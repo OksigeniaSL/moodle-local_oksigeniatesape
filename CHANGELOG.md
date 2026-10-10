@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1 (2026-10-10)
+
+- On narrow phones (360 px), the lists of the teacher panel no longer stick out on the right.
+
 ## 0.2.0 (2026-10-10)
 
 The game can be tried: students make their character and enter their region; teachers run the game from their

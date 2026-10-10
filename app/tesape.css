@@ -751,7 +751,12 @@ body.tesape {
   margin: 0;
   padding: 0;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 10px;
+}
+
+.list > li {
+  min-width: 0;
 }
 
 .item {
@@ -927,6 +932,15 @@ body.tesape {
   .item .pills {
     width: 100%;
     justify-content: flex-start;
+  }
+
+  .item {
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .bars {
+    min-width: 56px;
   }
 }
 
