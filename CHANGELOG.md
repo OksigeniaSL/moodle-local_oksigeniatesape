@@ -14,6 +14,11 @@
   completion is. A deleted activity stops being a challenge.
 - Energy and breath are filled once a day for those who are playing.
 - The look of the character is kept as data (parts and colours), ready for the character workshop.
+- **Web services** for the game client and the teacher panel: the world of a student (character, team, classroom
+  challenges, own log), making the character and changing its look; for teachers, the class, the settings of the
+  course, giving by hand, the word on classroom challenges, making and deleting them, pausing, recovery, steps, the
+  log of the course and undo. Classmates see each other's character and energy inside the team, never why someone
+  fell or was paused.
 
 ## 0.1.0 (2026-10-10)
 

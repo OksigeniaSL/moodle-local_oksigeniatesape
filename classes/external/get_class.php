@@ -1,0 +1,107 @@
+<?php
+// This file is part of Moodle - https://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+
+namespace local_oksigeniatesape\external;
+
+use core_external\external_api;
+use core_external\external_function_parameters;
+use core_external\external_multiple_structure;
+use core_external\external_single_structure;
+use core_external\external_value;
+use local_oksigeniatesape\local\characters;
+use local_oksigeniatesape\local\classroom;
+use local_oksigeniatesape\local\engine;
+use local_oksigeniatesape\local\regions;
+use local_oksigeniatesape\local\view;
+
+/**
+ * The class of a course for its teachers: settings, students and their characters, teams and challenges.
+ *
+ * @package    local_oksigeniatesape
+ * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+final class get_class extends external_api {
+    /**
+     * Parameters.
+     *
+     * @return external_function_parameters
+     */
+    public static function execute_parameters(): external_function_parameters {
+        return new external_function_parameters([
+            'courseid' => new external_value(PARAM_INT, 'Course'),
+        ]);
+    }
+
+    /**
+     * The class of a course for its teachers: settings, students and their characters, teams and challenges.
+     *
+     * @param int $courseid
+     * @return array
+     */
+    public static function execute(int $courseid): array {
+        $params = self::validate_parameters(self::execute_parameters(), [
+            'courseid' => $courseid,
+        ]);
+        $context = \context_course::instance($params['courseid']);
+        self::validate_context($context);
+        require_capability('local/oksigeniatesape:award', $context);
+        return view::teacher($params['courseid']);
+    }
+
+    /**
+     * What it returns.
+     *
+     * @return \core_external\external_description
+     */
+    public static function execute_returns(): \core_external\external_description {
+        return new external_single_structure([
+            'region' => structures::region(),
+            'students' => new external_multiple_structure(new external_single_structure([
+                'userid' => new external_value(PARAM_INT, 'User'),
+                'fullname' => new external_value(PARAM_TEXT, 'Full name'),
+                'firstname' => new external_value(PARAM_TEXT, 'First name'),
+                'picture' => new external_value(PARAM_URL, 'Picture'),
+                'teamid' => new external_value(PARAM_INT, 'Group of the team (0: none)'),
+                'character' => structures::character(VALUE_OPTIONAL),
+            ])),
+            'teams' => new external_multiple_structure(new external_single_structure([
+                'id' => new external_value(PARAM_INT, 'Group'),
+                'name' => new external_value(PARAM_TEXT, 'Name'),
+            ])),
+            'groupings' => new external_multiple_structure(new external_single_structure([
+                'id' => new external_value(PARAM_INT, 'Grouping'),
+                'name' => new external_value(PARAM_TEXT, 'Name'),
+            ])),
+            'challenges' => new external_multiple_structure(new external_single_structure([
+                'id' => new external_value(PARAM_INT, 'Challenge'),
+                'name' => new external_value(PARAM_TEXT, 'Name'),
+                'description' => new external_value(PARAM_RAW, 'What to do'),
+                'saber' => new external_value(PARAM_INT, 'Knowledge'),
+                'gems' => new external_value(PARAM_INT, 'Gems'),
+                'steps' => new external_value(PARAM_SEQUENCE, 'Steps it counts for'),
+                'teamwork' => new external_value(PARAM_BOOL, 'Done by the team'),
+                'validations' => new external_multiple_structure(new external_single_structure([
+                    'userid' => new external_value(PARAM_INT, 'Student'),
+                    'status' => new external_value(PARAM_ALPHA, 'done, merit or notyet'),
+                    'note' => new external_value(PARAM_TEXT, 'Note'),
+                ])),
+            ])),
+            'energymax' => new external_value(PARAM_INT, 'Most energy'),
+            'breathmax' => new external_value(PARAM_INT, 'Most breath'),
+        ]);
+    }
+}

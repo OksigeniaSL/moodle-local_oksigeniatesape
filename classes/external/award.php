@@ -1,0 +1,116 @@
+<?php
+// This file is part of Moodle - https://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+
+namespace local_oksigeniatesape\external;
+
+use core_external\external_api;
+use core_external\external_function_parameters;
+use core_external\external_multiple_structure;
+use core_external\external_single_structure;
+use core_external\external_value;
+use local_oksigeniatesape\local\characters;
+use local_oksigeniatesape\local\classroom;
+use local_oksigeniatesape\local\engine;
+use local_oksigeniatesape\local\regions;
+use local_oksigeniatesape\local\view;
+
+/**
+ * Gives knowledge, gems or breath to some students, or takes energy for a commitment not kept.
+ *
+ * @package    local_oksigeniatesape
+ * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+final class award extends external_api {
+    /**
+     * Parameters.
+     *
+     * @return external_function_parameters
+     */
+    public static function execute_parameters(): external_function_parameters {
+        return new external_function_parameters([
+            'courseid' => new external_value(PARAM_INT, 'Course'),
+            'userids' => new external_multiple_structure(new external_value(PARAM_INT, 'Student')),
+            'resource' => new external_value(PARAM_ALPHA, 'saber, gems, breath or energy'),
+            'amount' => new external_value(PARAM_INT, 'How much; negative only for energy'),
+        ]);
+    }
+
+    /**
+     * Gives knowledge, gems or breath to some students, or takes energy for a commitment not kept.
+     *
+     * @param int $courseid
+     * @param int[] $userids
+     * @param string $resource
+     * @param int $amount
+     * @return array
+     */
+    public static function execute(
+        int $courseid,
+        array $userids,
+        string $resource,
+        int $amount
+    ): array {
+        global $USER;
+        $params = self::validate_parameters(self::execute_parameters(), [
+            'courseid' => $courseid,
+            'userids' => $userids,
+            'resource' => $resource,
+            'amount' => $amount,
+        ]);
+        $context = \context_course::instance($params['courseid']);
+        self::validate_context($context);
+        require_capability('local/oksigeniatesape:award', $context);
+        if (!in_array($params['resource'], ['saber', 'gems', 'breath', 'energy'], true)) {
+            throw new \invalid_parameter_exception('Unknown resource');
+        }
+        if ($params['amount'] == 0 || ($params['amount'] < 0 && $params['resource'] !== 'energy')) {
+            throw new \invalid_parameter_exception('Only energy can be taken away, and something has to be given');
+        }
+        view::require_students($params['courseid'], $params['userids']);
+        $results = [];
+        foreach ($params['userids'] as $userid) {
+            $char = characters::get($userid);
+            if (!$char) {
+                $results[] = ['userid' => $userid, 'status' => 'nocharacter'];
+                continue;
+            }
+            $member = engine::member($char, $params['courseid']);
+            $reason = $params['resource'] === 'energy' && $params['amount'] < 0 ? 'commitment' : 'manual';
+            $method = $params['resource'];
+            $entry = engine::$method($member, $params['amount'], $reason, (int) $USER->id);
+            if (!$entry) {
+                $results[] = ['userid' => $userid, 'status' => $member->status === 'paused' ? 'paused' : 'capped'];
+                continue;
+            }
+            $results[] = [
+                'userid' => $userid,
+                'status' => $entry->capped && !$entry->amount ? 'capped' : 'given',
+                'amount' => (int) $entry->amount,
+            ];
+        }
+        return $results;
+    }
+
+    /**
+     * What it returns.
+     *
+     * @return \core_external\external_description
+     */
+    public static function execute_returns(): \core_external\external_description {
+        return structures::results();
+    }
+}

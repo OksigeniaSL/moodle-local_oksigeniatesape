@@ -26,6 +26,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $string['cannotundo'] = 'Este apunte no se puede deshacer: ya se deshizo o es él mismo un deshacer.';
 $string['characterexists'] = 'Ya tienes un personaje.';
+$string['nocharacter'] = 'Todavía no hay personaje.';
 $string['notenoughbreath'] = 'No hay aliento suficiente.';
 $string['notenoughgems'] = 'No hay gemas suficientes.';
 $string['oksigeniatesape:approvepowers'] = 'Aprobar o rechazar los poderes que piden los alumnos';

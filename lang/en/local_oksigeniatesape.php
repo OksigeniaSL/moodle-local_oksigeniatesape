@@ -26,6 +26,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $string['cannotundo'] = 'This entry cannot be undone: it was already undone, or it is an undo itself.';
 $string['characterexists'] = 'You already have a character.';
+$string['nocharacter'] = 'There is no character yet.';
 $string['notenoughbreath'] = 'Not enough breath.';
 $string['notenoughgems'] = 'Not enough gems.';
 $string['oksigeniatesape:approvepowers'] = 'Approve or turn down the powers students ask to use';
