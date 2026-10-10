@@ -1,6 +1,9 @@
 # Changelog
 
-## 0.2.0 (in progress)
+## 0.2.0 (2026-10-10)
+
+The game can be tried: students make their character and enter their region; teachers run the game from their
+phone.
 
 - **The game engine**: knowledge with the weekly cap of the course and the daily cap for what is given by hand;
   gems; energy, with its daily cap of losses and falling worn out at 0 (without losing knowledge or level) until the
@@ -14,6 +17,19 @@
   completion is. A deleted activity stops being a challenge.
 - Energy and breath are filled once a day for those who are playing.
 - The look of the character is kept as data (parts and colours), ready for the character workshop.
+- **The game client**, full screen and without the look of Moodle: the first time is a story (the valley, the role
+  in the family of names of the course, the form of the name, the lineage, the look) that ends with the new
+  character; then the world with five places: the region, the team (with the energy of the team only), the classroom
+  challenges with what the teacher said, the diary of what was won and the character sheet (printable, to change the
+  look). What was won since the last visit shows when coming back.
+- **The teacher panel**, made for the phone first: turning the game on with the family of names; the class with
+  names, photos and characters, by team; giving knowledge, gems or breath to a few or many with one tap, or taking
+  energy for a commitment not kept; classroom challenges, and the word on them student by student or for the whole
+  team, which waits and is sent later if there is no connection; the sheet of each student with their step, pause and
+  recovery; the log with undo; and the settings of the course.
+- Light for poor connections: the client and the panel weigh under 200 KB with their fonts, and use no external
+  service. Fonts Lexend and Cherry Swash included (SIL Open Font License), declared in `thirdpartylibs.xml`.
+- A link to the game in the course bar: the panel for teachers, the game for students once it is on.
 - **Web services** for the game client and the teacher panel: the world of a student (character, team, classroom
   challenges, own log), making the character and changing its look; for teachers, the class, the settings of the
   course, giving by hand, the word on classroom challenges, making and deleting them, pausing, recovery, steps, the

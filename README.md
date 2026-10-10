@@ -18,8 +18,15 @@ privacy come from Moodle, and the game is a full-screen application of its own.
 
 ## Status
 
-**Alpha, under development: not for use with students yet.** This first version lays the ground the game is built
-on:
+**Alpha, under development: not for use with students yet.** What there is today:
+
+- The game client: the first time is a story that ends with the student's character; then their region, team,
+  classroom challenges, diary and character sheet. Full screen, light, without external services.
+- The teacher panel, made for the phone: the class with names, photos and characters, touches of knowledge, gems
+  and breath, classroom challenges (also validated without connection), pause and recovery, the log with undo and
+  the settings of the course.
+- The game engine: knowledge with weekly and daily caps, gems, energy and falling worn out, breath, items, undo, and
+  completed Moodle activities turned into progress.
 
 - The tables of the game: characters, courses (regions), members, teams, challenges, the log of everything that
   adds and takes away, powers and their requests, items, missions, chapters, scenes and their attempts, and
@@ -30,8 +37,8 @@ on:
 - Levels, the stages of the character's look and the weekly cap per course, with their tests.
 - A made-up class to try it on a development site (see Development).
 
-Next come the game client with the decision scenes of the pilot mission, the teacher panel, the rules that turn
-Moodle activity into progress, the minigames and the class screen.
+Next come the decision scenes and the map of the pilot mission, teams and powers, the minigames and the class
+screen.
 
 ## Requirements
 
@@ -72,4 +79,5 @@ with `moodle-plugin-ci` in GitHub Actions on Moodle 4.5, 5.2 and 5.3, and on `ma
 
 ## License
 
-GNU GPL v3 or later. © 2026 Oksigenia.
+GNU GPL v3 or later. © 2026 Oksigenia. The fonts Lexend and Cherry Swash, in `app/fonts`, are under the SIL Open Font
+License 1.1 (listed in `thirdpartylibs.xml`).

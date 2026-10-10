@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<libraries>
+    <library>
+        <location>app/fonts/lexend-latin-wght-normal.woff2</location>
+        <name>Lexend</name>
+        <description>Lexend variable font (Latin subset) by The Lexend Project Authors, from Fontsource 5.3.0. License text in app/fonts/OFL-Lexend.txt.</description>
+        <version>5.3.0</version>
+        <license>OFL</license>
+        <licenseversion>1.1</licenseversion>
+    </library>
+    <library>
+        <location>app/fonts/lexend-latin-ext-wght-normal.woff2</location>
+        <name>Lexend (Latin Extended)</name>
+        <description>Lexend variable font (Latin Extended subset, for Guarani and other languages) by The Lexend Project Authors, from Fontsource 5.3.0. License text in app/fonts/OFL-Lexend.txt.</description>
+        <version>5.3.0</version>
+        <license>OFL</license>
+        <licenseversion>1.1</licenseversion>
+    </library>
+    <library>
+        <location>app/fonts/cherry-swash-latin-700-normal.woff2</location>
+        <name>Cherry Swash</name>
+        <description>Cherry Swash Bold (Latin subset) by Natalia Kasatkina, from Fontsource 5.3.0. License text in app/fonts/OFL-CherrySwash.txt.</description>
+        <version>5.3.0</version>
+        <license>OFL</license>
+        <licenseversion>1.1</licenseversion>
+    </library>
+    <library>
+        <location>app/fonts/cherry-swash-latin-ext-700-normal.woff2</location>
+        <name>Cherry Swash (Latin Extended)</name>
+        <description>Cherry Swash Bold (Latin Extended subset) by Natalia Kasatkina, from Fontsource 5.3.0. License text in app/fonts/OFL-CherrySwash.txt.</description>
+        <version>5.3.0</version>
+        <license>OFL</license>
+        <licenseversion>1.1</licenseversion>
+    </library>
+</libraries>

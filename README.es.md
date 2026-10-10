@@ -19,8 +19,15 @@ pantalla completa.
 
 ## Estado
 
-**Alfa, en desarrollo: todavía no es para usarlo con alumnos.** Esta primera versión pone la base sobre la que se
-construye el juego:
+**Alfa, en desarrollo: todavía no es para usarlo con alumnos.** Lo que hay hoy:
+
+- El cliente del juego: la primera vez es una historia que termina con el personaje del alumno; después, su región,
+  su equipo, los retos del aula, su diario y su ficha. A pantalla completa, ligero, sin servicios externos.
+- El panel del docente, pensado para el móvil: la clase con nombres, fotos y personajes, toques de saber, gemas y
+  aliento, retos del aula (también validados sin conexión), pausa y recuperación, el registro con deshacer y los
+  ajustes del curso.
+- El motor del juego: saber con topes semanal y diario, gemas, energía y caída, aliento, objetos, deshacer, y las
+  actividades completadas de Moodle convertidas en progreso.
 
 - Las tablas del juego: personajes, cursos (regiones), miembros, equipos, retos, el registro de todo lo que suma y
   resta, poderes y sus peticiones, objetos, misiones, capítulos, escenas y sus intentos, y resultados de minijuegos.
@@ -31,8 +38,8 @@ construye el juego:
 - Los niveles, las etapas del aspecto del personaje y el tope semanal por curso, con sus pruebas.
 - Una clase inventada para probarlo en un sitio de desarrollo (ver Desarrollo).
 
-Después llegan el cliente del juego con las escenas de decisión de la misión piloto, el panel del docente, las
-reglas que convierten la actividad de Moodle en progreso, los minijuegos y la pantalla de clase.
+Después llegan las escenas de decisión y el mapa de la misión piloto, equipos y poderes, los minijuegos y la
+pantalla de clase.
 
 ## Requisitos
 
@@ -74,4 +81,5 @@ que viene. Ver [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Licencia
 
-GNU GPL v3 o posterior. © 2026 Oksigenia.
+GNU GPL v3 o posterior. © 2026 Oksigenia. Las fuentes Lexend y Cherry Swash, en `app/fonts`, tienen licencia SIL Open
+Font License 1.1 (en `thirdpartylibs.xml`).
