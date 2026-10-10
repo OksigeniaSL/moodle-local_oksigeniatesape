@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.1 (2026-10-10)
+
+- Art packs: the images of characters are looked up by the family of names of the course too (a druid is not a
+  dolphin), then by role, lineage, form of the name and stage, each first in the tone of skin the student chose
+  (keys such as `character.storyheroes.healer.f.1.t2`), so that a first pack can start with a few images and grow.
+
 ## 0.4.0 (2026-10-10)
 
 - **Teams**: the teacher makes them in one go (the size they choose, the roles dealt out so that every team gets

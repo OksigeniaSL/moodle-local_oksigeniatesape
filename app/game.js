@@ -33,6 +33,7 @@
     loading();
     T.api('get_world', {courseid: cfg.courseid}).then(function(world) {
       state.world = world;
+      T.family = world.family;
       route();
     }).catch(fail);
   }

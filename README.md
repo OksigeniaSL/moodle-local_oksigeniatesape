@@ -81,7 +81,7 @@ powers waiting and ideas in the box. Never on a site with real students.
 php local/oksigeniatesape/cli/demo.php --run --weeks=3
 ```
 
-An art pack is a zip with `pack.json` (code, name, version, and `files`: keys such as `character.healer`,
+An art pack is a zip with `pack.json` (code, name, version, and `files`: keys such as `character.storyheroes.healer`,
 `creature.2.feathers`, `icon.saber` or `map.livingthings`, each with an image of the zip in PNG, WebP or JPEG):
 
 ```bash

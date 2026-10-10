@@ -41,8 +41,8 @@ if ($options['help'] || ($options['install'] === '' && !$options['off'])) {
 back to its own drawings).
 
 A pack is a zip with pack.json and its images (png, webp or jpg). pack.json has a code, a name, a version and
-files: a map from keys (character.healer, character.healer.fairy.f.1, creature.2.feathers, icon.saber,
-map.livingthings…) to the images in the zip.
+files: a map from keys (character.storyheroes.healer, character.storyheroes.healer.fairy.f.1, creature.2.feathers,
+icon.saber, map.livingthings…) to the images in the zip.
 
 Options:
 --install=FILE      Install the pack in this zip

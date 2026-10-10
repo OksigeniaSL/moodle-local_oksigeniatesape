@@ -22,8 +22,8 @@ namespace local_oksigeniatesape\local;
  * art.
  *
  * A pack is a zip with pack.json and its images. pack.json has a code, a name, a version and files: a map from keys
- * (character.healer.fairy.f.1, creature.2.feathers, icon.saber, map.livingthings…) to the images in the zip. The
- * client looks for the most precise key first and goes down to the general ones.
+ * (character.storyheroes.healer.fairy.f.1, creature.2.feathers, icon.saber, map.livingthings…) to the images in the
+ * zip. The client looks for the most precise key first and goes down to the general ones.
  *
  * @package    local_oksigeniatesape
  * @copyright  2026 Oksigenia <dev@oksigenia.cc>

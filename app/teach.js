@@ -46,6 +46,7 @@
     }
     return T.api('get_class', {courseid: cfg.courseid}).then(function(data) {
       state.data = data;
+      T.family = data.region.family;
       render();
     }).catch(function(e) {
       app.innerHTML = '<div class="story"><h2>' + esc(t('app_error')) + '</h2><p class="help">' + esc(e.message) +

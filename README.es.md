@@ -83,7 +83,7 @@ progreso, poderes pendientes e ideas en el buzón. Nunca en un sitio con alumnos
 php local/oksigeniatesape/cli/demo.php --run --weeks=3
 ```
 
-Un paquete de arte es un zip con `pack.json` (código, nombre, versión y `files`: claves como `character.healer`,
+Un paquete de arte es un zip con `pack.json` (código, nombre, versión y `files`: claves como `character.storyheroes.healer`,
 `creature.2.feathers`, `icon.saber` o `map.livingthings`, cada una con una imagen del zip en PNG, WebP o JPEG):
 
 ```bash

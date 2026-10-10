@@ -193,6 +193,33 @@
   }
 
   /**
+   * The keys of the image of a character in an art pack, from the most precise to the most general: family, role,
+   * lineage, form of the name and stage, each first with the tone of skin (t1 light, t2 medium, t3 dark).
+   *
+   * @param {string} family
+   * @param {string} role
+   * @param {string} lineage
+   * @param {string} form m or f.
+   * @param {number} stage
+   * @param {number} skin Index of the skin colour (-1: unknown).
+   * @param {boolean} portrait For the small round picture.
+   * @return {string[]}
+   */
+  T.characterKeys = function(family, role, lineage, form, stage, skin, portrait) {
+    var tone = skin < 0 ? 2 : skin < 2 ? 1 : skin < 4 ? 2 : 3;
+    var keys = [];
+    (portrait ? ['portrait', 'character'] : ['character']).forEach(function(kind) {
+      var b = kind + '.' + family + '.' + role;
+      var lin = lineage || 'none';
+      [b + '.' + lin + '.' + form + '.' + stage, b + '.' + lin + '.' + form, b + '.' + form + '.' + stage, b + '.' + form,
+        b + '.' + stage, b].forEach(function(k) {
+        keys.push(k + '.t' + tone, k);
+      });
+    });
+    return keys;
+  };
+
+  /**
    * Draws a character.
    *
    * @param {Object} c role, nameform, lineage, look (object or JSON), stage, label.
@@ -213,13 +240,8 @@
     var cloth = /^#[0-9a-f]{6}$/i.test(look.outfit) ? look.outfit : T.OUTFITS[0];
     var form = c.nameform === 'f' ? 'f' : 'm';
     var stage = c.stage || 1;
-    var keys = [];
-    (c.portrait ? ['portrait', 'character'] : ['character']).forEach(function(kind) {
-      var base = kind + '.' + c.role;
-      keys.push(base + '.' + (c.lineage || 'none') + '.' + form + '.' + stage, base + '.' + (c.lineage || 'none') + '.' + form,
-        base + '.' + stage, base);
-    });
-    var art = T.artUrl(keys);
+    var art = T.artUrl(T.characterKeys(c.family || T.family || 'storyheroes', c.role, c.lineage, form, stage,
+      T.SKINS.indexOf(skin), c.portrait));
     if (art) {
       return '<img class="avatar art' + (c.portrait ? ' portrait' : '') + '" src="' + T.esc(art) + '" alt="' +
         T.esc(c.label || '') + '">';
