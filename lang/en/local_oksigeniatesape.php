@@ -24,6 +24,10 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+$string['cannotundo'] = 'This entry cannot be undone: it was already undone, or it is an undo itself.';
+$string['characterexists'] = 'You already have a character.';
+$string['notenoughbreath'] = 'Not enough breath.';
+$string['notenoughgems'] = 'Not enough gems.';
 $string['oksigeniatesape:approvepowers'] = 'Approve or turn down the powers students ask to use';
 $string['oksigeniatesape:award'] = 'Give knowledge, gems and items by hand';
 $string['oksigeniatesape:manageregion'] = 'Turn the game on in a course and set it up';
@@ -34,6 +38,7 @@ $string['oksigeniatesape:undo'] = 'Undo entries of the game log';
 $string['oksigeniatesape:viewlog'] = 'See the game log of the course';
 $string['pluginname'] = 'Classroom role-playing game (Oksigenia Tesapé)';
 $string['privacy:metadata:char'] = 'The character of each student, one for the whole site.';
+$string['privacy:metadata:char:appearance'] = 'How their character looks.';
 $string['privacy:metadata:char:creature'] = 'The traits of their companion creature.';
 $string['privacy:metadata:char:creaturestage'] = 'How far their creature has grown.';
 $string['privacy:metadata:char:gems'] = 'The gems they have.';
@@ -102,8 +107,19 @@ $string['privacy:metadata:sceneattempt:sceneid'] = 'The scene.';
 $string['privacy:metadata:sceneattempt:score'] = 'Their score.';
 $string['privacy:metadata:sceneattempt:timefinished'] = 'When they finished.';
 $string['privacy:metadata:sceneattempt:timestarted'] = 'When they started.';
+$string['privacy:metadata:validation'] = 'What the teacher said about each classroom challenge of a student.';
+$string['privacy:metadata:validation:challengeid'] = 'The challenge.';
+$string['privacy:metadata:validation:charid'] = 'The character.';
+$string['privacy:metadata:validation:courseid'] = 'The course.';
+$string['privacy:metadata:validation:note'] = 'What the teacher told the student.';
+$string['privacy:metadata:validation:status'] = 'Done, done with a mention, or not yet.';
+$string['privacy:metadata:validation:timemodified'] = 'When.';
+$string['privacy:metadata:validation:validatedby'] = 'The teacher.';
+$string['privacy:path:classroom'] = 'Classroom challenges';
 $string['privacy:path:items'] = 'Items';
 $string['privacy:path:ledger'] = 'Log';
 $string['privacy:path:minigames'] = 'Minigames';
 $string['privacy:path:powers'] = 'Powers';
 $string['privacy:path:scenes'] = 'Scenes';
+$string['rolechangetoosoon'] = 'You changed your role not long ago; ask your teacher if you need to change it again.';
+$string['task:regenerate'] = 'Fill energy and breath every day';

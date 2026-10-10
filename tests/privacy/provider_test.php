@@ -43,6 +43,7 @@ final class provider_test extends provider_testcase {
      * @return \stdClass Courses, users, characters and members.
      */
     private function make_world(): \stdClass {
+        global $DB;
         $dg = $this->getDataGenerator();
         /** @var \local_oksigeniatesape_generator $gen */
         $gen = $dg->get_plugin_generator('local_oksigeniatesape');
@@ -84,6 +85,18 @@ final class provider_test extends provider_testcase {
         $gen->create_sceneattempt(['sceneid' => $scene->id, 'charid' => $w->leochar->id, 'courseid' => $w->course1->id]);
         $gen->create_minigame(['charid' => $w->anachar->id, 'courseid' => $w->course1->id]);
         $gen->create_minigame(['charid' => $w->anachar->id, 'courseid' => $w->course2->id, 'success' => 0, 'tries' => 3]);
+        // The teacher says Leo's drawing is done.
+        $challenge = \local_oksigeniatesape\local\classroom::save($w->course1->id, ['name' => 'Draw a food chain']);
+        $DB->insert_record(self::T . 'validation', (object) [
+            'challengeid' => $challenge->id,
+            'charid' => $w->leochar->id,
+            'courseid' => $w->course1->id,
+            'status' => 'done',
+            'note' => 'Lovely colours',
+            'validatedby' => $w->teacher->id,
+            'timecreated' => time(),
+            'timemodified' => time(),
+        ]);
         $w->ctx1 = \context_course::instance($w->course1->id);
         $w->ctx2 = \context_course::instance($w->course2->id);
         $w->anactx = \context_user::instance($w->ana->id);
@@ -109,7 +122,7 @@ final class provider_test extends provider_testcase {
     public function test_metadata(): void {
         $collection = provider::get_metadata(new collection('local_oksigeniatesape'));
         $tables = array_map(fn($item) => $item->get_name(), $collection->get_collection());
-        foreach (['char', 'member', 'ledger', 'powerreq', 'inventory', 'sceneattempt', 'minigame'] as $table) {
+        foreach (['char', 'member', 'ledger', 'powerreq', 'inventory', 'sceneattempt', 'minigame', 'validation'] as $table) {
             $this->assertContains(self::T . $table, $tables);
         }
     }
@@ -171,9 +184,11 @@ final class provider_test extends provider_testcase {
         $this->assertEquals('nestdefence', $writer->get_data($path('minigames'))->results[0]['game']);
         $this->assertEquals('approved', $writer->get_data($path('powers'))->requests[0]['status']);
 
-        // Leo sees why he was paused.
+        // Leo sees why he was paused, and what the teacher said of his drawing.
         $this->export_context_data_for_user($w->leo->id, $w->ctx1, 'local_oksigeniatesape');
         $this->assertEquals('Needs a break', writer::with_context($w->ctx1)->get_data($base)->statusreason);
+        $classroom = writer::with_context($w->ctx1)->get_data($path('classroom'));
+        $this->assertEquals('Lovely colours', $classroom->challenges[0]['note']);
     }
 
     public function test_delete_data_for_user_in_a_course(): void {
@@ -186,7 +201,7 @@ final class provider_test extends provider_testcase {
         // Her other course, her character and Leo stay.
         $this->assertSame(3, $this->rows($w->anachar->id, $w->course2->id));
         $this->assertTrue($DB->record_exists(self::T . 'char', ['id' => $w->anachar->id]));
-        $this->assertSame(3, $this->rows($w->leochar->id, $w->course1->id));
+        $this->assertSame(4, $this->rows($w->leochar->id, $w->course1->id));
     }
 
     public function test_delete_data_for_a_teacher(): void {
@@ -198,6 +213,7 @@ final class provider_test extends provider_testcase {
         $this->assertSame(0, (int) $DB->get_field(self::T . 'member', 'statusby', ['id' => $w->leo1->id]));
         $this->assertFalse($DB->record_exists(self::T . 'ledger', ['actorid' => $w->teacher->id]));
         $this->assertFalse($DB->record_exists(self::T . 'powerreq', ['decidedby' => $w->teacher->id]));
+        $this->assertFalse($DB->record_exists(self::T . 'validation', ['validatedby' => $w->teacher->id]));
         $this->assertSame(1, $DB->count_records(self::T . 'powerreq'));
         $this->assertSame(5, $this->rows($w->anachar->id, $w->course1->id));
     }
@@ -213,7 +229,7 @@ final class provider_test extends provider_testcase {
         }
         // Her power request goes with her; Leo's data stays.
         $this->assertSame(0, $DB->count_records(self::T . 'powerreq'));
-        $this->assertSame(3, $this->rows($w->leochar->id, $w->course1->id));
+        $this->assertSame(4, $this->rows($w->leochar->id, $w->course1->id));
     }
 
     public function test_delete_data_for_all_users_in_context(): void {

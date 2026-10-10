@@ -45,7 +45,7 @@ class provider implements
     private const T = 'local_oksigeniatesape_';
 
     /** @var string[] Tables of a character in a course, all with charid and courseid. */
-    public const COURSE_TABLES = ['member', 'ledger', 'inventory', 'sceneattempt', 'minigame'];
+    public const COURSE_TABLES = ['member', 'ledger', 'inventory', 'sceneattempt', 'minigame', 'validation'];
 
     /**
      * What is stored.
@@ -56,7 +56,7 @@ class provider implements
     public static function get_metadata(collection $collection): collection {
         $fields = [
             'char' => ['userid', 'role', 'nameform', 'lineage', 'nickname', 'nicknamepending', 'saber', 'level', 'gems',
-                'creature', 'creaturestage', 'rolechangedat', 'timecreated'],
+                'creature', 'appearance', 'creaturestage', 'rolechangedat', 'timecreated'],
             'member' => ['charid', 'courseid', 'renown', 'energy', 'breath', 'status', 'statusreason', 'statusby', 'step',
                 'timecreated'],
             'ledger' => ['charid', 'courseid', 'resource', 'amount', 'reason', 'cmid', 'actorid', 'capped', 'undoneby',
@@ -66,6 +66,7 @@ class provider implements
             'sceneattempt' => ['sceneid', 'charid', 'courseid', 'path', 'score', 'objectives', 'ending', 'attempt',
                 'timestarted', 'timefinished'],
             'minigame' => ['charid', 'courseid', 'cmid', 'game', 'success', 'tries', 'detail', 'timecreated'],
+            'validation' => ['challengeid', 'charid', 'courseid', 'status', 'note', 'validatedby', 'timemodified'],
         ];
         foreach ($fields as $table => $names) {
             $described = [];
@@ -125,6 +126,13 @@ class provider implements
               WHERE r.decidedby = :userid',
             ['level' => CONTEXT_COURSE, 'userid' => $userid]
         );
+        $contextlist->add_from_sql(
+            'SELECT ctx.id
+               FROM {context} ctx
+               JOIN {' . self::T . 'validation} v ON v.courseid = ctx.instanceid AND ctx.contextlevel = :level
+              WHERE v.validatedby = :userid',
+            ['level' => CONTEXT_COURSE, 'userid' => $userid]
+        );
         return $contextlist;
     }
 
@@ -168,6 +176,11 @@ class provider implements
             $params
         );
         $userlist->add_from_sql(
+            'validatedby',
+            'SELECT validatedby FROM {' . self::T . 'validation} WHERE courseid = :courseid AND validatedby > 0',
+            $params
+        );
+        $userlist->add_from_sql(
             'decidedby',
             'SELECT r.decidedby
                FROM {' . self::T . 'powerreq} r
@@ -202,6 +215,7 @@ class provider implements
                     'level' => $char->level,
                     'gems' => $char->gems,
                     'creature' => json_decode((string) $char->creature),
+                    'appearance' => json_decode((string) $char->appearance),
                     'creaturestage' => $char->creaturestage,
                     'rolechangedat' => $char->rolechangedat ? transform::datetime($char->rolechangedat) : null,
                     'timecreated' => transform::datetime($char->timecreated),
@@ -306,6 +320,24 @@ class provider implements
                     'timestarted' => transform::datetime($a->timestarted),
                     'timefinished' => $a->timefinished ? transform::datetime($a->timefinished) : null,
                 ], $attempts)),
+            ]);
+        }
+        $validations = $DB->get_records_sql(
+            'SELECT v.id, c.name, v.status, v.note, v.timemodified
+               FROM {' . self::T . 'validation} v
+               JOIN {' . self::T . 'challenge} c ON c.id = v.challengeid
+              WHERE v.charid = ? AND v.courseid = ?
+           ORDER BY v.timemodified',
+            [$charid, $courseid]
+        );
+        if ($validations) {
+            $writer->export_data(self::path('classroom'), (object) [
+                'challenges' => array_values(array_map(fn($v) => [
+                    'challenge' => $v->name,
+                    'status' => $v->status,
+                    'note' => $v->note,
+                    'timemodified' => transform::datetime($v->timemodified),
+                ], $validations)),
             ]);
         }
         $games = $DB->get_records(self::T . 'minigame', ['charid' => $charid, 'courseid' => $courseid], 'timecreated');
@@ -420,6 +452,10 @@ class provider implements
         );
         $DB->execute(
             'UPDATE {' . self::T . "ledger} SET actorid = 0 WHERE courseid = ? AND actorid $insql",
+            array_merge([$courseid], $params)
+        );
+        $DB->execute(
+            'UPDATE {' . self::T . "validation} SET validatedby = 0 WHERE courseid = ? AND validatedby $insql",
             array_merge([$courseid], $params)
         );
         $members = $DB->get_fieldset_select(self::T . 'member', 'id', 'courseid = ?', [$courseid]);

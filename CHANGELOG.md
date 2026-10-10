@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.2.0 (in progress)
+
+- **The game engine**: knowledge with the weekly cap of the course and the daily cap for what is given by hand;
+  gems; energy, with its daily cap of losses and falling worn out at 0 (without losing knowledge or level) until the
+  recovery challenge or a rescue; breath for the powers; expedition items without duplicates; pausing a student;
+  undoing any entry of the log (it adds the opposite entry and keeps the original, marked).
+- **Classroom challenges**: challenges that happen off the screen (a drawing, a model, a talk, a reading), with no
+  Moodle activity behind them. The teacher says done, done with a mention (extra gems, never extra knowledge) or not
+  yet, for a student or a whole team, with a note; changing their word gives or takes back what the challenge gives.
+- **From Moodle to the game**: a completed activity gives the knowledge of its challenge, or the course rule for
+  activities that are not challenges (10 unless the teacher changes it); once per activity, and taken back if the
+  completion is. A deleted activity stops being a challenge.
+- Energy and breath are filled once a day for those who are playing.
+- The look of the character is kept as data (parts and colours), ready for the character workshop.
+
 ## 0.1.0 (2026-10-10)
 
 First alpha: the ground the game is built on. Nothing is shown to students or teachers yet.

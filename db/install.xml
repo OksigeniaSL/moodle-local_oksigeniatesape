@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="local/oksigeniatesape/db" VERSION="20261010" COMMENT="XMLDB file for local_oksigeniatesape"
+<XMLDB PATH="local/oksigeniatesape/db" VERSION="20261011" COMMENT="XMLDB file for local_oksigeniatesape"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -17,6 +17,7 @@
         <FIELD NAME="level" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Worked out from saber, kept for quick queries"/>
         <FIELD NAME="gems" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="creature" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Traits of the companion creature (JSON), drawn when it hatches"/>
+        <FIELD NAME="appearance" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="How the character looks (JSON): parts and colours"/>
         <FIELD NAME="creaturestage" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="0 before it hatches"/>
         <FIELD NAME="rolechangedat" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Last change of role (one per term)"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
@@ -92,9 +93,12 @@
     <TABLE NAME="local_oksigeniatesape_challenge" COMMENT="A Moodle activity marked as a game challenge">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="cmid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="cmid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Moodle activity (0: a classroom challenge, with no activity)"/>
         <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-        <FIELD NAME="kind" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="scene, offscreen, task, forum, minigame, quest or curiosity"/>
+        <FIELD NAME="kind" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="classroom, scene, task, forum, minigame, quest or curiosity"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Name of a classroom challenge (the activity name otherwise)"/>
+        <FIELD NAME="description" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="What to do, for a classroom challenge"/>
+        <FIELD NAME="teamwork" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Done by the whole team"/>
         <FIELD NAME="saber" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Saber on completion (0 for quests and curiosity)"/>
         <FIELD NAME="gems" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="steps" TYPE="char" LENGTH="10" NOTNULL="true" DEFAULT="1,2,3,4" SEQUENCE="false" COMMENT="Steps it counts for"/>
@@ -106,7 +110,7 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="cmid" TYPE="foreign-unique" FIELDS="cmid" REFTABLE="course_modules" REFFIELDS="id"/>
+        <KEY NAME="cmid" TYPE="foreign" FIELDS="cmid" REFTABLE="course_modules" REFFIELDS="id"/>
         <KEY NAME="courseid" TYPE="foreign" FIELDS="courseid" REFTABLE="course" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
@@ -172,6 +176,28 @@
         <KEY NAME="memberid" TYPE="foreign" FIELDS="memberid" REFTABLE="local_oksigeniatesape_member" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
+    <TABLE NAME="local_oksigeniatesape_validation" COMMENT="A teacher's word on a classroom challenge for a student">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="challengeid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="charid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="status" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="done, merit (done, with a mention) or notyet"/>
+        <FIELD NAME="note" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="What the teacher tells the student"/>
+        <FIELD NAME="validatedby" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The teacher"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="challengeid" TYPE="foreign" FIELDS="challengeid" REFTABLE="local_oksigeniatesape_challenge" REFFIELDS="id"/>
+        <KEY NAME="charid" TYPE="foreign" FIELDS="charid" REFTABLE="local_oksigeniatesape_char" REFFIELDS="id"/>
+        <KEY NAME="courseid" TYPE="foreign" FIELDS="courseid" REFTABLE="course" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="challengeid-charid" UNIQUE="true" FIELDS="challengeid, charid"/>
+      </INDEXES>
+    </TABLE>
     <TABLE NAME="local_oksigeniatesape_item" COMMENT="Expedition items: they open choices in the scenes">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
@@ -213,6 +239,8 @@
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="code" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false" COMMENT="For example livingthings"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Name given by the teacher (the catalogue name otherwise)"/>
+        <FIELD NAME="origin" TYPE="char" LENGTH="10" NOTNULL="true" DEFAULT="catalog" SEQUENCE="false" COMMENT="catalog, template or custom"/>
         <FIELD NAME="skin" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="valley" SEQUENCE="false" COMMENT="valley or azara"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>

@@ -24,6 +24,10 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+$string['cannotundo'] = 'Este apunte no se puede deshacer: ya se deshizo o es él mismo un deshacer.';
+$string['characterexists'] = 'Ya tienes un personaje.';
+$string['notenoughbreath'] = 'No hay aliento suficiente.';
+$string['notenoughgems'] = 'No hay gemas suficientes.';
 $string['oksigeniatesape:approvepowers'] = 'Aprobar o rechazar los poderes que piden los alumnos';
 $string['oksigeniatesape:award'] = 'Dar saber, gemas y objetos a mano';
 $string['oksigeniatesape:manageregion'] = 'Activar el juego en un curso y configurarlo';
@@ -34,6 +38,7 @@ $string['oksigeniatesape:undo'] = 'Deshacer apuntes del registro del juego';
 $string['oksigeniatesape:viewlog'] = 'Ver el registro del juego del curso';
 $string['pluginname'] = 'Juego de rol para el aula (Oksigenia Tesapé)';
 $string['privacy:metadata:char'] = 'El personaje de cada alumno, uno para todo el sitio.';
+$string['privacy:metadata:char:appearance'] = 'El aspecto de su personaje.';
 $string['privacy:metadata:char:creature'] = 'Los rasgos de su criatura compañera.';
 $string['privacy:metadata:char:creaturestage'] = 'Cuánto ha crecido su criatura.';
 $string['privacy:metadata:char:gems'] = 'Las gemas que tiene.';
@@ -102,8 +107,19 @@ $string['privacy:metadata:sceneattempt:sceneid'] = 'La escena.';
 $string['privacy:metadata:sceneattempt:score'] = 'Su puntuación.';
 $string['privacy:metadata:sceneattempt:timefinished'] = 'Cuándo terminó.';
 $string['privacy:metadata:sceneattempt:timestarted'] = 'Cuándo empezó.';
+$string['privacy:metadata:validation'] = 'Lo que dijo el docente de cada reto del aula de un alumno.';
+$string['privacy:metadata:validation:challengeid'] = 'El reto.';
+$string['privacy:metadata:validation:charid'] = 'El personaje.';
+$string['privacy:metadata:validation:courseid'] = 'El curso.';
+$string['privacy:metadata:validation:note'] = 'Lo que el docente le dijo al alumno.';
+$string['privacy:metadata:validation:status'] = 'Hecho, hecho con mención o todavía no.';
+$string['privacy:metadata:validation:timemodified'] = 'Cuándo.';
+$string['privacy:metadata:validation:validatedby'] = 'El docente.';
+$string['privacy:path:classroom'] = 'Retos del aula';
 $string['privacy:path:items'] = 'Objetos';
 $string['privacy:path:ledger'] = 'Registro';
 $string['privacy:path:minigames'] = 'Minijuegos';
 $string['privacy:path:powers'] = 'Poderes';
 $string['privacy:path:scenes'] = 'Escenas';
+$string['rolechangetoosoon'] = 'Cambiaste de papel hace poco; si necesitas cambiarlo otra vez, pídeselo a tu docente.';
+$string['task:regenerate'] = 'Recargar cada día la energía y el aliento';
