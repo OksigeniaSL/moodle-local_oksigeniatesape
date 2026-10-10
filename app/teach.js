@@ -97,7 +97,7 @@
 
   /* ---------- Frame ---------- */
 
-  var TABS = ['class', 'challenges', 'log', 'settings'];
+  var TABS = ['class', 'mission', 'challenges', 'log', 'settings'];
 
   function render() {
     var d = state.data;
@@ -113,7 +113,7 @@
       pending)) : '') + '</small></span></div><a class="btn btn-soft" href="' + esc(cfg.courseurl) + '">' +
       esc(t('app_exit')) + '</a></header><nav class="tabs" aria-label="Tesapé">' + TABS.map(function(tab) {
         return '<button type="button" data-tab="' + tab + '"' + (state.tab === tab ? ' aria-current="page"' : '') + '>' +
-          T.icon({class: 'team', challenges: 'challenges', log: 'log', settings: 'settings'}[tab]) + '<span>' +
+          T.icon({class: 'team', mission: 'world', challenges: 'challenges', log: 'log', settings: 'settings'}[tab]) + '<span>' +
           esc(t('teach_tab_' + tab)) + '</span></button>';
       }).join('') + '</nav><main class="content" id="content"></main></div>';
     app.querySelectorAll('[data-tab]').forEach(function(b) {
@@ -124,7 +124,7 @@
         window.scrollTo(0, 0);
       };
     });
-    ({class: tabClass, challenges: tabChallenges, log: tabLog, settings: tabSettings})[state.tab]();
+    ({class: tabClass, mission: tabMission, challenges: tabChallenges, log: tabLog, settings: tabSettings})[state.tab]();
   }
 
   function content(html) {
@@ -403,6 +403,108 @@
 
   function stat(key, value) {
     return '<div class="stat"><span>' + esc(t(key)) + '</span><b>' + esc(value) + '</b></div>';
+  }
+
+  /* ---------- The mission ---------- */
+
+  function tabMission() {
+    if (!state.missions || !state.results) {
+      content('<section class="card"><p class="empty">' + esc(t('app_loading')) + '</p></section>');
+      Promise.all([
+        T.api('get_missions', {courseid: cfg.courseid}),
+        can('viewlog') ? T.api('get_results', {courseid: cfg.courseid}) : Promise.resolve({chapters: []})
+      ]).then(function(r) {
+        state.missions = r[0];
+        state.results = r[1];
+        if (state.tab === 'mission') {
+          tabMission();
+        }
+      }).catch(function(e) {
+        T.toast(esc(e.message), true);
+      });
+      return;
+    }
+    var m = state.missions;
+    var html = '';
+    if (!m.installed) {
+      html = '<section class="card"><h2>' + esc(t('teach_tab_mission')) + '</h2><p style="color:var(--text-soft)">' +
+        esc(t('teach_mission_none')) + '</p></section>' + m.packages.map(packageCard).join('');
+    } else {
+      var pkg = m.packages.filter(function(p) {
+        return p.code === m.installed.code;
+      })[0];
+      html = '<section class="card"><div class="kicker">' + esc(t('teach_mission_installed')) + '</div><h2>' +
+        esc(m.installed.title) + '</h2>' + (pkg ? '<p style="color:var(--text-soft)">' + esc(pkg.subtitle) + ' · ' +
+        esc(t('teach_mission_ages', pkg.ages)) + '</p>' + (can('manageregion') ? packageForm(pkg, m.installed) : '') : '') +
+        '</section>' + results();
+    }
+    var el = content(html);
+    el.querySelectorAll('form[data-install]').forEach(function(f) {
+      f.onsubmit = function(ev) {
+        ev.preventDefault();
+        var skin = f.querySelector('[name="skin"]:checked');
+        var variant = f.querySelector('[name="variant"]:checked');
+        T.api('install_mission', {courseid: cfg.courseid, code: f.dataset.install, skin: skin.value,
+          variant: variant.value}).then(function(missions) {
+          state.missions = missions;
+          state.results = null;
+          T.toast(esc(t('app_saved')));
+          tabMission();
+        }).catch(function(e) {
+          T.toast(esc(e.message), true);
+        });
+      };
+    });
+  }
+
+  function packageForm(p, installed) {
+    var radios = function(name, list, current) {
+      return '<div class="pills" style="justify-content:flex-start;margin-bottom:10px">' + list.map(function(o, i) {
+        var on = current ? current === o.code : i === 0;
+        return '<label class="chip" style="display:inline-flex;gap:8px;align-items:center"><input type="radio" name="' + name +
+          '" value="' + esc(o.code) + '"' + (on ? ' checked' : '') + '> ' + esc(o.name) + '</label>';
+      }).join('') + '</div>';
+    };
+    return '<form data-install="' + esc(p.code) + '" style="margin-top:12px"><h3>' + esc(t('teach_mission_skin')) + '</h3>' +
+      radios('skin', p.skins, installed && installed.skin) + '<h3>' + esc(t('teach_mission_variant')) + '</h3>' +
+      radios('variant', p.variants, installed && installed.variant) + '<div class="actions" style="justify-content:' +
+      'flex-start"><button class="btn ' + (installed ? 'btn-soft' : 'btn-main') + '" type="submit">' +
+      esc(installed ? t('teach_mission_change') : t('teach_mission_install')) + '</button></div></form>';
+  }
+
+  function packageCard(p) {
+    return '<section class="card" style="margin-top:16px"><div class="kicker">' + esc(t('teach_mission_ages', p.ages)) +
+      '</div><h2>' + esc(p.title) + '</h2><p>' + esc(p.subtitle) + '</p><p style="color:var(--text-soft)">' +
+      esc(t('teach_mission_size', p.chapters + ' · ' + p.scenes)) + (p.lang !== cfg.lang.slice(0, 2) ? ' · ' +
+      esc(t('teach_mission_lang', p.lang)) : '') + '</p>' + (can('manageregion') ? packageForm(p, null) : '') + '</section>';
+  }
+
+  function results() {
+    var r = state.results;
+    if (!r || !r.chapters.length) {
+      return '';
+    }
+    return '<section class="card" style="margin-top:16px"><h2>' + esc(t('teach_results')) + '</h2><p style="color:' +
+      'var(--text-soft)">' + esc(t('teach_results_help')) + '</p>' + r.chapters.map(function(ch) {
+        return '<div class="result-chapter"><div class="section-title"><h3>' + esc(ch.name) + '</h3><span class="tag ' +
+          (ch.lit ? 'merit' : 'todo') + '">' + esc(ch.lit ? t('teach_lantern_lit') : t('teach_lantern_off')) + '</span>' +
+          '</div><p style="color:var(--text-soft);margin-top:-6px">' + esc(t('teach_chapter_done', ch.done + '/' +
+          r.players)) + '</p>' + ch.scenes.map(function(sc) {
+            var objectives = sc.objectives.map(function(o) {
+              var pct = o.total ? Math.round(100 * o.ok / o.total) : 0;
+              return '<div class="objective"><span><b>' + esc(o.code) + '</b> ' + esc(o.name) + '</span><span class="meter ' +
+                'level"><i style="width:' + pct + '%"></i></span><b>' + pct + '%</b></div>';
+            }).join('');
+            var confusions = sc.confusions.length ? '<div class="note"><b>' + esc(t('teach_confusions')) + '</b><br>' +
+              sc.confusions.map(function(c) {
+                return esc(c.text) + ' (' + c.count + ')';
+              }).join('<br>') + '</div>' : '';
+            return '<div class="item" style="display:block"><b>' + esc(sc.title) + '</b><small style="display:block;color:' +
+              'var(--text-soft)">' + esc(t('teach_scene_stats', sc.players + ' · ' + sc.done + ' · ' + sc.attempts)) +
+              '</small>' + (sc.attempts ? objectives + confusions : '<small style="display:block;color:var(--text-soft)">' +
+              esc(t('teach_results_none')) + '</small>') + '</div>';
+          }).join('') + '</div>';
+      }).join('') + '</section>';
   }
 
   /* ---------- Classroom challenges ---------- */

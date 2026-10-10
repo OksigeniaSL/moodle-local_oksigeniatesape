@@ -25,6 +25,9 @@ namespace local_oksigeniatesape\local;
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class page {
+    /** @var array Scripts of each app, after the core. */
+    private const SCRIPTS = ['game' => ['scene', 'game'], 'teach' => ['teach']];
+
     /** @var string[] Prefixes of the language strings the client uses. */
     private const PREFIXES = ['app_', 'teach_', 'role_', 'roledesc_', 'lineage_'];
 
@@ -63,6 +66,10 @@ final class page {
         $version = (int) get_config('local_oksigeniatesape', 'version');
         $base = $CFG->wwwroot . '/local/oksigeniatesape/app/';
         $title = s(get_string('pluginname', 'local_oksigeniatesape'));
+        $scripts = '';
+        foreach (self::SCRIPTS[$app] ?? [$app] as $js) {
+            $scripts .= '<script src="' . $base . $js . '.js?v=' . $version . '"></script>' . "\n";
+        }
         @header('Content-Type: text/html; charset=utf-8');
         @header('X-Frame-Options: SAMEORIGIN');
         echo '<!DOCTYPE html>
@@ -80,7 +87,7 @@ final class page {
 <div id="app" aria-live="polite"><noscript>' . $title . '</noscript></div>
 <script>window.TESAPE_CONFIG = ' . $json . ';</script>
 <script src="' . $base . 'core.js?v=' . $version . '"></script>
-<script src="' . $base . $app . '.js?v=' . $version . '"></script>
+' . $scripts . '
 </body>
 </html>';
     }

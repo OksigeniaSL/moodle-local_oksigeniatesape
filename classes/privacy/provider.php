@@ -45,7 +45,7 @@ class provider implements
     private const T = 'local_oksigeniatesape_';
 
     /** @var string[] Tables of a character in a course, all with charid and courseid. */
-    public const COURSE_TABLES = ['member', 'ledger', 'inventory', 'sceneattempt', 'minigame', 'validation'];
+    public const COURSE_TABLES = ['member', 'ledger', 'inventory', 'sceneattempt', 'minigame', 'validation', 'found'];
 
     /**
      * What is stored.
@@ -67,6 +67,7 @@ class provider implements
                 'timestarted', 'timefinished'],
             'minigame' => ['charid', 'courseid', 'cmid', 'game', 'success', 'tries', 'detail', 'timecreated'],
             'validation' => ['challengeid', 'charid', 'courseid', 'status', 'note', 'validatedby', 'timemodified'],
+            'found' => ['charid', 'courseid', 'missionid', 'kind', 'code', 'timecreated'],
         ];
         foreach ($fields as $table => $names) {
             $described = [];
@@ -338,6 +339,16 @@ class provider implements
                     'note' => $v->note,
                     'timemodified' => transform::datetime($v->timemodified),
                 ], $validations)),
+            ]);
+        }
+        $found = $DB->get_records(self::T . 'found', ['charid' => $charid, 'courseid' => $courseid], 'timecreated, id');
+        if ($found) {
+            $writer->export_data(self::path('found'), (object) [
+                'found' => array_values(array_map(fn($f) => [
+                    'kind' => $f->kind,
+                    'code' => $f->code,
+                    'timecreated' => transform::datetime($f->timecreated),
+                ], $found)),
             ]);
         }
         $games = $DB->get_records(self::T . 'minigame', ['charid' => $charid, 'courseid' => $courseid], 'timecreated');

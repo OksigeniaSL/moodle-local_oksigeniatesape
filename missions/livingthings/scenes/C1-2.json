@@ -1,0 +1,159 @@
+{
+ "id": "C1-2",
+ "mission": "livingthings",
+ "chapter": "claro",
+ "title": "El Nido de la Vida",
+ "step": 2,
+ "mode": "both",
+ "objectives": [
+  "SV-01"
+ ],
+ "minutes": 8,
+ "locals": {
+  "semilla": {
+   "py": "una semilla seca de lapacho",
+   "es": "una bellota de encina"
+  }
+ },
+ "start": "intro",
+ "nodes": {
+  "intro": {
+   "type": "story",
+   "speaker": "druida-mayor",
+   "image": "claro-nido",
+   "text": {
+    "valley": "La druida mayor señala el nido de ramas en el centro del claro. «Dejad aquí vuestras semillas. Solo despertarán si el nido tiene a su alrededor compañía de verdad: seres vivos. Traed cinco cosas del claro. Elegid bien.»",
+    "azara": "El cuaderno dice: «Antes de describir a nadie, distingue lo que vive de lo que no». En el cajón de muestras caben cinco. Elegid las que estén vivas."
+   },
+   "next": "elegir"
+  },
+  "elegir": {
+   "type": "choice",
+   "prompt": "¿Qué cinco cosas lleváis al nido?",
+   "select": {
+    "min": 5,
+    "max": 5
+   },
+   "options": [
+    {
+     "id": "seta",
+     "label": "una seta junto a un tronco",
+     "correct": true,
+     "points": 2,
+     "objective": "SV-01",
+     "feedback": "El nido se ilumina. La seta se alimenta de la madera podrida, crece y suelta esporas para que nazcan otras."
+    },
+    {
+     "id": "cristal",
+     "label": "un cristal que «crece» en una roca húmeda",
+     "correct": false,
+     "objective": "SV-01",
+     "feedback": "El nido parpadea y se apaga. «Crece, sí, pero no come, no siente y no tiene hijos.»"
+    },
+    {
+     "id": "lombriz",
+     "label": "una lombriz bajo una piedra",
+     "correct": true,
+     "points": 2,
+     "objective": "SV-01",
+     "feedback": "El nido se ilumina. La lombriz come restos de hojas, se encoge si la tocas y pone huevos."
+    },
+    {
+     "id": "humo",
+     "label": "el humo de la hoguera",
+     "correct": false,
+     "objective": "SV-01",
+     "feedback": "El humo sube y se deshace. «Se mueve y cambia, pero nadie lo ha engendrado ni se alimenta.»"
+    },
+    {
+     "id": "pluma",
+     "label": "una pluma caída",
+     "correct": false,
+     "points": 1,
+     "objective": "SV-01",
+     "feedback": "El nido duda. «La pluma viene de un ser vivo, pero ella sola ya no lo está.» Buena pregunta para el equipo."
+    },
+    {
+     "id": "musgo",
+     "label": "un musgo verde",
+     "correct": true,
+     "points": 2,
+     "objective": "SV-01",
+     "feedback": "El nido se ilumina. El musgo es una planta pequeña: fabrica su alimento con la luz y bebe agua."
+    },
+    {
+     "id": "semilla",
+     "label": "{{local:semilla}}",
+     "correct": true,
+     "points": 2,
+     "objective": "SV-01",
+     "feedback": "Parece dormida, pero el nido se ilumina despacio. Dentro guarda una planta que despertará con agua."
+    },
+    {
+     "id": "pompa",
+     "label": "una pompa de jabón",
+     "correct": false,
+     "objective": "SV-01",
+     "feedback": "La pompa flota, brilla… y explota. «Moverse y brillar no es estar vivo.»"
+    },
+    {
+     "id": "hormiga",
+     "label": "una hormiga que carga una hoja",
+     "correct": true,
+     "points": 2,
+     "objective": "SV-01",
+     "feedback": "El nido se ilumina. La hormiga come, trabaja con las demás y nace de un huevo."
+    },
+    {
+     "id": "piedra",
+     "label": "una piedra que rueda por la ladera",
+     "correct": false,
+     "objective": "SV-01",
+     "feedback": "La piedra rueda y se para. «Moverse no basta para estar vivo.»"
+    }
+   ],
+   "next": "resultado"
+  },
+  "resultado": {
+   "type": "branch",
+   "rules": [
+    {
+     "if": {
+      "correct_at_least": 4,
+      "in": "elegir"
+     },
+     "next": "despierta"
+    }
+   ],
+   "else": "duerme"
+  },
+  "despierta": {
+   "type": "ending",
+   "outcome": "success",
+   "text": {
+    "valley": "Las semillas se abren. De la tuya sale {{creature}}, pequeña y distinta de todas, y se sube a tu hombro. La linterna del claro se enciende y en el Gran Libro aparece la primera página: «Ser vivo: el que se nutre, se relaciona y se reproduce».",
+    "azara": "Las semillas germinan en el cajón. De la tuya sale {{creature}}, que ya no se separa de ti. El cuaderno recupera su primera página: «Ser vivo: el que se nutre, se relaciona y se reproduce»."
+   },
+   "effects": [
+    {
+     "saber": 20
+    },
+    {
+     "creature": "hatch"
+    },
+    {
+     "lantern": "claro"
+    },
+    {
+     "page": "ser-vivo"
+    }
+   ]
+  },
+  "duerme": {
+   "type": "ending",
+   "outcome": "retry",
+   "text": "El nido sigue a oscuras: todavía hay demasiadas cosas que no están vivas a su alrededor. La druida mayor os devuelve al claro: «Pensad qué hacen los seres vivos que no hacen las piedras ni el humo».",
+   "retry": "elegir"
+  }
+ }
+}

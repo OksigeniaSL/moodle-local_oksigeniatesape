@@ -1,0 +1,73 @@
+{
+ "id": "C4-3",
+ "mission": "livingthings",
+ "chapter": "jardin",
+ "title": "El viaje de la gota",
+ "step": 2,
+ "mode": "both",
+ "objectives": [
+  "SV-05"
+ ],
+ "minutes": 5,
+ "locals": {
+  "arbol": {
+   "py": "un lapacho",
+   "es": "una encina"
+  }
+ },
+ "start": "intro",
+ "nodes": {
+  "intro": {
+   "type": "story",
+   "speaker": "gota",
+   "image": "gota-raiz",
+   "text": "Una gota de agua quiere llegar a lo más alto de {{local:arbol}} para ver el valle entero. No sabe el camino. Ayudadla paso a paso.",
+   "next": "viaje"
+  },
+  "viaje": {
+   "type": "order",
+   "prompt": "¿Por dónde va la gota?",
+   "objective": "SV-05",
+   "steps": [
+    {
+     "id": "raiz",
+     "label": "Entra por la raíz, desde la tierra húmeda"
+    },
+    {
+     "id": "tallo",
+     "label": "Sube por el tallo, por dentro, como por una tubería"
+    },
+    {
+     "id": "hoja",
+     "label": "Llega a la hoja"
+    },
+    {
+     "id": "alimento",
+     "label": "En la hoja, con la luz del sol, ayuda a fabricar el alimento de la planta"
+    },
+    {
+     "id": "vapor",
+     "label": "Parte del agua sale al aire como vapor por unos poros diminutos de la hoja"
+    }
+   ],
+   "stuck": {
+    "default": "La gota se queda atascada: «Por aquí no puedo seguir». Volved al paso anterior.",
+    "hoja-antes-de-raiz": "La gota cae al suelo: «¡No puedo entrar por las hojas desde fuera! Empiezo por abajo»."
+   },
+   "next": "fin"
+  },
+  "fin": {
+   "type": "ending",
+   "outcome": "success",
+   "text": "Desde lo alto, convertida en vapor, la gota ve todo el valle. «La próxima vez, vuelvo con la lluvia.» Para comprobarlo de verdad: un tallo de apio o un clavel blanco en agua con colorante; al día siguiente, el color habrá subido.",
+   "effects": [
+    {
+     "saber": 15
+    },
+    {
+     "page": "viaje-agua"
+    }
+   ]
+  }
+ }
+}

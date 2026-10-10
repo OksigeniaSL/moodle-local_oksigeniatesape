@@ -63,6 +63,7 @@ final class demo {
      * @param string $family Family of role names.
      * @param int $weeks Weeks of made-up progress (0: none).
      * @param int $seed Seed of the random choices, to get the same class again.
+     * @param string $mission Mission to install from the packages of the plugin (empty: none).
      * @return \stdClass The course, the teacher and the students.
      */
     public static function create_class(
@@ -71,7 +72,8 @@ final class demo {
         int $teamsize = 5,
         string $family = 'storyheroes',
         int $weeks = 0,
-        int $seed = 1
+        int $seed = 1,
+        string $mission = 'livingthings'
     ): \stdClass {
         global $CFG, $DB;
         require_once($CFG->dirroot . '/course/lib.php');
@@ -120,6 +122,10 @@ final class demo {
             'timecreated' => $now,
             'timemodified' => $now,
         ]);
+
+        if ($mission !== '') {
+            missions::install($course->id, $mission, 'valley', 'es', $now);
+        }
 
         $tag = self::USERNAME_PREFIX . $course->id;
         $teacher = self::make_user($tag . 't', 'Teacher', 'Demo');

@@ -1,0 +1,152 @@
+{
+ "id": "C2-2",
+ "mission": "livingthings",
+ "chapter": "biblioteca",
+ "title": "Los estantes que crujen",
+ "step": 2,
+ "mode": "both",
+ "objectives": [
+  "SV-03"
+ ],
+ "minutes": 8,
+ "start": "intro",
+ "nodes": {
+  "intro": {
+   "type": "story",
+   "speaker": "bibliotecaria",
+   "image": "biblioteca-torre",
+   "text": {
+    "valley": "En la torre, el Gran Libro guarda a los seres vivos por grupos, cada uno en su estante. El Embrollo los ha cambiado de sitio y la torre cruje. Tenéis una carretilla llena de seres mal colocados.",
+    "azara": "Las muestras viajan en cajas, una por cada gran grupo de seres vivos. En el traslado se han caído las etiquetas. Hay que volver a colocarlas antes de que salga el barco."
+   },
+   "next": "colocar"
+  },
+  "colocar": {
+   "type": "classify",
+   "prompt": "Devolved cada ser vivo a su estante.",
+   "retry": "item",
+   "bins": [
+    {
+     "id": "animales",
+     "label": "Animales"
+    },
+    {
+     "id": "plantas",
+     "label": "Plantas"
+    },
+    {
+     "id": "hongos",
+     "label": "Hongos"
+    },
+    {
+     "id": "micro",
+     "label": "Los que solo se ven con lupa"
+    }
+   ],
+   "items": [
+    {
+     "id": "seta",
+     "label": "una seta",
+     "bin": "hongos",
+     "objective": "SV-03",
+     "feedback": {
+      "plantas": "El estante de las plantas se inclina. «No tiene hojas verdes ni fabrica su alimento con la luz: se alimenta de restos. Es de otro grupo, los hongos.»"
+     }
+    },
+    {
+     "id": "helecho",
+     "label": "un helecho",
+     "bin": "plantas",
+     "objective": "SV-03",
+     "feedback": {
+      "hongos": "«Tiene hojas verdes y fabrica su alimento con la luz: es una planta.»"
+     }
+    },
+    {
+     "id": "medusa",
+     "label": "una medusa",
+     "bin": "animales",
+     "objective": "SV-03",
+     "feedback": {
+      "plantas": "«Flota y no tiene huesos, pero caza para comer: es un animal.»"
+     }
+    },
+    {
+     "id": "moho",
+     "label": "el moho del pan",
+     "bin": "hongos",
+     "objective": "SV-03",
+     "feedback": {
+      "micro": "«Al principio no se ve, pero crece hasta formar una mancha que se ve a simple vista: es un hongo, como las setas.»"
+     }
+    },
+    {
+     "id": "esponja",
+     "label": "una esponja de mar",
+     "bin": "animales",
+     "objective": "SV-03",
+     "feedback": {
+      "plantas": "«Parece una planta pegada a la roca, pero no fabrica su alimento: filtra el agua para comer. Es un animal.»"
+     }
+    },
+    {
+     "id": "lombriz",
+     "label": "una lombriz",
+     "bin": "animales",
+     "objective": "SV-03"
+    },
+    {
+     "id": "musgo",
+     "label": "un musgo",
+     "bin": "plantas",
+     "objective": "SV-03"
+    },
+    {
+     "id": "bacterias",
+     "label": "las bacterias del yogur",
+     "bin": "micro",
+     "objective": "SV-03",
+     "requires": {
+      "any": [
+       {
+        "item": "magnifier"
+       },
+       {
+        "teamrole": "sage"
+       }
+      ]
+     },
+     "locked": "Solo se ven con una lupa potente. Pedidle la suya a un mago o maga, o conseguidla en «La cinta de la biblioteca».",
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": {
+      "animales": "«Son seres vivos de una sola célula, tan pequeños que solo se ven con la lupa. Tienen su propio estante.»"
+     }
+    }
+   ],
+   "next": "fin"
+  },
+  "fin": {
+   "type": "ending",
+   "outcome": "success",
+   "text": {
+    "valley": "La torre deja de crujir. En lo alto se enciende una linterna con cuatro cristales de colores: uno por cada gran grupo de seres vivos.",
+    "azara": "Las cajas, bien etiquetadas, quedan listas para viajar a España."
+   },
+   "effects": [
+    {
+     "saber": 20
+    },
+    {
+     "lantern": "biblioteca"
+    },
+    {
+     "page": "grupos"
+    }
+   ]
+  }
+ }
+}

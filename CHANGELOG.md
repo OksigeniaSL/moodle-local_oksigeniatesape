@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.3.0 (2026-10-10)
+
+- **Missions** come as packages: a folder in `missions/` with the mission (chapters, texts per story, local examples,
+  objectives, pages of the book, items) and its scenes. The pilot mission, *Living things* (ages 9 to 11, texts in
+  Spanish), comes with the plugin, with its nine core scenes. Teachers install it in their course choosing the story
+  (the valley, or Azara's expedition) and the local examples (Spain or Paraguay), and can change both later without
+  losing what the students did. Each chapter brings a classroom challenge.
+- **The map of the mission** in the game: six places with their lanterns, the path walked, where the student is, and
+  for each place its story, its scenes and its classroom challenge.
+- **Decision scenes** played in the game: story, choices of one or several options with their consequences shown one
+  by one, things to put in their group, steps to put in order, paths that depend on what was done, items and roles
+  of the team that open options, an extra question to win. The server plays every scene again with what the student
+  did and decides the path, the points, the result per objective and the ending: a play that does not fit the scene
+  is refused. Every play is kept for the teacher.
+- **Rewards once per scene**: the first good ending gives its knowledge, gems, items and pages of the book (with the
+  weekly cap, and what the cap leaves out counts as given). The first scene hatches the **companion creature**, unique
+  to each student, which grows later. Finishing the scenes of a place lights its lantern for the student and gives
+  its reward (the garden gives the lantern for the night by the lake); when half of the class has a lantern, it
+  lights for the whole class.
+- **The book** of the mission in the diary, with the pages found, and the student's items; the creature on the
+  character sheet.
+- **How the class is doing**, in the teacher panel: per scene, students who played and finished it, plays, the
+  result per objective at the first try, and the mix-ups that came up most.
+- `cli/demo.php` installs the pilot mission in the made-up class (`--mission=` for none).
+
 ## 0.2.1 (2026-10-10)
 
 - On narrow phones (360 px), the lists of the teacher panel no longer stick out on the right.

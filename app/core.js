@@ -310,6 +310,51 @@
     return '<svg class="avatar" viewBox="' + box + '"' + label + '>' + out.join('') + '</svg>';
   };
 
+  /**
+   * Draws the companion creature from its traits.
+   *
+   * @param {string|Object} traits JSON or object: hue, ears, eyes, round, name.
+   * @param {number} stage 1 when it hatches, up to 4.
+   * @param {boolean} big With the hatching animation.
+   * @return {string} SVG, or empty before it hatches.
+   */
+  T.creature = function(traits, stage, big) {
+    var c = traits;
+    if (typeof c === 'string') {
+      try {
+        c = JSON.parse(c || 'null');
+      } catch (e) {
+        c = null;
+      }
+    }
+    if (!c) {
+      return '';
+    }
+    var h = Number(c.hue) || 0;
+    var st = Math.max(1, Math.min(4, stage || 1));
+    var s = 1 + (st - 1) * 0.12;
+    var body = 'hsl(' + h + ' 60% 62%)';
+    var dark = 'hsl(' + h + ' 60% 52%)';
+    var belly = 'hsl(' + h + ' 70% 84%)';
+    var ears = c.ears === 0 ? '<path d="M30 34 L24 12 L42 28Z M70 34 L76 12 L58 28Z" fill="' + dark + '"/>' :
+      c.ears === 1 ? '<circle cx="30" cy="26" r="9" fill="' + dark + '"/><circle cx="70" cy="26" r="9" fill="' + dark + '"/>' :
+      '<path d="M44 22 Q40 4 48 2 Q50 14 50 22 M56 22 Q60 4 52 2" stroke="hsl(' + ((h + 120) % 360) + ' 70% 60%)" ' +
+      'stroke-width="4" fill="none"/>';
+    var leaf = st >= 2 ? '<path d="M50 20 Q62 8 70 14 Q60 24 50 20Z" fill="#7cc67f"/>' : '';
+    var spots = st >= 3 ? '<circle cx="34" cy="70" r="3" fill="' + belly + '"/><circle cx="66" cy="70" r="3" fill="' + belly +
+      '"/>' : '';
+    var glow = st >= 4 ? '<circle cx="50" cy="60" r="40" fill="none" stroke="#ffc857" stroke-opacity=".5" stroke-width="2"/>' :
+      '';
+    var eyes = 5 + (Number(c.eyes) || 0);
+    return '<svg class="creature' + (big ? ' born' : '') + '" viewBox="0 0 100 100" role="img" aria-label="' +
+      T.esc(c.name || '') + '"><g transform="translate(50 60) scale(' + s + ') translate(-50 -60)">' + glow + ears + leaf +
+      '<ellipse cx="50" cy="60" rx="30" ry="' + (26 + (Number(c.round) || 0) * 4) + '" fill="' + body + '"/>' + spots +
+      '<ellipse cx="50" cy="70" rx="18" ry="12" fill="' + belly + '"/>' +
+      '<circle cx="40" cy="52" r="' + eyes + '" fill="#fff"/><circle cx="60" cy="52" r="' + eyes + '" fill="#fff"/>' +
+      '<circle cx="41" cy="53" r="' + (eyes / 2) + '" fill="#1b1b2a"/><circle cx="61" cy="53" r="' + (eyes / 2) +
+      '" fill="#1b1b2a"/><path d="M45 64 Q50 68 55 64" stroke="#1b1b2a" stroke-width="2" fill="none"/></g></svg>';
+  };
+
   /* ---------- Icons ---------- */
 
   T.icon = function(name) {
@@ -329,6 +374,8 @@
         'fill="currentColor"/>',
       log: '<path d="M5 3h11l3 3v15H5z" fill="currentColor" opacity=".9"/><path d="M8 9h8M8 13h8M8 17h5" ' +
         'stroke="#0f2131" stroke-width="1.6"/>',
+      lantern: '<rect x="11" y="13" width="2" height="9" fill="#8a6a3a"/><path d="M8 6h8l-1 8H9z" fill="#ffc857"/>' +
+        '<path d="M9 6l3-3 3 3" stroke="#8a6a3a" stroke-width="1.5" fill="none"/>',
       me: '<circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c.7-5 4-7 8-7s7.3 2 8 7z" fill="currentColor"/>',
       class: '<rect x="3" y="4" width="18" height="12" rx="2" fill="currentColor" opacity=".9"/><path d="M8 20h8M12 16v4" ' +
         'stroke="currentColor" stroke-width="2"/>',

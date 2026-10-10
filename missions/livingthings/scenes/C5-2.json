@@ -1,0 +1,205 @@
+{
+ "id": "C5-2",
+ "mission": "livingthings",
+ "chapter": "lago",
+ "title": "La noche junto al lago",
+ "step": 2,
+ "mode": "team",
+ "objectives": [
+  "SV-06",
+  "SV-08"
+ ],
+ "minutes": 10,
+ "locals": {
+  "hojas": {
+   "py": "hojas grandes de palmera",
+   "es": "hojas grandes de helecho"
+  },
+  "hormigas": {
+   "py": "Las hormigas cortadoras no se comen las hojas: con ellas cultivan un hongo del que se alimentan.",
+   "es": "Las hormigas se han llevado en fila las semillas y las migas de vuestra cena a su almacén."
+  }
+ },
+ "start": "intro",
+ "nodes": {
+  "intro": {
+   "type": "story",
+   "speaker": "narrador",
+   "image": "lago-atardecer",
+   "text": "Os acercáis a la orilla del Gran Lago y empieza a oscurecer. Hay que pasar aquí la noche. Primero, decidid dónde acampar.",
+   "next": "lugar"
+  },
+  "lugar": {
+   "type": "choice",
+   "prompt": "¿Dónde acampáis?",
+   "options": [
+    {
+     "id": "agua",
+     "label": "junto al agua quieta de la orilla",
+     "points": 1,
+     "objective": "SV-06",
+     "feedback": "Es un sitio llano y bonito.",
+     "next": "noche-agua"
+    },
+    {
+     "id": "arbol",
+     "label": "bajo un árbol hueco con un camino de hormigas",
+     "points": 1,
+     "objective": "SV-06",
+     "feedback": "El árbol os protege del viento.",
+     "next": "noche-hormigas"
+    },
+    {
+     "id": "alto",
+     "label": "en un alto seco entre arbustos",
+     "points": 2,
+     "objective": "SV-06",
+     "feedback": "Sube un poco, pero el suelo está seco.",
+     "next": "noche-alto"
+    }
+   ]
+  },
+  "noche-agua": {
+   "type": "story",
+   "image": "noche-mosquitos",
+   "text": "A medianoche os comen los mosquitos. Sus larvas viven en el agua quieta: son invertebrados y alimento de peces, ranas y murciélagos. No es grave, pero la noche se hace larga.",
+   "next": "refugio"
+  },
+  "noche-hormigas": {
+   "type": "story",
+   "image": "noche-hormigas",
+   "text": "Al amanecer falta media cosa de todo. {{local:hormigas}}",
+   "next": "refugio"
+  },
+  "noche-alto": {
+   "type": "story",
+   "image": "noche-buho",
+   "text": "Dormís bien. De madrugada se oye un aleteo y un chillido corto: un búho ha cazado un ratón.",
+   "next": "farol"
+  },
+  "farol": {
+   "type": "choice",
+   "prompt": "¿Encendéis el farol para mirar?",
+   "options": [
+    {
+     "id": "farol",
+     "label": "Encender el farol",
+     "requires": {
+      "item": "lantern"
+     },
+     "points": 2,
+     "objective": "SV-06",
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "Con el farol veis al búho en una rama, con el ratón. A sus pies, unas bolitas grises: egagrópilas, con huesecillos de lo que comió."
+    },
+    {
+     "id": "dormir",
+     "label": "Seguir durmiendo",
+     "points": 1,
+     "objective": "SV-06",
+     "feedback": "Por la mañana, bajo el árbol, encontráis unas bolitas grises: egagrópilas del búho, con huesecillos de ratón dentro."
+    }
+   ],
+   "next": "refugio"
+  },
+  "refugio": {
+   "type": "choice",
+   "prompt": "Para la noche siguiente, ¿con qué improvisáis un refugio? (Elegid dos.)",
+   "select": {
+    "min": 2,
+    "max": 2
+   },
+   "options": [
+    {
+     "id": "ramas-caidas",
+     "label": "ramas caídas",
+     "correct": true,
+     "points": 2,
+     "objective": "SV-08",
+     "feedback": "Ramas secas del suelo: aguantan bien y no dañan nada vivo."
+    },
+    {
+     "id": "hojas",
+     "label": "{{local:hojas}}",
+     "correct": true,
+     "points": 2,
+     "objective": "SV-08",
+     "feedback": "Las caídas hacen un buen techo."
+    },
+    {
+     "id": "ramas-verdes",
+     "label": "ramas verdes cortadas de un arbusto",
+     "correct": false,
+     "objective": "SV-08",
+     "feedback": "Al secarse se encogen y el refugio se hunde. Y el arbusto queda herido. «Para el refugio sirve lo que ya no está vivo.»"
+    },
+    {
+     "id": "piedras",
+     "label": "piedras",
+     "correct": true,
+     "points": 1,
+     "objective": "SV-08",
+     "feedback": "Sujetan las ramas contra el viento."
+    },
+    {
+     "id": "barro",
+     "label": "barro",
+     "correct": false,
+     "points": 1,
+     "objective": "SV-08",
+     "feedback": "Tapa huecos, pero si llueve se deshace."
+    }
+   ],
+   "next": "cadena"
+  },
+  "cadena": {
+   "type": "choice",
+   "prompt": "Con lo que habéis visto esta noche, ¿qué cadena alimentaria apuntáis en el Gran Libro?",
+   "options": [
+    {
+     "id": "buena",
+     "label": "semillas y hierba → ratón → búho",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-06",
+     "feedback": "Las plantas fabrican su alimento, el ratón se las come y el búho se come al ratón."
+    },
+    {
+     "id": "reves",
+     "label": "búho → ratón → semillas y hierba",
+     "correct": false,
+     "objective": "SV-06",
+     "feedback": "El ratón se ríe: «¿Yo comerme un búho?». Las flechas van del que es comido al que come."
+    },
+    {
+     "id": "suelta",
+     "label": "mosquito → búho → hierba",
+     "correct": false,
+     "objective": "SV-06",
+     "feedback": "La hierba no se come al búho. Empezad por quien fabrica su propio alimento."
+    }
+   ],
+   "next": "fin"
+  },
+  "fin": {
+   "type": "ending",
+   "outcome": "success",
+   "text": "Cuando las cadenas del lago vuelven a estar unidas, el agua refleja todas las linternas del valle a la vez. Solo queda una a oscuras: la de la torre, donde se esconde el Embrollo.",
+   "effects": [
+    {
+     "saber": 25
+    },
+    {
+     "lantern": "lago"
+    },
+    {
+     "page": "cadenas"
+    }
+   ]
+  }
+ }
+}

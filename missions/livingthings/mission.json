@@ -1,0 +1,228 @@
+{
+ "code": "livingthings",
+ "version": 1,
+ "lang": "es",
+ "ages": "9–11",
+ "title": {
+  "valley": "Los seres vivos",
+  "azara": "Los seres vivos"
+ },
+ "subtitle": {
+  "valley": "El Gran Libro de la Vida",
+  "azara": "El cuaderno de Azara"
+ },
+ "book": {
+  "valley": "El Gran Libro de la Vida",
+  "azara": "El cuaderno de Azara"
+ },
+ "prologue": {
+  "valley": "En el Valle de Tesapé nunca era del todo de noche: en cada sendero brillaba una linterna, y todas se alimentaban del Gran Libro de la Vida, donde estaba anotado cada ser vivo del valle. Una mañana, el libro apareció revuelto. Ha sido el Embrollo: no rompe nada, lo confunde todo. Cada página que enreda es una luz que se pierde. Vuestra misión: recorrer el valle, observar a cada ser vivo y volver a encender las linternas.",
+  "azara": "En 1781 llegó al Río de la Plata Félix de Azara, un ingeniero militar aragonés. Venía a medir fronteras, pero pasó veinte años observando y describiendo la fauna de estas tierras. Imaginemos que aparece un cuaderno de campo de su expedición, con páginas perdidas y notas mezcladas. Vuestra clase será la expedición que lo complete."
+ },
+ "skins": {
+  "valley": "El valle",
+  "azara": "La expedición de Azara"
+ },
+ "variants": {
+  "es": "España",
+  "py": "Paraguay"
+ },
+ "objectives": {
+  "SV-01": "Distinguir seres vivos de seres inertes por las funciones vitales",
+  "SV-02": "Reconocer la célula como unidad de los seres vivos",
+  "SV-03": "Clasificar los seres vivos en los grandes grupos",
+  "SV-04": "Clasificar animales en vertebrados e invertebrados",
+  "SV-05": "Partes de una planta, cómo se nutre y cómo se reproduce",
+  "SV-06": "Ecosistemas y cadenas alimentarias",
+  "SV-07": "Trabajar como un científico",
+  "SV-08": "Cómo influyen las personas en los ecosistemas"
+ },
+ "speakers": {
+  "druida-mayor": {
+   "valley": "La druida mayor",
+   "azara": "El naturalista"
+  },
+  "bibliotecaria": {
+   "valley": "La bibliotecaria",
+   "azara": "La archivera"
+  },
+  "buho": {
+   "valley": "El búho guardián",
+   "azara": "El baqueano"
+  },
+  "barquero": {
+   "valley": "El barquero",
+   "azara": "El barquero"
+  },
+  "jardinera": {
+   "valley": "La jardinera",
+   "azara": "La jardinera"
+  },
+  "gota": {
+   "valley": "La gota",
+   "azara": "La gota"
+  },
+  "narrador": {
+   "valley": "Narrador",
+   "azara": "Narrador"
+  },
+  "garza": {
+   "valley": "La garza",
+   "azara": "La garza"
+  },
+  "embrollo": {
+   "valley": "El Embrollo",
+   "azara": "El Embrollo"
+  }
+ },
+ "items": {
+  "lantern": {
+   "name": "el farol",
+   "description": "Alumbra de noche sin asustar a nadie."
+  },
+  "magnifier": {
+   "name": "la lupa potente",
+   "description": "Para ver de cerca lo que se esconde."
+  },
+  "net": {
+   "name": "la red de captura",
+   "description": "Para observar sin hacer daño y soltar después."
+  },
+  "naturalistlens": {
+   "name": "la lupa del naturalista",
+   "description": "El premio de quien ha devuelto el orden al Gran Libro."
+  }
+ },
+ "pages": {
+  "ser-vivo": {
+   "title": "Ser vivo",
+   "text": "Un ser vivo se nutre, se relaciona y se reproduce. Una piedra que rueda o el humo que sube se mueven, pero no hacen ninguna de las tres cosas."
+  },
+  "grupos": {
+   "title": "Los grandes grupos",
+   "text": "Los seres vivos se agrupan en animales, plantas, hongos y seres tan pequeños que solo se ven con lupa o microscopio."
+  },
+  "caracol": {
+   "title": "El caracol",
+   "text": "Es un invertebrado de la familia de los moluscos. Lleva concha, necesita humedad y deja un rastro brillante al moverse."
+  },
+  "vertebrados": {
+   "title": "Los vertebrados",
+   "text": "Tienen esqueleto por dentro, con columna vertebral. Son cinco grupos, mamíferos, aves, reptiles, anfibios y peces. Los demás animales son invertebrados."
+  },
+  "plantas": {
+   "title": "Cómo se alimentan las plantas",
+   "text": "Las plantas fabrican su propio alimento con la luz del sol, el agua y el aire. Sin luz crecen pálidas y débiles."
+  },
+  "viaje-agua": {
+   "title": "El viaje del agua",
+   "text": "El agua entra por la raíz, sube por el tallo hasta las hojas y sale de ellas convertida en vapor."
+  },
+  "ecosistema": {
+   "title": "El ecosistema",
+   "text": "Un ecosistema son los seres vivos y el lugar donde viven, juntos, con todo lo que se relacionan."
+  },
+  "cadenas": {
+   "title": "Las cadenas alimentarias",
+   "text": "Las plantas producen el alimento, los herbívoros se comen a las plantas y los carnívoros a otros animales. Los descomponedores devuelven los restos al suelo."
+  }
+ },
+ "chapters": [
+  {
+   "code": "claro",
+   "name": {
+    "valley": "Claro del Despertar",
+    "azara": "El campamento"
+   },
+   "intro": {
+    "valley": "El primer lugar del valle donde se apagaron las luces. Aquí despiertan las semillas.",
+    "azara": "La primera noche de la expedición. El cuaderno pide distinguir lo que vive de lo que no."
+   },
+   "offscreen": "El rastreo del patio, inventario de seres vivos e inertes",
+   "x": 160,
+   "y": 560
+  },
+  {
+   "code": "biblioteca",
+   "name": {
+    "valley": "Biblioteca de los Reinos",
+    "azara": "Las cajas de la expedición"
+   },
+   "intro": {
+    "valley": "Los estantes del Gran Libro guardan a los seres vivos por grupos. El Embrollo los ha revuelto.",
+    "azara": "Las muestras viajan en cajas por grupos, pero se han caído las etiquetas."
+   },
+   "offscreen": "Al rincón de tu reino, juego en el patio",
+   "x": 300,
+   "y": 470
+  },
+  {
+   "code": "bosque",
+   "name": {
+    "valley": "Bosque de las Huellas",
+    "azara": "El monte"
+   },
+   "intro": {
+    "valley": "El Embrollo ha borrado los nombres de los animales. Solo quedan sus huellas.",
+    "azara": "En el cuaderno hay descripciones de animales sin nombre."
+   },
+   "offscreen": "Lupas de cartón y caza de bichos, sin dañarlos",
+   "x": 120,
+   "y": 360
+  },
+  {
+   "code": "jardin",
+   "name": {
+    "valley": "Jardín de la Luz",
+    "azara": "El huerto"
+   },
+   "intro": {
+    "valley": "El corazón del valle. Sus plantas daban la luz a la linterna mayor.",
+    "azara": "Las plantas que viajaron a oscuras han salido pálidas."
+   },
+   "offscreen": "El experimento de la luz, semillas con luz y sin luz",
+   "reward": "lantern",
+   "x": 280,
+   "y": 260
+  },
+  {
+   "code": "lago",
+   "name": {
+    "valley": "El Gran Lago",
+    "azara": "La orilla del río"
+   },
+   "intro": {
+    "valley": "A orillas del lago todo depende de todo. Cae la tarde y hay que pasar aquí la noche.",
+    "azara": "La expedición llega a la orilla de un gran río al caer la tarde."
+   },
+   "offscreen": "La carrera de la cadena, pilla-pilla de productores y consumidores",
+   "x": 150,
+   "y": 165
+  },
+  {
+   "code": "torre",
+   "name": {
+    "valley": "La Torre",
+    "azara": "El cuaderno"
+   },
+   "intro": {
+    "valley": "En lo alto de la torre se esconde el Embrollo.",
+    "azara": "Antes de entregar el cuaderno hay que corregir lo que se mezcló."
+   },
+   "offscreen": "La exposición del naturalista, la guía de campo de la clase",
+   "x": 290,
+   "y": 75
+  }
+ ],
+ "scenes": [
+  "C1-2",
+  "C2-2",
+  "C3-2",
+  "C3-3",
+  "C4-2",
+  "C4-3",
+  "C5-2",
+  "C5-3",
+  "C6-2"
+ ]
+}

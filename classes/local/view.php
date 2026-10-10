@@ -52,6 +52,7 @@ final class view {
             'energymax' => engine::ENERGY_MAX,
             'breathmax' => engine::BREATH_MAX,
             'challenges' => [],
+            'items' => [],
             'log' => [],
         ];
         if (!$char) {
@@ -82,6 +83,19 @@ final class view {
                 'note' => $validation ? (string) $validation->note : '',
             ];
         }
+        $world['items'] = array_values(array_map(fn($i) => ['code' => $i->code, 'name' => format_string($i->name),
+            'description' => (string) $i->description], $DB->get_records_sql(
+                'SELECT i.id, i.code, i.name, i.description
+               FROM {' . self::T . 'inventory} v
+               JOIN {' . self::T . 'item} i ON i.id = v.itemid
+              WHERE v.charid = ? AND v.courseid = ?
+           ORDER BY v.timecreated',
+                [$char->id, $courseid]
+            )));
+        $mission = self::mission($courseid, $char, $member);
+        if ($mission) {
+            $world['mission'] = $mission;
+        }
         $entries = $DB->get_records(
             self::T . 'ledger',
             ['charid' => $char->id, 'courseid' => $courseid],
@@ -92,6 +106,96 @@ final class view {
         );
         $world['log'] = array_values(array_map(fn($e) => self::entry($e), $entries));
         return $world;
+    }
+
+    /**
+     * The mission of a course as a student sees it: the map with its chapters and lanterns, the scenes of their step
+     * and what they have done, and the pages of the book they have found.
+     *
+     * @param int $courseid
+     * @param \stdClass $char
+     * @param \stdClass $member
+     * @return array|null
+     */
+    public static function mission(int $courseid, \stdClass $char, \stdClass $member): ?array {
+        global $DB;
+        $mission = missions::get($courseid);
+        if (!$mission) {
+            return null;
+        }
+        $data = $mission->data;
+        $skin = $mission->skin;
+        $found = [];
+        foreach ($DB->get_records(self::T . 'found', ['charid' => $char->id, 'missionid' => $mission->id]) as $f) {
+            $found[$f->kind][$f->code] = true;
+        }
+        $attempts = $DB->get_records_sql_menu(
+            'SELECT sceneid, COUNT(1) FROM {' . self::T . 'sceneattempt} WHERE charid = ? AND courseid = ? GROUP BY sceneid',
+            [$char->id, $courseid]
+        );
+        $chapters = $DB->get_records(self::T . 'chapter', ['missionid' => $mission->id], 'sortorder');
+        $scenes = $DB->get_records(self::T . 'scene', ['missionid' => $mission->id], 'code');
+        $challenges = $DB->get_records_select_menu(
+            self::T . 'challenge',
+            'courseid = ? AND cmid = 0 AND chapterid > 0',
+            [$courseid],
+            '',
+            'chapterid, id'
+        );
+        $info = [];
+        foreach ($data['chapters'] ?? [] as $chapter) {
+            $info[$chapter['code']] = $chapter;
+        }
+        $list = [];
+        foreach ($chapters as $chapter) {
+            $meta = $info[$chapter->code] ?? [];
+            $mine = scenes::for_step(
+                array_values(array_filter($scenes, fn($s) => $s->chapterid == $chapter->id)),
+                (int) $member->step
+            );
+            $list[] = [
+                'id' => (int) $chapter->id,
+                'code' => $chapter->code,
+                'name' => missions::text($meta['name'] ?? $chapter->code, $skin),
+                'intro' => missions::text($meta['intro'] ?? '', $skin),
+                'x' => (int) ($meta['x'] ?? 0),
+                'y' => (int) ($meta['y'] ?? 0),
+                'lit' => (bool) $chapter->litat,
+                'mine' => !empty($found['lantern'][$chapter->code]),
+                'done' => !empty($found['chapter'][$chapter->code]),
+                'challengeid' => (int) ($challenges[$chapter->id] ?? 0),
+                'scenes' => array_map(function ($scene) use ($found, $attempts) {
+                    $def = json_decode($scene->definition, true);
+                    return [
+                        'id' => (int) $scene->id,
+                        'code' => $scene->code,
+                        'title' => (string) ($def['title'] ?? $scene->code),
+                        'minutes' => (int) ($def['minutes'] ?? 0),
+                        'done' => !empty($found['scene'][$scene->code]),
+                        'attempts' => (int) ($attempts[$scene->id] ?? 0),
+                    ];
+                }, $mine),
+            ];
+        }
+        $pages = [];
+        foreach ($data['pages'] ?? [] as $code => $page) {
+            if (!empty($found['page'][$code])) {
+                $pages[] = ['code' => $code, 'title' => (string) $page['title'], 'text' => (string) $page['text']];
+            }
+        }
+        return [
+            'id' => (int) $mission->id,
+            'code' => $mission->code,
+            'title' => missions::text($data['title'] ?? $mission->code, $skin),
+            'subtitle' => missions::text($data['subtitle'] ?? '', $skin),
+            'prologue' => missions::text($data['prologue'] ?? '', $skin),
+            'book' => missions::text($data['book'] ?? '', $skin),
+            'skin' => $skin,
+            'variant' => $mission->variant,
+            'pagecount' => count($data['pages'] ?? []),
+            'chapters' => $list,
+            'pages' => $pages,
+        ];
     }
 
     /**
@@ -306,6 +410,7 @@ final class view {
             'stage' => progress::stage_for_level($level['level']),
             'gems' => (int) $char->gems,
             'creaturestage' => (int) $char->creaturestage,
+            'creature' => (string) $char->creature,
         ];
         if ($member) {
             $character['member'] = [

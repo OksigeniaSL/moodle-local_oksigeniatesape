@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="local/oksigeniatesape/db" VERSION="20261011" COMMENT="XMLDB file for local_oksigeniatesape"
+<XMLDB PATH="local/oksigeniatesape/db" VERSION="20261012" COMMENT="XMLDB file for local_oksigeniatesape"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -242,6 +242,9 @@
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Name given by the teacher (the catalogue name otherwise)"/>
         <FIELD NAME="origin" TYPE="char" LENGTH="10" NOTNULL="true" DEFAULT="catalog" SEQUENCE="false" COMMENT="catalog, template or custom"/>
         <FIELD NAME="skin" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="valley" SEQUENCE="false" COMMENT="valley or azara"/>
+        <FIELD NAME="variant" TYPE="char" LENGTH="10" NOTNULL="true" DEFAULT="es" SEQUENCE="false" COMMENT="Local examples: es or py"/>
+        <FIELD NAME="version" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Version of the package installed"/>
+        <FIELD NAME="definition" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="The mission without its scenes (JSON): chapters, pages, items, texts"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>
@@ -307,6 +310,26 @@
         <KEY NAME="charid" TYPE="foreign" FIELDS="charid" REFTABLE="local_oksigeniatesape_char" REFFIELDS="id"/>
         <KEY NAME="courseid" TYPE="foreign" FIELDS="courseid" REFTABLE="course" REFFIELDS="id"/>
       </KEYS>
+    </TABLE>
+    <TABLE NAME="local_oksigeniatesape_found" COMMENT="What a character has found in a mission: lanterns, pages of the book, steps of the creature">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="charid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="missionid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="kind" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="lantern, page, grow, breath or chapter"/>
+        <FIELD NAME="code" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="charid" TYPE="foreign" FIELDS="charid" REFTABLE="local_oksigeniatesape_char" REFFIELDS="id"/>
+        <KEY NAME="courseid" TYPE="foreign" FIELDS="courseid" REFTABLE="course" REFFIELDS="id"/>
+        <KEY NAME="missionid" TYPE="foreign" FIELDS="missionid" REFTABLE="local_oksigeniatesape_mission" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="charid-missionid-kind-code" UNIQUE="true" FIELDS="charid, missionid, kind, code"/>
+      </INDEXES>
     </TABLE>
     <TABLE NAME="local_oksigeniatesape_minigame" COMMENT="Results of the minigames">
       <FIELDS>

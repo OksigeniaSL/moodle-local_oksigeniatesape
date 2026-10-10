@@ -1,0 +1,183 @@
+{
+ "id": "C6-2",
+ "mission": "livingthings",
+ "chapter": "torre",
+ "title": "El Embrollo",
+ "step": 2,
+ "mode": "both",
+ "objectives": [
+  "SV-01",
+  "SV-03",
+  "SV-04",
+  "SV-05",
+  "SV-06"
+ ],
+ "minutes": 10,
+ "classscreen": true,
+ "start": "intro",
+ "nodes": {
+  "intro": {
+   "type": "story",
+   "speaker": "embrollo",
+   "image": "torre-embrollo",
+   "text": {
+    "valley": "En lo alto de la torre, el Embrollo se enrosca sobre sí mismo y empieza a lanzar enredos. Cada enredo que deshagáis con su porqué le quitará fuerza.",
+    "azara": "Antes de entregar el cuaderno hay que revisar las notas que se mezclaron en el viaje. Cada error corregido con su porqué deja el cuaderno un poco más listo."
+   },
+   "next": "e1"
+  },
+  "e1": {
+   "type": "choice",
+   "prompt": "«¡El murciélago es un pájaro, que vuela!»",
+   "options": [
+    {
+     "id": "ok",
+     "label": "No: tiene pelo y sus crías maman. Es un mamífero que vuela.",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-04",
+     "feedback": "El enredo se deshace."
+    },
+    {
+     "id": "medio",
+     "label": "No, porque es de noche.",
+     "correct": false,
+     "objective": "SV-04",
+     "feedback": "Hay aves nocturnas, como el búho. ¿Qué tiene el murciélago que no tienen las aves?",
+     "next": "e1"
+    },
+    {
+     "id": "mal",
+     "label": "Sí, porque tiene alas.",
+     "correct": false,
+     "objective": "SV-04",
+     "feedback": "El Embrollo se ríe y aprieta el nudo. Las alas no bastan: ¿plumas o pelo?",
+     "next": "e1"
+    }
+   ],
+   "next": "e2"
+  },
+  "e2": {
+   "type": "choice",
+   "prompt": "«¡La ballena es un pez, que nada!»",
+   "options": [
+    {
+     "id": "ok",
+     "label": "No: respira aire con pulmones y sus crías maman. Es un mamífero.",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-04",
+     "feedback": "Otro enredo menos."
+    },
+    {
+     "id": "mal",
+     "label": "Sí, porque vive en el mar.",
+     "correct": false,
+     "objective": "SV-04",
+     "feedback": "Vivir en el agua no hace a nadie pez. ¿Cómo respira la ballena?",
+     "next": "e2"
+    },
+    {
+     "id": "medio",
+     "label": "No, porque es muy grande.",
+     "correct": false,
+     "objective": "SV-04",
+     "feedback": "Hay peces enormes, como el tiburón ballena. Mirad cómo respira y cómo alimenta a sus crías.",
+     "next": "e2"
+    }
+   ],
+   "next": "e3"
+  },
+  "e3": {
+   "type": "choice",
+   "prompt": "«¡La seta es una planta, que crece en el suelo!»",
+   "options": [
+    {
+     "id": "ok",
+     "label": "No: no fabrica su alimento con la luz. Es un hongo.",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-03",
+     "feedback": "El Embrollo pierde un hilo."
+    },
+    {
+     "id": "mal",
+     "label": "Sí, porque no se mueve.",
+     "correct": false,
+     "objective": "SV-03",
+     "feedback": "Las plantas no se mueven, pero los hongos tampoco. ¿Cómo consigue la seta su alimento?",
+     "next": "e3"
+    }
+   ],
+   "next": "e4"
+  },
+  "e4": {
+   "type": "choice",
+   "prompt": "«¡Sin plantas no pasa nada, que los leones comen carne!»",
+   "options": [
+    {
+     "id": "ok",
+     "label": "Sí pasa: los animales que se comen los leones comen plantas. Sin plantas no hay cadena.",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-06",
+     "feedback": "El Embrollo se tambalea."
+    },
+    {
+     "id": "mal",
+     "label": "Es verdad, los leones no comen plantas.",
+     "correct": false,
+     "objective": "SV-06",
+     "feedback": "¿Y qué comen las cebras que se come el león? Seguid la cadena hacia atrás.",
+     "next": "e4"
+    }
+   ],
+   "next": "e5"
+  },
+  "e5": {
+   "type": "choice",
+   "prompt": "«¡La araña es un insecto, que es pequeña!»",
+   "options": [
+    {
+     "id": "ok",
+     "label": "No: tiene ocho patas. Es un arácnido. Los insectos tienen seis.",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-04",
+     "feedback": "¡El último enredo!"
+    },
+    {
+     "id": "mal",
+     "label": "Sí, porque es un bicho.",
+     "correct": false,
+     "objective": "SV-04",
+     "feedback": "«Bicho» no es un grupo de seres vivos. Contad sus patas.",
+     "next": "e5"
+    }
+   ],
+   "next": "fin"
+  },
+  "fin": {
+   "type": "ending",
+   "outcome": "success",
+   "text": {
+    "valley": "Sin enredos que lanzar, el Embrollo se encoge hasta quedarse en una madeja pequeña y confusa. La druida mayor la guarda en un frasco: «Siempre habrá algo que nos confunda. Por eso existen los naturalistas». La linterna de la torre se enciende y el Gran Libro de la Vida queda completo. {{creature}} crece un poco.",
+    "azara": "El cuaderno está listo. Como hizo Azara al publicar sus Apuntamientos, la expedición va a compartir lo que ha descubierto. {{creature}} crece un poco."
+   },
+   "effects": [
+    {
+     "saber": 30
+    },
+    {
+     "lantern": "torre"
+    },
+    {
+     "creature": "grow"
+    },
+    {
+     "item": "naturalistlens"
+    }
+   ]
+  }
+ }
+}

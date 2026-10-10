@@ -13,7 +13,7 @@
   var t = T.t;
   var esc = T.esc;
   var app = document.getElementById('app');
-  var state = {world: null, tab: 'world', draft: null, editing: false};
+  var state = {world: null, tab: 'world', draft: null, editing: false, chapter: 0};
 
   /* ---------- Start ---------- */
 
@@ -368,6 +368,9 @@
     if (state.tab === 'me') {
       bindMe();
     }
+    if (state.tab === 'world') {
+      bindWorld();
+    }
   }
 
   function res(kind, value, label) {
@@ -387,8 +390,144 @@
     return '';
   }
 
+  /* ---------- The mission: map, places and scenes ---------- */
+
+  function nextChapter(m) {
+    var open = m.chapters.filter(function(ch) {
+      return !ch.done;
+    });
+    return open.length ? open[0] : m.chapters[m.chapters.length - 1];
+  }
+
+  function missionMap(m) {
+    var current = nextChapter(m);
+    var pts = m.chapters.map(function(ch) {
+      return ch.x + ',' + ch.y;
+    }).join(' ');
+    var lastDone = -1;
+    m.chapters.forEach(function(ch, i) {
+      if (ch.done) {
+        lastDone = i;
+      }
+    });
+    var walked = m.chapters.slice(0, lastDone + 2).map(function(ch) {
+      return ch.x + ',' + ch.y;
+    }).join(' ');
+    var places = m.chapters.map(function(ch) {
+      var cls = 'place' + (ch.mine ? ' mine' : '') + (ch.lit ? ' lit' : '') + (ch.id === current.id ? ' here' : '') +
+        (ch.id === state.chapter ? ' selected' : '');
+      var label = ch.name.length > 22 ? ch.name.slice(0, 21) + '…' : ch.name;
+      return '<g class="' + cls + '" data-chapter="' + ch.id + '" tabindex="0" role="button" aria-label="' + esc(ch.name) + '">' +
+        '<rect class="hit" x="' + (ch.x - 80) + '" y="' + (ch.y - 32) + '" width="160" height="84" rx="16"/>' +
+        (ch.lit ? '<circle cx="' + ch.x + '" cy="' + ch.y + '" r="40" class="classglow"/>' : '') +
+        '<circle cx="' + ch.x + '" cy="' + ch.y + '" r="25" class="ring"/>' +
+        '<rect x="' + (ch.x - 2) + '" y="' + (ch.y - 4) + '" width="4" height="17" rx="1" fill="#2b2219"/>' +
+        '<circle cx="' + ch.x + '" cy="' + (ch.y - 7) + '" r="7" class="flame"/>' +
+        '<text x="' + ch.x + '" y="' + (ch.y + 44) + '" text-anchor="middle">' + esc(label) + '</text></g>';
+    }).join('');
+    var c = state.world.character;
+    var me = '<foreignObject x="' + (current.x - 74) + '" y="' + (current.y - 22) + '" width="44" height="44" class="me-marker">' +
+      '<div xmlns="http://www.w3.org/1999/xhtml" class="face">' + T.avatar({role: c.role, nameform: c.nameform,
+      lineage: c.lineage, look: c.appearance, stage: c.stage, portrait: true}) + '</div></foreignObject>';
+    return '<div class="map-wrap"><svg class="map" viewBox="0 0 400 640" role="group" aria-label="' + esc(m.title) + '">' +
+      '<defs><radialGradient id="mapglow" cx="50%" cy="40%" r="70%"><stop offset="0" stop-color="#21465c"/>' +
+      '<stop offset="1" stop-color="#10283b"/></radialGradient></defs>' +
+      '<rect width="400" height="640" rx="18" fill="url(#mapglow)"/>' +
+      '<path d="M0 600 Q120 520 220 590 T400 560 V640 H0Z" fill="#183a2b"/>' +
+      '<path d="M0 230 Q90 190 170 230 T400 200 V260 Q300 300 200 270 T0 290Z" fill="#1d4a5e" opacity=".6"/>' +
+      '<path d="M20 120 L52 50 L84 120Z M330 380 L356 318 L382 380Z M40 470 L64 414 L88 470Z" fill="#163829"/>' +
+      '<polyline points="' + pts + '" class="road"/>' +
+      (walked ? '<polyline points="' + walked + '" class="road walked"/>' : '') + places + me + '</svg></div>';
+  }
+
+  function chapterPanel(m, ch) {
+    var w = state.world;
+    var challenge = w.challenges.filter(function(x) {
+      return x.id === ch.challengeid;
+    })[0];
+    var lantern = ch.lit ? t('app_lantern_class') : ch.mine ? t('app_lantern_mine') : t('app_lantern_off');
+    var scenes = ch.scenes.map(function(sc) {
+      return '<li class="item"><span class="grow"><b>' + esc(sc.title) + '</b><small>' + (sc.minutes ?
+        esc(t('app_minutes', sc.minutes)) : '') + (sc.done ? ' · ' + esc(t('app_status_done')) : '') + '</small></span>' +
+        '<button class="btn ' + (sc.done ? 'btn-soft' : 'btn-main') + '" data-scene="' + sc.id + '">' +
+        esc(sc.done ? t('app_playagain') : t('app_play')) + '</button></li>';
+    }).join('');
+    return '<section class="card chapter"><div class="kicker">' + esc(lantern) + '</div><h2>' + esc(ch.name) + '</h2>' +
+      '<p>' + esc(ch.intro) + '</p>' + (scenes ? '<ul class="list">' + scenes + '</ul>' : '') +
+      (challenge ? '<h3 style="margin-top:16px">' + esc(t('app_inclass')) + '</h3><ul class="list">' + challengeItem(challenge) +
+      '</ul>' : '') + '</section>';
+  }
+
+  function missionView(m) {
+    var key = 'tesape-mission-' + cfg.courseid + '-' + m.id + '-' + cfg.userid;
+    var seen = true;
+    try {
+      seen = !!window.localStorage.getItem(key);
+    } catch (e) {
+      seen = true;
+    }
+    if (!seen) {
+      return '<section class="card story-card"><div class="kicker">' + esc(m.subtitle) + '</div><h2>' + esc(m.title) +
+        '</h2><p class="lead">' + esc(m.prologue) + '</p><div class="actions" style="justify-content:flex-start">' +
+        '<button class="btn btn-main" data-begin="' + esc(key) + '">' + esc(t('app_beginmission')) + '</button></div></section>';
+    }
+    var chapter = m.chapters.filter(function(ch) {
+      return ch.id === state.chapter;
+    })[0] || nextChapter(m);
+    var lit = m.chapters.filter(function(ch) {
+      return ch.mine;
+    }).length;
+    return '<div class="mission"><div class="mission-head"><div><div class="kicker">' + esc(m.subtitle) + '</div><h2>' +
+      esc(m.title) + '</h2></div><div class="tally"><span>' + T.icon('lantern') + ' ' + lit + '/' + m.chapters.length +
+      '</span><span>' + T.icon('log') + ' ' + m.pages.length + '/' + m.pagecount + '</span></div></div>' +
+      '<div class="mission-grid">' + missionMap(m) + chapterPanel(m, chapter) + '</div></div>';
+  }
+
+  function bindWorld() {
+    var begin = app.querySelector('[data-begin]');
+    if (begin) {
+      begin.onclick = function() {
+        try {
+          window.localStorage.setItem(begin.dataset.begin, '1');
+        } catch (e) {
+          // Without storage the prologue shows again next time; nothing else.
+        }
+        world();
+      };
+    }
+    app.querySelectorAll('[data-chapter]').forEach(function(g) {
+      var pickChapter = function() {
+        state.chapter = Number(g.dataset.chapter);
+        world();
+        var panel = app.querySelector('.chapter');
+        if (panel && window.innerWidth < 900) {
+          panel.scrollIntoView({behavior: 'smooth', block: 'start'});
+        }
+      };
+      g.onclick = pickChapter;
+      g.onkeydown = function(ev) {
+        if (ev.key === 'Enter' || ev.key === ' ') {
+          ev.preventDefault();
+          pickChapter();
+        }
+      };
+    });
+    app.querySelectorAll('[data-scene]').forEach(function(b) {
+      b.onclick = function() {
+        T.playScene({sceneid: Number(b.dataset.scene), world: state.world, onclose: function(world) {
+          state.world = world;
+          remember();
+          route();
+        }});
+      };
+    });
+  }
+
   function tabWorld() {
     var w = state.world;
+    if (w.mission) {
+      return missionView(w.mission);
+    }
     var next = w.challenges.filter(function(ch) {
       return !ch.status || ch.status === 'notyet';
     }).slice(0, 3);
@@ -470,7 +609,22 @@
   }
 
   function tabLog() {
-    return '<section class="card"><h2>' + esc(t('app_tab_log')) + '</h2>' + logList(state.world.log) + '</section>';
+    var w = state.world;
+    var book = '';
+    if (w.mission) {
+      book = '<section class="card parchment book"><h2>' + esc(w.mission.book || t('app_book')) + '</h2><p class="book-count">' +
+        esc(t('app_pages', w.mission.pages.length + '/' + w.mission.pagecount)) + '</p>' + (w.mission.pages.length ?
+        w.mission.pages.map(function(pg) {
+          return '<article class="page"><h3>' + esc(pg.title) + '</h3><p>' + esc(pg.text) + '</p></article>';
+        }).join('') : '<p>' + esc(t('app_nopages')) + '</p>') + '</section>';
+    }
+    var items = w.items.length ? '<section class="card"><h2>' + esc(t('app_items')) + '</h2><ul class="list">' +
+      w.items.map(function(i) {
+        return '<li class="item"><span style="width:22px;height:22px;flex:none">' + T.icon('gems') + '</span>' +
+          '<span class="grow"><b>' + esc(i.name) + '</b><small>' + esc(i.description) + '</small></span></li>';
+      }).join('') + '</ul></section>' : '';
+    return '<div class="grid2">' + book + items + '</div><section class="card" style="margin-top:16px"><h2>' +
+      esc(t('app_tab_log')) + '</h2>' + logList(w.log) + '</section>';
   }
 
   function tabMe() {
@@ -484,7 +638,9 @@
         '</button></div></div></section>';
     }
     var pct = c.levelneeded ? Math.round(100 * c.levelinto / c.levelneeded) : 100;
-    return '<section class="card sheet"><div>' + avatarOf(c, title(c)) + '</div><div class="stats"><h2>' + esc(myName()) +
+    var creature = c.creature ? '<div class="creature-box">' + T.creature(c.creature, c.creaturestage) + '<b>' +
+      esc(creatureName(c)) + '</b><small>' + esc(t('app_creaturestage', c.creaturestage)) + '</small></div>' : '';
+    return '<section class="card sheet"><div class="sheet-art">' + avatarOf(c, title(c)) + creature + '</div><div class="stats"><h2>' + esc(myName()) +
       '</h2><p style="color:var(--text-soft)">' + esc(title(c)) + ' · ' + esc(t('app_stage', c.stage)) + '</p>' +
       '<div class="stat"><span>' + esc(t('app_level')) + '</span><b>' + c.level + '</b></div>' +
       '<div class="meter level" style="margin:6px 0 4px"><i style="width:' + pct + '%"></i></div><small style="color:' +
@@ -498,6 +654,14 @@
       'data-edit>' + esc(t('app_changelook')) + '</button><button class="btn btn-soft" data-print>' + esc(t('app_print')) +
       '</button><a class="btn btn-soft" href="' + esc(cfg.courseurl) + '">' + esc(t('app_exit')) + '</a></div></div>' +
       '</section>';
+  }
+
+  function creatureName(c) {
+    try {
+      return JSON.parse(c.creature || '{}').name || '';
+    } catch (e) {
+      return '';
+    }
   }
 
   function bindMe() {

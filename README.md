@@ -20,25 +20,23 @@ privacy come from Moodle, and the game is a full-screen application of its own.
 
 **Alpha, under development: not for use with students yet.** What there is today:
 
-- The game client: the first time is a story that ends with the student's character; then their region, team,
-  classroom challenges, diary and character sheet. Full screen, light, without external services.
-- The teacher panel, made for the phone: the class with names, photos and characters, touches of knowledge, gems
-  and breath, classroom challenges (also validated without connection), pause and recovery, the log with undo and
-  the settings of the course.
-- The game engine: knowledge with weekly and daily caps, gems, energy and falling worn out, breath, items, undo, and
-  completed Moodle activities turned into progress.
+- **A mission to play**: the pilot mission, *Living things* (ages 9 to 11, in Spanish), comes with the plugin. Its
+  map has six places with their lanterns; each place has its decision scenes and a classroom challenge. The scenes
+  are played in the game with the art of the game: choices with consequences, things to put in their group, steps to
+  put in order. The server plays each scene again with what the student did and decides the ending, so the result
+  does not depend on the browser. The first good ending gives knowledge, pages of the book, items and, in the first
+  scene, the companion creature; lanterns light for the student and, when half of the class has them, for the class.
+- **The game client**: the first time is a story that ends with the student's character; then the map of the
+  mission, their team, classroom challenges, the book, the diary and their character sheet with their creature. Full
+  screen, light, without external services.
+- **The teacher panel**, made for the phone: the class with names, photos and characters, touches of knowledge, gems
+  and breath, the mission of the course (with its story and local examples) and how the class is doing in each
+  scene and objective, with the mix-ups that come up most; classroom challenges (also validated without
+  connection), pause and recovery, the log with undo and the settings of the course.
+- **The game engine**: knowledge with weekly and daily caps, gems, energy and falling worn out, breath, items, undo,
+  and completed Moodle activities turned into progress. Privacy provider from the first day.
 
-- The tables of the game: characters, courses (regions), members, teams, challenges, the log of everything that
-  adds and takes away, powers and their requests, items, missions, chapters, scenes and their attempts, and
-  minigame results.
-- The capabilities: students play; teachers set the game up, give knowledge by hand, approve powers, pause a
-  student, see and undo the log, and run the class screen.
-- The privacy provider, from the first day: export and deletion of everything the game keeps about a student.
-- Levels, the stages of the character's look and the weekly cap per course, with their tests.
-- A made-up class to try it on a development site (see Development).
-
-Next come the decision scenes and the map of the pilot mission, teams and powers, the minigames and the class
-screen.
+Next come teams and powers, the minigames and the class screen.
 
 ## Requirements
 

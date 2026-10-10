@@ -48,6 +48,7 @@ final class structures {
             'stage' => new external_value(PARAM_INT, 'Stage of the look, 1 to 5'),
             'gems' => new external_value(PARAM_INT, 'Gems'),
             'creaturestage' => new external_value(PARAM_INT, 'Stage of the creature (0 before it hatches)'),
+            'creature' => new external_value(PARAM_RAW, 'Traits of the creature (JSON), empty before it hatches'),
             'member' => new external_single_structure([
                 'renown' => new external_value(PARAM_INT, 'Knowledge earned in the course'),
                 'energy' => new external_value(PARAM_INT, 'Energy in the course'),
@@ -57,6 +58,50 @@ final class structures {
                 'step' => new external_value(PARAM_INT, 'Step of the mission, 1 to 4'),
             ], 'State in the course, if it plays there', VALUE_OPTIONAL),
         ], 'Character', $required);
+    }
+
+    /**
+     * The mission of a course as a student sees it.
+     *
+     * @return external_single_structure
+     */
+    public static function mission(): external_single_structure {
+        return new external_single_structure([
+            'id' => new external_value(PARAM_INT, 'Mission'),
+            'code' => new external_value(PARAM_ALPHANUMEXT, 'Code'),
+            'title' => new external_value(PARAM_TEXT, 'Title'),
+            'subtitle' => new external_value(PARAM_TEXT, 'Subtitle'),
+            'prologue' => new external_value(PARAM_TEXT, 'Prologue'),
+            'book' => new external_value(PARAM_TEXT, 'Name of the book of the mission'),
+            'skin' => new external_value(PARAM_ALPHANUMEXT, 'Skin'),
+            'variant' => new external_value(PARAM_ALPHANUMEXT, 'Local examples'),
+            'pagecount' => new external_value(PARAM_INT, 'Pages of the book in the mission'),
+            'chapters' => new external_multiple_structure(new external_single_structure([
+                'id' => new external_value(PARAM_INT, 'Chapter'),
+                'code' => new external_value(PARAM_ALPHANUMEXT, 'Code'),
+                'name' => new external_value(PARAM_TEXT, 'Name'),
+                'intro' => new external_value(PARAM_TEXT, 'Introduction'),
+                'x' => new external_value(PARAM_INT, 'Place on the map'),
+                'y' => new external_value(PARAM_INT, 'Place on the map'),
+                'lit' => new external_value(PARAM_BOOL, 'Lantern of the class lit'),
+                'mine' => new external_value(PARAM_BOOL, 'Lantern of the student lit'),
+                'done' => new external_value(PARAM_BOOL, 'Scenes of the student done'),
+                'challengeid' => new external_value(PARAM_INT, 'Classroom challenge of the chapter (0: none)'),
+                'scenes' => new external_multiple_structure(new external_single_structure([
+                    'id' => new external_value(PARAM_INT, 'Scene'),
+                    'code' => new external_value(PARAM_ALPHANUMEXT, 'Code'),
+                    'title' => new external_value(PARAM_TEXT, 'Title'),
+                    'minutes' => new external_value(PARAM_INT, 'Minutes, more or less'),
+                    'done' => new external_value(PARAM_BOOL, 'Done'),
+                    'attempts' => new external_value(PARAM_INT, 'Plays'),
+                ])),
+            ])),
+            'pages' => new external_multiple_structure(new external_single_structure([
+                'code' => new external_value(PARAM_ALPHANUMEXT, 'Code'),
+                'title' => new external_value(PARAM_TEXT, 'Title'),
+                'text' => new external_value(PARAM_TEXT, 'Text'),
+            ])),
+        ], 'Mission of the course', VALUE_OPTIONAL);
     }
 
     /**

@@ -1,0 +1,120 @@
+{
+ "id": "C5-3",
+ "mission": "livingthings",
+ "chapter": "lago",
+ "title": "Lo que forma el lago",
+ "step": 2,
+ "mode": "both",
+ "objectives": [
+  "SV-06"
+ ],
+ "minutes": 5,
+ "start": "intro",
+ "nodes": {
+  "intro": {
+   "type": "story",
+   "speaker": "garza",
+   "image": "lago-pagina",
+   "text": "Para devolver la página del lago al Gran Libro hay que apuntar todo lo que lo forma: lo vivo y lo que no está vivo pero también forma parte de él. Y quitar lo que no pinta nada aquí.",
+   "next": "anotar"
+  },
+  "anotar": {
+   "type": "classify",
+   "prompt": "¿Dónde apuntáis cada cosa?",
+   "retry": "item",
+   "bins": [
+    {
+     "id": "vivo",
+     "label": "Lo vivo del lago"
+    },
+    {
+     "id": "novivo",
+     "label": "Lo no vivo del lago"
+    },
+    {
+     "id": "fuera",
+     "label": "No es del lago"
+    }
+   ],
+   "items": [
+    {
+     "id": "agua",
+     "label": "el agua",
+     "bin": "novivo",
+     "objective": "SV-06"
+    },
+    {
+     "id": "luz",
+     "label": "la luz del sol",
+     "bin": "novivo",
+     "objective": "SV-06"
+    },
+    {
+     "id": "temperatura",
+     "label": "la temperatura",
+     "bin": "novivo",
+     "objective": "SV-06"
+    },
+    {
+     "id": "piedras",
+     "label": "las piedras del fondo",
+     "bin": "novivo",
+     "objective": "SV-06"
+    },
+    {
+     "id": "peces",
+     "label": "los peces",
+     "bin": "vivo",
+     "objective": "SV-06"
+    },
+    {
+     "id": "algas",
+     "label": "las algas",
+     "bin": "vivo",
+     "objective": "SV-06",
+     "feedback": {
+      "novivo": "«Las algas fabrican su alimento con la luz, como las plantas: están vivas.»"
+     }
+    },
+    {
+     "id": "ranas",
+     "label": "las ranas",
+     "bin": "vivo",
+     "objective": "SV-06"
+    },
+    {
+     "id": "bacterias",
+     "label": "las bacterias del fondo",
+     "bin": "vivo",
+     "objective": "SV-06",
+     "feedback": {
+      "fuera": "«Son diminutas, pero importantísimas: descomponen los restos y devuelven al agua lo que las plantas necesitan.»"
+     }
+    },
+    {
+     "id": "lata",
+     "label": "una lata tirada",
+     "bin": "fuera",
+     "objective": "SV-06",
+     "feedback": {
+      "novivo": "«La lata no forma parte del lago: alguien la dejó aquí.» La garza la saca con el pico."
+     }
+    }
+   ],
+   "next": "fin"
+  },
+  "fin": {
+   "type": "ending",
+   "outcome": "success",
+   "text": "La página del lago queda completa: un ecosistema son los seres vivos y el lugar donde viven, juntos. La garza se lleva la lata a la papelera del campamento.",
+   "effects": [
+    {
+     "saber": 15
+    },
+    {
+     "page": "ecosistema"
+    }
+   ]
+  }
+ }
+}

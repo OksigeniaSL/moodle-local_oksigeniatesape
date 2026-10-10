@@ -1,0 +1,394 @@
+<?php
+// This file is part of Moodle - https://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+
+namespace local_oksigeniatesape\local;
+
+/**
+ * Plays a decision scene again on the server with what the student did in the client, so that the path, the points,
+ * the result per objective and the ending are decided here and not by the browser.
+ *
+ * What the student did is a list of events, in order:
+ * - {"n": node, "pick": [option ids]} for each answer to a choice;
+ * - {"n": node, "item": item id, "bin": bin id} for each try to put an item of a classify in a group;
+ * - {"n": node, "step": step id} for each step put in an order.
+ *
+ * The rules are those of the client (and of the format of the scenes): an answer of one option may lead back to the
+ * same question, a classify asks for each item until it is in its group (unless retry is none), an order asks for
+ * each step until it is the right one.
+ *
+ * @package    local_oksigeniatesape
+ * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+final class scene_runner {
+    /** @var int Most nodes visited in one play, against endless loops. */
+    private const MAX_VISITS = 500;
+
+    /** @var array The scene. */
+    private array $scene;
+
+    /** @var string[] Codes of the items the student carries. */
+    private array $items;
+
+    /** @var string[] Roles in the student's team. */
+    private array $teamroles;
+
+    /** @var array Events not yet used. */
+    private array $events = [];
+
+    /** @var int Points. */
+    private int $points = 0;
+
+    /** @var array Result per objective: code => [ok, total]. */
+    private array $objectives = [];
+
+    /** @var array Last answer to each choice: node => option ids. */
+    private array $picks = [];
+
+    /** @var array Items put right at the first try in each classify: node => item ids. */
+    private array $placed = [];
+
+    /** @var array Effects of the options chosen and the items placed. */
+    private array $inline = [];
+
+    /** @var int Extra answers won. */
+    private int $extra = 0;
+
+    /** @var array Nodes where an extra answer was used. */
+    private array $extraused = [];
+
+    /**
+     * Prepares a play.
+     *
+     * @param array $scene The scene, as in its JSON.
+     * @param string[] $items Codes of the items the student carries in the course.
+     * @param string[] $teamroles Roles of the characters in the student's team.
+     */
+    public function __construct(array $scene, array $items = [], array $teamroles = []) {
+        $this->scene = $scene;
+        $this->items = $items;
+        $this->teamroles = $teamroles;
+    }
+
+    /**
+     * Whether a requirement is met.
+     *
+     * @param array|null $requires {item: code}, {teamrole: role} or {any: [...]}.
+     * @return bool
+     */
+    public function has(?array $requires): bool {
+        if (!$requires) {
+            return true;
+        }
+        if (isset($requires['item'])) {
+            return in_array($requires['item'], $this->items, true);
+        }
+        if (isset($requires['teamrole'])) {
+            return in_array($requires['teamrole'], $this->teamroles, true);
+        }
+        if (isset($requires['any']) && is_array($requires['any'])) {
+            foreach ($requires['any'] as $one) {
+                if (is_array($one) && $this->has($one)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * The nodes where a play can start: the start of the scene and those where a retry ending sends back.
+     *
+     * @return string[]
+     */
+    public function starts(): array {
+        $starts = [$this->scene['start']];
+        foreach ($this->scene['nodes'] as $node) {
+            if (($node['type'] ?? '') === 'ending' && !empty($node['retry'])) {
+                $starts[] = $node['retry'];
+            }
+        }
+        return array_values(array_unique($starts));
+    }
+
+    /**
+     * Plays the scene with the events of the student.
+     *
+     * @param array $events
+     * @param string|null $from Node to start at (the start, or where a retry ending sent back).
+     * @return array ending, outcome, effects (of the ending), inline (effects won on the way), points, objectives, path.
+     */
+    public function run(array $events, ?string $from = null): array {
+        $nodes = $this->scene['nodes'];
+        $node = $from ?? $this->scene['start'];
+        if (!in_array($node, $this->starts(), true)) {
+            $this->fail('cannot start at ' . $node);
+        }
+        $this->events = array_values($events);
+        $path = [];
+        for ($visits = 0; $visits < self::MAX_VISITS; $visits++) {
+            if (!isset($nodes[$node])) {
+                $this->fail('unknown node ' . $node);
+            }
+            $n = $nodes[$node];
+            $path[] = $node;
+            switch ($n['type']) {
+                case 'story':
+                    $node = $n['next'];
+                    break;
+                case 'branch':
+                    $node = $this->branch($n);
+                    break;
+                case 'choice':
+                    $node = $this->choice($node, $n);
+                    break;
+                case 'classify':
+                    $this->classify($node, $n);
+                    $node = $n['next'];
+                    break;
+                case 'order':
+                    $this->order($node, $n);
+                    $node = $n['next'];
+                    break;
+                case 'ending':
+                    if ($this->events) {
+                        $this->fail('events left after the ending');
+                    }
+                    return [
+                        'ending' => $node,
+                        'outcome' => $n['outcome'] ?? 'success',
+                        'effects' => $n['effects'] ?? [],
+                        'inline' => $this->inline,
+                        'retry' => $n['retry'] ?? null,
+                        'points' => $this->points,
+                        'objectives' => $this->objectives,
+                        'path' => $path,
+                    ];
+                default:
+                    $this->fail('unknown type ' . $n['type']);
+            }
+        }
+        $this->fail('too long');
+    }
+
+    /**
+     * A branch: the first rule that holds, or else.
+     *
+     * @param array $n
+     * @return string Next node.
+     */
+    private function branch(array $n): string {
+        foreach ($n['rules'] ?? [] as $rule) {
+            $if = $rule['if'] ?? [];
+            if (isset($if['correct_at_least'], $if['in'])) {
+                if ($this->correct_in($if['in']) >= (int) $if['correct_at_least']) {
+                    return $rule['next'];
+                }
+            }
+        }
+        return $n['else'];
+    }
+
+    /**
+     * How many right answers there were in a node: options marked correct in a choice, items placed at the first try
+     * in a classify.
+     *
+     * @param string $node
+     * @return int
+     */
+    private function correct_in(string $node): int {
+        if (isset($this->placed[$node])) {
+            return count($this->placed[$node]);
+        }
+        $options = [];
+        foreach ($this->scene['nodes'][$node]['options'] ?? [] as $option) {
+            $options[$option['id']] = $option;
+        }
+        $count = 0;
+        foreach ($this->picks[$node] ?? [] as $id) {
+            if (!empty($options[$id]['correct'])) {
+                $count++;
+            }
+        }
+        return $count;
+    }
+
+    /**
+     * A choice: one answer (one event).
+     *
+     * @param string $node
+     * @param array $n
+     * @return string Next node (the same one if the answer leads back to the question).
+     */
+    private function choice(string $node, array $n): string {
+        $event = $this->take($node);
+        if (!isset($event['pick']) || !is_array($event['pick'])) {
+            $this->fail('a choice needs pick');
+        }
+        $options = [];
+        foreach ($n['options'] as $option) {
+            $options[$option['id']] = $option;
+        }
+        $picked = array_values(array_unique(array_map('strval', $event['pick'])));
+        $max = (int) ($n['select']['max'] ?? 1);
+        $min = (int) ($n['select']['min'] ?? $max);
+        if (count($picked) < $min || count($picked) > $max || count($picked) != count($event['pick'])) {
+            $this->fail('wrong number of options in ' . $node);
+        }
+        foreach ($picked as $id) {
+            if (!isset($options[$id]) || !$this->has($options[$id]['requires'] ?? null)) {
+                $this->fail('option not available: ' . $id);
+            }
+            $option = $options[$id];
+            $this->points += (int) ($option['points'] ?? 0);
+            $correct = $option['correct'] ?? null;
+            $this->tally($option['objective'] ?? null, $correct !== false && ($correct === true || ($option['points'] ?? 0) > 0));
+            foreach ($option['effects'] ?? [] as $effect) {
+                if (isset($effect['extraquestion'])) {
+                    $this->extra += (int) $effect['extraquestion'];
+                } else {
+                    $this->inline[] = $effect;
+                }
+            }
+        }
+        $this->picks[$node] = $picked;
+        if ($max > 1) {
+            return $n['next'];
+        }
+        $target = $options[$picked[0]]['next'] ?? $n['next'];
+        if ($target === $node) {
+            return $node;
+        }
+        if ($this->extra > 0 && !empty($n['extra']) && empty($this->extraused[$node])) {
+            $this->extra--;
+            $this->extraused[$node] = true;
+            return $node;
+        }
+        return $target;
+    }
+
+    /**
+     * A classify: each item available, until it is in its group.
+     *
+     * @param string $node
+     * @param array $n
+     */
+    private function classify(string $node, array $n): void {
+        $bins = array_map(fn($b) => $b['id'], $n['bins']);
+        $once = ($n['retry'] ?? 'item') === 'none';
+        $this->placed[$node] = [];
+        foreach ($n['items'] as $item) {
+            if (!$this->has($item['requires'] ?? null)) {
+                // Locked: they could not try it, so it does not count against the objective.
+                continue;
+            }
+            $first = true;
+            for ($tries = 0; $tries <= count($bins); $tries++) {
+                $event = $this->take($node);
+                if (($event['item'] ?? null) !== $item['id'] || !in_array($event['bin'] ?? null, $bins, true)) {
+                    $this->fail('expected ' . $item['id'] . ' in a group of ' . $node);
+                }
+                if ($event['bin'] === $item['bin']) {
+                    $this->points += $first ? 2 : 1;
+                    $this->tally($item['objective'] ?? null, $first);
+                    if ($first) {
+                        $this->placed[$node][] = $item['id'];
+                    }
+                    foreach ($item['effects'] ?? [] as $effect) {
+                        $this->inline[] = $effect;
+                    }
+                    continue 2;
+                }
+                if ($once) {
+                    $this->tally($item['objective'] ?? null, false);
+                    continue 2;
+                }
+                $first = false;
+            }
+            $this->fail('too many tries for ' . $item['id']);
+        }
+    }
+
+    /**
+     * An order: each step until it is the one that comes.
+     *
+     * @param string $node
+     * @param array $n
+     */
+    private function order(string $node, array $n): void {
+        $steps = array_map(fn($s) => $s['id'], $n['steps']);
+        $built = 0;
+        $first = true;
+        $tries = 0;
+        while ($built < count($steps)) {
+            if (++$tries > count($steps) * count($steps)) {
+                $this->fail('too many tries in ' . $node);
+            }
+            $event = $this->take($node);
+            $step = $event['step'] ?? null;
+            if (!in_array($step, array_slice($steps, $built), true)) {
+                $this->fail('step not available: ' . $step);
+            }
+            if ($step === $steps[$built]) {
+                $built++;
+            } else {
+                $first = false;
+            }
+        }
+        $this->points += $first ? 6 : 3;
+        $this->tally($n['objective'] ?? null, $first);
+    }
+
+    /**
+     * The next event, which has to be for this node.
+     *
+     * @param string $node
+     * @return array
+     */
+    private function take(string $node): array {
+        $event = array_shift($this->events);
+        if (!is_array($event) || ($event['n'] ?? null) !== $node) {
+            $this->fail('expected an event for ' . $node);
+        }
+        return $event;
+    }
+
+    /**
+     * Counts an answer for an objective.
+     *
+     * @param string|null $objective
+     * @param bool $ok
+     */
+    private function tally(?string $objective, bool $ok): void {
+        if (!$objective) {
+            return;
+        }
+        $this->objectives[$objective] = $this->objectives[$objective] ?? ['ok' => 0, 'total' => 0];
+        $this->objectives[$objective]['total']++;
+        if ($ok) {
+            $this->objectives[$objective]['ok']++;
+        }
+    }
+
+    /**
+     * Stops: what the client sent does not fit the scene.
+     *
+     * @param string $why
+     */
+    private function fail(string $why): never {
+        throw new \moodle_exception('invalidscenepath', 'local_oksigeniatesape', '', null, $why);
+    }
+}

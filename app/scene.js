@@ -1,0 +1,493 @@
+/**
+ * Tesapé: the player of decision scenes. It shows each node with the art of the game, notes what the student does
+ * and, at an ending, sends it to the server, which plays the scene again and decides the ending and the rewards.
+ *
+ * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+(function() {
+  'use strict';
+
+  var T = window.Tesape;
+  var cfg = T.cfg;
+  var t = T.t;
+  var esc = T.esc;
+
+  /**
+   * A picture for a node, drawn from words in its key (placeholder until the art arrives).
+   *
+   * @param {string} key
+   * @return {string}
+   */
+  function picture(key) {
+    var k = String(key || '');
+    var mid = '';
+    if (/lago|gota|agua|barcaza|rio/.test(k)) {
+      mid = '<ellipse cx="170" cy="104" rx="130" ry="15" fill="#2f6f8f" opacity=".85"/>' +
+        '<path d="M120 98 q10 -6 20 0 q10 6 20 0" stroke="#8fd3ff" stroke-width="2" fill="none" opacity=".6"/>';
+    } else if (/biblioteca|torre|sotano|pagina|embrollo/.test(k)) {
+      mid = '<rect x="140" y="26" width="60" height="86" rx="4" fill="#2b2219"/><rect x="152" y="44" width="12" height="16" ' +
+        'fill="#ffc857"/><rect x="176" y="44" width="12" height="16" fill="#ffc857" opacity=".6"/>' +
+        (/embrollo/.test(k) ? '<path d="M150 80 q20 -30 40 0 q-20 30 -40 0" stroke="#b9a6ff" stroke-width="3" fill="none"/>' : '');
+    } else if (/bosque|buho|rastro|noche/.test(k)) {
+      mid = '<path d="M60 112 L88 36 L116 112Z M210 112 L242 26 L274 112Z" fill="#1f4a33"/><circle cx="242" cy="58" r="7" ' +
+        'fill="#ffe38a" opacity=".8"/>';
+    } else if (/plantas|jardin|raiz/.test(k)) {
+      mid = '<path d="M150 112 q-6 -40 20 -60 q26 20 20 60Z" fill="#7cc67f"/><path d="M170 112 V60" stroke="#4f8f45" ' +
+        'stroke-width="3"/>';
+    } else {
+      mid = '<circle cx="170" cy="96" r="20" fill="#3b2a18"/><circle cx="170" cy="96" r="8" fill="#ffc857"/>';
+    }
+    return '<div class="vignette scene-pic" aria-hidden="true"><svg viewBox="0 0 340 120" ' +
+      'preserveAspectRatio="xMidYMid slice"><rect width="340" height="120" fill="#16314a"/><circle cx="300" cy="26" r="12" ' +
+      'fill="#fff3c4" opacity=".8"/><path d="M0 120 Q80 64 160 100 T340 92 V120Z" fill="#183528"/>' + mid + '</svg></div>';
+  }
+
+  /**
+   * Plays a scene.
+   *
+   * @param {Object} opts sceneid, world (the world of the student), onclose(world) when the student leaves.
+   */
+  T.playScene = function(opts) {
+    var layer = document.createElement('div');
+    layer.className = 'scene-layer';
+    layer.setAttribute('role', 'dialog');
+    layer.setAttribute('aria-modal', 'true');
+    document.body.appendChild(layer);
+    document.body.classList.add('in-scene');
+    var world = opts.world;
+    var data = null;
+    var sc = null;
+    var run = null;
+
+    function close() {
+      layer.remove();
+      document.body.classList.remove('in-scene');
+      opts.onclose(world);
+    }
+
+    function show(html) {
+      layer.innerHTML = '<div class="scene"><div class="scene-top"><span class="scene-title">' + esc(sc ? sc.title : '') +
+        '</span><button class="btn btn-soft scene-close" type="button" aria-label="' + esc(t('app_close')) + '">✕</button>' +
+        '</div><div class="scene-body">' + html + '</div></div>';
+      layer.querySelector('.scene-close').onclick = close;
+      layer.scrollTop = 0;
+      var focus = layer.querySelector('[data-focus]');
+      if (focus) {
+        focus.focus();
+      }
+      return layer.querySelector('.scene-body');
+    }
+
+    function myName() {
+      var c = world.character;
+      return world.nicknames && c && c.nickname ? c.nickname : cfg.firstname;
+    }
+
+    function creatureName() {
+      try {
+        return JSON.parse(world.character.creature || '{}').name || t('app_creature');
+      } catch (e) {
+        return t('app_creature');
+      }
+    }
+
+    /**
+     * A text of the scene: in the skin of the course, with the local examples, the name and the creature.
+     *
+     * @param {*} text
+     * @return {string}
+     */
+    function tx(text) {
+      if (text && typeof text === 'object') {
+        text = text[data.skin] || text[Object.keys(text)[0]];
+      }
+      return String(text || '').replace(/\{\{local:([a-z0-9_-]+)\}\}/g, function(m, key) {
+        var local = sc.locals && sc.locals[key];
+        return local ? (local[data.variant] || local[Object.keys(local)[0]]) : m;
+      }).replace(/\{\{name\}\}/g, myName()).replace(/\{\{creature\}\}/g, creatureName());
+    }
+
+    function has(req) {
+      if (!req) {
+        return true;
+      }
+      if (req.item) {
+        return (world.items || []).some(function(i) {
+          return i.code === req.item;
+        });
+      }
+      if (req.teamrole) {
+        var roles = [world.character.role];
+        ((world.team && world.team.members) || []).forEach(function(m) {
+          if (m.character) {
+            roles.push(m.character.role);
+          }
+        });
+        return roles.indexOf(req.teamrole) >= 0;
+      }
+      if (req.any) {
+        return req.any.some(has);
+      }
+      return false;
+    }
+
+    function missing(req) {
+      if (req.item) {
+        return t('app_needs', data.items[req.item] || req.item);
+      }
+      if (req.teamrole) {
+        return t('app_needs', T.roleName(world.family, req.teamrole, 'm'));
+      }
+      if (req.any) {
+        return req.any.map(missing).join(' · ');
+      }
+      return '';
+    }
+
+    function start(from) {
+      run = {node: from || sc.start, from: from || '', events: [], extra: 0, extraused: {}};
+      next();
+    }
+
+    function go(node) {
+      run.node = node;
+      next();
+    }
+
+    function next() {
+      var n = sc.nodes[run.node];
+      if (n.type === 'story') {
+        var body = show(picture(n.image || sc.id) + (n.speaker ? '<div class="speaker">' + esc(data.speakers[n.speaker] ||
+          n.speaker) + '</div>' : '') + '<p class="scene-text">' + esc(tx(n.text)) + '</p><div class="actions">' +
+          '<button class="btn btn-main" data-focus data-next>' + esc(t('app_continue')) + '</button></div>');
+        body.querySelector('[data-next]').onclick = function() {
+          go(n.next);
+        };
+      } else if (n.type === 'branch') {
+        var target = n.else;
+        (n.rules || []).some(function(rule) {
+          if (rule.if && rule.if.correct_at_least !== undefined && correctIn(rule.if.in) >= rule.if.correct_at_least) {
+            target = rule.next;
+            return true;
+          }
+          return false;
+        });
+        go(target);
+      } else if (n.type === 'choice') {
+        choice(n);
+      } else if (n.type === 'classify') {
+        classify(n);
+      } else if (n.type === 'order') {
+        order(n);
+      } else if (n.type === 'ending') {
+        ending(n);
+      }
+    }
+
+    function correctIn(node) {
+      var picks = [];
+      run.events.forEach(function(e) {
+        if (e.n === node && e.pick) {
+          picks = e.pick;
+        }
+      });
+      var opts = sc.nodes[node].options || [];
+      return picks.filter(function(id) {
+        return opts.some(function(o) {
+          return o.id === id && o.correct === true;
+        });
+      }).length;
+    }
+
+    function kind(o) {
+      if (o.correct === true || (o.correct !== false && (o.points || 0) >= 2)) {
+        return 'good';
+      }
+      return o.correct === false ? 'bad' : 'meh';
+    }
+
+    function choice(n) {
+      var max = (n.select && n.select.max) || 1;
+      var min = (n.select && n.select.min) || max;
+      var multi = max > 1;
+      var selected = [];
+      var opts = n.options.map(function(o) {
+        if (!has(o.requires)) {
+          return '<button class="opt locked" type="button" disabled><b>' + esc(tx(o.label)) + '</b><small>' +
+            esc(o.locked ? tx(o.locked) : missing(o.requires)) + '</small></button>';
+        }
+        return '<button class="opt" type="button" data-id="' + esc(o.id) + '">' + esc(tx(o.label)) + '</button>';
+      }).join('');
+      var body = show((n.image ? picture(n.image) : '') + '<p class="scene-prompt">' + esc(tx(n.prompt)) + '</p>' +
+        '<div class="opts">' + opts + '</div>' + (multi ? '<div class="counter" data-count>' + esc(t('app_chosen', '0/' + max)) +
+        '</div><div class="actions"><button class="btn btn-main" data-confirm disabled>' + esc(t('app_confirm')) +
+        '</button></div>' : '') + '<div data-out></div>');
+      function pick(id) {
+        return n.options.filter(function(o) {
+          return o.id === id;
+        })[0];
+      }
+      body.querySelectorAll('.opt[data-id]').forEach(function(b) {
+        b.onclick = function() {
+          var id = b.dataset.id;
+          if (!multi) {
+            body.querySelectorAll('.opt').forEach(function(x) {
+              x.disabled = true;
+            });
+            b.classList.add('sel');
+            run.events.push({n: run.node, pick: [id]});
+            reveal(body, [pick(id)], function() {
+              var o = pick(id);
+              (o.effects || []).forEach(function(e) {
+                run.extra += e.extraquestion || 0;
+              });
+              var target = o.next || n.next;
+              if (target === run.node) {
+                next();
+              } else if (run.extra > 0 && n.extra && !run.extraused[run.node]) {
+                run.extra--;
+                run.extraused[run.node] = true;
+                T.toast(esc(t('app_extraquestion')));
+                next();
+              } else {
+                go(target);
+              }
+            });
+            return;
+          }
+          var i = selected.indexOf(id);
+          if (i >= 0) {
+            selected.splice(i, 1);
+            b.classList.remove('sel');
+          } else if (selected.length < max) {
+            selected.push(id);
+            b.classList.add('sel');
+          }
+          body.querySelector('[data-count]').textContent = t('app_chosen', selected.length + '/' + max);
+          body.querySelector('[data-confirm]').disabled = selected.length < min;
+        };
+      });
+      if (multi) {
+        body.querySelector('[data-confirm]').onclick = function() {
+          body.querySelectorAll('.opt').forEach(function(x) {
+            x.disabled = true;
+          });
+          this.disabled = true;
+          run.events.push({n: run.node, pick: selected.slice()});
+          selected.forEach(function(id) {
+            (pick(id).effects || []).forEach(function(e) {
+              run.extra += e.extraquestion || 0;
+            });
+          });
+          reveal(body, selected.map(pick), function() {
+            go(n.next);
+          });
+        };
+      }
+    }
+
+    /**
+     * Shows what each choice brings, one by one: the consequences are the explanation.
+     *
+     * @param {Element} body
+     * @param {Array} list
+     * @param {Function} done
+     */
+    function reveal(body, list, done) {
+      var out = body.querySelector('[data-out]');
+      var i = 0;
+      function step() {
+        if (i >= list.length) {
+          done();
+          return;
+        }
+        var o = list[i++];
+        out.innerHTML = '<div class="conseq ' + kind(o) + '"><span class="what">' + esc(tx(o.label)) + '</span>' +
+          esc(tx(o.feedback || '')) + '</div><div class="actions"><button class="btn btn-main" data-more>' +
+          esc(i < list.length ? t('app_next') : t('app_continue')) + '</button></div>';
+        var more = out.querySelector('[data-more]');
+        more.focus();
+        more.onclick = step;
+        out.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+      }
+      step();
+    }
+
+    function classify(n) {
+      var items = n.items.slice();
+      var idx = 0;
+      var once = n.retry === 'none';
+      function draw() {
+        if (idx >= items.length) {
+          go(n.next);
+          return;
+        }
+        var it = items[idx];
+        var dots = items.map(function(x, j) {
+          return '<i class="' + (j < idx ? 'ok' : '') + '"></i>';
+        }).join('');
+        if (!has(it.requires)) {
+          var lockedbody = show('<p class="scene-prompt">' + esc(tx(n.prompt)) + '</p><div class="progress">' + dots + '</div>' +
+            '<div class="current">' + esc(tx(it.label)) + '</div><div class="conseq meh">' + esc(it.locked ? tx(it.locked) :
+            missing(it.requires)) + '</div><div class="actions"><button class="btn btn-soft" data-focus data-skip>' +
+            esc(t('app_later')) + '</button></div>');
+          lockedbody.querySelector('[data-skip]').onclick = function() {
+            idx++;
+            draw();
+          };
+          return;
+        }
+        var bins = n.bins.map(function(b) {
+          return '<button class="bin" type="button" data-bin="' + esc(b.id) + '">' + esc(tx(b.label)) + '</button>';
+        }).join('');
+        var body = show('<p class="scene-prompt">' + esc(tx(n.prompt)) + '</p><div class="progress">' + dots + '</div>' +
+          '<div class="current" data-cur>' + esc(tx(it.label)) + '</div><div class="bins">' + bins + '</div><div data-out></div>');
+        body.querySelectorAll('.bin').forEach(function(b) {
+          b.onclick = function() {
+            var bin = b.dataset.bin;
+            run.events.push({n: run.node, item: it.id, bin: bin});
+            var out = body.querySelector('[data-out]');
+            if (bin === it.bin || once) {
+              body.querySelectorAll('.bin').forEach(function(x) {
+                x.disabled = true;
+              });
+              var good = bin === it.bin;
+              out.innerHTML = '<div class="conseq ' + (good ? 'good' : 'bad') + '"><span class="what">' + esc(tx(it.label)) +
+                '</span>' + esc(good ? tx(it.ok || t('app_inplace')) : tx((it.feedback && it.feedback[bin]) ||
+                t('app_notthere'))) + '</div><div class="actions"><button class="btn btn-main" data-more>' +
+                esc(t('app_next')) + '</button></div>';
+              var more = out.querySelector('[data-more]');
+              more.focus();
+              more.onclick = function() {
+                idx++;
+                draw();
+              };
+            } else {
+              out.innerHTML = '<div class="conseq bad">' + esc(tx((it.feedback && it.feedback[bin]) || t('app_notthere'))) +
+                '</div>';
+              var cur = body.querySelector('[data-cur]');
+              cur.classList.remove('shake');
+              void cur.offsetWidth;
+              cur.classList.add('shake');
+            }
+          };
+        });
+      }
+      draw();
+    }
+
+    function order(n) {
+      var built = [];
+      var pool = n.steps.slice().sort(function() {
+        return Math.random() - 0.5;
+      });
+      function draw() {
+        if (built.length === n.steps.length) {
+          go(n.next);
+          return;
+        }
+        var body = show('<p class="scene-prompt">' + esc(tx(n.prompt)) + '</p><ol class="built">' + built.map(function(s) {
+          return '<li>' + esc(tx(s.label)) + '</li>';
+        }).join('') + '</ol><div class="opts">' + pool.filter(function(s) {
+          return built.indexOf(s) < 0;
+        }).map(function(s) {
+          return '<button class="opt" type="button" data-id="' + esc(s.id) + '">' + esc(tx(s.label)) + '</button>';
+        }).join('') + '</div><div data-out></div>');
+        body.querySelectorAll('.opt').forEach(function(b) {
+          b.onclick = function() {
+            var s = n.steps.filter(function(x) {
+              return x.id === b.dataset.id;
+            })[0];
+            var expected = n.steps[built.length];
+            run.events.push({n: run.node, step: s.id});
+            if (s === expected) {
+              built.push(s);
+              draw();
+            } else {
+              var stuck = n.stuck || {};
+              var msg = stuck[s.id + '-antes-de-' + expected.id] || stuck.default || t('app_stuck');
+              body.querySelector('[data-out]').innerHTML = '<div class="conseq bad">' + esc(tx(msg)) + '</div>';
+              b.classList.remove('shake');
+              void b.offsetWidth;
+              b.classList.add('shake');
+            }
+          };
+        });
+      }
+      draw();
+    }
+
+    function ending(n) {
+      show('<div class="loading-inline"><div class="lamp"></div>' + esc(t('app_saving')) + '</div>');
+      T.api('play_scene', {courseid: cfg.courseid, sceneid: data.id, events: JSON.stringify(run.events),
+        start: run.from}).then(function(result) {
+        var before = world.character;
+        world = result.world;
+        var r = result.rewards;
+        var lines = [];
+        if (r.saber) {
+          lines.push('+' + r.saber + ' ' + t('app_saber'));
+        }
+        if (r.capped) {
+          lines.push(t('app_capped', r.capped));
+        }
+        if (r.gems) {
+          lines.push('+' + r.gems + ' ' + t('app_gems'));
+        }
+        r.items.forEach(function(name) {
+          lines.push(t('app_gotitem', name));
+        });
+        r.pages.forEach(function(name) {
+          lines.push(t('app_gotpage', name));
+        });
+        r.lanterns.forEach(function(name) {
+          lines.push(t('app_gotlantern', name));
+        });
+        if (r.classlantern) {
+          lines.push(t('app_classlantern', r.classlantern));
+        }
+        if (r.grew) {
+          lines.push(t('app_creaturegrew', creatureName()));
+        }
+        var success = result.outcome !== 'retry';
+        var hatch = r.hatched ? '<div class="hatch">' + T.creature(world.character.creature, 1, true) + '<p>' +
+          esc(t('app_hatched', creatureName())) + '</p></div>' : '';
+        var levelup = world.character.level > before.level ? '<div class="conseq good"><span class="what">' +
+          esc(t('app_levelup', world.character.level)) + '</span></div>' : '';
+        var done = !success ? '' : (result.attempt > 1 && !lines.length ? '<p class="help">' + esc(t('app_alreadydone')) +
+          '</p>' : '');
+        var body = show(picture(n.image || sc.id) + '<p class="scene-text">' + esc(tx(n.text)) + '</p>' + hatch + levelup +
+          (lines.length ? '<div class="conseq good"><span class="what">' + esc(t('app_forcharacter')) + '</span>' +
+          lines.map(esc).join('<br>') + '</div>' : '') + done + '<div class="actions">' + (success ?
+          '<button class="btn btn-main" data-focus data-map>' + esc(t('app_backtomap')) + '</button>' :
+          '<button class="btn btn-main" data-focus data-retry>' + esc(t('app_tryagain')) + '</button>') + '</div>');
+        var map = body.querySelector('[data-map]');
+        if (map) {
+          map.onclick = close;
+        } else {
+          body.querySelector('[data-retry]').onclick = function() {
+            start(result.retry || n.retry);
+          };
+        }
+      }).catch(function(e) {
+        var body = show('<p class="scene-text">' + esc(t('app_error')) + '</p><p class="help">' + esc(e.message) + '</p>' +
+          '<div class="actions"><button class="btn btn-main" data-again>' + esc(t('app_retry')) + '</button></div>');
+        body.querySelector('[data-again]').onclick = function() {
+          ending(n);
+        };
+      });
+    }
+
+    show('<div class="loading-inline"><div class="lamp"></div>' + esc(t('app_loading')) + '</div>');
+    T.api('get_scene', {courseid: cfg.courseid, sceneid: opts.sceneid}).then(function(d) {
+      data = d;
+      data.speakers = JSON.parse(d.speakers || '{}');
+      data.items = JSON.parse(d.items || '{}');
+      sc = JSON.parse(d.definition);
+      start(null);
+    }).catch(function(e) {
+      show('<p class="scene-text">' + esc(t('app_error')) + '</p><p class="help">' + esc(e.message) + '</p>');
+    });
+  };
+})();

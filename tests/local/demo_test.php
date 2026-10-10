@@ -42,6 +42,8 @@ final class demo_test extends \advanced_testcase {
         $this->assertTrue($DB->record_exists(self::T . 'region', ['courseid' => $courseid, 'enabled' => 1]));
         $this->assertSame(3, $DB->count_records(self::T . 'team', ['courseid' => $courseid]));
         $this->assertSame(12, $DB->count_records(self::T . 'member', ['courseid' => $courseid]));
+        // With the mission of the plugin.
+        $this->assertSame('livingthings', missions::get($courseid)->code);
         foreach ($class->teams as $groupid) {
             $members = groups_get_members($groupid, 'u.id');
             $this->assertCount(4, $members);

@@ -1,0 +1,135 @@
+{
+ "id": "C3-3",
+ "mission": "livingthings",
+ "chapter": "bosque",
+ "title": "La barcaza de la expedición",
+ "step": 2,
+ "mode": "both",
+ "objectives": [
+  "SV-04"
+ ],
+ "minutes": 8,
+ "start": "intro",
+ "nodes": {
+  "intro": {
+   "type": "story",
+   "speaker": "barquero",
+   "image": "barcaza-lago",
+   "text": "Hay que cruzar el lago con los animales del bosque. La barcaza tiene cinco compartimentos para los vertebrados y una bodega para los invertebrados. Cada uno tiene que viajar donde le toca. Algunos pasajeros engañan.",
+   "next": "embarcar"
+  },
+  "embarcar": {
+   "type": "classify",
+   "prompt": "¿En qué compartimento viaja cada pasajero?",
+   "retry": "item",
+   "bins": [
+    {
+     "id": "mamiferos",
+     "label": "Mamíferos"
+    },
+    {
+     "id": "aves",
+     "label": "Aves"
+    },
+    {
+     "id": "reptiles",
+     "label": "Reptiles"
+    },
+    {
+     "id": "anfibios",
+     "label": "Anfibios"
+    },
+    {
+     "id": "peces",
+     "label": "Peces"
+    },
+    {
+     "id": "invertebrados",
+     "label": "Bodega de invertebrados"
+    }
+   ],
+   "items": [
+    {
+     "id": "murcielago",
+     "label": "un murciélago",
+     "bin": "mamiferos",
+     "objective": "SV-04",
+     "feedback": {
+      "aves": "El murciélago protesta: «Vuelo, pero no tengo plumas: tengo pelo, y mis crías maman»."
+     }
+    },
+    {
+     "id": "pinguino",
+     "label": "un pingüino",
+     "bin": "aves",
+     "objective": "SV-04",
+     "feedback": {
+      "peces": "«Nado muy bien, pero tengo plumas, pico y pongo huevos: soy un ave, aunque no vuele.»",
+      "mamiferos": "«Tengo plumas, no pelo: soy un ave.»"
+     }
+    },
+    {
+     "id": "delfin",
+     "label": "un delfín",
+     "bin": "mamiferos",
+     "objective": "SV-04",
+     "feedback": {
+      "peces": "A mitad de camino, el delfín asoma la cabeza para respirar: «Tengo pulmones y mis crías maman: soy un mamífero»."
+     }
+    },
+    {
+     "id": "tortuga",
+     "label": "una tortuga marina",
+     "bin": "reptiles",
+     "objective": "SV-04",
+     "feedback": {
+      "peces": "«Vivo en el mar, pero respiro aire, tengo escamas y pongo los huevos en la arena: soy un reptil.»",
+      "anfibios": "«Mi piel es seca y con escamas: soy un reptil.»"
+     }
+    },
+    {
+     "id": "salamandra",
+     "label": "una salamandra",
+     "bin": "anfibios",
+     "objective": "SV-04",
+     "feedback": {
+      "reptiles": "«Parezco una lagartija, pero mi piel es húmeda y sin escamas, y de pequeña viví en el agua: soy un anfibio.»"
+     }
+    },
+    {
+     "id": "caballito",
+     "label": "un caballito de mar",
+     "bin": "peces",
+     "objective": "SV-04",
+     "feedback": {
+      "invertebrados": "«No lo parezco, pero tengo esqueleto, branquias y aletas: soy un pez.»",
+      "mamiferos": "«Respiro con branquias: soy un pez.»"
+     }
+    },
+    {
+     "id": "arana",
+     "label": "una araña",
+     "bin": "invertebrados",
+     "objective": "SV-04",
+     "feedback": {
+      "reptiles": "«No tengo huesos: voy a la bodega de los invertebrados. Y cuenta mis patas: ocho. No soy un insecto.»"
+     }
+    }
+   ],
+   "next": "fin"
+  },
+  "fin": {
+   "type": "ending",
+   "outcome": "success",
+   "text": "La barcaza llega a la otra orilla sin que nadie se maree. El barquero apunta en su libro: cinco grupos de vertebrados y una bodega llena de invertebrados.",
+   "effects": [
+    {
+     "saber": 20
+    },
+    {
+     "page": "vertebrados"
+    }
+   ]
+  }
+ }
+}

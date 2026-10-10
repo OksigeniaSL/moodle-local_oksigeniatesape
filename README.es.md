@@ -21,25 +21,24 @@ pantalla completa.
 
 **Alfa, en desarrollo: todavía no es para usarlo con alumnos.** Lo que hay hoy:
 
-- El cliente del juego: la primera vez es una historia que termina con el personaje del alumno; después, su región,
-  su equipo, los retos del aula, su diario y su ficha. A pantalla completa, ligero, sin servicios externos.
-- El panel del docente, pensado para el móvil: la clase con nombres, fotos y personajes, toques de saber, gemas y
-  aliento, retos del aula (también validados sin conexión), pausa y recuperación, el registro con deshacer y los
-  ajustes del curso.
-- El motor del juego: saber con topes semanal y diario, gemas, energía y caída, aliento, objetos, deshacer, y las
-  actividades completadas de Moodle convertidas en progreso.
+- **Una misión para jugar**: la misión piloto, *Los seres vivos* (9 a 11 años, en español), viene con el plugin. Su
+  mapa tiene seis lugares con sus linternas; cada lugar tiene sus escenas de decisión y un reto del aula. Las escenas
+  se juegan dentro del juego, con su arte: decisiones con consecuencias, cosas que repartir en grupos, pasos que
+  ordenar. El servidor vuelve a jugar cada escena con lo que hizo el alumno y decide él el final, así que el
+  resultado no depende del navegador. El primer final bueno da saber, páginas del libro, objetos y, en la primera
+  escena, la criatura compañera; las linternas se encienden para el alumno y, cuando las tiene la mitad de la clase,
+  para la clase.
+- **El cliente del juego**: la primera vez es una historia que termina con el personaje del alumno; después, el
+  mapa de la misión, su equipo, los retos del aula, el libro, el diario y su ficha con su criatura. A pantalla
+  completa, ligero, sin servicios externos.
+- **El panel del docente**, pensado para el móvil: la clase con nombres, fotos y personajes, toques de saber, gemas y
+  aliento, la misión del curso (con su historia y sus ejemplos del lugar) y cómo va la clase en cada escena y
+  objetivo, con las confusiones más frecuentes; retos del aula (también validados sin conexión), pausa y
+  recuperación, el registro con deshacer y los ajustes del curso.
+- **El motor del juego**: saber con topes semanal y diario, gemas, energía y caída, aliento, objetos, deshacer, y las
+  actividades completadas de Moodle convertidas en progreso. Proveedor de privacidad desde el primer día.
 
-- Las tablas del juego: personajes, cursos (regiones), miembros, equipos, retos, el registro de todo lo que suma y
-  resta, poderes y sus peticiones, objetos, misiones, capítulos, escenas y sus intentos, y resultados de minijuegos.
-- Las capacidades: el alumno juega; el docente configura el juego, da saber a mano, aprueba poderes, pone en pausa
-  a un alumno, ve y deshace el registro y lleva la pantalla de clase.
-- El proveedor de privacidad, desde el primer día: exportación y borrado de todo lo que el juego guarda de un
-  alumno.
-- Los niveles, las etapas del aspecto del personaje y el tope semanal por curso, con sus pruebas.
-- Una clase inventada para probarlo en un sitio de desarrollo (ver Desarrollo).
-
-Después llegan las escenas de decisión y el mapa de la misión piloto, equipos y poderes, los minijuegos y la
-pantalla de clase.
+Después llegan equipos y poderes, los minijuegos y la pantalla de clase.
 
 ## Requisitos
 

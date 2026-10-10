@@ -1093,3 +1093,477 @@ body.tesape {
   opacity: .45;
   cursor: default;
 }
+
+/* The mission: header, map and the panel of a place. */
+.kicker {
+  color: var(--lantern);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.mission-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 2px 12px;
+}
+
+.mission-head h2 {
+  margin: 0;
+}
+
+.tally {
+  display: flex;
+  gap: 8px;
+}
+
+.tally span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .07);
+  border: 1px solid var(--line);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.tally svg {
+  width: 18px;
+  height: 18px;
+}
+
+.mission-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+@media (min-width: 900px) {
+  .mission-grid {
+    grid-template-columns: minmax(0, 420px) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .mission-grid .chapter {
+    position: sticky;
+    top: 84px;
+  }
+}
+
+.map-wrap {
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--line);
+}
+
+.map {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 78vh;
+}
+
+.map .road {
+  fill: none;
+  stroke: rgba(255, 255, 255, .22);
+  stroke-width: 5;
+  stroke-dasharray: 2 10;
+  stroke-linecap: round;
+}
+
+.map .road.walked {
+  stroke: rgba(255, 200, 87, .7);
+}
+
+.map .place {
+  cursor: pointer;
+}
+
+.map .place .ring {
+  fill: #183447;
+  stroke: rgba(255, 255, 255, .35);
+  stroke-width: 3;
+  transition: stroke .2s ease;
+}
+
+.map .place .flame {
+  fill: #6b7a86;
+}
+
+.map .place.mine .flame {
+  fill: var(--lantern);
+  filter: drop-shadow(0 0 6px rgba(255, 200, 87, .9));
+}
+
+.map .place.mine .ring {
+  stroke: var(--lantern);
+}
+
+.map .place .classglow {
+  fill: rgba(255, 200, 87, .18);
+}
+
+.map .place.selected .ring {
+  stroke: #fff;
+  stroke-width: 4;
+}
+
+.map .place.here .ring {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.map .place text {
+  fill: var(--text);
+  font-family: var(--f-text);
+  font-size: 15px;
+  font-weight: 600;
+  paint-order: stroke;
+  stroke: #0f2131;
+  stroke-width: 4px;
+}
+
+.map .place:focus-visible .ring {
+  stroke: var(--lantern);
+  stroke-width: 5;
+}
+
+.map .me-marker .face {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--lantern);
+  background: radial-gradient(circle at 50% 35%, var(--mist-2), var(--night-2));
+}
+
+.map .me-marker .face .avatar {
+  width: 100%;
+  height: 100%;
+}
+
+.story-card .lead {
+  font-size: 18px;
+}
+
+/* The book and the creature. */
+.book .book-count {
+  color: var(--ink-soft);
+}
+
+.book .page {
+  padding: 10px 0;
+  border-top: 1px dashed rgba(0, 0, 0, .15);
+}
+
+.book .page h3 {
+  font-size: 19px;
+  margin-bottom: 4px;
+}
+
+.book .page p {
+  margin: 0;
+}
+
+.sheet-art {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.creature-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.creature-box .creature {
+  width: 110px;
+  height: 110px;
+}
+
+.creature-box small {
+  color: var(--text-soft);
+}
+
+/* Playing a scene: a layer over everything. */
+body.in-scene {
+  overflow: hidden;
+}
+
+.scene-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  overflow-y: auto;
+  background:
+    radial-gradient(900px 500px at 50% -10%, rgba(255, 200, 87, .12), transparent 60%),
+    linear-gradient(180deg, #0f2131, #0c1c29);
+  animation: rise .25s ease both;
+}
+
+.scene {
+  width: min(720px, 100%);
+  margin: 0 auto;
+  padding: 12px 16px 40px;
+}
+
+.scene-top {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 0 10px;
+  background: linear-gradient(180deg, #0f2131 70%, rgba(15, 33, 49, 0));
+}
+
+.scene-title {
+  font-family: var(--f-title);
+  font-size: 20px;
+  color: var(--lantern);
+}
+
+.scene-close {
+  min-width: 48px;
+  padding: 0;
+}
+
+.scene-pic {
+  width: 100%;
+  margin-bottom: 14px;
+}
+
+.speaker {
+  display: inline-block;
+  margin-bottom: 6px;
+  padding: 2px 12px;
+  border-radius: 999px;
+  background: rgba(185, 166, 255, .18);
+  color: #e1d8ff;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.scene-text {
+  font-size: 19px;
+  line-height: 1.55;
+}
+
+.scene-prompt {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.opts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.opt,
+.bin {
+  min-height: 56px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 2px solid var(--line);
+  background: rgba(255, 255, 255, .06);
+  text-align: left;
+  cursor: pointer;
+  font-size: 17px;
+  transition: transform .12s ease, border-color .15s ease, background .15s ease;
+}
+
+.opt:hover:not([disabled]),
+.bin:hover:not([disabled]) {
+  background: rgba(255, 255, 255, .11);
+}
+
+.opt.sel {
+  border-color: var(--lantern);
+  background: rgba(255, 200, 87, .14);
+}
+
+.opt.locked {
+  opacity: .7;
+  cursor: default;
+  border-style: dashed;
+}
+
+.opt.locked small {
+  display: block;
+  color: var(--text-soft);
+  font-size: 14px;
+}
+
+.opt[disabled]:not(.sel):not(.locked) {
+  opacity: .55;
+}
+
+.counter {
+  color: var(--text-soft);
+  text-align: center;
+}
+
+.conseq {
+  margin: 12px 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border-left: 5px solid;
+  background: rgba(255, 255, 255, .06);
+  animation: rise .25s ease both;
+}
+
+.conseq .what {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.conseq.good {
+  border-color: var(--leaf);
+}
+
+.conseq.bad {
+  border-color: var(--ember);
+}
+
+.conseq.meh {
+  border-color: var(--lilac);
+}
+
+.progress {
+  display: flex;
+  gap: 6px;
+  margin: 6px 0 12px;
+}
+
+.progress i {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, .15);
+}
+
+.progress i.ok {
+  background: var(--leaf);
+}
+
+.current {
+  display: inline-block;
+  margin-bottom: 12px;
+  padding: 10px 16px;
+  border-radius: 14px;
+  background: var(--parchment);
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 19px;
+}
+
+.bins {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.bin {
+  text-align: center;
+  font-weight: 600;
+}
+
+.built {
+  margin: 8px 0;
+  padding-left: 26px;
+}
+
+.built li {
+  margin-bottom: 6px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(124, 198, 127, .14);
+}
+
+.shake {
+  animation: shake .4s ease;
+}
+
+.loading-inline {
+  padding: 60px 0;
+  text-align: center;
+  color: var(--text-soft);
+}
+
+.hatch {
+  text-align: center;
+  margin: 10px 0;
+}
+
+.hatch .creature {
+  width: 150px;
+  height: 150px;
+}
+
+.creature.born {
+  animation: reveal 1.2s cubic-bezier(.2, .8, .2, 1) both;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    stroke-opacity: .35;
+  }
+
+  50% {
+    stroke-opacity: 1;
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: none;
+  }
+
+  25% {
+    transform: translateX(-6px);
+  }
+
+  75% {
+    transform: translateX(6px);
+  }
+}
+
+/* Results of the mission for the teacher. */
+.result-chapter {
+  margin-top: 16px;
+}
+
+.result-chapter .item {
+  margin-bottom: 10px;
+}
+
+.objective {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 90px 44px;
+  gap: 10px;
+  align-items: center;
+  margin-top: 8px;
+  font-size: 15px;
+}
+
+.map .place .hit {
+  fill: transparent;
+}
+
+.map .place:hover .ring {
+  stroke: rgba(255, 255, 255, .7);
+}

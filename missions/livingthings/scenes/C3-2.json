@@ -1,0 +1,186 @@
+{
+ "id": "C3-2",
+ "mission": "livingthings",
+ "chapter": "bosque",
+ "title": "Las preguntas al búho",
+ "step": 2,
+ "mode": "both",
+ "objectives": [
+  "SV-04",
+  "SV-07"
+ ],
+ "minutes": 8,
+ "start": "intro",
+ "nodes": {
+  "intro": {
+   "type": "story",
+   "speaker": "buho",
+   "image": "bosque-rastro-concha",
+   "text": {
+    "valley": "En el barro, junto a un tronco, hay un rastro: un caparazón pequeño en espiral y un hilo brillante que se pierde entre las hojas. El búho guardián solo responde sí o no. «Tenéis tres preguntas. Elegidlas bien.»",
+    "azara": "El baqueano de la expedición se agacha junto al rastro. «Os contesto sí o no. Tres preguntas, ni una más.»"
+   },
+   "next": "p1"
+  },
+  "p1": {
+   "type": "choice",
+   "prompt": "Primera pregunta",
+   "options": [
+    {
+     "id": "huesos",
+     "label": "¿Tiene huesos por dentro?",
+     "points": 3,
+     "objective": "SV-04",
+     "feedback": "«No.» Y añade: «Buena pregunta: así se separan los vertebrados de los invertebrados». Os regala una pregunta más.",
+     "effects": [
+      {
+       "extraquestion": 1
+      }
+     ]
+    },
+    {
+     "id": "huevos",
+     "label": "¿Pone huevos?",
+     "points": 0,
+     "objective": "SV-07",
+     "feedback": "«Sí.» Pero eso no ayuda mucho: ponen huevos las aves, los reptiles, los peces, muchos anfibios, los insectos… «Pregunta algo que separe más.»"
+    },
+    {
+     "id": "pelo",
+     "label": "¿Tiene pelo?",
+     "points": 1,
+     "objective": "SV-04",
+     "feedback": "«No.» Al menos ya sabéis que no es un mamífero."
+    },
+    {
+     "id": "plumas",
+     "label": "¿Tiene plumas?",
+     "points": 1,
+     "objective": "SV-04",
+     "feedback": "«No.» Ya sabéis que no es un ave."
+    }
+   ],
+   "next": "p2"
+  },
+  "p2": {
+   "type": "choice",
+   "prompt": "Segunda pregunta",
+   "options": [
+    {
+     "id": "patas6",
+     "label": "¿Tiene seis patas?",
+     "points": 2,
+     "objective": "SV-04",
+     "feedback": "«No.» Entonces no es un insecto."
+    },
+    {
+     "id": "concha",
+     "label": "¿Tiene concha?",
+     "points": 3,
+     "objective": "SV-04",
+     "feedback": "«Sí.» El caparazón del rastro era suyo."
+    },
+    {
+     "id": "humeda",
+     "label": "¿Su piel está húmeda?",
+     "points": 2,
+     "objective": "SV-04",
+     "feedback": "«Sí.» Y el hilo brillante del rastro es la baba que deja al moverse."
+    },
+    {
+     "id": "agua",
+     "label": "¿Respira en el agua?",
+     "points": 1,
+     "objective": "SV-04",
+     "feedback": "«No, este no.» Vive en tierra, en sitios húmedos."
+    }
+   ],
+   "next": "p3"
+  },
+  "p3": {
+   "type": "choice",
+   "extra": true,
+   "prompt": "Última pregunta (o dos, si os la ganasteis)",
+   "options": [
+    {
+     "id": "concha",
+     "label": "¿Tiene concha?",
+     "points": 2,
+     "objective": "SV-04",
+     "feedback": "«Sí.»"
+    },
+    {
+     "id": "humeda",
+     "label": "¿Su piel está húmeda?",
+     "points": 2,
+     "objective": "SV-04",
+     "feedback": "«Sí.»"
+    },
+    {
+     "id": "patas",
+     "label": "¿Tiene patas?",
+     "points": 2,
+     "objective": "SV-04",
+     "feedback": "«No: se arrastra sobre un pie musculoso.»"
+    }
+   ],
+   "next": "adivinar"
+  },
+  "adivinar": {
+   "type": "choice",
+   "prompt": "¿De quién es el rastro?",
+   "image": "cuatro-candidatos",
+   "options": [
+    {
+     "id": "caracol",
+     "label": "un caracol",
+     "correct": true,
+     "points": 5,
+     "objective": "SV-04",
+     "feedback": "El caracol asoma los cuernos: «Invertebrado, con concha y piel húmeda. Soy un molusco».",
+     "next": "bien"
+    },
+    {
+     "id": "escarabajo",
+     "label": "un escarabajo",
+     "correct": false,
+     "objective": "SV-04",
+     "feedback": "El escarabajo sale del tronco: «Yo tengo seis patas y un caparazón duro, pero no en espiral».",
+     "next": "adivinar"
+    },
+    {
+     "id": "tortuga",
+     "label": "una tortuga",
+     "correct": false,
+     "objective": "SV-04",
+     "feedback": "La tortuga se asoma: «Mi caparazón tiene huesos por dentro: soy un reptil, un vertebrado».",
+     "next": "adivinar"
+    },
+    {
+     "id": "cangrejo",
+     "label": "un cangrejo",
+     "correct": false,
+     "objective": "SV-04",
+     "feedback": "El cangrejo chasquea las pinzas: «Yo tengo patas, y muchas. Y vivo junto al agua».",
+     "next": "adivinar"
+    }
+   ]
+  },
+  "bien": {
+   "type": "ending",
+   "outcome": "success",
+   "text": {
+    "valley": "El nombre del caracol vuelve al Gran Libro y una luciérnaga se enciende sobre el rastro. El búho abre las alas: «Preguntar bien es la mitad de saber».",
+    "azara": "El baqueano sonríe y el cuaderno recupera su página. «Así trabajaba el naturalista: preguntando a cada rastro.»"
+   },
+   "effects": [
+    {
+     "saber": 20
+    },
+    {
+     "page": "caracol"
+    }
+   ]
+  }
+ }
+}

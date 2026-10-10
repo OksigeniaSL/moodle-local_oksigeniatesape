@@ -1,0 +1,147 @@
+{
+ "id": "C4-2",
+ "mission": "livingthings",
+ "chapter": "jardin",
+ "title": "El sótano de las linternas",
+ "step": 2,
+ "mode": "both",
+ "objectives": [
+  "SV-05",
+  "SV-07"
+ ],
+ "minutes": 8,
+ "start": "intro",
+ "nodes": {
+  "intro": {
+   "type": "story",
+   "speaker": "jardinera",
+   "image": "sotano-plantas-palidas",
+   "text": {
+    "valley": "En el sótano de la torre, las plantas del Jardín de la Luz están pálidas, largas y débiles. El Embrollo las encerró aquí y les dio de comer lo que se le ocurrió. Podéis llevarles tres cosas.",
+    "azara": "En el almacén de la expedición, las plantas que viajaron a oscuras han salido pálidas y larguiruchas. Hay que salvarlas antes de plantarlas en el huerto. Podéis darles tres cosas."
+   },
+   "next": "elegir"
+  },
+  "elegir": {
+   "type": "choice",
+   "prompt": "¿Qué tres cosas les lleváis?",
+   "select": {
+    "min": 3,
+    "max": 3
+   },
+   "options": [
+    {
+     "id": "luz",
+     "label": "luz del sol",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-05",
+     "feedback": "Las hojas se giran hacia la ventana y empiezan a ponerse verdes: con la luz fabrican su alimento."
+    },
+    {
+     "id": "agua",
+     "label": "agua",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-05",
+     "feedback": "La tierra se oscurece y los tallos se enderezan: el agua sube por la raíz hasta las hojas."
+    },
+    {
+     "id": "aire",
+     "label": "aire fresco",
+     "correct": true,
+     "points": 2,
+     "objective": "SV-05",
+     "feedback": "Las hojas «respiran»: del aire toman el dióxido de carbono que necesitan para fabricar su alimento."
+    },
+    {
+     "id": "azucar",
+     "label": "azúcar",
+     "correct": false,
+     "objective": "SV-05",
+     "feedback": "Al día siguiente la tierra tiene moho. «Las plantas no comen azúcar: lo fabrican ellas mismas con la luz.»"
+    },
+    {
+     "id": "leche",
+     "label": "leche",
+     "correct": false,
+     "objective": "SV-05",
+     "feedback": "La maceta huele mal y aparece moho. «Las plantas no comen como nosotros.»"
+    },
+    {
+     "id": "tierra",
+     "label": "tierra con restos de hojas",
+     "correct": true,
+     "points": 1,
+     "objective": "SV-05",
+     "feedback": "Ayuda un poco: de la tierra toman agua y sales minerales. Pero sin luz no basta."
+    },
+    {
+     "id": "musica",
+     "label": "música",
+     "correct": false,
+     "points": 1,
+     "objective": "SV-07",
+     "feedback": "La planta no cambia… o eso parece. ¿Cómo podríais comprobar si la música le hace algo? Apuntadlo para un experimento."
+    },
+    {
+     "id": "oscuridad",
+     "label": "oscuridad para que descanse",
+     "correct": false,
+     "objective": "SV-05",
+     "feedback": "Al volver, la planta está aún más larga y pálida: crece estirándose para buscar una luz que no encuentra."
+    }
+   ],
+   "next": "apuesta"
+  },
+  "apuesta": {
+   "type": "choice",
+   "prompt": "Antes de mirar vuestro experimento de verdad: ¿qué creéis que habrá pasado con las semillas que pusisteis a oscuras?",
+   "options": [
+    {
+     "id": "palidas",
+     "label": "Habrán crecido largas, pálidas y débiles",
+     "correct": true,
+     "points": 2,
+     "objective": "SV-07",
+     "feedback": "Apostado. Ahora id a mirar las macetas de la clase."
+    },
+    {
+     "id": "igual",
+     "label": "Estarán igual que las de la luz",
+     "correct": false,
+     "objective": "SV-07",
+     "feedback": "Apostado. Ahora id a mirar las macetas de la clase."
+    },
+    {
+     "id": "nada",
+     "label": "No habrán germinado",
+     "correct": false,
+     "points": 1,
+     "objective": "SV-07",
+     "feedback": "Apostado. Ahora id a mirar las macetas: ¿germinar necesita luz, o solo crecer?"
+    }
+   ],
+   "next": "fin"
+  },
+  "fin": {
+   "type": "ending",
+   "outcome": "success",
+   "text": {
+    "valley": "Las plantas vuelven al Jardín de la Luz y se inclinan hacia el sol. La linterna mayor del valle se enciende con una luz verde y dorada. Por eso el valle se llama así: tesapé, en guaraní, es «iluminar».",
+    "azara": "El huerto vuelve a estar verde. El cuaderno añade: «Lo que crece a oscuras, crece buscando la luz»."
+   },
+   "effects": [
+    {
+     "saber": 20
+    },
+    {
+     "lantern": "jardin"
+    },
+    {
+     "page": "plantas"
+    }
+   ]
+  }
+ }
+}

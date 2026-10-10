@@ -96,6 +96,12 @@ final class get_world extends external_api {
                 'status' => new external_value(PARAM_ALPHA, 'done, merit, notyet or empty'),
                 'note' => new external_value(PARAM_TEXT, 'What the teacher said'),
             ])),
+            'items' => new external_multiple_structure(new external_single_structure([
+                'code' => new external_value(PARAM_ALPHANUMEXT, 'Code'),
+                'name' => new external_value(PARAM_TEXT, 'Name'),
+                'description' => new external_value(PARAM_TEXT, 'Description'),
+            ])),
+            'mission' => structures::mission(),
             'log' => new external_multiple_structure(structures::entry()),
         ]);
     }

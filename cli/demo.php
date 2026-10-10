@@ -37,6 +37,7 @@ require_once($CFG->libdir . '/clilib.php');
         'family' => 'storyheroes',
         'weeks' => 0,
         'seed' => 1,
+        'mission' => 'livingthings',
     ],
     ['h' => 'help']
 );
@@ -61,6 +62,7 @@ Options:
 --family=FAMILY     animals, dinosaurs, storyheroes, epic, elements or nomagic (default storyheroes)
 --weeks=N           Weeks of made-up progress (default 0)
 --seed=N            Seed of the random choices: the same seed gives the same class (default 1)
+--mission=CODE      Mission to install (default livingthings, the sample that comes with the plugin; empty for none)
 -h, --help          Print this help
 
 Example:
@@ -80,7 +82,8 @@ $class = \local_oksigeniatesape\local\demo::create_class(
     (int) $options['teamsize'],
     $options['family'],
     (int) $options['weeks'],
-    (int) $options['seed']
+    (int) $options['seed'],
+    (string) $options['mission']
 );
 cli_writeln('Course: ' . (new moodle_url('/course/view.php', ['id' => $class->course->id]))->out(false));
 cli_writeln('Teacher: ' . $class->teacher->username);
