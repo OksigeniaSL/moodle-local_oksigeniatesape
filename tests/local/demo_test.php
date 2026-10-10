@@ -44,6 +44,9 @@ final class demo_test extends \advanced_testcase {
         $this->assertSame(12, $DB->count_records(self::T . 'member', ['courseid' => $courseid]));
         // With the mission of the plugin.
         $this->assertSame('livingthings', missions::get($courseid)->code);
+        // The mission brings its Moodle activities as challenges.
+        $this->assertSame(5, $DB->count_records_select(self::T . 'challenge', 'courseid = ? AND cmid > 0', [$courseid]));
+        $this->assertSame(0, powers::pending_count($courseid));
         foreach ($class->teams as $groupid) {
             $members = groups_get_members($groupid, 'u.id');
             $this->assertCount(4, $members);
@@ -67,13 +70,16 @@ final class demo_test extends \advanced_testcase {
         foreach ($class->students as $student) {
             $char = $DB->get_record(self::T . 'char', ['userid' => $student->id]);
             $this->assertNull($char->lineage);
-            $sum = (int) $DB->get_field(self::T . 'ledger', 'SUM(amount)', ['charid' => $char->id]);
+            $sum = (int) $DB->get_field(self::T . 'ledger', 'SUM(amount)', ['charid' => $char->id, 'resource' => 'saber']);
             $this->assertSame($sum, (int) $char->saber);
             $this->assertLessThanOrEqual(4 * 100, $sum);
             $this->assertSame(progress::level_for_saber($sum), (int) $char->level);
             $renown = $DB->get_field(self::T . 'member', 'renown', ['charid' => $char->id, 'courseid' => $courseid]);
             $this->assertSame($sum, (int) $renown);
         }
+        // A class in the middle of the game: powers waiting and ideas in the box.
+        $this->assertSame(2, powers::pending_count($courseid));
+        $this->assertCount(2, ideas::list($courseid));
     }
 
     public function test_same_seed_same_class(): void {

@@ -40,6 +40,10 @@ final class missions {
      */
     public static function packages(): array {
         global $CFG;
+        static $cache = null;
+        if ($cache !== null) {
+            return $cache;
+        }
         $packages = [];
         foreach (glob($CFG->dirroot . '/local/oksigeniatesape/missions/*/mission.json') as $file) {
             $mission = json_decode(file_get_contents($file), true);
@@ -48,6 +52,7 @@ final class missions {
             }
         }
         ksort($packages);
+        $cache = $packages;
         return $packages;
     }
 
@@ -81,9 +86,18 @@ final class missions {
      * @param string $skin
      * @param string $variant
      * @param int|null $now
+     * @param bool $activities Also make the Moodle activities of the chapters that do not have them yet, each chapter in
+     *     a new section of the course.
      * @return \stdClass The mission.
      */
-    public static function install(int $courseid, string $code, string $skin, string $variant, ?int $now = null): \stdClass {
+    public static function install(
+        int $courseid,
+        string $code,
+        string $skin,
+        string $variant,
+        ?int $now = null,
+        bool $activities = false
+    ): \stdClass {
         global $DB;
         $packages = self::packages();
         if (!isset($packages[$code])) {
@@ -161,6 +175,15 @@ final class missions {
         foreach ($package['items'] ?? [] as $itemcode => $item) {
             self::item_id($itemcode, $item['name'] ?? $itemcode, $item['description'] ?? null, $code);
         }
+        if ($activities) {
+            $course = get_course($courseid);
+            foreach ($package['chapters'] as $chapter) {
+                $place = $DB->get_record(self::T . 'chapter', ['id' => $chapterids[$chapter['code']]], '*', MUST_EXIST);
+                if (!$place->sectionid && !empty($chapter['activities'])) {
+                    activities::make_for_chapter($course, $place, $chapter, $skin, $now);
+                }
+            }
+        }
         $transaction->allow_commit();
         return $DB->get_record(self::T . 'mission', ['id' => $record->id], '*', MUST_EXIST);
     }
@@ -178,8 +201,32 @@ final class missions {
         if (!$mission) {
             return null;
         }
+        // A newer package came with the plugin: bring the mission up to date, keeping what the students did.
+        $package = self::packages()[$mission->code] ?? null;
+        if ($mission->origin === 'catalog' && $package && (int) ($package['version'] ?? 1) > (int) $mission->version) {
+            $mission = self::install($courseid, $mission->code, $mission->skin, $mission->variant);
+        }
         $mission->data = json_decode((string) $mission->definition, true) ?: [];
         return $mission;
+    }
+
+    /**
+     * Whether some chapters of the mission of a course bring Moodle activities that are not in the course yet.
+     *
+     * @param \stdClass $mission With data.
+     * @return bool
+     */
+    public static function activities_missing(\stdClass $mission): bool {
+        global $DB;
+        foreach ($mission->data['chapters'] ?? [] as $chapter) {
+            if (
+                !empty($chapter['activities']) && !$DB->get_field(self::T . 'chapter', 'sectionid', ['missionid' => $mission->id,
+                    'code' => $chapter['code']])
+            ) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

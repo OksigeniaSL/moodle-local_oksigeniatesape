@@ -102,6 +102,29 @@ final class get_class extends external_api {
             ])),
             'energymax' => new external_value(PARAM_INT, 'Most energy'),
             'breathmax' => new external_value(PARAM_INT, 'Most breath'),
+            'standings' => new external_multiple_structure(new external_single_structure([
+                'id' => new external_value(PARAM_INT, 'Group'),
+                'name' => new external_value(PARAM_TEXT, 'Team'),
+                'saber' => new external_value(PARAM_INT, 'Knowledge this week'),
+                'goal' => new external_value(PARAM_INT, 'Goal of the week'),
+                'reached' => new external_value(PARAM_BOOL, 'Goal reached'),
+                'players' => new external_value(PARAM_INT, 'Members who play'),
+            ])),
+            'activities' => new external_multiple_structure(new external_single_structure([
+                'cmid' => new external_value(PARAM_INT, 'Activity'),
+                'name' => new external_value(PARAM_TEXT, 'Name'),
+                'modname' => new external_value(PARAM_PLUGIN, 'Module'),
+                'icon' => new external_value(PARAM_URL, 'Icon'),
+                'url' => new external_value(PARAM_URL, 'Its settings'),
+                'saber' => new external_value(PARAM_INT, 'Knowledge'),
+                'gems' => new external_value(PARAM_INT, 'Gems'),
+                'steps' => new external_value(PARAM_SEQUENCE, 'Steps it counts for'),
+                'teamwork' => new external_value(PARAM_BOOL, 'Done by the team'),
+                'tracked' => new external_value(PARAM_BOOL, 'Completion is tracked'),
+                'done' => new external_value(PARAM_INT, 'Students who completed it'),
+            ])),
+            'powerspending' => new external_value(PARAM_INT, 'Requests of powers waiting'),
+            'ideasunread' => new external_value(PARAM_INT, 'Ideas not read yet'),
         ]);
     }
 }

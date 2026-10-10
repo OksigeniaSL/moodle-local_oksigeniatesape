@@ -58,7 +58,7 @@ final class get_results extends external_api {
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
         require_capability('local/oksigeniatesape:viewlog', $context);
-        return results::mission($params['courseid']) ?? ['title' => '', 'players' => 0, 'chapters' => []];
+        return results::mission($params['courseid']) ?? ['title' => '', 'players' => 0, 'chapters' => [], 'games' => []];
     }
 
     /**
@@ -92,6 +92,18 @@ final class get_results extends external_api {
                         'text' => new external_value(PARAM_TEXT, 'The mix-up'),
                         'count' => new external_value(PARAM_INT, 'How many times'),
                     ])),
+                ])),
+            ])),
+            'games' => new external_multiple_structure(new external_single_structure([
+                'code' => new external_value(PARAM_ALPHANUMEXT, 'Minigame'),
+                'title' => new external_value(PARAM_TEXT, 'Title'),
+                'chapter' => new external_value(PARAM_ALPHANUMEXT, 'Chapter where it is played'),
+                'players' => new external_value(PARAM_INT, 'Students who played it'),
+                'won' => new external_value(PARAM_INT, 'Students who won it'),
+                'tries' => new external_value(PARAM_INT, 'Plays'),
+                'confusions' => new external_multiple_structure(new external_single_structure([
+                    'text' => new external_value(PARAM_TEXT, 'The mix-up'),
+                    'count' => new external_value(PARAM_INT, 'How many times'),
                 ])),
             ])),
         ]);

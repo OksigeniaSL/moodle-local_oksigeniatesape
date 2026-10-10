@@ -47,9 +47,9 @@ if ($unrecognized) {
 }
 
 if ($options['help'] || !$options['run']) {
-    echo "Makes a made-up class to try Tesapé on a development site: a course, a teacher, students with
-invented names, teams, characters and, if asked, some weeks of progress. Nobody in it exists. Do not run it on a
-site with real students.
+    echo "Makes a made-up class to try Tesapé on a development site: a course with the mission and its Moodle
+activities, a teacher, students with invented names, teams, characters and, if asked, some weeks of progress (with
+powers waiting for the teacher and ideas in the box). Nobody in it exists. Do not run it on a site with real students.
 
 The users are called " . \local_oksigeniatesape\local\demo::USERNAME_PREFIX . "<courseid>NN and cannot log in until
 someone sets their password.

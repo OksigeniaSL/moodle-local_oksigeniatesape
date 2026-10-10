@@ -1,6 +1,6 @@
 {
  "code": "livingthings",
- "version": 1,
+ "version": 2,
  "lang": "es",
  "ages": "9–11",
  "title": {
@@ -140,7 +140,31 @@
    },
    "offscreen": "El rastreo del patio, inventario de seres vivos e inertes",
    "x": 160,
-   "y": 560
+   "y": 560,
+   "activities": [
+    {
+     "code": "estavivo",
+     "module": "forum",
+     "name": "¿Está vivo?",
+     "intro": "Un fuego que crece y se mueve, un cristal que «crece» en una roca húmeda, una semilla seca que parece muerta. Elige uno y explica si está vivo con las funciones vitales: ¿se nutre?, ¿se relaciona?, ¿se reproduce? Después, contesta a alguien que haya elegido otro.",
+     "saber": 15,
+     "objectives": [
+      "SV-01"
+     ]
+    },
+    {
+     "code": "inventario",
+     "module": "assign",
+     "name": "El inventario del equipo",
+     "intro": "Subid el inventario que hicisteis en el patio: los seres vivos y los inertes que encontrasteis, con un dibujo o una foto de cada uno y una frase que diga por qué lo pusisteis en cada lista.",
+     "saber": 20,
+     "teamwork": true,
+     "objectives": [
+      "SV-01",
+      "SV-07"
+     ]
+    }
+   ]
   },
   {
    "code": "biblioteca",
@@ -168,7 +192,10 @@
    },
    "offscreen": "Lupas de cartón y caza de bichos, sin dañarlos",
    "x": 120,
-   "y": 360
+   "y": 360,
+   "games": [
+    "nestdefence"
+   ]
   },
   {
    "code": "jardin",
@@ -183,7 +210,21 @@
    "offscreen": "El experimento de la luz, semillas con luz y sin luz",
    "reward": "lantern",
    "x": 280,
-   "y": 260
+   "y": 260,
+   "activities": [
+    {
+     "code": "experimento",
+     "module": "assign",
+     "name": "El registro del experimento",
+     "intro": "Subid el registro del experimento de las semillas con luz y sin luz: fotos o dibujos de cada día, la tabla con lo que medisteis y vuestra conclusión. ¿Qué necesita una planta para fabricar su alimento?",
+     "saber": 25,
+     "teamwork": true,
+     "objectives": [
+      "SV-05",
+      "SV-07"
+     ]
+    }
+   ]
   },
   {
    "code": "lago",
@@ -197,7 +238,20 @@
    },
    "offscreen": "La carrera de la cadena, pilla-pilla de productores y consumidores",
    "x": 150,
-   "y": 165
+   "y": 165,
+   "activities": [
+    {
+     "code": "eslabon",
+     "module": "forum",
+     "name": "¿Y si desapareciera un eslabón?",
+     "intro": "Elige una cadena alimentaria del lago o de tu entorno y piensa qué pasaría si desapareciera uno de sus eslabones. ¿Quién se quedaría sin alimento? ¿Quién crecería sin control? Explícalo y comenta la idea de alguien de tu clase.",
+     "saber": 15,
+     "objectives": [
+      "SV-06",
+      "SV-08"
+     ]
+    }
+   ]
   },
   {
    "code": "torre",
@@ -211,9 +265,405 @@
    },
    "offscreen": "La exposición del naturalista, la guía de campo de la clase",
    "x": 290,
-   "y": 75
+   "y": 75,
+   "activities": [
+    {
+     "code": "guia",
+     "module": "data",
+     "name": "La guía de campo de la clase",
+     "intro": "Cada equipo añade fichas de especies de vuestro entorno: nombre, dibujo o foto, grupo, cómo es, dónde vive y qué lugar ocupa en una cadena alimentaria. Entre todos, la guía de campo de la clase.",
+     "saber": 30,
+     "teamwork": true,
+     "objectives": [
+      "SV-03",
+      "SV-04",
+      "SV-06",
+      "SV-07"
+     ],
+     "fields": [
+      {
+       "name": "Nombre",
+       "type": "text"
+      },
+      {
+       "name": "Dibujo o foto",
+       "type": "picture"
+      },
+      {
+       "name": "Grupo",
+       "type": "menu",
+       "options": [
+        "Mamífero",
+        "Ave",
+        "Reptil",
+        "Anfibio",
+        "Pez",
+        "Invertebrado",
+        "Planta",
+        "Hongo"
+       ]
+      },
+      {
+       "name": "Cómo es",
+       "type": "textarea"
+      },
+      {
+       "name": "Dónde vive",
+       "type": "text"
+      },
+      {
+       "name": "En la cadena alimentaria",
+       "type": "menu",
+       "options": [
+        "Productor",
+        "Herbívoro",
+        "Carnívoro",
+        "Omnívoro",
+        "Descomponedor"
+       ]
+      }
+     ]
+    }
+   ]
   }
  ],
+ "games": {
+  "nestdefence": {
+   "title": "Defensa del nido",
+   "intro": "Los animales del bosque bajan curiosos hacia el nido de tu criatura. Para que no lo pisen, atrápalos con la red de su grupo, míralos bien y suéltalos lejos. Con la red equivocada, el animal pasa y daña el escudo del nido.",
+   "win": "El nido está a salvo y has visto de cerca a todo el bosque. Te quedas con la red de captura, para observar sin hacer daño, y con lo que los animales dejaron al pasar: pelo, plumas y escamas para el abrigo de tu criatura.",
+   "lose": "El escudo no ha aguantado esta vez, pero el nido sigue ahí. Fíjate en lo que te dice cada animal al pasar y vuelve a intentarlo.",
+   "reward": {
+    "item": "net",
+    "coat": true
+   },
+   "nets": {
+    "vertebrate": {
+     "label": "Vertebrado",
+     "hint": "Tiene esqueleto por dentro, con columna vertebral."
+    },
+    "invertebrate": {
+     "label": "Invertebrado",
+     "hint": "No tiene columna vertebral."
+    },
+    "mammal": {
+     "label": "Mamífero",
+     "hint": "Tiene pelo y de cría toma leche de su madre."
+    },
+    "bird": {
+     "label": "Ave",
+     "hint": "Tiene plumas y pico, y nace de un huevo."
+    },
+    "reptile": {
+     "label": "Reptil",
+     "hint": "Tiene la piel seca con escamas y respira por pulmones."
+    },
+    "amphibian": {
+     "label": "Anfibio",
+     "hint": "Tiene la piel húmeda y sin escamas; de pequeño vive en el agua."
+    },
+    "fish": {
+     "label": "Pez",
+     "hint": "Vive en el agua, respira por branquias y tiene aletas."
+    },
+    "insect": {
+     "label": "Insecto",
+     "hint": "Tiene seis patas y el cuerpo en tres partes."
+    },
+    "arachnid": {
+     "label": "Arácnido",
+     "hint": "Tiene ocho patas."
+    },
+    "mollusc": {
+     "label": "Molusco",
+     "hint": "Tiene el cuerpo blando, muchas veces con concha."
+    }
+   },
+   "parents": {
+    "mammal": "vertebrate",
+    "bird": "vertebrate",
+    "reptile": "vertebrate",
+    "amphibian": "vertebrate",
+    "fish": "vertebrate",
+    "insect": "invertebrate",
+    "arachnid": "invertebrate",
+    "mollusc": "invertebrate",
+    "worm": "invertebrate"
+   },
+   "animals": {
+    "felino": {
+     "label": {
+      "es": "lince ibérico",
+      "py": "yaguareté"
+     },
+     "group": "mammal"
+    },
+    "roedor": {
+     "label": {
+      "es": "conejo",
+      "py": "carpincho"
+     },
+     "group": "mammal"
+    },
+    "murcielago": {
+     "label": "murciélago",
+     "group": "mammal",
+     "why": "Vuela, pero tiene pelo y de cría toma leche. Es un mamífero."
+    },
+    "delfin": {
+     "label": "delfín",
+     "group": "mammal",
+     "why": "Vive en el agua, pero respira aire y de cría toma leche. Es un mamífero."
+    },
+    "zancuda": {
+     "label": {
+      "es": "cigüeña",
+      "py": "tucán"
+     },
+     "group": "bird"
+    },
+    "pajarillo": {
+     "label": {
+      "es": "gorrión",
+      "py": "benteveo"
+     },
+     "group": "bird"
+    },
+    "pinguino": {
+     "label": "pingüino",
+     "group": "bird",
+     "why": "No vuela, pero tiene plumas y pico. Es un ave."
+    },
+    "corredora": {
+     "label": {
+      "es": "avestruz",
+      "py": "ñandú"
+     },
+     "group": "bird",
+     "why": "No vuela, pero tiene plumas y pico. Es un ave."
+    },
+    "lagarto": {
+     "label": {
+      "es": "lagartija",
+      "py": "teyú"
+     },
+     "group": "reptile"
+    },
+    "tortuga": {
+     "label": "tortuga",
+     "group": "reptile",
+     "why": "Lleva caparazón, pero tiene escamas y respira por pulmones. Es un reptil."
+    },
+    "caiman": {
+     "label": {
+      "es": "cocodrilo",
+      "py": "yacaré"
+     },
+     "group": "reptile"
+    },
+    "rana": {
+     "label": "rana",
+     "group": "amphibian"
+    },
+    "sapo": {
+     "label": "sapo",
+     "group": "amphibian"
+    },
+    "salamandra": {
+     "label": "salamandra",
+     "group": "amphibian",
+     "why": "Parece un lagarto, pero tiene la piel húmeda y sin escamas. Es un anfibio."
+    },
+    "pezrio": {
+     "label": {
+      "es": "trucha",
+      "py": "dorado"
+     },
+     "group": "fish"
+    },
+    "caballito": {
+     "label": "caballito de mar",
+     "group": "fish",
+     "why": "No lo parece, pero respira por branquias y tiene aletas. Es un pez."
+    },
+    "tiburon": {
+     "label": "tiburón",
+     "group": "fish"
+    },
+    "mariquita": {
+     "label": {
+      "es": "mariquita",
+      "py": "vaquita de San Antonio"
+     },
+     "group": "insect"
+    },
+    "hormiga": {
+     "label": "hormiga",
+     "group": "insect"
+    },
+    "mariposa": {
+     "label": "mariposa",
+     "group": "insect"
+    },
+    "abeja": {
+     "label": "abeja",
+     "group": "insect"
+    },
+    "arana": {
+     "label": "araña",
+     "group": "arachnid",
+     "why": "Tiene ocho patas. No es un insecto, es un arácnido."
+    },
+    "escorpion": {
+     "label": {
+      "es": "escorpión",
+      "py": "alacrán"
+     },
+     "group": "arachnid",
+     "why": "Tiene ocho patas. Es un arácnido, como las arañas."
+    },
+    "caracol": {
+     "label": "caracol",
+     "group": "mollusc"
+    },
+    "pulpo": {
+     "label": "pulpo",
+     "group": "mollusc",
+     "why": "No tiene concha, pero tiene el cuerpo blando. Es un molusco."
+    },
+    "babosa": {
+     "label": "babosa",
+     "group": "mollusc",
+     "why": "Es un caracol sin concha. Es un molusco."
+    },
+    "lombriz": {
+     "label": "lombriz",
+     "group": "worm",
+     "why": "No tiene esqueleto ni columna. Es un invertebrado."
+    }
+   },
+   "levels": {
+    "1": {
+     "nets": [
+      "vertebrate",
+      "invertebrate"
+     ],
+     "animals": [
+      "felino",
+      "pajarillo",
+      "lagarto",
+      "rana",
+      "pezrio",
+      "roedor",
+      "mariquita",
+      "caracol",
+      "hormiga",
+      "arana",
+      "lombriz",
+      "mariposa"
+     ],
+     "goal": 9,
+     "shield": 4,
+     "speed": 1
+    },
+    "2": {
+     "nets": [
+      "mammal",
+      "bird",
+      "reptile",
+      "amphibian",
+      "fish",
+      "invertebrate"
+     ],
+     "animals": [
+      "felino",
+      "murcielago",
+      "zancuda",
+      "pinguino",
+      "lagarto",
+      "tortuga",
+      "rana",
+      "salamandra",
+      "pezrio",
+      "caballito",
+      "mariquita",
+      "arana",
+      "caracol",
+      "lombriz"
+     ],
+     "goal": 10,
+     "shield": 4,
+     "speed": 2
+    },
+    "3": {
+     "nets": [
+      "mammal",
+      "bird",
+      "reptile",
+      "amphibian",
+      "fish",
+      "insect",
+      "arachnid",
+      "mollusc"
+     ],
+     "animals": [
+      "murcielago",
+      "delfin",
+      "corredora",
+      "pinguino",
+      "tortuga",
+      "caiman",
+      "salamandra",
+      "sapo",
+      "caballito",
+      "tiburon",
+      "abeja",
+      "mariposa",
+      "arana",
+      "escorpion",
+      "pulpo",
+      "babosa"
+     ],
+     "goal": 12,
+     "shield": 4,
+     "speed": 3
+    },
+    "4": {
+     "nets": [
+      "mammal",
+      "bird",
+      "reptile",
+      "amphibian",
+      "fish",
+      "insect",
+      "arachnid",
+      "mollusc"
+     ],
+     "animals": [
+      "murcielago",
+      "delfin",
+      "corredora",
+      "pinguino",
+      "tortuga",
+      "caiman",
+      "salamandra",
+      "sapo",
+      "caballito",
+      "tiburon",
+      "abeja",
+      "mariposa",
+      "arana",
+      "escorpion",
+      "pulpo",
+      "babosa"
+     ],
+     "goal": 13,
+     "shield": 4,
+     "speed": 4
+    }
+   }
+  }
+ },
  "scenes": [
   "C1-2",
   "C2-2",

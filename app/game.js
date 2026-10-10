@@ -1,6 +1,7 @@
 /**
  * Tesapé: the game client of a student. The first time is a story that ends with their character; after that, the
- * world: their region, team, classroom challenges, diary and character sheet.
+ * world: the map of the mission with its places (scenes, Moodle activities and minigames), the team with its powers,
+ * the challenges, the diary and the character sheet with the box of ideas.
  *
  * @copyright  2026 Oksigenia <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -13,7 +14,7 @@
   var t = T.t;
   var esc = T.esc;
   var app = document.getElementById('app');
-  var state = {world: null, tab: 'world', draft: null, editing: false, chapter: 0};
+  var state = {world: null, tab: 'world', draft: null, editing: false, chapter: 0, power: 0};
 
   /* ---------- Start ---------- */
 
@@ -341,6 +342,8 @@
     var pct = c.levelneeded ? Math.round(100 * c.levelinto / c.levelneeded) : 100;
     var pending = w.challenges.filter(function(ch) {
       return !ch.status || ch.status === 'notyet';
+    }).length + w.activities.filter(function(a) {
+      return a.tracked && !a.done;
     }).length;
     app.innerHTML = '<div class="sky"></div><div class="world">' +
       '<header class="hud"><button class="me" data-tab="me" aria-label="' + esc(t('app_tab_me')) + '"><span class="face">' +
@@ -368,9 +371,25 @@
     if (state.tab === 'me') {
       bindMe();
     }
-    if (state.tab === 'world') {
+    if (state.tab === 'world' || state.tab === 'challenges') {
       bindWorld();
     }
+    if (state.tab === 'team') {
+      bindTeam();
+    }
+  }
+
+  /**
+   * Shows the world again with what the server says now, with toasts for what was won.
+   */
+  function refresh() {
+    return T.api('get_world', {courseid: cfg.courseid}).then(function(w) {
+      state.world = w;
+      celebrate();
+      world();
+    }).catch(function(e) {
+      T.toast(esc(e.message), true);
+    });
   }
 
   function res(kind, value, label) {
@@ -429,13 +448,16 @@
     var me = '<foreignObject x="' + (current.x - 74) + '" y="' + (current.y - 22) + '" width="44" height="44" class="me-marker">' +
       '<div xmlns="http://www.w3.org/1999/xhtml" class="face">' + T.avatar({role: c.role, nameform: c.nameform,
       lineage: c.lineage, look: c.appearance, stage: c.stage, portrait: true}) + '</div></foreignObject>';
-    return '<div class="map-wrap"><svg class="map" viewBox="0 0 400 640" role="group" aria-label="' + esc(m.title) + '">' +
-      '<defs><radialGradient id="mapglow" cx="50%" cy="40%" r="70%"><stop offset="0" stop-color="#21465c"/>' +
-      '<stop offset="1" stop-color="#10283b"/></radialGradient></defs>' +
-      '<rect width="400" height="640" rx="18" fill="url(#mapglow)"/>' +
+    // The painted map of the art pack, or a drawing of the valley.
+    var art = T.artUrl(['map.' + m.code + '.' + m.skin, 'map.' + m.code]);
+    var ground = art ? '<image href="' + esc(art) + '" x="0" y="0" width="400" height="640" ' +
+      'preserveAspectRatio="xMidYMid slice"/>' : '<rect width="400" height="640" rx="18" fill="url(#mapglow)"/>' +
       '<path d="M0 600 Q120 520 220 590 T400 560 V640 H0Z" fill="#183a2b"/>' +
       '<path d="M0 230 Q90 190 170 230 T400 200 V260 Q300 300 200 270 T0 290Z" fill="#1d4a5e" opacity=".6"/>' +
-      '<path d="M20 120 L52 50 L84 120Z M330 380 L356 318 L382 380Z M40 470 L64 414 L88 470Z" fill="#163829"/>' +
+      '<path d="M20 120 L52 50 L84 120Z M330 380 L356 318 L382 380Z M40 470 L64 414 L88 470Z" fill="#163829"/>';
+    return '<div class="map-wrap"><svg class="map" viewBox="0 0 400 640" role="group" aria-label="' + esc(m.title) + '">' +
+      '<defs><radialGradient id="mapglow" cx="50%" cy="40%" r="70%"><stop offset="0" stop-color="#21465c"/>' +
+      '<stop offset="1" stop-color="#10283b"/></radialGradient></defs>' + ground +
       '<polyline points="' + pts + '" class="road"/>' +
       (walked ? '<polyline points="' + walked + '" class="road walked"/>' : '') + places + me + '</svg></div>';
   }
@@ -452,11 +474,95 @@
         '<button class="btn ' + (sc.done ? 'btn-soft' : 'btn-main') + '" data-scene="' + sc.id + '">' +
         esc(sc.done ? t('app_playagain') : t('app_play')) + '</button></li>';
     }).join('');
+    var acts = w.activities.filter(function(a) {
+      return a.chapterid === ch.id;
+    });
+    var games = (ch.games || []).map(function(g) {
+      return '<li class="item"><span class="mini-icon">' + T.icon('game') + '</span><span class="grow"><b>' + esc(g.title) +
+        '</b><small>' + esc(g.done ? t('app_game_done') : t('app_game_help')) + '</small></span><button class="btn ' +
+        (g.done ? 'btn-soft' : 'btn-main') + '" data-game="' + esc(g.code) + '">' + esc(g.done ? t('app_playagain') :
+        t('app_play')) + '</button></li>';
+    }).join('');
     return '<section class="card chapter"><div class="kicker">' + esc(lantern) + '</div><h2>' + esc(ch.name) + '</h2>' +
       '<p>' + esc(ch.intro) + '</p>' + (scenes ? '<ul class="list">' + scenes + '</ul>' : '') +
+      (games ? '<h3 style="margin-top:16px">' + esc(t('app_minigames')) + '</h3><ul class="list">' + games + '</ul>' : '') +
+      (acts.length ? '<h3 style="margin-top:16px">' + esc(t('app_inmoodle')) + '</h3><ul class="list">' +
+      acts.map(activityItem).join('') + '</ul>' : '') +
       (challenge ? '<h3 style="margin-top:16px">' + esc(t('app_inclass')) + '</h3><ul class="list">' + challengeItem(challenge) +
       '</ul>' : '') + '</section>';
   }
+
+  /**
+   * A Moodle activity in the world: it opens inside the game.
+   *
+   * @param {Object} a
+   * @return {string}
+   */
+  function activityItem(a) {
+    var rewards = [];
+    if (a.saber) {
+      rewards.push('+' + a.saber + ' ' + t('app_saber'));
+    }
+    if (a.gems) {
+      rewards.push('+' + a.gems + ' ' + t('app_gems'));
+    }
+    if (a.teamwork) {
+      rewards.push(t('app_teamwork'));
+    }
+    return '<li class="item"><span class="mini-icon"><img src="' + esc(a.icon) + '" alt="" width="24" height="24"></span>' +
+      '<span class="grow"><b>' + esc(a.name) + '</b><small>' + esc(rewards.join(' · ')) + '</small></span>' +
+      (a.done ? '<span class="tag done">' + esc(t('app_status_done')) + '</span>' : '') + '<button class="btn ' +
+      (a.done ? 'btn-soft' : 'btn-main') + '" data-activity="' + a.cmid + '">' + esc(t('app_open')) + '</button></li>';
+  }
+
+  /**
+   * Opens a Moodle activity in a panel of the world, without the frame of Moodle around it.
+   *
+   * @param {number} cmid
+   */
+  function openActivity(cmid) {
+    var a = state.world.activities.filter(function(x) {
+      return x.cmid === cmid;
+    })[0];
+    if (!a) {
+      return;
+    }
+    var layer = document.createElement('div');
+    layer.className = 'frame-layer';
+    layer.setAttribute('role', 'dialog');
+    layer.setAttribute('aria-modal', 'true');
+    layer.setAttribute('aria-label', a.name);
+    layer.innerHTML = '<div class="frame-top"><button class="btn btn-soft" type="button" data-close>← ' +
+      esc(t('app_backtovalley')) + '</button><b>' + esc(a.name) + '</b><a class="btn btn-soft" href="' + esc(a.url) +
+      '" target="_blank" rel="noopener">' + esc(t('app_newtab')) + '</a></div><iframe src="' + esc(a.url) + '" title="' +
+      esc(a.name) + '"></iframe>';
+    document.body.appendChild(layer);
+    document.body.classList.add('in-scene');
+    var frame = layer.querySelector('iframe');
+    frame.onload = function() {
+      try {
+        var doc = frame.contentDocument;
+        var style = doc.createElement('style');
+        style.textContent = FRAME_CSS;
+        doc.head.appendChild(style);
+      } catch (e) {
+        // Another site: it shows as it is.
+      }
+    };
+    layer.querySelector('[data-close]').onclick = function() {
+      layer.remove();
+      document.body.classList.remove('in-scene');
+      refresh();
+    };
+    layer.querySelector('[data-close]').focus();
+  }
+
+  /** What hides the frame of Moodle around an activity opened in the world. */
+  var FRAME_CSS = 'nav.navbar,#page-header,.secondary-navigation,#page-footer,footer,.drawer,.drawer-toggles,' +
+    '.btn-footer-popover,.footer-popover,.activity-navigation,.course-content-footer,#top-footer,.breadcrumb,' +
+    '[data-region="drawer-toggle"],#theme_boost-drawers-courseindex,#theme_boost-drawers-blocks{display:none!important}' +
+    'body{padding-top:0!important}#page,#page-wrapper #page{margin:0!important;padding-top:8px!important}' +
+    '#page.drawers{margin-left:0!important;margin-right:0!important}';
 
   function missionView(m) {
     var key = 'tesape-mission-' + cfg.courseid + '-' + m.id + '-' + cfg.userid;
@@ -521,6 +627,20 @@
         }});
       };
     });
+    app.querySelectorAll('[data-game]').forEach(function(b) {
+      b.onclick = function() {
+        T.playNest({code: b.dataset.game, world: state.world, onclose: function(world) {
+          state.world = world;
+          remember();
+          route();
+        }});
+      };
+    });
+    app.querySelectorAll('[data-activity]').forEach(function(b) {
+      b.onclick = function() {
+        openActivity(Number(b.dataset.activity));
+      };
+    });
   }
 
   function tabWorld() {
@@ -540,23 +660,158 @@
   }
 
   function tabTeam() {
-    var team = state.world.team;
+    var w = state.world;
+    var team = w.team;
+    var fam = w.family;
+    var html = '';
     if (!team) {
-      return '<section class="card"><p class="empty">' + esc(t('app_noteam')) + '</p></section>';
+      html += '<section class="card"><p class="empty">' + esc(t('app_noteam')) + '</p></section>';
+    } else {
+      var wk = team.week;
+      var pct = wk.goal ? Math.min(100, Math.round(100 * wk.saber / wk.goal)) : 0;
+      html += '<section class="card team-card"><div class="kicker">' + esc(t('app_tab_team')) + '</div><h2>' +
+        esc(team.name) + '</h2><div class="team-week"><span class="meter level"><i style="width:' + pct + '%"></i></span>' +
+        '<small>' + esc(wk.reached ? t('app_team_reached') : t('app_team_week', {saber: wk.saber, goal: wk.goal})) +
+        '</small></div><ul class="list">' + team.members.map(function(mate) {
+          var c = mate.character;
+          var m = c && c.member;
+          var tag = m && m.status === 'paused' ? '<span class="tag todo">' + esc(t('app_resting')) + '</span>' :
+            m && m.status === 'fallen' ? '<span class="tag notyet">' + esc(t('app_wornout')) + '</span>' : '';
+          return '<li class="item"><span class="mini">' + (c ? avatarOf(c) : '') + '</span><span class="grow"><b>' +
+            esc(mate.name) + (mate.me ? ' (' + esc(t('app_you')) + ')' : '') + '</b><small>' +
+            (c ? esc(T.roleName(fam, c.role, c.nameform)) + ' · ' + esc(t('app_level')) + ' ' + c.level :
+            esc(t('app_nocharacter'))) + '</small></span>' + tag + (m ? '<span class="bars"><span class="meter energy" ' +
+            'title="' + esc(t('app_energy')) + '"><i style="width:' + Math.round(100 * m.energy / w.energymax) +
+            '%"></i></span></span>' : '') + '</li>';
+        }).join('') + '</ul></section>';
     }
-    var fam = state.world.family;
-    return '<section class="card"><h2>' + esc(team.name) + '</h2><ul class="list">' + team.members.map(function(mate) {
-      var c = mate.character;
-      var m = c && c.member;
-      var tag = m && m.status === 'paused' ? '<span class="tag todo">' + esc(t('app_resting')) + '</span>' :
-        m && m.status === 'fallen' ? '<span class="tag notyet">' + esc(t('app_wornout')) + '</span>' : '';
-      return '<li class="item"><span class="mini">' + (c ? avatarOf(c) : '') + '</span><span class="grow"><b>' +
-        esc(mate.name) + (mate.me ? ' (' + esc(t('app_you')) + ')' : '') + '</b><small>' +
-        (c ? esc(T.roleName(fam, c.role, c.nameform)) + ' · ' + esc(t('app_level')) + ' ' + c.level :
-        esc(t('app_nocharacter'))) + '</small></span>' + tag + (m ? '<span class="bars"><span class="meter energy" ' +
-        'title="' + esc(t('app_energy')) + '"><i style="width:' + Math.round(100 * m.energy / state.world.energymax) +
-        '%"></i></span></span>' : '') + '</li>';
-    }).join('') + '</ul></section>';
+    html += powersCard();
+    if (w.standings.length > 1) {
+      var top = Math.max.apply(null, w.standings.map(function(x) {
+        return x.saber;
+      }).concat([1]));
+      html += '<section class="card"><h2>' + esc(t('app_standings')) + '</h2><p class="help-soft">' +
+        esc(t('app_standings_help')) + '</p><ul class="list">' + w.standings.map(function(x) {
+          var mine = team && x.id === team.id;
+          return '<li class="item' + (mine ? ' mine' : '') + '"><span class="grow"><b>' + esc(x.name) + '</b>' +
+            '<span class="meter level"><i style="width:' + Math.round(100 * x.saber / top) + '%"></i></span></span>' +
+            '<span class="amount up">' + x.saber + '</span>' + (x.reached ? '<span class="tag merit">' +
+            esc(t('app_team_goal')) + '</span>' : '') + '</li>';
+        }).join('') + '</ul></section>';
+    }
+    return html;
+  }
+
+  /**
+   * The powers of the student: what each does, what it costs, and the latest requests.
+   *
+   * @return {string}
+   */
+  function powersCard() {
+    var w = state.world;
+    var c = w.character;
+    var m = c.member || {};
+    var dots = '';
+    for (var i = 0; i < w.breathmax; i++) {
+      dots += '<i class="' + (i < m.breath ? 'on' : '') + '"></i>';
+    }
+    var blocked = m.status === 'paused' ? t('app_power_paused') : m.status === 'fallen' ? t('app_power_wornout') : '';
+    var mates = (w.team ? w.team.members : []).filter(function(mate) {
+      var mm = mate.character && mate.character.member;
+      return !mate.me && mm && mm.status !== 'paused';
+    });
+    var fallen = mates.filter(function(mate) {
+      return mate.character.member.status === 'fallen';
+    });
+    var list = w.powers.map(function(p) {
+      var why = p.locked ? t('app_power_level', p.minlevel) : p.pending ? t('app_power_pending') :
+        (p.target !== 'none' && !w.team) ? t('app_power_noteam') : m.breath < p.cost ? t('app_power_breath') : blocked ||
+        (p.target === 'fallen' && !fallen.length ? t('app_power_nofallen_short') : '') ||
+        (p.target === 'mate' && !mates.length ? t('app_power_nomates_short') : '');
+      var open = state.power === p.id && !why;
+      return '<li class="item power' + (p.locked ? ' locked' : '') + '"><div class="power-head"><span class="mini-icon">' +
+        T.icon('power') + '</span><b>' + esc(p.name) + '</b><span class="cost" title="' + esc(t('app_breath')) + '">' +
+        p.cost + ' ' + T.icon('breath') + '</span></div><p class="power-desc">' + esc(p.description) + '</p>' +
+        '<div class="power-foot">' + (why ? '<span class="tag todo">' + esc(why) + '</span>' : '<button class="btn ' +
+        (open ? 'btn-soft' : 'btn-main') + '" data-power="' + p.id + '">' + esc(open ? t('app_cancel') : t('app_power_use')) +
+        '</button>') + '</div>' + (open ? powerConfirm(p) : '') + '</li>';
+    }).join('');
+    var requests = w.powerrequests.map(function(r) {
+      return '<li class="item"><span class="grow"><b>' + esc(r.name) + '</b><small>' + (r.target ? esc(t('app_power_for',
+        r.target)) + ' · ' : '') + esc(when(r.time)) + '</small></span><span class="tag ' + ({pending: 'todo',
+        approved: 'done', used: 'done', rejected: 'notyet'}[r.status] || 'todo') + '">' + esc(t('app_power_' + r.status)) +
+        '</span></li>';
+    }).join('');
+    return '<section class="card"><div class="section-title"><h2>' + esc(t('app_powers')) + '</h2><span class="breath-dots" ' +
+      'title="' + esc(t('app_breath')) + ' ' + m.breath + '/' + w.breathmax + '">' + dots + '</span></div><p class="help-soft">' +
+      esc(t('app_powers_help')) + '</p>' + (list ? '<ul class="list">' + list + '</ul>' : '<p class="empty">' +
+      esc(t('app_nopowers')) + '</p>') + (requests ? '<h3 style="margin-top:16px">' + esc(t('app_power_requests')) +
+      '</h3><ul class="list">' + requests + '</ul>' : '') + '</section>';
+  }
+
+  /**
+   * Asking for a power: who it is for, if it is used on a teammate, and the confirmation.
+   *
+   * @param {Object} p
+   * @return {string}
+   */
+  function powerConfirm(p) {
+    var w = state.world;
+    var mates = [];
+    if (p.target === 'mate' || p.target === 'fallen') {
+      mates = (w.team ? w.team.members : []).filter(function(mate) {
+        var m = mate.character && mate.character.member;
+        if (mate.me || !m || m.status === 'paused') {
+          return false;
+        }
+        return p.target === 'fallen' ? m.status === 'fallen' : true;
+      });
+      if (!mates.length) {
+        return '<div class="power-ask"><p class="help-soft">' + esc(t(p.target === 'fallen' ? 'app_power_nofallen' :
+          'app_power_nomates')) + '</p></div>';
+      }
+    }
+    return '<div class="power-ask">' + (mates.length ? '<p>' + esc(t('app_power_who')) + '</p><div class="pills" ' +
+      'style="justify-content:flex-start">' + mates.map(function(mate, i) {
+        return '<button class="chip" type="button" data-target="' + mate.userid + '" aria-pressed="' + (i === 0) + '">' +
+          esc(mate.name) + '</button>';
+      }).join('') + '</div>' : '') + '<p>' + esc(t('app_power_confirm', {name: p.name, cost: p.cost})) + '</p>' +
+      '<button class="btn btn-main" data-ask="' + p.id + '">' + esc(t('app_power_ask')) + '</button></div>';
+  }
+
+  function bindTeam() {
+    app.querySelectorAll('[data-power]').forEach(function(b) {
+      b.onclick = function() {
+        var id = Number(b.dataset.power);
+        state.power = state.power === id ? 0 : id;
+        world();
+      };
+    });
+    app.querySelectorAll('[data-target]').forEach(function(b) {
+      b.onclick = function() {
+        app.querySelectorAll('[data-target]').forEach(function(o) {
+          o.setAttribute('aria-pressed', o === b);
+        });
+      };
+    });
+    var ask = app.querySelector('[data-ask]');
+    if (ask) {
+      ask.onclick = function() {
+        var target = app.querySelector('[data-target][aria-pressed="true"]');
+        ask.disabled = true;
+        T.api('use_power', {courseid: cfg.courseid, powerid: Number(ask.dataset.ask),
+          targetuserid: target ? Number(target.dataset.target) : 0}).then(function(w) {
+          state.world = w;
+          state.power = 0;
+          var last = w.powerrequests[0];
+          T.toast(esc(last && last.status !== 'pending' ? t('app_power_done') : t('app_power_asked')));
+          world();
+        }).catch(function(e) {
+          ask.disabled = false;
+          T.toast(esc(e.message), true);
+        });
+      };
+    }
   }
 
   function challengeItem(ch) {
@@ -579,9 +834,12 @@
 
   function tabChallenges() {
     var list = state.world.challenges;
-    return '<section class="card"><h2>' + esc(t('app_tab_challenges')) + '</h2><p style="color:var(--text-soft)">' +
-      esc(t('app_challenges_help')) + '</p>' + (list.length ? '<ul class="list">' + list.map(challengeItem).join('') +
-      '</ul>' : '<p class="empty">' + esc(t('app_nochallenges')) + '</p>') + '</section>';
+    var acts = state.world.activities;
+    return (acts.length ? '<section class="card"><h2>' + esc(t('app_inmoodle')) + '</h2><p style="color:var(--text-soft)">' +
+      esc(t('app_activities_help')) + '</p><ul class="list">' + acts.map(activityItem).join('') + '</ul></section>' : '') +
+      '<section class="card"' + (acts.length ? ' style="margin-top:16px"' : '') + '><h2>' + esc(t('app_inclass')) + '</h2>' +
+      '<p style="color:var(--text-soft)">' + esc(t('app_challenges_help')) + '</p>' + (list.length ? '<ul class="list">' +
+      list.map(challengeItem).join('') + '</ul>' : '<p class="empty">' + esc(t('app_nochallenges')) + '</p>') + '</section>';
   }
 
   function when(time) {
@@ -653,7 +911,31 @@
       '<div class="actions no-print" style="justify-content:flex-start;margin-top:16px"><button class="btn btn-soft" ' +
       'data-edit>' + esc(t('app_changelook')) + '</button><button class="btn btn-soft" data-print>' + esc(t('app_print')) +
       '</button><a class="btn btn-soft" href="' + esc(cfg.courseurl) + '">' + esc(t('app_exit')) + '</a></div></div>' +
-      '</section>';
+      '</section>' + (w.hascoat && c.creature ? '<section class="card no-print" style="margin-top:16px"><h2>' +
+      esc(t('app_coat_title', creatureName(c))) + '</h2><p class="help-soft">' + esc(t('app_coat_help')) + '</p>' +
+      T.coatPicker(w, function() {}).html + '</section>' : '') + ideasCard();
+  }
+
+  /**
+   * The box of ideas: the student tells their teachers an idea for the game or the class.
+   *
+   * @return {string}
+   */
+  function ideasCard() {
+    var ideas = state.world.ideas;
+    return '<section class="card no-print" style="margin-top:16px"><h2>' + T.icon('idea').replace('<svg',
+      '<svg width="22" height="22" style="vertical-align:-4px;color:var(--lantern)"') + ' ' + esc(t('app_ideas')) + '</h2>' +
+      '<p class="help-soft">' + esc(t('app_ideas_help')) + '</p><label class="sr-only" for="tesape-idea">' +
+      esc(t('app_ideas')) + '</label><textarea id="tesape-idea" data-idea rows="3" maxlength="1000" placeholder="' +
+      esc(t('app_ideas_placeholder')) + '"></textarea><div class="actions" style="justify-content:space-between;' +
+      'margin-top:10px"><label class="chip" style="display:inline-flex;gap:8px;align-items:center"><input ' +
+      'type="checkbox" data-anon> ' + esc(t('app_ideas_anonymous')) + '</label><button class="btn btn-main" data-sendidea>' +
+      esc(t('app_ideas_send')) + '</button></div>' + (ideas.length ? '<ul class="list" style="margin-top:12px">' +
+      ideas.map(function(i) {
+        return '<li class="item"><span class="grow">' + esc(i.message) + '<small>' + esc(when(i.time)) +
+          (i.anonymous ? ' · ' + esc(t('app_ideas_noname')) : '') + '</small></span><span class="tag ' +
+          (i.status === 'read' ? 'done' : 'todo') + '">' + esc(t('app_ideas_' + i.status)) + '</span></li>';
+      }).join('') + '</ul>' : '') + '</section>';
   }
 
   function creatureName(c) {
@@ -667,6 +949,33 @@
   function bindMe() {
     var c = state.world.character;
     var edit = app.querySelector('[data-edit]');
+    var send = app.querySelector('[data-sendidea]');
+    if (send) {
+      send.onclick = function() {
+        var box = app.querySelector('[data-idea]');
+        if (!box.value.trim()) {
+          box.focus();
+          return;
+        }
+        send.disabled = true;
+        T.api('send_idea', {courseid: cfg.courseid, message: box.value, anonymous: app.querySelector('[data-anon]').checked})
+          .then(function(w) {
+            state.world = w;
+            T.toast(esc(t('app_ideas_sent')));
+            world();
+          }).catch(function(e) {
+            send.disabled = false;
+            T.toast(esc(e.message), true);
+          });
+      };
+    }
+    if (state.world.hascoat && c.creature) {
+      T.coatPicker(state.world, function(w) {
+        state.world = w;
+        T.toast(esc(t('app_coat_done')));
+        world();
+      }).bind(app);
+    }
     if (edit) {
       edit.onclick = function() {
         var look = {};

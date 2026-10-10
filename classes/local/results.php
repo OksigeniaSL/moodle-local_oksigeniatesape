@@ -68,6 +68,7 @@ final class results {
             'title' => missions::text($data['title'] ?? $mission->code, $mission->skin),
             'players' => $DB->count_records(self::T . 'member', ['courseid' => $courseid]),
             'chapters' => $chapters,
+            'games' => minigames::results($mission),
         ];
     }
 

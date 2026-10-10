@@ -12,7 +12,7 @@
   var T = window.Tesape = {cfg: cfg};
 
   /**
-   * A text of the language pack, with {$a} replaced.
+   * A text of the language pack, with {$a} (or {$a->name}, when a is an object) replaced.
    *
    * @param {string} key
    * @param {*} a
@@ -20,7 +20,15 @@
    */
   T.t = function(key, a) {
     var s = (cfg.strings && cfg.strings[key]) || '[' + key + ']';
-    return a === undefined ? s : s.split('{$a}').join(String(a));
+    if (a === undefined) {
+      return s;
+    }
+    if (a !== null && typeof a === 'object') {
+      return s.replace(/\{\$a->(\w+)\}/g, function(m, name) {
+        return a[name] === undefined ? m : String(a[name]);
+      });
+    }
+    return s.split('{$a}').join(String(a));
   };
 
   /**
@@ -125,6 +133,28 @@
     return lineage ? T.t('lineage_' + lineage + '_' + (form || 'm')) : '';
   };
 
+  /* ---------- Art packs ---------- */
+
+  /**
+   * The image of the art pack of the site for the first of some keys, from the most precise to the most general.
+   * Without a pack, or without an image for any key, null: then the client draws its own.
+   *
+   * @param {string[]} keys
+   * @return {string|null}
+   */
+  T.artUrl = function(keys) {
+    var files = cfg.art && cfg.art.files;
+    if (!files) {
+      return null;
+    }
+    for (var i = 0; i < keys.length; i++) {
+      if (files[keys[i]]) {
+        return files[keys[i]];
+      }
+    }
+    return null;
+  };
+
   /* ---------- The look of the characters ---------- */
 
   T.ROLES = ['protector', 'healer', 'sage', 'scout'];
@@ -183,6 +213,17 @@
     var cloth = /^#[0-9a-f]{6}$/i.test(look.outfit) ? look.outfit : T.OUTFITS[0];
     var form = c.nameform === 'f' ? 'f' : 'm';
     var stage = c.stage || 1;
+    var keys = [];
+    (c.portrait ? ['portrait', 'character'] : ['character']).forEach(function(kind) {
+      var base = kind + '.' + c.role;
+      keys.push(base + '.' + (c.lineage || 'none') + '.' + form + '.' + stage, base + '.' + (c.lineage || 'none') + '.' + form,
+        base + '.' + stage, base);
+    });
+    var art = T.artUrl(keys);
+    if (art) {
+      return '<img class="avatar art' + (c.portrait ? ' portrait' : '') + '" src="' + T.esc(art) + '" alt="' +
+        T.esc(c.label || '') + '">';
+    }
     var dwarf = c.lineage === 'dwarf';
     var out = [];
     // Wings behind (fairy).
@@ -332,6 +373,12 @@
     }
     var h = Number(c.hue) || 0;
     var st = Math.max(1, Math.min(4, stage || 1));
+    var art = T.artUrl(['creature.' + st + '.' + (c.coat || 'none'), 'creature.' + st, 'creature']);
+    if (art) {
+      // One image for every creature: its own hue makes it unique.
+      return '<img class="creature art' + (big ? ' born' : '') + '" src="' + T.esc(art) + '" alt="' + T.esc(c.name || '') +
+        '" style="filter:hue-rotate(' + h + 'deg)">';
+    }
     var s = 1 + (st - 1) * 0.12;
     var body = 'hsl(' + h + ' 60% 62%)';
     var dark = 'hsl(' + h + ' 60% 52%)';
@@ -346,9 +393,29 @@
     var glow = st >= 4 ? '<circle cx="50" cy="60" r="40" fill="none" stroke="#ffc857" stroke-opacity=".5" stroke-width="2"/>' :
       '';
     var eyes = 5 + (Number(c.eyes) || 0);
+    var ry = 26 + (Number(c.round) || 0) * 4;
+    // The coat it got in the forest: fur, feathers or scales.
+    var behind = '';
+    var over = '';
+    if (c.coat === 'fur') {
+      behind = [[22, 52], [24, 70], [32, 84], [68, 84], [76, 70], [78, 52], [36, 36], [50, 32], [64, 36]].map(function(p) {
+        return '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="7" fill="' + dark + '"/>';
+      }).join('');
+    } else if (c.coat === 'feathers') {
+      behind = '<path d="M22 58 Q4 50 8 72 Q16 70 24 66Z M78 58 Q96 50 92 72 Q84 70 76 66Z" fill="' + dark + '"/>';
+      over = '<path d="M46 ' + (60 - ry + 2) + ' Q40 ' + (60 - ry - 14) + ' 46 ' + (60 - ry - 18) + ' Q50 ' + (60 - ry - 8) +
+        ' 48 ' + (60 - ry + 2) + 'Z M52 ' + (60 - ry + 2) + ' Q58 ' + (60 - ry - 16) + ' 64 ' + (60 - ry - 14) + ' Q58 ' +
+        (60 - ry - 4) + ' 54 ' + (60 - ry + 2) + 'Z" fill="hsl(' + ((h + 40) % 360) + ' 75% 60%)"/>';
+    } else if (c.coat === 'scales') {
+      behind = '<path d="M30 ' + (60 - ry + 8) + ' l4 -9 4 8 M40 ' + (60 - ry + 3) + ' l5 -10 5 9 M54 ' + (60 - ry + 3) +
+        ' l5 -10 5 9 M64 ' + (60 - ry + 8) + ' l4 -9 4 8" fill="' + dark + '" stroke="' + dark + '" stroke-width="2"/>';
+      over = [[36, 62], [44, 58], [56, 58], [64, 62], [40, 70], [60, 70]].map(function(p) {
+        return '<path d="M' + (p[0] - 4) + ' ' + p[1] + ' q4 5 8 0" stroke="' + dark + '" stroke-width="1.6" fill="none"/>';
+      }).join('');
+    }
     return '<svg class="creature' + (big ? ' born' : '') + '" viewBox="0 0 100 100" role="img" aria-label="' +
       T.esc(c.name || '') + '"><g transform="translate(50 60) scale(' + s + ') translate(-50 -60)">' + glow + ears + leaf +
-      '<ellipse cx="50" cy="60" rx="30" ry="' + (26 + (Number(c.round) || 0) * 4) + '" fill="' + body + '"/>' + spots +
+      behind + '<ellipse cx="50" cy="60" rx="30" ry="' + ry + '" fill="' + body + '"/>' + over + spots +
       '<ellipse cx="50" cy="70" rx="18" ry="12" fill="' + belly + '"/>' +
       '<circle cx="40" cy="52" r="' + eyes + '" fill="#fff"/><circle cx="60" cy="52" r="' + eyes + '" fill="#fff"/>' +
       '<circle cx="41" cy="53" r="' + (eyes / 2) + '" fill="#1b1b2a"/><circle cx="61" cy="53" r="' + (eyes / 2) +
@@ -358,6 +425,10 @@
   /* ---------- Icons ---------- */
 
   T.icon = function(name) {
+    var art = T.artUrl(['icon.' + name]);
+    if (art) {
+      return '<img class="icon art" src="' + T.esc(art) + '" alt="" aria-hidden="true">';
+    }
     var p = {
       saber: '<path d="M12 2l2.6 6.1L21 9l-4.9 4.3L17.5 20 12 16.6 6.5 20l1.4-6.7L3 9l6.4-.9z" fill="#ffc857"/>',
       gems: '<path d="M6 3h12l4 6-10 12L2 9z" fill="#8fd3ff"/><path d="M2 9h20M9 3l3 18 3-18" stroke="#3b7fa8" ' +
@@ -379,6 +450,16 @@
       me: '<circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c.7-5 4-7 8-7s7.3 2 8 7z" fill="currentColor"/>',
       class: '<rect x="3" y="4" width="18" height="12" rx="2" fill="currentColor" opacity=".9"/><path d="M8 20h8M12 16v4" ' +
         'stroke="currentColor" stroke-width="2"/>',
+      power: '<path d="M13 2L5 13h6l-1 9 8-11h-6z" fill="#b9a6ff"/>',
+      exit: '<path d="M10 4H5v16h5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/><path ' +
+        'd="M14 8l4 4-4 4M18 12H9" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>',
+      idea: '<path d="M9 18h6M10 21h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 3a6 6 0 0 ' +
+        '0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z" fill="currentColor"/>',
+      game: '<path d="M6 8h12a4 4 0 0 1 4 4v1a4 4 0 0 1-7 2.6h-6A4 4 0 0 1 2 13v-1a4 4 0 0 1 4-4z" fill="currentColor"/>' +
+        '<path d="M7 11v3M5.5 12.5h3" stroke="#0f2131" stroke-width="1.6"/><circle cx="16" cy="11.5" r="1.2" fill="#0f2131"/>' +
+        '<circle cx="18" cy="13.5" r="1.2" fill="#0f2131"/>',
+      activity: '<rect x="4" y="3" width="16" height="18" rx="2" fill="currentColor"/><path d="M8 8h8M8 12h8M8 16h5" ' +
+        'stroke="#0f2131" stroke-width="1.6"/>',
       settings: '<circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 ' +
         '19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1" stroke="currentColor" ' +
         'stroke-width="2" stroke-linecap="round"/>'

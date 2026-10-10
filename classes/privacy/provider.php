@@ -45,7 +45,7 @@ class provider implements
     private const T = 'local_oksigeniatesape_';
 
     /** @var string[] Tables of a character in a course, all with charid and courseid. */
-    public const COURSE_TABLES = ['member', 'ledger', 'inventory', 'sceneattempt', 'minigame', 'validation', 'found'];
+    public const COURSE_TABLES = ['member', 'ledger', 'inventory', 'sceneattempt', 'minigame', 'validation', 'found', 'idea'];
 
     /**
      * What is stored.
@@ -68,6 +68,7 @@ class provider implements
             'minigame' => ['charid', 'courseid', 'cmid', 'game', 'success', 'tries', 'detail', 'timecreated'],
             'validation' => ['challengeid', 'charid', 'courseid', 'status', 'note', 'validatedby', 'timemodified'],
             'found' => ['charid', 'courseid', 'missionid', 'kind', 'code', 'timecreated'],
+            'idea' => ['courseid', 'charid', 'anonymous', 'message', 'status', 'timecreated'],
         ];
         foreach ($fields as $table => $names) {
             $described = [];
@@ -264,7 +265,7 @@ class provider implements
                 'timecreated' => transform::datetime($member->timecreated),
             ]);
             $requests = $DB->get_records_sql(
-                'SELECT r.id, p.name, r.status, r.timecreated, r.timedecided
+                'SELECT r.id, p.code, p.name, r.status, r.timecreated, r.timedecided
                    FROM {' . self::T . 'powerreq} r
                    JOIN {' . self::T . 'power} p ON p.id = r.powerid
                   WHERE r.memberid = ?
@@ -274,7 +275,7 @@ class provider implements
             if ($requests) {
                 $writer->export_data(self::path('powers'), (object) [
                     'requests' => array_values(array_map(fn($r) => [
-                        'power' => $r->name,
+                        'power' => \local_oksigeniatesape\local\powers::name($r),
                         'status' => $r->status,
                         'timecreated' => transform::datetime($r->timecreated),
                         'timedecided' => $r->timedecided ? transform::datetime($r->timedecided) : null,
@@ -349,6 +350,17 @@ class provider implements
                     'code' => $f->code,
                     'timecreated' => transform::datetime($f->timecreated),
                 ], $found)),
+            ]);
+        }
+        $ideas = $DB->get_records(self::T . 'idea', ['charid' => $charid, 'courseid' => $courseid], 'timecreated, id');
+        if ($ideas) {
+            $writer->export_data(self::path('ideas'), (object) [
+                'ideas' => array_values(array_map(fn($i) => [
+                    'message' => $i->message,
+                    'anonymous' => transform::yesno($i->anonymous),
+                    'status' => $i->status,
+                    'timecreated' => transform::datetime($i->timecreated),
+                ], $ideas)),
             ]);
         }
         $games = $DB->get_records(self::T . 'minigame', ['charid' => $charid, 'courseid' => $courseid], 'timecreated');

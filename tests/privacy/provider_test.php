@@ -97,6 +97,16 @@ final class provider_test extends provider_testcase {
             'timecreated' => time(),
             'timemodified' => time(),
         ]);
+        // Leo leaves an idea for his teacher, without his name.
+        $DB->insert_record(self::T . 'idea', (object) [
+            'courseid' => $w->course1->id,
+            'charid' => $w->leochar->id,
+            'anonymous' => 1,
+            'message' => 'A map of our school',
+            'status' => 'new',
+            'timecreated' => time(),
+            'timemodified' => time(),
+        ]);
         $w->ctx1 = \context_course::instance($w->course1->id);
         $w->ctx2 = \context_course::instance($w->course2->id);
         $w->anactx = \context_user::instance($w->ana->id);
@@ -122,7 +132,8 @@ final class provider_test extends provider_testcase {
     public function test_metadata(): void {
         $collection = provider::get_metadata(new collection('local_oksigeniatesape'));
         $tables = array_map(fn($item) => $item->get_name(), $collection->get_collection());
-        $expected = ['char', 'member', 'ledger', 'powerreq', 'inventory', 'sceneattempt', 'minigame', 'validation', 'found'];
+        $expected = ['char', 'member', 'ledger', 'powerreq', 'inventory', 'sceneattempt', 'minigame', 'validation', 'found',
+            'idea'];
         foreach ($expected as $table) {
             $this->assertContains(self::T . $table, $tables);
         }
@@ -190,6 +201,7 @@ final class provider_test extends provider_testcase {
         $this->assertEquals('Needs a break', writer::with_context($w->ctx1)->get_data($base)->statusreason);
         $classroom = writer::with_context($w->ctx1)->get_data($path('classroom'));
         $this->assertEquals('Lovely colours', $classroom->challenges[0]['note']);
+        $this->assertEquals('A map of our school', writer::with_context($w->ctx1)->get_data($path('ideas'))->ideas[0]['message']);
     }
 
     public function test_delete_data_for_user_in_a_course(): void {
@@ -202,7 +214,7 @@ final class provider_test extends provider_testcase {
         // Her other course, her character and Leo stay.
         $this->assertSame(3, $this->rows($w->anachar->id, $w->course2->id));
         $this->assertTrue($DB->record_exists(self::T . 'char', ['id' => $w->anachar->id]));
-        $this->assertSame(4, $this->rows($w->leochar->id, $w->course1->id));
+        $this->assertSame(5, $this->rows($w->leochar->id, $w->course1->id));
     }
 
     public function test_delete_data_for_a_teacher(): void {
@@ -230,7 +242,7 @@ final class provider_test extends provider_testcase {
         }
         // Her power request goes with her; Leo's data stays.
         $this->assertSame(0, $DB->count_records(self::T . 'powerreq'));
-        $this->assertSame(4, $this->rows($w->leochar->id, $w->course1->id));
+        $this->assertSame(5, $this->rows($w->leochar->id, $w->course1->id));
     }
 
     public function test_delete_data_for_all_users_in_context(): void {

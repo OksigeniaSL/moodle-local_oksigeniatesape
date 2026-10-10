@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.4.0 (2026-10-10)
+
+- **Teams**: the teacher makes them in one go (the size they choose, the roles dealt out so that every team gets
+  each one, in a new grouping), or uses the groups of the course. Each week a team fills a bar of knowledge
+  together; when it is full, everybody in it gets gems. The ranking of the teams is shown to the students only if
+  the teacher wants.
+- **Powers**: real privileges of the classroom that cost breath, by role (shield, extra time, wall; breather,
+  revive, cheer; hint, notes; lookout, exploration, shortcut) and for everybody (choose your seat, music, one more
+  day). A student asks, choosing the teammate when the power is for one; the teacher approves with a tap, or the
+  power approves itself if the teacher says so; saying no gives the breath back. Some act in the game: the shield
+  takes half of a teammate's loss of energy, the wall keeps the team from losing energy for the day, the breather
+  gives energy, revive brings a worn-out teammate back and gives knowledge to the team, cheer gives breath to the
+  team. Teachers turn powers on and off, change their cost and level, and make their own privileges.
+- **Moodle activities in the game**: any activity can be a challenge, from its own settings (section Tesapé):
+  knowledge, gems, steps, the chapter of the mission and the item it gives, once, when it is completed. The pilot
+  mission brings its activities (two forums, two assignments and the database of the field guide) and makes them in
+  a section per chapter when it is installed, with completion set; they appear in the places of the map and open
+  inside the game, without the frame of Moodle around them.
+- **Defensa del nido**, the minigame of the forest: animals come down towards the nest of the creature and are caught
+  with the net of their group. Its levels follow the steps (vertebrates and invertebrates; the five groups; the
+  groups of invertebrates too), with the local examples of the mission. A mode without hurry, one animal at a time;
+  pause; keyboard, mouse or touch. The server counts every play again; winning gives the net for the scenes and a
+  coat for the creature (fur, feathers or scales), once. The teacher sees who played and won, and the mix-ups.
+- **The box of ideas**: students send their teachers ideas for the game or the class, with or without their name.
+  Only the teachers of the course read them; nothing leaves Moodle.
+- **Art packs**: the art of the game can come as a pack of images (characters, creature, icons, maps), installed
+  with `cli/art.php` and served by Moodle itself. Without a pack, the client draws its own placeholder art.
+- The night by the lake has a new choice for those who carry the net. The pilot mission is now version 2, and
+  courses that have the mission get it by themselves.
+- `cli/demo.php` makes the class with the activities of the mission and, with `--weeks`, powers waiting for the
+  teacher and ideas in the box.
+- Main buttons keep their dark text on every screen.
+
 ## 0.3.0 (2026-10-10)
 
 - **Missions** come as packages: a folder in `missions/` with the mission (chapters, texts per story, local examples,

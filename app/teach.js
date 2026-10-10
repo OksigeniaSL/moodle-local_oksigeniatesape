@@ -1,7 +1,8 @@
 /**
- * Tesapé: the teacher panel, made for the phone first. The class with names, photos and characters; touches of
- * knowledge, gems and breath; the word on classroom challenges, also without connection; pause and recovery; the log
- * with undo; and the settings of the course.
+ * Tesapé: the teacher panel, made for the phone first. The class with names, photos, characters and teams; touches
+ * of knowledge, gems and breath; the powers the students ask for, approved with a tap; the word on classroom
+ * challenges, also without connection; the mission and how the class is doing; the box of ideas; pause and recovery;
+ * the log with undo; and the settings of the course.
  *
  * @copyright  2026 Oksigenia <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -14,8 +15,24 @@
   var t = T.t;
   var esc = T.esc;
   var app = document.getElementById('app');
-  var state = {data: null, tab: 'class', team: 0, selected: {}, open: 0, log: null, logUser: 0, challenge: 0};
+  var state = {data: null, tab: 'class', team: 0, selected: {}, open: 0, log: null, logUser: 0, challenge: 0, powers: null,
+    ideas: null, newpower: false};
   var QUEUE = 'tesape-queue-' + cfg.courseid + '-' + cfg.userid;
+
+  /**
+   * A date and time, short.
+   *
+   * @param {number} time
+   * @return {string}
+   */
+  function when(time) {
+    try {
+      return new Intl.DateTimeFormat(cfg.lang, {day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'})
+        .format(new Date(time * 1000));
+    } catch (e) {
+      return new Date(time * 1000).toLocaleString();
+    }
+  }
 
   function can(cap) {
     return cfg.caps && cfg.caps[cap];
@@ -97,7 +114,7 @@
 
   /* ---------- Frame ---------- */
 
-  var TABS = ['class', 'mission', 'challenges', 'log', 'settings'];
+  var TABS = ['class', 'powers', 'mission', 'challenges', 'log'];
 
   function render() {
     var d = state.data;
@@ -110,21 +127,35 @@
       '<header class="hud"><div class="me"><span class="face" style="display:grid;place-items:center">' +
       '<span style="width:26px;height:26px;color:var(--lantern)">' + T.icon('saber') + '</span></span><span class="who">' +
       '<b>' + esc(cfg.coursename) + '</b><small>' + esc(t('teach_title')) + (pending ? ' · ' + esc(t('teach_pending',
-      pending)) : '') + '</small></span></div><a class="btn btn-soft" href="' + esc(cfg.courseurl) + '">' +
-      esc(t('app_exit')) + '</a></header><nav class="tabs" aria-label="Tesapé">' + TABS.map(function(tab) {
+      pending)) : '') + '</small></span></div><div class="hud-actions"><button class="btn btn-soft icon-btn" type="button" ' +
+      'data-tab="ideas" aria-label="' + esc(t('teach_tab_ideas')) + '"' + (state.tab === 'ideas' ? ' aria-current="page"' : '') +
+      '>' + T.icon('idea') + (d.ideasunread ? '<span class="badge">' + d.ideasunread + '</span>' : '') + '</button>' +
+      '<button class="btn btn-soft icon-btn" type="button" data-tab="settings" aria-label="' + esc(t('teach_tab_settings')) +
+      '"' + (state.tab === 'settings' ? ' aria-current="page"' : '') + '>' + T.icon('settings') + '</button><a class="btn ' +
+      'btn-soft exit" href="' + esc(cfg.courseurl) + '" aria-label="' + esc(t('app_exit')) + '">' + T.icon('exit') +
+      '<span>' + esc(t('app_exit')) + '</span></a></div></header><nav class="tabs" ' +
+      'aria-label="Tesapé">' + TABS.map(function(tab) {
+        var badge = tab === 'powers' && d.powerspending ? '<span class="badge">' + d.powerspending + '</span>' : '';
         return '<button type="button" data-tab="' + tab + '"' + (state.tab === tab ? ' aria-current="page"' : '') + '>' +
-          T.icon({class: 'team', mission: 'world', challenges: 'challenges', log: 'log', settings: 'settings'}[tab]) + '<span>' +
-          esc(t('teach_tab_' + tab)) + '</span></button>';
+          T.icon({class: 'team', powers: 'power', mission: 'world', challenges: 'challenges', log: 'log'}[tab]) + badge +
+          '<span>' + esc(t('teach_tab_' + tab)) + '</span></button>';
       }).join('') + '</nav><main class="content" id="content"></main></div>';
     app.querySelectorAll('[data-tab]').forEach(function(b) {
       b.onclick = function() {
         state.tab = b.dataset.tab;
         state.open = 0;
+        if (state.tab === 'powers') {
+          state.powers = null;
+        }
+        if (state.tab === 'ideas') {
+          state.ideas = null;
+        }
         render();
         window.scrollTo(0, 0);
       };
     });
-    ({class: tabClass, mission: tabMission, challenges: tabChallenges, log: tabLog, settings: tabSettings})[state.tab]();
+    ({class: tabClass, powers: tabPowers, mission: tabMission, challenges: tabChallenges, log: tabLog, settings: tabSettings,
+      ideas: tabIdeas})[state.tab]();
   }
 
   function content(html) {
@@ -239,10 +270,11 @@
           '</button>';
       }).join('') + '</div>';
     var shown = studentsShown();
-    var el = content('<section class="card"><div class="section-title"><h2>' + esc(t('teach_tab_class')) + '</h2>' +
-      '<button class="btn btn-soft" data-all>' + esc(t('teach_selectall')) + '</button></div>' + teams +
+    var el = content(teamsCard() + '<section class="card"><div class="section-title"><h2>' + esc(t('teach_tab_class')) +
+      '</h2><button class="btn btn-soft" data-all>' + esc(t('teach_selectall')) + '</button></div>' + teams +
       (shown.length ? '<ul class="list">' + shown.map(studentCard).join('') + '</ul>' : '<p class="empty">' +
       esc(t('teach_nostudents')) + '</p>') + '</section><div id="actionbar"></div>');
+    bindMakeTeams(el);
     el.querySelectorAll('[data-team]').forEach(function(b) {
       b.onclick = function() {
         state.team = Number(b.dataset.team);
@@ -272,6 +304,61 @@
       };
     });
     actionBar();
+  }
+
+  /**
+   * The teams this week, or the way to make them in one go.
+   *
+   * @return {string}
+   */
+  function teamsCard() {
+    var d = state.data;
+    if (!d.standings.length) {
+      return can('manageregion') && d.students.length ? '<section class="card" style="margin-bottom:16px"><h2>' +
+        esc(t('teach_teams_none')) + '</h2><p style="color:var(--text-soft)">' + esc(t('teach_teams_help')) + '</p>' +
+        makeTeamsForm() + '</section>' : '';
+    }
+    var top = Math.max.apply(null, d.standings.map(function(x) {
+      return Math.max(x.saber, x.goal);
+    }).concat([1]));
+    return '<section class="card" style="margin-bottom:16px"><div class="section-title"><h2>' + esc(t('teach_teams_week')) +
+      '</h2>' + (d.region.leaderboard ? '' : '<span class="tag todo">' + esc(t('teach_teams_hidden')) + '</span>') +
+      '</div><ul class="list">' + d.standings.map(function(x) {
+        return '<li class="item"><span class="grow"><b>' + esc(x.name) + '</b><span class="meter level goal" style="--goal:' +
+          Math.round(100 * x.goal / top) + '%"><i style="width:' + Math.round(100 * x.saber / top) + '%"></i></span>' +
+          '<small>' + esc(t('teach_teams_progress', {saber: x.saber, goal: x.goal, players: x.players})) + '</small></span>' +
+          (x.reached ? '<span class="tag merit">' + esc(t('app_team_goal')) + '</span>' : '') + '</li>';
+      }).join('') + '</ul></section>';
+  }
+
+  function makeTeamsForm() {
+    return '<div class="actions" style="justify-content:flex-start;align-items:center;margin-top:10px"><label>' +
+      esc(t('teach_teams_size')) + ' <select data-teamsize>' + [3, 4, 5, 6].map(function(n) {
+        return '<option value="' + n + '"' + (n === 4 ? ' selected' : '') + '>' + n + '</option>';
+      }).join('') + '</select></label><button class="btn btn-main" type="button" data-maketeams>' +
+      esc(t('teach_teams_make')) + '</button></div>';
+  }
+
+  function bindMakeTeams(el) {
+    var b = el.querySelector('[data-maketeams]');
+    if (!b) {
+      return;
+    }
+    b.onclick = function() {
+      var size = Number(el.querySelector('[data-teamsize]').value);
+      if (state.data.standings.length && !window.confirm(t('teach_teams_again'))) {
+        return;
+      }
+      b.disabled = true;
+      T.api('make_teams', {courseid: cfg.courseid, size: size}).then(function(r) {
+        T.toast(esc(t('teach_teams_made', r.teams)));
+        state.tab = 'class';
+        load(true);
+      }).catch(function(e) {
+        b.disabled = false;
+        T.toast(esc(e.message), true);
+      });
+    };
   }
 
   function actionBar() {
@@ -405,6 +492,199 @@
     return '<div class="stat"><span>' + esc(t(key)) + '</span><b>' + esc(value) + '</b></div>';
   }
 
+  /* ---------- Powers ---------- */
+
+  var ROLES = ['protector', 'healer', 'sage', 'scout', 'all'];
+
+  function tabPowers() {
+    if (!state.powers) {
+      content('<section class="card"><p class="empty">' + esc(t('app_loading')) + '</p></section>');
+      T.api('get_powers', {courseid: cfg.courseid}).then(function(r) {
+        state.powers = r;
+        if (state.tab === 'powers') {
+          tabPowers();
+        }
+      }).catch(function(e) {
+        T.toast(esc(e.message), true);
+      });
+      return;
+    }
+    var r = state.powers;
+    var fam = state.data.region.family;
+    var request = function(q, pending) {
+      var note = q.code === 'revive' && pending ? '<small class="note">' + esc(t('teach_power_revive')) + '</small>' : '';
+      return '<li class="item" style="flex-wrap:wrap"><span class="mini-icon">' + T.icon('power') + '</span><span class="grow">' +
+        '<b>' + esc(q.fullname) + '</b><small>' + esc(q.power) + (q.target ? ' → ' + esc(q.target) : '') + ' · ' +
+        esc(t('teach_power_cost', q.cost)) + ' · ' + esc(when(q.time)) + '</small>' + note +
+        '</span>' + (pending ? '<span class="pills"><button class="btn btn-main" data-decide="' + q.id + '" data-yes="1">' +
+        esc(t('teach_power_yes')) + '</button><button class="btn btn-soft" data-decide="' + q.id + '" data-yes="0">' +
+        esc(t('teach_power_no')) + '</button></span>' : '<span class="tag ' + (q.status === 'rejected' ? 'notyet' : 'done') +
+        '">' + esc(t('app_power_' + q.status)) + '</span>') + '</li>';
+    };
+    var catalog = ROLES.map(function(role) {
+      var list = r.powers.filter(function(p) {
+        return p.role === role;
+      });
+      if (!list.length) {
+        return '';
+      }
+      return '<h3 style="margin-top:14px">' + esc(role === 'all' ? t('teach_power_all') : T.roleName(fam, role, 'm')) +
+        '</h3><ul class="list">' + list.map(function(p) {
+          return '<li class="item power-row' + (p.enabled ? '' : ' off') + '" style="flex-wrap:wrap"><span class="grow"><b>' +
+            esc(p.name) + '</b><small>' + esc(p.description) + '</small></span><label class="mini-field">' +
+            esc(t('app_breath')) + ' <input type="number" min="0" max="5" value="' + p.cost + '" data-cost="' + p.id + '"' +
+            (can('manageregion') ? '' : ' disabled') + '></label><label class="mini-field">' + esc(t('app_level')) +
+            ' <input type="number" min="1" max="50" value="' + p.minlevel + '" data-level="' + p.id + '"' +
+            (can('manageregion') ? '' : ' disabled') + '></label><label class="chip"><input type="checkbox" data-on="' + p.id +
+            '"' + (p.enabled ? ' checked' : '') + (can('manageregion') ? '' : ' disabled') + '> ' + esc(t('teach_power_on')) +
+            '</label><label class="chip"><input type="checkbox" data-auto="' + p.id + '"' + (p.autoapprove ? ' checked' : '') +
+            (can('manageregion') ? '' : ' disabled') + '> ' + esc(t('teach_power_auto')) + '</label></li>';
+        }).join('') + '</ul>';
+    }).join('');
+    var form = state.newpower ? '<form data-newpower class="card" style="margin-top:12px">' + field('name',
+      t('teach_power_name'), '<input name="name" required maxlength="255" placeholder="' + esc(t('teach_power_example')) +
+      '">') + field('description', t('teach_ch_description'), '<textarea name="description" rows="2"></textarea>') +
+      '<div class="grid2" style="gap:10px">' + field('role', t('teach_power_for'), '<select name="role">' +
+      ROLES.map(function(role) {
+        return '<option value="' + role + '"' + (role === 'all' ? ' selected' : '') + '>' + esc(role === 'all' ?
+          t('teach_power_all') : T.roleName(fam, role, 'm')) + '</option>';
+      }).join('') + '</select>') + field('cost', t('app_breath'), '<input name="cost" type="number" min="0" max="5" ' +
+      'value="2">') + field('minlevel', t('app_level'), '<input name="minlevel" type="number" min="1" max="50" value="1">') +
+      '</div><div class="actions" style="justify-content:flex-start"><button class="btn btn-main" type="submit">' +
+      esc(t('app_save')) + '</button></div></form>' : '';
+    var el = content('<section class="card"><h2>' + esc(t('teach_power_pending')) + '</h2>' + (r.pending.length ?
+      '<ul class="list">' + r.pending.map(function(q) {
+        return request(q, true);
+      }).join('') + '</ul>' : '<p class="empty">' + esc(t('teach_power_nopending')) + '</p>') + '</section>' +
+      (r.decided.length ? '<section class="card" style="margin-top:16px"><h2>' + esc(t('teach_power_decided')) + '</h2>' +
+      '<ul class="list">' + r.decided.map(function(q) {
+        return request(q, false);
+      }).join('') + '</ul></section>' : '') + '<section class="card" style="margin-top:16px"><div class="section-title"><h2>' +
+      esc(t('teach_power_catalog')) + '</h2>' + (can('manageregion') ? '<button class="btn btn-soft" data-newpowerbtn>' +
+      esc(t('teach_power_new')) + '</button>' : '') + '</div><p style="color:var(--text-soft)">' +
+      esc(t('teach_power_help')) + '</p>' + form + catalog + '</section>');
+    el.querySelectorAll('[data-decide]').forEach(function(b) {
+      b.onclick = function() {
+        b.disabled = true;
+        T.api('decide_power', {courseid: cfg.courseid, requestid: Number(b.dataset.decide), approve: b.dataset.yes === '1'})
+          .then(function(res) {
+            state.powers = res;
+            state.data.powerspending = res.pending.length;
+            render();
+          }).catch(function(e) {
+            b.disabled = false;
+            T.toast(esc(e.message), true);
+          });
+      };
+    });
+    var save = function(id, data) {
+      T.api('save_power', Object.assign({courseid: cfg.courseid, id: id}, data)).then(function(res) {
+        state.powers = res;
+        T.toast(esc(t('app_saved')));
+      }).catch(function(e) {
+        T.toast(esc(e.message), true);
+        tabPowers();
+      });
+    };
+    var power = function(id) {
+      return r.powers.filter(function(p) {
+        return p.id === id;
+      })[0];
+    };
+    var current = function(id) {
+      var p = power(id);
+      return {name: p.own ? p.name : '', description: p.own ? p.description : '', cost: p.cost, minlevel: p.minlevel,
+        enabled: p.enabled, autoapprove: p.autoapprove};
+    };
+    el.querySelectorAll('[data-cost]').forEach(function(i) {
+      i.onchange = function() {
+        save(Number(i.dataset.cost), Object.assign(current(Number(i.dataset.cost)), {cost: Number(i.value)}));
+      };
+    });
+    el.querySelectorAll('[data-level]').forEach(function(i) {
+      i.onchange = function() {
+        save(Number(i.dataset.level), Object.assign(current(Number(i.dataset.level)), {minlevel: Number(i.value)}));
+      };
+    });
+    el.querySelectorAll('[data-on]').forEach(function(i) {
+      i.onchange = function() {
+        save(Number(i.dataset.on), Object.assign(current(Number(i.dataset.on)), {enabled: i.checked}));
+      };
+    });
+    el.querySelectorAll('[data-auto]').forEach(function(i) {
+      i.onchange = function() {
+        save(Number(i.dataset.auto), Object.assign(current(Number(i.dataset.auto)), {autoapprove: i.checked}));
+      };
+    });
+    var add = el.querySelector('[data-newpowerbtn]');
+    if (add) {
+      add.onclick = function() {
+        state.newpower = !state.newpower;
+        tabPowers();
+      };
+    }
+    var f = el.querySelector('form[data-newpower]');
+    if (f) {
+      f.onsubmit = function(ev) {
+        ev.preventDefault();
+        T.api('save_power', {courseid: cfg.courseid, id: 0, role: f.role.value, name: f.name.value,
+          description: f.description.value, cost: Number(f.cost.value), minlevel: Number(f.minlevel.value)})
+          .then(function(res) {
+            state.powers = res;
+            state.newpower = false;
+            T.toast(esc(t('app_saved')));
+            tabPowers();
+          }).catch(function(e) {
+            T.toast(esc(e.message), true);
+          });
+      };
+    }
+  }
+
+  /* ---------- The box of ideas ---------- */
+
+  function tabIdeas() {
+    if (!state.ideas) {
+      content('<section class="card"><p class="empty">' + esc(t('app_loading')) + '</p></section>');
+      T.api('get_ideas', {courseid: cfg.courseid}).then(function(list) {
+        state.ideas = list;
+        if (state.tab === 'ideas') {
+          tabIdeas();
+        }
+      }).catch(function(e) {
+        T.toast(esc(e.message), true);
+      });
+      return;
+    }
+    var el = content('<section class="card"><h2>' + esc(t('teach_tab_ideas')) + '</h2><p style="color:var(--text-soft)">' +
+      esc(t('teach_ideas_help')) + '</p>' + (state.ideas.length ? '<ul class="list">' + state.ideas.map(function(i) {
+        return '<li class="item idea' + (i.status === 'new' ? ' fresh' : '') + '">' +
+          '<span class="grow"><b>' + esc(i.fullname || t('teach_ideas_anonymous')) + '</b><small>' + esc(when(i.time)) +
+          '</small><span class="idea-text">' + esc(i.message) + '</span></span><span class="row-actions">' +
+          (i.status === 'new' ? '<button class="chip" data-idea="' + i.id + '" data-action="read">' +
+          esc(t('teach_ideas_read')) + '</button>' : '<span class="tag done">' + esc(t('app_ideas_read')) + '</span>') +
+          '<button class="chip" data-idea="' + i.id + '" data-action="delete">' + esc(t('teach_delete')) + '</button>' +
+          '</span></li>';
+      }).join('') + '</ul>' : '<p class="empty">' + esc(t('teach_ideas_none')) + '</p>') + '</section>');
+    el.querySelectorAll('[data-idea]').forEach(function(b) {
+      b.onclick = function() {
+        if (b.dataset.action === 'delete' && !window.confirm(t('teach_ideas_delete'))) {
+          return;
+        }
+        T.api('handle_idea', {courseid: cfg.courseid, ideaid: Number(b.dataset.idea), action: b.dataset.action})
+          .then(function(list) {
+            state.ideas = list;
+            state.data.ideasunread = list.filter(function(i) {
+              return i.status === 'new';
+            }).length;
+            render();
+          }).catch(function(e) {
+            T.toast(esc(e.message), true);
+          });
+      };
+    });
+  }
+
   /* ---------- The mission ---------- */
 
   function tabMission() {
@@ -436,7 +716,7 @@
       html = '<section class="card"><div class="kicker">' + esc(t('teach_mission_installed')) + '</div><h2>' +
         esc(m.installed.title) + '</h2>' + (pkg ? '<p style="color:var(--text-soft)">' + esc(pkg.subtitle) + ' · ' +
         esc(t('teach_mission_ages', pkg.ages)) + '</p>' + (can('manageregion') ? packageForm(pkg, m.installed) : '') : '') +
-        '</section>' + results();
+        '</section>' + games() + results();
     }
     var el = content(html);
     el.querySelectorAll('form[data-install]').forEach(function(f) {
@@ -444,8 +724,9 @@
         ev.preventDefault();
         var skin = f.querySelector('[name="skin"]:checked');
         var variant = f.querySelector('[name="variant"]:checked');
+        var acts = f.querySelector('[name="activities"]');
         T.api('install_mission', {courseid: cfg.courseid, code: f.dataset.install, skin: skin.value,
-          variant: variant.value}).then(function(missions) {
+          variant: variant.value, activities: !!(acts && acts.checked)}).then(function(missions) {
           state.missions = missions;
           state.results = null;
           T.toast(esc(t('app_saved')));
@@ -465,9 +746,13 @@
           '" value="' + esc(o.code) + '"' + (on ? ' checked' : '') + '> ' + esc(o.name) + '</label>';
       }).join('') + '</div>';
     };
+    var acts = !installed || installed.activitiesmissing;
     return '<form data-install="' + esc(p.code) + '" style="margin-top:12px"><h3>' + esc(t('teach_mission_skin')) + '</h3>' +
       radios('skin', p.skins, installed && installed.skin) + '<h3>' + esc(t('teach_mission_variant')) + '</h3>' +
-      radios('variant', p.variants, installed && installed.variant) + '<div class="actions" style="justify-content:' +
+      radios('variant', p.variants, installed && installed.variant) + (acts ? '<label class="chip" style="display:flex;' +
+      'gap:8px;align-items:flex-start;margin:6px 0 4px"><input type="checkbox" name="activities"' + (installed ? '' :
+      ' checked') + '> <span>' + esc(installed ? t('teach_mission_missing') : t('teach_mission_activities')) + '</span>' +
+      '</label>' : '') + '<div class="actions" style="justify-content:' +
       'flex-start"><button class="btn ' + (installed ? 'btn-soft' : 'btn-main') + '" type="submit">' +
       esc(installed ? t('teach_mission_change') : t('teach_mission_install')) + '</button></div></form>';
   }
@@ -477,6 +762,21 @@
       '</div><h2>' + esc(p.title) + '</h2><p>' + esc(p.subtitle) + '</p><p style="color:var(--text-soft)">' +
       esc(t('teach_mission_size', p.chapters + ' · ' + p.scenes)) + (p.lang !== cfg.lang.slice(0, 2) ? ' · ' +
       esc(t('teach_mission_lang', p.lang)) : '') + '</p>' + (can('manageregion') ? packageForm(p, null) : '') + '</section>';
+  }
+
+  function games() {
+    var r = state.results;
+    if (!r || !r.games || !r.games.length) {
+      return '';
+    }
+    return '<section class="card" style="margin-top:16px"><h2>' + esc(t('teach_games')) + '</h2>' + r.games.map(function(g) {
+      return '<div class="item" style="display:block"><b>' + esc(g.title) + '</b><small style="display:block;color:' +
+        'var(--text-soft)">' + esc(t('teach_game_stats', g.players + ' · ' + g.won + ' · ' + g.tries)) + '</small>' +
+        (g.confusions.length ? '<div class="note"><b>' + esc(t('teach_confusions')) + '</b><br>' + g.confusions.map(
+          function(c) {
+            return esc(c.text) + ' (' + c.count + ')';
+          }).join('<br>') + '</div>' : '') + '</div>';
+    }).join('') + '</section>';
   }
 
   function results() {
@@ -523,10 +823,21 @@
         '</b><small>' + rewards(ch) + (ch.teamwork ? ' · ' + esc(t('teach_teamwork')) : '') + '</small></span>' +
         '<span class="tag done">' + done + ' / ' + d.students.length + '</span></li>';
     }).join('');
+    var acts = d.activities.map(function(a) {
+      return '<li class="item act"><span class="mini-icon"><img src="' + esc(a.icon) + '" alt="" ' +
+        'width="24" height="24"></span><span class="grow"><b>' + esc(a.name) + '</b><small>' + rewards(a) +
+        (a.teamwork ? ' · ' + esc(t('teach_teamwork')) : '') + (a.tracked ? '' : ' · ' + esc(t('teach_act_notracking'))) +
+        '</small></span><span class="row-actions"><span class="tag done" title="' + esc(t('teach_act_done')) + '">' +
+        a.done + ' / ' + d.students.length + '</span>' + (can('manageregion') ? '<a class="chip" href="' + esc(a.url) + '">' +
+        esc(t('teach_edit')) + '</a>' : '') + '</span></li>';
+    }).join('');
     var el = content('<section class="card"><div class="section-title"><h2>' + esc(t('teach_tab_challenges')) + '</h2>' +
       (can('manageregion') ? '<button class="btn btn-main" data-new>' + esc(t('teach_newchallenge')) + '</button>' : '') +
       '</div><p style="color:var(--text-soft)">' + esc(t('teach_challenges_help')) + '</p>' + (list ? '<ul class="list">' +
-      list + '</ul>' : '<p class="empty">' + esc(t('app_nochallenges')) + '</p>') + '</section><div id="form"></div>');
+      list + '</ul>' : '<p class="empty">' + esc(t('app_nochallenges')) + '</p>') + '</section><div id="form"></div>' +
+      '<section class="card" style="margin-top:16px"><h2>' + esc(t('teach_act_title')) + '</h2><p style="color:' +
+      'var(--text-soft)">' + esc(t('teach_act_help')) + '</p>' + (acts ? '<ul class="list">' + acts + '</ul>' :
+      '<p class="empty">' + esc(t('teach_act_none')) + '</p>') + '</section>');
     el.querySelectorAll('[data-open]').forEach(function(li) {
       li.onclick = function() {
         state.challenge = Number(li.dataset.open);
@@ -815,7 +1126,8 @@
       'type="checkbox" name="enabled"' + (r.enabled ? ' checked' : '') + (editable ? '' : ' disabled') + '> ' +
       esc(t('teach_set_enabled')) + '</label><h3>' + esc(t('teach_family')) + '</h3><div class="pills" style="' +
       'justify-content:flex-start;margin-bottom:14px">' + families(r.family) + '</div>' +
-      field('groupingid', t('teach_set_groupingid'), groupings) + '<div class="grid2" style="gap:10px">' +
+      field('groupingid', t('teach_set_groupingid'), groupings) + (editable ? '<div style="margin:-6px 0 14px">' +
+      makeTeamsForm() + '</div>' : '') + '<div class="grid2" style="gap:10px">' +
       num('weeklycap', r.weeklycap, true) + num('dailymanualcap', r.dailymanualcap, false) +
       num('dailyenergylosscap', r.dailyenergylosscap, false) + num('completionrule', r.completionrule, true) + '</div>' +
       '<label class="chip" style="display:inline-flex;gap:8px;align-items:center;margin:4px 0 14px"><input ' +
@@ -827,6 +1139,7 @@
     bindFamilies(function(f) {
       family = f;
     });
+    bindMakeTeams(el);
     var f = el.querySelector('form');
     f.onsubmit = function(ev) {
       ev.preventDefault();

@@ -73,6 +73,7 @@ final class get_missions extends external_api {
                 'title' => new external_value(PARAM_TEXT, 'Title'),
                 'skin' => new external_value(PARAM_ALPHANUMEXT, 'Skin'),
                 'variant' => new external_value(PARAM_ALPHANUMEXT, 'Local examples'),
+                'activitiesmissing' => new external_value(PARAM_BOOL, 'Some chapters bring Moodle activities not made yet'),
             ], 'Mission of the course', VALUE_OPTIONAL),
             'packages' => new external_multiple_structure(new external_single_structure([
                 'code' => new external_value(PARAM_ALPHANUMEXT, 'Code'),
@@ -131,6 +132,7 @@ final class get_missions extends external_api {
                 'title' => missions::text($mission->data['title'] ?? $mission->code, $mission->skin),
                 'skin' => $mission->skin,
                 'variant' => $mission->variant,
+                'activitiesmissing' => missions::activities_missing($mission),
             ];
         }
         return $result;

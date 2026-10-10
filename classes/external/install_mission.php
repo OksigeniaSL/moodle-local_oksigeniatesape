@@ -45,6 +45,12 @@ final class install_mission extends external_api {
             'code' => new external_value(PARAM_ALPHANUMEXT, 'Mission'),
             'skin' => new external_value(PARAM_ALPHANUMEXT, 'Skin'),
             'variant' => new external_value(PARAM_ALPHANUMEXT, 'Local examples'),
+            'activities' => new external_value(
+                PARAM_BOOL,
+                'Also make its Moodle activities, a section per chapter',
+                VALUE_DEFAULT,
+                false
+            ),
         ]);
     }
 
@@ -55,24 +61,37 @@ final class install_mission extends external_api {
      * @param string $code
      * @param string $skin
      * @param string $variant
+     * @param bool $activities
      * @return array
      */
     public static function execute(
         int $courseid,
         string $code,
         string $skin,
-        string $variant
+        string $variant,
+        bool $activities = false
     ): array {
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
             'code' => $code,
             'skin' => $skin,
             'variant' => $variant,
+            'activities' => $activities,
         ]);
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
         require_capability('local/oksigeniatesape:manageregion', $context);
-        missions::install($params['courseid'], $params['code'], $params['skin'], $params['variant']);
+        if ($params['activities']) {
+            require_capability('moodle/course:manageactivities', $context);
+        }
+        missions::install(
+            $params['courseid'],
+            $params['code'],
+            $params['skin'],
+            $params['variant'],
+            null,
+            $params['activities']
+        );
         return get_missions::missions($params['courseid']);
     }
 

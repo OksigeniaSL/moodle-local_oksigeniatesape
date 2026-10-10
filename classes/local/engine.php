@@ -111,6 +111,9 @@ final class engine {
         $transaction = $DB->start_delegated_transaction();
         $entry = self::record($member, 'saber', $granted, $reason, $actorid, $cmid, $refid, $amount - $granted, $now);
         self::add_saber((int) $member->charid, $member, $granted, $now);
+        if ($granted > 0) {
+            teams::check_goal($member, $now);
+        }
         $transaction->allow_commit();
         return $entry;
     }
@@ -179,6 +182,12 @@ final class engine {
             return null;
         }
         $now = $now ?? time();
+        if ($amount < 0 && $reason === 'commitment' && $member->energy > 0) {
+            $guard = powers::guard($member, $now);
+            if ($guard) {
+                return self::guarded($member, -$amount, $guard, $actorid, $now);
+            }
+        }
         $capped = 0;
         if ($amount < 0) {
             $region = regions::get((int) $member->courseid);
@@ -203,6 +212,30 @@ final class engine {
         }
         $member->timemodified = $now;
         $DB->update_record(self::T . 'member', $member);
+        $transaction->allow_commit();
+        return $entry;
+    }
+
+    /**
+     * A loss of energy stopped by a power: the wall of the team stops it all; a shield marks itself used and the
+     * protector loses half of it instead (within their own daily cap).
+     *
+     * @param \stdClass $member Who was going to lose it.
+     * @param int $loss More than 0.
+     * @param array $guard Of powers::guard().
+     * @param int $actorid
+     * @param int $now
+     * @return \stdClass The entry of the one protected, with nothing lost and the loss as left out.
+     */
+    private static function guarded(\stdClass $member, int $loss, array $guard, int $actorid, int $now): \stdClass {
+        global $DB;
+        $request = $guard['request'];
+        $transaction = $DB->start_delegated_transaction();
+        $entry = self::record($member, 'energy', 0, $guard['kind'], $actorid, 0, (int) $request->id, $loss, $now);
+        if ($guard['kind'] === 'shield') {
+            $DB->set_field('local_oksigeniatesape_powerreq', 'status', 'used', ['id' => $request->id]);
+            self::energy($guard['protector'], -(int) ceil($loss / 2), 'shield', $actorid, (int) $request->id, $now);
+        }
         $transaction->allow_commit();
         return $entry;
     }

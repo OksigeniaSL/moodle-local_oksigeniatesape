@@ -45,9 +45,6 @@ final class demo {
         'Insfrán', 'Jara', 'Ledesma', 'Medina', 'Núñez', 'Ortiz', 'Paredes', 'Quintana', 'Ramírez', 'Sosa', 'Torres',
         'Valdez', 'Zárate'];
 
-    /** @var string[] Team names. */
-    private const TEAMS = ['Owls', 'Herons', 'Jaguars', 'Toucans', 'Lynxes', 'Foxes', 'Hawks', 'Otters'];
-
     /** @var string[] The four roles, in the order teams are filled. */
     private const ROLES = ['protector', 'healer', 'sage', 'scout'];
 
@@ -112,7 +109,7 @@ final class demo {
             'shortname' => $shortname,
             'category' => \core_course_category::get_default()->id,
             'format' => 'topics',
-            'numsections' => 6,
+            'numsections' => 0,
             'enablecompletion' => 1,
         ]);
         $DB->insert_record(self::T . 'region', (object) [
@@ -124,7 +121,8 @@ final class demo {
         ]);
 
         if ($mission !== '') {
-            missions::install($course->id, $mission, 'valley', 'es', $now);
+            // With its Moodle activities, a section per chapter.
+            missions::install($course->id, $mission, 'valley', 'es', $now, true);
         }
 
         $tag = self::USERNAME_PREFIX . $course->id;
@@ -133,8 +131,11 @@ final class demo {
 
         $result = (object) ['course' => $course, 'teacher' => $teacher, 'students' => [], 'teams' => []];
         $teams = (int) ceil($students / $teamsize);
+        $animals = array_map('trim', explode(',', get_string('teams_names', 'local_oksigeniatesape')));
         for ($t = 0; $t < $teams; $t++) {
-            $groupid = groups_create_group((object) ['courseid' => $course->id, 'name' => self::TEAMS[$t % count(self::TEAMS)]]);
+            $animal = $animals[$t % count($animals)];
+            $groupid = groups_create_group((object) ['courseid' => $course->id,
+                'name' => get_string('teams_name', 'local_oksigeniatesape', $animal)]);
             $DB->insert_record(self::T . 'team', (object) [
                 'groupid' => $groupid,
                 'courseid' => $course->id,
@@ -169,7 +170,45 @@ final class demo {
             self::make_progress($charid, $course->id, $student->weeks, $now);
             $result->students[] = $user;
         }
+        if ($weeks > 0) {
+            self::make_life($course->id, $result, $now);
+        }
         return $result;
+    }
+
+    /**
+     * A class in the middle of the game: powers waiting for the teacher and ideas in the box.
+     *
+     * @param int $courseid
+     * @param \stdClass $result The class.
+     * @param int $now
+     */
+    private static function make_life(int $courseid, \stdClass $result, int $now): void {
+        $codes = [];
+        foreach (powers::catalog($courseid, $now) as $power) {
+            $codes[$power->code] = (int) $power->id;
+        }
+        $byrole = [];
+        foreach (groups_get_members($result->teams[0], 'u.id') as $user) {
+            $char = characters::get((int) $user->id);
+            $byrole[$char->role] = (int) $user->id;
+        }
+        if (isset($byrole['healer'], $byrole['protector'])) {
+            powers::request($courseid, $byrole['healer'], $codes['breather'], $byrole['protector'], $now);
+        }
+        if (isset($byrole['sage'])) {
+            powers::request($courseid, $byrole['sage'], $codes['hint'], 0, $now);
+        }
+        ideas::send(
+            $courseid,
+            (int) $result->students[0]->id,
+            'Que en el mapa haya animales escondidos para encontrarlos.',
+            false,
+            $now
+        );
+        if (count($result->students) > 1) {
+            ideas::send($courseid, (int) $result->students[1]->id, 'Un minijuego con dinosaurios.', true, $now);
+        }
     }
 
     /**

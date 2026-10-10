@@ -87,6 +87,11 @@ final class structures {
                 'mine' => new external_value(PARAM_BOOL, 'Lantern of the student lit'),
                 'done' => new external_value(PARAM_BOOL, 'Scenes of the student done'),
                 'challengeid' => new external_value(PARAM_INT, 'Classroom challenge of the chapter (0: none)'),
+                'games' => new external_multiple_structure(new external_single_structure([
+                    'code' => new external_value(PARAM_ALPHANUMEXT, 'Minigame'),
+                    'title' => new external_value(PARAM_TEXT, 'Title'),
+                    'done' => new external_value(PARAM_BOOL, 'Won'),
+                ])),
                 'scenes' => new external_multiple_structure(new external_single_structure([
                     'id' => new external_value(PARAM_INT, 'Scene'),
                     'code' => new external_value(PARAM_ALPHANUMEXT, 'Code'),
@@ -102,6 +107,72 @@ final class structures {
                 'text' => new external_value(PARAM_TEXT, 'Text'),
             ])),
         ], 'Mission of the course', VALUE_OPTIONAL);
+    }
+
+    /**
+     * How a team is doing this week.
+     *
+     * @return external_single_structure
+     */
+    public static function week(): external_single_structure {
+        return new external_single_structure([
+            'saber' => new external_value(PARAM_INT, 'Knowledge this week'),
+            'goal' => new external_value(PARAM_INT, 'Goal of the week'),
+            'reached' => new external_value(PARAM_BOOL, 'Goal reached'),
+            'players' => new external_value(PARAM_INT, 'Members who play'),
+        ]);
+    }
+
+    /**
+     * The powers of a course, and the requests, for its teachers.
+     *
+     * @return external_single_structure
+     */
+    public static function powers(): external_single_structure {
+        $request = new external_single_structure([
+            'id' => new external_value(PARAM_INT, 'Request'),
+            'userid' => new external_value(PARAM_INT, 'Student'),
+            'fullname' => new external_value(PARAM_TEXT, 'Student'),
+            'power' => new external_value(PARAM_TEXT, 'Power'),
+            'code' => new external_value(PARAM_ALPHANUMEXT, 'Code of the power'),
+            'cost' => new external_value(PARAM_INT, 'Breath'),
+            'target' => new external_value(PARAM_TEXT, 'Teammate it is for'),
+            'status' => new external_value(PARAM_ALPHA, 'pending, approved, rejected or used'),
+            'time' => new external_value(PARAM_INT, 'When it was asked'),
+        ]);
+        return new external_single_structure([
+            'powers' => new external_multiple_structure(new external_single_structure([
+                'id' => new external_value(PARAM_INT, 'Power'),
+                'code' => new external_value(PARAM_ALPHANUMEXT, 'Code'),
+                'role' => new external_value(PARAM_ALPHA, 'Role, or all'),
+                'name' => new external_value(PARAM_TEXT, 'Name'),
+                'description' => new external_value(PARAM_TEXT, 'What it does'),
+                'cost' => new external_value(PARAM_INT, 'Breath'),
+                'minlevel' => new external_value(PARAM_INT, 'Level needed'),
+                'target' => new external_value(PARAM_ALPHA, 'mate, fallen, team or none'),
+                'enabled' => new external_value(PARAM_BOOL, 'On'),
+                'autoapprove' => new external_value(PARAM_BOOL, 'Approved by itself'),
+                'own' => new external_value(PARAM_BOOL, 'Made by a teacher'),
+            ])),
+            'pending' => new external_multiple_structure($request),
+            'decided' => new external_multiple_structure($request),
+        ]);
+    }
+
+    /**
+     * The ideas of a course, for its teachers.
+     *
+     * @return external_multiple_structure
+     */
+    public static function ideas(): external_multiple_structure {
+        return new external_multiple_structure(new external_single_structure([
+            'id' => new external_value(PARAM_INT, 'Idea'),
+            'message' => new external_value(PARAM_TEXT, 'The idea'),
+            'fullname' => new external_value(PARAM_TEXT, 'Who sent it (empty: they chose not to say)'),
+            'userid' => new external_value(PARAM_INT, 'Who sent it (0: they chose not to say)'),
+            'status' => new external_value(PARAM_ALPHA, 'new or read'),
+            'time' => new external_value(PARAM_INT, 'When'),
+        ]));
     }
 
     /**

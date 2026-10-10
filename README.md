@@ -22,7 +22,7 @@ privacy come from Moodle, and the game is a full-screen application of its own.
 
 - **A mission to play**: the pilot mission, *Living things* (ages 9 to 11, in Spanish), comes with the plugin. Its
   map has six places with their lanterns; each place has its decision scenes and a classroom challenge. The scenes
-  are played in the game with the art of the game: choices with consequences, things to put in their group, steps to
+  are played in the game: choices with consequences, things to put in their group, steps to
   put in order. The server plays each scene again with what the student did and decides the ending, so the result
   does not depend on the browser. The first good ending gives knowledge, pages of the book, items and, in the first
   scene, the companion creature; lanterns light for the student and, when half of the class has them, for the class.
@@ -33,10 +33,18 @@ privacy come from Moodle, and the game is a full-screen application of its own.
   and breath, the mission of the course (with its story and local examples) and how the class is doing in each
   scene and objective, with the mix-ups that come up most; classroom challenges (also validated without
   connection), pause and recovery, the log with undo and the settings of the course.
+- **Teams and powers**: teams made in one go with the roles spread, a weekly goal for each team and an optional
+  ranking; powers that cost breath, asked by students and approved by the teacher with a tap, some of which act in
+  the game (shield, wall, breather, revive, cheer).
+- **Moodle activities in the game**: any activity can be a challenge from its settings; the pilot mission brings its
+  forums, assignments and field guide, which open inside the game.
+- **Defensa del nido**, the first minigame, by steps and with a mode without hurry; and **the box of ideas** from
+  students to their teachers.
 - **The game engine**: knowledge with weekly and daily caps, gems, energy and falling worn out, breath, items, undo,
   and completed Moodle activities turned into progress. Privacy provider from the first day.
 
-Next come teams and powers, the minigames and the class screen.
+The art you see today is a placeholder: the game is ready for **art packs** (`cli/art.php`), and its art is being
+made. Next comes the class screen.
 
 ## Requirements
 
@@ -60,15 +68,24 @@ student, gave them something or decided on a power stay in the student's records
 data is deleted.
 
 Minors play this game, so it keeps only what the game needs: no external services, no CDN, no tracking, no
-individual public rankings and no purchases.
+individual public rankings and no purchases. The ideas students send stay in Moodle, for their teachers only; the
+images of art packs are served by Moodle itself.
 
 ## Development
 
-To try the game on a development site, `cli/demo.php` makes a made-up class: a course, a teacher, students with
-invented names, teams, characters and, with `--weeks`, some weeks of progress. Never on a site with real students.
+To try the game on a development site, `cli/demo.php` makes a made-up class: a course with the mission and its
+activities, a teacher, students with invented names, teams, characters and, with `--weeks`, some weeks of progress,
+powers waiting and ideas in the box. Never on a site with real students.
 
 ```bash
 php local/oksigeniatesape/cli/demo.php --run --weeks=3
+```
+
+An art pack is a zip with `pack.json` (code, name, version, and `files`: keys such as `character.healer`,
+`creature.2.feathers`, `icon.saber` or `map.livingthings`, each with an image of the zip in PNG, WebP or JPEG):
+
+```bash
+php local/oksigeniatesape/cli/art.php --install=/path/to/pack.zip
 ```
 
 Code, comments and commit messages in English; texts in the language packs (`lang/en`, `lang/es`). The tests run

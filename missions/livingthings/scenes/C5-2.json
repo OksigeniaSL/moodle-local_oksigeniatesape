@@ -63,6 +63,35 @@
    "type": "story",
    "image": "noche-mosquitos",
    "text": "A medianoche os comen los mosquitos. Sus larvas viven en el agua quieta: son invertebrados y alimento de peces, ranas y murciélagos. No es grave, pero la noche se hace larga.",
+   "next": "charca"
+  },
+  "charca": {
+   "type": "choice",
+   "prompt": "Al amanecer, en el agua quieta de la orilla, algo se mueve. ¿Qué hacéis?",
+   "options": [
+    {
+     "id": "red",
+     "label": "Mirarlo de cerca con la red de captura",
+     "requires": {
+      "item": "net"
+     },
+     "points": 2,
+     "objective": "SV-06",
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "En la red, unas larvas de mosquito y un renacuajo. Los miráis bien y los devolvéis al agua: la red es para observar, no para llevarse nada."
+    },
+    {
+     "id": "orilla",
+     "label": "Mirarlo desde la orilla",
+     "points": 1,
+     "objective": "SV-06",
+     "feedback": "Desde la orilla solo se ven puntitos que se mueven. Algo vive ahí, pero no sabéis qué."
+    }
+   ],
    "next": "refugio"
   },
   "noche-hormigas": {

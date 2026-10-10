@@ -54,6 +54,12 @@ final class view {
             'challenges' => [],
             'items' => [],
             'log' => [],
+            'activities' => [],
+            'powers' => [],
+            'powerrequests' => [],
+            'standings' => [],
+            'ideas' => [],
+            'hascoat' => false,
         ];
         if (!$char) {
             return $world;
@@ -65,8 +71,19 @@ final class view {
         }
         $team = self::team($courseid, $userid, (int) ($region->groupingid ?? 0), $region);
         if ($team) {
+            $team['week'] = teams::week($courseid, $team['id']);
             $world['team'] = $team;
         }
+        if ($region->leaderboard) {
+            $world['standings'] = array_map(fn($t) => ['id' => $t['id'], 'name' => $t['name'], 'saber' => $t['saber'],
+                'goal' => $t['goal'], 'reached' => $t['reached']], teams::standings($courseid));
+        }
+        $powers = powers::for_student($char, $member);
+        $world['powers'] = $powers['powers'];
+        $world['powerrequests'] = $powers['requests'];
+        $world['activities'] = activities::for_student($courseid, $userid, $member);
+        $world['ideas'] = ideas::mine($courseid, (int) $char->id);
+        $world['hascoat'] = minigames::has_coat($char, $courseid);
         foreach (classroom::list($courseid) as $challenge) {
             if (!in_array((string) $member->step, explode(',', $challenge->steps), true)) {
                 continue;
@@ -153,9 +170,17 @@ final class view {
                 array_values(array_filter($scenes, fn($s) => $s->chapterid == $chapter->id)),
                 (int) $member->step
             );
+            $games = [];
+            foreach ($meta['games'] ?? [] as $game) {
+                if (isset($data['games'][$game])) {
+                    $games[] = ['code' => $game, 'title' => missions::text($data['games'][$game]['title'] ?? $game, $skin),
+                        'done' => !empty($found['game'][$game])];
+                }
+            }
             $list[] = [
                 'id' => (int) $chapter->id,
                 'code' => $chapter->code,
+                'games' => $games,
                 'name' => missions::text($meta['name'] ?? $chapter->code, $skin),
                 'intro' => missions::text($meta['intro'] ?? '', $skin),
                 'x' => (int) ($meta['x'] ?? 0),
@@ -279,6 +304,10 @@ final class view {
             'challenges' => $challenges,
             'energymax' => engine::ENERGY_MAX,
             'breathmax' => engine::BREATH_MAX,
+            'standings' => teams::standings($courseid),
+            'activities' => activities::for_teacher($courseid, array_keys($students)),
+            'powerspending' => powers::pending_count($courseid),
+            'ideasunread' => ideas::unread($courseid),
         ];
     }
 

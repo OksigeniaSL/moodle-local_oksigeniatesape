@@ -26,7 +26,7 @@ namespace local_oksigeniatesape\local;
  */
 final class page {
     /** @var array Scripts of each app, after the core. */
-    private const SCRIPTS = ['game' => ['scene', 'game'], 'teach' => ['teach']];
+    private const SCRIPTS = ['game' => ['scene', 'nest', 'game'], 'teach' => ['teach']];
 
     /** @var string[] Prefixes of the language strings the client uses. */
     private const PREFIXES = ['app_', 'teach_', 'role_', 'roledesc_', 'lineage_'];
@@ -61,6 +61,7 @@ final class page {
             'firstname' => $USER->firstname,
             'lang' => str_replace('_', '-', $lang),
             'strings' => $strings,
+            'art' => art::manifest(),
         ];
         $json = json_encode($config, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE);
         $version = (int) get_config('local_oksigeniatesape', 'version');
