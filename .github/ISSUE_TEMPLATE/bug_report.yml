@@ -1,0 +1,74 @@
+name: Bug report
+description: Something in the game is misbehaving (a scene stuck, progress not counted, a console error, etc.)
+labels: ["bug", "needs triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug. Please give us the minimum context we need to reproduce it, and never paste real students' names or data.
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Plugin version
+      description: Find it in *Site administration → Plugins → Plugins overview → Local plugins* or in `version.php` (`$plugin->release`).
+      placeholder: e.g. 0.1.0
+    validations:
+      required: true
+  - type: input
+    id: moodle-version
+    attributes:
+      label: Moodle version
+      placeholder: e.g. 4.5.6, 5.3.1
+    validations:
+      required: true
+  - type: input
+    id: php-version
+    attributes:
+      label: PHP version
+      placeholder: e.g. 8.3.7
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser & OS
+      placeholder: e.g. Chrome 142 on a Chromebook, Firefox 142 on Ubuntu 24.04
+  - type: textarea
+    id: what-happens
+    attributes:
+      label: What happens
+    validations:
+      required: true
+  - type: textarea
+    id: what-expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Turn the game on in a course as a teacher.
+        2. Log in as a student and ...
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: console
+    attributes:
+      label: Browser console errors (if any)
+      description: Open DevTools → Console and paste any JS errors you see.
+      render: shell
+  - type: textarea
+    id: php-errors
+    attributes:
+      label: PHP debug output (if any)
+      description: Enable *Site admin → Development → Debugging → DEVELOPER + Display debug messages*, reload, and paste any messages related to `local_oksigeniatesape`.
+      render: shell
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: Screenshots
+      description: Drag-and-drop here if relevant. Please hide students' names and photos.
