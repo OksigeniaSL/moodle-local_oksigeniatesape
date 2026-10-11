@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.13.2 (2026-10-11)
+
+- The Embrollo of the card of the battle on the class screen had no size of its own and filled the whole card.
+
 ## 0.13.1 (2026-10-11)
 
 - **The demo class has played**: with weeks of progress, each made-up student plays the scenes of their step in the
