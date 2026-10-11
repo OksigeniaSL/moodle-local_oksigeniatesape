@@ -418,7 +418,7 @@
         return s.teamid === team.id;
       });
       var w = standings[team.id];
-      var pct = w && w.goal ? Math.min(100, Math.round(100 * w.saber / w.goal)) : 0;
+      var pct = w && w.needed ? Math.min(100, Math.round(100 * w.done / w.needed)) : 0;
       return '<div class="board-team"><button type="button" class="team-name" data-team="' + team.id + '">' +
         esc(team.name) + '</button>' + (w ? '<span class="meter level"><i style="width:' + pct + '%"></i></span>' : '') +
         '<div class="members">' + members.map(student).join('') + '</div></div>';

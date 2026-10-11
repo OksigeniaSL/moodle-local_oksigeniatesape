@@ -229,7 +229,8 @@ final class classroom {
         $isdone = $after !== 'notyet';
         if ($isdone && !$wasdone) {
             if ($challenge->saber > 0) {
-                engine::saber($member, (int) $challenge->saber, 'classroom', $actorid, 0, $validationid, $now);
+                $mission = $challenge->chapterid > 0;
+                engine::saber($member, (int) $challenge->saber, 'classroom', $actorid, 0, $validationid, $now, $mission);
             }
             if ($challenge->gems > 0) {
                 engine::gems($member, (int) $challenge->gems, 'classroom', $actorid, 0, $validationid, $now);

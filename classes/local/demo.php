@@ -235,11 +235,12 @@ final class demo {
             $char = characters::get((int) $user->id);
             $byrole[$char->role] = (int) $user->id;
         }
+        // A cheap power that went through by itself, and a dearer one waiting for the teacher.
         if (isset($byrole['healer'], $byrole['protector'])) {
             powers::request($courseid, $byrole['healer'], $codes['breather'], $byrole['protector'], $now);
         }
         if (isset($byrole['sage'])) {
-            powers::request($courseid, $byrole['sage'], $codes['hint'], 0, $now);
+            powers::request($courseid, $byrole['sage'], $codes['seat'], 0, $now);
         }
         ideas::send(
             $courseid,
@@ -264,7 +265,8 @@ final class demo {
         for ($w = 0; $w < $weeks; $w++) {
             $gains = [];
             for ($g = mt_rand(1, 6); $g > 0; $g--) {
-                $gains[] = [5 * mt_rand(3, 6), mt_rand(0, 1) ? 'scene' : 'completion'];
+                // Activities and classroom challenges done in those weeks; the scenes are played for real (make_plays).
+                $gains[] = [5 * mt_rand(3, 6), mt_rand(0, 1) ? 'classroom' : 'completion'];
             }
             $plan[] = $gains;
         }
@@ -284,7 +286,7 @@ final class demo {
         if (!$weeks) {
             return;
         }
-        $cap = (int) $DB->get_field(self::T . 'region', 'weeklycap', ['courseid' => $courseid]);
+        $cap = engine::site_weekly_cap();
         $total = 0;
         foreach ($weeks as $w => $gains) {
             $earned = 0;

@@ -30,6 +30,9 @@ final class view {
     /** @var string Prefix of the plugin tables. */
     private const T = 'local_oksigeniatesape_';
 
+    /** @var string[] Roles that see which teammates are low on energy, because they can help them. */
+    public const CARERS = ['healer', 'protector'];
+
     /** @var int Entries of the log a student sees. */
     public const OWN_LOG = 20;
 
@@ -461,10 +464,10 @@ final class view {
             'enabled' => (bool) ($region->enabled ?? false),
             'family' => $region->family ?? 'storyheroes',
             'groupingid' => (int) ($region->groupingid ?? 0),
-            'weeklycap' => (int) ($region->weeklycap ?? 100),
+            'weeklycap' => (int) ($region->weeklycap ?? 0),
             'dailymanualcap' => (int) ($region->dailymanualcap ?? 20),
             'dailyenergylosscap' => (int) ($region->dailyenergylosscap ?? 3),
-            'leaderboard' => (bool) ($region->leaderboard ?? true),
+            'leaderboard' => (bool) ($region->leaderboard ?? false),
             'nicknames' => (int) ($region->nicknames ?? 0),
             'timezone' => (string) ($region->timezone ?? '99'),
             'completionrule' => $region ? regions::rule($region, 'completion') : regions::RULES['completion'],
@@ -526,6 +529,10 @@ final class view {
         }
         $group = reset($groups);
         $students = self::students($courseid);
+        // Who is low on energy, only for the healer and the protector, who can help; the rest see the team's total.
+        $mine = characters::get($userid);
+        $carers = $mine && in_array($mine->role, self::CARERS, true);
+        $energy = 0;
         $mates = [];
         foreach (groups_get_members($group->id, 'u.id') as $mate) {
             if (!isset($students[$mate->id])) {
@@ -540,10 +547,19 @@ final class view {
             ];
             if ($char) {
                 $entry['character'] = self::character($char, $member ?: null, $mate->id == $userid);
+                $energy += $member ? (int) $member->energy : 0;
+                if ($member && !$carers && $mate->id != $userid) {
+                    $entry['character']['member']['energy'] = -1;
+                    if ($member->status === 'fallen') {
+                        $entry['character']['member']['status'] = 'active';
+                    }
+                }
             }
             $mates[] = $entry;
         }
-        return ['id' => (int) $group->id, 'name' => format_string($group->name), 'members' => $mates];
+        $playing = count(array_filter($mates, fn($m) => isset($m['character']['member'])));
+        return ['id' => (int) $group->id, 'name' => format_string($group->name), 'members' => $mates,
+            'energy' => $energy, 'energymax' => $playing * engine::ENERGY_MAX, 'carer' => $carers];
     }
 
     /**

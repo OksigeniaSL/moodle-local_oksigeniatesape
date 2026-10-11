@@ -94,17 +94,41 @@ final class engine_test extends \advanced_testcase {
         $this->resetAfterTest();
         [, $char, $member] = $this->make_player(['weeklycap' => 50]);
         $monday = engine::week_start(time());
-        engine::saber($member, 30, 'scene', 0, 0, 0, $monday + HOURSECS);
-        $entry = engine::saber($member, 30, 'scene', 0, 0, 0, $monday + 2 * HOURSECS);
+        engine::saber($member, 30, 'completion', 0, 0, 0, $monday + HOURSECS);
+        $entry = engine::saber($member, 30, 'completion', 0, 0, 0, $monday + 2 * HOURSECS);
         $this->assertEquals(20, $entry->amount);
         $this->assertEquals(10, $entry->capped);
-        $entry = engine::saber($member, 15, 'scene', 0, 0, 0, $monday + 3 * HOURSECS);
+        $entry = engine::saber($member, 15, 'completion', 0, 0, 0, $monday + 3 * HOURSECS);
         $this->assertEquals(0, $entry->amount);
         $this->assertEquals(15, $entry->capped);
+        // The mission goes under no cap.
+        $this->assertEquals(20, engine::saber($member, 20, 'scene', 0, 0, 0, $monday + 4 * HOURSECS)->amount);
         // A new week, a new cap.
-        $entry = engine::saber($member, 15, 'scene', 0, 0, 0, $monday + WEEKSECS + HOURSECS);
+        $entry = engine::saber($member, 15, 'completion', 0, 0, 0, $monday + WEEKSECS + HOURSECS);
         $this->assertEquals(15, $entry->amount);
-        $this->assertEquals(65, $this->char($char)->saber);
+        $this->assertEquals(85, $this->char($char)->saber);
+    }
+
+    public function test_the_weekly_cap_of_the_site_counts_every_course(): void {
+        $this->resetAfterTest();
+        set_config('weeklycap', 50, 'local_oksigeniatesape');
+        [$course, $char, $member] = $this->make_player();
+        $other = $this->getDataGenerator()->create_course();
+        regions::save($other->id, ['enabled' => 1]);
+        $there = engine::member($char, $other->id);
+        $monday = engine::week_start(time());
+        $this->assertEquals(30, engine::saber($member, 30, 'completion', 0, 0, 0, $monday + HOURSECS)->amount);
+        // What the mission gives neither goes under the cap nor fills it.
+        $this->assertEquals(40, engine::saber($member, 40, 'battle', 0, 0, 0, $monday + 2 * HOURSECS)->amount);
+        $this->assertEquals(40, engine::saber($member, 40, 'classroom', 2, 0, 0, $monday + 3 * HOURSECS, true)->amount);
+        $entry = engine::saber($there, 30, 'completion', 0, 0, 0, $monday + 4 * HOURSECS);
+        $this->assertEquals(20, $entry->amount);
+        $this->assertEquals(10, $entry->capped);
+        $this->assertEquals(130, $this->char($char)->saber);
+        // 0: no cap.
+        set_config('weeklycap', 0, 'local_oksigeniatesape');
+        $this->assertEquals(30, engine::saber($there, 30, 'completion', 0, 0, 0, $monday + 5 * HOURSECS)->amount);
+        $this->assertNotEmpty($course);
     }
 
     public function test_undone_saber_frees_the_weekly_cap(): void {

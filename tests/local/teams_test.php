@@ -109,7 +109,8 @@ final class teams_test extends \advanced_testcase {
         // The third is paused: the goal is for the two who play.
         engine::pause($this->member($w, $w->users[2]), 'A break', 0);
         $week = teams::week($w->course->id, $group->id);
-        $this->assertSame(100, $week['goal']);
+        $this->assertSame(2, $week['needed']);
+        $this->assertSame(2 * teams::GOAL_PART, $week['goal']);
         $this->assertSame(2, $week['players']);
 
         engine::saber($this->member($w, $w->users[0]), 60, 'classroom', 0);
@@ -127,10 +128,28 @@ final class teams_test extends \advanced_testcase {
         $this->assertSame(teams::GOAL_GEMS, (int) characters::get($w->users[0]->id)->gems);
         $this->assertSame(2, $DB->count_records(self::T . 'ledger', ['reason' => 'teamgoal', 'refid' => $group->id]));
 
-        // Next week, again.
+        // Next week, again: each one their part.
         $next = time() + WEEKSECS;
         engine::saber($this->member($w, $w->users[0]), 100, 'classroom', 0, 0, 0, $next);
+        $this->assertSame(teams::GOAL_GEMS, (int) characters::get($w->users[0]->id)->gems);
+        engine::saber($this->member($w, $w->users[1]), teams::GOAL_PART, 'classroom', 0, 0, 0, $next);
         $this->assertSame(2 * teams::GOAL_GEMS, (int) characters::get($w->users[0]->id)->gems);
+    }
+
+    public function test_one_missing_does_not_sink_a_team_of_four(): void {
+        $this->resetAfterTest();
+        $w = $this->make_class(['protector', 'healer', 'sage', 'scout']);
+        $group = $this->getDataGenerator()->create_group(['courseid' => $w->course->id]);
+        foreach ($w->users as $user) {
+            $this->getDataGenerator()->create_group_member(['groupid' => $group->id, 'userid' => $user->id]);
+        }
+        $this->assertSame(3, teams::week($w->course->id, $group->id)['needed']);
+        foreach (array_slice($w->users, 0, 3) as $user) {
+            engine::saber($this->member($w, $user), teams::GOAL_PART, 'classroom', 0);
+        }
+        // The fourth was ill all week: the team reaches its goal and everybody gets the gems.
+        $this->assertTrue(teams::week($w->course->id, $group->id)['reached']);
+        $this->assertSame(teams::GOAL_GEMS, (int) characters::get($w->users[3]->id)->gems);
     }
 
     public function test_standings(): void {

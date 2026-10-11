@@ -696,11 +696,14 @@
       html += '<section class="card"><p class="empty">' + esc(t('app_noteam')) + '</p></section>';
     } else {
       var wk = team.week;
-      var pct = wk.goal ? Math.min(100, Math.round(100 * wk.saber / wk.goal)) : 0;
+      var pct = wk.needed ? Math.min(100, Math.round(100 * wk.done / wk.needed)) : 0;
+      var epct = team.energymax ? Math.round(100 * team.energy / team.energymax) : 0;
       html += '<section class="card team-card"><div class="kicker">' + esc(t('app_tab_team')) + '</div><h2>' +
         esc(team.name) + '</h2><div class="team-week"><span class="meter level"><i style="width:' + pct + '%"></i></span>' +
-        '<small>' + esc(wk.reached ? t('app_team_reached') : t('app_team_week', {saber: wk.saber, goal: wk.goal})) +
-        '</small></div><ul class="list">' + team.members.map(function(mate) {
+        '<small>' + esc(wk.reached ? t('app_team_reached') : t('app_team_week', {done: wk.done, needed: wk.needed,
+        part: wk.part})) + '</small></div><div class="team-week"><span class="meter energy"><i style="width:' + epct +
+        '%"></i></span><small>' + esc(t(team.carer ? 'app_team_energy_carer' : 'app_team_energy', {energy: team.energy,
+        max: team.energymax})) + '</small></div><ul class="list">' + team.members.map(function(mate) {
           var c = mate.character;
           var m = c && c.member;
           var tag = m && m.status === 'paused' ? '<span class="tag todo">' + esc(t('app_resting')) + '</span>' :
@@ -708,7 +711,8 @@
           return '<li class="item"><span class="face">' + (c ? avatarOf(c, '', true) : '') + '</span><span class="grow"><b>' +
             esc(mate.name) + (mate.me ? ' (' + esc(t('app_you')) + ')' : '') + '</b><small>' +
             (c ? esc(T.roleName(fam, c.role, c.nameform)) + ' · ' + esc(t('app_level')) + ' ' + c.level :
-            esc(t('app_nocharacter'))) + '</small></span>' + tag + (m ? '<span class="bars"><span class="meter energy" ' +
+            esc(t('app_nocharacter'))) + '</small></span>' + tag + (m && m.energy >= 0 ? '<span class="bars">' +
+            '<span class="meter energy" ' +
             'title="' + esc(t('app_energy')) + '"><i style="width:' + Math.round(100 * m.energy / w.energymax) +
             '%"></i></span></span>' : '') + '</li>';
         }).join('') + '</ul></section>';

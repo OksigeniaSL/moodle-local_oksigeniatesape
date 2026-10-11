@@ -72,13 +72,17 @@ final class demo_test extends \advanced_testcase {
             $this->assertNull($char->lineage);
             $sum = (int) $DB->get_field(self::T . 'ledger', 'SUM(amount)', ['charid' => $char->id, 'resource' => 'saber']);
             $this->assertSame($sum, (int) $char->saber);
-            $this->assertLessThanOrEqual(4 * 100, $sum);
+            // Outside the scenes, within the weekly cap of the site.
+            $where = "charid = ? AND resource = 'saber' AND reason <> 'scene'";
+            $outside = (int) $DB->get_field_select(self::T . 'ledger', 'SUM(amount)', $where, [$char->id]);
+            $this->assertLessThanOrEqual(4 * engine::site_weekly_cap(), $outside);
             $this->assertSame(progress::level_for_saber($sum), (int) $char->level);
             $renown = $DB->get_field(self::T . 'member', 'renown', ['charid' => $char->id, 'courseid' => $courseid]);
             $this->assertSame($sum, (int) $renown);
         }
-        // A class in the middle of the game: powers waiting and ideas in the box.
-        $this->assertSame(2, powers::pending_count($courseid));
+        // A class in the middle of the game: a cheap power that went through by itself, one waiting, ideas in the box.
+        $this->assertSame(1, powers::pending_count($courseid));
+        $this->assertCount(1, powers::requests($courseid)['decided']);
         $this->assertCount(2, ideas::list($courseid));
     }
 

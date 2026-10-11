@@ -36,8 +36,8 @@ final class progress {
     /** @var int Highest level. */
     public const MAX_LEVEL = 50;
 
-    /** @var int Levels in each stage of the character's look. */
-    public const LEVELS_PER_STAGE = 10;
+    /** @var int[] Level at which each stage of the character's look starts: the second one comes in the first mission. */
+    public const STAGES = [1, 5, 12, 25, 40];
 
     /**
      * Total saber needed to reach a level.
@@ -66,14 +66,13 @@ final class progress {
     }
 
     /**
-     * Stage of the character's look: a new one every ten levels.
+     * Stage of the character's look, from the table of stages.
      *
      * @param int $level
      * @return int From 1 to 5.
      */
     public static function stage_for_level(int $level): int {
-        $level = max(1, min(self::MAX_LEVEL, $level));
-        return intdiv($level - 1, self::LEVELS_PER_STAGE) + 1;
+        return count(array_filter(self::STAGES, fn($from) => $level >= $from)) ?: 1;
     }
 
     /**

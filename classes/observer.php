@@ -80,7 +80,8 @@ final class observer {
         $challenge = $DB->get_record(self::T . 'challenge', ['cmid' => $cmid, 'courseid' => $courseid]);
         $saber = $challenge ? (int) $challenge->saber : regions::rule($region, 'completion');
         if ($saber > 0) {
-            engine::saber($member, $saber, 'completion', 0, $cmid);
+            // The activities of the chapters of a mission are measured with it: they go under no weekly cap.
+            engine::saber($member, $saber, 'completion', 0, $cmid, 0, null, $challenge && $challenge->chapterid > 0);
         }
         if ($challenge && $challenge->gems > 0) {
             engine::gems($member, (int) $challenge->gems, 'completion', 0, $cmid);

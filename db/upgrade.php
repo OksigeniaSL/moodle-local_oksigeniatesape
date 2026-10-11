@@ -235,5 +235,21 @@ function xmldb_local_oksigeniatesape_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026101114, 'local', 'oksigeniatesape');
     }
 
+    if ($oldversion < 2026101118) {
+        // The design review: the weekly cap belongs to the character in the whole site (a setting of the plugin) and the
+        // cap of each course is an option, off; the ranking of the teams is hidden unless the teacher shows it; the cheap
+        // powers are approved by themselves.
+        $table = new xmldb_table('local_oksigeniatesape_region');
+        $field = new xmldb_field('weeklycap', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'groupingid');
+        $dbman->change_field_default($table, $field);
+        $field = new xmldb_field('leaderboard', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'rules');
+        $dbman->change_field_default($table, $field);
+        $DB->set_field('local_oksigeniatesape_region', 'weeklycap', 0, ['weeklycap' => 100]);
+        $DB->set_field('local_oksigeniatesape_region', 'leaderboard', 0);
+        $DB->execute("UPDATE {local_oksigeniatesape_power} SET autoapprove = 1 WHERE code <> 'own' AND cost <= 2");
+
+        upgrade_plugin_savepoint(true, 2026101118, 'local', 'oksigeniatesape');
+    }
+
     return true;
 }

@@ -70,10 +70,15 @@ final class progress_test extends \basic_testcase {
 
     public function test_stages(): void {
         $this->assertSame(1, progress::stage_for_level(1));
-        $this->assertSame(1, progress::stage_for_level(10));
+        $this->assertSame(1, progress::stage_for_level(4));
+        $this->assertSame(2, progress::stage_for_level(5));
         $this->assertSame(2, progress::stage_for_level(11));
-        $this->assertSame(5, progress::stage_for_level(50));
+        $this->assertSame(3, progress::stage_for_level(12));
+        $this->assertSame(4, progress::stage_for_level(25));
+        $this->assertSame(5, progress::stage_for_level(40));
         $this->assertSame(5, progress::stage_for_level(99));
+        // The pilot mission (some 450 of saber) shows the second stage.
+        $this->assertSame(2, progress::stage_for_level(progress::level_for_saber(450)));
     }
 
     public function test_weekly_cap(): void {

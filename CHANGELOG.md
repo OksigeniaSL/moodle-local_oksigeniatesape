@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.14.0 (2026-10-11)
+
+First part of the decisions of the design review:
+
+- **The hero changes in the first mission**: the stages of the look start at levels 1, 5, 12, 25 and 40 (they came
+  every ten levels, and the pilot mission ended in the first).
+- **The weekly cap belongs to the character, in the whole site**: 150 by default, a setting of the plugin. What the
+  mission gives (its scenes, its battle, and the activities and classroom challenges of its chapters) goes under no cap:
+  it is measured by design. The cap of each course is now an option, off unless the teacher sets it.
+- **The goal of the week of a team** is reached when three of every four members (two at least) reach their part (40
+  of saber each): someone ill or without a device at home no longer sinks the team.
+- **The energy of the teammates**: everybody sees the total of the team; only the healer and the protector, who can
+  help, see who is low.
+- **The cheap powers (1 or 2 of breath) go through by themselves**; the teacher can take any approved power back from
+  the panel, and what it gave is undone and the breath comes back.
+- **Breath comes back +2 a day**, up to 5: saving it is worth something.
+- **The ranking of the teams is hidden** unless the teacher shows it.
+
 ## 0.13.3 (2026-10-11)
 
 - When the AI provider of the site cannot be reached, the teacher sees «The AI of the site could not make the plan»

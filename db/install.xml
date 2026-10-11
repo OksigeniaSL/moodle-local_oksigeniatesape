@@ -35,11 +35,11 @@
         <FIELD NAME="enabled" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="family" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false" COMMENT="animals, dinosaurs, storyheroes, epic, elements or nomagic"/>
         <FIELD NAME="groupingid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Grouping whose groups are the teams (0: every group of the course)"/>
-        <FIELD NAME="weeklycap" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="100" SEQUENCE="false" COMMENT="Most saber a student can earn in the course in a week (0: no cap)"/>
+        <FIELD NAME="weeklycap" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Most saber a student can earn in the course in a week, on top of the cap of the site (0: no cap of the course)"/>
         <FIELD NAME="dailymanualcap" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="20" SEQUENCE="false" COMMENT="Most saber a student can get by hand in a day"/>
         <FIELD NAME="dailyenergylosscap" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="3" SEQUENCE="false" COMMENT="Most energy a student can lose in a day"/>
         <FIELD NAME="rules" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Values of the automatic rules (JSON)"/>
-        <FIELD NAME="leaderboard" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Show the team ranking"/>
+        <FIELD NAME="leaderboard" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Show the team ranking"/>
         <FIELD NAME="nicknames" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="0: Moodle names; 1: hero names from a list; 2: from a list or their own, approved by a teacher"/>
         <FIELD NAME="timezone" TYPE="char" LENGTH="100" NOTNULL="true" DEFAULT="99" SEQUENCE="false" COMMENT="Time zone of the days and weeks of the game (99: the one of the site)"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>

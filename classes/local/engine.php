@@ -40,6 +40,15 @@ final class engine {
     /** @var int Energy a worn-out character comes back with. */
     public const RECOVERED_ENERGY = 5;
 
+    /** @var int Breath that comes back each day, up to BREATH_MAX: saving it is worth something. */
+    public const BREATH_DAILY = 2;
+
+    /** @var int Saber a character can earn in a week in the whole site, outside the mission, if the site sets none. */
+    public const SITE_WEEKLY_CAP = 150;
+
+    /** @var string[] Reasons of saber that come from the mission itself: measured by design, they go under no cap. */
+    public const MISSION_REASONS = ['scene', 'battle'];
+
     /**
      * The character in a course: the existing one, or a new one with full energy and breath (joining the region).
      *
@@ -69,8 +78,10 @@ final class engine {
     }
 
     /**
-     * Gives saber: within the weekly cap of the course and, if given by hand, the daily cap. Saber is never taken
-     * away (only undone).
+     * Gives saber. What the mission gives (its scenes, its battle, the activities and classroom challenges of its
+     * chapters) goes under no cap: it is measured by design. Anything else goes under the weekly cap of the character in
+     * the whole site, the weekly cap of the course if it has one and, if given by hand, the daily cap. Saber is never
+     * taken away (only undone).
      *
      * @param \stdClass $member
      * @param int $amount More than 0.
@@ -79,6 +90,7 @@ final class engine {
      * @param int $cmid Activity behind it, if any.
      * @param int $refid Other reference, if any.
      * @param int|null $now
+     * @param bool $mission It comes from a chapter of the mission (scenes and battles always do).
      * @return \stdClass|null The log entry, or null if the student is paused.
      */
     public static function saber(
@@ -88,7 +100,8 @@ final class engine {
         int $actorid,
         int $cmid = 0,
         int $refid = 0,
-        ?int $now = null
+        ?int $now = null,
+        bool $mission = false
     ): ?\stdClass {
         global $DB;
         if ($amount <= 0) {
@@ -104,10 +117,13 @@ final class engine {
         }
         $region = regions::get((int) $member->courseid);
         $granted = $amount;
-        if ($region) {
-            $earned = self::sum($member, 'saber', self::week_start($now, (int) $member->courseid), "l.amount > 0");
-            $granted = progress::apply_cap($granted, $earned, (int) $region->weeklycap)['granted'];
-            if ($reason === 'manual') {
+        if (!$mission && !in_array($reason, self::MISSION_REASONS, true)) {
+            $week = self::week_start($now, (int) $member->courseid);
+            $granted = progress::apply_cap($granted, self::earned($member, $week, false), self::site_weekly_cap())['granted'];
+            if ($region && $region->weeklycap > 0) {
+                $granted = progress::apply_cap($granted, self::earned($member, $week, true), (int) $region->weeklycap)['granted'];
+            }
+            if ($region && $reason === 'manual') {
                 $today = self::day_start($now, (int) $member->courseid);
                 $manual = self::sum($member, 'saber', $today, "l.amount > 0 AND l.reason = 'manual'");
                 $granted = progress::apply_cap($granted, $manual, (int) $region->dailymanualcap)['granted'];
@@ -446,7 +462,7 @@ final class engine {
     }
 
     /**
-     * Fills energy and breath once a day for the characters who are playing.
+     * Once a day for the characters who are playing: energy full again, and some breath back (up to the most).
      *
      * @param int|null $now
      * @return int How many were filled.
@@ -469,9 +485,12 @@ final class engine {
             if ($found) {
                 $DB->execute(
                     'UPDATE {' . self::T . "member}
-                        SET energy = :energy, breath = :breath, lastregen = :now, timemodified = :now2
+                        SET energy = :energy,
+                            breath = CASE WHEN breath + :daily > :breath THEN :breath2 ELSE breath + :daily2 END,
+                            lastregen = :now, timemodified = :now2
                       WHERE $where",
-                    $params + ['energy' => self::ENERGY_MAX, 'breath' => self::BREATH_MAX, 'now' => $now, 'now2' => $now]
+                    $params + ['energy' => self::ENERGY_MAX, 'breath' => self::BREATH_MAX, 'breath2' => self::BREATH_MAX,
+                        'daily' => self::BREATH_DAILY, 'daily2' => self::BREATH_DAILY, 'now' => $now, 'now2' => $now]
                 );
             }
             $count += $found;
@@ -511,6 +530,44 @@ final class engine {
     public static function timezone(int $courseid = 0): \DateTimeZone {
         $zone = $courseid ? (string) (regions::get($courseid)->timezone ?? '99') : '99';
         return regions::zone($zone);
+    }
+
+    /**
+     * The weekly cap of a character in the whole site: a setting of the plugin.
+     *
+     * @return int 0: no cap.
+     */
+    public static function site_weekly_cap(): int {
+        $cap = get_config('local_oksigeniatesape', 'weeklycap');
+        return $cap === false || $cap === '' ? self::SITE_WEEKLY_CAP : max(0, (int) $cap);
+    }
+
+    /**
+     * Saber a character has earned since a time outside the mission (what goes under the weekly caps).
+     *
+     * @param \stdClass $member
+     * @param int $since
+     * @param bool $incourse Only in the course of the member; else in the whole site.
+     * @return int
+     */
+    private static function earned(\stdClass $member, int $since, bool $incourse): int {
+        global $DB;
+        [$notmission, $params] = $DB->get_in_or_equal(self::MISSION_REASONS, SQL_PARAMS_NAMED, 'mr', false);
+        $params += ['charid' => $member->charid, 'since' => $since, 'courseid' => $member->courseid];
+        $course = $incourse ? 'AND l.courseid = :courseid' : '';
+        return (int) $DB->get_field_sql(
+            'SELECT COALESCE(SUM(l.amount), 0)
+               FROM {' . self::T . "ledger} l
+              WHERE l.charid = :charid AND l.resource = 'saber' AND l.amount > 0 AND l.undoneby = 0
+                    AND l.timecreated >= :since $course AND l.reason $notmission
+                    AND NOT (l.reason = 'completion' AND l.cmid IN (
+                        SELECT c.cmid FROM {" . self::T . "challenge} c WHERE c.chapterid > 0 AND c.cmid > 0))
+                    AND NOT (l.reason = 'classroom' AND l.refid IN (
+                        SELECT v.id FROM {" . self::T . "validation} v
+                          JOIN {" . self::T . "challenge} c ON c.id = v.challengeid
+                         WHERE c.chapterid > 0))",
+            $params
+        );
     }
 
     /**

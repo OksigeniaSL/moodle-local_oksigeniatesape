@@ -86,6 +86,9 @@ final class get_world extends external_api {
                     'character' => structures::character(VALUE_OPTIONAL),
                 ])),
                 'week' => structures::week(),
+                'energy' => new external_value(PARAM_INT, 'Energy of the whole team'),
+                'energymax' => new external_value(PARAM_INT, 'Most energy of the whole team'),
+                'carer' => new external_value(PARAM_BOOL, 'The student sees who is low on energy (healer, protector)'),
             ], 'Team', VALUE_OPTIONAL),
             'challenges' => new external_multiple_structure(new external_single_structure([
                 'id' => new external_value(PARAM_INT, 'Challenge'),

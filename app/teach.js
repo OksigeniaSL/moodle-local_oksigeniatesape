@@ -350,15 +350,13 @@
         esc(t('teach_teams_none')) + '</h2><p style="color:var(--text-soft)">' + esc(t('teach_teams_help')) + '</p>' +
         makeTeamsForm() + '</section>' : '';
     }
-    var top = Math.max.apply(null, d.standings.map(function(x) {
-      return Math.max(x.saber, x.goal);
-    }).concat([1]));
     return '<section class="card" style="margin-bottom:16px"><div class="section-title"><h2>' + esc(t('teach_teams_week')) +
       '</h2>' + (d.region.leaderboard ? '' : '<span class="tag todo">' + esc(t('teach_teams_hidden')) + '</span>') +
       '</div><ul class="list">' + d.standings.map(function(x) {
-        return '<li class="item"><span class="grow"><b>' + esc(x.name) + '</b><span class="meter level goal" style="--goal:' +
-          Math.round(100 * x.goal / top) + '%"><i style="width:' + Math.round(100 * x.saber / top) + '%"></i></span>' +
-          '<small>' + esc(t('teach_teams_progress', {saber: x.saber, goal: x.goal, players: x.players})) + '</small></span>' +
+        var pct = x.needed ? Math.min(100, Math.round(100 * x.done / x.needed)) : 0;
+        return '<li class="item"><span class="grow"><b>' + esc(x.name) + '</b><span class="meter level"><i style="width:' +
+          pct + '%"></i></span><small>' + esc(t('teach_teams_progress', {done: x.done, needed: x.needed, part: x.part,
+          saber: x.saber, players: x.players})) + '</small></span>' +
           (x.reached ? '<span class="tag merit">' + esc(t('app_team_goal')) + '</span>' : '') + '</li>';
       }).join('') + '</ul></section>';
   }
@@ -633,7 +631,9 @@
         '</span>' + (pending ? '<span class="pills"><button class="btn btn-main" data-decide="' + q.id + '" data-yes="1">' +
         esc(t('teach_power_yes')) + '</button><button class="btn btn-soft" data-decide="' + q.id + '" data-yes="0">' +
         esc(t('teach_power_no')) + '</button></span>' : '<span class="tag ' + (q.status === 'rejected' ? 'notyet' : 'done') +
-        '">' + esc(t('app_power_' + q.status)) + '</span>') + '</li>';
+        '">' + esc(t('app_power_' + q.status)) + '</span>' + (q.status === 'approved' || q.status === 'used' ?
+        '<button class="btn btn-soft board-small" data-decide="' + q.id + '" data-yes="0">' + esc(t('teach_power_withdraw')) +
+        '</button>' : '')) + '</li>';
     };
     var catalog = ROLES.map(function(role) {
       var list = r.powers.filter(function(p) {

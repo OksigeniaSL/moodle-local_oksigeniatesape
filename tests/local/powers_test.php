@@ -54,6 +54,9 @@ final class powers_test extends \advanced_testcase {
             $dg->create_group_member(['groupid' => $w->group->id, 'userid' => $user->id]);
             $w->users[$role] = $user;
         }
+        // These tests are about the teacher's word: nothing goes through by itself unless a test says so.
+        powers::catalog($w->course->id);
+        $DB->set_field(self::T . 'power', 'autoapprove', 0, ['courseid' => $w->course->id]);
         return $w;
     }
 
@@ -116,6 +119,29 @@ final class powers_test extends \advanced_testcase {
         $this->assertSame(0, powers::pending_count($w->course->id));
         $this->expectException(\moodle_exception::class);
         powers::decide((int) $request->id, true, $w->teacher->id);
+    }
+
+    public function test_cheap_powers_go_through_by_themselves_and_can_be_taken_back(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $course = $this->getDataGenerator()->create_course();
+        $catalog = powers::catalog($course->id);
+        foreach ($catalog as $power) {
+            $this->assertSame($power->cost <= powers::AUTO_COST ? 1 : 0, (int) $power->autoapprove, $power->code);
+        }
+        $w = $this->make_team();
+        $breather = $this->power($w, 'breather');
+        $DB->set_field(self::T . 'power', 'autoapprove', 1, ['id' => $breather->id]);
+        $scout = $this->member($w, 'scout');
+        engine::energy($scout, -4, 'commitment', $w->teacher->id);
+        $request = powers::request($w->course->id, $w->users['healer']->id, $breather->id, $w->users['scout']->id);
+        $this->assertSame('approved', $request->status);
+        $this->assertSame(engine::ENERGY_MAX - 4 + powers::BREATHER_ENERGY, (int) $this->member($w, 'scout')->energy);
+        // The teacher takes it back: the energy given goes, and the breath spent comes back.
+        $back = powers::decide((int) $request->id, false, $w->teacher->id);
+        $this->assertSame('rejected', $back->status);
+        $this->assertSame(engine::ENERGY_MAX - 4, (int) $this->member($w, 'scout')->energy);
+        $this->assertSame(engine::BREATH_MAX, (int) $this->member($w, 'healer')->breath);
     }
 
     public function test_who_can_ask(): void {

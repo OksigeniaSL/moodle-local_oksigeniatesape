@@ -51,7 +51,7 @@ final class structures {
             'creature' => new external_value(PARAM_RAW, 'Traits of the creature (JSON), empty before it hatches'),
             'member' => new external_single_structure([
                 'renown' => new external_value(PARAM_INT, 'Knowledge earned in the course'),
-                'energy' => new external_value(PARAM_INT, 'Energy in the course'),
+                'energy' => new external_value(PARAM_INT, 'Energy in the course (-1: not shown to this classmate)'),
                 'breath' => new external_value(PARAM_INT, 'Breath in the course'),
                 'status' => new external_value(PARAM_ALPHA, 'active, fallen or paused'),
                 'statusreason' => new external_value(PARAM_TEXT, 'Why, only for the student and the teachers'),
@@ -116,8 +116,11 @@ final class structures {
      */
     public static function week(): external_single_structure {
         return new external_single_structure([
-            'saber' => new external_value(PARAM_INT, 'Knowledge this week'),
-            'goal' => new external_value(PARAM_INT, 'Goal of the week'),
+            'saber' => new external_value(PARAM_INT, 'Knowledge of the team this week'),
+            'part' => new external_value(PARAM_INT, 'Part of each member: knowledge this week'),
+            'done' => new external_value(PARAM_INT, 'Members who have reached their part'),
+            'needed' => new external_value(PARAM_INT, 'Members who have to reach it'),
+            'goal' => new external_value(PARAM_INT, 'Knowledge of the parts needed'),
             'reached' => new external_value(PARAM_BOOL, 'Goal reached'),
             'players' => new external_value(PARAM_INT, 'Members who play'),
         ]);

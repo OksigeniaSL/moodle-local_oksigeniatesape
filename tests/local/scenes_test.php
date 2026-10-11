@@ -213,14 +213,14 @@ final class scenes_test extends \advanced_testcase {
         $this->play($w, $w->users[0], 'C1-2');
     }
 
-    public function test_capped_saber_counts_as_given(): void {
+    public function test_the_saber_of_the_mission_goes_under_no_cap(): void {
         $this->resetAfterTest();
         $w = $this->make_class(1);
         regions::save($w->course->id, ['weeklycap' => 10]);
+        set_config('weeklycap', 10, 'local_oksigeniatesape');
         $first = $this->play($w, $w->users[0], 'C1-2');
-        $this->assertSame(10, $first['rewards']['saber']);
-        $this->assertSame(10, $first['rewards']['capped']);
-        regions::save($w->course->id, ['weeklycap' => 0]);
+        $this->assertSame(20, $first['rewards']['saber']);
+        $this->assertSame(0, $first['rewards']['capped']);
         $this->assertSame(0, $this->play($w, $w->users[0], 'C1-2')['rewards']['saber']);
     }
 

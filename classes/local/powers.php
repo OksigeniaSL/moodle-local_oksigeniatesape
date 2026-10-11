@@ -32,6 +32,9 @@ final class powers {
     /** @var string Prefix of the plugin tables. */
     private const T = 'local_oksigeniatesape_';
 
+    /** @var int Powers that cost this breath or less are approved by themselves when a course starts with them. */
+    public const AUTO_COST = 2;
+
     /**
      * @var array The powers each course starts with: code => [role, cost in breath, level, target]. Target: mate (a
      *     teammate), fallen (a worn-out teammate), team (the whole team) or none.
@@ -99,7 +102,8 @@ final class powers {
                     'cost' => $cost,
                     'minlevel' => $level,
                     'enabled' => 1,
-                    'autoapprove' => 0,
+                    // The cheap ones go through by themselves; the teacher can still undo them.
+                    'autoapprove' => $cost <= self::AUTO_COST ? 1 : 0,
                     'timecreated' => $now,
                     'timemodified' => $now,
                 ];
@@ -269,7 +273,8 @@ final class powers {
     }
 
     /**
-     * The teacher says yes or no to a request. Yes makes it act; no gives the breath back.
+     * The teacher says yes or no to a request. Yes makes it act; no gives the breath back, and on a power that was
+     * already approved (by the teacher or by itself) takes it back.
      *
      * @param int $requestid
      * @param bool $approve
@@ -282,6 +287,12 @@ final class powers {
         $now = $now ?? time();
         $transaction = $DB->start_delegated_transaction();
         $request = $DB->get_record(self::T . 'powerreq', ['id' => $requestid], '*', MUST_EXIST);
+        if (!$approve && in_array($request->status, ['approved', 'used'], true)) {
+            // A power that went through by itself (or was approved): the teacher takes it back.
+            self::withdraw($request, $actorid, $now);
+            $transaction->allow_commit();
+            return $DB->get_record(self::T . 'powerreq', ['id' => $request->id], '*', MUST_EXIST);
+        }
         if ($request->status !== 'pending') {
             throw new \moodle_exception('powerdecided', 'local_oksigeniatesape');
         }
@@ -302,6 +313,29 @@ final class powers {
         }
         $transaction->allow_commit();
         return $DB->get_record(self::T . 'powerreq', ['id' => $request->id], '*', MUST_EXIST);
+    }
+
+    /**
+     * Takes back a power that was approved: what it gave is undone and the breath spent comes back.
+     *
+     * @param \stdClass $request
+     * @param int $actorid The teacher.
+     * @param int $now
+     */
+    private static function withdraw(\stdClass $request, int $actorid, int $now): void {
+        global $DB;
+        $entries = $DB->get_records_select(
+            self::T . 'ledger',
+            "refid = ? AND reason IN ('power', 'rescue') AND undoneby = 0 AND amount <> 0",
+            [$request->id]
+        );
+        foreach ($entries as $entry) {
+            engine::undo((int) $entry->id, $actorid, $now);
+        }
+        $request->status = 'rejected';
+        $request->decidedby = $actorid;
+        $request->timedecided = $now;
+        $DB->update_record(self::T . 'powerreq', $request);
     }
 
     /**

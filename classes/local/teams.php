@@ -28,11 +28,14 @@ final class teams {
     /** @var string Prefix of the plugin tables. */
     private const T = 'local_oksigeniatesape_';
 
-    /** @var float Goal of the week: this share of the weekly cap of each member who plays. */
-    public const GOAL_SHARE = 0.5;
+    /** @var int The part of each member in the goal of the week: saber in the course that week. */
+    public const GOAL_PART = 40;
 
-    /** @var int Weekly cap used for the goal when the course has none. */
-    public const GOAL_CAP = 100;
+    /** @var float Share of the members who have to reach their part: someone missing does not sink the team. */
+    public const GOAL_SHARE = 0.75;
+
+    /** @var int Members who have to reach their part at least, in teams of two or more. */
+    public const GOAL_MIN = 2;
 
     /** @var int Gems for each member when the team reaches the goal of the week. */
     public const GOAL_GEMS = 3;
@@ -88,27 +91,38 @@ final class teams {
      * @param int $courseid
      * @param int $groupid
      * @param int|null $now
-     * @return array saber, goal, reached, players.
+     * @return array saber (of the team), part (of each one), done (members who reached it), needed (to reach the goal),
+     *     goal (saber of the needed parts), reached, players.
      */
     public static function week(int $courseid, int $groupid, ?int $now = null): array {
         global $DB;
         $now = $now ?? time();
         $members = self::members($courseid, $groupid);
-        $region = regions::get($courseid);
-        $cap = (int) ($region->weeklycap ?? 0) ?: self::GOAL_CAP;
-        $goal = (int) round(self::GOAL_SHARE * $cap * count($members));
-        $saber = 0;
+        $bychar = [];
         if ($members) {
             [$insql, $params] = $DB->get_in_or_equal(array_map(fn($m) => $m->charid, $members));
-            $saber = (int) $DB->get_field_sql(
-                'SELECT COALESCE(SUM(amount), 0)
+            $bychar = $DB->get_records_sql_menu(
+                'SELECT charid, SUM(amount)
                    FROM {' . self::T . "ledger}
                   WHERE charid $insql AND courseid = ? AND resource = 'saber' AND amount > 0 AND undoneby = 0
-                        AND timecreated >= ?",
+                        AND timecreated >= ?
+               GROUP BY charid",
                 array_merge($params, [$courseid, engine::week_start($now, $courseid)])
             );
         }
-        return ['saber' => $saber, 'goal' => $goal, 'reached' => $goal > 0 && $saber >= $goal, 'players' => count($members)];
+        $players = count($members);
+        // Three of every four (two at least): someone ill or without a device at home does not sink the team.
+        $needed = min($players, max(self::GOAL_MIN, (int) floor(self::GOAL_SHARE * $players)));
+        $done = count(array_filter($bychar, fn($saber) => (int) $saber >= self::GOAL_PART));
+        return [
+            'saber' => (int) array_sum($bychar),
+            'part' => self::GOAL_PART,
+            'done' => $done,
+            'needed' => $needed,
+            'goal' => $needed * self::GOAL_PART,
+            'reached' => $needed > 0 && $done >= $needed,
+            'players' => $players,
+        ];
     }
 
     /**
