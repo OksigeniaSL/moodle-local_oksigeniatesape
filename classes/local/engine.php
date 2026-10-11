@@ -480,9 +480,10 @@ final class engine {
     }
 
     /**
-     * Start of the school week (Monday at midnight, in the time zone of the site).
+     * Start of the school week: Monday at midnight, in the time zone of the course.
      *
      * @param int $now
+     * @param int $courseid 0: in the time zone of the site.
      * @return int
      */
     public static function week_start(int $now, int $courseid = 0): int {
@@ -490,9 +491,10 @@ final class engine {
     }
 
     /**
-     * Start of the day, in the time zone of the site.
+     * Start of the day, in the time zone of the course.
      *
      * @param int $now
+     * @param int $courseid 0: in the time zone of the site.
      * @return int
      */
     public static function day_start(int $now, int $courseid = 0): int {
