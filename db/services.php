@@ -95,6 +95,13 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:pause',
     ],
+    'local_oksigeniatesape_make_character' => [
+        'classname' => 'local_oksigeniatesape\\external\\make_character',
+        'description' => 'The teacher makes the character of a student, for classes where the students do not use a device.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:award',
+    ],
     'local_oksigeniatesape_set_step' => [
         'classname' => 'local_oksigeniatesape\external\set_step',
         'description' => 'Moves a student to another step of the mission.',

@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.10.0 (2026-10-11)
+
+- **The teacher makes the characters of a class without devices**: in the sheet of a student who has none, the
+  teacher picks the role, the form of the names and the lineage (the role suggested is the one the class has least
+  of). The student gets everything the class plays from then on, and if they come in one day, they find their
+  character ready and can change how it looks.
+- **The living things, version 5**: the wrong answers of the final scene and of three quick questions are as long and
+  as reasoned as the right one, so the longest is no longer the right one; the owl scene no longer says what the trail
+  is before the questions; and the bacteria no longer send to a minigame that does not exist.
+
 ## 0.9.1 (2026-10-11)
 
 Fixes from a review of the code:

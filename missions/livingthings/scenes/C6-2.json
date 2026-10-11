@@ -40,7 +40,7 @@
     },
     {
      "id": "medio",
-     "label": "No, porque es de noche.",
+     "label": "No: sale de noche, y las aves son de día. Es otra cosa.",
      "correct": false,
      "objective": "SV-04",
      "feedback": "Hay aves nocturnas, como el búho. ¿Qué tiene el murciélago que no tienen las aves?",
@@ -48,7 +48,7 @@
     },
     {
      "id": "mal",
-     "label": "Sí, porque tiene alas.",
+     "label": "Sí: tiene alas y vuela muy bien, como cualquier pájaro del bosque.",
      "correct": false,
      "objective": "SV-04",
      "feedback": "El Embrollo se ríe y aprieta el nudo. Las alas no bastan: ¿plumas o pelo?",
@@ -71,7 +71,7 @@
     },
     {
      "id": "mal",
-     "label": "Sí, porque vive en el mar.",
+     "label": "Sí: vive siempre en el mar y nada con aletas, como los peces.",
      "correct": false,
      "objective": "SV-04",
      "feedback": "Vivir en el agua no hace a nadie pez. ¿Cómo respira la ballena?",
@@ -79,7 +79,7 @@
     },
     {
      "id": "medio",
-     "label": "No, porque es muy grande.",
+     "label": "No: es demasiado grande para ser un pez. Es otro animal.",
      "correct": false,
      "objective": "SV-04",
      "feedback": "Hay peces enormes, como el tiburón ballena. Mirad cómo respira y cómo alimenta a sus crías.",
@@ -102,7 +102,7 @@
     },
     {
      "id": "mal",
-     "label": "Sí, porque no se mueve.",
+     "label": "Sí: no se mueve y sale de la tierra, como las plantas.",
      "correct": false,
      "objective": "SV-03",
      "feedback": "Las plantas no se mueven, pero los hongos tampoco. ¿Cómo consigue la seta su alimento?",
@@ -125,7 +125,7 @@
     },
     {
      "id": "mal",
-     "label": "Es verdad, los leones no comen plantas.",
+     "label": "Es verdad: el león solo come carne, así que las plantas no le importan.",
      "correct": false,
      "objective": "SV-06",
      "feedback": "¿Y qué comen las cebras que se come el león? Seguid la cadena hacia atrás.",
@@ -148,7 +148,7 @@
     },
     {
      "id": "mal",
-     "label": "Sí, porque es un bicho.",
+     "label": "Sí: es un bicho pequeño con patas, como la hormiga o la mosca.",
      "correct": false,
      "objective": "SV-04",
      "feedback": "«Bicho» no es un grupo de seres vivos. Contad sus patas.",

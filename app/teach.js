@@ -439,6 +439,76 @@
     });
   }
 
+  /**
+   * The teacher makes the character of a student who does not use a device: role, form of the names and, in the
+   * families of heroes, lineage. The role suggested is the one the class has least of.
+   *
+   * @param {string} fam The family of names of the region.
+   * @return {string}
+   */
+  function makeCharacter(fam) {
+    var roles = ['protector', 'healer', 'sage', 'scout'];
+    var count = {};
+    state.data.students.forEach(function(x) {
+      if (x.character) {
+        count[x.character.role] = (count[x.character.role] || 0) + 1;
+      }
+    });
+    var best = roles.slice().sort(function(a, b) {
+      return (count[a] || 0) - (count[b] || 0);
+    })[0];
+    state.make = {role: best, nameform: 'f', lineage: T.hasLineages(fam) ? 'human' : ''};
+    return '<div class="make-character" style="margin-top:16px"><h3>' + esc(t('teach_make_title')) + '</h3>' +
+      '<div data-makeform></div><div class="actions" style="justify-content:flex-start"><button class="btn btn-main" ' +
+      'data-make>' + esc(t('teach_make_go')) + '</button></div></div>';
+  }
+
+  function bindMakeCharacter(el, s) {
+    var box = el.querySelector('[data-makeform]');
+    if (!box) {
+      return;
+    }
+    var fam = state.data.region.family;
+    var chips = function(key, values, label) {
+      return '<div class="pills" style="justify-content:flex-start;margin-bottom:10px">' + values.map(function(v) {
+        return '<button class="chip" type="button" data-pick="' + key + ':' + v + '" aria-pressed="' +
+          (state.make[key] === v) + '">' + esc(label(v)) + '</button>';
+      }).join('') + '</div>';
+    };
+    var draw = function() {
+      var m = state.make;
+      box.innerHTML = chips('role', ['protector', 'healer', 'sage', 'scout'], function(v) {
+        return T.roleName(fam, v, m.nameform);
+      }) + chips('nameform', ['f', 'm'], function(v) {
+        return t('teach_make_form_' + v, T.roleName(fam, m.role, v));
+      }) + (m.lineage ? chips('lineage', ['human', 'elf', 'dwarf', 'fairy'], function(v) {
+        return T.lineageName(v, m.nameform);
+      }) : '');
+      box.querySelectorAll('[data-pick]').forEach(function(b) {
+        b.onclick = function() {
+          var p = b.dataset.pick.split(':');
+          state.make[p[0]] = p[1];
+          draw();
+        };
+      });
+    };
+    draw();
+    var go = el.querySelector('[data-make]');
+    go.onclick = function() {
+      go.disabled = true;
+      T.api('make_character', {courseid: cfg.courseid, userid: s.userid, role: state.make.role,
+        nameform: state.make.nameform, lineage: state.make.lineage}).then(function() {
+        T.toast(esc(t('teach_make_done', s.firstname)));
+        return load(true);
+      }).then(function() {
+        openStudent(s.userid);
+      }).catch(function(e) {
+        go.disabled = false;
+        T.toast(esc(e.message), true);
+      });
+    };
+  }
+
   function openStudent(userid) {
     var s = state.data.students.filter(function(x) {
       return x.userid === userid;
@@ -453,8 +523,11 @@
       role: c.role, nameform: c.nameform, lineage: c.lineage, look: c.appearance, stage: c.stage}) : '') + '</div>' +
       '<div class="stats"><h2>' + esc(s.fullname) + '</h2>';
     if (!c) {
-      html += '<p>' + esc(t('teach_nocharacter_help')) + '</p></div></div></section>';
-      content(html).querySelector('[data-back]').onclick = render;
+      html += '<p>' + esc(t('teach_nocharacter_help')) + '</p></div></div>' + (can('award') ? makeCharacter(fam) : '') +
+        '</section>';
+      var el = content(html);
+      el.querySelector('[data-back]').onclick = render;
+      bindMakeCharacter(el, s);
       return;
     }
     html += '<p style="color:var(--text-soft)">' + esc(T.roleName(fam, c.role, c.nameform)) + ' ' +

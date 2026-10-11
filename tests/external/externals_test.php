@@ -29,6 +29,7 @@ use local_oksigeniatesape\local\regions;
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \local_oksigeniatesape\external\get_world
  * @covers     \local_oksigeniatesape\external\create_character
+ * @covers     \local_oksigeniatesape\external\make_character
  * @covers     \local_oksigeniatesape\external\update_look
  * @covers     \local_oksigeniatesape\external\get_class
  * @covers     \local_oksigeniatesape\external\save_region
@@ -44,6 +45,7 @@ use local_oksigeniatesape\local\regions;
  */
 #[\PHPUnit\Framework\Attributes\CoversClass(get_world::class)]
 #[\PHPUnit\Framework\Attributes\CoversClass(create_character::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(make_character::class)]
 #[\PHPUnit\Framework\Attributes\CoversClass(update_look::class)]
 #[\PHPUnit\Framework\Attributes\CoversClass(get_class::class)]
 #[\PHPUnit\Framework\Attributes\CoversClass(save_region::class)]
@@ -181,6 +183,26 @@ final class externals_test extends \advanced_testcase {
         $this->assertEquals(0, $region['completionrule']);
         $this->assertTrue($region['enabled']);
         $this->assertEquals(['ok' => true], $this->call('delete_challenge', $w->teacher, [$w->course->id, $challenge['id']]));
+    }
+
+    public function test_the_teacher_makes_the_character_of_a_student_without_a_device(): void {
+        $this->resetAfterTest();
+        $w = $this->make_class();
+        $this->call('make_character', $w->teacher, [$w->course->id, $w->noa->id, 'scout', 'f', 'dwarf']);
+        $world = $this->call('get_world', $w->noa, [$w->course->id]);
+        $this->assertEquals('scout', $world['character']['role']);
+        $this->assertEquals('dwarf', $world['character']['lineage']);
+        $this->assertEquals(10, $world['character']['member']['energy']);
+        // Once only, and only for students of the course.
+        try {
+            $this->call('make_character', $w->teacher, [$w->course->id, $w->noa->id, 'sage', 'f', '']);
+            $this->fail('Made twice');
+        } catch (\moodle_exception $e) {
+            $this->assertEquals('characterexists', $e->errorcode);
+        }
+        $stranger = $this->getDataGenerator()->create_user();
+        $this->expectException(\invalid_parameter_exception::class);
+        $this->call('make_character', $w->teacher, [$w->course->id, $stranger->id, 'sage', 'm', '']);
     }
 
     public function test_students_cannot_teach(): void {

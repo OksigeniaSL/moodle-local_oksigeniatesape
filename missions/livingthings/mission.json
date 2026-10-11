@@ -1,6 +1,6 @@
 {
  "code": "livingthings",
- "version": 4,
+ "version": 5,
  "lang": "es",
  "ages": "9–11",
  "title": {
@@ -863,9 +863,9 @@
    "text": "¿Qué es un ecosistema?",
    "options": [
     "Los seres vivos de un lugar, el lugar y cómo se relacionan",
-    "Solo los animales de un bosque",
-    "Una planta del lago",
-    "Un aparato para medir el agua"
+    "Todos los animales que viven juntos en un mismo bosque",
+    "Las plantas y el agua de un lago, sin los animales",
+    "Un aparato que mide si el agua de un río está limpia"
    ],
    "why": "Un ecosistema son los seres vivos, el medio donde viven (agua, suelo, luz) y las relaciones entre todos."
   },
@@ -876,8 +876,8 @@
    "text": "Antes de sacar una conclusión, un buen naturalista…",
    "options": [
     "Observa, anota y comprueba",
-    "Elige la primera idea que se le ocurre",
-    "Pregunta qué piensa la mayoría"
+    "Se fía de la primera idea que se le ocurre",
+    "Pregunta qué piensa la mayoría de la clase"
    ],
    "why": "La ciencia avanza observando con cuidado, anotando lo que se ve y comprobándolo."
   },
@@ -901,8 +901,8 @@
    "text": "¿Para qué sirve un cuaderno de campo?",
    "options": [
     "Para no olvidar lo observado y poder compararlo",
-    "Para dibujar solo lo bonito",
-    "Para que nadie más lo lea"
+    "Para dibujar solo las cosas bonitas que ve",
+    "Para guardar secretos que nadie más pueda leer"
    ],
    "why": "Anotar la fecha, el lugar y lo observado permite comparar y que otros lo comprueben."
   }
