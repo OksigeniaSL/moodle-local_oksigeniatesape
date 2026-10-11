@@ -182,7 +182,8 @@
    * @return {Object}
    */
   T.defaultLook = function(role) {
-    return {skin: T.SKINS[1], hair: 'short', haircolour: T.HAIRCOLOURS[1], outfit: T.ROLE_OUTFIT[role] || T.OUTFITS[0]};
+    // No skin until the student picks one: an art pack then shows each character as it is painted.
+    return {hair: 'short', haircolour: T.HAIRCOLOURS[1], outfit: T.ROLE_OUTFIT[role] || T.OUTFITS[0]};
   };
 
   /**
@@ -204,7 +205,8 @@
 
   /**
    * The keys of the image of a character in an art pack, from the most precise to the most general: family, role,
-   * lineage, form of the name and stage, each first with the tone of skin (t1 light, t2 medium, t3 dark).
+   * lineage, form of the name and stage, each first with the tone of skin the student chose (t1 light, t2 medium, t3
+   * dark). Without a choice, only the images as they are painted.
    *
    * @param {string} family
    * @param {string} role
@@ -216,14 +218,17 @@
    * @return {string[]}
    */
   T.characterKeys = function(family, role, lineage, form, stage, skin, portrait) {
-    var tone = skin < 0 ? 2 : skin < 2 ? 1 : skin < 4 ? 2 : 3;
+    var tone = skin < 0 ? 0 : skin < 2 ? 1 : skin < 4 ? 2 : 3;
     var keys = [];
     (portrait ? ['portrait', 'character'] : ['character']).forEach(function(kind) {
       var b = kind + '.' + family + '.' + role;
       var lin = lineage || 'none';
       [b + '.' + lin + '.' + form + '.' + stage, b + '.' + lin + '.' + form, b + '.' + form + '.' + stage, b + '.' + form,
         b + '.' + stage, b].forEach(function(k) {
-        keys.push(k + '.t' + tone, k);
+        if (tone) {
+          keys.push(k + '.t' + tone);
+        }
+        keys.push(k);
       });
     });
     return keys;
@@ -270,7 +275,7 @@
     var form = c.nameform === 'f' ? 'f' : 'm';
     var stage = c.stage || 1;
     var art = T.artUrl(T.characterKeys(c.family || T.family || 'storyheroes', c.role, c.lineage, form, stage,
-      T.SKINS.indexOf(skin), c.portrait));
+      T.SKINS.indexOf(look.skin), c.portrait));
     if (art) {
       return '<img class="avatar art' + (c.portrait ? ' portrait' : '') + '" src="' + T.esc(art) + '" alt="' +
         T.esc(c.label || '') + '">';

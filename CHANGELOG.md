@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.5 (2026-10-11)
+
+- Tone of skin with an art pack: until the student picks one, each character shows as it is painted (the cards of the
+  roles keep their variety); once picked, the pack's image in that tone (light, medium or dark), in every stage that
+  has it. Before, every character counted as light-skinned by default.
+
 ## 0.4.4 (2026-10-11)
 
 - The look of a character only offers what shows. With an art pack, hair and clothes are painted in, so the step of
