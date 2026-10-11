@@ -280,7 +280,7 @@ final class demo {
      */
     private static function make_user(string $username, string $firstname, string $lastname): \stdClass {
         global $CFG, $DB;
-        $id = user_create_user((object) [
+        $user = (object) [
             'username' => $username,
             'auth' => 'manual',
             'firstname' => $firstname,
@@ -289,7 +289,10 @@ final class demo {
             'emailstop' => 1,
             'mnethostid' => $CFG->mnet_localhost_id,
             'confirmed' => 1,
-        ], false, false);
+        ];
+        // Moodle 5.3 moved this to \core\user and deprecated the old function; 4.5 to 5.2 only have the old one.
+        $id = method_exists(\core\user::class, 'create_user') ? \core\user::create_user($user, false, false) :
+            user_create_user($user, false, false);
         return $DB->get_record('user', ['id' => $id], '*', MUST_EXIST);
     }
 
