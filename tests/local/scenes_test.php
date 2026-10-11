@@ -99,7 +99,7 @@ final class scenes_test extends \advanced_testcase {
         // Installing again changes the skin and keeps everything else.
         missions::install($w->course->id, 'livingthings', 'azara', 'es');
         $this->assertEquals(1, $DB->count_records(self::T . 'mission', ['courseid' => $w->course->id]));
-        $this->assertEquals(15, $DB->count_records(self::T . 'scene', ['missionid' => $w->mission->id]));
+        $this->assertEquals(27, $DB->count_records(self::T . 'scene', ['missionid' => $w->mission->id]));
         $this->assertCount(6, classroom::list($w->course->id));
         $this->assertSame('azara', missions::get($w->course->id)->skin);
         $this->expectException(\invalid_parameter_exception::class);
