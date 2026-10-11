@@ -457,8 +457,9 @@
     var m = c.member || {};
     var cls = 'board-student' + (state.sel[s.userid] ? ' on' : '') + (m.status && m.status !== 'active' ? ' resting' : '');
     return '<button type="button" class="' + cls + '" data-student="' + s.userid + '" aria-pressed="' + !!state.sel[s.userid] +
-      '"><span class="face">' + T.avatar({role: c.role, nameform: c.nameform, lineage: c.lineage, look: c.appearance,
-      stage: c.stage, portrait: true}) + '</span><span class="name">' + esc(s.firstname) + '</span></button>';
+      '"><span class="face' + (c.aura ? ' aura ' + esc(c.aura) : '') + '">' + T.avatar({role: c.role, nameform: c.nameform,
+      lineage: c.lineage, look: c.appearance, stage: c.stage, portrait: true}) + '</span><span class="name">' +
+      esc(s.firstname) + '</span></button>';
   }
 
   function teams() {
@@ -473,7 +474,9 @@
       });
       var w = standings[team.id];
       var pct = w && w.needed ? Math.min(100, Math.round(100 * w.done / w.needed)) : 0;
-      return '<div class="board-team"><button type="button" class="team-name" data-team="' + team.id + '">' +
+      var lantern = (team.banner || []).indexOf('banner-lantern') >= 0 ? '<span class="banner-lantern">' +
+        T.icon('lantern') + '</span> ' : '';
+      return '<div class="board-team"><button type="button" class="team-name" data-team="' + team.id + '">' + lantern +
         esc(team.name) + '</button>' + (w ? '<span class="meter level"><i style="width:' + pct + '%"></i></span>' : '') +
         '<div class="members">' + members.map(student).join('') + '</div></div>';
     }).join('');

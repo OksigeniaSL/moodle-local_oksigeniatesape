@@ -104,6 +104,11 @@ final class view {
         if ($page) {
             $world['page'] = $page;
         }
+        $world['market'] = market::for_student($char, $courseid, $userid);
+        $album = album::for_student($courseid, $userid);
+        if ($album) {
+            $world['album'] = $album;
+        }
         foreach (classroom::list($courseid) as $challenge) {
             if (!in_array((string) $member->step, explode(',', $challenge->steps), true)) {
                 continue;
@@ -393,7 +398,8 @@ final class view {
         $view = [
             'region' => self::region($region),
             'students' => $list,
-            'teams' => array_values(array_map(fn($g) => ['id' => (int) $g->id, 'name' => format_string($g->name)], $groups)),
+            'teams' => array_values(array_map(fn($g) => ['id' => (int) $g->id, 'name' => format_string($g->name),
+                'banner' => market::team_owns($courseid, (int) $g->id)], $groups)),
             'groupings' => array_values(array_map(
                 fn($g) => ['id' => (int) $g->id, 'name' => format_string($g->name)],
                 groups_get_all_groupings($courseid)
@@ -537,10 +543,16 @@ final class view {
     private static function character(\stdClass $char, ?\stdClass $member, bool $private): array {
         $level = progress::level_progress((int) $char->saber);
         $creature = (string) $char->creature;
-        if (!$private && $creature !== '') {
-            // An own name for the creature that no teacher has read yet is not for classmates.
+        $worn = market::worn($char);
+        if ($creature !== '' && (!$private || isset($worn['paint']))) {
             $traits = json_decode($creature, true) ?: [];
-            unset($traits['pending']);
+            if (!$private) {
+                // An own name for the creature that no teacher has read yet is not for classmates.
+                unset($traits['pending']);
+            }
+            if (isset($worn['paint'])) {
+                $traits['paint'] = $worn['paint'];
+            }
             $creature = json_encode($traits);
         }
         $character = [
@@ -557,6 +569,7 @@ final class view {
             'gems' => (int) $char->gems,
             'creaturestage' => (int) $char->creaturestage,
             'creature' => $creature,
+            'aura' => (string) ($worn['aura'] ?? ''),
         ];
         if ($member) {
             $character['member'] = [
@@ -618,7 +631,8 @@ final class view {
         }
         $playing = count(array_filter($mates, fn($m) => isset($m['character']['member'])));
         return ['id' => (int) $group->id, 'name' => format_string($group->name), 'members' => $mates,
-            'energy' => $energy, 'energymax' => $playing * engine::ENERGY_MAX, 'carer' => $carers];
+            'energy' => $energy, 'energymax' => $playing * engine::ENERGY_MAX, 'carer' => $carers,
+            'banner' => market::team_owns($courseid, (int) $group->id)];
     }
 
     /**

@@ -430,6 +430,16 @@
    * @param {boolean} big With the hatching animation.
    * @return {string} SVG, or empty before it hatches.
    */
+  /**
+   * Paints of the market of the valley: a filter for the drawn creature (whose own colour is orange, about 35º), and a
+   * hue for the one made of shapes.
+   */
+  var PAINTS = {
+    'paint-gold': {filter: 'hue-rotate(17deg) saturate(1.6) brightness(1.18)', hue: 45},
+    'paint-night': {filter: 'hue-rotate(190deg) saturate(.9) brightness(.75)', hue: 240},
+    'paint-snow': {filter: 'grayscale(.92) brightness(1.25)', hue: 205}
+  };
+
   T.creature = function(traits, stage, big) {
     var c = traits;
     if (typeof c === 'string') {
@@ -442,13 +452,14 @@
     if (!c) {
       return '';
     }
-    var h = Number(c.hue) || 0;
+    var paint = PAINTS[c.paint];
+    var h = paint ? paint.hue : Number(c.hue) || 0;
     var st = Math.max(1, Math.min(4, stage || 1));
     var art = T.artUrl(['creature.' + st + '.' + (c.coat || 'none'), 'creature.' + st, 'creature']);
     if (art) {
-      // One image for every creature: its own hue makes it unique.
+      // One image for every creature: its own hue makes it unique, or the paint bought in the market.
       return '<img class="creature art' + (big ? ' born' : '') + '" src="' + T.esc(art) + '" alt="' + T.esc(c.name || '') +
-        '" style="filter:hue-rotate(' + h + 'deg)">';
+        '" style="filter:' + (paint ? paint.filter : 'hue-rotate(' + h + 'deg)') + '">';
     }
     var s = 1 + (st - 1) * 0.12;
     var body = 'hsl(' + h + ' 60% 62%)';

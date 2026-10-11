@@ -168,5 +168,7 @@ final class observer {
         foreach (self::PLAYED_TABLES as $table) {
             $DB->delete_records(self::T . $table, ['courseid' => $courseid]);
         }
+        // The banner of a team goes with the teams; what each one bought for their character is theirs in every course.
+        $DB->delete_records_select(self::T . 'purchase', 'courseid = ? AND groupid > 0', [$courseid]);
     }
 }

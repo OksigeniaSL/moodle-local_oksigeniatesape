@@ -321,8 +321,10 @@
   }
 
   function avatarOf(c, label, portrait) {
-    return T.avatar({role: c.role, nameform: c.nameform, lineage: c.lineage, look: c.appearance, stage: c.stage,
+    var avatar = T.avatar({role: c.role, nameform: c.nameform, lineage: c.lineage, look: c.appearance, stage: c.stage,
       label: label, portrait: portrait});
+    // The aura bought in the market, seen by everybody.
+    return c.aura ? '<span class="aura ' + esc(c.aura) + '">' + avatar + '</span>' : avatar;
   }
 
   /**
@@ -751,7 +753,9 @@
       var pct = wk.needed ? Math.min(100, Math.round(100 * wk.done / wk.needed)) : 0;
       var epct = team.energymax ? Math.round(100 * team.energy / team.energymax) : 0;
       html += '<section class="card team-card"><div class="kicker">' + esc(t('app_tab_team')) + '</div><h2>' +
-        esc(team.name) + '</h2><div class="team-week"><span class="meter level"><i style="width:' + pct + '%"></i></span>' +
+        (team.banner.indexOf('banner-lantern') >= 0 ? '<span class="banner-lantern" title="' +
+        esc(t('app_market_banner-lantern')) + '">' + T.icon('lantern') + '</span> ' : '') + esc(team.name) + '</h2>' +
+        '<div class="team-week"><span class="meter level"><i style="width:' + pct + '%"></i></span>' +
         '<small>' + esc(wk.reached ? t('app_team_reached') : t('app_team_week', {done: wk.done, needed: wk.needed,
         part: wk.part})) + '</small></div><div class="team-week"><span class="meter energy"><i style="width:' + epct +
         '%"></i></span><small>' + esc(t(team.carer ? 'app_team_energy_carer' : 'app_team_energy', {energy: team.energy,
@@ -1048,7 +1052,71 @@
       '</button><a class="btn btn-soft" href="' + esc(cfg.courseurl) + '">' + esc(t('app_exit')) + '</a></div></div>' +
       '</section>' + (w.hascoat && c.creature ? '<section class="card no-print" style="margin-top:16px"><h2>' +
       esc(t('app_coat_title', creatureName(c))) + '</h2><p class="help-soft">' + esc(t('app_coat_help')) + '</p>' +
-      T.coatPicker(w, function() {}).html + '</section>' : '') + namesCard() + ideasCard();
+      T.coatPicker(w, function() {}).html + '</section>' : '') + marketCard() + albumCard() + namesCard() + ideasCard();
+  }
+
+  /**
+   * The market of the valley: paints for the creature and auras for the hero, and the lantern of the team's banner,
+   * which the team pays for together.
+   *
+   * @return {string}
+   */
+  function marketCard() {
+    var w = state.world;
+    var c = w.character;
+    if (!w.market || !w.market.length) {
+      return '';
+    }
+    var items = w.market.map(function(x) {
+      var action;
+      if (x.team) {
+        var pct = Math.min(100, Math.round(100 * x.given / x.price));
+        action = x.owned ? '<span class="tag done">' + esc(t('app_market_team_done')) + '</span>' : '<span class="row-actions">' +
+          '<button class="chip" type="button" data-give="' + x.code + ':1"' + (c.gems < 1 ? ' disabled' : '') + '>+1</button>' +
+          '<button class="chip" type="button" data-give="' + x.code + ':5"' + (c.gems < 1 ? ' disabled' : '') + '>+5</button>' +
+          '</span>';
+        return '<li class="item"><span class="grow"><b>' + esc(t('app_market_' + x.code)) + '</b><small>' +
+          esc(t('app_market_team_help', {given: x.given, price: x.price, mine: x.mine})) + '</small><span class="meter level">' +
+          '<i style="width:' + pct + '%"></i></span></span>' + action + '</li>';
+      }
+      if (!x.owned) {
+        action = '<button class="btn btn-soft" type="button" data-buy="' + x.code + '"' + (c.gems < x.price ? ' disabled' : '') +
+          '>' + esc(t('app_market_buy', x.price)) + '</button>';
+      } else if (x.worn) {
+        action = '<button class="chip" type="button" data-takeoff="' + x.kind + '" aria-pressed="true">' +
+          esc(t('app_market_worn')) + '</button>';
+      } else {
+        action = '<button class="chip" type="button" data-wear="' + x.code + '">' + esc(t('app_market_wear')) + '</button>';
+      }
+      return '<li class="item"><span class="grow"><b>' + esc(t('app_market_' + x.code)) + '</b><small>' +
+        esc(t('app_market_kind_' + x.kind)) + '</small></span>' + action + '</li>';
+    }).join('');
+    return '<section class="card no-print market-card" style="margin-top:16px"><h2>' + esc(t('app_market')) + '</h2>' +
+      '<p class="help-soft">' + esc(t('app_market_help', c.gems)) + '</p><ul class="list">' + items + '</ul></section>';
+  }
+
+  /**
+   * The album of the field guide: a card for each entry of the student or their team, golden with its food chain.
+   *
+   * @return {string}
+   */
+  function albumCard() {
+    var a = state.world.album;
+    if (!a) {
+      return '';
+    }
+    var golden = a.cards.filter(function(x) {
+      return x.golden;
+    }).length;
+    return '<section class="card no-print album-card" style="margin-top:16px"><h2>' + esc(t('app_album')) + '</h2>' +
+      '<p class="help-soft">' + esc(t('app_album_help', {cards: a.cards.length, golden: golden, class: a['class']})) + '</p>' +
+      (a.cards.length ? '<div class="album">' + a.cards.map(function(x) {
+        return '<div class="album-card' + (x.golden ? ' golden' : '') + '"><b>' + esc(x.name) + '</b>' + (x.group ?
+          '<small>' + esc(x.group) + '</small>' : '') + (x.mine ? '<small class="mine">' + esc(t('app_album_mine')) + '</small>' :
+          '') + '</div>';
+      }).join('') + '</div>' : '<p class="empty">' + esc(t('app_album_empty')) + '</p>') + '<div class="actions" style="' +
+      'justify-content:flex-start"><button class="btn btn-soft" data-activity="' + a.cmid + '">' + esc(t('app_album_open')) +
+      '</button></div></section>';
   }
 
   /**
@@ -1114,6 +1182,47 @@
 
   function bindMe() {
     var c = state.world.character;
+    var shop = function(fn, args, done) {
+      app.querySelectorAll('[data-buy], [data-wear], [data-takeoff], [data-give]').forEach(function(o) {
+        o.disabled = true;
+      });
+      T.api(fn, Object.assign({courseid: cfg.courseid}, args)).then(function(w) {
+        state.world = w;
+        if (done) {
+          T.toast(esc(done));
+        }
+        world();
+      }).catch(function(e) {
+        T.toast(esc(e.message), true);
+        world();
+      });
+    };
+    app.querySelectorAll('[data-buy]').forEach(function(b) {
+      b.onclick = function() {
+        shop('market_buy', {code: b.dataset.buy}, t('app_market_bought'));
+      };
+    });
+    app.querySelectorAll('[data-wear]').forEach(function(b) {
+      b.onclick = function() {
+        shop('market_wear', {code: b.dataset.wear});
+      };
+    });
+    app.querySelectorAll('[data-takeoff]').forEach(function(b) {
+      b.onclick = function() {
+        shop('market_wear', {code: b.dataset.takeoff});
+      };
+    });
+    app.querySelectorAll('[data-give]').forEach(function(b) {
+      b.onclick = function() {
+        var parts = b.dataset.give.split(':');
+        shop('market_buy', {code: parts[0], amount: Number(parts[1])}, t('app_market_given'));
+      };
+    });
+    app.querySelectorAll('[data-activity]').forEach(function(b) {
+      b.onclick = function() {
+        openActivity(Number(b.dataset.activity));
+      };
+    });
     var saveName = function(what, option, own) {
       app.querySelectorAll('[data-name], [data-sendname]').forEach(function(o) {
         o.disabled = true;

@@ -46,7 +46,7 @@ class provider implements
 
     /** @var string[] Tables of a character in a course, all with charid and courseid. */
     public const COURSE_TABLES = ['member', 'ledger', 'inventory', 'sceneattempt', 'minigame', 'validation', 'found', 'idea',
-        'livein', 'livetoken', 'pact', 'daily'];
+        'livein', 'livetoken', 'pact', 'daily', 'purchase'];
 
     /**
      * What is stored.
@@ -57,7 +57,7 @@ class provider implements
     public static function get_metadata(collection $collection): collection {
         $fields = [
             'char' => ['userid', 'role', 'nameform', 'lineage', 'nickname', 'nicknamepending', 'saber', 'level', 'gems',
-                'creature', 'appearance', 'creaturestage', 'rolechangedat', 'timecreated'],
+                'creature', 'appearance', 'creaturestage', 'cosmetics', 'rolechangedat', 'timecreated'],
             'member' => ['charid', 'courseid', 'renown', 'energy', 'breath', 'status', 'statusreason', 'statusby', 'step',
                 'timecreated'],
             'ledger' => ['charid', 'courseid', 'resource', 'amount', 'reason', 'cmid', 'actorid', 'capped', 'undoneby',
@@ -75,6 +75,7 @@ class provider implements
             'pact' => ['courseid', 'charid', 'missionid', 'chapter', 'groupid', 'text', 'status', 'decidedby', 'timecreated',
                 'timedecided'],
             'daily' => ['charid', 'courseid', 'daystart', 'question', 'answer', 'success', 'timecreated'],
+            'purchase' => ['charid', 'courseid', 'groupid', 'code', 'amount', 'timecreated'],
         ];
         foreach ($fields as $table => $names) {
             $described = [];
@@ -240,6 +241,7 @@ class provider implements
                     'creature' => json_decode((string) $char->creature),
                     'appearance' => json_decode((string) $char->appearance),
                     'creaturestage' => $char->creaturestage,
+                    'cosmetics' => (string) $char->cosmetics,
                     'rolechangedat' => $char->rolechangedat ? transform::datetime($char->rolechangedat) : null,
                     'timecreated' => transform::datetime($char->timecreated),
                 ]);
@@ -402,6 +404,17 @@ class provider implements
                     'token' => $t->kind,
                     'timecreated' => transform::datetime($t->timecreated),
                 ], $tokens)),
+            ]);
+        }
+        $bought = $DB->get_records(self::T . 'purchase', ['charid' => $charid, 'courseid' => $courseid], 'timecreated');
+        if ($bought) {
+            $writer->export_data(self::path('market'), (object) [
+                'purchases' => array_values(array_map(fn($b) => [
+                    'what' => $b->code,
+                    'forteam' => (bool) $b->groupid,
+                    'gems' => (int) $b->amount,
+                    'timecreated' => transform::datetime($b->timecreated),
+                ], $bought)),
             ]);
         }
         $pages = $DB->get_records(self::T . 'daily', ['charid' => $charid, 'courseid' => $courseid], 'daystart');

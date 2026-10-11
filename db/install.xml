@@ -19,6 +19,7 @@
         <FIELD NAME="creature" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Traits of the companion creature (JSON), drawn when it hatches"/>
         <FIELD NAME="appearance" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="How the character looks (JSON): parts and colours"/>
         <FIELD NAME="creaturestage" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="0 before it hatches"/>
+        <FIELD NAME="cosmetics" TYPE="char" LENGTH="255" NOTNULL="true" DEFAULT="" SEQUENCE="false" COMMENT="What it wears from the market: JSON with paint and aura"/>
         <FIELD NAME="rolechangedat" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Last change of role (one per term)"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
@@ -491,6 +492,26 @@
       </KEYS>
       <INDEXES>
         <INDEX NAME="charid-courseid-daystart" UNIQUE="true" FIELDS="charid, courseid, daystart"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_oksigeniatesape_purchase" COMMENT="What was bought in the market of the valley: for oneself, or gems put towards something of the team.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="charid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Course where it was bought"/>
+        <FIELD NAME="groupid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Team it was for (0: for oneself)"/>
+        <FIELD NAME="code" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="amount" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Gems paid"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="charid" TYPE="foreign" FIELDS="charid" REFTABLE="local_oksigeniatesape_char" REFFIELDS="id"/>
+        <KEY NAME="courseid" TYPE="foreign" FIELDS="courseid" REFTABLE="course" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="charid-code" UNIQUE="false" FIELDS="charid, code"/>
+        <INDEX NAME="courseid-groupid-code" UNIQUE="false" FIELDS="courseid, groupid, code"/>
       </INDEXES>
     </TABLE>
     <TABLE NAME="local_oksigeniatesape_nextclass" COMMENT="Plans for the next class made by the AI of the site from what confuses the class. No personal data.">

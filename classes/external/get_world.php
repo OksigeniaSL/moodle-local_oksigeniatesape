@@ -89,8 +89,16 @@ final class get_world extends external_api {
                 'energy' => new external_value(PARAM_INT, 'Energy of the whole team'),
                 'energymax' => new external_value(PARAM_INT, 'Most energy of the whole team'),
                 'carer' => new external_value(PARAM_BOOL, 'The student sees who is low on energy (healer, protector)'),
+                'banner' => new external_multiple_structure(
+                    new external_value(PARAM_ALPHANUMEXT, 'Ornament of the banner'),
+                    'What the team has of the market',
+                    VALUE_DEFAULT,
+                    []
+                ),
                 'pacts' => structures::team_pacts(),
             ], 'Team', VALUE_OPTIONAL),
+            'market' => structures::market(),
+            'album' => structures::album(),
             'names' => new external_single_structure([
                 'heroes' => new external_value(PARAM_BOOL, 'Hero names allowed in the course'),
                 'own' => new external_value(PARAM_BOOL, 'Own names allowed, read by a teacher first'),

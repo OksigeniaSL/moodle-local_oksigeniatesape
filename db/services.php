@@ -214,6 +214,20 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:play',
     ],
+    'local_oksigeniatesape_market_buy' => [
+        'classname' => 'local_oksigeniatesape\\external\\market_buy',
+        'description' => 'The current student buys something of the market for themselves, or gems towards their team\'s.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:play',
+    ],
+    'local_oksigeniatesape_market_wear' => [
+        'classname' => 'local_oksigeniatesape\\external\\market_wear',
+        'description' => 'The current student wears something of the market they own, or takes off what they wear of a kind.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:play',
+    ],
     'local_oksigeniatesape_set_coat' => [
         'classname' => 'local_oksigeniatesape\\external\\set_coat',
         'description' => 'Dresses the creature of the current student with fur, feathers or scales.',

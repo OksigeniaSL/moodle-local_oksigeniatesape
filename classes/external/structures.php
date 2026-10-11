@@ -49,6 +49,7 @@ final class structures {
             'gems' => new external_value(PARAM_INT, 'Gems'),
             'creaturestage' => new external_value(PARAM_INT, 'Stage of the creature (0 before it hatches)'),
             'creature' => new external_value(PARAM_RAW, 'Traits of the creature (JSON), empty before it hatches'),
+            'aura' => new external_value(PARAM_ALPHANUMEXT, 'Aura it wears from the market', VALUE_DEFAULT, ''),
             'member' => new external_single_structure([
                 'renown' => new external_value(PARAM_INT, 'Knowledge earned in the course'),
                 'energy' => new external_value(PARAM_INT, 'Energy in the course (-1: not shown to this classmate)'),
@@ -158,6 +159,42 @@ final class structures {
                 'answer' => new external_value(PARAM_TEXT, 'The wrong answer most given'),
             ], 'The mix-up that came up most', VALUE_OPTIONAL),
         ], 'Today in the valley', VALUE_OPTIONAL);
+    }
+
+    /**
+     * The market of the valley, as a student sees it.
+     *
+     * @return external_multiple_structure
+     */
+    public static function market(): external_multiple_structure {
+        return new external_multiple_structure(new external_single_structure([
+            'code' => new external_value(PARAM_ALPHANUMEXT, 'What'),
+            'kind' => new external_value(PARAM_ALPHA, 'paint, aura or banner'),
+            'price' => new external_value(PARAM_INT, 'Gems'),
+            'team' => new external_value(PARAM_BOOL, 'The team buys it together'),
+            'owned' => new external_value(PARAM_BOOL, 'Owned (by the team, if it is the team\'s)'),
+            'worn' => new external_value(PARAM_BOOL, 'Worn'),
+            'given' => new external_value(PARAM_INT, 'Gems the team has put towards it'),
+            'mine' => new external_value(PARAM_INT, 'Gems the student has put towards it'),
+        ]), 'The market of the valley', VALUE_DEFAULT, []);
+    }
+
+    /**
+     * The album of the field guide.
+     *
+     * @return external_single_structure
+     */
+    public static function album(): external_single_structure {
+        return new external_single_structure([
+            'cards' => new external_multiple_structure(new external_single_structure([
+                'name' => new external_value(PARAM_TEXT, 'Species'),
+                'group' => new external_value(PARAM_TEXT, 'Its group'),
+                'golden' => new external_value(PARAM_BOOL, 'The entry says its place in a food chain'),
+                'mine' => new external_value(PARAM_BOOL, 'Made by the student'),
+            ])),
+            'class' => new external_value(PARAM_INT, 'Entries of the whole class'),
+            'cmid' => new external_value(PARAM_INT, 'The field guide'),
+        ], 'The album of the field guide', VALUE_OPTIONAL);
     }
 
     /**

@@ -3299,3 +3299,83 @@ body.in-battle {
   display: block;
   color: var(--text-soft);
 }
+
+/* ---------- The market of the valley ---------- */
+
+.aura {
+  position: relative;
+  display: inline-block;
+}
+
+.aura.aura-leaves {
+  filter: drop-shadow(0 0 8px rgba(111, 208, 140, .85));
+}
+
+.aura.aura-fireflies::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  pointer-events: none;
+  background:
+    radial-gradient(circle 3px at 15% 20%, #ffe58a, transparent 70%),
+    radial-gradient(circle 2px at 85% 30%, #ffe58a, transparent 70%),
+    radial-gradient(circle 3px at 70% 85%, #fff2b0, transparent 70%),
+    radial-gradient(circle 2px at 25% 78%, #ffe58a, transparent 70%);
+  animation: tesape-fireflies 3s ease-in-out infinite;
+}
+
+@keyframes tesape-fireflies {
+  0%,
+  100% {
+    opacity: .45;
+    transform: translateY(0);
+  }
+
+  50% {
+    opacity: 1;
+    transform: translateY(-4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aura.aura-fireflies::after {
+    animation: none;
+  }
+}
+
+.banner-lantern svg {
+  width: 20px;
+  height: 20px;
+  color: var(--lantern);
+  vertical-align: -3px;
+}
+
+/* ---------- The album of the field guide ---------- */
+
+.album {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.album-card {
+  padding: 12px;
+  border-radius: 12px;
+  border: 2px solid var(--line);
+  background: rgba(255, 255, 255, .05);
+}
+
+.album-card.golden {
+  border-color: var(--lantern);
+  background: linear-gradient(135deg, rgba(255, 200, 87, .25), rgba(255, 200, 87, .05));
+}
+
+.album-card small {
+  display: block;
+  color: var(--text-soft);
+}
+
+.album-card small.mine {
+  color: var(--lantern);
+}

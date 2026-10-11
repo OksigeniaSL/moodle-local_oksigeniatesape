@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.20.0 (2026-10-12)
+
+- **The market of the valley**, where gems go: three paints for the creature (gold, night and snow, 10 gems) and two
+  auras for the hero (fireflies and forest, 15), which classmates see in the team and on the class screen; and the
+  lantern of the team's banner (20), the first thing the team pays for together: each member puts in what they want,
+  and the lantern shows next to the team's name once it is paid. Bought things can be taken off and worn again for
+  nothing. Nothing is bought with money and nothing changes how the game plays. Resetting a course takes the banners
+  of its teams, not what each student bought for their character.
+- **The album of the field guide**: each entry of the field guide of the class made by the student or their team is a
+  card, golden if it says what place the species takes in a food chain. It reads the database of the mission (entries
+  waiting for approval do not count yet).
+
 ## 0.19.0 (2026-10-12)
 
 - **Today in the valley**, on the class screen and at the top of the teacher's panel: the chapter the class is in and
