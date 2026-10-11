@@ -327,7 +327,19 @@
     return '<section class="board-map"><h2>' + esc(m.title) + '</h2><div class="map-wrap"><svg class="map" ' +
       'viewBox="0 0 400 640" role="img" aria-label="' + esc(m.title) + '">' + ground +
       '<polyline points="' + pts + '" class="road"/>' + (lit ? '<polyline points="' + walked + '" class="road walked"/>' : '') +
-      places + '</svg></div></section>';
+      places + '</svg></div>' + pastExpeditions() + '</section>';
+  }
+
+  /**
+   * The expeditions the class made before the current one, with the lanterns it lit.
+   *
+   * @return {string}
+   */
+  function pastExpeditions() {
+    var list = state.board.expeditions || [];
+    return list.length ? '<p class="help-soft board-past">' + esc(t('app_expeditions')) + ': ' + list.map(function(x) {
+      return esc(x.title) + ' (' + esc(t('app_expedition_lit', {lit: x.lit, total: x.total})) + ')';
+    }).join(' · ') + '</p>' : '';
   }
 
   /* ---------- The event of the day ---------- */

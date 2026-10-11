@@ -19,7 +19,7 @@
         <FIELD NAME="creature" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Traits of the companion creature (JSON), drawn when it hatches"/>
         <FIELD NAME="appearance" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="How the character looks (JSON): parts and colours"/>
         <FIELD NAME="creaturestage" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="0 before it hatches"/>
-        <FIELD NAME="cosmetics" TYPE="char" LENGTH="255" NOTNULL="true" DEFAULT="" SEQUENCE="false" COMMENT="What it wears from the market: JSON with paint and aura"/>
+        <FIELD NAME="cosmetics" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="What it wears from the market: JSON with paint and aura"/>
         <FIELD NAME="rolechangedat" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Last change of role (one per term)"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>

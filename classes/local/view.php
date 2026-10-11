@@ -138,6 +138,7 @@ final class view {
         if ($mission) {
             $world['mission'] = $mission;
         }
+        $world['expeditions'] = self::expeditions($courseid, (int) $char->id);
         $entries = $DB->get_records(
             self::T . 'ledger',
             ['charid' => $char->id, 'courseid' => $courseid],
@@ -157,11 +158,12 @@ final class view {
      * @param int $courseid
      * @param \stdClass $char
      * @param \stdClass $member
+     * @param \stdClass|null $mission An expedition of the course (the current one if none).
      * @return array|null
      */
-    public static function mission(int $courseid, \stdClass $char, \stdClass $member): ?array {
+    public static function mission(int $courseid, \stdClass $char, \stdClass $member, ?\stdClass $mission = null): ?array {
         global $DB;
-        $mission = missions::get($courseid);
+        $mission = $mission ?? missions::get($courseid);
         if (!$mission) {
             return null;
         }
@@ -265,6 +267,38 @@ final class view {
     }
 
     /**
+     * The expeditions a course made before the current one, with what the class lit in each (and the student, if given).
+     *
+     * @param int $courseid
+     * @param int $charid The student (0: the class only).
+     * @return array id, code, title, subtitle, lit, total, mine, pages.
+     */
+    public static function expeditions(int $courseid, int $charid = 0): array {
+        global $DB;
+        $list = [];
+        foreach (missions::past($courseid) as $mission) {
+            $mine = $charid ? $DB->get_records_menu(
+                self::T . 'found',
+                ['charid' => $charid, 'missionid' => $mission->id],
+                '',
+                'id, kind'
+            ) : [];
+            $counts = array_count_values($mine);
+            $list[] = [
+                'id' => (int) $mission->id,
+                'code' => $mission->code,
+                'title' => missions::text($mission->data['title'] ?? $mission->code, $mission->skin),
+                'subtitle' => missions::text($mission->data['subtitle'] ?? '', $mission->skin),
+                'lit' => $DB->count_records_select(self::T . 'chapter', 'missionid = ? AND litat > 0', [$mission->id]),
+                'total' => $DB->count_records(self::T . 'chapter', ['missionid' => $mission->id]),
+                'mine' => (int) ($counts['lantern'] ?? 0),
+                'pages' => (int) ($counts['page'] ?? 0),
+            ];
+        }
+        return $list;
+    }
+
+    /**
      * The class screen of a course: the map of the mission with the lanterns of the class, and the event of the day.
      *
      * @param int $courseid
@@ -318,6 +352,7 @@ final class view {
         if ($today) {
             $board['today'] = $today;
         }
+        $board['expeditions'] = self::expeditions($courseid);
         $opener = nextclass::opener($courseid, $now ?? time());
         if ($opener !== '') {
             $board['opener'] = $opener;

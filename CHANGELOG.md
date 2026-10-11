@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.21.0 (2026-10-12)
+
+- **Expeditions**: when a course starts another mission, the one before stays as an earlier expedition, with the
+  lanterns the class lit. Students see the earlier expeditions under the map (the lanterns of the class, and their own
+  lanterns and pages) and can visit each map as the class left it, to look, not to play. The class screen lists them
+  under the map, and the teacher's panel lists them in the mission tab, with the missions the course has not made yet
+  to start another expedition.
+- The field of what a character wears from the market can be empty: the definition of 0.20.0 was not accepted by
+  Moodle on a new install.
+
 ## 0.20.0 (2026-10-12)
 
 - **The market of the valley**, where gems go: three paints for the creature (gold, night and snow, 10 gems) and two

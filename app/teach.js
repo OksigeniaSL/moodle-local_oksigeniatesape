@@ -915,10 +915,19 @@
       var pkg = m.packages.filter(function(p) {
         return p.code === m.installed.code;
       })[0];
+      // Other missions start a new expedition; the current one stays lit as a past one.
+      var others = m.packages.filter(function(p) {
+        return p.code !== m.installed.code && !m.expeditions.some(function(x) {
+          return x.code === p.code;
+        });
+      });
       html = '<section class="card"><div class="kicker">' + esc(t('teach_mission_installed')) + '</div><h2>' +
         esc(m.installed.title) + '</h2>' + (pkg ? '<p style="color:var(--text-soft)">' + esc(pkg.subtitle) + ' · ' +
         esc(t('teach_mission_ages', pkg.ages)) + '</p>' + (can('manageregion') ? packageForm(pkg, m.installed) : '') : '') +
-        '</section>' + nextClass() + games() + results();
+        '</section>' + nextClass() + games() + results() + expeditionsCard(m.expeditions) +
+        (others.length && can('manageregion') ? '<section class="card" style="margin-top:16px"><h2>' +
+        esc(t('teach_expedition_new')) + '</h2><p style="color:var(--text-soft)">' + esc(t('teach_expedition_new_help')) +
+        '</p></section>' + others.map(packageCard).join('') : '');
     }
     var el = content(html);
     bindNextClass(el);
@@ -939,6 +948,23 @@
         });
       };
     });
+  }
+
+  /**
+   * The expeditions the class made before the current one, with the lanterns it lit.
+   *
+   * @param {Array} list
+   * @return {string}
+   */
+  function expeditionsCard(list) {
+    if (!list || !list.length) {
+      return '';
+    }
+    return '<section class="card" style="margin-top:16px"><h2>' + esc(t('app_expeditions')) + '</h2><ul class="list">' +
+      list.map(function(x) {
+        return '<li class="item"><span class="grow"><b>' + esc(x.title) + '</b><small>' + esc(x.subtitle) + '</small></span>' +
+          '<span class="tag done">' + esc(t('app_expedition_lit', {lit: x.lit, total: x.total})) + '</span></li>';
+      }).join('') + '</ul></section>';
   }
 
   function packageForm(p, installed) {

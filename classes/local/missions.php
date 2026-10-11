@@ -225,6 +225,37 @@ final class missions {
     }
 
     /**
+     * The expeditions a course made before the current one: the missions installed earlier, newest first. They stay,
+     * with their lanterns, as a map the class can visit.
+     *
+     * @param int $courseid
+     * @return \stdClass[] Missions, with data.
+     */
+    public static function past(int $courseid): array {
+        global $DB;
+        $missions = array_values($DB->get_records(self::T . 'mission', ['courseid' => $courseid], 'id DESC'));
+        array_shift($missions);
+        foreach ($missions as $mission) {
+            $mission->data = json_decode((string) $mission->definition, true) ?: [];
+        }
+        return $missions;
+    }
+
+    /**
+     * One of the expeditions of a course, current or past.
+     *
+     * @param int $courseid
+     * @param int $missionid
+     * @return \stdClass The mission, with data.
+     */
+    public static function expedition(int $courseid, int $missionid): \stdClass {
+        global $DB;
+        $mission = $DB->get_record(self::T . 'mission', ['id' => $missionid, 'courseid' => $courseid], '*', MUST_EXIST);
+        $mission->data = json_decode((string) $mission->definition, true) ?: [];
+        return $mission;
+    }
+
+    /**
      * Whether some chapters of the mission of a course bring Moodle activities that are not in the course yet.
      *
      * @param \stdClass $mission With data.

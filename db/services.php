@@ -228,6 +228,13 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:play',
     ],
+    'local_oksigeniatesape_get_expedition' => [
+        'classname' => 'local_oksigeniatesape\\external\\get_expedition',
+        'description' => 'An expedition the course made before the current one, as the current student sees it.',
+        'type' => 'read',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:play',
+    ],
     'local_oksigeniatesape_set_coat' => [
         'classname' => 'local_oksigeniatesape\\external\\set_coat',
         'description' => 'Dresses the creature of the current student with fur, feathers or scales.',

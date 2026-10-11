@@ -198,6 +198,24 @@ final class structures {
     }
 
     /**
+     * The expeditions a course made before the current one.
+     *
+     * @return external_multiple_structure
+     */
+    public static function expeditions(): external_multiple_structure {
+        return new external_multiple_structure(new external_single_structure([
+            'id' => new external_value(PARAM_INT, 'Mission'),
+            'code' => new external_value(PARAM_ALPHANUMEXT, 'Code of the mission'),
+            'title' => new external_value(PARAM_TEXT, 'Title'),
+            'subtitle' => new external_value(PARAM_TEXT, 'Subtitle'),
+            'lit' => new external_value(PARAM_INT, 'Lanterns the class lit'),
+            'total' => new external_value(PARAM_INT, 'Chapters'),
+            'mine' => new external_value(PARAM_INT, 'Lanterns the student lit'),
+            'pages' => new external_value(PARAM_INT, 'Pages the student found'),
+        ]), 'Expeditions made before the current one', VALUE_DEFAULT, []);
+    }
+
+    /**
      * Own names waiting for a teacher.
      *
      * @return external_multiple_structure

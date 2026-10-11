@@ -357,7 +357,7 @@ function xmldb_local_oksigeniatesape_upgrade($oldversion) {
     if ($oldversion < 2026101201) {
         // The market of the valley: what a character wears, and what was bought.
         $table = new xmldb_table('local_oksigeniatesape_char');
-        $field = new xmldb_field('cosmetics', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, '', 'creaturestage');
+        $field = new xmldb_field('cosmetics', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'creaturestage');
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
@@ -379,6 +379,18 @@ function xmldb_local_oksigeniatesape_upgrade($oldversion) {
         }
 
         upgrade_plugin_savepoint(true, 2026101201, 'local', 'oksigeniatesape');
+    }
+
+    if ($oldversion < 2026101202) {
+        // What a character wears can be empty (the first version of the field did not allow it).
+        $table = new xmldb_table('local_oksigeniatesape_char');
+        $field = new xmldb_field('cosmetics', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'creaturestage');
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->change_field_notnull($table, $field);
+            $dbman->change_field_default($table, $field);
+        }
+
+        upgrade_plugin_savepoint(true, 2026101202, 'local', 'oksigeniatesape');
     }
 
     return true;

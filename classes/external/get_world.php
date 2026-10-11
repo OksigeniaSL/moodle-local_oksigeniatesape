@@ -98,6 +98,7 @@ final class get_world extends external_api {
                 'pacts' => structures::team_pacts(),
             ], 'Team', VALUE_OPTIONAL),
             'market' => structures::market(),
+            'expeditions' => structures::expeditions(),
             'album' => structures::album(),
             'names' => new external_single_structure([
                 'heroes' => new external_value(PARAM_BOOL, 'Hero names allowed in the course'),

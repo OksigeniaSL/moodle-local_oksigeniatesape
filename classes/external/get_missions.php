@@ -92,6 +92,7 @@ final class get_missions extends external_api {
                     'name' => new external_value(PARAM_TEXT, 'Name'),
                 ])),
             ])),
+            'expeditions' => structures::expeditions(),
         ]);
     }
 
@@ -135,6 +136,7 @@ final class get_missions extends external_api {
                 'activitiesmissing' => missions::activities_missing($mission),
             ];
         }
+        $result['expeditions'] = view::expeditions($courseid);
         return $result;
     }
 }

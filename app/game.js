@@ -492,7 +492,7 @@
       (walked ? '<polyline points="' + walked + '" class="road walked"/>' : '') + places + me + '</svg></div>';
   }
 
-  function chapterPanel(m, ch) {
+  function chapterPanel(m, ch, past) {
     var w = state.world;
     var challenge = w.challenges.filter(function(x) {
       return x.id === ch.challengeid;
@@ -501,19 +501,22 @@
     var scenes = ch.scenes.map(function(sc) {
       return '<li class="item"><span class="grow"><b>' + esc(sc.title) + '</b><small>' + (sc.minutes ?
         esc(t('app_minutes', sc.minutes)) : '') + (sc.done ? ' · ' + esc(t(sc.better ? 'app_status_better' :
-        'app_status_done')) : '') + '</small></span>' +
+        'app_status_done')) : '') + '</small></span>' + (past ? '' :
         '<button class="btn ' + (sc.done ? 'btn-soft' : 'btn-main') + '" data-scene="' + sc.id + '">' +
-        esc(sc.done ? t('app_playagain') : t('app_play')) + '</button></li>';
+        esc(sc.done ? t('app_playagain') : t('app_play')) + '</button>') + '</li>';
     }).join('');
-    var acts = w.activities.filter(function(a) {
+    var acts = past ? [] : w.activities.filter(function(a) {
       return a.chapterid === ch.id;
     });
     var games = (ch.games || []).map(function(g) {
       return '<li class="item"><span class="mini-icon">' + T.icon('game') + '</span><span class="grow"><b>' + esc(g.title) +
-        '</b><small>' + esc(g.done ? t('app_game_done') : t('app_game_help')) + '</small></span><button class="btn ' +
-        (g.done ? 'btn-soft' : 'btn-main') + '" data-game="' + esc(g.code) + '">' + esc(g.done ? t('app_playagain') :
-        t('app_play')) + '</button></li>';
+        '</b><small>' + esc(g.done ? t('app_game_done') : t('app_game_help')) + '</small></span>' + (past ? '' :
+        '<button class="btn ' + (g.done ? 'btn-soft' : 'btn-main') + '" data-game="' + esc(g.code) + '">' +
+        esc(g.done ? t('app_playagain') : t('app_play')) + '</button>') + '</li>';
     }).join('');
+    if (past) {
+      challenge = null;
+    }
     return '<section class="card chapter"><div class="kicker">' + esc(lantern) + '</div><h2>' + esc(ch.name) + '</h2>' +
       '<p>' + esc(ch.intro) + '</p>' + (ch.letter ? '<blockquote class="letter"><small>' + esc(t('app_letter')) +
       '</small>' + esc(ch.letter) + '</blockquote>' : '') + (scenes ? '<ul class="list">' + scenes + '</ul>' : '') +
@@ -596,11 +599,11 @@
     'body{padding-top:0!important}#page,#page-wrapper #page{margin:0!important;padding-top:8px!important}' +
     '#page.drawers{margin-left:0!important;margin-right:0!important}';
 
-  function missionView(m) {
+  function missionView(m, past) {
     var key = 'tesape-mission-' + cfg.courseid + '-' + m.id + '-' + cfg.userid;
     var seen = true;
     try {
-      seen = !!window.localStorage.getItem(key);
+      seen = past || !!window.localStorage.getItem(key);
     } catch (e) {
       seen = true;
     }
@@ -608,6 +611,10 @@
       return '<section class="card story-card"><div class="kicker">' + esc(m.subtitle) + '</div><h2>' + esc(m.title) +
         '</h2><p class="lead">' + esc(m.prologue) + '</p><div class="actions" style="justify-content:flex-start">' +
         '<button class="btn btn-main" data-begin="' + esc(key) + '">' + esc(t('app_beginmission')) + '</button></div></section>';
+    }
+    if (!m.chapters.length) {
+      return '<section class="card"><h2>' + esc(m.title) + '</h2><p class="empty">' + esc(t('app_mission_soon')) +
+        '</p></section>';
     }
     var chapter = m.chapters.filter(function(ch) {
       return ch.id === state.chapter;
@@ -617,8 +624,27 @@
     }).length;
     return '<div class="mission"><div class="mission-head"><div><div class="kicker">' + esc(m.subtitle) + '</div><h2>' +
       esc(m.title) + '</h2></div><div class="tally"><span>' + T.icon('lantern') + ' ' + lit + '/' + m.chapters.length +
-      '</span><span>' + T.icon('log') + ' ' + m.pages.length + '/' + m.pagecount + '</span></div></div>' + pageCard() +
-      '<div class="mission-grid">' + missionMap(m) + chapterPanel(m, chapter) + '</div></div>';
+      '</span><span>' + T.icon('log') + ' ' + m.pages.length + '/' + m.pagecount + '</span></div></div>' +
+      (past ? '' : pageCard()) + '<div class="mission-grid">' + missionMap(m) + chapterPanel(m, chapter, past) + '</div></div>';
+  }
+
+  /**
+   * The expeditions the class made before the current one: their maps stay lit, to visit.
+   *
+   * @return {string}
+   */
+  function expeditionsCard() {
+    var list = state.world.expeditions || [];
+    if (!list.length) {
+      return '';
+    }
+    return '<section class="card expeditions-card" style="margin-top:16px"><h2>' + esc(t('app_expeditions')) + '</h2>' +
+      '<ul class="list">' + list.map(function(x) {
+        return '<li class="item"><span class="mini-icon">' + T.icon('lantern') + '</span><span class="grow"><b>' +
+          esc(x.title) + '</b><small>' + esc(t('app_expedition_lit', {lit: x.lit, total: x.total})) + ' · ' +
+          esc(t('app_expedition_mine', {mine: x.mine, pages: x.pages})) + '</small></span><button class="btn btn-soft" ' +
+          'data-visit="' + x.id + '">' + esc(t('app_expedition_visit')) + '</button></li>';
+      }).join('') + '</ul></section>';
   }
 
   /**
@@ -658,6 +684,28 @@
   }
 
   function bindWorld() {
+    app.querySelectorAll('[data-visit]').forEach(function(b) {
+      b.onclick = function() {
+        b.disabled = true;
+        T.api('get_expedition', {courseid: cfg.courseid, missionid: Number(b.dataset.visit)}).then(function(r) {
+          state.visit = r.mission;
+          state.chapter = 0;
+          world();
+          window.scrollTo(0, 0);
+        }).catch(function(e) {
+          b.disabled = false;
+          T.toast(esc(e.message), true);
+        });
+      };
+    });
+    var leave = app.querySelector('[data-leave]');
+    if (leave) {
+      leave.onclick = function() {
+        state.visit = null;
+        state.chapter = 0;
+        world();
+      };
+    }
     app.querySelectorAll('[data-page]:not([disabled])').forEach(function(b) {
       b.onclick = function() {
         app.querySelectorAll('[data-page]').forEach(function(o) {
@@ -727,8 +775,14 @@
 
   function tabWorld() {
     var w = state.world;
+    if (state.visit) {
+      return '<section class="card visit-head" style="margin-bottom:12px"><div class="kicker">' +
+        esc(t('app_expedition_visiting')) + '</div><div class="actions" style="justify-content:flex-start"><button ' +
+        'class="btn btn-soft" data-leave>' + esc(t('app_expedition_back')) + '</button></div></section>' +
+        missionView(state.visit, true);
+    }
     if (w.mission) {
-      return missionView(w.mission);
+      return missionView(w.mission) + expeditionsCard();
     }
     var next = w.challenges.filter(function(ch) {
       return !ch.status || ch.status === 'notyet';
