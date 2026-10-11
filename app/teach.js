@@ -131,6 +131,9 @@
       pending)) : '') + '</small></span></div><div class="hud-actions"><button class="btn btn-soft icon-btn" type="button" ' +
       'data-tab="ideas" aria-label="' + esc(t('teach_tab_ideas')) + '"' + (state.tab === 'ideas' ? ' aria-current="page"' : '') +
       '>' + T.icon('idea') + (d.ideasunread ? '<span class="badge">' + d.ideasunread + '</span>' : '') + '</button>' +
+      (can('runclassscreen') ? '<a class="btn btn-soft icon-btn" href="' +
+      esc(cfg.wwwroot + '/local/oksigeniatesape/board.php?id=' + cfg.courseid) + '" aria-label="' + esc(t('teach_board')) +
+      '" title="' + esc(t('teach_board')) + '">' + T.icon('world') + '</a>' : '') +
       '<button class="btn btn-soft icon-btn" type="button" data-tab="settings" aria-label="' + esc(t('teach_tab_settings')) +
       '"' + (state.tab === 'settings' ? ' aria-current="page"' : '') + '>' + T.icon('settings') + '</button><a class="btn ' +
       'btn-soft exit" href="' + esc(cfg.courseurl) + '" aria-label="' + esc(t('app_exit')) + '">' + T.icon('exit') +

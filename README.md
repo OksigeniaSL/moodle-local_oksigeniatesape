@@ -40,11 +40,15 @@ privacy come from Moodle, and the game is a full-screen application of its own.
   forums, assignments and field guide, which open inside the game.
 - **Defensa del nido**, the first minigame, by steps and with a mode without hurry; and **the box of ideas** from
   students to their teachers.
+- **The class screen**, for the projector: the map of the mission with the lanterns of the class, the teams with their
+  portraits and quick touches of knowledge and gems, and **the event of the day** (calm, fair breeze, mysterious
+  footprint with a question for the whole class, exchange of breath between teams). It refreshes itself, so what the
+  teacher does from the phone shows up on the board.
 - **The game engine**: knowledge with weekly and daily caps, gems, energy and falling worn out, breath, items, undo,
   and completed Moodle activities turned into progress. Privacy provider from the first day.
 
-The art you see today is a placeholder: the game is ready for **art packs** (`cli/art.php`), and its art is being
-made. Next comes the class screen.
+The game is ready for **art packs** (`cli/art.php`), and its first pack is nearly done. Next come the battles with
+the students' phones and the scenes voted by the class.
 
 ## Requirements
 

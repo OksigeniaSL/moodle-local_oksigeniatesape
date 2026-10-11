@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.5.0 (2026-10-11)
+
+- **The class screen** (`board.php`), for the projector or the whiteboard, opened from the teacher panel: the map of
+  the mission with the lanterns of the class, the teams with their portraits and the goal of the week, and quick
+  touches of saber and gems on students or whole teams. Only good news on it: nothing that takes something away from a
+  student in front of the class. It refreshes itself every few seconds, so what the teacher does from the phone shows
+  up on the board.
+- **The event of the day**: a card drawn when the class starts, that the teacher can change or skip until something
+  has come of it. Calm: nobody loses energy today. Fair breeze: activities completed today give double saber. Mysterious
+  footprint: a question for the whole class, with its answer and why; if the class gets it right, saber for everybody.
+  Exchange: each team gives breath to another team. The card of yesterday is not repeated.
+- The pilot mission brings 18 quick questions, three per chapter (version 3 of the mission, updated by itself).
+
 ## 0.4.5 (2026-10-11)
 
 - Tone of skin with an art pack: until the student picks one, each character shows as it is painted (the cards of the

@@ -2211,3 +2211,229 @@ a.chip {
   align-items: center;
   text-decoration: none;
 }
+
+/* The class screen: for the projector, read from the back of the room. */
+.board {
+  min-height: 100vh;
+  padding: 16px 20px 96px;
+  font-size: clamp(16px, 1.25vw, 22px);
+}
+
+.board-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.board-top b {
+  display: block;
+  font-family: var(--f-title);
+  font-size: 1.5em;
+}
+
+.board-top small {
+  color: var(--text-soft);
+}
+
+.board-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.board-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 2fr) 3fr;
+  gap: 18px;
+  align-items: start;
+}
+
+.board-map h2 {
+  font-family: var(--f-title);
+  margin: 0 0 8px;
+}
+
+.board-map .map-wrap {
+  max-height: calc(100vh - 150px);
+  aspect-ratio: 400 / 640;
+  margin: 0 auto;
+}
+
+.board-map .map {
+  width: 100%;
+  height: 100%;
+}
+
+.board-side {
+  display: grid;
+  gap: 18px;
+}
+
+.board-event .event-head {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.board-event .event-icon {
+  width: 3.2em;
+  height: 3.2em;
+  flex: none;
+}
+
+.board-event .event-icon svg,
+.board-event .event-icon img {
+  width: 100%;
+  height: 100%;
+}
+
+.board-event h2 {
+  font-family: var(--f-title);
+  font-size: 1.8em;
+  margin: 0;
+}
+
+.board-event .question .q {
+  font-size: 1.35em;
+  font-weight: 600;
+  margin: 16px 0 10px;
+}
+
+.board-event .options {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14em, 1fr));
+  gap: 10px;
+}
+
+.board-event .options li {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 16px;
+  border-radius: var(--r-s);
+  border: 2px solid var(--line);
+  background: rgba(255, 255, 255, .05);
+  font-size: 1.15em;
+}
+
+.board-event .options b {
+  font-family: var(--f-title);
+  color: var(--lantern);
+}
+
+.board-event .options li.right {
+  border-color: var(--leaf);
+  background: rgba(124, 198, 127, .18);
+}
+
+.board-event .why {
+  margin: 12px 0 0;
+  color: var(--text-soft);
+}
+
+.board-small .btn {
+  font-size: .85em;
+}
+
+.board-team {
+  margin-top: 12px;
+}
+
+.board-team .team-name {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--text);
+  font-family: var(--f-title);
+  font-size: 1.25em;
+  cursor: pointer;
+}
+
+.board-team .meter {
+  display: block;
+  margin: 6px 0 8px;
+}
+
+.board-team .members {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.board-student {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 5.2em;
+  padding: 6px 4px;
+  border-radius: var(--r-s);
+  border: 2px solid transparent;
+  background: none;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.board-student .face {
+  width: 3.8em;
+  height: 3.8em;
+  border-radius: 50%;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 35%, var(--mist-2), var(--night-2));
+  border: 2px solid var(--line);
+}
+
+.board-student .face .avatar {
+  width: 100%;
+  height: 100%;
+}
+
+.board-student .name {
+  font-size: .85em;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.board-student.on {
+  border-color: var(--lantern);
+  background: rgba(255, 200, 87, .12);
+}
+
+.board-student.resting {
+  opacity: .55;
+}
+
+.board-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 20px;
+  background: rgba(15, 33, 49, .96);
+  border-top: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+.board-bar .btn .icon {
+  width: 1.2em;
+  height: 1.2em;
+  vertical-align: -.2em;
+}
+
+@media (max-width: 900px) {
+  .board-grid {
+    grid-template-columns: 1fr;
+  }
+}

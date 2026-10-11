@@ -98,6 +98,10 @@ final class engine {
             return null;
         }
         $now = $now ?? time();
+        if ($reason === 'completion' && events::active((int) $member->courseid, 'breeze', $now)) {
+            // Breeze, the event of the day: what is handed in today counts double.
+            $amount *= 2;
+        }
         $region = regions::get((int) $member->courseid);
         $granted = $amount;
         if ($region) {
@@ -183,6 +187,11 @@ final class engine {
         }
         $now = $now ?? time();
         if ($amount < 0 && $reason === 'commitment' && $member->energy > 0) {
+            $calm = events::active((int) $member->courseid, 'calm', $now);
+            if ($calm) {
+                // Calm, the event of the day: nobody loses energy; the loss is noted as left out.
+                return self::record($member, 'energy', 0, 'calm', $actorid, 0, (int) $calm->id, -$amount, $now);
+            }
             $guard = powers::guard($member, $now);
             if ($guard) {
                 return self::guarded($member, -$amount, $guard, $actorid, $now);

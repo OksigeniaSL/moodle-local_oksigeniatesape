@@ -228,4 +228,18 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:award',
     ],
+    'local_oksigeniatesape_get_board' => [
+        'classname' => 'local_oksigeniatesape\\external\\get_board',
+        'description' => 'The class screen: the map of the mission with the lanterns of the class, and the event of the day.',
+        'type' => 'read',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:runclassscreen',
+    ],
+    'local_oksigeniatesape_class_event' => [
+        'classname' => 'local_oksigeniatesape\\external\\class_event',
+        'description' => 'The event of the day on the class screen: draw, change, skip or play it.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:runclassscreen',
+    ],
 ];

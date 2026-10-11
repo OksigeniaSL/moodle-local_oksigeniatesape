@@ -1,6 +1,6 @@
 {
  "code": "livingthings",
- "version": 2,
+ "version": 3,
  "lang": "es",
  "ages": "9–11",
  "title": {
@@ -664,6 +664,242 @@
    }
   }
  },
+ "questions": [
+  {
+   "id": "Q1-1",
+   "chapter": "claro",
+   "objective": "SV-01",
+   "text": "¿Cuál de estos es un ser vivo?",
+   "options": [
+    "Una seta del bosque",
+    "Una nube",
+    "El fuego de la hoguera",
+    "Una piedra que rueda"
+   ],
+   "why": "La seta se nutre, se relaciona y se reproduce. El fuego crece y se mueve, pero no hace ninguna de esas tres cosas."
+  },
+  {
+   "id": "Q1-2",
+   "chapter": "claro",
+   "objective": "SV-01",
+   "text": "¿Qué tres cosas hacen todos los seres vivos?",
+   "options": [
+    "Se nutren, se relacionan y se reproducen",
+    "Comen, duermen y corren",
+    "Crecen, vuelan y nadan",
+    "Respiran, hablan y se mueven"
+   ],
+   "why": "Son las tres funciones vitales. Una planta no corre ni habla, y es un ser vivo."
+  },
+  {
+   "id": "Q1-3",
+   "chapter": "claro",
+   "objective": "SV-02",
+   "text": "¿De qué están hechos todos los seres vivos?",
+   "options": [
+    "De células",
+    "Solo de agua",
+    "De arena muy fina",
+    "De aire"
+   ],
+   "why": "La célula es la parte más pequeña de un ser vivo. Algunos, como las bacterias, son una sola célula."
+  },
+  {
+   "id": "Q2-1",
+   "chapter": "biblioteca",
+   "objective": "SV-03",
+   "text": "Una seta, ¿en qué grupo de seres vivos va?",
+   "options": [
+    "Hongos",
+    "Plantas",
+    "Animales"
+   ],
+   "why": "Las setas no fabrican su alimento con la luz, como las plantas, sino que se alimentan de restos de otros seres vivos. Son hongos."
+  },
+  {
+   "id": "Q2-2",
+   "chapter": "biblioteca",
+   "objective": "SV-03",
+   "text": "¿Qué hacen las plantas que no hacen los animales?",
+   "options": [
+    "Fabrican su alimento con la luz del sol",
+    "Necesitan agua",
+    "Están hechas de células",
+    "Se reproducen"
+   ],
+   "why": "Las plantas hacen la fotosíntesis. Las otras tres cosas las hacen también los animales."
+  },
+  {
+   "id": "Q2-3",
+   "chapter": "biblioteca",
+   "objective": "SV-03",
+   "text": "¿Cuántas células tiene una bacteria?",
+   "options": [
+    "Una sola",
+    "Muchas, como un árbol",
+    "Ninguna, porque no está viva"
+   ],
+   "why": "Las bacterias son seres vivos de una sola célula, tan pequeños que solo se ven con microscopio."
+  },
+  {
+   "id": "Q3-1",
+   "chapter": "bosque",
+   "objective": "SV-04",
+   "text": "El murciélago vuela. ¿Qué es?",
+   "options": [
+    "Un mamífero",
+    "Un ave",
+    "Un insecto",
+    "Un reptil"
+   ],
+   "why": "Tiene pelo y de cría toma leche de su madre. Que vuele no lo convierte en ave."
+  },
+  {
+   "id": "Q3-2",
+   "chapter": "bosque",
+   "objective": "SV-04",
+   "text": "¿Cuántas patas tiene un insecto?",
+   "options": [
+    "Seis",
+    "Ocho",
+    "Cuatro",
+    "Diez"
+   ],
+   "why": "Los insectos tienen seis patas y el cuerpo en tres partes. Con ocho patas es un arácnido, como la araña."
+  },
+  {
+   "id": "Q3-3",
+   "chapter": "bosque",
+   "objective": "SV-04",
+   "text": "¿Cuál de estos animales es invertebrado?",
+   "options": [
+    "El caracol",
+    "La rana",
+    {
+     "es": "La trucha",
+     "py": "El dorado"
+    },
+    {
+     "es": "La lagartija",
+     "py": "El teyú"
+    }
+   ],
+   "why": "El caracol no tiene columna vertebral. Es un molusco, de cuerpo blando y con concha."
+  },
+  {
+   "id": "Q4-1",
+   "chapter": "jardin",
+   "objective": "SV-05",
+   "text": "¿Por qué parte de la planta entra el agua del suelo?",
+   "options": [
+    "Por la raíz",
+    "Por la flor",
+    "Por el fruto",
+    "Por las semillas"
+   ],
+   "why": "La raíz sujeta la planta y absorbe el agua y las sales minerales del suelo."
+  },
+  {
+   "id": "Q4-2",
+   "chapter": "jardin",
+   "objective": "SV-05",
+   "text": "¿Qué necesita la hoja para fabricar el alimento de la planta?",
+   "options": [
+    "Luz, agua y aire",
+    "Solo tierra",
+    "Oscuridad y frío",
+    "Azúcar del suelo"
+   ],
+   "why": "Con la luz del sol, el agua y el dióxido de carbono del aire, la hoja fabrica alimento y suelta oxígeno."
+  },
+  {
+   "id": "Q4-3",
+   "chapter": "jardin",
+   "objective": "SV-05",
+   "text": "¿Para qué le sirve la flor a la planta?",
+   "options": [
+    "Para reproducirse",
+    "Para respirar",
+    "Para absorber agua",
+    "Solo para adornar"
+   ],
+   "why": "En la flor se forman las semillas, que darán plantas nuevas."
+  },
+  {
+   "id": "Q5-1",
+   "chapter": "lago",
+   "objective": "SV-06",
+   "text": "En la cadena «alga, pez pequeño, garza», ¿quién es el productor?",
+   "options": [
+    "El alga",
+    "El pez pequeño",
+    "La garza"
+   ],
+   "why": "El productor fabrica su propio alimento con la luz. En el lago, las algas y las plantas acuáticas."
+  },
+  {
+   "id": "Q5-2",
+   "chapter": "lago",
+   "objective": "SV-06",
+   "text": "Si desaparecen los peces pequeños del lago, ¿qué le pasa a la garza?",
+   "options": [
+    "Le cuesta encontrar alimento",
+    "Pasa a alimentarse de algas",
+    "No le afecta"
+   ],
+   "why": "En un ecosistema todo está unido. Si falta un eslabón de la cadena, lo notan los que se alimentan de él."
+  },
+  {
+   "id": "Q5-3",
+   "chapter": "lago",
+   "objective": "SV-06",
+   "text": "¿Qué es un ecosistema?",
+   "options": [
+    "Los seres vivos de un lugar, el lugar y cómo se relacionan",
+    "Solo los animales de un bosque",
+    "Una planta del lago",
+    "Un aparato para medir el agua"
+   ],
+   "why": "Un ecosistema son los seres vivos, el medio donde viven (agua, suelo, luz) y las relaciones entre todos."
+  },
+  {
+   "id": "Q6-1",
+   "chapter": "torre",
+   "objective": "SV-07",
+   "text": "Antes de sacar una conclusión, un buen naturalista…",
+   "options": [
+    "Observa, anota y comprueba",
+    "Elige la primera idea que se le ocurre",
+    "Pregunta qué piensa la mayoría"
+   ],
+   "why": "La ciencia avanza observando con cuidado, anotando lo que se ve y comprobándolo."
+  },
+  {
+   "id": "Q6-2",
+   "chapter": "torre",
+   "objective": "SV-08",
+   "text": "¿Cuál de estas acciones ayuda a un ecosistema?",
+   "options": [
+    "Plantar especies del lugar",
+    "Soltar en el río peces de otro país",
+    "Dejar basura junto al lago",
+    "Cortar los árboles de la orilla"
+   ],
+   "why": "Las especies del lugar dan alimento y refugio a los animales que ya viven allí. Una especie traída de fuera puede desplazar a las de aquí."
+  },
+  {
+   "id": "Q6-3",
+   "chapter": "torre",
+   "objective": "SV-07",
+   "text": "¿Para qué sirve un cuaderno de campo?",
+   "options": [
+    "Para no olvidar lo observado y poder compararlo",
+    "Para dibujar solo lo bonito",
+    "Para que nadie más lo lea"
+   ],
+   "why": "Anotar la fecha, el lugar y lo observado permite comparar y que otros lo comprueben."
+  }
+ ],
  "scenes": [
   "C1-2",
   "C2-2",

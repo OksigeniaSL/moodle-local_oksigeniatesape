@@ -42,11 +42,15 @@ pantalla completa.
   piloto trae sus foros, sus tareas y la guía de campo, que se abren dentro del juego.
 - **Defensa del nido**, el primer minijuego, por escalones y con un modo sin prisa; y **el buzón de ideas** de los
   alumnos para sus docentes.
+- **La pantalla de clase**, para el proyector: el mapa de la misión con las linternas de la clase, los equipos con sus
+  retratos y toques rápidos de saber y gemas, y **el evento del día** (calma, brisa favorable, huella misteriosa con una
+  pregunta para toda la clase, intercambio de aliento entre equipos). Se pone al día sola, así que lo que el docente
+  hace desde el móvil aparece en la pizarra.
 - **El motor del juego**: saber con topes semanal y diario, gemas, energía y caída, aliento, objetos, deshacer, y las
   actividades completadas de Moodle convertidas en progreso. Proveedor de privacidad desde el primer día.
 
-El arte que se ve hoy es provisional: el juego está preparado para **paquetes de arte** (`cli/art.php`), y su arte
-está en marcha. Después llega la pantalla de clase.
+El juego está preparado para **paquetes de arte** (`cli/art.php`), y el primero está casi terminado. Después llegan
+las batallas con los móviles de los alumnos y las escenas votadas por la clase.
 
 ## Requisitos
 

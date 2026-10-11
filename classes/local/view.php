@@ -224,6 +224,48 @@ final class view {
     }
 
     /**
+     * The class screen of a course: the map of the mission with the lanterns of the class, and the event of the day.
+     *
+     * @param int $courseid
+     * @param int|null $now
+     * @return array mission (if any), event (if drawn), cards.
+     */
+    public static function board(int $courseid, ?int $now = null): array {
+        global $DB;
+        $board = ['cards' => events::CARDS];
+        $mission = missions::get($courseid);
+        if ($mission) {
+            $info = [];
+            foreach ($mission->data['chapters'] ?? [] as $chapter) {
+                $info[$chapter['code']] = $chapter;
+            }
+            $chapters = [];
+            foreach ($DB->get_records(self::T . 'chapter', ['missionid' => $mission->id], 'sortorder') as $chapter) {
+                $meta = $info[$chapter->code] ?? [];
+                $chapters[] = [
+                    'id' => (int) $chapter->id,
+                    'code' => $chapter->code,
+                    'name' => missions::text($meta['name'] ?? $chapter->code, $mission->skin),
+                    'x' => (int) ($meta['x'] ?? 0),
+                    'y' => (int) ($meta['y'] ?? 0),
+                    'lit' => (bool) $chapter->litat,
+                ];
+            }
+            $board['mission'] = [
+                'code' => $mission->code,
+                'title' => missions::text($mission->data['title'] ?? $mission->code, $mission->skin),
+                'skin' => $mission->skin,
+                'chapters' => $chapters,
+            ];
+        }
+        $event = events::export(events::today($courseid, $now));
+        if ($event) {
+            $board['event'] = $event;
+        }
+        return $board;
+    }
+
+    /**
      * The class of a course, for its teachers.
      *
      * @param int $courseid

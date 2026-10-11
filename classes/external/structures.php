@@ -213,6 +213,34 @@ final class structures {
     }
 
     /**
+     * The event of the day on the class screen.
+     *
+     * @param int $required VALUE_OPTIONAL where there may be none yet.
+     * @return external_single_structure
+     */
+    public static function event(int $required = VALUE_OPTIONAL): external_single_structure {
+        return new external_single_structure([
+            'id' => new external_value(PARAM_INT, 'Event'),
+            'code' => new external_value(PARAM_ALPHA, 'Card: calm, breeze, footprint or exchange'),
+            'status' => new external_value(PARAM_ALPHA, 'drawn or skipped'),
+            'question' => new external_single_structure([
+                'id' => new external_value(PARAM_RAW, 'Question'),
+                'chapter' => new external_value(PARAM_RAW, 'Chapter'),
+                'objective' => new external_value(PARAM_RAW, 'Objective'),
+                'text' => new external_value(PARAM_TEXT, 'Question'),
+                'options' => new external_multiple_structure(new external_value(PARAM_TEXT, 'Option')),
+                'correct' => new external_value(PARAM_INT, 'Index of the right option'),
+                'why' => new external_value(PARAM_TEXT, 'Why'),
+            ], 'Question of a footprint', VALUE_OPTIONAL),
+            'solved' => new external_value(PARAM_ALPHA, 'Footprint: right, wrong or empty'),
+            'gifts' => new external_multiple_structure(new external_single_structure([
+                'from' => new external_value(PARAM_INT, 'Group that gives'),
+                'to' => new external_value(PARAM_INT, 'Group that receives'),
+            ])),
+        ], 'Event of the day', $required);
+    }
+
+    /**
      * What happened to each user of a teacher's action.
      *
      * @return external_multiple_structure
