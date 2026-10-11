@@ -20,40 +20,49 @@ privacy come from Moodle, and the game is a full-screen application of its own.
 
 **Alpha, under development: not for use with students yet.** What there is today:
 
-- **A mission to play**: the pilot mission, *Living things* (ages 9 to 11, in Spanish), comes with the plugin. Its
-  map has six places with their lanterns; each place has its decision scenes and a classroom challenge. The scenes
-  are played in the game: choices with consequences, things to put in their group, steps to
-  put in order. The server plays each scene again with what the student did and decides the ending, so the result
-  does not depend on the browser. The first good ending gives knowledge, pages of the book, items and, in the first
-  scene, the companion creature; lanterns light for the student and, when half of the class has them, for the class.
+- **A mission to play**: the pilot mission, *Living things* (ages 9 to 11, in Spanish, with a story for Spain and
+  for Paraguay), comes with the plugin. Its map has six places with their lanterns; each place has its decision
+  scenes and a classroom challenge, and scenes for first steps. The scenes are played in the game: choices with
+  consequences, things to put in their group, steps to put in order, hints that cost breath, an option for each role
+  and endings that can be made better by playing again; what a student does in one scene changes later ones. The
+  server plays each scene again with what the student did and decides the ending, so the result does not depend on
+  the browser. When the class lights a lantern, the Embrollo leaves a letter in that place.
 - **The game client**: the first time is a story that ends with the student's character; then the map of the
-  mission, their team, classroom challenges, the book, the diary and their character sheet with their creature. Full
-  screen, light, without external services.
-- **The teacher panel**, made for the phone: the class with names, photos and characters, touches of knowledge, gems
-  and breath, the mission of the course (with its story and local examples) and how the class is doing in each
-  scene and objective, with the mix-ups that come up most; classroom challenges (also validated without
-  connection), pause and recovery, the log with undo and the settings of the course.
-- **Teams and powers**: teams made in one go with the roles spread, a weekly goal for each team and an optional
-  ranking; powers that cost breath, asked by students and approved by the teacher with a tap, some of which act in
-  the game (shield, wall, breather, revive, cheer).
+  mission, their team (with its commitments for the chapter), classroom challenges, the book, the diary and their
+  character sheet with their creature. Each day the creature asks for **the page of the day**, a quick review question
+  that gives breath, never knowledge. Students can name their creature and, where the course allows it, choose a hero
+  name; own names wait for a teacher. Full screen, light, without external services.
+- **The market of the valley and the album**: gems buy paints for the creature and auras for the hero, which
+  classmates see, and the team buys the lantern of its banner together; each entry of the field guide made by the
+  student or their team is a card in the album.
+- **Expeditions**: a mission the course made before stays lit, and its map can be visited.
+- **The teacher panel**, made for the phone: «Today in the valley» (what the mission proposes for each session of the
+  chapter and what is waiting for the teacher), the class with names, photos and characters, touches of knowledge,
+  gems and breath, the commitments of the teams to mark, own names to approve, the mission of the course and how the
+  class is doing in each scene and objective, classroom challenges (also validated without connection), pause and
+  recovery, the log with undo and the settings of the course.
+- **Teams and powers**: teams made in one go with the roles spread, a weekly goal that three of every four members
+  reach, and an optional ranking, hidden by default; commitments chosen by each member in each chapter (one not kept
+  costs energy, all kept give breath); powers that cost breath, the cheap ones approved by themselves, some of which
+  act in the game (shield, wall, breather, revive, cheer).
 - **Moodle activities in the game**: any activity can be a challenge from its settings; the pilot mission brings its
   forums, assignments and field guide, which open inside the game.
 - **Defensa del nido**, the first minigame, by steps and with a mode without hurry; and **the box of ideas** from
   students to their teachers.
-- **The class screen**, for the projector: the map of the mission with the lanterns of the class, the teams with their
-  portraits and quick touches of knowledge and gems, and **the event of the day** (calm, fair breeze, mysterious
-  footprint with a question for the whole class, exchange of breath between teams). It refreshes itself, so what the
-  teacher does from the phone shows up on the board.
-- **The game engine**: knowledge with weekly and daily caps, gems, energy and falling worn out, breath, items, undo,
-  and completed Moodle activities turned into progress. Privacy provider from the first day.
-
+- **The class screen**, for the projector: «Today in the valley», the map of the mission with the lanterns of the
+  class and the last letter of the Embrollo, the teams with their portraits and quick touches of knowledge and gems,
+  and **the event of the day** (calm, fair breeze, mysterious footprint with a question for the whole class, exchange
+  of breath between teams). It refreshes itself, so what the teacher does from the phone shows up on the board.
 - **The battle against the Embrollo**: questions of the mission for the whole class, with the students' phones or
-  aloud by teams; each right answer takes life from it, a wrong one takes nothing from anybody, and winning gives saber
-  and gems, and an object of the mission for the team that helped most. The sage can glance at the next question.
+  aloud by teams. Each role has a token once a battle (the sage strikes out a wrong option for their team, the scout
+  tells where the answer is, the protector stops the counterattack, the healer doubles the team's right answers); it
+  can be lost, and nobody loses anything. The final battle of the mission gives what the mission saves for the end.
 - **Scenes with the whole class**: a scene on the class screen where the class decides at each step, with phones or
   with A, B, C, D cards, and printable material for classes without devices: vote cards, team cards, the characters
   of the class and a diploma for each student.
-
+- **The game engine**: knowledge with a weekly cap for each character in the whole site (what the mission gives goes
+  under no cap), gems, energy and falling worn out, breath that comes back a little each day, items, undo, and
+  completed Moodle activities turned into progress. Privacy provider from the first day.
 - **A plan for the next class with the AI of the site** (Moodle's AI subsystem, any provider): what confuses the
   class turned into what to review, a new example, a question to open the class and the classroom challenge that fits.
   Counts only, never a name.
@@ -81,12 +90,12 @@ provider covers every table that holds something about a student (export and del
 student, gave them something or decided on a power stay in the student's records without their name once their own
 data is deleted. When a course is deleted, the game in it goes too; the characters stay with their students. Course
 backups keep how the game is set up, never what students did; a course reset that takes the students out clears what
-was played.
+was played (what each student bought in the market for their character stays with them).
 
-Minors play this game, so it keeps only what the game needs: no external services, no CDN, no tracking, no
-individual public rankings and no purchases. The ideas students send stay in Moodle, for their teachers only; the
-images of art packs are served by Moodle itself. The plan for the next class goes to the AI provider the site has
-chosen, with counts and the content of the mission only.
+Minors play this game, so it keeps only what the game needs: no external services, no CDN, no tracking, no individual
+public rankings and nothing bought with money (the market of the valley takes only gems won in the game). The ideas
+students send stay in Moodle, for their teachers only; the images of art packs are served by Moodle itself. The plan
+for the next class goes to the AI provider the site has chosen, with counts and the content of the mission only.
 
 ## Development
 
