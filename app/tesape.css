@@ -2744,3 +2744,143 @@ body.in-battle {
     animation: none;
   }
 }
+
+/* Printable material from the class screen: A4 pages, white, ready to cut. */
+.printout {
+  padding: 20px;
+}
+
+.printout > .actions {
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.sheet-page {
+  box-sizing: border-box;
+  width: 190mm;
+  min-height: 270mm;
+  margin: 0 auto 24px;
+  padding: 8mm;
+  background: #fff;
+  color: #111;
+  box-shadow: var(--shadow);
+  break-after: page;
+  page-break-after: always;
+}
+
+.sheet-page.votes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+
+.vote-card {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 4mm;
+  border: 1px dashed #888;
+}
+
+.vote-card svg {
+  width: 70mm;
+  height: 70mm;
+}
+
+.vote-card small,
+.sheet-foot {
+  color: #555;
+  font-size: 11pt;
+}
+
+.team-sheet h1 {
+  font-family: var(--f-title);
+  font-size: 34pt;
+  text-align: center;
+  margin: 6mm 0 10mm;
+}
+
+.team-faces {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8mm;
+  text-align: center;
+}
+
+.team-faces .face,
+.char-card .face {
+  display: block;
+  width: 40mm;
+  height: 40mm;
+  margin: 0 auto 3mm;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1.5mm solid #e9a92b;
+}
+
+.team-faces .face .avatar,
+.char-card .face .avatar {
+  width: 100%;
+  height: 100%;
+}
+
+.team-faces b {
+  display: block;
+  font-size: 16pt;
+}
+
+.team-faces small,
+.char-card small {
+  display: block;
+  color: #444;
+  font-size: 11pt;
+}
+
+.sheet-foot {
+  text-align: center;
+  margin-top: 12mm;
+}
+
+.sheet-page.char-sheets {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: repeat(3, 1fr);
+  gap: 4mm;
+}
+
+.char-card {
+  display: flex;
+  gap: 5mm;
+  align-items: center;
+  padding: 5mm;
+  border: 1px dashed #888;
+}
+
+.char-card .face {
+  width: 30mm;
+  height: 30mm;
+  margin: 0;
+  flex: none;
+}
+
+.char-card b {
+  font-size: 13pt;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
+
+  .printout {
+    padding: 0;
+  }
+
+  .sheet-page {
+    width: auto;
+    min-height: 275mm;
+    margin: 0;
+    box-shadow: none;
+  }
+}

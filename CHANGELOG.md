@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.1 (2026-10-11)
+
+- **Printable material** from the class screen, for classes without devices, as A4 pages straight from the browser:
+  vote cards A, B, C and D for each team (each letter with its own colour and shape, so that they work in black and
+  white and for those who do not tell colours apart), a card for each team with the portraits of its members, and the
+  characters of the whole class, six per page.
+
 ## 0.6.0 (2026-10-11)
 
 - **The battle against the Embrollo**, from the class screen: questions of the mission for the whole class, four to

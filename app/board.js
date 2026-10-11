@@ -20,7 +20,13 @@
   var LETTERS = 'ABCD';
   var CARD_ICON = {calm: 'energy', breeze: 'saber', footprint: 'world', exchange: 'breath'};
   var state = {board: null, cls: null, sel: {}, reveal: false, busy: false, sig: '', live: null, seen: 0, timer: 0,
-    battle: {mode: 'phones', count: 6, secs: 30}, auto: 0};
+    battle: {mode: 'phones', count: 6, secs: 30}, auto: 0, print: ''};
+  var VOTES = [
+    {letter: 'A', colour: '#3f6fb5', shape: '<circle cx="50" cy="50" r="44"/>'},
+    {letter: 'B', colour: '#2f8f6a', shape: '<path d="M50 4 L96 92 L4 92Z"/>'},
+    {letter: 'C', colour: '#d39a2a', shape: '<rect x="8" y="8" width="84" height="84" rx="6"/>'},
+    {letter: 'D', colour: '#7b5bc4', shape: '<path d="M50 3 L62 37 L98 38 L69 59 L80 95 L50 74 L20 95 L31 59 L2 38 L38 37Z"/>'}
+  ];
 
   function can(cap) {
     return cfg.caps && cfg.caps[cap];
@@ -403,11 +409,83 @@
       '<button class="btn btn-soft" data-clear>' + esc(t('board_clear')) + '</button></div>';
   }
 
+  /* ---------- Printable material ---------- */
+
+  function printCard() {
+    return '<section class="card board-print"><div class="kicker">' + esc(t('board_print')) + '</div><p class="help-soft">' +
+      esc(t('board_print_help')) + '</p><div class="actions board-small">' + ['votes', 'teams', 'chars'].map(function(k) {
+        return '<button class="btn btn-soft" data-print="' + k + '">' + esc(t('board_print_' + k)) + '</button>';
+      }).join('') + '</div></section>';
+  }
+
+  function voteSet(team) {
+    return '<div class="sheet-page votes">' + VOTES.map(function(v) {
+      return '<div class="vote-card"><svg viewBox="0 0 100 100" aria-hidden="true"><g fill="' + v.colour + '" stroke="#000" ' +
+        'stroke-width="3">' + v.shape + '</g><text x="50" y="' + (v.letter === 'B' ? 76 : 66) + '" text-anchor="middle" ' +
+        'font-size="' + (v.letter === 'B' ? 34 : 42) + '" font-weight="700" fill="#fff" stroke="#000" stroke-width="1.5">' +
+        v.letter + '</text></svg><small>' + esc(team) + '</small></div>';
+    }).join('') + '</div>';
+  }
+
+  function portrait(s) {
+    var c = s.character;
+    return c ? T.avatar({role: c.role, nameform: c.nameform, lineage: c.lineage, look: c.appearance, stage: c.stage,
+      portrait: true}) : '';
+  }
+
+  function drawPrint() {
+    var cls = state.cls;
+    var fam = cls.region.family;
+    var pages = '';
+    if (state.print === 'votes') {
+      pages = (cls.teams.length ? cls.teams : [{name: cfg.coursename}]).map(function(team) {
+        return voteSet(team.name);
+      }).join('');
+    } else if (state.print === 'teams') {
+      pages = cls.teams.map(function(team) {
+        var members = cls.students.filter(function(s) {
+          return s.teamid === team.id && s.character;
+        });
+        return '<div class="sheet-page team-sheet"><h1>' + esc(team.name) + '</h1><div class="team-faces">' +
+          members.map(function(s) {
+            return '<div><span class="face">' + portrait(s) + '</span><b>' + esc(s.firstname) + '</b><small>' +
+              esc(T.roleName(fam, s.character.role, s.character.nameform)) + '</small></div>';
+          }).join('') + '</div><p class="sheet-foot">Tesapé · ' + esc(cfg.coursename) + '</p></div>';
+      }).join('');
+    } else {
+      var chars = cls.students.filter(function(s) {
+        return s.character;
+      });
+      for (var i = 0; i < chars.length; i += 6) {
+        pages += '<div class="sheet-page char-sheets">' + chars.slice(i, i + 6).map(function(s) {
+          var c = s.character;
+          return '<div class="char-card"><span class="face">' + portrait(s) + '</span><div><b>' + esc(s.fullname) + '</b>' +
+            '<small>' + esc(T.roleName(fam, c.role, c.nameform)) + ' · ' + esc(t('app_level')) + ' ' + c.level + '</small>' +
+            '<small>' + esc(t('app_saber')) + ' ' + c.saber + ' · ' + esc(t('app_gems')) + ' ' + c.gems + '</small></div></div>';
+        }).join('') + '</div>';
+      }
+    }
+    app.innerHTML = '<div class="printout"><div class="actions no-print"><button class="btn btn-main" data-doprint>' +
+      esc(t('board_print_go')) + '</button><button class="btn btn-soft" data-printback>' + esc(t('board_print_back')) +
+      '</button></div>' + pages + '</div>';
+    app.querySelector('[data-doprint]').onclick = function() {
+      window.print();
+    };
+    app.querySelector('[data-printback]').onclick = function() {
+      state.print = '';
+      render();
+    };
+  }
+
   /* ---------- The screen ---------- */
 
   function render() {
     if (battling()) {
       drawBattle();
+      return;
+    }
+    if (state.print) {
+      drawPrint();
       return;
     }
     var pending = state.cls.powerspending;
@@ -418,7 +496,8 @@
       '</a>' : '') + '<a class="btn btn-soft" href="' + esc(cfg.wwwroot + '/local/oksigeniatesape/teach.php?id=' +
       cfg.courseid) + '">' + esc(t('board_panel')) + '</a><button class="btn btn-soft" data-full>' +
       esc(t('board_fullscreen')) + '</button></div></header>' +
-      '<div class="board-grid">' + map() + '<div class="board-side">' + eventCard() + battleCard() + teams() + '</div></div>' +
+      '<div class="board-grid">' + map() + '<div class="board-side">' + eventCard() + battleCard() + teams() + printCard() +
+      '</div></div>' +
       bar() + '</div>';
     bind();
   }
@@ -435,6 +514,10 @@
     on('[data-battle]', function(el) {
       var p = el.dataset.battle.split(':');
       state.battle[p[0]] = p[0] === 'mode' ? p[1] : +p[1];
+      render();
+    });
+    on('[data-print]', function(el) {
+      state.print = el.dataset.print;
       render();
     });
     on('[data-battlestart]', function() {
