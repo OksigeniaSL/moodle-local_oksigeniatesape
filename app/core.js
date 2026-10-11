@@ -120,6 +120,16 @@
   };
 
   /**
+   * Whether the characters of a family are people: then the student picks a boy or a girl together with the role.
+   *
+   * @param {string} family
+   * @return {boolean}
+   */
+  T.isPeople = function(family) {
+    return family === 'storyheroes' || family === 'epic' || family === 'nomagic';
+  };
+
+  /**
    * Whether a family has lineages (only the fantasy ones).
    *
    * @param {string} family

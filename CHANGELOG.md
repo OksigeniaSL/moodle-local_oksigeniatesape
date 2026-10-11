@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.3 (2026-10-11)
+
+- Choosing a character: in the families of people (story heroes, epic legends, without magic) every role comes as a
+  boy and as a girl, eight cards with their own picture and name (Mago, Maga), instead of four cards with both names
+  and a step after them to choose. A girl can now be a druid with her own picture: roles with the same name for both
+  (Druida) skipped that step. Animals with two names (Oso, Osa) still choose after the role.
+
 ## 0.4.2 (2026-10-11)
 
 - Lists show the round portrait of each character instead of a tiny full figure: the team in the game, and the

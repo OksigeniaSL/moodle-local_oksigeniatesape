@@ -59,7 +59,8 @@
 
   function steps(current) {
     var list = ['role'];
-    if (state.draft.role && T.hasForms(state.world.family, state.draft.role)) {
+    // People come as a boy or a girl on the cards of the roles; animals with two names (Oso, Osa) choose it after.
+    if (state.draft.role && !T.isPeople(state.world.family) && T.hasForms(state.world.family, state.draft.role)) {
       list.push('form');
     }
     if (T.hasLineages(state.world.family)) {
@@ -100,12 +101,14 @@
   function chooseRole() {
     var fam = state.world.family;
     var s = steps('role');
+    var people = T.isPeople(fam);
     var cards = T.ROLES.map(function(role) {
-      var names = T.hasForms(fam, role) ? T.roleName(fam, role, 'm') + ' · ' + T.roleName(fam, role, 'f') :
-        T.roleName(fam, role, 'm');
-      return '<button class="choice" type="button" data-role="' + role + '" aria-pressed="' + (state.draft.role === role) +
-        '">' + T.avatar({role: role, nameform: 'm', look: T.defaultLook(role), stage: 1}) + '<strong>' + esc(names) +
-        '</strong><small>' + esc(t('roledesc_' + role)) + '</small></button>';
+      return (people ? ['m', 'f'] : ['m']).map(function(form) {
+        var on = state.draft.role === role && (!people || state.draft.nameform === form);
+        return '<button class="choice" type="button" data-role="' + role + '" data-nameform="' + form + '" aria-pressed="' +
+          on + '">' + T.avatar({role: role, nameform: form, look: T.defaultLook(role), stage: 1}) + '<strong>' +
+          esc(T.roleName(fam, role, form)) + '</strong><small>' + esc(t('roledesc_' + role)) + '</small></button>';
+      }).join('');
     }).join('');
     app.innerHTML = '<div class="story">' + s.bar + '<h2>' + esc(t('app_who')) + '</h2><p class="help">' +
       esc(t('app_who_help')) + '</p><div class="choices">' + cards + '</div><div class="actions">' +
@@ -115,6 +118,9 @@
     app.querySelectorAll('[data-role]').forEach(function(b) {
       b.onclick = function() {
         state.draft.role = b.dataset.role;
+        if (people) {
+          state.draft.nameform = b.dataset.nameform;
+        }
         state.draft.look = state.draft.look || T.defaultLook(b.dataset.role);
         if (!state.draft.lookTouched) {
           state.draft.look.outfit = T.ROLE_OUTFIT[b.dataset.role];
