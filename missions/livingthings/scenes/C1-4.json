@@ -1,0 +1,322 @@
+{
+ "id": "C1-4",
+ "mission": "livingthings",
+ "chapter": "claro",
+ "title": "El tribunal de la vida",
+ "quest": true,
+ "step": 4,
+ "mode": "both",
+ "objectives": [
+  "SV-01",
+  "SV-07"
+ ],
+ "minutes": 10,
+ "start": "memoria",
+ "nodes": {
+  "memoria": {
+   "type": "branch",
+   "rules": [
+    {
+     "if": {
+      "flag": "pluma-en-el-nido"
+     },
+     "next": "intro-pluma"
+    }
+   ],
+   "else": "intro"
+  },
+  "intro": {
+   "type": "story",
+   "speaker": "druida-mayor",
+   "image": "claro-consejo",
+   "text": {
+    "valley": "En la Cumbre, el consejo de sabios del valle tiene una lista de cinco pruebas que debe cumplir un ser vivo: estar hecho de células, nutrirse, crecer, responder a lo que le rodea y reproducirse. La druida mayor la lee en voz alta y añade: «Hoy llegan casos difíciles. El consejo no quiere un sí o un no: quiere saber qué prueba se cumple y cuál falla. Y si no está claro, se dice».",
+    "azara": "Los sabios de la expedición tienen una lista de cinco pruebas que debe cumplir un ser vivo: estar hecho de células, nutrirse, crecer, responder a lo que le rodea y reproducirse. El naturalista la lee en voz alta y añade: «Hoy llegan casos difíciles. No quiero un sí o un no: quiero saber qué prueba se cumple y cuál falla. Y si no está claro, se escribe que no está claro»."
+   },
+   "next": "fuego"
+  },
+  "intro-pluma": {
+   "type": "story",
+   "speaker": "druida-mayor",
+   "image": "claro-consejo",
+   "text": {
+    "valley": "En la Cumbre, el consejo de sabios del valle empieza por un caso viejo: la pluma que alguien de esta expedición puso en el nido el primer día. «¿Células? Las tuvo. ¿Se nutre, crece, responde, se reproduce? Ninguna de las cuatro. Viene de un ser vivo, pero no lo es.» Cerrado ese caso, la druida mayor lee la lista de las cinco pruebas y añade: «Hoy llegan casos más difíciles. El consejo no quiere un sí o un no: quiere saber qué prueba se cumple y cuál falla».",
+    "azara": "Los sabios de la expedición empiezan por un caso viejo: la pluma que alguien puso entre los seres vivos el primer día. «¿Células? Las tuvo. ¿Se nutre, crece, responde, se reproduce? Ninguna de las cuatro. Viene de un ser vivo, pero no lo es.» Cerrado ese caso, el naturalista lee la lista de las cinco pruebas y añade: «Hoy llegan casos más difíciles. No quiero un sí o un no: quiero saber qué prueba se cumple y cuál falla»."
+   },
+   "next": "fuego"
+  },
+  "fuego": {
+   "type": "choice",
+   "prompt": "Primer caso: el fuego. Crece, consume leña y «salta» a otros sitios. ¿Está vivo?",
+   "hints": [
+    "Antes de mirar lo que hace, mirar de qué está hecho: ¿tiene células?",
+    "Que se apague con agua no dice nada: una lagartija tampoco vive bajo el agua."
+   ],
+   "options": [
+    {
+     "id": "celulas",
+     "label": "No: crece y se extiende, pero no está hecho de células, y quemar leña no es nutrirse",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-01",
+     "feedback": "El consejo asiente: «Falla la primera prueba, y sin células no hay ser vivo. Crecer y moverse engañan a cualquiera»."
+    },
+    {
+     "id": "come",
+     "label": "Sí: come leña, crece y salta a otros sitios, como un animal",
+     "correct": false,
+     "objective": "SV-01",
+     "feedback": "El consejo pregunta: «¿De qué está hecho? ¿Dónde están sus células?». El fuego no tiene. Y la leña no la digiere: la quema."
+    },
+    {
+     "id": "agua",
+     "label": "No: porque se apaga con agua, y los seres vivos necesitan agua",
+     "correct": false,
+     "points": 1,
+     "objective": "SV-01",
+     "feedback": "«Una lagartija también se muere bajo el agua, y está viva.» La razón está en la lista: ¿tiene células? ¿Se nutre?"
+    }
+   ],
+   "next": "mula"
+  },
+  "mula": {
+   "type": "choice",
+   "prompt": "Segundo caso: una mula. Está hecha de células, se nutre, crece y responde, pero no puede tener crías. ¿Está viva?",
+   "hints": [
+    "Un abuelo que ya no tendrá hijos, ¿está vivo?",
+    "Hay pruebas que se piden a cada uno y otras que se piden a su especie."
+   ],
+   "options": [
+    {
+     "id": "especie",
+     "label": "Sí: la prueba de reproducirse se le pide a la especie, no a cada individuo; lo demás lo cumple",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-01",
+     "feedback": "El consejo asiente: «Un abuelo que ya no tendrá hijos sigue vivo. Los caballos y los burros, de donde vienen las mulas, se reproducen de sobra»."
+    },
+    {
+     "id": "falta",
+     "label": "No del todo: le falta una de las cinco pruebas",
+     "correct": false,
+     "objective": "SV-01",
+     "feedback": "La mula rebuzna, ofendida. «¿Entonces no está viva?» Hay pruebas que se piden a la especie, no a cada uno."
+    },
+    {
+     "id": "mueve",
+     "label": "Sí: se mueve y rebuzna",
+     "correct": false,
+     "objective": "SV-01",
+     "feedback": "Un coche de cuerda también se mueve. El consejo quiere las pruebas de la lista, no lo que se ve a primera vista."
+    }
+   ],
+   "next": "tardigrado"
+  },
+  "tardigrado": {
+   "type": "choice",
+   "prompt": "Tercer caso: un tardígrado seco. Lleva años sin moverse ni comer, y con una gota de agua «revive». ¿Estaba vivo mientras estuvo seco?",
+   "hints": [
+    "Ya conocemos algo que parece muerto y guarda vida dentro: la semilla.",
+    "Lo que está muerto no vuelve. Si volvió, ¿qué era?"
+   ],
+   "options": [
+    {
+     "id": "pausa",
+     "label": "Sí: estaba en pausa, como una semilla dormida; sus células seguían ahí, esperando",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-01",
+     "feedback": "El consejo asiente: «Dormido no es muerto. Sus células estaban enteras, sin hacer nada, hasta la gota de agua»."
+    },
+    {
+     "id": "muerto",
+     "label": "No: estaba muerto y la gota lo resucitó",
+     "correct": false,
+     "objective": "SV-01",
+     "feedback": "«Lo que está muerto no vuelve.» Si volvió, es que no había muerto: estaba en pausa, como la semilla."
+    },
+    {
+     "id": "mitad",
+     "label": "A medias: medio vivo y medio muerto",
+     "correct": false,
+     "points": 1,
+     "objective": "SV-01",
+     "feedback": "El consejo arruga la frente: «¿Qué mitad?». Mejor decirlo con las pruebas: vivo, pero en pausa, como la semilla dormida."
+    }
+   ],
+   "next": "virus"
+  },
+  "virus": {
+   "type": "choice",
+   "prompt": "Cuarto caso: un virus. Hace copias de sí mismo, pero solo dentro de una célula ajena; fuera, no come, no crece, no responde. ¿Está vivo?",
+   "hints": [
+    "Repasemos la lista prueba por prueba: ¿cuántas cumple solo? ¿Cuántas cumple con ayuda?",
+    "«No lo sabemos del todo» es una respuesta que el consejo acepta, si se explica."
+   ],
+   "options": [
+    {
+     "id": "abierto",
+     "label": "No está claro: cumple unas pruebas y otras no, y solo con ayuda; que se apunte como caso abierto",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-07",
+     "feedback": "El consejo apunta: «Caso abierto». «Decirlo así no es fallar», dice la druida. «Es ser preciso. Los científicos lo siguen discutiendo.»"
+    },
+    {
+     "id": "si",
+     "label": "Sí: se reproduce, y con eso basta",
+     "correct": false,
+     "objective": "SV-01",
+     "feedback": "Solo si entra en una célula de otro. Fuera, no se alimenta, no crece y no responde. Una sola prueba no basta."
+    },
+    {
+     "id": false,
+     "label": "No: no tiene células, así que no hay más que hablar",
+     "correct": false,
+     "points": 1,
+     "objective": "SV-01",
+     "feedback": "Buen argumento, y hay sabios que lo defienden. Pero otros no, y por eso el consejo prefiere «caso abierto» a cerrar lo que no está cerrado."
+    },
+    {
+     "id": "sabio",
+     "label": "Que el sabio lo compare, prueba por prueba, con la levadura y con el cristal de sal",
+     "requires": {
+      "teamrole": "sage"
+     },
+     "locked": "Esto lo haría alguien que compara antes de afirmar: el sabio del equipo.",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-07",
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "La levadura cumple las cinco; el cristal, ninguna; el virus, una y con ayuda. «Está en medio», dice el consejo, «y en medio se queda: caso abierto». Una gema por comparar."
+    }
+   ],
+   "next": "semilla"
+  },
+  "semilla": {
+   "type": "choice",
+   "prompt": "Quinto caso: una semilla guardada en seco desde hace unos dos mil años, que germinó al plantarla. ¿Estaba viva?",
+   "hints": [
+    "Se parece a un caso de hoy. ¿A cuál?",
+    "Cuando los hechos contradicen lo que creíamos, ¿qué cambiamos: los hechos o lo que creíamos?"
+   ],
+   "options": [
+    {
+     "id": "dormida",
+     "label": "Sí: dormida, como el tardígrado; dentro había una planta plegada esperando agua",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-01",
+     "feedback": "El consejo asiente: «Dos mil años en pausa. Sus células aguantaron secas, y con agua despertaron»."
+    },
+    {
+     "id": "vieja",
+     "label": "No podía estar viva: nada aguanta dos mil años",
+     "correct": false,
+     "objective": "SV-07",
+     "feedback": "Pues germinó. Cuando los hechos contradicen lo que creíamos, cambiamos lo que creíamos, no los hechos."
+    },
+    {
+     "id": "tierra",
+     "label": "No: estaba muerta y la tierra la hizo revivir",
+     "correct": false,
+     "objective": "SV-01",
+     "feedback": "«Lo que está muerto no vuelve.» La tierra y el agua no fabrican vida: la despiertan si ya estaba dentro."
+    },
+    {
+     "id": "parecido",
+     "label": "Poner la semilla y el tardígrado juntos y apuntar en qué se parecen",
+     "requires": {
+      "role": "scout"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "Los dos secos, los dos quietos, los dos con las células enteras y a la espera. El consejo les pone la misma etiqueta: «en pausa». Una gema por juntar lo que se parece."
+    }
+   ],
+   "next": "regla"
+  },
+  "regla": {
+   "type": "choice",
+   "prompt": "El consejo pide una regla para el Gran Libro, con todos los casos de hoy delante. ¿Cuál?",
+   "hints": [
+    "La regla tiene que valer para la mula y para la semilla a la vez.",
+    "Una regla que deje fuera a lo que duerme deja fuera a medio valle en invierno."
+   ],
+   "options": [
+    {
+     "id": "todas",
+     "label": "Un ser vivo cumple las cinco pruebas a lo largo de su vida, aunque alguna esté en pausa, y la de reproducirse se le pide a su especie",
+     "correct": true,
+     "points": 4,
+     "objective": "SV-01",
+     "feedback": "El consejo la escribe en el Gran Libro. La mula, el tardígrado y la semilla la cumplen. El fuego, no.",
+     "next": "bien"
+    },
+    {
+     "id": "siempre",
+     "label": "Un ser vivo cumple las cinco pruebas siempre, en todo momento, sin pausas",
+     "correct": false,
+     "points": 1,
+     "objective": "SV-01",
+     "feedback": "La semilla y el tardígrado protestan: con esa regla, dormidos no estarían vivos. Y la mula se queda fuera. Casi, pero la regla tiene que valer para todos los casos de hoy.",
+     "next": "casi"
+    },
+    {
+     "id": "mueve",
+     "label": "Un ser vivo es lo que se mueve, crece o cambia",
+     "correct": false,
+     "objective": "SV-01",
+     "feedback": "El fuego aplaude: con esa regla, él estaría vivo. Y la piedra que rueda, también. Las pruebas de la lista son otras.",
+     "next": "otra"
+    }
+   ]
+  },
+  "bien": {
+   "type": "ending",
+   "outcome": "success",
+   "text": {
+    "valley": "El consejo cierra la sesión y en el Gran Libro queda una página nueva: las cinco pruebas y la regla. «Lo importante no era el veredicto», dice la druida mayor, «sino cómo se llega a él. El Embrollo decide a la primera; el consejo, prueba por prueba». {{creature}} se ha dormido sobre la lista, y la druida la mira con la lupa para comprobar que respira.",
+    "azara": "Los sabios cierran la sesión y en el cuaderno queda una página nueva: las cinco pruebas y la regla. «Lo importante no era el veredicto», dice el naturalista, «sino cómo se llega a él. Quien escribe sin comprobar decide a la primera; nosotros, prueba por prueba». {{creature}} se ha dormido sobre la lista."
+   },
+   "effects": [
+    {
+     "gems": 4
+    },
+    {
+     "page": "cinco-pruebas"
+    }
+   ]
+  },
+  "casi": {
+   "type": "ending",
+   "outcome": "partial",
+   "text": {
+    "valley": "La regla se queda escrita a lápiz, no con tinta: deja fuera a la semilla y a la mula, y el consejo no la da por buena. «Otro día, con los casos delante otra vez, la afinamos», dice la druida mayor. {{creature}} se ha dormido sobre la lista, en pausa, como el tardígrado.",
+    "azara": "La regla se queda escrita a lápiz, no con tinta: deja fuera a la semilla y a la mula. «Otro día, con los casos delante otra vez, la afinamos», dice el naturalista. {{creature}} se ha dormido sobre la lista, en pausa, como el tardígrado."
+   },
+   "effects": [
+    {
+     "gems": 2
+    }
+   ]
+  },
+  "otra": {
+   "type": "ending",
+   "outcome": "retry",
+   "text": {
+    "valley": "El consejo devuelve la regla: «Con esta, el fuego y la piedra que rueda estarían vivos». La druida mayor señala la lista de las cinco pruebas: «La regla tiene que salir de aquí».",
+    "azara": "Los sabios devuelven la regla: «Con esta, el fuego y la piedra que rueda estarían vivos». El naturalista señala la lista de las cinco pruebas: «La regla tiene que salir de aquí»."
+   },
+   "retry": "regla"
+  }
+ }
+}

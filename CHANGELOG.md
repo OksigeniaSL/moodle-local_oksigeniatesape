@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.22.0 (2026-10-12)
+
+- **Quests**: the twelve scenes of extension (the Path of the Mountain) and expert (the Summit) of the pilot mission,
+  two in each place, now version 8: under the lens, the court of life, cells, the tree of the kingdoms, the key of the
+  schoolyard, family names, travelling seeds, our experiment, the web of the lake, the case of the lynx, whom to trust
+  and the naturalist of then and of now. They are open to every student, whatever their step, apart from the scenes
+  of their route: they give gems and a new page of the book each (twelve new pages), never saber, lanterns, items or
+  the creature, and they do not count to close a chapter. Each has a partial ending that can be made better.
+
 ## 0.21.0 (2026-10-12)
 
 - **Expeditions**: when a course starts another mission, the one before stays as an earlier expedition, with the

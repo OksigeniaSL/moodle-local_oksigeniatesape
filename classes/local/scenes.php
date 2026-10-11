@@ -60,18 +60,33 @@ final class scenes {
     }
 
     /**
-     * The scenes of a chapter a student plays: those of their step, or the core ones where there are none for it.
+     * The scenes of a chapter a student plays: those of their step, or the core ones where there are none for it. Not
+     * the quests.
      *
      * @param \stdClass[] $scenes Scenes of the chapter.
      * @param int $step
      * @return \stdClass[]
      */
     public static function for_step(array $scenes, int $step): array {
+        // Quests are apart: open to everybody, they are not anybody's route.
+        $scenes = array_filter($scenes, fn($s) => empty($s->quest));
         $mine = array_filter($scenes, fn($s) => (int) $s->step === $step || (int) $s->step === 0);
         if (!$mine) {
             $mine = array_filter($scenes, fn($s) => (int) $s->step === self::CORE_STEP);
         }
         return array_values($mine);
+    }
+
+    /**
+     * The quests of a chapter: scenes of extension and expert, open to everybody, that give gems and pages, not saber.
+     *
+     * @param \stdClass[] $scenes Scenes of the chapter.
+     * @return \stdClass[]
+     */
+    public static function quests(array $scenes): array {
+        $quests = array_values(array_filter($scenes, fn($s) => !empty($s->quest)));
+        usort($quests, fn($a, $b) => [(int) $a->step, $a->code] <=> [(int) $b->step, $b->code]);
+        return $quests;
     }
 
     /**
@@ -325,6 +340,11 @@ final class scenes {
             'hatched' => false, 'grew' => false, 'chapter' => '', 'classlantern' => ''];
         $target = ['saber' => 0, 'gems' => 0];
         $effects = array_merge($result['effects'], $result['inline']);
+        $quest = !empty($scene->quest);
+        if ($quest) {
+            // A quest is for whoever wants more: gems, pages and memory, never saber, lanterns, items or the creature.
+            $effects = array_map(fn($e) => array_intersect_key($e, ['gems' => 1, 'page' => 1, 'flag' => 1]), $effects);
+        }
         foreach ($effects as $effect) {
             foreach (['saber', 'gems'] as $resource) {
                 if (isset($effect[$resource])) {
@@ -389,8 +409,8 @@ final class scenes {
             }
         }
         self::found($char, $member, $mission, 'scene', $scene->code, $now);
-        // The chapter: done when its scenes for the student's step are done.
-        $chapter = $DB->get_record(self::T . 'chapter', ['id' => $scene->chapterid]);
+        // The chapter: done when its scenes for the student's step are done (quests do not count).
+        $chapter = $quest ? null : $DB->get_record(self::T . 'chapter', ['id' => $scene->chapterid]);
         if ($chapter && self::chapter_done($char, (int) $member->step, $chapter)) {
             if (self::found($char, $member, $mission, 'chapter', $chapter->code, $now)) {
                 $rewards['chapter'] = $chapter->code;

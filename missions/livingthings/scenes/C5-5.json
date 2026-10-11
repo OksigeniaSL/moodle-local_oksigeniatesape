@@ -1,0 +1,192 @@
+{
+ "id": "C5-5",
+ "mission": "livingthings",
+ "chapter": "lago",
+ "title": "El caso del lince",
+ "quest": true,
+ "step": 4,
+ "mode": "both",
+ "objectives": [
+  "SV-06",
+  "SV-08"
+ ],
+ "minutes": 10,
+ "locals": {
+  "tagua": {
+   "py": "Y aquí mismo, en el Chaco, hay otro caso para el informe: el tagua. Se describió en 1930 a partir de huesos fósiles, y todos lo daban por desaparecido hace mucho. En 1975 se encontró vivo en el Chaco paraguayo. Hoy sigue en peligro.",
+   "es": "Y muy lejos, en el Chaco paraguayo, hay otro caso para el informe: el tagua, un pariente del jabalí. Se describió en 1930 a partir de huesos fósiles, y todos lo daban por desaparecido hace mucho. En 1975 se encontró vivo. Hoy sigue en peligro."
+  }
+ },
+ "start": "intro",
+ "nodes": {
+  "intro": {
+   "type": "story",
+   "speaker": "garza",
+   "image": "lago-informe",
+   "text": {
+    "valley": "La garza trae en el pico un informe de fuera del valle, de verdad, con números y fechas. «El consejo quiere que la expedición lo lea y diga qué pasó. Es la historia de un cazador que casi desaparece.» Es el lince ibérico, que se alimenta sobre todo de conejo. En 2002 quedaban menos de cien. En 2024 se contaron 2.401 y en 2025, 2.663. Ese año de 2024, la lista mundial de especies amenazadas lo pasó de «en peligro» a «vulnerable». {{local:tagua}}",
+    "azara": "La garza trae en el pico un informe de fuera, de verdad, con números y fechas. «El naturalista quiere que la expedición lo lea y diga qué pasó. Es la historia de un cazador que casi desaparece.» Es el lince ibérico, de España, que se alimenta sobre todo de conejo. En 2002 quedaban menos de cien. En 2024 se contaron 2.401 y en 2025, 2.663. Ese año de 2024, la lista mundial de especies amenazadas lo pasó de «en peligro» a «vulnerable». {{local:tagua}}"
+   },
+   "next": "leer"
+  },
+  "leer": {
+   "type": "choice",
+   "prompt": "La gráfica del informe: de menos de cien a más de dos mil. ¿Qué dice?",
+   "hints": [
+    "Mirar los dos extremos de la gráfica y, luego, la palabra que la lista mundial usa hoy.",
+    "«Vulnerable» no es lo mismo que «a salvo»."
+   ],
+   "options": [
+    {
+     "id": "cuidado",
+     "label": "Que el lince casi desaparece y hoy hay muchos más, aunque siga necesitando cuidado",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-08",
+     "feedback": "Eso dice: de menos de cien a más de dos mil, y todavía «vulnerable». Mejor, no a salvo."
+    },
+    {
+     "id": "salvo",
+     "label": "Que el lince ya está fuera de peligro para siempre",
+     "correct": false,
+     "objective": "SV-08",
+     "feedback": "«Vulnerable» quiere decir que todavía puede volver atrás. Para siempre no lo dice ningún informe."
+    },
+    {
+     "id": "solos",
+     "label": "Que los números suben solos con el tiempo",
+     "correct": false,
+     "objective": "SV-06",
+     "feedback": "Nada subió solo: hubo años en los que bajaba. Algo cambió entre medias, y eso es lo que hay que averiguar."
+    },
+    {
+     "id": "fuente",
+     "label": "Que el sabio pregunte de dónde salen estos números antes de fiarse",
+     "requires": {
+      "teamrole": "sage"
+     },
+     "locked": "Esto lo haría alguien que no se fía de un número sin fuente: el sabio del equipo.",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-07",
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "Del recuento que se hace cada año y se publica con fecha. Un número sin fuente es una página tachada: de esas bebe el Embrollo. Una gema."
+    }
+   ],
+   "next": "medidas"
+  },
+  "medidas": {
+   "type": "choice",
+   "prompt": "El informe dice que los conejos escasearon por enfermedades y que algunos linces morían en las carreteras. ¿Qué tres medidas ayudaron, según el equipo? La gráfica se moverá con cada una.",
+   "select": {
+    "min": 3,
+    "max": 3
+   },
+   "hints": [
+    "¿Qué come el lince? Lo primero es que tenga qué comer.",
+    "Una medida que no cambia nada en la cadena no mueve la gráfica.",
+    "Las carreteras cortan el camino del lince. ¿Cómo se cruza una carretera sin pisarla?"
+   ],
+   "options": [
+    {
+     "id": "conejos",
+     "label": "Recuperar los conejos: vacunarlos y darles refugios",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-06",
+     "feedback": "La gráfica sube: con conejo, el lince cría. Sin su presa principal, nada de lo demás serviría."
+    },
+    {
+     "id": "criar",
+     "label": "Criar linces en centros y soltarlos donde hay conejos",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-08",
+     "feedback": "La gráfica sube, y además en más sitios: donde había uno, ahora hay varios grupos de linces."
+    },
+    {
+     "id": "pasos",
+     "label": "Hacer pasos de fauna bajo las carreteras",
+     "correct": true,
+     "points": 2,
+     "objective": "SV-08",
+     "feedback": "La gráfica deja de dar bajones: menos linces mueren cruzando. No sube sola con esto, pero no se hunde."
+    },
+    {
+     "id": "pintar",
+     "label": "Pintar a los linces de colores vivos para que los coches los vean",
+     "correct": false,
+     "objective": "SV-08",
+     "feedback": "La gráfica no se mueve. Los coches no frenan por el color, los conejos no aparecen y el lince pintado no caza nada."
+    },
+    {
+     "id": "prohibir",
+     "label": "Prohibir los conejos, que se comen los cultivos",
+     "correct": false,
+     "objective": "SV-06",
+     "feedback": "La gráfica cae en picado: sin conejos, el lince no tiene qué comer. La cadena, hacia atrás, siempre."
+    }
+   ],
+   "next": "resultado"
+  },
+  "resultado": {
+   "type": "branch",
+   "rules": [
+    {
+     "if": {
+      "correct_at_least": 3,
+      "in": "medidas"
+     },
+     "next": "sube"
+    },
+    {
+     "if": {
+      "correct_at_least": 2,
+      "in": "medidas"
+     },
+     "next": "medio"
+    }
+   ],
+   "else": "cae"
+  },
+  "sube": {
+   "type": "ending",
+   "outcome": "success",
+   "text": {
+    "valley": "Con las tres medidas, la gráfica de la simulación sigue el mismo camino que la de verdad: de menos de cien a más de dos mil. «Las personas lo empujaron hacia abajo y las personas lo empujaron hacia arriba», dice la garza. «Con datos se ve lo uno y lo otro.» El informe entra en el Gran Libro con su fuente y su fecha. {{creature}} mira la gráfica y pone la pata donde sube.",
+    "azara": "Con las tres medidas, la gráfica de la simulación sigue el mismo camino que la de verdad: de menos de cien a más de dos mil. «Las personas lo empujaron hacia abajo y las personas lo empujaron hacia arriba», dice la garza. «Con datos se ve lo uno y lo otro.» El informe entra en el cuaderno con su fuente y su fecha. {{creature}} mira la gráfica y pone la pata donde sube."
+   },
+   "effects": [
+    {
+     "gems": 4
+    },
+    {
+     "page": "los-que-volvieron"
+    }
+   ]
+  },
+  "medio": {
+   "type": "ending",
+   "outcome": "partial",
+   "text": {
+    "valley": "La gráfica sube, pero menos que la de verdad, y en un tramo baja: una de las medidas elegidas no movía nada, o lo empeoraba. «Casi», dice la garza. «Otro día, con las tres que tocan, el lince llega a donde llegó.» {{creature}} pone la pata en el tramo que baja.",
+    "azara": "La gráfica sube, pero menos que la de verdad, y en un tramo baja: una de las medidas elegidas no movía nada, o lo empeoraba. «Casi», dice la garza. «Otro día, con las tres que tocan, el lince llega a donde llegó.» {{creature}} pone la pata en el tramo que baja."
+   },
+   "effects": [
+    {
+     "gems": 2
+    }
+   ]
+  },
+  "cae": {
+   "type": "ending",
+   "outcome": "retry",
+   "text": "La gráfica de la simulación se hunde. La garza la mira de lado: «¿Qué come el lince? Hasta que tenga qué comer, nada de lo demás sirve».",
+   "retry": "medidas"
+  }
+ }
+}

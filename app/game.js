@@ -508,6 +508,14 @@
     var acts = past ? [] : w.activities.filter(function(a) {
       return a.chapterid === ch.id;
     });
+    // Quests: for whoever wants more, whatever their step; gems and pages, never saber.
+    var quests = (ch.quests || []).map(function(q) {
+      return '<li class="item"><span class="grow"><b>' + esc(q.title) + '</b><small>' + esc(t('app_quest_step_' +
+        (q.step === 4 ? 4 : 3))) + (q.minutes ? ' · ' + esc(t('app_minutes', q.minutes)) : '') + (q.done ? ' · ' +
+        esc(t(q.better ? 'app_status_better' : 'app_status_done')) : '') + '</small></span>' + (past ? '' :
+        '<button class="btn btn-soft" data-scene="' + q.id + '">' + esc(q.done ? t('app_playagain') : t('app_play')) +
+        '</button>') + '</li>';
+    }).join('');
     var games = (ch.games || []).map(function(g) {
       return '<li class="item"><span class="mini-icon">' + T.icon('game') + '</span><span class="grow"><b>' + esc(g.title) +
         '</b><small>' + esc(g.done ? t('app_game_done') : t('app_game_help')) + '</small></span>' + (past ? '' :
@@ -521,6 +529,8 @@
       '<p>' + esc(ch.intro) + '</p>' + (ch.letter ? '<blockquote class="letter"><small>' + esc(t('app_letter')) +
       '</small>' + esc(ch.letter) + '</blockquote>' : '') + (scenes ? '<ul class="list">' + scenes + '</ul>' : '') +
       (games ? '<h3 style="margin-top:16px">' + esc(t('app_minigames')) + '</h3><ul class="list">' + games + '</ul>' : '') +
+      (quests ? '<h3 style="margin-top:16px">' + esc(t('app_quests')) + '</h3><p class="help-soft">' +
+      esc(t('app_quests_help')) + '</p><ul class="list">' + quests + '</ul>' : '') +
       (acts.length ? '<h3 style="margin-top:16px">' + esc(t('app_inmoodle')) + '</h3><ul class="list">' +
       acts.map(activityItem).join('') + '</ul>' : '') +
       (challenge ? '<h3 style="margin-top:16px">' + esc(t('app_inclass')) + '</h3><ul class="list">' + challengeItem(challenge) +

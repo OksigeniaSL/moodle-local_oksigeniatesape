@@ -393,5 +393,16 @@ function xmldb_local_oksigeniatesape_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026101202, 'local', 'oksigeniatesape');
     }
 
+    if ($oldversion < 2026101203) {
+        // Quests: scenes open to everybody that are not anybody's route.
+        $table = new xmldb_table('local_oksigeniatesape_scene');
+        $field = new xmldb_field('quest', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'step');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_plugin_savepoint(true, 2026101203, 'local', 'oksigeniatesape');
+    }
+
     return true;
 }

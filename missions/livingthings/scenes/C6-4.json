@@ -1,0 +1,230 @@
+{
+ "id": "C6-4",
+ "mission": "livingthings",
+ "chapter": "torre",
+ "title": "El naturalista de entonces y el de ahora",
+ "quest": true,
+ "step": 4,
+ "mode": "both",
+ "objectives": [
+  "SV-04",
+  "SV-07"
+ ],
+ "minutes": 10,
+ "start": "intro",
+ "nodes": {
+  "intro": {
+   "type": "story",
+   "speaker": "druida-mayor",
+   "image": "torre-dos-paginas",
+   "text": {
+    "valley": "En la Cumbre, el consejo pone sobre la mesa dos páginas sobre el mismo animal. Una es la más vieja del Gran Libro, escrita hace más de dos siglos por un viajero: «Hay en estos montes un animal del tamaño de un gato, de ojos grandísimos y redondos, que solo anda de noche y de día duerme en los huecos de los árboles. Por los ojos lo tengo por pariente de los gatos monteses. Lo llaman mono de noche». La otra es la ficha de hoy: «Mirikiná, Aotus azarae. Un mono, un primate, de ojos grandes. Activo de noche y, en el Chaco, también de día. Vive en el Chaco de Paraguay y de Argentina. En Paraguay se considera vulnerable». La druida mayor pregunta: «¿Qué acertó el de entonces, qué ha cambiado y por qué?».",
+    "azara": "El naturalista pone sobre la mesa dos páginas sobre el mismo animal. Una es la nota de un viajero anterior, copiada en el cuaderno: «Hay en estos montes un animal del tamaño de un gato, de ojos grandísimos y redondos, que solo anda de noche y de día duerme en los huecos de los árboles. Por los ojos lo tengo por pariente de los gatos monteses. Lo llaman mono de noche». La otra es la ficha de hoy: «Mirikiná, Aotus azarae. Un mono, un primate, de ojos grandes. Activo de noche y, en el Chaco, también de día. Vive en el Chaco de Paraguay y de Argentina. En Paraguay se considera vulnerable». «Azara lo describió con calma y corrigió a quien se equivocaba», dice el naturalista. «Hoy nos toca a nosotros. ¿Qué acertó el viajero, qué ha cambiado y por qué?»"
+   },
+   "next": "acierto"
+  },
+  "acierto": {
+   "type": "choice",
+   "prompt": "¿Qué acertó el de entonces? Elegimos dos cosas.",
+   "select": {
+    "min": 2,
+    "max": 2
+   },
+   "hints": [
+    "Lo que se ve con los ojos, de cerca, suele estar bien: el tamaño, la forma, la hora.",
+    "Lo que se deduce sin comprobar («lo tengo por…») es lo que más falla.",
+    "«Solo» y «nunca» son palabras peligrosas en una descripción."
+   ],
+   "options": [
+    {
+     "id": "tamano",
+     "label": "Que es del tamaño de un gato y tiene los ojos muy grandes",
+     "correct": true,
+     "points": 2,
+     "objective": "SV-07",
+     "feedback": "Lo vio y lo midió a ojo: acertó. Lo que se observa de cerca suele aguantar bien el paso del tiempo."
+    },
+    {
+     "id": "noche",
+     "label": "Que anda de noche",
+     "correct": true,
+     "points": 2,
+     "objective": "SV-07",
+     "feedback": "Acertó: de noche anda. Lo que no vio es que en el Chaco también anda de día. Vio poco, no mal."
+    },
+    {
+     "id": "gatos",
+     "label": "Que es pariente de los gatos monteses",
+     "correct": false,
+     "objective": "SV-04",
+     "feedback": "Ahí falló: lo dedujo por los ojos, sin mirar las manos ni los dientes. Es un mono, un primate. «Lo tengo por…» no es «lo he comprobado»."
+    },
+    {
+     "id": "solo",
+     "label": "Que solo sale de noche, nunca de día",
+     "correct": false,
+     "objective": "SV-07",
+     "feedback": "«Solo» y «nunca» le jugaron una mala pasada: en el Chaco sale también de día. Él miraba de noche, y de noche lo veía."
+    }
+   ],
+   "next": "cambios"
+  },
+  "cambios": {
+   "type": "classify",
+   "prompt": "¿Por qué ha cambiado cada cosa entre la página vieja y la ficha de hoy?",
+   "retry": "item",
+   "hints": [
+    "Si hoy sabemos algo que entonces no se sabía, ¿fue por mirar más, por mirar mejor o porque el mundo cambió?",
+    "Comparar huesos, dientes y manos es mirar mejor. Volver más noches y más días es mirar más.",
+    "Que un animal pase a estar en peligro no es cosa de los libros: es cosa de su monte."
+   ],
+   "bins": [
+    {
+     "id": "mas",
+     "label": "Más observaciones, en más sitios y durante más tiempo"
+    },
+    {
+     "id": "mejor",
+     "label": "Mejores instrumentos y maneras de comparar"
+    },
+    {
+     "id": "entorno",
+     "label": "Cambios en el lugar donde vive"
+    }
+   ],
+   "items": [
+    {
+     "id": "dia",
+     "label": "Hoy se sabe que en el Chaco también sale de día",
+     "bin": "mas",
+     "objective": "SV-07",
+     "feedback": {
+      "mejor": "«No hizo falta ningún aparato: hizo falta volver de día, muchas veces, a muchos sitios.»",
+      "entorno": "«El mono no cambió de costumbres: cambió cuántas veces lo miramos.»"
+     }
+    },
+    {
+     "id": "mono",
+     "label": "Hoy se sabe que es un mono y no un pariente de los gatos: manos con dedos, dientes de mono",
+     "bin": "mejor",
+     "objective": "SV-04",
+     "feedback": {
+      "mas": "«No fue por mirar más veces: fue por comparar sus huesos, sus dientes y sus manos con los de otros animales. Mirar mejor.»",
+      "entorno": "«El animal es el mismo que entonces. Lo que cambió fue la manera de compararlo.»"
+     }
+    },
+    {
+     "id": "vulnerable",
+     "label": "Hoy se considera vulnerable en Paraguay",
+     "bin": "entorno",
+     "objective": "SV-07",
+     "feedback": {
+      "mas": "«No está en peligro porque lo miremos más: está en peligro por lo que ha pasado en el lugar donde vive.»",
+      "mejor": "«Ningún aparato lo puso en peligro. Lo puso en peligro lo que ha cambiado en el lugar donde vive.»"
+     }
+    },
+    {
+     "id": "camaras",
+     "label": "Hoy se puede contar cuántos hay en un monte, con cámaras que graban de noche",
+     "bin": "mejor",
+     "objective": "SV-07",
+     "feedback": {
+      "mas": "«Más noches no bastaban: hacía falta una cámara que mirara cuando no hay nadie. Un instrumento nuevo.»",
+      "entorno": "«El monte no cambia porque lo grabemos. Lo que cambió fue el instrumento.»"
+     }
+    }
+   ],
+   "next": "pagina"
+  },
+  "pagina": {
+   "type": "choice",
+   "prompt": "El consejo quiere una página nueva en el Gran Libro: «Cómo cambia la ciencia». ¿Qué escribimos?",
+   "hints": [
+    "Si el de entonces no mentía y el de ahora sabe más, ¿qué dirá el de dentro de cien años de nosotros?",
+    "Una página que no admite corregirse es una página del Embrollo."
+   ],
+   "options": [
+    {
+     "id": "medios",
+     "label": "Lo de entonces no era mentira: era lo que se veía con los ojos y los medios de entonces. Hoy se ve más, y mañana se verá más todavía",
+     "correct": true,
+     "points": 4,
+     "objective": "SV-07",
+     "feedback": "El consejo la escribe tal cual. «Y que conste que esta página también se corregirá algún día.»",
+     "next": "bien"
+    },
+    {
+     "id": "todo",
+     "label": "Los de entonces se equivocaban en todo; los de ahora lo sabemos todo",
+     "correct": false,
+     "points": 1,
+     "objective": "SV-07",
+     "feedback": "La druida pregunta: «¿Y dentro de cien años, qué dirán de nosotros?». El de entonces acertó el tamaño, los ojos y la noche. Y nosotros no lo sabemos todo: la ficha de hoy también se corregirá.",
+     "next": "casi"
+    },
+    {
+     "id": "nada",
+     "label": "Nada cambia: lo que se escribió una vez queda escrito",
+     "correct": false,
+     "objective": "SV-07",
+     "feedback": "Entonces el mirikiná seguiría siendo pariente de los gatos. Lo escrito se corrige cuando se mira mejor; si no, es el Embrollo.",
+     "next": "otra"
+    },
+    {
+     "id": "pie",
+     "label": "Lo mismo que la primera, y al pie, la fecha y quién lo escribió, para que el siguiente sepa cuánto mirar",
+     "requires": {
+      "role": "scout"
+     },
+     "points": 4,
+     "objective": "SV-07",
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "El consejo añade el pie: fecha y nombres. «Así, quien venga después sabrá desde dónde seguir mirando.» Una gema por pensar en el siguiente.",
+     "next": "bien"
+    }
+   ]
+  },
+  "bien": {
+   "type": "ending",
+   "outcome": "success",
+   "text": {
+    "valley": "La página «Cómo cambia la ciencia» entra en el Gran Libro, con la vieja y la nueva pegadas al lado. «El de entonces miró lo que pudo y lo escribió. El de ahora miró más y lo corrigió. Al de mañana le toca corregirnos», dice la druida mayor. «Eso no es que la ciencia falle: es que funciona.» {{creature}} mira la página vieja y luego la nueva, y bosteza con los ojos muy grandes, como el mirikiná.",
+    "azara": "La página «Cómo cambia la ciencia» entra en el cuaderno, con la nota vieja y la ficha nueva pegadas al lado. «El viajero miró lo que pudo y lo escribió. Azara miró más y lo corrigió. A los de mañana les toca corregirnos a nosotros», dice el naturalista. «Eso no es que la ciencia falle: es que funciona.» {{creature}} mira la página vieja y luego la nueva, y bosteza con los ojos muy grandes, como el mirikiná."
+   },
+   "effects": [
+    {
+     "gems": 4
+    },
+    {
+     "page": "como-cambia-la-ciencia"
+    }
+   ]
+  },
+  "casi": {
+   "type": "ending",
+   "outcome": "partial",
+   "text": {
+    "valley": "La página se queda escrita a lápiz: dice que los de entonces fallaban en todo, y las dos cosas que acertó el viajero protestan desde la página vieja. «Otro día la pasamos a tinta, cuando diga lo que pasó de verdad», dice la druida mayor. {{creature}} bosteza con los ojos muy grandes.",
+    "azara": "La página se queda escrita a lápiz: dice que los de entonces fallaban en todo, y las dos cosas que acertó el viajero protestan desde la nota vieja. «Otro día la pasamos a tinta, cuando diga lo que pasó de verdad», dice el naturalista. {{creature}} bosteza con los ojos muy grandes."
+   },
+   "effects": [
+    {
+     "gems": 2
+    }
+   ]
+  },
+  "otra": {
+   "type": "ending",
+   "outcome": "retry",
+   "text": {
+    "valley": "El consejo devuelve la página: «Con esto, el mirikiná seguiría siendo pariente de los gatos». La druida mayor señala las dos páginas: «¿Qué cambió entre una y otra, y por qué?».",
+    "azara": "El naturalista devuelve la página: «Con esto, el mirikiná seguiría siendo pariente de los gatos». Señala las dos páginas: «¿Qué cambió entre una y otra, y por qué?»."
+   },
+   "retry": "pagina"
+  }
+ }
+}

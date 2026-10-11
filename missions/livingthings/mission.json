@@ -1,6 +1,6 @@
 {
  "code": "livingthings",
- "version": 7,
+ "version": 8,
  "lang": "es",
  "ages": "9–11",
  "title": {
@@ -150,6 +150,54 @@
   "egagropilas": {
    "title": "Las egagrópilas",
    "text": "El búho no mastica. Traga entero y, horas después, devuelve en una bolita gris lo que no digiere, huesos y pelo. Abrir una egagrópila es leer qué cenó."
+  },
+  "levadura": {
+   "title": "Lo que vive en un sobre",
+   "text": "La levadura es un ser vivo de una sola célula. Come azúcar, suelta gas y se parte en dos. Lo comprobé con una botella de agua tibia y un globo en la boca; el globo se hinchó solo, sin que nadie soplara."
+  },
+  "cinco-pruebas": {
+   "title": "Las cinco pruebas de la vida",
+   "text": "Un ser vivo está hecho de células, se nutre, crece, responde a lo que le rodea y se reproduce. La última se le pide a la especie, no a cada uno, y alguna puede estar en pausa. A la mula le pedí la quinta y me rebuznó."
+  },
+  "celulas": {
+   "title": "De qué estamos hechos",
+   "text": "Todos los seres vivos están hechos de células. Las de las plantas tienen pared, como ladrillos, y las de las hojas llevan además cuerpecillos verdes; las de los animales son redondeadas y sin pared. Las tres láminas las etiqueté con la lupa delante, esta vez."
+  },
+  "por-dentro": {
+   "title": "Ordenar por dentro",
+   "text": "Los cinco grandes grupos se separan por cómo son por dentro, con núcleo o sin él, de una célula o de muchas, y si fabrican o toman el alimento. El coral se me coló con las plantas, por fuera engaña; por dentro, no. Los científicos de hoy ponen además tres troncos por debajo de las ramas."
+  },
+  "buenas-preguntas": {
+   "title": "Las buenas preguntas de una clave",
+   "text": "Una pregunta de clave separa por lo que no cambia de un ejemplar a otro, huesos, plumas, patas, concha. El color y el tamaño cambian; lo comprobé con dos caracoles del mismo muro, uno marrón y otro amarillo."
+  },
+  "nombre-cientifico": {
+   "title": "El apellido de familia",
+   "text": "Cada especie tiene dos nombres en latín, el primero es el apellido que comparten los primos y el segundo es suyo. Vale en todos los países, para que dos naturalistas lejanos sepan que hablan del mismo animal. Al yaguareté y al león los junté por el apellido, Panthera, y no por el pelaje."
+  },
+  "semillas-viajeras": {
+   "title": "Las semillas viajan",
+   "text": "Las plantas no andan, pero sus semillas sí viajan, con el viento, flotando, enganchadas al pelo de un animal, en la barriga de un pájaro o de un salto, y la forma de cada una dice cómo. Y antes de la semilla, la flor, con sus colores y su néctar, invita a quien le lleve el polen. Lo apunté con un cadillo pegado a la manga."
+  },
+  "una-sola-cosa": {
+   "title": "Cambiar una sola cosa",
+   "text": "Un experimento cambia una sola cosa y deja igual todo lo demás; mide con la misma regla, el mismo día; pone varias macetas, por si una semilla venía mal; y escribe la predicción antes de sembrar, no después. La tabla la dejé en blanco a propósito."
+  },
+  "descomponedores": {
+   "title": "Los que comen lo que nadie quiere",
+   "text": "Hongos, bacterias y lombrices se alimentan de restos y devuelven al suelo y al agua lo que las plantas necesitan. Sin ellos, las hojas muertas se amontonan y las plantas nuevas crecen peor. Metí un palo en el fondo del lago para comprobarlo y saqué barro oscuro y lombrices."
+  },
+  "los-que-volvieron": {
+   "title": "Los que volvieron",
+   "text": "El lince ibérico bajó a menos de cien en 2002 y en 2025 pasaba de dos mil seiscientos, con conejos recuperados, linces criados y soltados y pasos bajo las carreteras. El tagua del Chaco se conocía por fósiles hasta que apareció vivo en 1975. Lo copié de los informes, con la fecha al lado, y no de memoria."
+  },
+  "fuentes": {
+   "title": "De quién fiarse",
+   "text": "A cada fuente, tres preguntas, quién lo dice, cuándo y cómo lo sabe. Lo que tiene autor y fecha se apunta con su fuente; lo que no, se comprueba antes; lo que alguien recuerda se guarda como testimonio, con su nombre. La seguridad con que alguien habla no es una fuente, y lo sé por experiencia."
+  },
+  "como-cambia-la-ciencia": {
+   "title": "Cómo cambia la ciencia",
+   "text": "Lo de antes no era mentira, era lo que se veía con los ojos y los medios de entonces. Más ojos, más tiempo y mejores aparatos corrigen las páginas. Esta también se corregirá algún día, y me parece bien, siempre que quien la corrija ponga la fecha."
   }
  },
  "letters": {
@@ -1062,18 +1110,30 @@
  "scenes": [
   "C1-1",
   "C1-2",
+  "C1-3",
+  "C1-4",
   "C2-1",
   "C2-2",
+  "C2-3",
+  "C2-4",
   "C3-1",
   "C3-2",
   "C3-3",
+  "C3-4",
+  "C3-5",
   "C4-1",
   "C4-2",
   "C4-3",
+  "C4-4",
+  "C4-5",
   "C5-1",
   "C5-2",
   "C5-3",
+  "C5-4",
+  "C5-5",
   "C6-1",
-  "C6-2"
+  "C6-2",
+  "C6-3",
+  "C6-4"
  ]
 }

@@ -90,7 +90,7 @@ final class scenes_test extends \advanced_testcase {
         $w = $this->make_class(0);
         $this->assertSame('py', $w->mission->variant);
         $this->assertEquals(6, $DB->count_records(self::T . 'chapter', ['missionid' => $w->mission->id]));
-        $this->assertEquals(15, $DB->count_records(self::T . 'scene', ['missionid' => $w->mission->id]));
+        $this->assertEquals(27, $DB->count_records(self::T . 'scene', ['missionid' => $w->mission->id]));
         $this->assertTrue($DB->record_exists(self::T . 'item', ['code' => 'naturalistlens']));
         // A classroom challenge per chapter, from the activity off the screen.
         $challenges = classroom::list($w->course->id);
@@ -184,6 +184,36 @@ final class scenes_test extends \advanced_testcase {
         // With the lantern, the night by the lake has one more option, and it gives a gem.
         $night = $this->play($w, $user, 'C5-2', ['lantern']);
         $this->assertSame(1, $night['rewards']['gems']);
+    }
+
+    public function test_quests_are_for_everybody_and_give_no_saber(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $w = $this->make_class(1);
+        $user = $w->users[0];
+        $quests = $DB->get_records(self::T . 'scene', ['missionid' => $w->mission->id, 'quest' => 1], 'code');
+        $this->assertCount(12, $quests);
+        // Nobody's route: a student of the extension step plays the core scenes, and the quests apart.
+        $member = engine::member(characters::get($user->id), $w->course->id);
+        $DB->set_field(self::T . 'member', 'step', 3, ['id' => $member->id]);
+        $claro = $DB->get_field(self::T . 'chapter', 'id', ['missionid' => $w->mission->id, 'code' => 'claro']);
+        $scenes = array_values($DB->get_records(self::T . 'scene', ['chapterid' => $claro], 'code'));
+        $this->assertSame(['C1-2'], array_map(fn($sc) => $sc->code, scenes::for_step($scenes, 3)));
+        $map = view::world($w->course->id, $user->id)['mission']['chapters'][0];
+        $this->assertSame(['C1-2'], array_column($map['scenes'], 'code'));
+        $this->assertCount(2, $map['quests']);
+        // Played well: gems, maybe a page, never saber, lanterns, items or the creature.
+        foreach ($quests as $quest) {
+            $result = $this->play($w, $user, $quest->code);
+            $this->assertContains($result['outcome'], ['success', 'partial'], $quest->code);
+            $this->assertSame(0, $result['rewards']['saber'], $quest->code);
+            $this->assertGreaterThan(0, $result['rewards']['gems'], $quest->code);
+            $this->assertSame([], $result['rewards']['lanterns'], $quest->code);
+            $this->assertSame([], $result['rewards']['items'], $quest->code);
+            $this->assertFalse($result['rewards']['hatched'], $quest->code);
+            $this->assertSame('', $result['rewards']['chapter'], $quest->code);
+        }
+        $this->assertEquals(0, characters::get($user->id)->saber);
     }
 
     public function test_the_rehearsal_gives_only_saber(): void {

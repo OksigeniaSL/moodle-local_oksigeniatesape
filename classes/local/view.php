@@ -200,13 +200,28 @@ final class view {
         foreach ($data['chapters'] ?? [] as $chapter) {
             $info[$chapter['code']] = $chapter;
         }
+        $sceneview = function ($scene) use ($found, $attempts, $reached) {
+            $def = json_decode($scene->definition, true);
+            $done = !empty($found['scene'][$scene->code]);
+            // Done with a partial ending only: playing it again can make it better.
+            $best = array_filter($reached[$scene->id] ?? [], fn($e) => ($def['nodes'][$e]['type'] ?? '') === 'ending'
+                && ($def['nodes'][$e]['outcome'] ?? 'success') === 'success');
+            return [
+                'id' => (int) $scene->id,
+                'code' => $scene->code,
+                'title' => (string) ($def['title'] ?? $scene->code),
+                'minutes' => (int) ($def['minutes'] ?? 0),
+                'step' => (int) $scene->step,
+                'done' => $done,
+                'better' => $done && !$best,
+                'attempts' => (int) ($attempts[$scene->id] ?? 0),
+            ];
+        };
         $list = [];
         foreach ($chapters as $chapter) {
             $meta = $info[$chapter->code] ?? [];
-            $mine = scenes::for_step(
-                array_values(array_filter($scenes, fn($s) => $s->chapterid == $chapter->id)),
-                (int) $member->step
-            );
+            $here = array_values(array_filter($scenes, fn($s) => $s->chapterid == $chapter->id));
+            $mine = scenes::for_step($here, (int) $member->step);
             $games = [];
             foreach ($meta['games'] ?? [] as $game) {
                 if (isset($data['games'][$game])) {
@@ -227,22 +242,9 @@ final class view {
                 'done' => !empty($found['chapter'][$chapter->code]),
                 'challengeid' => (int) ($challenges[$chapter->id] ?? 0),
                 'letter' => $chapter->litat ? today::letter($mission, $chapter->code) : '',
-                'scenes' => array_map(function ($scene) use ($found, $attempts, $reached) {
-                    $def = json_decode($scene->definition, true);
-                    $done = !empty($found['scene'][$scene->code]);
-                    // Done with a partial ending only: playing it again can make it better.
-                    $best = array_filter($reached[$scene->id] ?? [], fn($e) => ($def['nodes'][$e]['type'] ?? '') === 'ending'
-                        && ($def['nodes'][$e]['outcome'] ?? 'success') === 'success');
-                    return [
-                        'id' => (int) $scene->id,
-                        'code' => $scene->code,
-                        'title' => (string) ($def['title'] ?? $scene->code),
-                        'minutes' => (int) ($def['minutes'] ?? 0),
-                        'done' => $done,
-                        'better' => $done && !$best,
-                        'attempts' => (int) ($attempts[$scene->id] ?? 0),
-                    ];
-                }, $mine),
+                'scenes' => array_map($sceneview, $mine),
+                // The quests of the place, for whoever wants more, whatever their step.
+                'quests' => array_map($sceneview, scenes::quests($here)),
             ];
         }
         $pages = [];

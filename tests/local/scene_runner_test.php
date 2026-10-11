@@ -34,13 +34,13 @@ require_once(__DIR__ . '/../fixtures/autoplayer.php');
 #[\PHPUnit\Framework\Attributes\CoversClass(scene_runner::class)]
 final class scene_runner_test extends \advanced_testcase {
     /**
-     * The nine core scenes of the pilot mission.
+     * The scenes of the pilot mission: those of the routes and the quests.
      *
      * @return array
      */
     public static function scenes_provider(): array {
         $codes = ['C1-1', 'C1-2', 'C2-1', 'C2-2', 'C3-1', 'C3-2', 'C3-3', 'C4-1', 'C4-2', 'C4-3', 'C5-1', 'C5-2', 'C5-3', 'C6-1',
-            'C6-2'];
+            'C6-2', 'C1-3', 'C1-4', 'C2-3', 'C2-4', 'C3-4', 'C3-5', 'C4-4', 'C4-5', 'C5-4', 'C5-5', 'C6-3', 'C6-4'];
         return array_combine($codes, array_map(fn($c) => [$c], $codes));
     }
 
@@ -65,6 +65,7 @@ final class scene_runner_test extends \advanced_testcase {
     /**
      * A first try with mix-ups put right on the way is taken by the server, ends as the good play (or in the partial
      * ending, where the scene counts what was right at the first try), and the mix-ups count against the objectives.
+     * Quests ask for more: a play wrong at every first try can be sent back, one with some mix-ups counts.
      *
      * @param string $code
      * @dataProvider scenes_provider
@@ -75,10 +76,16 @@ final class scene_runner_test extends \advanced_testcase {
         $good = (new scene_runner($scene))->run(autoplayer::play($scene));
         $events = \local_oksigeniatesape\local\autoplayer::tangled($scene, 'seed', 100);
         $result = (new scene_runner($scene))->run($events);
+        $this->assertLessThanOrEqual($good['points'], $result['points'], $code);
+        if (!empty($scene['quest'])) {
+            // A quest asks for more: wrong at every first try it can send back, but with a few mix-ups it counts.
+            $some = (new scene_runner($scene))->run(\local_oksigeniatesape\local\autoplayer::tangled($scene, 'a', 30));
+            $this->assertContains($some['outcome'], ['success', 'partial'], $code);
+            return;
+        }
         if ($result['outcome'] !== 'partial') {
             $this->assertSame($good['ending'], $result['ending'], $code);
         }
-        $this->assertLessThanOrEqual($good['points'], $result['points'], $code);
     }
 
     public function test_the_nest_sleeps_with_too_few_living_things(): void {

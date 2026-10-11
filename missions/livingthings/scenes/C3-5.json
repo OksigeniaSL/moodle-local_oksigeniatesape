@@ -1,0 +1,263 @@
+{
+ "id": "C3-5",
+ "mission": "livingthings",
+ "chapter": "bosque",
+ "title": "Apellidos de familia",
+ "quest": true,
+ "step": 4,
+ "mode": "both",
+ "objectives": [
+  "SV-04"
+ ],
+ "minutes": 7,
+ "start": "intro",
+ "nodes": {
+  "intro": {
+   "type": "story",
+   "speaker": "bibliotecaria",
+   "image": "bosque-etiquetas",
+   "text": {
+    "valley": "Los naturalistas ponen a cada especie dos nombres en latín: el primero es como un apellido de familia, y lo comparten los parientes cercanos; el segundo es de cada especie. En el Gran Libro, las etiquetas con esos nombres se han despegado de sus animales. Doña Hebra las sostiene en abanico: «Ocho animales, ocho etiquetas. Y un aviso: los primos comparten apellido».",
+    "azara": "Los naturalistas ponen a cada especie dos nombres en latín: el primero es como un apellido de familia, y lo comparten los parientes cercanos; el segundo es de cada especie. En las cajas de la expedición, esas etiquetas se han despegado de sus animales. La archivera las sostiene en abanico: «Ocho animales, ocho etiquetas. Y un aviso: los primos comparten apellido»."
+   },
+   "next": "pegar"
+  },
+  "pegar": {
+   "type": "classify",
+   "prompt": "¿Qué apellido lleva cada animal?",
+   "retry": "item",
+   "hints": [
+    "El apellido lo comparten los primos: dos felinos grandes van juntos, y los dos linces, también.",
+    "«Hydro» quiere decir agua: es el que vive junto al río. «Barbatus», con barba.",
+    "«Azarae» lleva el nombre de Félix de Azara, que describió al mono de noche."
+   ],
+   "bins": [
+    {
+     "id": "panthera",
+     "label": "Panthera: onca · leo"
+    },
+    {
+     "id": "lynx",
+     "label": "Lynx: pardinus · lynx"
+    },
+    {
+     "id": "hydrochoerus",
+     "label": "Hydrochoerus hydrochaeris"
+    },
+    {
+     "id": "rhea",
+     "label": "Rhea americana"
+    },
+    {
+     "id": "gypaetus",
+     "label": "Gypaetus barbatus"
+    },
+    {
+     "id": "aotus",
+     "label": "Aotus azarae"
+    }
+   ],
+   "items": [
+    {
+     "id": "yaguarete",
+     "label": "el yaguareté, el felino más grande de América",
+     "bin": "panthera",
+     "objective": "SV-04",
+     "feedback": {
+      "lynx": "«Los linces son más pequeños y tienen pinceles en las orejas. El yaguareté comparte apellido con el león: Panthera.»"
+     }
+    },
+    {
+     "id": "leon",
+     "label": "el león",
+     "bin": "panthera",
+     "objective": "SV-04",
+     "feedback": {
+      "lynx": "«El león es primo del yaguareté, no de los linces. Panthera.»"
+     }
+    },
+    {
+     "id": "iberico",
+     "label": "el lince ibérico",
+     "bin": "lynx",
+     "objective": "SV-04",
+     "feedback": {
+      "panthera": "«Pinceles en las orejas y patillas: lince. Comparte apellido con el otro lince, no con el león.»"
+     }
+    },
+    {
+     "id": "boreal",
+     "label": "el lince boreal",
+     "bin": "lynx",
+     "objective": "SV-04",
+     "feedback": {
+      "panthera": "«Primo del lince ibérico: mismo apellido, Lynx. Distinta especie.»"
+     }
+    },
+    {
+     "id": "carpincho",
+     "label": "el carpincho, el roedor más grande del mundo, que vive junto al agua",
+     "bin": "hydrochoerus",
+     "objective": "SV-04",
+     "feedback": {
+      "rhea": "«Rhea es un ave que corre. El del agua es el otro: hydro, agua.»",
+      "aotus": "«Aotus es un mono. El roedor del agua lleva el agua en el nombre: Hydrochoerus.»"
+     }
+    },
+    {
+     "id": "nandu",
+     "label": "el ñandú",
+     "bin": "rhea",
+     "objective": "SV-04",
+     "feedback": {
+      "gypaetus": "«Gypaetus barbatus es un ave con barba que vive en la montaña. El ñandú corre por el campo: Rhea americana.»"
+     }
+    },
+    {
+     "id": "quebrantahuesos",
+     "label": "el quebrantahuesos, el ave que come huesos",
+     "bin": "gypaetus",
+     "objective": "SV-04",
+     "feedback": {
+      "rhea": "«Rhea americana corre y no vuela. El de los huesos vuela alto en la montaña y tiene barba: Gypaetus barbatus.»"
+     }
+    },
+    {
+     "id": "mirikina",
+     "label": "el mirikiná, el mono de noche de ojos enormes",
+     "bin": "aotus",
+     "objective": "SV-04",
+     "feedback": {
+      "hydrochoerus": "«Hydrochoerus vive en el agua y es un roedor. El mono de noche lleva el nombre de quien lo describió: azarae.»"
+     }
+    }
+   ],
+   "next": "paraque"
+  },
+  "paraque": {
+   "type": "choice",
+   "prompt": {
+    "valley": "Doña Hebra pregunta: «¿Para qué sirve un nombre en latín, si cada sitio ya tiene el suyo?»",
+    "azara": "La archivera pregunta: «¿Para qué sirve un nombre en latín, si cada sitio ya tiene el suyo?»"
+   },
+   "hints": [
+    "El carpincho tiene otros nombres en otros países. ¿Cómo sabrían dos naturalistas que hablan del mismo animal?",
+    "Un nombre que vale en todo el mundo no es para presumir: es para no confundirse."
+   ],
+   "options": [
+    {
+     "id": "mundo",
+     "label": "Para que un naturalista de Paraguay y uno de España sepan que hablan del mismo animal",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-04",
+     "feedback": "«Eso es. Carpincho, capibara, chigüiro: tres nombres según el país y un solo animal. En latín, uno para todos.»"
+    },
+    {
+     "id": "importante",
+     "label": "Para que el animal suene más importante",
+     "correct": false,
+     "objective": "SV-04",
+     "feedback": "«Al animal le da igual cómo suene. El nombre es para que dos personas lejanas no se confundan.»"
+    },
+    {
+     "id": "nadie",
+     "label": "Para que nadie lo entienda y así no lo cacen",
+     "correct": false,
+     "objective": "SV-04",
+     "feedback": "«Al revés: es para que lo entienda todo el mundo, en cualquier país. Por eso está en una lengua que no es de nadie.»"
+    },
+    {
+     "id": "primos",
+     "label": "Que el sabio explique qué más dice el apellido, aparte de quién es primo de quién",
+     "requires": {
+      "teamrole": "sage"
+     },
+     "locked": "Esto lo haría alguien que lee entre líneas: el sabio del equipo.",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-04",
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "«Dice cómo son por dentro. Los dos linces se parecen en los huesos, en los dientes y en cómo cazan; por eso llevan el mismo apellido. El nombre resume lo que se ha mirado.» Una gema."
+    },
+    {
+     "id": "firma",
+     "label": "Fijarse en el segundo nombre del mirikiná y buscarlo en otras etiquetas del libro",
+     "requires": {
+      "role": "scout"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "«Azarae» aparece también en un agutí y en un ratón de campo. Un naturalista que miró tanto que varios animales llevan su nombre. Una gema por seguir la pista."
+    }
+   ],
+   "next": "resultado"
+  },
+  "resultado": {
+   "type": "branch",
+   "rules": [
+    {
+     "if": {
+      "correct_at_least": 8,
+      "in": "pegar"
+     },
+     "next": "pegadas"
+    },
+    {
+     "if": {
+      "correct_at_least": 6,
+      "in": "pegar"
+     },
+     "next": "sueltas"
+    }
+   ],
+   "else": "revueltas"
+  },
+  "pegadas": {
+   "type": "ending",
+   "outcome": "success",
+   "text": {
+    "valley": "Cada etiqueta vuelve a su animal y los primos se juntan solos: el yaguareté y el león a un lado, los dos linces al otro. Doña Hebra pasa el dedo por las etiquetas: «Un nombre que vale en todo el mundo. Y mirar que ninguno está escrito de memoria». {{creature}} se busca en la lista y no se encuentra: todavía no tiene apellido.",
+    "azara": "Cada etiqueta vuelve a su animal y los primos se juntan solos: el yaguareté y el león a un lado, los dos linces al otro. La archivera pasa el dedo por las etiquetas: «Los nombres en latín los pondrán otros, en Europa, a partir de estas descripciones. Por eso hay que describir bien». {{creature}} se busca en la lista y no se encuentra: todavía no tiene apellido."
+   },
+   "effects": [
+    {
+     "gems": 3
+    },
+    {
+     "page": "nombre-cientifico"
+    }
+   ]
+  },
+  "sueltas": {
+   "type": "ending",
+   "outcome": "partial",
+   "text": {
+    "valley": "Casi todas las etiquetas están en su sitio, pero dos se han pegado donde no era y los primos no acaban de juntarse. Doña Hebra las deja a medio pegar: «Otro día, cada una a la primera, y la página queda limpia». {{creature}} se busca en la lista y no se encuentra.",
+    "azara": "Casi todas las etiquetas están en su sitio, pero dos se han pegado donde no era y los primos no acaban de juntarse. La archivera las deja a medio pegar: «Otro día, cada una a la primera, y la página queda limpia». {{creature}} se busca en la lista y no se encuentra."
+   },
+   "effects": [
+    {
+     "gems": 1
+    }
+   ]
+  },
+  "revueltas": {
+   "type": "ending",
+   "outcome": "retry",
+   "text": {
+    "valley": "Las etiquetas están más revueltas que antes. Doña Hebra las despega todas: «El primer nombre es el apellido, y lo comparten los primos. Empecemos por los dos felinos grandes».",
+    "azara": "Las etiquetas están más revueltas que antes. La archivera las despega todas: «El primer nombre es el apellido, y lo comparten los primos. Empecemos por los dos felinos grandes»."
+   },
+   "retry": "pegar"
+  }
+ }
+}

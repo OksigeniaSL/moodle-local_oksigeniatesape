@@ -159,6 +159,7 @@ final class missions {
                 'chapterid' => $chapterids[$scene['chapter']] ?? 0,
                 'code' => $scenecode,
                 'step' => (int) ($scene['step'] ?? 0),
+                'quest' => empty($scene['quest']) ? 0 : 1,
                 'version' => (int) ($package['version'] ?? 1),
                 'definition' => json_encode($scene),
                 'timemodified' => $now,

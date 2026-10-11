@@ -1,0 +1,256 @@
+{
+ "id": "C4-4",
+ "mission": "livingthings",
+ "chapter": "jardin",
+ "title": "Semillas viajeras",
+ "quest": true,
+ "step": 3,
+ "mode": "both",
+ "objectives": [
+  "SV-05"
+ ],
+ "minutes": 8,
+ "locals": {
+  "fruta": {
+   "py": "una guayaba madura",
+   "es": "una mora madura"
+  }
+ },
+ "start": "intro",
+ "nodes": {
+  "intro": {
+   "type": "story",
+   "speaker": "jardinera",
+   "image": "jardin-semillas",
+   "text": {
+    "valley": "Las plantas del Jardín de la Luz no pueden andar, pero sus semillas sí tienen que llegar lejos: si todas cayeran al pie de la madre, crecerían a su sombra y sin sitio. La jardinera deja en la mesa cinco semillas muy distintas: «Cada una viaja de una manera, y lo dice su forma. Hay que decidir cómo se va cada una. Si nos equivocamos, la semilla no llega».",
+    "azara": "Las plantas del huerto no pueden andar, pero sus semillas sí tienen que llegar lejos: si todas cayeran al pie de la madre, crecerían a su sombra y sin sitio. La jardinera deja en la mesa cinco semillas muy distintas: «Cada una viaja de una manera, y lo dice su forma. Hay que decidir cómo se va cada una. Si nos equivocamos, la semilla no llega»."
+   },
+   "next": "viajar"
+  },
+  "viajar": {
+   "type": "classify",
+   "prompt": "¿Cómo viaja cada semilla?",
+   "retry": "item",
+   "hints": [
+    "La forma lo dice: lo ligero y con pelillos vuela; lo que flota, navega; lo que se engancha, va a cuestas.",
+    "Lo que está dentro de una fruta dulce viaja en la barriga de quien se la come, y sale entero al otro lado.",
+    "Una vaina seca que se retuerce al sol acaba abriéndose de golpe."
+   ],
+   "bins": [
+    {
+     "id": "viento",
+     "label": "Con el viento"
+    },
+    {
+     "id": "agua",
+     "label": "Flotando en el agua"
+    },
+    {
+     "id": "pelo",
+     "label": "Enganchada al pelo de un animal"
+    },
+    {
+     "id": "pajaro",
+     "label": "En la barriga de un pájaro"
+    },
+    {
+     "id": "salto",
+     "label": "De un salto, por su cuenta"
+    }
+   ],
+   "items": [
+    {
+     "id": "diente",
+     "label": "una semilla de diente de león, con su paracaídas de pelillos",
+     "bin": "viento",
+     "objective": "SV-05",
+     "feedback": {
+      "agua": "Cae al arroyo y los pelillos se empapan: no flota, se hunde. Con un soplo de viento habría cruzado el valle.",
+      "pelo": "No tiene ganchos: resbala del pelo y cae al pie de la madre. Lo suyo es el aire."
+     }
+    },
+    {
+     "id": "coco",
+     "label": "un coco",
+     "bin": "agua",
+     "objective": "SV-05",
+     "feedback": {
+      "viento": "Cae a los pies de la palmera: «Demasiado pesado; yo floto». Con la marea, llegaría a otra playa.",
+      "pajaro": "No hay pájaro que se trague un coco. Lo suyo es el agua: flota semanas sin pudrirse.",
+      "salto": "No hay vaina que lo lance: pesa demasiado. Lo suyo es el agua."
+     }
+    },
+    {
+     "id": "cadillo",
+     "label": "un cadillo, con ganchitos por todas partes",
+     "bin": "pelo",
+     "objective": "SV-05",
+     "feedback": {
+      "viento": "Es pesado y con ganchos: el viento no lo mueve. Pero un perro que pasa se lo lleva a cuestas, enganchado al pelo.",
+      "agua": "Los ganchos no sirven para flotar. Sirven para agarrarse a lo que roza: pelo, lana, calcetines."
+     }
+    },
+    {
+     "id": "fruta",
+     "label": "{{local:fruta}}, con las semillas dentro",
+     "bin": "pajaro",
+     "objective": "SV-05",
+     "feedback": {
+      "viento": "Demasiado pesada y jugosa para volar. Un pájaro se la come y, lejos de aquí, las semillas salen enteras con sus deposiciones, con abono incluido.",
+      "agua": "Se pudre en el agua antes de llegar a ningún sitio. Lo suyo es ser dulce: un pájaro se la lleva por dentro."
+     }
+    },
+    {
+     "id": "vaina",
+     "label": "una vaina seca que se retuerce al sol",
+     "bin": "salto",
+     "objective": "SV-05",
+     "feedback": {
+      "viento": "El viento no la mueve. Pero al secarse, se abre de golpe y lanza sus semillas a unos pasos.",
+      "pelo": "No se engancha a nada. Se retuerce, se abre con un chasquido y las semillas salen disparadas."
+     }
+    }
+   ],
+   "next": "vaina"
+  },
+  "vaina": {
+   "type": "choice",
+   "prompt": "La vaina estalla hoy. ¿Dónde aparecerán sus plantitas en primavera?",
+   "hints": [
+    "Un salto propio no es un vuelo: ¿hasta dónde llega una semilla lanzada por una vaina?",
+    "Justo debajo de la madre hay sombra y poco sitio."
+   ],
+   "options": [
+    {
+     "id": "pasos",
+     "label": "A unos pasos de la planta madre, repartidas en un círculo",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-05",
+     "feedback": "Ahí aparecen: a un par de metros, en corro. Un salto corto, pero fuera de la sombra de la madre."
+    },
+    {
+     "id": "lejos",
+     "label": "Al otro lado del valle",
+     "correct": false,
+     "objective": "SV-05",
+     "feedback": "El salto es corto. Para llegar tan lejos haría falta viento, agua o un animal."
+    },
+    {
+     "id": "debajo",
+     "label": "Justo debajo de la planta madre, todas juntas",
+     "correct": false,
+     "objective": "SV-05",
+     "feedback": "Las que caen ahí crecen a la sombra, apretadas, y casi ninguna sale adelante. Por eso la vaina lanza, en vez de soltar."
+    }
+   ],
+   "next": "flor"
+  },
+  "flor": {
+   "type": "choice",
+   "prompt": {
+    "valley": "La jardinera señala las flores del jardín: «¿Y por qué una flor tiene colores y néctar? Para la planta cuesta trabajo fabricarlos».",
+    "azara": "La jardinera señala las flores del huerto: «¿Y por qué una flor tiene colores y néctar? Para la planta cuesta trabajo fabricarlos»."
+   },
+   "hints": [
+    "¿Quién visita las flores, y qué se lleva pegado al cuerpo de una a otra?",
+    "Antes de que haya semilla tiene que pasar algo en la flor."
+   ],
+   "options": [
+    {
+     "id": "polen",
+     "label": "Para atraer a abejas y otros insectos, que se llevan el polen pegado de una flor a otra; sin eso, no hay semillas",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-05",
+     "feedback": "La abeja entra por el néctar y sale empolvada de polen. En la siguiente flor lo deja, y de ahí saldrán las semillas. El color es el cartel; el néctar, la paga."
+    },
+    {
+     "id": "bonita",
+     "label": "Para estar bonita y que alguien la riegue",
+     "correct": false,
+     "objective": "SV-05",
+     "feedback": "Las flores eran de colores mucho antes de que hubiera regaderas. El color es para quien vuela, no para nosotros."
+    },
+    {
+     "id": "sombra",
+     "label": "Para dar sombra a las hojas en verano",
+     "correct": false,
+     "objective": "SV-05",
+     "feedback": "Las hojas quieren sol, no sombra. Lo que la flor busca es una visita."
+    },
+    {
+     "id": "cadillos",
+     "label": "Fijarse en lo que {{creature}} trae enganchado en el pelo al volver del jardín",
+     "requires": {
+      "role": "scout"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "Cadillos. Una docena. {{creature}} ha sido el animal de la semilla sin saberlo, y las ha sembrado por todo el camino. Una gema por mirar lo que nadie mira."
+    }
+   ],
+   "next": "resultado"
+  },
+  "resultado": {
+   "type": "branch",
+   "rules": [
+    {
+     "if": {
+      "correct_at_least": 5,
+      "in": "viajar"
+     },
+     "next": "lejos"
+    },
+    {
+     "if": {
+      "correct_at_least": 3,
+      "in": "viajar"
+     },
+     "next": "cerca"
+    }
+   ],
+   "else": "pie"
+  },
+  "lejos": {
+   "type": "ending",
+   "outcome": "success",
+   "text": {
+    "valley": "Cada semilla llega a su sitio: una cruza el valle volando, otra navega hasta la otra orilla, otra viaja en un perro, otra en un pájaro y la última salta. La jardinera apunta: «Las plantas no andan, pero viajan». Dentro de unos meses, en todos esos sitios, habrá brotes. {{creature}} estornuda y un diente de león sale volando.",
+    "azara": "Cada semilla llega a su sitio: una cruza el campo volando, otra navega río abajo, otra viaja en un perro, otra en un pájaro y la última salta. El cuaderno añade: «Las plantas no andan, pero viajan». Dentro de unos meses, en todos esos sitios, habrá brotes. {{creature}} estornuda y un diente de león sale volando."
+   },
+   "effects": [
+    {
+     "gems": 3
+    },
+    {
+     "page": "semillas-viajeras"
+    }
+   ]
+  },
+  "cerca": {
+   "type": "ending",
+   "outcome": "partial",
+   "text": {
+    "valley": "Tres semillas llegan lejos; las otras caen al pie de la madre y crecerán a su sombra, si crecen. «No todas han viajado», dice la jardinera. «Otro día, cada una con su manera de irse, y el jardín llegará más lejos.» {{creature}} estornuda y un diente de león sale volando.",
+    "azara": "Tres semillas llegan lejos; las otras caen al pie de la madre y crecerán a su sombra, si crecen. «No todas han viajado», dice la jardinera. «Otro día, cada una con su manera de irse, y el huerto llegará más lejos.» {{creature}} estornuda y un diente de león sale volando."
+   },
+   "effects": [
+    {
+     "gems": 1
+    }
+   ]
+  },
+  "pie": {
+   "type": "ending",
+   "outcome": "retry",
+   "text": "Casi todas las semillas han caído al pie de la madre. La jardinera las junta una a una: «La forma lo dice todo. ¿Qué es ligero, qué flota, qué se engancha, qué es dulce y qué estalla?».",
+   "retry": "viajar"
+  }
+ }
+}

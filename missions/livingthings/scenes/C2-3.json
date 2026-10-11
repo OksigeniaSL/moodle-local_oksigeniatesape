@@ -1,0 +1,222 @@
+{
+ "id": "C2-3",
+ "mission": "livingthings",
+ "chapter": "biblioteca",
+ "title": "Bajo la lupa: células",
+ "quest": true,
+ "step": 3,
+ "mode": "both",
+ "objectives": [
+  "SV-02"
+ ],
+ "minutes": 6,
+ "start": "intro",
+ "nodes": {
+  "intro": {
+   "type": "story",
+   "speaker": "bibliotecaria",
+   "image": "biblioteca-cajon",
+   "text": {
+    "valley": "En la biblioteca hay un cajón que casi nadie abre. Dentro, tres láminas de cristal con una gota seca cada una y las etiquetas despegadas. Doña Hebra las pone al trasluz: «Una viene de una piel de cebolla, otra del interior de una mejilla y otra de una hoja. Con la lupa potente se ve de qué están hechas. Yo las etiqueté de memoria una vez. Ya no».",
+    "azara": "En el cajón de la expedición hay tres láminas de cristal con una gota seca cada una y las etiquetas despegadas. La archivera las pone al trasluz: «Una viene de una piel de cebolla, otra del interior de una mejilla y otra de una hoja. Con la lupa se ve de qué están hechas. Yo las etiqueté de memoria una vez. Ya no»."
+   },
+   "next": "laminas"
+  },
+  "laminas": {
+   "type": "classify",
+   "prompt": "Con la lupa: ¿de qué ser vivo viene cada lámina?",
+   "retry": "item",
+   "hints": [
+    "Las células de las plantas tienen una pared rígida y suelen ser regulares, como ladrillos.",
+    "Las de las hojas tienen, además, cuerpecillos verdes.",
+    "Las de los animales son más redondeadas y no tienen pared."
+   ],
+   "bins": [
+    {
+     "id": "cebolla",
+     "label": "La piel de cebolla"
+    },
+    {
+     "id": "mejilla",
+     "label": "El interior de la mejilla"
+    },
+    {
+     "id": "hoja",
+     "label": "La hoja"
+    },
+    {
+     "id": "charco",
+     "label": "Una gota del charco"
+    }
+   ],
+   "items": [
+    {
+     "id": "ladrillos",
+     "label": "células con pared, ordenadas como ladrillos, sin nada verde dentro",
+     "bin": "cebolla",
+     "objective": "SV-02",
+     "feedback": {
+      "mejilla": "«Tienen pared, como ladrillos. Las de un animal no la tienen: esto es de una planta.»",
+      "hoja": "«Pared sí, pero nada verde dentro. Es de una parte de la planta que no ve el sol.»"
+     }
+    },
+    {
+     "id": "redondas",
+     "label": "células redondeadas, sueltas, sin pared",
+     "bin": "mejilla",
+     "objective": "SV-02",
+     "feedback": {
+      "cebolla": "«Sin pared y redondeadas: son de animal. La cebolla las tiene de ladrillo.»",
+      "hoja": "«Sin pared y sin nada verde: de animal. Una hoja no es así por dentro.»"
+     }
+    },
+    {
+     "id": "verdes",
+     "label": "células con pared y cuerpecillos verdes dentro",
+     "bin": "hoja",
+     "objective": "SV-02",
+     "feedback": {
+      "cebolla": "«Lo verde delata a la hoja: esos cuerpecillos fabrican el alimento con la luz. La cebolla crece bajo tierra.»",
+      "mejilla": "«Pared y cuerpecillos verdes: eso no lo tiene ningún animal.»"
+     }
+    },
+    {
+     "id": "entero",
+     "label": "un ser entero de una sola célula, con pelillos que se mueven",
+     "bin": "charco",
+     "objective": "SV-02",
+     "requires": {
+      "any": [
+       {
+        "item": "magnifier"
+       },
+       {
+        "teamrole": "sage"
+       }
+      ]
+     },
+     "locked": "Esta lámina solo se lee con una lupa de verdad. Esto lo haría alguien que sabe mirar de cerca: el sabio del equipo tiene una.",
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": {
+      "mejilla": "«No es un trozo de nadie: es alguien entero. Una sola célula que nada, come y se divide. Del charco.»",
+      "hoja": "«Nada y se mueve solo: no es un trozo de hoja. Es un ser entero de una célula, del charco.»",
+      "cebolla": "«Se mueve con los pelillos: la cebolla no hace eso. Es un ser entero de una célula, del charco.»"
+     }
+    }
+   ],
+   "next": "cebolla"
+  },
+  "cebolla": {
+   "type": "choice",
+   "prompt": {
+    "valley": "Doña Hebra pregunta: «La cebolla es una planta. ¿Por qué su lámina no tiene cuerpecillos verdes?»",
+    "azara": "La archivera pregunta: «La cebolla es una planta. ¿Por qué su lámina no tiene cuerpecillos verdes?»"
+   },
+   "hints": [
+    "¿Dónde crece la parte de la cebolla que comemos: al sol o bajo tierra?",
+    "No todas las partes de una planta hacen el mismo trabajo."
+   ],
+   "options": [
+    {
+     "id": "tierra",
+     "label": "Porque esa parte crece bajo tierra, sin luz: no todas las partes de una planta fabrican alimento",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-02",
+     "feedback": "«Eso es. Las hojas verdes de la cebolla, las que asoman, sí los tienen. Lo de abajo guarda el alimento que fabrican las de arriba.»"
+    },
+    {
+     "id": "noplanta",
+     "label": "Porque la cebolla no es una planta de verdad",
+     "correct": false,
+     "objective": "SV-02",
+     "feedback": "«Planta es: tiene raíz, hojas y flor, y sus células tienen pared. Lo que no tiene esa parte es luz.»"
+    },
+    {
+     "id": "tenida",
+     "label": "Porque la lámina está mal preparada y se ha perdido el verde",
+     "correct": false,
+     "objective": "SV-02",
+     "feedback": "«La lámina está bien. Es que esa parte de la cebolla nunca fue verde: crece a oscuras.»"
+    },
+    {
+     "id": "etiqueta",
+     "label": "Mirar la etiqueta despegada del cajón, la que tiene la letra apurada",
+     "requires": {
+      "role": "scout"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "Dice «hoja» y estaba pegada a la lámina de la cebolla. Escrita de memoria, sin lupa. Una gema por leer lo que nadie leía."
+    }
+   ],
+   "next": "resultado"
+  },
+  "resultado": {
+   "type": "branch",
+   "rules": [
+    {
+     "if": {
+      "correct_at_least": 3,
+      "in": "laminas"
+     },
+     "next": "ventanas"
+    },
+    {
+     "if": {
+      "correct_at_least": 2,
+      "in": "laminas"
+     },
+     "next": "medias"
+    }
+   ],
+   "else": "otra"
+  },
+  "ventanas": {
+   "type": "ending",
+   "outcome": "success",
+   "text": {
+    "valley": "Cada lámina, con su etiqueta bien puesta, se vuelve una ventana: por una se ve la cebolla, por otra una boca abierta y por la tercera, una hoja al sol. «Tres seres distintos, y por dentro los tres hechos de lo mismo: células», dice Doña Hebra. Si en clase hay microscopio, la piel de cebolla de verdad se ve igual que en la lámina. {{creature}} se mira la pata con la lupa, por si acaso.",
+    "azara": "Cada lámina, con su etiqueta bien puesta, se vuelve una ventana: por una se ve la cebolla, por otra una boca abierta y por la tercera, una hoja al sol. «Tres seres distintos, y por dentro los tres hechos de lo mismo: células», dice la archivera. Si en clase hay microscopio, la piel de cebolla de verdad se ve igual que en la lámina. {{creature}} se mira la pata con la lupa, por si acaso."
+   },
+   "effects": [
+    {
+     "gems": 3
+    },
+    {
+     "page": "celulas"
+    }
+   ]
+  },
+  "medias": {
+   "type": "ending",
+   "outcome": "partial",
+   "text": {
+    "valley": "Dos láminas tienen su etiqueta y la tercera se queda en el cajón con un papel que dice «¿?». «Mejor una duda escrita que una etiqueta de memoria», dice Doña Hebra. «Otro día la miramos otra vez.» {{creature}} se mira la pata con la lupa, por si acaso.",
+    "azara": "Dos láminas tienen su etiqueta y la tercera se queda en el cajón con un papel que dice «¿?». «Mejor una duda escrita que una etiqueta de memoria», dice la archivera. «Otro día la miramos otra vez.» {{creature}} se mira la pata con la lupa, por si acaso."
+   },
+   "effects": [
+    {
+     "gems": 1
+    }
+   ]
+  },
+  "otra": {
+   "type": "ending",
+   "outcome": "retry",
+   "text": {
+    "valley": "Las etiquetas vuelven a estar cambiadas. Doña Hebra las despega todas: «Pared o sin pared. Verde o sin verde. Solo con eso se distinguen las tres».",
+    "azara": "Las etiquetas vuelven a estar cambiadas. La archivera las despega todas: «Pared o sin pared. Verde o sin verde. Solo con eso se distinguen las tres»."
+   },
+   "retry": "laminas"
+  }
+ }
+}

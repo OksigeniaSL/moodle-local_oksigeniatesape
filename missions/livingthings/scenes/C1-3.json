@@ -1,0 +1,288 @@
+{
+ "id": "C1-3",
+ "mission": "livingthings",
+ "chapter": "claro",
+ "title": "Bajo la lupa: ¿está vivo?",
+ "quest": true,
+ "step": 3,
+ "mode": "both",
+ "objectives": [
+  "SV-01",
+  "SV-07"
+ ],
+ "minutes": 8,
+ "start": "memoria",
+ "nodes": {
+  "memoria": {
+   "type": "branch",
+   "rules": [
+    {
+     "if": {
+      "flag": "criatura-dormida"
+     },
+     "next": "intro-dormida"
+    }
+   ],
+   "else": "intro"
+  },
+  "intro": {
+   "type": "story",
+   "speaker": "druida-mayor",
+   "image": "claro-lupa",
+   "text": {
+    "valley": "La druida mayor deja en el claro una bandeja con cosas tan pequeñas que, a simple vista, parecen polvo. «La Senda de la Montaña empieza aquí: con lo que no se ve. Hay tres cajas: lo vivo, lo no vivo y una tercera, para lo que la ciencia todavía discute. Usar la tercera no es rendirse: es ser honrado.» Nos presta la lupa potente y, con ella, cada cosa se ve de cerca.",
+    "azara": "El naturalista saca del cajón una bandeja con muestras tan pequeñas que parecen polvo. «Hay tres cajas: lo vivo, lo no vivo y una tercera, para lo que los sabios de Europa todavía discuten. Usar la tercera no es rendirse: es ser honrado.» Nos presta su lupa y, con ella, cada muestra se ve de cerca."
+   },
+   "next": "mirar"
+  },
+  "intro-dormida": {
+   "type": "story",
+   "speaker": "druida-mayor",
+   "image": "claro-lupa",
+   "text": {
+    "valley": "{{creature}} sigue con los ojos cerrados. La druida mayor la mira con la lupa potente: «Respira despacio y el pecho le sube y le baja. Dormida también está viva. Hoy aprendemos a mirar así: de cerca y sin prisa». Deja en el claro una bandeja con cosas que parecen polvo y tres cajas: lo vivo, lo no vivo y lo que la ciencia todavía discute. «Usar la tercera no es rendirse: es ser honrado.»",
+    "azara": "{{creature}} sigue con los ojos cerrados. El naturalista la mira con su lupa: «Respira despacio y el pecho le sube y le baja. Dormida también está viva. Hoy aprendemos a mirar así: de cerca y sin prisa». Saca una bandeja con muestras que parecen polvo y tres cajas: lo vivo, lo no vivo y lo que los sabios todavía discuten. «Usar la tercera no es rendirse: es ser honrado.»"
+   },
+   "next": "mirar"
+  },
+  "mirar": {
+   "type": "classify",
+   "prompt": "Con la lupa: ¿en qué caja va cada cosa?",
+   "retry": "item",
+   "hints": [
+    "Lo pequeño también se nutre, responde y se reproduce, si está vivo. La lupa enseña si lo hace.",
+    "Hay una cosa que parece muerta y guarda algo dentro. Ya nos pasó en el claro.",
+    "La tercera caja es para lo que cumple unas pruebas y otras no. Ponerlo ahí no es equivocarse."
+   ],
+   "bins": [
+    {
+     "id": "vivo",
+     "label": "Lo vivo"
+    },
+    {
+     "id": "novivo",
+     "label": "Lo no vivo"
+    },
+    {
+     "id": "discute",
+     "label": "La ciencia todavía discute"
+    }
+   ],
+   "items": [
+    {
+     "id": "levadura",
+     "label": "la levadura de panadería",
+     "bin": "vivo",
+     "objective": "SV-01",
+     "feedback": {
+      "novivo": "Con la lupa, un grano de levadura se hincha y se parte en dos. Se alimenta y se multiplica: está viva, aunque venga en un sobre.",
+      "discute": "Aquí no hay discusión: come azúcar, crece y se parte en dos. Viva."
+     }
+    },
+    {
+     "id": "bacterias",
+     "label": "las bacterias del yogur",
+     "bin": "vivo",
+     "objective": "SV-01",
+     "feedback": {
+      "novivo": "Una sola célula, pero se alimenta, se aparta de lo que no le gusta y se divide en dos. Viva.",
+      "discute": "Sobre estas no hay duda: comen, responden y se reproducen."
+     }
+    },
+    {
+     "id": "virus",
+     "label": "un virus de la gripe",
+     "bin": "discute",
+     "objective": "SV-01",
+     "feedback": {
+      "vivo": "La druida sonríe y lo cambia de caja: «No se alimenta ni se reproduce por sí mismo: necesita entrar en una célula. Los científicos siguen discutiendo si está vivo».",
+      "novivo": "La druida sonríe y lo cambia de caja: «Dentro de una célula hace copias de sí mismo. Fuera, nada. Los científicos siguen discutiendo si está vivo»."
+     }
+    },
+    {
+     "id": "semilla",
+     "label": "una semilla dormida",
+     "bin": "vivo",
+     "objective": "SV-01",
+     "feedback": {
+      "novivo": "La lupa enseña la plantita doblada dentro: está viva, esperando agua.",
+      "discute": "Aquí no hay duda: dentro hay una planta plegada que despertará con agua. Está viva, dormida."
+     }
+    },
+    {
+     "id": "cristal",
+     "label": "un cristal de sal",
+     "bin": "novivo",
+     "objective": "SV-01",
+     "feedback": {
+      "vivo": "Crece, sí, cuando el agua salada se seca. Pero no come, no responde y no tiene hijos: crece como crece un montón de arena, por capas.",
+      "discute": "Nadie discute esto: un cristal crece por capas, como un montón de arena. No está vivo."
+     }
+    },
+    {
+     "id": "polvo",
+     "label": "un grano de polvo",
+     "bin": "novivo",
+     "objective": "SV-01",
+     "feedback": {
+      "vivo": "Con la lupa es un trocito de piedra y de fibra. No hace nada de lo que hace un ser vivo.",
+      "discute": "Es solo un trocito de piedra y de fibra. No hay nada que discutir."
+     }
+    },
+    {
+     "id": "bichito",
+     "label": "un bichito transparente de una gota del charco",
+     "bin": "vivo",
+     "objective": "SV-01",
+     "requires": {
+      "any": [
+       {
+        "item": "magnifier"
+       },
+       {
+        "teamrole": "sage"
+       }
+      ]
+     },
+     "locked": "Solo se ve con una lupa de verdad. Esto lo haría alguien que sabe mirar de cerca: el sabio del equipo tiene una.",
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": {
+      "novivo": "Nada, se para y cambia de rumbo cuando choca con algo. Vivo, y de una sola célula.",
+      "discute": "Sobre este no hay discusión: nada, come y se parte en dos."
+     }
+    }
+   ],
+   "next": "prueba"
+  },
+  "prueba": {
+   "type": "choice",
+   "prompt": {
+    "valley": "La druida pregunta: «¿Y cómo se probaría en casa, sin lupa, que la levadura está viva?»",
+    "azara": "El naturalista pregunta: «¿Y cómo se probaría en el campamento, sin lupa, que la levadura está viva?»"
+   },
+   "hints": [
+    "Lo que se alimenta deja alguna señal: calor, gas, restos.",
+    "Leer lo que pone en el sobre no es mirar la levadura."
+   ],
+   "options": [
+    {
+     "id": "globo",
+     "label": "Agua tibia, azúcar y levadura en una botella, con un globo en la boca: si se hincha, ahí dentro algo se alimenta",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-07",
+     "feedback": "Al rato el globo se hincha: es el gas que suelta la levadura al alimentarse del azúcar. Un ser vivo que no se ve, demostrado con un globo."
+    },
+    {
+     "id": "sol",
+     "label": "Dejar el sobre abierto al sol y ver si se mueve",
+     "correct": false,
+     "objective": "SV-07",
+     "feedback": "Pasa la tarde y no se mueve nada. Moverse no es la prueba: la prueba es si se alimenta, crece o se multiplica."
+    },
+    {
+     "id": "fecha",
+     "label": "Leer la fecha de caducidad del sobre",
+     "correct": false,
+     "points": 1,
+     "objective": "SV-07",
+     "feedback": "La fecha dice hasta cuándo sirve, pero la escribió alguien: no la levadura. Para saberlo hay que mirar, no leer la etiqueta."
+    },
+    {
+     "id": "comparar",
+     "label": "Que el sabio prepare dos botellas, una con agua tibia y otra con agua helada, para comparar",
+     "requires": {
+      "teamrole": "sage"
+     },
+     "locked": "Esto lo haría alguien que compara antes de afirmar: el sabio del equipo.",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-07",
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "Con agua tibia el globo se hincha; con agua helada, apenas. Lo vivo responde al frío y al calor. Comparar es la mitad de un experimento."
+    },
+    {
+     "id": "tinta",
+     "label": "Fijarse en la mancha de tinta corrida que hay en la bandeja, junto a la tercera caja",
+     "requires": {
+      "role": "scout"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "La mancha está justo donde alguien quiso escribir «no vivo» deprisa, sin mirar. El Embrollo también ronda lo pequeño. Una gema por fijarse."
+    }
+   ],
+   "next": "resultado"
+  },
+  "resultado": {
+   "type": "branch",
+   "rules": [
+    {
+     "if": {
+      "correct_at_least": 6,
+      "in": "mirar"
+     },
+     "next": "bien"
+    },
+    {
+     "if": {
+      "correct_at_least": 4,
+      "in": "mirar"
+     },
+     "next": "medias"
+    }
+   ],
+   "else": "otra"
+  },
+  "bien": {
+   "type": "ending",
+   "outcome": "success",
+   "text": {
+    "valley": "Las tres cajas quedan llenas, y la tercera no está vacía: ahí está el virus, con un cartel que dice «se sigue estudiando». «Un buen naturalista sabe decir \"todavía no lo sé\"», dice la druida mayor. «El Embrollo nunca lo dice.» {{creature}} mira la lupa desde el otro lado y ve un ojo enorme que la mira a ella.",
+    "azara": "Las tres cajas quedan llenas, y la tercera no está vacía: ahí está el virus, con una nota que dice «se sigue estudiando». «Un buen naturalista sabe escribir \"todavía no lo sé\"», dice el naturalista. «Lo que se escribe sin saberlo es lo que luego hay que tachar.» {{creature}} mira la lupa desde el otro lado y ve un ojo enorme."
+   },
+   "effects": [
+    {
+     "gems": 3
+    },
+    {
+     "page": "levadura"
+    }
+   ]
+  },
+  "medias": {
+   "type": "ending",
+   "outcome": "partial",
+   "text": {
+    "valley": "Casi todo está en su caja, pero un par de cosas han ido donde no era, y la lupa lo sabe. La druida mayor deja la bandeja en el claro: «Mañana volvemos a mirar, con más calma. Lo pequeño no tiene prisa». {{creature}} intenta meter la nariz en la caja de lo que se discute.",
+    "azara": "Casi todo está en su caja, pero un par de muestras han ido donde no era. El naturalista deja la bandeja en el cajón: «Mañana volvemos a mirar, con más calma. Lo pequeño no tiene prisa». {{creature}} intenta meter la nariz en la tercera caja."
+   },
+   "effects": [
+    {
+     "gems": 1
+    }
+   ]
+  },
+  "otra": {
+   "type": "ending",
+   "outcome": "retry",
+   "text": {
+    "valley": "Casi todo ha ido a la caja equivocada. La druida mayor limpia la lupa: «La lupa no piensa por nosotros. ¿Qué hace un ser vivo que no hace una piedra, por pequeño que sea?».",
+    "azara": "Casi todo ha ido a la caja equivocada. El naturalista limpia la lupa: «La lupa no piensa por nosotros. ¿Qué hace un ser vivo que no hace una piedra, por pequeño que sea?»."
+   },
+   "retry": "mirar"
+  }
+ }
+}

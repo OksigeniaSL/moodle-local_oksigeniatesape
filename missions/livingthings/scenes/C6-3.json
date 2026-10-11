@@ -1,0 +1,265 @@
+{
+ "id": "C6-3",
+ "mission": "livingthings",
+ "chapter": "torre",
+ "title": "¿De quién nos fiamos?",
+ "quest": true,
+ "step": 3,
+ "mode": "both",
+ "objectives": [
+  "SV-07"
+ ],
+ "minutes": 7,
+ "start": "intro",
+ "nodes": {
+  "intro": {
+   "type": "story",
+   "speaker": "bibliotecaria",
+   "image": "torre-fuentes",
+   "text": {
+    "valley": "Para completar la guía de campo hace falta información que no está en el valle. Un visitante que dice saberlo todo ha dejado una montaña de papeles, vídeos y mensajes, y algunas cosas no cuadran. Doña Hebra los reparte en la mesa: «Antes de copiar nada, hay que decidir de qué nos fiamos, qué comprobamos y qué guardamos como lo que alguien recuerda. Yo copié sin mirar una vez. De eso salió el Embrollo».",
+    "azara": "Para completar el cuaderno hace falta información que no está en la expedición. Un viajero que dice saberlo todo ha dejado una montaña de papeles y notas, y algunas cosas no cuadran. La archivera los reparte en la mesa: «Antes de copiar nada, hay que decidir de qué nos fiamos, qué comprobamos y qué guardamos como lo que alguien recuerda. Yo copié sin mirar una vez. De eso salieron las notas mezcladas»."
+   },
+   "next": "fuentes"
+  },
+  "fuentes": {
+   "type": "classify",
+   "prompt": "¿Qué hacemos con cada fuente?",
+   "retry": "item",
+   "hints": [
+    "¿Quién lo escribió, cuándo y para qué? Si no se sabe ninguna de las tres cosas, se comprueba antes.",
+    "Lo que alguien recuerda de su vida vale mucho, pero no es lo mismo que un dato medido.",
+    "Que llegue por un grupo de mensajes no lo hace cierto ni falso: lo hace sin comprobar."
+   ],
+   "bins": [
+    {
+     "id": "fiamos",
+     "label": "Nos fiamos, y lo apuntamos con su fuente"
+    },
+    {
+     "id": "contrastar",
+     "label": "Lo comprobamos en otra fuente antes de apuntarlo"
+    },
+    {
+     "id": "testimonio",
+     "label": "Lo guardamos como testimonio, con el nombre de quien lo cuenta"
+    }
+   ],
+   "items": [
+    {
+     "id": "libro",
+     "label": "un libro de la biblioteca, con autor y año",
+     "bin": "fiamos",
+     "objective": "SV-07",
+     "feedback": {
+      "contrastar": "«Comprobar nunca sobra, pero este tiene autor, año y editor: ya pasó por otros ojos. Se puede apuntar, con su fuente.»"
+     }
+    },
+    {
+     "id": "parque",
+     "label": "la guía de un parque natural",
+     "bin": "fiamos",
+     "objective": "SV-07",
+     "feedback": {
+      "testimonio": "«No es lo que alguien recuerda: son datos tomados en el parque por quien lo cuida. Se apunta con su fuente.»"
+     }
+    },
+    {
+     "id": "video",
+     "label": "un vídeo sin autor ni fecha",
+     "bin": "contrastar",
+     "objective": "SV-07",
+     "feedback": {
+      "fiamos": "Lo que dice entra en la guía con una mancha de tinta corrida al lado, hasta que alguien lo compruebe. «No sabemos quién lo hizo ni cuándo. Puede ser cierto; hay que mirarlo.»"
+     }
+    },
+    {
+     "id": "museo",
+     "label": "la web de un museo de ciencias",
+     "bin": "fiamos",
+     "objective": "SV-07",
+     "feedback": {
+      "contrastar": "«Comprobar nunca sobra, pero un museo firma lo que publica y vive de no equivocarse. Se apunta con su fuente.»"
+     }
+    },
+    {
+     "id": "abuelo",
+     "label": "el abuelo de alguien, que se crio en el campo",
+     "bin": "testimonio",
+     "objective": "SV-07",
+     "feedback": {
+      "fiamos": "«Sabe mucho, pero de memoria y de hace años. Se apunta como testimonio, con su nombre, y se compara con lo demás. Vale oro para saber qué había antes.»",
+      "contrastar": "«No es un dato que comprobar: es lo que vio con sus ojos. Se guarda como testimonio, con su nombre, y se compara con lo demás.»"
+     }
+    },
+    {
+     "id": "mensaje",
+     "label": "un mensaje reenviado en un grupo",
+     "bin": "contrastar",
+     "objective": "SV-07",
+     "feedback": {
+      "fiamos": "Lo que dice entra en la guía con una mancha de tinta corrida al lado. «Nadie sabe quién lo escribió. Lo reenviado no está más comprobado por llegar muchas veces.»",
+      "testimonio": "«Testimonio es lo que alguien con nombre cuenta de lo que vio. Esto no tiene nombre ni ojos: se comprueba.»"
+     }
+    }
+   ],
+   "next": "visitante"
+  },
+  "visitante": {
+   "type": "choice",
+   "prompt": "El visitante dice, muy seguro, que el murciélago es un ave. ¿Qué hacemos?",
+   "hints": [
+    "Hablar con seguridad no es una fuente.",
+    "Comprobar no es acusar: se puede estar equivocado sin mentir."
+   ],
+   "options": [
+    {
+     "id": "comprobar",
+     "label": "Preguntarle de dónde lo ha sacado y comprobarlo en la guía del parque",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-07",
+     "feedback": "«De un vídeo», dice. La guía del parque dice otra cosa: pelo, y crías que maman. Mamífero. El visitante se encoge de hombros y aprende algo."
+    },
+    {
+     "id": "seguro",
+     "label": "Apuntarlo: lo dice con mucha seguridad",
+     "correct": false,
+     "objective": "SV-07",
+     "feedback": "Entra en la guía con una mancha de tinta al lado. La seguridad no es una fuente: el Embrollo también habla muy seguro."
+    },
+    {
+     "id": "mentira",
+     "label": "Decirle que miente",
+     "correct": false,
+     "objective": "SV-07",
+     "feedback": "No sabemos si miente: puede estar equivocado. Comprobar no es acusar. Y así, además, se va sin aprender nada."
+    },
+    {
+     "id": "calma",
+     "label": "Que el sanador le pregunte con calma de dónde lo ha sacado, sin dejarlo en ridículo",
+     "requires": {
+      "teamrole": "healer"
+     },
+     "locked": "Esto lo haría alguien que corrige sin herir: el sanador del equipo.",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-07",
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "«De un vídeo», dice. Miran juntos la guía del parque: pelo, y crías que maman. El visitante se ríe de sí mismo y pide ver la guía entera. Una gema."
+    }
+   ],
+   "next": "abuelo"
+  },
+  "abuelo": {
+   "type": "choice",
+   "prompt": "El abuelo cuenta que, de niño, en el río había nutrias y ahora no ve ninguna. ¿Para qué sirve sobre todo lo que cuenta?",
+   "hints": [
+    "Nadie midió el río hace sesenta años. ¿Quién puede contar cómo era?",
+    "Un testimonio se compara con otros: ¿qué dirían otros mayores del lugar?"
+   ],
+   "options": [
+    {
+     "id": "antes",
+     "label": "Para saber qué había antes en el lugar y compararlo con lo de hoy",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-07",
+     "feedback": "«Eso es. Ningún libro cuenta cómo era este río hace sesenta años; él sí. Se apunta con su nombre, se pregunta a otros mayores y se compara.»"
+    },
+    {
+     "id": "nada",
+     "label": "Para nada: no es un libro",
+     "correct": false,
+     "objective": "SV-07",
+     "feedback": "Doña Hebra levanta una ceja: «Los libros los escribe gente que miró. Él miró. Lo que hay que hacer es apuntarlo como lo que es: un recuerdo con nombre»."
+    },
+    {
+     "id": "copiar",
+     "label": "Para copiarlo en la guía tal cual, como si fuera un dato",
+     "correct": false,
+     "points": 1,
+     "objective": "SV-07",
+     "feedback": "Vale mucho, pero es un recuerdo, no una medición. En la guía va como testimonio, con su nombre, al lado de los datos."
+    },
+    {
+     "id": "rastro",
+     "label": "Preguntarle al abuelo por dónde salían las nutrias y buscar huellas en esa orilla",
+     "requires": {
+      "role": "scout"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "En la orilla que dice el abuelo no hay huellas de nutria, pero sí un rastro de tinta corrida que entra en el agua. Un testimonio que lleva a mirar es un buen testimonio. Una gema."
+    }
+   ],
+   "next": "resultado"
+  },
+  "resultado": {
+   "type": "branch",
+   "rules": [
+    {
+     "if": {
+      "correct_at_least": 6,
+      "in": "fuentes"
+     },
+     "next": "limpia"
+    },
+    {
+     "if": {
+      "correct_at_least": 4,
+      "in": "fuentes"
+     },
+     "next": "manchas"
+    }
+   ],
+   "else": "revuelta"
+  },
+  "limpia": {
+   "type": "ending",
+   "outcome": "success",
+   "text": {
+    "valley": "La guía queda sin manchas: cada dato con su fuente, lo dudoso comprobado y el recuerdo del abuelo con su nombre al pie. «Así se escribe una guía que otros puedan comprobar», dice Doña Hebra. «Y así el Embrollo no tiene de qué beber.» {{creature}} olisquea los papeles del visitante y estornuda sobre el vídeo.",
+    "azara": "El cuaderno queda sin manchas: cada dato con su fuente, lo dudoso comprobado y el recuerdo del abuelo con su nombre al pie. «Así se escribe un cuaderno que otros puedan comprobar», dice la archivera. «Como hacía Azara: con la cosa delante, y si no, diciendo quién se lo contó.» {{creature}} olisquea los papeles del viajero y estornuda."
+   },
+   "effects": [
+    {
+     "gems": 3
+    },
+    {
+     "page": "fuentes"
+    }
+   ]
+  },
+  "manchas": {
+   "type": "ending",
+   "outcome": "partial",
+   "text": {
+    "valley": "La guía queda casi limpia, pero dos datos llevan al lado una mancha de tinta corrida: entraron sin comprobar. «Se quedan así hasta que alguien los mire», dice Doña Hebra. «Otro día, con todo en su sitio, la página quedará limpia.» {{creature}} intenta borrar una mancha con la pata y la extiende.",
+    "azara": "El cuaderno queda casi limpio, pero dos datos llevan al lado una mancha de tinta corrida: entraron sin comprobar. «Se quedan así hasta que alguien los mire», dice la archivera. «Otro día, con todo en su sitio, la página quedará limpia.» {{creature}} intenta borrar una mancha con la pata y la extiende."
+   },
+   "effects": [
+    {
+     "gems": 1
+    }
+   ]
+  },
+  "revuelta": {
+   "type": "ending",
+   "outcome": "retry",
+   "text": {
+    "valley": "La guía está llena de manchas de tinta: ha entrado casi todo sin comprobar. Doña Hebra la cierra: «Tres preguntas a cada fuente: ¿quién lo dice? ¿cuándo? ¿cómo lo sabe?».",
+    "azara": "El cuaderno está lleno de manchas de tinta: ha entrado casi todo sin comprobar. La archivera lo cierra: «Tres preguntas a cada fuente: ¿quién lo dice? ¿cuándo? ¿cómo lo sabe?»."
+   },
+   "retry": "fuentes"
+  }
+ }
+}

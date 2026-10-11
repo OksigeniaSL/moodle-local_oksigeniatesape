@@ -1,0 +1,326 @@
+{
+ "id": "C4-5",
+ "mission": "livingthings",
+ "chapter": "jardin",
+ "title": "Nuestro experimento",
+ "quest": true,
+ "step": 4,
+ "mode": "both",
+ "objectives": [
+  "SV-05",
+  "SV-07"
+ ],
+ "minutes": 10,
+ "start": "intro",
+ "nodes": {
+  "intro": {
+   "type": "story",
+   "speaker": "jardinera",
+   "image": "jardin-macetas",
+   "text": {
+    "valley": "La jardinera ofrece un rincón del Jardín de la Luz, tierra, semillas y macetas al equipo que demuestre algo sobre las plantas con un experimento propio. «Una condición: que al acabar sepamos por qué ha pasado lo que ha pasado. Un experimento que no sabe responder a eso es un jardín, no un experimento.» El consejo lo revisará paso a paso.",
+    "azara": "El naturalista ofrece un rincón del huerto, tierra, semillas y macetas al equipo que demuestre algo sobre las plantas con un experimento propio. «Una condición: que al acabar sepamos por qué ha pasado lo que ha pasado. Un experimento que no sabe responder a eso es un huerto, no un experimento.» Lo revisará paso a paso."
+   },
+   "next": "pregunta"
+  },
+  "pregunta": {
+   "type": "choice",
+   "prompt": "Primero, la pregunta. ¿Cuál elegimos?",
+   "hints": [
+    "Una buena pregunta se puede responder midiendo algo.",
+    "Si en la pregunta hay dos cosas que cambian, al final no se sabrá cuál de las dos lo hizo."
+   ],
+   "options": [
+    {
+     "id": "agua",
+     "label": "¿Influye la cantidad de agua en lo que crece una planta?",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-07",
+     "feedback": "Una sola cosa que cambia (el agua) y algo que se puede medir (lo que crece). El consejo asiente."
+    },
+    {
+     "id": "dos",
+     "label": "¿Influyen el agua y la luz a la vez en lo que crece una planta?",
+     "correct": false,
+     "points": 1,
+     "objective": "SV-07",
+     "feedback": "El consejo pregunta: «Si una crece más, ¿ha sido por el agua o por la luz?». Dos cosas a la vez no se pueden separar al final. Una de cada vez."
+    },
+    {
+     "id": "bonitas",
+     "label": "¿Son más bonitas las plantas con flores?",
+     "correct": false,
+     "objective": "SV-07",
+     "feedback": "«¿Bonitas según quién?» Lo que no se puede medir no se puede comprobar."
+    }
+   ],
+   "next": "cambiar"
+  },
+  "cambiar": {
+   "type": "choice",
+   "prompt": "¿Qué cambiamos entre unas macetas y otras?",
+   "hints": [
+    "Lo que cambiamos tiene que ser lo que pregunta la pregunta, y nada más.",
+    "Si nada cambia, no hay nada que comparar."
+   ],
+   "options": [
+    {
+     "id": "solo-agua",
+     "label": "Solo el agua: unas macetas con poca, otras con la justa y otras con mucha",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-07",
+     "feedback": "Tres cantidades, y todo lo demás igual. Si al final hay diferencias, sabremos de dónde vienen."
+    },
+    {
+     "id": "agua-tierra",
+     "label": "El agua y, de paso, el tipo de tierra, para aprovechar",
+     "correct": false,
+     "objective": "SV-07",
+     "feedback": "«Si una crece más, ¿ha sido por el agua o por la tierra?» Aprovechar sale caro: al final no se sabe nada."
+    },
+    {
+     "id": "nada",
+     "label": "Nada: regamos todas igual y vemos cuál crece más",
+     "correct": false,
+     "objective": "SV-07",
+     "feedback": "Si todas reciben lo mismo, lo que crezcan de más o de menos será por azar. Para comparar hay que cambiar algo, una sola cosa."
+    }
+   ],
+   "next": "igual"
+  },
+  "igual": {
+   "type": "choice",
+   "prompt": "¿Qué dejamos igual en todas las macetas? Elegimos tres.",
+   "select": {
+    "min": 3,
+    "max": 3
+   },
+   "hints": [
+    "Todo lo que no sea el agua tiene que ser lo mismo en todas: si no, se cuela otra causa.",
+    "Variar por variar es dejar entrar al Embrollo."
+   ],
+   "options": [
+    {
+     "id": "luz",
+     "label": "La misma luz, en el mismo sitio",
+     "correct": true,
+     "points": 2,
+     "objective": "SV-07",
+     "feedback": "Si una tuviera más sol, el sol se colaría en el resultado."
+    },
+    {
+     "id": "tierra",
+     "label": "La misma tierra y semillas del mismo sobre",
+     "correct": true,
+     "points": 2,
+     "objective": "SV-07",
+     "feedback": "Misma tierra y mismas semillas: lo único distinto será el agua."
+    },
+    {
+     "id": "temperatura",
+     "label": "La misma temperatura, lejos del radiador y de la ventana abierta",
+     "correct": true,
+     "points": 2,
+     "objective": "SV-07",
+     "feedback": "El frío y el calor también hacen crecer distinto. Igual para todas."
+    },
+    {
+     "id": "macetas",
+     "label": "Macetas de distinto tamaño, para variar",
+     "correct": false,
+     "objective": "SV-07",
+     "feedback": "«¿Y si crece más la de la maceta grande porque tiene más tierra?» Variar por variar deja entrar otra causa."
+    },
+    {
+     "id": "ventanas",
+     "label": "Cada maceta en una ventana distinta de la clase",
+     "correct": false,
+     "objective": "SV-07",
+     "feedback": "Cada ventana tiene su luz. Al final no sabríamos si fue el agua o la ventana."
+    }
+   ],
+   "next": "medir"
+  },
+  "medir": {
+   "type": "choice",
+   "prompt": "¿Cómo medimos lo que crece?",
+   "hints": [
+    "«Más alto según quién?» Una medida tiene que dar lo mismo la mida quien la mida.",
+    "Medir siempre igual: la misma regla, desde el mismo punto, el mismo día."
+   ],
+   "options": [
+    {
+     "id": "regla",
+     "label": "La altura con una regla, desde la tierra hasta la punta, el mismo día de cada semana, y apuntada en la tabla",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-07",
+     "feedback": "Una medida que cualquiera puede repetir y comparar. El consejo asiente."
+    },
+    {
+     "id": "ojo",
+     "label": "A ojo: cuál parece más alta",
+     "correct": false,
+     "objective": "SV-07",
+     "feedback": "«¿Más alta según quién?» Dos personas, dos respuestas. Con la regla, una."
+    },
+    {
+     "id": "cara",
+     "label": "Contar cuántas tienen buena cara",
+     "correct": false,
+     "objective": "SV-07",
+     "feedback": "«¿Buena cara?» No se puede medir ni comparar. Hace falta un número que salga igual la mida quien la mida."
+    }
+   ],
+   "next": "cuantas"
+  },
+  "cuantas": {
+   "type": "choice",
+   "prompt": "¿Cuántas macetas ponemos con cada cantidad de agua?",
+   "hints": [
+    "¿Y si una semilla venía mal del sobre? Con una sola maceta no lo sabríamos nunca.",
+    "Cuantas más macetas iguales, menos manda el azar."
+   ],
+   "options": [
+    {
+     "id": "varias",
+     "label": "Tres o más con cada cantidad",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-07",
+     "feedback": "Si una semilla sale mal, las otras dos lo cuentan. El consejo asiente."
+    },
+    {
+     "id": "una",
+     "label": "Una con cada cantidad, para no gastar semillas",
+     "correct": false,
+     "objective": "SV-07",
+     "feedback": "«¿Y si esa semilla venía mal?» Con una sola no se sabe si fue el agua o la mala suerte."
+    },
+    {
+     "id": "azar",
+     "label": "Que el sabio reparta las semillas al azar entre las macetas, para que nadie elija las mejores para su grupo",
+     "requires": {
+      "teamrole": "sage"
+     },
+     "locked": "Esto lo haría alguien que no se fía ni de sí mismo: el sabio del equipo.",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-07",
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "Tres o más por cantidad, y las semillas repartidas sin mirar. Así nadie, ni sin querer, da las mejores a su maceta favorita. Una gema."
+    }
+   ],
+   "next": "predecir"
+  },
+  "predecir": {
+   "type": "choice",
+   "prompt": "Antes de sembrar: ¿qué predecimos?",
+   "hints": [
+    "Predecir es apostar antes de ver. Luego se compara con lo que pase.",
+    "Cualquier predicción vale si está escrita antes. Lo que no vale es no apostar."
+   ],
+   "options": [
+    {
+     "id": "justa",
+     "label": "Las de agua justa crecerán mejor; las de mucha agua pueden pudrirse",
+     "correct": true,
+     "points": 2,
+     "objective": "SV-05",
+     "feedback": "Apostado y escrito. Dentro de unas semanas se compara con la tabla."
+    },
+    {
+     "id": "mas",
+     "label": "Cuanta más agua, más crecen, sin límite",
+     "correct": true,
+     "points": 2,
+     "objective": "SV-05",
+     "feedback": "Apostado y escrito. Es una predicción que se puede comprobar; si la tabla dice otra cosa, habremos aprendido algo."
+    },
+    {
+     "id": "nada",
+     "label": "No predecimos nada: ya se verá",
+     "correct": false,
+     "objective": "SV-07",
+     "feedback": "Sin predicción, al final no hay con qué comparar. Apostar antes es parte del experimento."
+    },
+    {
+     "id": "tinta",
+     "label": "Fijarse en que la tabla vacía ya tiene una mancha de tinta corrida en la casilla del resultado",
+     "requires": {
+      "role": "scout"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "Alguien quiso escribir el resultado antes de sembrar. Eso no es predecir: es dar por cierto. La jardinera borra la mancha. Una gema por verla."
+    }
+   ],
+   "next": "revision"
+  },
+  "revision": {
+   "type": "branch",
+   "rules": [
+    {
+     "if": {
+      "correct_at_least": 3,
+      "in": "igual"
+     },
+     "next": "revision2"
+    }
+   ],
+   "else": "dudoso"
+  },
+  "revision2": {
+   "type": "branch",
+   "rules": [
+    {
+     "if": {
+      "correct_at_least": 1,
+      "in": "cambiar"
+     },
+     "next": "aprobado"
+    }
+   ],
+   "else": "dudoso"
+  },
+  "aprobado": {
+   "type": "ending",
+   "outcome": "success",
+   "text": {
+    "valley": "El consejo aprueba el experimento: una sola cosa cambia, el resto igual, una medida que vale para todos, varias macetas por cantidad y una predicción escrita antes de sembrar. La jardinera reparte la tierra: «Cuando la tabla esté llena, sabremos por qué ha pasado lo que ha pasado». {{creature}} se queda vigilando las macetas como si fueran a crecer esa misma tarde.",
+    "azara": "El naturalista aprueba el experimento: una sola cosa cambia, el resto igual, una medida que vale para todos, varias macetas por cantidad y una predicción escrita antes de sembrar. «Cuando la tabla esté llena, sabremos por qué ha pasado lo que ha pasado.» {{creature}} se queda vigilando las macetas como si fueran a crecer esa misma tarde."
+   },
+   "effects": [
+    {
+     "gems": 4
+    },
+    {
+     "page": "una-sola-cosa"
+    }
+   ]
+  },
+  "dudoso": {
+   "type": "ending",
+   "outcome": "partial",
+   "text": {
+    "valley": "El consejo deja sembrar, pero con una nota al margen: «Si una crece más, no sabremos del todo por qué». Algo cambia entre las macetas además del agua. «Otro día, con una sola cosa cambiada, el experimento será limpio», dice la jardinera. {{creature}} se queda vigilando las macetas de todas formas.",
+    "azara": "El naturalista deja sembrar, pero con una nota al margen: «Si una crece más, no sabremos del todo por qué». Algo cambia entre las macetas además del agua. «Otro día, con una sola cosa cambiada, el experimento será limpio.» {{creature}} se queda vigilando las macetas de todas formas."
+   },
+   "effects": [
+    {
+     "gems": 2
+    }
+   ]
+  }
+ }
+}

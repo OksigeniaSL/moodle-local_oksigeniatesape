@@ -1,0 +1,316 @@
+{
+ "id": "C5-4",
+ "mission": "livingthings",
+ "chapter": "lago",
+ "title": "La red del lago",
+ "quest": true,
+ "step": 3,
+ "mode": "both",
+ "objectives": [
+  "SV-06"
+ ],
+ "minutes": 8,
+ "locals": {
+  "herbivoro": {
+   "py": "el carpincho, que pasta en la orilla",
+   "es": "el conejo, que pasta en la orilla"
+  }
+ },
+ "start": "memoria",
+ "nodes": {
+  "memoria": {
+   "type": "branch",
+   "rules": [
+    {
+     "if": {
+      "flag": "mosquitos"
+     },
+     "next": "intro-picados"
+    }
+   ],
+   "else": "intro"
+  },
+  "intro": {
+   "type": "story",
+   "speaker": "garza",
+   "image": "lago-red",
+   "text": {
+    "valley": "Las cadenas del lago no van solas: se cruzan. La garza come peces, pero también ranas; el ratón come semillas, pero también algún insecto. «Lo que sale es una red», dice la garza desde el agua, «y en una red cada uno tiene su sitio según lo que come. Hasta los que comen lo que nadie quiere». Hay que colocar a cada uno en su hilo.",
+    "azara": "Las cadenas de la orilla no van solas: se cruzan. La garza come peces, pero también ranas; el ratón come semillas, pero también algún insecto. «Lo que sale es una red», dice la garza desde el agua, «y en una red cada uno tiene su sitio según lo que come. Hasta los que comen lo que nadie quiere». El cuaderno tiene la página de la red a medio dibujar."
+   },
+   "next": "tejer"
+  },
+  "intro-picados": {
+   "type": "story",
+   "speaker": "garza",
+   "image": "lago-red",
+   "text": {
+    "valley": "La garza nos ve llegar con las picaduras de la otra noche. «Los mosquitos también tienen su hilo en la red: sus larvas alimentan a peces y ranas, y los adultos, a los murciélagos. En el lago nadie sobra.» Las cadenas del lago no van solas: se cruzan. «Lo que sale es una red, y en una red cada uno tiene su sitio según lo que come. Hasta los que comen lo que nadie quiere.» Hay que colocar a cada uno en su hilo.",
+    "azara": "La garza nos ve llegar con las picaduras de la otra noche. «Los mosquitos también tienen su hilo en la red: sus larvas alimentan a peces y ranas, y los adultos, a los murciélagos. En la orilla nadie sobra.» Las cadenas no van solas: se cruzan. «Lo que sale es una red, y en una red cada uno tiene su sitio según lo que come. Hasta los que comen lo que nadie quiere.» El cuaderno tiene la página de la red a medio dibujar."
+   },
+   "next": "tejer"
+  },
+  "tejer": {
+   "type": "classify",
+   "prompt": "¿En qué hilo de la red va cada uno?",
+   "retry": "item",
+   "hints": [
+    "Primero, quién fabrica su alimento con la luz: de ahí sale todo lo demás.",
+    "Quien come plantas y también animales no va con los que solo cazan.",
+    "Hay quien se alimenta de lo que ya está muerto, y devuelve al agua y al suelo lo que las plantas necesitan."
+   ],
+   "bins": [
+    {
+     "id": "productores",
+     "label": "Fabrican su alimento con la luz"
+    },
+    {
+     "id": "herbivoros",
+     "label": "Comen plantas"
+    },
+    {
+     "id": "carnivoros",
+     "label": "Cazan a otros animales"
+    },
+    {
+     "id": "omnivoros",
+     "label": "Comen de todo"
+    },
+    {
+     "id": "descomponedores",
+     "label": "Se alimentan de restos y los devuelven al suelo y al agua"
+    }
+   ],
+   "items": [
+    {
+     "id": "algas",
+     "label": "las algas",
+     "bin": "productores",
+     "objective": "SV-06",
+     "feedback": {
+      "descomponedores": "«Las algas no comen restos: fabrican su alimento con la luz, como las plantas. Son el principio de la red.»"
+     }
+    },
+    {
+     "id": "juncos",
+     "label": "los juncos y las plantas de la orilla",
+     "bin": "productores",
+     "objective": "SV-06"
+    },
+    {
+     "id": "caracol",
+     "label": "el caracol de agua, que raspa las algas de las piedras",
+     "bin": "herbivoros",
+     "objective": "SV-06",
+     "feedback": {
+      "descomponedores": "«Raspa algas vivas, no restos. Come plantas.»"
+     }
+    },
+    {
+     "id": "herbivoro",
+     "label": "{{local:herbivoro}}",
+     "bin": "herbivoros",
+     "objective": "SV-06",
+     "feedback": {
+      "omnivoros": "«Solo hierba y plantas de la orilla. No caza.»"
+     }
+    },
+    {
+     "id": "rana",
+     "label": "la rana, que caza insectos",
+     "bin": "carnivoros",
+     "objective": "SV-06",
+     "feedback": {
+      "herbivoros": "«De pequeña, renacuajo, raspaba algas. De mayor caza insectos: va con los que cazan.»"
+     }
+    },
+    {
+     "id": "garza",
+     "label": "la garza, que come peces y ranas",
+     "bin": "carnivoros",
+     "objective": "SV-06",
+     "feedback": {
+      "omnivoros": "«Peces y ranas, nada de plantas. La garza caza.»"
+     }
+    },
+    {
+     "id": "pez",
+     "label": "el pez pequeño, que come algas y larvas",
+     "bin": "omnivoros",
+     "objective": "SV-06",
+     "feedback": {
+      "herbivoros": "«Algas sí, pero también larvas. Come de todo.»",
+      "carnivoros": "«Larvas sí, pero también algas. Come de todo.»"
+     }
+    },
+    {
+     "id": "raton",
+     "label": "el ratón, que come semillas y algún insecto",
+     "bin": "omnivoros",
+     "objective": "SV-06",
+     "feedback": {
+      "herbivoros": "«Semillas, sí, pero también algún insecto. Come de todo.»"
+     }
+    },
+    {
+     "id": "lombriz",
+     "label": "la lombriz, que come hojas muertas del fondo",
+     "bin": "descomponedores",
+     "objective": "SV-06",
+     "feedback": {
+      "herbivoros": "«Hojas muertas, no plantas vivas. Lo que come ya no está vivo: devuelve los restos al suelo.»"
+     }
+    },
+    {
+     "id": "hongos",
+     "label": "los hongos y las bacterias del fondo",
+     "bin": "descomponedores",
+     "objective": "SV-06",
+     "feedback": {
+      "productores": "«No fabrican su alimento con la luz: deshacen los restos de los demás y devuelven al agua lo que las algas necesitan.»"
+     }
+    }
+   ],
+   "next": "sinellos"
+  },
+  "sinellos": {
+   "type": "choice",
+   "prompt": "La garza pregunta: «Si quitamos de la red a los que comen restos, ¿qué pasa en unas estaciones?»",
+   "hints": [
+    "Las hojas que caen al lago cada otoño tienen que ir a alguna parte.",
+    "Las algas y las plantas toman del agua y del suelo lo que alguien ha devuelto."
+   ],
+   "options": [
+    {
+     "id": "amontonan",
+     "label": "Las hojas muertas se amontonan en el fondo y las plantas nuevas crecen peor: nadie devuelve al agua lo que necesitan",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-06",
+     "feedback": "La escena avanza unas estaciones: el fondo se llena de hojas sin deshacer y los juncos nuevos salen flacos. «Los descomponedores devuelven al suelo y al agua lo que las plantas necesitan.»"
+    },
+    {
+     "id": "nada",
+     "label": "Nada: nadie se los come, así que no hacen falta en la red",
+     "correct": false,
+     "objective": "SV-06",
+     "feedback": "Que nadie se los coma no significa que sobren. Sin ellos, los restos se amontonan y las plantas nuevas crecen peor."
+    },
+    {
+     "id": "limpio",
+     "label": "El lago queda más limpio, sin hongos ni bacterias",
+     "correct": false,
+     "objective": "SV-06",
+     "feedback": "Al revés: sin ellos, el fondo se llena de hojas y animales muertos sin deshacer. Los que comen restos son los que limpian."
+    },
+    {
+     "id": "fondo",
+     "label": "Que el explorador meta un palo en el fondo y mire qué hay bajo las hojas",
+     "requires": {
+      "teamrole": "scout"
+     },
+     "locked": "Esto lo haría alguien que mira donde nadie mira: el explorador del equipo.",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-06",
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "Bajo las hojas del fondo, barro oscuro y lombrices: lo que era hoja se ha vuelto suelo. Sin los que comen restos, ese barro no existiría. Una gema."
+    }
+   ],
+   "next": "sinranas"
+  },
+  "sinranas": {
+   "type": "choice",
+   "prompt": "«¿Y si desaparecen las ranas?», sigue la garza.",
+   "hints": [
+    "Las ranas comen y son comidas. Pensemos en los dos lados del hilo.",
+    "En una red, quien pierde una presa suele tener otra. Lo nota, pero no es lo mismo que una cadena sola."
+   ],
+   "options": [
+    {
+     "id": "dos-lados",
+     "label": "Los insectos que comían crecen sin control, y la garza tira de otro hilo y come más peces",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-06",
+     "feedback": "Eso es una red: la garza no se queda sin cenar, pero los mosquitos se multiplican y los peces pequeños lo notan. Todo se mueve."
+    },
+    {
+     "id": "hambre",
+     "label": "La garza se muere de hambre enseguida",
+     "correct": false,
+     "points": 1,
+     "objective": "SV-06",
+     "feedback": "La garza también come peces: en una red hay más de un hilo. Lo nota, pero no se muere al día siguiente. En una cadena sola, sí sería grave."
+    },
+    {
+     "id": "nada",
+     "label": "No pasa nada: las ranas son pequeñas",
+     "correct": false,
+     "objective": "SV-06",
+     "feedback": "Pequeñas, pero con dos hilos: comen insectos y las come la garza. Si se cortan esos hilos, la red se mueve entera."
+    }
+   ],
+   "next": "resultado"
+  },
+  "resultado": {
+   "type": "branch",
+   "rules": [
+    {
+     "if": {
+      "correct_at_least": 9,
+      "in": "tejer"
+     },
+     "next": "tejida"
+    },
+    {
+     "if": {
+      "correct_at_least": 6,
+      "in": "tejer"
+     },
+     "next": "floja"
+    }
+   ],
+   "else": "rota"
+  },
+  "tejida": {
+   "type": "ending",
+   "outcome": "success",
+   "text": {
+    "valley": "La red queda tejida, con cada uno en su hilo y los que comen restos abajo del todo, sosteniéndola. «Una cadena se rompe por un eslabón», dice la garza. «Una red aguanta más, pero todo lo que pasa en un hilo se nota en los demás.» La página de la red entra en el Gran Libro. {{creature}} se mira en el agua y sigue sin saber en qué hilo iría.",
+    "azara": "La red queda tejida, con cada uno en su hilo y los que comen restos abajo del todo, sosteniéndola. «Una cadena se rompe por un eslabón», dice la garza. «Una red aguanta más, pero todo lo que pasa en un hilo se nota en los demás.» La página de la red queda completa en el cuaderno. {{creature}} se mira en el agua y sigue sin saber en qué hilo iría."
+   },
+   "effects": [
+    {
+     "gems": 3
+    },
+    {
+     "page": "descomponedores"
+    }
+   ]
+  },
+  "floja": {
+   "type": "ending",
+   "outcome": "partial",
+   "text": {
+    "valley": "La red se sostiene, pero con hilos flojos: algunos han acabado donde no comen. La garza la deja tendida al sol: «Otro día, cada uno en su hilo a la primera, y la red quedará tensa». {{creature}} se mira en el agua.",
+    "azara": "La red se sostiene, pero con hilos flojos: algunos han acabado donde no comen. La garza deja la página a medio dibujar: «Otro día, cada uno en su hilo a la primera, y la red quedará tensa». {{creature}} se mira en el agua."
+   },
+   "effects": [
+    {
+     "gems": 1
+    }
+   ]
+  },
+  "rota": {
+   "type": "ending",
+   "outcome": "retry",
+   "text": "La red se deshace: demasiados hilos cruzados donde no tocaba. La garza la levanta con el pico: «Empecemos por quien fabrica su alimento con la luz. Luego, quién se lo come. Y al final, quién come lo que ya está muerto».",
+   "retry": "tejer"
+  }
+ }
+}

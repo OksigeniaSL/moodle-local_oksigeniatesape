@@ -1,0 +1,255 @@
+{
+ "id": "C2-4",
+ "mission": "livingthings",
+ "chapter": "biblioteca",
+ "title": "El árbol de los reinos",
+ "quest": true,
+ "step": 4,
+ "mode": "both",
+ "objectives": [
+  "SV-02",
+  "SV-03"
+ ],
+ "minutes": 10,
+ "start": "intro",
+ "nodes": {
+  "intro": {
+   "type": "story",
+   "speaker": "bibliotecaria",
+   "image": "biblioteca-arbol",
+   "text": {
+    "valley": "Para que la torre no vuelva a crujir, los sabios quieren un orden que no dependa de la apariencia, sino de cómo es cada ser por dentro. Doña Hebra despliega un árbol de cinco ramas y en cada una cuelga sus pruebas: si sus células tienen núcleo, si es de una célula o de muchas, y si fabrica su alimento o lo toma. «Una rama que recibe a quien no cumple sus pruebas se dobla. Y avisa de cuál falla.»",
+    "azara": "Para que las cajas no vuelvan a mezclarse, el naturalista quiere un orden que no dependa de la apariencia, sino de cómo es cada ser por dentro. La archivera despliega un árbol de cinco ramas y en cada una cuelga sus pruebas: si sus células tienen núcleo, si es de una célula o de muchas, y si fabrica su alimento o lo toma. «Una rama que recibe a quien no cumple sus pruebas se dobla. Y avisa de cuál falla.»"
+   },
+   "next": "colgar"
+  },
+  "colgar": {
+   "type": "classify",
+   "prompt": "¿En qué rama cuelga cada ser vivo?",
+   "retry": "item",
+   "hints": [
+    "Primero, el núcleo: solo una rama acepta células sin él.",
+    "Después, cuántas células: una sola, o muchas. La levadura engaña.",
+    "Por último, el alimento: ¿lo fabrica con la luz o lo toma de otros? El coral engaña."
+   ],
+   "bins": [
+    {
+     "id": "moneras",
+     "label": "Sin núcleo, de una sola célula"
+    },
+    {
+     "id": "protistas",
+     "label": "Con núcleo, de una sola célula, casi siempre en el agua"
+    },
+    {
+     "id": "hongos",
+     "label": "Con núcleo y pared en sus células; toman el alimento de restos"
+    },
+    {
+     "id": "plantas",
+     "label": "Con núcleo, de muchas células; fabrican su alimento con la luz"
+    },
+    {
+     "id": "animales",
+     "label": "Con núcleo, de muchas células; toman el alimento"
+    }
+   ],
+   "items": [
+    {
+     "id": "bacteria",
+     "label": "una bacteria",
+     "bin": "moneras",
+     "objective": "SV-02",
+     "feedback": {
+      "protistas": "La rama se dobla: «Sin núcleo». Solo una rama acepta células sin núcleo.",
+      "hongos": "La rama se dobla: «Sin núcleo». Solo una rama acepta células sin núcleo.",
+      "plantas": "La rama se dobla: «Sin núcleo, y de una sola célula». Dos pruebas falladas.",
+      "animales": "La rama se dobla: «Sin núcleo, y de una sola célula». Dos pruebas falladas."
+     }
+    },
+    {
+     "id": "levadura",
+     "label": "la levadura",
+     "bin": "hongos",
+     "objective": "SV-03",
+     "feedback": {
+      "protistas": "La rama duda: «Una sola célula, sí. Pero tiene pared y se alimenta de restos, como las setas. Es un hongo pequeño».",
+      "moneras": "La rama se dobla: «Tiene núcleo».",
+      "plantas": "La rama se dobla: «No fabrica su alimento: lo toma del azúcar. Y es una sola célula»."
+     }
+    },
+    {
+     "id": "seta",
+     "label": "una seta",
+     "bin": "hongos",
+     "objective": "SV-03",
+     "feedback": {
+      "plantas": "La rama se dobla: «No fabrica su alimento con la luz: lo toma de la madera podrida».",
+      "animales": "La rama se dobla: «Sus células tienen pared, y no caza: absorbe restos. Es un hongo»."
+     }
+    },
+    {
+     "id": "paramecio",
+     "label": "un paramecio, un ser de una célula que nada con pelillos",
+     "bin": "protistas",
+     "objective": "SV-02",
+     "feedback": {
+      "animales": "La rama se dobla: «Toma su alimento, sí, pero es una sola célula. Esta rama pide muchas».",
+      "moneras": "La rama se dobla: «Tiene núcleo»."
+     }
+    },
+    {
+     "id": "alga",
+     "label": "un alga verde de una sola célula",
+     "bin": "protistas",
+     "objective": "SV-03",
+     "feedback": {
+      "plantas": "La rama duda: «Fabrica su alimento con la luz, sí. Pero es una sola célula, y esta rama pide muchas».",
+      "moneras": "La rama se dobla: «Tiene núcleo»."
+     }
+    },
+    {
+     "id": "helecho",
+     "label": "un helecho",
+     "bin": "plantas",
+     "objective": "SV-03",
+     "feedback": {
+      "hongos": "La rama se dobla: «Fabrica su alimento con la luz. Es una planta»."
+     }
+    },
+    {
+     "id": "coral",
+     "label": "un coral",
+     "bin": "animales",
+     "objective": "SV-03",
+     "feedback": {
+      "plantas": "La rama se dobla: «Parece una planta pegada a la roca, pero toma su alimento: atrapa seres diminutos del agua. Es un animal».",
+      "hongos": "La rama se dobla: «Sus células no tienen pared y caza para comer. Es un animal»."
+     }
+    },
+    {
+     "id": "lombriz",
+     "label": "una lombriz",
+     "bin": "animales",
+     "objective": "SV-03",
+     "feedback": {
+      "protistas": "La rama se dobla: «Muchas células, no una»."
+     }
+    }
+   ],
+   "next": "porque"
+  },
+  "porque": {
+   "type": "choice",
+   "prompt": {
+    "valley": "Doña Hebra pregunta: «¿Por qué este árbol no se cae, y los estantes de antes crujían?»",
+    "azara": "La archivera pregunta: «¿Por qué este árbol no se cae, y las cajas de antes se mezclaban?»"
+   },
+   "hints": [
+    "¿Qué cambia de un ser a otro de la misma rama, y qué no cambia nunca?",
+    "Por fuera, el coral parece una planta. Por dentro, no."
+   ],
+   "options": [
+    {
+     "id": "dentro",
+     "label": "Porque ordena por cómo son por dentro, y eso no cambia aunque por fuera engañen",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-03",
+     "feedback": "«Eso es. El coral engaña a los ojos, no a la lupa.»"
+    },
+    {
+     "id": "cinco",
+     "label": "Porque tiene cinco ramas, y cinco es un número que se recuerda bien",
+     "correct": false,
+     "objective": "SV-03",
+     "feedback": "«El número no sujeta nada. Lo que sujeta son las pruebas de cada rama.»"
+    },
+    {
+     "id": "coral",
+     "label": "Porque el coral ya no está con las plantas",
+     "correct": false,
+     "points": 1,
+     "objective": "SV-03",
+     "feedback": "«Eso ayuda, pero es un caso. La razón es la regla: ordenar por dentro, no por fuera.»"
+    },
+    {
+     "id": "dominios",
+     "label": "Que el sabio cuente por qué los científicos de hoy ponen tres troncos por debajo de estas cinco ramas",
+     "requires": {
+      "teamrole": "sage"
+     },
+     "locked": "Esto lo haría alguien que sabe cómo cambia la ciencia: el sabio del equipo.",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-02",
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "«Al mirar más de cerca, las células sin núcleo resultaron ser de dos familias muy distintas: bacterias y arqueas. Y todo lo que tiene núcleo, de una tercera. Tres troncos. El árbol cambia cuando se mira mejor; eso no es que fallara, es que la ciencia crece.» Una gema por saberlo."
+    }
+   ],
+   "next": "resultado"
+  },
+  "resultado": {
+   "type": "branch",
+   "rules": [
+    {
+     "if": {
+      "correct_at_least": 8,
+      "in": "colgar"
+     },
+     "next": "firme"
+    },
+    {
+     "if": {
+      "correct_at_least": 6,
+      "in": "colgar"
+     },
+     "next": "dobla"
+    }
+   ],
+   "else": "cae"
+  },
+  "firme": {
+   "type": "ending",
+   "outcome": "success",
+   "text": {
+    "valley": "El árbol se queda firme, con sus cinco ramas cargadas y ninguna doblada. Doña Hebra lo cuelga en la pared de la torre, al lado de los estantes: «Los estantes, para encontrar; el árbol, para entender». Al pie del árbol, con letra pequeña, escribe: «Se corregirá cuando se mire mejor». {{creature}} intenta subirse a la rama de los animales.",
+    "azara": "El árbol se queda firme, con sus cinco ramas cargadas y ninguna doblada. La archivera lo guarda en la primera página de las cajas: «Las cajas, para encontrar; el árbol, para entender». Al pie, con letra pequeña, escribe: «Se corregirá cuando se mire mejor». {{creature}} intenta subirse a la rama de los animales."
+   },
+   "effects": [
+    {
+     "gems": 4
+    },
+    {
+     "page": "por-dentro"
+    }
+   ]
+  },
+  "dobla": {
+   "type": "ending",
+   "outcome": "partial",
+   "text": {
+    "valley": "El árbol se sostiene, pero dos ramas han quedado dobladas por recibir a quien no cumplía sus pruebas. Doña Hebra las entablilla: «Aguantará. Otro día, con cada ser en su rama a la primera, lo colgamos en la pared». {{creature}} intenta subirse a la rama de los animales y la rama cruje.",
+    "azara": "El árbol se sostiene, pero dos ramas han quedado dobladas por recibir a quien no cumplía sus pruebas. La archivera las entablilla: «Aguantará. Otro día, con cada ser en su rama a la primera, lo pasamos a limpio». {{creature}} intenta subirse a la rama de los animales y la rama cruje."
+   },
+   "effects": [
+    {
+     "gems": 2
+    }
+   ]
+  },
+  "cae": {
+   "type": "ending",
+   "outcome": "retry",
+   "text": {
+    "valley": "Demasiadas ramas dobladas: el árbol se viene abajo. Doña Hebra lo levanta: «Tres preguntas por cada ser, y en orden: ¿núcleo? ¿una célula o muchas? ¿fabrica o toma el alimento?».",
+    "azara": "Demasiadas ramas dobladas: el árbol se viene abajo. La archivera lo levanta: «Tres preguntas por cada ser, y en orden: ¿núcleo? ¿una célula o muchas? ¿fabrica o toma el alimento?»."
+   },
+   "retry": "colgar"
+  }
+ }
+}

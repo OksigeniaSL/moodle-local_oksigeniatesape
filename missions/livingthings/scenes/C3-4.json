@@ -1,0 +1,242 @@
+{
+ "id": "C3-4",
+ "mission": "livingthings",
+ "chapter": "bosque",
+ "title": "La clave del patio",
+ "quest": true,
+ "step": 3,
+ "mode": "both",
+ "objectives": [
+  "SV-04",
+  "SV-07"
+ ],
+ "minutes": 8,
+ "locals": {
+  "pajaro": {
+   "py": "un benteveo",
+   "es": "un gorrión"
+  },
+  "lagartija": {
+   "py": "un teyú",
+   "es": "una lagartija"
+  }
+ },
+ "start": "memoria",
+ "nodes": {
+  "memoria": {
+   "type": "branch",
+   "rules": [
+    {
+     "if": {
+      "flag": "pregunta-buena"
+     },
+     "next": "intro-conocidos"
+    }
+   ],
+   "else": "intro"
+  },
+  "intro": {
+   "type": "story",
+   "speaker": "buho",
+   "image": "bosque-clave",
+   "text": {
+    "valley": "El búho guardián se va a dormir y deja al equipo de guardián del bosque. «Hoy no respondo yo: hoy se preguntan unos a otros.» Deja seis seres vivos del patio o del barrio ({{local:pajaro}}, {{local:lagartija}}, una hormiga, un caracol, una araña y un gato) y una tabla vacía. «Con preguntas de sí o no, cualquiera tiene que llegar a cada uno sin equivocarse. Eso es una clave. Las buenas preguntas se eligen; las malas se notan solas.»",
+    "azara": "El baqueano se va a descansar y deja al equipo de guía. «Hoy no respondo yo: hoy se preguntan unos a otros.» Deja seis seres vivos del patio o del barrio ({{local:pajaro}}, {{local:lagartija}}, una hormiga, un caracol, una araña y un gato) y una tabla vacía. «Con preguntas de sí o no, cualquiera tiene que llegar a cada uno sin equivocarse. Eso es una clave. Las buenas preguntas se eligen; las malas se notan solas.»"
+   },
+   "next": "elegir"
+  },
+  "intro-conocidos": {
+   "type": "story",
+   "speaker": "buho",
+   "image": "bosque-clave",
+   "text": {
+    "valley": "El búho guardián reconoce a quienes preguntaron bien junto al rastro. «Los de la pregunta de los huesos. Hoy les dejo el bosque: hoy no respondo yo, hoy se preguntan unos a otros.» Deja seis seres vivos del patio o del barrio ({{local:pajaro}}, {{local:lagartija}}, una hormiga, un caracol, una araña y un gato) y una tabla vacía. «Con preguntas de sí o no, cualquiera tiene que llegar a cada uno sin equivocarse. Eso es una clave.»",
+    "azara": "El baqueano reconoce a quienes preguntaron bien junto al rastro. «Los de la pregunta de los huesos. Hoy les dejo el monte: hoy no respondo yo, hoy se preguntan unos a otros.» Deja seis seres vivos del patio o del barrio ({{local:pajaro}}, {{local:lagartija}}, una hormiga, un caracol, una araña y un gato) y una tabla vacía. «Con preguntas de sí o no, cualquiera tiene que llegar a cada uno sin equivocarse. Eso es una clave.»"
+   },
+   "next": "elegir"
+  },
+  "elegir": {
+   "type": "choice",
+   "prompt": "¿Qué cuatro preguntas ponemos en la clave?",
+   "select": {
+    "min": 4,
+    "max": 4
+   },
+   "hints": [
+    "Una buena pregunta separa por algo que no cambia de un ejemplar a otro.",
+    "El color y el tamaño cambian: dos caracoles del mismo muro no son iguales.",
+    "La mejor primera pregunta parte a los seis en dos grupos grandes."
+   ],
+   "options": [
+    {
+     "id": "huesos",
+     "label": "¿Tiene huesos por dentro?",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-04",
+     "feedback": "Parte a los seis en dos grupos: tres con huesos, tres sin ellos. Y ningún ejemplar cambia de respuesta."
+    },
+    {
+     "id": "plumas",
+     "label": "¿Tiene plumas?",
+     "correct": true,
+     "points": 2,
+     "objective": "SV-04",
+     "feedback": "Solo uno dice que sí. Las plumas no se quitan: buena pregunta."
+    },
+    {
+     "id": "pelo",
+     "label": "¿Tiene pelo?",
+     "correct": true,
+     "points": 2,
+     "objective": "SV-04",
+     "feedback": "Solo uno dice que sí, y lo dirá siempre."
+    },
+    {
+     "id": "patas",
+     "label": "¿Tiene ocho patas?",
+     "correct": true,
+     "points": 2,
+     "objective": "SV-04",
+     "feedback": "Separa a la araña de la hormiga, que tiene seis. Y ninguna de las dos cambia de patas."
+    },
+    {
+     "id": "concha",
+     "label": "¿Lleva concha?",
+     "correct": true,
+     "points": 2,
+     "objective": "SV-04",
+     "feedback": "Solo uno dice que sí. Una concha no se la quita nadie."
+    },
+    {
+     "id": "color",
+     "label": "¿Es de color marrón?",
+     "correct": false,
+     "objective": "SV-07",
+     "feedback": "El primer caracol es marrón; el segundo, amarillo. La clave falla con el siguiente ejemplar. El color cambia."
+    },
+    {
+     "id": "grande",
+     "label": "¿Es grande?",
+     "correct": false,
+     "objective": "SV-07",
+     "feedback": "«¿Grande según quién?» Una cría de gato es más pequeña que un caracol gordo. El tamaño cambia y, además, cada uno lo mide a su manera."
+    },
+    {
+     "id": "martes",
+     "label": "¿Lo vimos el martes?",
+     "correct": false,
+     "objective": "SV-07",
+     "feedback": "Al equipo que lo pruebe el jueves no le sirve de nada. La clave tiene que valer para cualquiera, cualquier día."
+    }
+   ],
+   "next": "prueba"
+  },
+  "prueba": {
+   "type": "choice",
+   "prompt": "Otro equipo prueba la clave con un ser elegido en secreto: {{local:pajaro}} y el gato caen en la misma casilla. La clave se atasca. ¿Qué pregunta añadimos?",
+   "hints": [
+    "¿Qué tiene uno que no tenga el otro, y que no se le pueda quitar?",
+    "Lo que hace un animal cambia según el día; lo que lleva encima, no."
+   ],
+   "options": [
+    {
+     "id": "plumas",
+     "label": "¿Tiene plumas?",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-04",
+     "feedback": "La clave se desatasca: uno dice sí y el otro no, y lo dirán siempre. Cada uno en su casilla."
+    },
+    {
+     "id": "color",
+     "label": "¿Es de color gris?",
+     "correct": false,
+     "objective": "SV-07",
+     "feedback": "Hay gatos grises y hay gatos naranjas. Al siguiente gato, la clave vuelve a atascarse."
+    },
+    {
+     "id": "vuela",
+     "label": "¿Vuela?",
+     "correct": false,
+     "points": 1,
+     "objective": "SV-04",
+     "feedback": "Hoy sirve. Pero el día que alguien pruebe la clave con un pingüino, se atasca. Mejor preguntar por lo que lleva encima que por lo que hace."
+    },
+    {
+     "id": "rastro",
+     "label": "Seguir el rastro del ser secreto hasta donde está escondido, antes de preguntar nada",
+     "requires": {
+      "role": "scout"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "El rastro acaba en un tejado: plumas sueltas junto a un nido. «Eso no es una clave», dice el búho medio dormido, «pero es saber mirar». Una gema."
+    }
+   ],
+   "next": "resultado"
+  },
+  "resultado": {
+   "type": "branch",
+   "rules": [
+    {
+     "if": {
+      "correct_at_least": 4,
+      "in": "elegir"
+     },
+     "next": "guardianes"
+    },
+    {
+     "if": {
+      "correct_at_least": 3,
+      "in": "elegir"
+     },
+     "next": "atascada"
+    }
+   ],
+   "else": "rota"
+  },
+  "guardianes": {
+   "type": "ending",
+   "outcome": "success",
+   "text": {
+    "valley": "La clave funciona: cada ser del patio cae en su casilla, y con el ser secreto también. El búho abre un ojo: «Una buena pregunta separa por lo que no cambia. Con esa regla se puede hacer una clave de cualquier sitio: del patio, del barrio, del bosque entero». La tabla queda apuntada en el Gran Libro. {{creature}} prueba la clave consigo misma y no cae en ninguna casilla: todavía no sabe qué es.",
+    "azara": "La clave funciona: cada ser del patio cae en su casilla, y con el ser secreto también. El baqueano abre un ojo: «Una buena pregunta separa por lo que no cambia. Con esa regla se puede hacer una clave de cualquier sitio: del patio, del barrio, del monte entero». La tabla queda apuntada en el cuaderno. {{creature}} prueba la clave consigo misma y no cae en ninguna casilla: todavía no sabe qué es."
+   },
+   "effects": [
+    {
+     "gems": 3
+    },
+    {
+     "page": "buenas-preguntas"
+    }
+   ]
+  },
+  "atascada": {
+   "type": "ending",
+   "outcome": "partial",
+   "text": {
+    "valley": "La clave llega casi hasta el final, pero una de las preguntas cambia de respuesta con el segundo ejemplar y dos seres se quedan en la misma casilla. El búho bosteza: «Casi. Otro día, con todas las preguntas sobre lo que no cambia, la clave será de las buenas». {{creature}} se queda vigilando el bosque, muy seria.",
+    "azara": "La clave llega casi hasta el final, pero una de las preguntas cambia de respuesta con el segundo ejemplar y dos seres se quedan en la misma casilla. El baqueano bosteza: «Casi. Otro día, con todas las preguntas sobre lo que no cambia, la clave será de las buenas». {{creature}} se queda vigilando el monte, muy seria."
+   },
+   "effects": [
+    {
+     "gems": 1
+    }
+   ]
+  },
+  "rota": {
+   "type": "ending",
+   "outcome": "retry",
+   "text": {
+    "valley": "La clave se atasca a la segunda pregunta. El búho, sin abrir los ojos: «Preguntar por el color o por el tamaño es preguntar por lo que cambia. ¿Qué no cambia nunca en un animal?».",
+    "azara": "La clave se atasca a la segunda pregunta. El baqueano, sin abrir los ojos: «Preguntar por el color o por el tamaño es preguntar por lo que cambia. ¿Qué no cambia nunca en un animal?»."
+   },
+   "retry": "elegir"
+  }
+ }
+}

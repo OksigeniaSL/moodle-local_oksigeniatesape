@@ -62,6 +62,24 @@ final class structures {
     }
 
     /**
+     * A scene in the map of a student.
+     *
+     * @return external_single_structure
+     */
+    public static function scene_item(): external_single_structure {
+        return new external_single_structure([
+            'id' => new external_value(PARAM_INT, 'Scene'),
+            'code' => new external_value(PARAM_ALPHANUMEXT, 'Code'),
+            'title' => new external_value(PARAM_TEXT, 'Title'),
+            'minutes' => new external_value(PARAM_INT, 'Minutes, more or less'),
+            'step' => new external_value(PARAM_INT, 'Step it is for (0: every step)', VALUE_DEFAULT, 0),
+            'done' => new external_value(PARAM_BOOL, 'Done'),
+            'better' => new external_value(PARAM_BOOL, 'Done with a partial ending', VALUE_DEFAULT, false),
+            'attempts' => new external_value(PARAM_INT, 'Plays'),
+        ]);
+    }
+
+    /**
      * The mission of a course as a student sees it.
      *
      * @return external_single_structure
@@ -94,15 +112,13 @@ final class structures {
                     'title' => new external_value(PARAM_TEXT, 'Title'),
                     'done' => new external_value(PARAM_BOOL, 'Won'),
                 ])),
-                'scenes' => new external_multiple_structure(new external_single_structure([
-                    'id' => new external_value(PARAM_INT, 'Scene'),
-                    'code' => new external_value(PARAM_ALPHANUMEXT, 'Code'),
-                    'title' => new external_value(PARAM_TEXT, 'Title'),
-                    'minutes' => new external_value(PARAM_INT, 'Minutes, more or less'),
-                    'done' => new external_value(PARAM_BOOL, 'Done'),
-                    'better' => new external_value(PARAM_BOOL, 'Done with a partial ending', VALUE_DEFAULT, false),
-                    'attempts' => new external_value(PARAM_INT, 'Plays'),
-                ])),
+                'scenes' => new external_multiple_structure(self::scene_item()),
+                'quests' => new external_multiple_structure(
+                    self::scene_item(),
+                    'Quests: for whoever wants more',
+                    VALUE_DEFAULT,
+                    []
+                ),
             ])),
             'pages' => new external_multiple_structure(new external_single_structure([
                 'code' => new external_value(PARAM_ALPHANUMEXT, 'Code'),
