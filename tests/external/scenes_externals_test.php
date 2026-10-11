@@ -70,7 +70,7 @@ final class scenes_externals_test extends \advanced_testcase {
         $this->assertArrayNotHasKey('installed', $missions);
         $pilot = $missions['packages'][0];
         $this->assertSame('livingthings', $pilot['code']);
-        $this->assertSame(9, $pilot['scenes']);
+        $this->assertSame(15, $pilot['scenes']);
         $this->assertSame(['valley', 'azara'], array_column($pilot['skins'], 'code'));
         $missions = $this->call('install_mission', $teacher, [$course->id, 'livingthings', 'valley', 'es']);
         $this->assertSame('valley', $missions['installed']['skin']);
@@ -99,7 +99,8 @@ final class scenes_externals_test extends \advanced_testcase {
         $this->assertNotEmpty($result['world']['character']['creature']);
 
         $results = $this->call('get_results', $teacher, [$course->id]);
-        $this->assertSame(1, $results['chapters'][0]['scenes'][0]['done']);
+        $nests = array_filter($results['chapters'][0]['scenes'], fn($sc) => $sc['code'] === 'C1-2');
+        $this->assertSame(1, reset($nests)['done']);
         $this->assertTrue($results['chapters'][0]['lit']);
     }
 

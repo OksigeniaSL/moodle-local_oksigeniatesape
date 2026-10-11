@@ -244,7 +244,7 @@ final class scenes_test extends \advanced_testcase {
         $claro = $results['chapters'][0];
         $this->assertSame('claro', $claro['code']);
         $this->assertSame(2, $claro['done']);
-        $nest = $claro['scenes'][0];
+        $nest = array_values(array_filter($claro['scenes'], fn($sc) => $sc['code'] === 'C1-2'))[0];
         $this->assertSame(2, $nest['players']);
         $this->assertSame(2, $nest['done']);
         $this->assertSame(3, $nest['attempts']);
