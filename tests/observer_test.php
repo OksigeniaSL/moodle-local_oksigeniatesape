@@ -150,6 +150,8 @@ final class observer_test extends \advanced_testcase {
         $gone = demo::create_class('GONE', 6, 3, 'storyheroes', 2);
         $kept = demo::create_class('KEPT', 6, 3, 'storyheroes', 2);
         $now = time();
+        $gen = $this->getDataGenerator()->get_plugin_generator('local_oksigeniatesape');
+        $item = $gen->create_item();
         foreach ([$gone, $kept] as $class) {
             $courseid = (int) $class->course->id;
             $event = ['courseid' => $courseid, 'day' => $now, 'code' => 'calm', 'timecreated' => $now, 'timemodified' => $now];
@@ -159,6 +161,7 @@ final class observer_test extends \advanced_testcase {
             $char = characters::get((int) $class->students[0]->id);
             $in = ['liveid' => $liveid, 'courseid' => $courseid, 'charid' => $char->id, 'round' => 0, 'timecreated' => $now];
             $DB->insert_record(self::T . 'livein', (object) $in);
+            $gen->create_inventory(['charid' => $char->id, 'itemid' => $item->id, 'courseid' => $courseid]);
         }
         $chars = $DB->count_records(self::T . 'char');
         $missions = $DB->get_records_menu(self::T . 'mission', null, '', 'courseid, id');
