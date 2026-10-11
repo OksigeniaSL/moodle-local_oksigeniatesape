@@ -17,10 +17,11 @@
 namespace local_oksigeniatesape;
 
 use local_oksigeniatesape\local\characters;
+use local_oksigeniatesape\local\demo;
 use local_oksigeniatesape\local\regions;
 
 /**
- * Tests for what the game takes from Moodle: completed activities.
+ * Tests for what the game takes from Moodle: completed activities, deleted activities and courses.
  *
  * @package    local_oksigeniatesape
  * @category   test
@@ -140,5 +141,48 @@ final class observer_test extends \advanced_testcase {
         ]);
         course_delete_module($w->page1->cmid);
         $this->assertFalse($DB->record_exists(self::T . 'challenge', ['cmid' => $w->page1->cmid]));
+    }
+
+    public function test_deleted_course_takes_its_game_with_it(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $gone = demo::create_class('GONE', 6, 3, 'storyheroes', 2);
+        $kept = demo::create_class('KEPT', 6, 3, 'storyheroes', 2);
+        $now = time();
+        foreach ([$gone, $kept] as $class) {
+            $courseid = (int) $class->course->id;
+            $event = ['courseid' => $courseid, 'day' => $now, 'code' => 'calm', 'timecreated' => $now, 'timemodified' => $now];
+            $DB->insert_record(self::T . 'event', (object) $event);
+            $live = ['courseid' => $courseid, 'kind' => 'battle', 'timecreated' => $now, 'timemodified' => $now];
+            $liveid = $DB->insert_record(self::T . 'live', (object) $live);
+            $char = characters::get((int) $class->students[0]->id);
+            $in = ['liveid' => $liveid, 'courseid' => $courseid, 'charid' => $char->id, 'round' => 0, 'timecreated' => $now];
+            $DB->insert_record(self::T . 'livein', (object) $in);
+        }
+        $chars = $DB->count_records(self::T . 'char');
+        $missions = $DB->get_records_menu(self::T . 'mission', null, '', 'courseid, id');
+        $this->assertGreaterThan(0, $DB->count_records(self::T . 'powerreq'));
+        $this->assertGreaterThan(0, $DB->count_records(self::T . 'chapter', ['missionid' => $missions[$gone->course->id]]));
+
+        delete_course($gone->course, false);
+
+        $tables = ['region', 'member', 'team', 'ledger', 'power', 'inventory', 'mission', 'idea', 'event', 'live', 'livein'];
+        foreach ($tables as $table) {
+            $this->assertEquals(0, $DB->count_records(self::T . $table, ['courseid' => $gone->course->id]), $table);
+            $this->assertGreaterThan(0, $DB->count_records(self::T . $table, ['courseid' => $kept->course->id]), $table);
+        }
+        foreach (['chapter', 'scene'] as $table) {
+            $this->assertEquals(0, $DB->count_records(self::T . $table, ['missionid' => $missions[$gone->course->id]]));
+            $this->assertGreaterThan(0, $DB->count_records(self::T . $table, ['missionid' => $missions[$kept->course->id]]));
+        }
+        $orphans = $DB->count_records_sql(
+            'SELECT COUNT(1) FROM {' . self::T . 'powerreq} r LEFT JOIN {' . self::T . 'power} p ON p.id = r.powerid
+              WHERE p.id IS NULL'
+        );
+        $this->assertEquals(0, $orphans);
+        $this->assertGreaterThan(0, $DB->count_records(self::T . 'powerreq'));
+        // The characters are the students' own: they stay, with what they earned.
+        $this->assertEquals($chars, $DB->count_records(self::T . 'char'));
     }
 }

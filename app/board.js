@@ -497,7 +497,8 @@
 
   function printCard() {
     return '<section class="card board-print"><div class="kicker">' + esc(t('board_print')) + '</div><p class="help-soft">' +
-      esc(t('board_print_help')) + '</p><div class="actions board-small">' + ['votes', 'teams', 'chars'].map(function(k) {
+      esc(t('board_print_help')) + '</p><div class="actions board-small">' +
+      ['votes', 'teams', 'chars', 'diplomas'].map(function(k) {
         return '<button class="btn btn-soft" data-print="' + k + '">' + esc(t('board_print_' + k)) + '</button>';
       }).join('') + '</div></section>';
   }
@@ -515,6 +516,28 @@
     var c = s.character;
     return c ? T.avatar({role: c.role, nameform: c.nameform, lineage: c.lineage, look: c.appearance, stage: c.stage,
       portrait: true}) : '';
+  }
+
+  /**
+   * A diploma for each student with a character, for the end of the mission.
+   *
+   * @param {string} fam The family of names of the region.
+   * @return {string}
+   */
+  function diplomas(fam) {
+    var m = state.board.mission;
+    var date = new Intl.DateTimeFormat(cfg.lang, {day: 'numeric', month: 'long', year: 'numeric'}).format(new Date());
+    return state.cls.students.filter(function(s) {
+      return s.character;
+    }).map(function(s) {
+      var c = s.character;
+      return '<div class="sheet-page diploma"><div class="diploma-frame"><p class="diploma-kicker">Tesapé</p><h1>' +
+        esc(t('board_diploma')) + '</h1><span class="face">' + portrait(s) + '</span><h2>' + esc(s.fullname) + '</h2><p>' +
+        esc(T.roleName(fam, c.role, c.nameform)) + ' · ' + esc(t('app_level')) + ' ' + c.level + '</p><p class="lead">' +
+        esc(m ? t('board_diploma_for', m.title) : t('board_diploma_course', cfg.coursename)) + '</p><div class="diploma-foot">' +
+        '<span>' + esc(cfg.coursename) + '<br>' + esc(date) + '</span><span class="diploma-sign">' + esc(t('board_diploma_sign')) +
+        '</span></div></div></div>';
+    }).join('');
   }
 
   function drawPrint() {
@@ -536,6 +559,8 @@
               esc(T.roleName(fam, s.character.role, s.character.nameform)) + '</small></div>';
           }).join('') + '</div><p class="sheet-foot">Tesapé · ' + esc(cfg.coursename) + '</p></div>';
       }).join('');
+    } else if (state.print === 'diplomas') {
+      pages = diplomas(fam);
     } else {
       var chars = cls.students.filter(function(s) {
         return s.character;

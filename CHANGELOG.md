@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.8.0 (2026-10-11)
+
+- **Glance**, a new power of the sage (the wizard, the owl…): once approved by the teacher, the phone shows the next
+  question of the battle before anybody else, between one question and the next, so that the player can think about it
+  and help the team. Each glance is used once.
+- **An object for the team that helped most** in a battle won, when the mission has one: in the living things, the
+  untangled thread (the Embrollo, undone). Missions without an object keep the extra gems. The mission goes to its
+  version 4 and updates itself in the courses that play it.
+- **Diplomas** in the printable material of the class screen: one page for each student with their portrait, name, role
+  and level, the journey of the mission, the course, the date and a line for the signature.
+- When a course is deleted, everything of the game in it goes too: the region, the teams, the mission and its scenes,
+  the ledger, the powers and their requests, the events, the battles. The characters stay, with what they earned: they
+  belong to the students.
+
 ## 0.7.0 (2026-10-11)
 
 - **Scenes played by the whole class** on the class screen: the teacher picks a scene of the core step and plays it on

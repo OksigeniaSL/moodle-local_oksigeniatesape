@@ -139,13 +139,57 @@ final class live_test extends \advanced_testcase {
         $best = live::device_view($live, $members[0], self::NOW)['prize'];
         $other = live::device_view($live, $members[2], self::NOW)['prize'];
         $this->assertEquals(live::WIN_SABER, $best['saber']);
-        $this->assertEquals(live::WIN_GEMS + live::TEAM_GEMS, $best['gems']);
+        $this->assertEquals(live::WIN_GEMS, $best['gems']);
         $this->assertTrue($best['best']);
+        // The sample mission has an object for the team that helped most.
+        $this->assertEquals('el hilo desenredado', $best['item']);
+        $this->assertEquals('', $other['item']);
         $this->assertEquals(live::WIN_GEMS, $other['gems']);
-        $this->assertEquals(8, $DB->count_records(self::T . 'ledger', ['reason' => 'battle', 'refid' => $live->id]));
+        $thread = $DB->get_field(self::T . 'item', 'id', ['code' => 'thread']);
+        $this->assertTrue($DB->record_exists(self::T . 'inventory', ['charid' => $members[0]->charid, 'itemid' => $thread]));
+        $this->assertFalse($DB->record_exists(self::T . 'inventory', ['charid' => $members[2]->charid, 'itemid' => $thread]));
+        $where = "reason = 'battle' AND refid = ? AND resource IN ('saber', 'gems')";
+        $this->assertEquals(8, $DB->count_records_select(self::T . 'ledger', $where, [$live->id]));
         // Finishing again gives nothing more.
         live::finish($live, 2, self::NOW);
-        $this->assertEquals(8, $DB->count_records(self::T . 'ledger', ['reason' => 'battle', 'refid' => $live->id]));
+        $this->assertEquals(8, $DB->count_records_select(self::T . 'ledger', $where, [$live->id]));
+    }
+
+    public function test_the_team_that_helped_most_is_counted_for_each_player_who_came_in(): void {
+        $this->resetAfterTest();
+        [$course, $members] = $this->make_class();
+        // One player of the first team comes in, and both of the second.
+        $players = [$members[0], $members[2], $members[3]];
+        foreach ([1, 2] as $battle) {
+            $at = self::NOW + $battle;
+            $live = live::start($course->id, 'phones', 4, 0, $at);
+            foreach ($players as $member) {
+                live::join($live, $member, $member->userid, $at);
+            }
+            for ($round = 1; $round <= 4; $round++) {
+                $live = live::next($live, $at);
+                $right = $this->correct($live);
+                // Four right for one player against six for two: the first team helped most.
+                foreach ($players as $i => $member) {
+                    live::answer($live, $member, $round, $i === 0 || $round < 4 ? $right : ($right + 1) % 2, $at);
+                }
+                $live = live::reveal($live, $at);
+            }
+            $live = live::finish($live, 2, $at);
+            $best = live::device_view($live, $members[0], $at)['prize'];
+            $other = live::device_view($live, $members[2], $at)['prize'];
+            $this->assertTrue($best['best']);
+            $this->assertFalse($other['best']);
+            $this->assertEquals(live::WIN_GEMS, $other['gems']);
+            if ($battle === 1) {
+                $this->assertEquals('el hilo desenredado', $best['item']);
+                $this->assertEquals(live::WIN_GEMS, $best['gems']);
+            } else {
+                // They already have the object: the gems instead.
+                $this->assertEquals('', $best['item']);
+                $this->assertEquals(live::WIN_GEMS + live::TEAM_GEMS, $best['gems']);
+            }
+        }
     }
 
     public function test_losing_takes_nothing_from_anybody(): void {
@@ -231,5 +275,32 @@ final class live_test extends \advanced_testcase {
         $this->assertEquals(0, $DB->get_field(self::T . 'char', 'saber', ['id' => $members[2]->charid]));
         // Again: nothing more for anybody.
         $this->assertEquals(0, scenes::play_class($course->id, (int) $scene->id, $events, null, $charids, self::NOW)['rewarded']);
+    }
+
+    public function test_the_glance_shows_the_next_question_before_it_opens(): void {
+        global $DB;
+        $this->resetAfterTest();
+        [$course, $members] = $this->make_class();
+        $glance = $DB->get_record(self::T . 'power', ['courseid' => $course->id, 'code' => 'glance']);
+        if (!$glance) {
+            powers::catalog($course->id, self::NOW);
+            $glance = $DB->get_record(self::T . 'power', ['courseid' => $course->id, 'code' => 'glance'], '*', MUST_EXIST);
+        }
+        $request = (object) ['powerid' => $glance->id, 'memberid' => $members[0]->id, 'targetmemberid' => 0,
+            'status' => 'approved', 'decidedby' => 2, 'timecreated' => self::NOW, 'timedecided' => self::NOW];
+        $request->id = $DB->insert_record(self::T . 'powerreq', $request);
+        $live = live::start($course->id, 'phones', 4, 0, self::NOW);
+        live::join($live, $members[0], $members[0]->userid, self::NOW);
+        live::join($live, $members[1], $members[1]->userid, self::NOW);
+        $preview = live::device_view($live, $members[0], self::NOW)['preview'];
+        $this->assertArrayNotHasKey('preview', live::device_view($live, $members[1], self::NOW));
+        $this->assertEquals('used', $DB->get_field(self::T . 'powerreq', 'status', ['id' => $request->id]));
+        // It stays until the question opens, and it is that question, with its options in the same order.
+        $this->assertEquals($preview, live::device_view($live, $members[0], self::NOW)['preview']);
+        $live = live::next($live, self::NOW);
+        $view = live::device_view($live, $members[0], self::NOW);
+        $this->assertArrayNotHasKey('preview', $view);
+        $this->assertEquals($preview['text'], $view['question']['text']);
+        $this->assertEquals($preview['options'], $view['question']['options']);
     }
 }

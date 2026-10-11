@@ -305,9 +305,15 @@ final class structures {
             'mine' => new external_value(PARAM_INT, 'Their answer in the round (-1: none)'),
             'prize' => new external_single_structure([
                 'saber' => new external_value(PARAM_INT, 'Saber'),
+                'capped' => new external_value(PARAM_INT, 'Saber left out by the weekly cap', VALUE_DEFAULT, 0),
                 'gems' => new external_value(PARAM_INT, 'Gems'),
                 'best' => new external_value(PARAM_BOOL, 'Their team helped most'),
+                'item' => new external_value(PARAM_TEXT, 'Object they got for it (empty: none)', VALUE_DEFAULT, ''),
             ], 'What they got for the win', VALUE_OPTIONAL),
+            'preview' => new external_single_structure([
+                'text' => new external_value(PARAM_TEXT, 'Next question'),
+                'options' => new external_multiple_structure(new external_value(PARAM_TEXT, 'Option')),
+            ], 'The next question, seen with the glance', VALUE_OPTIONAL),
         ], 'Battle of the course', VALUE_OPTIONAL);
     }
 

@@ -49,10 +49,10 @@ privacy come from Moodle, and the game is a full-screen application of its own.
 
 - **The battle against the Embrollo**: questions of the mission for the whole class, with the students' phones or
   aloud by teams; each right answer takes life from it, a wrong one takes nothing from anybody, and winning gives saber
-  and gems.
-
+  and gems, and an object of the mission for the team that helped most. The sage can glance at the next question.
 - **Scenes with the whole class**: a scene on the class screen where the class decides at each step, with phones or
-  with A, B, C, D cards, and printable material for classes without devices.
+  with A, B, C, D cards, and printable material for classes without devices: vote cards, team cards, the characters
+  of the class and a diploma for each student.
 
 The game is ready for **art packs** (`cli/art.php`), and its first pack is nearly done.
 
@@ -75,7 +75,7 @@ Then visit *Site administration → Notifications* to finish the install.
 The character belongs to the student's user context; what happens in a course belongs to the course. The privacy
 provider covers every table that holds something about a student (export and deletion), and teachers who paused a
 student, gave them something or decided on a power stay in the student's records without their name once their own
-data is deleted.
+data is deleted. When a course is deleted, the game in it goes too; the characters stay with their students.
 
 Minors play this game, so it keeps only what the game needs: no external services, no CDN, no tracking, no
 individual public rankings and no purchases. The ideas students send stay in Moodle, for their teachers only; the

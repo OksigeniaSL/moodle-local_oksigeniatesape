@@ -31,6 +31,10 @@ final class observer {
     /** @var string Prefix of the plugin tables. */
     private const T = 'local_oksigeniatesape_';
 
+    /** @var string[] Tables of what belongs to one course, by courseid. */
+    private const COURSE_TABLES = ['region', 'member', 'team', 'challenge', 'ledger', 'power', 'validation', 'inventory',
+        'mission', 'sceneattempt', 'found', 'minigame', 'idea', 'event', 'live', 'livein'];
+
     /**
      * An activity completed (or no longer completed): saber from its challenge, or from the rule of the course for
      * activities that are not challenges. Once per activity; if the completion is taken back, so is the saber.
@@ -91,5 +95,30 @@ final class observer {
     public static function module_deleted(\core\event\course_module_deleted $event): void {
         global $DB;
         $DB->delete_records(self::T . 'challenge', ['cmid' => $event->contextinstanceid]);
+    }
+
+    /**
+     * A course deleted: the region goes with it, and everything played there. The characters stay, with what they
+     * earned: they belong to the students, not to the course.
+     *
+     * @param \core\event\course_deleted $event
+     */
+    public static function course_deleted(\core\event\course_deleted $event): void {
+        global $DB;
+        $courseid = (int) $event->objectid;
+        $powers = $DB->get_fieldset_select(self::T . 'power', 'id', 'courseid = ?', [$courseid]);
+        if ($powers) {
+            [$insql, $params] = $DB->get_in_or_equal($powers);
+            $DB->delete_records_select(self::T . 'powerreq', "powerid $insql", $params);
+        }
+        $missions = $DB->get_fieldset_select(self::T . 'mission', 'id', 'courseid = ?', [$courseid]);
+        if ($missions) {
+            [$insql, $params] = $DB->get_in_or_equal($missions);
+            $DB->delete_records_select(self::T . 'scene', "missionid $insql", $params);
+            $DB->delete_records_select(self::T . 'chapter', "missionid $insql", $params);
+        }
+        foreach (self::COURSE_TABLES as $table) {
+            $DB->delete_records(self::T . $table, ['courseid' => $courseid]);
+        }
     }
 }

@@ -98,8 +98,10 @@
     }
     if (live.outcome === 'won') {
       var p = live.prize;
-      return '<div class="battle-end won"><h2>' + esc(t('app_battle_won')) + '</h2>' + (p ? '<p class="lead">' +
-        esc(t('app_battle_prize', p)) + '</p>' + (p.best ? '<p>' + esc(t('app_battle_best')) + '</p>' : '') : '') +
+      var prize = p ? '<p class="lead">' + esc(t('app_battle_prize', p)) + (p.capped ? ' (' + esc(t('app_capped', p.capped)) +
+        ')' : '') + '</p>' + (p.best ? '<p>' + esc(p.item ? t('app_battle_bestitem', p.item) : t('app_battle_best')) +
+        '</p>' : '') : '';
+      return '<div class="battle-end won"><h2>' + esc(t('app_battle_won')) + '</h2>' + prize +
         '<button class="btn btn-main" data-back>' + esc(t('app_battle_back')) + '</button></div>';
     }
     if (live.outcome === 'lost') {
@@ -107,7 +109,7 @@
         '<button class="btn btn-main" data-back>' + esc(t('app_battle_back')) + '</button></div>';
     }
     if (!live.round || !live.question) {
-      return '<p class="battle-wait">' + esc(t('app_battle_wait')) + '</p>';
+      return '<p class="battle-wait">' + esc(t('app_battle_wait')) + '</p>' + glance(live);
     }
     var q = live.question;
     var answered = live.mine >= 0;
@@ -127,7 +129,24 @@
     } else if (live.left >= 0) {
       note = '<p class="battle-left" data-left="' + live.left + '">' + esc(t('app_battle_left', live.left)) + '</p>';
     }
-    return '<p class="battle-q">' + esc(q.text) + '</p><div class="battle-options">' + options + '</div>' + note;
+    return '<p class="battle-q">' + esc(q.text) + '</p><div class="battle-options">' + options + '</div>' + note + glance(live);
+  }
+
+  /**
+   * The glance: the next question, before anybody else sees it.
+   *
+   * @param {Object} live
+   * @return {string}
+   */
+  function glance(live) {
+    var p = live.preview;
+    if (!p) {
+      return '';
+    }
+    return '<div class="battle-glance"><b>' + esc(t('app_battle_glance')) + '</b><p>' + esc(p.text) + '</p><ol>' +
+      p.options.map(function(o, i) {
+        return '<li><b>' + LETTERS[i] + '</b> ' + esc(o) + '</li>';
+      }).join('') + '</ol></div>';
   }
 
   function voteBody(live) {

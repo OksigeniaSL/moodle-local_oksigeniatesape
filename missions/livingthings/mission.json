@@ -1,6 +1,6 @@
 {
  "code": "livingthings",
- "version": 3,
+ "version": 4,
  "lang": "es",
  "ages": "9–11",
  "title": {
@@ -91,7 +91,14 @@
   "naturalistlens": {
    "name": "la lupa del naturalista",
    "description": "El premio de quien ha devuelto el orden al Gran Libro."
+  },
+  "thread": {
+   "name": "el hilo desenredado",
+   "description": "Lo que queda del Embrollo cuando la clase lo vence: un hilo limpio y bien recogido."
   }
+ },
+ "battle": {
+  "reward": "thread"
  },
  "pages": {
   "ser-vivo": {

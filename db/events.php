@@ -33,4 +33,8 @@ $observers = [
         'eventname' => '\core\event\course_module_deleted',
         'callback' => '\local_oksigeniatesape\observer::module_deleted',
     ],
+    [
+        'eventname' => '\core\event\course_deleted',
+        'callback' => '\local_oksigeniatesape\observer::course_deleted',
+    ],
 ];

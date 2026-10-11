@@ -26,7 +26,7 @@ namespace local_oksigeniatesape\local;
  * the course, and the count of each round is kept when it is revealed instead of being read again on every poll.
  *
  * Each right answer takes life from the Embrollo; a wrong one takes nothing from anybody. If the class wins, saber and
- * gems for everybody who played, and more gems for the team that helped most.
+ * gems for everybody who played, and the object of the mission (or more gems) for the team that helped most.
  *
  * @package    local_oksigeniatesape
  * @copyright  2026 Oksigenia <dev@oksigenia.cc>
@@ -60,7 +60,7 @@ final class live {
     /** @var int Gems for each player when the class wins. */
     public const WIN_GEMS = 2;
 
-    /** @var int More gems for each member of the team that helped most. */
+    /** @var int More gems for each member of the team that helped most, when the mission has no object for it. */
     public const TEAM_GEMS = 2;
 
     /**
@@ -443,7 +443,46 @@ final class live {
         if ($state['outcome'] === 'won') {
             $view['prize'] = $state['rewarded'][$member->charid] ?? null;
         }
+        $view['preview'] = self::glance($live, $state, $member, array_key_exists(0, $mine), $now);
         return array_filter($view, fn($value) => $value !== null);
+    }
+
+    /**
+     * The glance (a power of the role of clues): between two questions of a battle, the next one shows on the phone
+     * of the student before anybody else sees it. Using it is kept as a row of the round, in negative, so that it
+     * stays shown until the question opens; the request is then used.
+     *
+     * @param \stdClass $live
+     * @param array $state
+     * @param \stdClass $member
+     * @param bool $joined
+     * @param int $now
+     * @return array|null text and options of the next question.
+     */
+    private static function glance(\stdClass $live, array $state, \stdClass $member, bool $joined, int $now): ?array {
+        global $DB;
+        $round = (int) $live->round;
+        $between = $round === 0 || !empty($state['rounds'][$round]['revealed']);
+        if ($live->kind !== 'battle' || !$joined || $state['outcome'] !== '' || !$between || $round >= count($state['questions'])) {
+            return null;
+        }
+        $key = ['liveid' => $live->id, 'round' => -($round + 1), 'charid' => $member->charid];
+        if (!$DB->record_exists(self::T . 'livein', $key)) {
+            $request = powers::glance($member, $now);
+            if (!$request) {
+                return null;
+            }
+            try {
+                $row = $key + ['courseid' => $live->courseid, 'team' => 0, 'answer' => -1, 'timecreated' => $now];
+                $DB->insert_record(self::T . 'livein', (object) $row);
+            } catch (\dml_write_exception $e) {
+                // Two polls at once: the first one counts.
+                return null;
+            }
+            $DB->set_field(self::T . 'powerreq', 'status', 'used', ['id' => $request->id]);
+        }
+        $question = questions::get((int) $live->courseid, $state['questions'][$round], self::seed($live, $round + 1));
+        return ['text' => $question['text'], 'options' => $question['options']];
     }
 
     /**
@@ -564,17 +603,34 @@ final class live {
                 $byteam[$team] = ($byteam[$team] ?? 0) + $right;
             }
         }
+        if ($state['mode'] === 'phones') {
+            // With phones, what each team got right for each of its players who came in: a team does not help most
+            // just for having more players in class that day.
+            $sizes = array_count_values(array_map('intval', $players));
+            foreach ($byteam as $team => $right) {
+                $byteam[$team] = $right / ($sizes[$team] ?? 1);
+            }
+        }
         $best = $byteam ? max($byteam) : 0;
+        // The object of the mission for the team that helped most; more gems if the mission has none, or for those
+        // who already have it.
+        $mission = missions::get($courseid);
+        $code = (string) ($mission->data['battle']['reward'] ?? '');
+        $item = $code ? ($mission->data['items'][$code] ?? []) : [];
+        $itemid = $code ? missions::item_id($code, $item['name'] ?? null, $item['description'] ?? null, $mission->code) : 0;
         $rewarded = [];
         foreach ($players as $charid => $team) {
             $member = $DB->get_record(self::T . 'member', ['charid' => $charid, 'courseid' => $courseid]);
             if (!$member || $member->status === 'paused') {
                 continue;
             }
-            $gems = self::WIN_GEMS + ($best > 0 && ($byteam[$team] ?? 0) === $best ? self::TEAM_GEMS : 0);
+            $isbest = $best > 0 && ($byteam[$team] ?? 0) == $best;
+            $got = $isbest && $itemid ? engine::item($member, $itemid, 'battle', $actorid, 0, $now) : null;
+            $gems = self::WIN_GEMS + ($isbest && !$got ? self::TEAM_GEMS : 0);
             $entry = engine::saber($member, self::WIN_SABER, 'battle', $actorid, 0, (int) $live->id, $now);
             engine::gems($member, $gems, 'battle', $actorid, 0, (int) $live->id, $now);
-            $rewarded[$charid] = ['saber' => (int) ($entry->amount ?? 0), 'gems' => $gems, 'best' => $gems > self::WIN_GEMS];
+            $rewarded[$charid] = ['saber' => (int) ($entry->amount ?? 0), 'capped' => (int) ($entry->capped ?? 0),
+                'gems' => $gems, 'best' => $isbest, 'item' => $got ? (string) ($item['name'] ?? $code) : ''];
         }
         return $rewarded;
     }
