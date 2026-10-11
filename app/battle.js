@@ -102,7 +102,8 @@
       var p = live.prize;
       var prize = p ? '<p class="lead">' + esc(t('app_battle_prize', p)) + (p.capped ? ' (' + esc(t('app_capped', p.capped)) +
         ')' : '') + '</p>' + (p.best ? '<p>' + esc(p.item ? t('app_battle_bestitem', p.item) : t('app_battle_best')) +
-        '</p>' : '') : '';
+        '</p>' : '') + (p.final ? '<p>' + esc(t('app_battle_finalprize', p.final)) + '</p>' : '') + (p.grew ? '<p>' +
+        esc(t('app_battle_grew')) + '</p>' : '') : '';
       return '<div class="battle-end won"><h2>' + esc(t('app_battle_won')) + '</h2>' + prize +
         '<button class="btn btn-main" data-back>' + esc(t('app_battle_back')) + '</button></div>';
     }
@@ -111,14 +112,17 @@
         '<button class="btn btn-main" data-back>' + esc(t('app_battle_back')) + '</button></div>';
     }
     if (!live.round || !live.question) {
-      return '<p class="battle-wait">' + esc(t('app_battle_wait')) + '</p>' + glance(live);
+      return '<p class="battle-wait">' + esc(t('app_battle_wait')) + '</p>';
     }
     var q = live.question;
     var answered = live.mine >= 0;
     var options = q.options.map(function(o, i) {
-      var cls = 'battle-option' + (live.mine === i ? ' mine' : '') + (live.revealed && q.correct === i ? ' right' : '');
-      return '<button type="button" class="' + cls + '" data-answer="' + i + '"' +
-        (answered || !live.open ? ' disabled' : '') + '><b>' + LETTERS[i] + '</b><span>' + esc(o) + '</span></button>';
+      var struck = live.struck === i && !live.revealed;
+      var cls = 'battle-option' + (live.mine === i ? ' mine' : '') + (live.revealed && q.correct === i ? ' right' : '') +
+        (struck ? ' struck' : '');
+      return '<button type="button" class="' + cls + '" data-answer="' + i + '"' + (answered || !live.open || struck ?
+        ' disabled' : '') + (struck ? ' title="' + esc(t('app_battle_struck')) + '"' : '') + '><b>' + LETTERS[i] + '</b><span>' +
+        esc(o) + '</span></button>';
     }).join('');
     var note = '';
     if (live.revealed) {
@@ -131,24 +135,27 @@
     } else if (live.left >= 0) {
       note = '<p class="battle-left" data-left="' + live.left + '">' + esc(t('app_battle_left', live.left)) + '</p>';
     }
-    return '<p class="battle-q">' + esc(q.text) + '</p><div class="battle-options">' + options + '</div>' + note + glance(live);
+    var trail = live.trail && !live.revealed ? '<p class="battle-trail">' + esc(t('app_token_trail_shown', live.trail)) +
+      '</p>' : '';
+    return '<p class="battle-q">' + esc(q.text) + '</p>' + trail + '<div class="battle-options">' + options + '</div>' + note +
+      token(live);
   }
 
   /**
-   * The glance: the next question, before anybody else sees it.
+   * The battle token of the role of the student: once a battle, while a question is open.
    *
    * @param {Object} live
    * @return {string}
    */
-  function glance(live) {
-    var p = live.preview;
-    if (!p) {
+  function token(live) {
+    if (!live.token || live.revealed) {
       return '';
     }
-    return '<div class="battle-glance"><b>' + esc(t('app_battle_glance')) + '</b><p>' + esc(p.text) + '</p><ol>' +
-      p.options.map(function(o, i) {
-        return '<li><b>' + LETTERS[i] + '</b> ' + esc(o) + '</li>';
-      }).join('') + '</ol></div>';
+    if (live.tokenused) {
+      return '<p class="help-soft battle-token-used">' + esc(t('app_token_used')) + '</p>';
+    }
+    return live.open ? '<div class="battle-token"><button type="button" class="btn btn-soft" data-token>' +
+      esc(t('app_token_' + live.token)) + '</button></div>' : '';
   }
 
   function voteBody(live) {
@@ -196,6 +203,19 @@
         });
       };
     });
+    var use = layer.querySelector('[data-token]');
+    if (use) {
+      use.onclick = function() {
+        use.disabled = true;
+        api('token', {}).then(function(r) {
+          state.sig = '';
+          show(r.live || null);
+        }).catch(function(e) {
+          use.disabled = false;
+          T.toast(esc(e.message), true);
+        });
+      };
+    }
     var back = layer.querySelector('[data-back]');
     if (back) {
       back.onclick = function() {

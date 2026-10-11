@@ -262,6 +262,10 @@ final class structures {
             'hp' => new external_value(PARAM_INT, 'Life of the Embrollo'),
             'maxhp' => new external_value(PARAM_INT, 'Life of the Embrollo at the start'),
             'outcome' => new external_value(PARAM_ALPHA, 'won, lost, done (a vote) or empty while playing'),
+            'phase' => new external_value(PARAM_INT, '1, or 2 once the Embrollo is down to half its life', VALUE_DEFAULT, 1),
+            'final' => new external_value(PARAM_BOOL, 'The final battle of the mission', VALUE_DEFAULT, false),
+            'counter' => new external_value(PARAM_INT, 'Life the Embrollo got back after the round', VALUE_DEFAULT, 0),
+            'shielded' => new external_value(PARAM_BOOL, 'A protector\'s shield stopped that', VALUE_DEFAULT, false),
             'tally' => new external_multiple_structure(
                 new external_value(PARAM_INT, 'Votes'),
                 'Votes for each option, once a vote is closed',
@@ -295,6 +299,10 @@ final class structures {
                 'right' => new external_value(PARAM_INT, 'Right answers of the team so far'),
                 'mark' => new external_value(PARAM_INT, 'Aloud: marked right (1), not (0) or not yet (-1) in this round'),
             ])),
+            'tokens' => new external_multiple_structure(new external_single_structure([
+                'kind' => new external_value(PARAM_ALPHA, 'glance, trail, shield or cheer'),
+                'team' => new external_value(PARAM_TEXT, 'Team of who used it'),
+            ]), 'Battle tokens used in the round', VALUE_DEFAULT, []),
         ], 'Battle of the course', VALUE_OPTIONAL);
     }
 
@@ -313,11 +321,13 @@ final class structures {
                 'gems' => new external_value(PARAM_INT, 'Gems'),
                 'best' => new external_value(PARAM_BOOL, 'Their team helped most'),
                 'item' => new external_value(PARAM_TEXT, 'Object they got for it (empty: none)', VALUE_DEFAULT, ''),
+                'final' => new external_value(PARAM_TEXT, 'Object of the final battle (empty: none)', VALUE_DEFAULT, ''),
+                'grew' => new external_value(PARAM_BOOL, 'Their creature grew', VALUE_DEFAULT, false),
             ], 'What they got for the win', VALUE_OPTIONAL),
-            'preview' => new external_single_structure([
-                'text' => new external_value(PARAM_TEXT, 'Next question'),
-                'options' => new external_multiple_structure(new external_value(PARAM_TEXT, 'Option')),
-            ], 'The next question, seen with the glance', VALUE_OPTIONAL),
+            'token' => new external_value(PARAM_ALPHA, 'Battle token of their role (empty: none)', VALUE_DEFAULT, ''),
+            'tokenused' => new external_value(PARAM_BOOL, 'They used it in this battle', VALUE_DEFAULT, false),
+            'struck' => new external_value(PARAM_INT, 'A wrong option struck out by the glance of their team', VALUE_OPTIONAL),
+            'trail' => new external_value(PARAM_TEXT, 'Chapter of the answer, by the trail of their team', VALUE_OPTIONAL),
         ], 'Battle of the course', VALUE_OPTIONAL);
     }
 

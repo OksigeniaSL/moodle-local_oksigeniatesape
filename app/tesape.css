@@ -3040,24 +3040,23 @@ body.in-battle {
   grid-template-columns: repeat(auto-fit, minmax(16em, 1fr));
 }
 
-/* The glance of the role of clues: the next question of the battle, before anybody else. */
-.battle-glance {
-  margin-top: 18px;
-  padding: 12px 14px;
+/* The battle tokens of the roles on the phone: the option struck out by a glance, the trail, the button. */
+.battle-option.struck {
+  opacity: .45;
+  text-decoration: line-through;
+}
+
+.battle-trail {
+  margin: 0 0 12px;
+  padding: 8px 12px;
   border-radius: var(--r-s);
   border: 2px dashed var(--lilac);
   background: rgba(185, 166, 255, .1);
 }
 
-.battle-glance ol {
-  list-style: none;
-  padding: 0;
-  margin: 8px 0 0;
-}
-
-.battle-glance li b {
-  color: var(--lantern);
-  font-family: var(--f-title);
+.battle-token {
+  margin-top: 16px;
+  text-align: center;
 }
 
 /* The plan for the next class, made by the AI of the site, and its question to open the class on the board. */
@@ -3118,4 +3117,28 @@ body.in-battle {
 
 .scene-hints .btn {
   justify-self: start;
+}
+
+/* The class screen of a battle: tokens used in the round, the Embrollo pulling itself together, the end of the mission. */
+.battle-token-used {
+  margin: 6px 0 0;
+  color: var(--lilac);
+  font-weight: 600;
+}
+
+.battle-counter {
+  margin: 8px 0 0;
+  color: #ff9a8b;
+  font-weight: 600;
+}
+
+.battle-counter.shield {
+  color: var(--lantern);
+}
+
+.battle-ending {
+  max-width: 46em;
+  margin: 12px auto;
+  font-size: 1.1em;
+  line-height: 1.5;
 }

@@ -82,6 +82,8 @@ final class get_board extends external_api {
                         'title' => new external_value(PARAM_TEXT, 'Title'),
                     ])),
                 ])),
+                'final' => new external_value(PARAM_BOOL, 'The mission saves something for a final battle', VALUE_DEFAULT, false),
+                'ending' => new external_value(PARAM_TEXT, 'Text of the end of the mission', VALUE_DEFAULT, ''),
             ], 'Mission of the course', VALUE_OPTIONAL),
             'event' => structures::event(),
             'opener' => new external_value(PARAM_TEXT, 'A question to open the class, from the plan of the AI', VALUE_OPTIONAL),

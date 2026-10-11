@@ -41,7 +41,7 @@ final class live_play extends external_api {
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
             'courseid' => new external_value(PARAM_INT, 'Course'),
-            'action' => new external_value(PARAM_ALPHA, 'state, join or answer'),
+            'action' => new external_value(PARAM_ALPHA, 'state, join, answer or token (the battle token of their role)'),
             'round' => new external_value(PARAM_INT, 'answer: the round', VALUE_DEFAULT, 0),
             'answer' => new external_value(PARAM_INT, 'answer: index of the option', VALUE_DEFAULT, -1),
         ]);
@@ -83,6 +83,9 @@ final class live_play extends external_api {
                 break;
             case 'join':
                 live::join($live, $member, (int) $USER->id, $now);
+                break;
+            case 'token':
+                live::token($live, $member, $now);
                 break;
             case 'answer':
                 live::answer($live, $member, $params['round'], $params['answer'], $now);

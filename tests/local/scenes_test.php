@@ -74,9 +74,13 @@ final class scenes_test extends \advanced_testcase {
     private function play(\stdClass $w, \stdClass $user, string $code, array $items = []): array {
         global $DB;
         $scene = $DB->get_record(self::T . 'scene', ['missionid' => $w->mission->id, 'code' => $code]);
+        [$carried, $roles, $flags, $role] = scenes::context(characters::get($user->id), $w->course->id);
         return scenes::play($w->course->id, $user->id, $scene->id, autoplayer::play(
             json_decode($scene->definition, true),
-            $items
+            array_merge($carried, $items),
+            $roles,
+            $flags,
+            $role
         ), null);
     }
 
@@ -162,7 +166,8 @@ final class scenes_test extends \advanced_testcase {
         $result = scenes::play($w->course->id, $w->users[0]->id, $scene->id, $events, null);
         $this->assertSame('retry', $result['outcome']);
         $this->assertSame('elegir', $result['retry']);
-        $this->assertSame([], $result['rewards']);
+        // Nothing won: only the hints opened, if any, are paid.
+        $this->assertSame(['hints' => 0, 'shielded' => false], $result['rewards']);
         $this->assertEquals(0, characters::get($w->users[0]->id)->saber);
     }
 
@@ -233,14 +238,18 @@ final class scenes_test extends \advanced_testcase {
         $def['nodes']['colocar']['hints'] = ['Una', 'Dos', 'Tres'];
         $DB->set_field(self::T . 'scene', 'definition', json_encode($def), ['id' => $scene->id]);
         $hints = [['n' => 'colocar', 'hint' => 0], ['n' => 'colocar', 'hint' => 1], ['n' => 'colocar', 'hint' => 2]];
-        $events = array_merge($hints, autoplayer::play($def));
+        // Each one plays what they can see: the sage has one more card to place.
+        $events = function (\stdClass $user) use ($w, $def, $hints): array {
+            [$items, $roles, $flags, $role] = scenes::context(characters::get($user->id), $w->course->id);
+            return array_merge($hints, autoplayer::play($def, $items, $roles, $flags, $role));
+        };
         // The sage: the first free, half for the rest.
-        $sage = scenes::play($w->course->id, $w->users[0]->id, $scene->id, $events, null);
+        $sage = scenes::play($w->course->id, $w->users[0]->id, $scene->id, $events($w->users[0]), null);
         $this->assertSame(1, $sage['rewards']['hints']);
         $this->assertEquals(engine::BREATH_MAX - 1, engine::member(characters::get($w->users[0]->id), $w->course->id)->breath);
         // Anyone else: one each.
         $DB->set_field(self::T . 'char', 'role', 'scout', ['userid' => $w->users[1]->id]);
-        $scout = scenes::play($w->course->id, $w->users[1]->id, $scene->id, $events, null);
+        $scout = scenes::play($w->course->id, $w->users[1]->id, $scene->id, $events($w->users[1]), null);
         $this->assertSame(3, $scout['rewards']['hints']);
     }
 

@@ -108,7 +108,8 @@ final class team_externals_test extends \advanced_testcase {
         $world = $this->call('get_world', $w->students['healer'], [$w->course->id]);
         $this->assertCount(4, $world['team']['members']);
         $this->assertSame(0, $world['team']['week']['saber']);
-        $this->assertCount(1, $world['standings']);
+        // The standings of the teams are hidden unless the teacher shows them.
+        $this->assertCount(0, $world['standings']);
         $breather = array_values(array_filter($world['powers'], fn($p) => $p['code'] === 'breather'))[0];
         $this->assertSame('mate', $breather['target']);
         $this->assertFalse($breather['locked']);

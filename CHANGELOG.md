@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.16.0 (2026-10-11)
+
+The battle against the Embrollo, after the design review:
+
+- **Battle tokens of the roles**, one each battle, with no approval and announced on the class screen: the glance of
+  the sage strikes out a wrong option for the whole team, the trail of the scout tells the team in which place of the
+  mission the answer is, the shield of the protector stops the Embrollo's counterattack, and the cheer of the healer
+  makes each right answer of the team take double life. The glance as a power, which needed the teacher, is gone.
+- **The battle can be lost**: six answers of ten must be right. When most of the class gets a question wrong, the
+  Embrollo pulls itself together (a tenth of its life back), and below half its life it tangles itself more: ten
+  seconds less for each question. Losing still takes nothing from anybody.
+- **One Embrollo, the final battle**: the teacher can mark the battle as the final one of the mission. Won, it gives
+  each player, once, what the mission saves for the end (30 of saber, the naturalist's lens, the creature grows) and
+  lights the lantern of the tower for the whole class; the class screen reads the ending of the mission.
+- «Your team helped most and gets…» in Spanish, without «os».
+
 ## 0.15.0 (2026-10-11)
 
 The scene engine for the decisions of the design review (the scenes that use it come with the next version of the

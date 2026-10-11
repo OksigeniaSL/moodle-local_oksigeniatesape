@@ -267,6 +267,9 @@ final class view {
                 'title' => missions::text($mission->data['title'] ?? $mission->code, $mission->skin),
                 'skin' => $mission->skin,
                 'chapters' => $chapters,
+                // The final battle, if the mission saves something for the end, and the text of its end.
+                'final' => !empty($mission->data['battle']['final']),
+                'ending' => missions::text($mission->data['ending'] ?? '', $mission->skin, $mission->variant),
             ];
         }
         $event = events::export(events::today($courseid, $now));

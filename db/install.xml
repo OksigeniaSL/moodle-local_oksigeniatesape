@@ -427,6 +427,27 @@
         <INDEX NAME="liveid-round-charid" UNIQUE="true" FIELDS="liveid, round, charid"/>
       </INDEXES>
     </TABLE>
+    <TABLE NAME="local_oksigeniatesape_livetoken" COMMENT="The battle tokens of the roles: one for each player and battle, used in a round.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="liveid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="charid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="round" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="team" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Group of the team"/>
+        <FIELD NAME="kind" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="glance, trail, shield or cheer"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="liveid" TYPE="foreign" FIELDS="liveid" REFTABLE="local_oksigeniatesape_live" REFFIELDS="id"/>
+        <KEY NAME="courseid" TYPE="foreign" FIELDS="courseid" REFTABLE="course" REFFIELDS="id"/>
+        <KEY NAME="charid" TYPE="foreign" FIELDS="charid" REFTABLE="local_oksigeniatesape_char" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="liveid-charid" UNIQUE="true" FIELDS="liveid, charid"/>
+      </INDEXES>
+    </TABLE>
     <TABLE NAME="local_oksigeniatesape_nextclass" COMMENT="Plans for the next class made by the AI of the site from what confuses the class. No personal data.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>

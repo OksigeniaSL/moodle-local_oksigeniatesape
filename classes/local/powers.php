@@ -48,7 +48,6 @@ final class powers {
         'cheer' => ['healer', 4, 5, 'team'],
         'hint' => ['sage', 2, 1, 'none'],
         'notes' => ['sage', 3, 3, 'none'],
-        'glance' => ['sage', 3, 4, 'none'],
         'lookout' => ['scout', 2, 1, 'none'],
         'explore' => ['scout', 3, 3, 'none'],
         'trail' => ['scout', 4, 5, 'team'],
@@ -376,8 +375,7 @@ final class powers {
                 }
                 break;
         }
-        // The shield and the wall stay approved for the rest of the day, and the glance until the next question of a
-        // battle; the rest are privileges granted in class.
+        // The shield and the wall stay approved for the rest of the day; the rest are privileges granted in class.
     }
 
     /**
@@ -429,28 +427,6 @@ final class powers {
             }
         }
         return null;
-    }
-
-    /**
-     * A glance approved today and not used yet: the next question of a battle, before anybody else.
-     *
-     * @param \stdClass $member
-     * @param int $now
-     * @return \stdClass|null The request.
-     */
-    public static function glance(\stdClass $member, int $now): ?\stdClass {
-        global $DB;
-        $requests = $DB->get_records_sql(
-            'SELECT r.*
-               FROM {' . self::T . 'powerreq} r
-               JOIN {' . self::T . "power} p ON p.id = r.powerid
-              WHERE p.code = 'glance' AND r.status = 'approved' AND r.timedecided >= ? AND r.memberid = ?
-           ORDER BY r.timedecided",
-            [engine::day_start($now, (int) $member->courseid), $member->id],
-            0,
-            1
-        );
-        return reset($requests) ?: null;
     }
 
     /**

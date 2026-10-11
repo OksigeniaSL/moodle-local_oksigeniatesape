@@ -46,7 +46,7 @@ class provider implements
 
     /** @var string[] Tables of a character in a course, all with charid and courseid. */
     public const COURSE_TABLES = ['member', 'ledger', 'inventory', 'sceneattempt', 'minigame', 'validation', 'found', 'idea',
-        'livein'];
+        'livein', 'livetoken'];
 
     /**
      * What is stored.
@@ -71,6 +71,7 @@ class provider implements
             'found' => ['charid', 'courseid', 'missionid', 'kind', 'code', 'timecreated'],
             'idea' => ['courseid', 'charid', 'anonymous', 'message', 'status', 'timecreated'],
             'livein' => ['liveid', 'courseid', 'charid', 'round', 'team', 'answer', 'timecreated'],
+            'livetoken' => ['liveid', 'courseid', 'charid', 'round', 'team', 'kind', 'timecreated'],
         ];
         foreach ($fields as $table => $names) {
             $described = [];
@@ -369,16 +370,23 @@ class provider implements
             ]);
         }
         $live = $DB->get_records(self::T . 'livein', ['charid' => $charid, 'courseid' => $courseid], 'liveid, round');
-        if ($live) {
+        $tokens = $DB->get_records(self::T . 'livetoken', ['charid' => $charid, 'courseid' => $courseid], 'liveid');
+        if ($live || $tokens) {
             $writer->export_data(self::path('battles'), (object) [
-                // Round 0 is coming in; a negative round is a glance at that question before it opened (-2: round 2).
+                // Round 0 is coming in.
                 'answers' => array_values(array_map(fn($a) => [
                     'session' => (int) $a->liveid,
-                    'round' => abs((int) $a->round),
-                    'what' => (int) $a->round > 0 ? 'answer' : ((int) $a->round === 0 ? 'joined' : 'glance'),
+                    'round' => (int) $a->round,
+                    'what' => (int) $a->round > 0 ? 'answer' : 'joined',
                     'answer' => (int) $a->answer,
                     'timecreated' => transform::datetime($a->timecreated),
                 ], $live)),
+                'tokens' => array_values(array_map(fn($t) => [
+                    'session' => (int) $t->liveid,
+                    'round' => (int) $t->round,
+                    'token' => $t->kind,
+                    'timecreated' => transform::datetime($t->timecreated),
+                ], $tokens)),
             ]);
         }
         $games = $DB->get_records(self::T . 'minigame', ['charid' => $charid, 'courseid' => $courseid], 'timecreated');

@@ -51,8 +51,17 @@ final class live {
     /** @var int[] Seconds a question can last (0: until the teacher reveals it). */
     public const SECONDS = [0, 20, 30, 45, 60];
 
-    /** @var float Share of the right answers the class needs to beat the Embrollo. */
-    public const TO_WIN = 0.5;
+    /** @var float Share of the right answers the class needs to beat the Embrollo: winning is not a given. */
+    public const TO_WIN = 0.6;
+
+    /** @var float Life the Embrollo gets back, as a share of the whole, after a round the class mostly got wrong. */
+    public const COUNTER = 0.1;
+
+    /** @var int Seconds less for each question once the Embrollo is down to half its life and tangles itself more. */
+    public const PHASE_SECS = 10;
+
+    /** @var string[] The battle token of each role: one for each player and battle, in an open round, with phones. */
+    public const TOKENS = ['sage' => 'glance', 'scout' => 'trail', 'protector' => 'shield', 'healer' => 'cheer'];
 
     /** @var int Saber for each player when the class wins. */
     public const WIN_SABER = 10;
@@ -71,9 +80,17 @@ final class live {
      * @param int $count Questions.
      * @param int $secs Seconds per question (0: no limit).
      * @param int|null $now
+     * @param bool $final The final battle of the mission: it gives what the mission saves for the end.
      * @return \stdClass The session.
      */
-    public static function start(int $courseid, string $mode, int $count, int $secs, ?int $now = null): \stdClass {
+    public static function start(
+        int $courseid,
+        string $mode,
+        int $count,
+        int $secs,
+        ?int $now = null,
+        bool $final = false
+    ): \stdClass {
         global $DB;
         $now = $now ?? time();
         if (!in_array($mode, ['phones', 'aloud'], true) || !in_array($count, self::COUNTS) || !in_array($secs, self::SECONDS)) {
@@ -85,7 +102,7 @@ final class live {
         }
         $DB->set_field_select(self::T . 'live', 'timeend', $now, 'courseid = ? AND timeend = 0', [$courseid]);
         $state = ['mode' => $mode, 'secs' => $secs, 'questions' => $questions, 'rounds' => [], 'open' => false,
-            'closesat' => 0, 'hp' => 0, 'maxhp' => 0, 'outcome' => '', 'rewarded' => []];
+            'closesat' => 0, 'hp' => 0, 'maxhp' => 0, 'outcome' => '', 'rewarded' => [], 'final' => $final];
         $record = (object) ['courseid' => $courseid, 'kind' => 'battle', 'state' => json_encode($state), 'round' => 0,
             'timecreated' => $now, 'timemodified' => $now, 'timeend' => 0];
         $id = $DB->insert_record(self::T . 'live', $record);
@@ -317,9 +334,12 @@ final class live {
         // The question stays in the state, so that the phones do not read the mission on every poll.
         $state['rounds'][$round] = ['q' => $question['id'], 'options' => count($question['options']),
             'correct' => $question['correct'], 'question' => array_diff_key($question, ['chapter' => 1, 'objective' => 1]),
-            'revealed' => false, 'answered' => 0, 'right' => 0, 'teams' => []];
+            'chapter' => (string) ($question['chapter'] ?? ''), 'revealed' => false, 'answered' => 0, 'right' => 0,
+            'teams' => [], 'counter' => 0, 'shielded' => 0];
         $state['open'] = true;
-        $state['closesat'] = $state['secs'] ? $now + $state['secs'] + 1 : 0;
+        // Down to half its life, the Embrollo tangles itself more: less time for each question.
+        $secs = $state['secs'] && self::phase($state) > 1 ? max(10, $state['secs'] - self::PHASE_SECS) : $state['secs'];
+        $state['closesat'] = $secs ? $now + $secs + 1 : 0;
         return self::save($live, $state, $round, $now);
     }
 
@@ -444,6 +464,10 @@ final class live {
             }
         }
         $view['rewarded'] = count($state['rewarded']);
+        // The tokens used in the round, announced on the class screen.
+        $names = array_map(fn($t) => $t['name'], $teams ? array_column($teams, null, 'id') : []);
+        $used = $round > 0 ? $DB->get_records(self::T . 'livetoken', ['liveid' => $live->id, 'round' => $round], 'id') : [];
+        $view['tokens'] = array_values(array_map(fn($t) => ['kind' => $t->kind, 'team' => $names[$t->team] ?? ''], $used));
         return $view;
     }
 
@@ -474,46 +498,81 @@ final class live {
         if ($state['outcome'] === 'won') {
             $view['prize'] = $state['rewarded'][$member->charid] ?? null;
         }
-        $view['preview'] = self::glance($live, $state, $member, array_key_exists(0, $mine), $now);
+        if ($live->kind === 'battle' && $state['mode'] === 'phones' && array_key_exists(0, $mine)) {
+            $view += self::tokens_for($live, $state, $member);
+        }
         return array_filter($view, fn($value) => $value !== null);
     }
 
     /**
-     * The glance (a power of the role of clues): between two questions of a battle, the next one shows on the phone
-     * of the student before anybody else sees it. Using it is kept as a row of the round, in negative, so that it
-     * stays shown until the question opens; the request is then used.
+     * A player uses the battle token of their role in the open round, once a battle: the glance of the sage strikes out
+     * a wrong option for their team, the trail of the scout tells their team in which chapter the answer is, the shield
+     * of the protector stops the Embrollo pulling itself together, and the cheer of the healer makes each right answer
+     * of their team take double life.
+     *
+     * @param \stdClass $live
+     * @param \stdClass $member
+     * @param int|null $now
+     * @return string The token used.
+     */
+    public static function token(\stdClass $live, \stdClass $member, ?int $now = null): string {
+        global $DB;
+        $now = $now ?? time();
+        $state = self::state($live);
+        $round = (int) $live->round;
+        $kind = self::TOKENS[(string) $DB->get_field(self::T . 'char', 'role', ['id' => $member->charid])] ?? '';
+        $joined = $DB->get_record(self::T . 'livein', ['liveid' => $live->id, 'round' => 0, 'charid' => $member->charid]);
+        $playing = $live->kind === 'battle' && $state['mode'] === 'phones' && $state['outcome'] === '';
+        if (!$kind || !$joined || !$playing || $round < 1 || !self::is_open($state, $now)) {
+            throw new \moodle_exception('roundclosed', 'local_oksigeniatesape');
+        }
+        try {
+            $DB->insert_record(self::T . 'livetoken', (object) ['liveid' => $live->id, 'courseid' => $live->courseid,
+                'charid' => $member->charid, 'round' => $round, 'team' => $joined->team, 'kind' => $kind, 'timecreated' => $now]);
+        } catch (\dml_write_exception $e) {
+            throw new \moodle_exception('tokenused', 'local_oksigeniatesape');
+        }
+        return $kind;
+    }
+
+    /**
+     * The token of a player and what the tokens of their team do in the round, for their phone.
      *
      * @param \stdClass $live
      * @param array $state
      * @param \stdClass $member
-     * @param bool $joined
-     * @param int $now
-     * @return array|null text and options of the next question.
+     * @return array token, tokenused and, in the round, struck (an option that is not it) and trail (the chapter).
      */
-    private static function glance(\stdClass $live, array $state, \stdClass $member, bool $joined, int $now): ?array {
+    private static function tokens_for(\stdClass $live, array $state, \stdClass $member): array {
         global $DB;
         $round = (int) $live->round;
-        $between = $round === 0 || !empty($state['rounds'][$round]['revealed']);
-        if ($live->kind !== 'battle' || !$joined || $state['outcome'] !== '' || !$between || $round >= count($state['questions'])) {
-            return null;
+        $role = (string) $DB->get_field(self::T . 'char', 'role', ['id' => $member->charid]);
+        $used = $DB->record_exists(self::T . 'livetoken', ['liveid' => $live->id, 'charid' => $member->charid]);
+        $view = ['token' => self::TOKENS[$role] ?? '', 'tokenused' => $used];
+        if ($round < 1 || !empty($state['rounds'][$round]['revealed'])) {
+            return $view;
         }
-        $key = ['liveid' => $live->id, 'round' => -($round + 1), 'charid' => $member->charid];
-        if (!$DB->record_exists(self::T . 'livein', $key)) {
-            $request = powers::glance($member, $now);
-            if (!$request) {
-                return null;
-            }
-            try {
-                $row = $key + ['courseid' => $live->courseid, 'team' => 0, 'answer' => -1, 'timecreated' => $now];
-                $DB->insert_record(self::T . 'livein', (object) $row);
-            } catch (\dml_write_exception $e) {
-                // Two polls at once: the first one counts.
-                return null;
-            }
-            $DB->set_field(self::T . 'powerreq', 'status', 'used', ['id' => $request->id]);
+        $joined = ['liveid' => $live->id, 'round' => 0, 'charid' => $member->charid];
+        $team = (int) $DB->get_field(self::T . 'livein', 'team', $joined);
+        // Without a team, only one's own token.
+        $where = $team ? ['liveid' => $live->id, 'round' => $round, 'team' => $team] :
+            ['liveid' => $live->id, 'round' => $round, 'charid' => $member->charid];
+        $kinds = array_map(fn($t) => $t->kind, $DB->get_records(self::T . 'livetoken', $where, '', 'id, kind'));
+        $info = $state['rounds'][$round];
+        if (in_array('glance', $kinds, true) && $info['options'] > 1) {
+            // Always the same wrong option for the round, so that the phones of the team agree.
+            $wrong = array_values(array_diff(range(0, $info['options'] - 1), [(int) $info['correct']]));
+            $view['struck'] = $wrong[self::seed($live, $round) % count($wrong)];
         }
-        $question = questions::get((int) $live->courseid, $state['questions'][$round], self::seed($live, $round + 1));
-        return ['text' => $question['text'], 'options' => $question['options']];
+        if (in_array('trail', $kinds, true) && $info['chapter'] !== '') {
+            $mission = missions::get((int) $live->courseid);
+            foreach ($mission->data['chapters'] ?? [] as $chapter) {
+                if ($chapter['code'] === $info['chapter']) {
+                    $view['trail'] = missions::text($chapter['name'] ?? $chapter['code'], $mission->skin, $mission->variant);
+                }
+            }
+        }
+        return $view;
     }
 
     /**
@@ -528,6 +587,7 @@ final class live {
         foreach (array_chunk($old, 500) as $chunk) {
             [$insql, $params] = $DB->get_in_or_equal($chunk);
             $DB->delete_records_select(self::T . 'livein', "liveid $insql", $params);
+            $DB->delete_records_select(self::T . 'livetoken', "liveid $insql", $params);
             $DB->delete_records_select(self::T . 'live', "id $insql", $params);
         }
         return count($old);
@@ -555,7 +615,21 @@ final class live {
             'hp' => (int) $state['hp'],
             'maxhp' => (int) $state['maxhp'],
             'outcome' => $state['outcome'],
+            'phase' => self::phase($state),
+            'final' => !empty($state['final']),
+            'counter' => $round > 0 ? (int) ($state['rounds'][$round]['counter'] ?? 0) : 0,
+            'shielded' => $round > 0 && !empty($state['rounds'][$round]['shielded']),
         ];
+    }
+
+    /**
+     * The phase of the battle: 2 once the Embrollo is down to half its life.
+     *
+     * @param array $state
+     * @return int
+     */
+    private static function phase(array $state): int {
+        return $state['maxhp'] > 0 && 2 * $state['hp'] <= $state['maxhp'] ? 2 : 1;
     }
 
     /**
@@ -591,13 +665,28 @@ final class live {
                 $info['tally'][(int) $answer->answer]++;
             }
         } else if ($state['mode'] === 'phones') {
+            $tokens = $DB->get_records(self::T . 'livetoken', ['liveid' => $live->id, 'round' => $round], '', 'id, team, kind');
+            $cheer = array_map(fn($t) => (int) $t->team, array_filter($tokens, fn($t) => $t->kind === 'cheer'));
+            $shield = array_values(array_filter($tokens, fn($t) => $t->kind === 'shield'));
+            $damage = 0;
             foreach ($answers as $answer) {
                 if ((int) $answer->answer === (int) $info['correct']) {
                     $info['right']++;
                     $info['teams'][$answer->team] = ($info['teams'][$answer->team] ?? 0) + 1;
+                    // The cheer of the healer: each right answer of their team takes double life this round.
+                    $damage += in_array((int) $answer->team, $cheer, true) ? 2 : 1;
                 }
             }
-            $state['hp'] = max(0, $state['hp'] - $info['right']);
+            $state['hp'] = max(0, $state['hp'] - $damage);
+            // A round the class mostly got wrong: the Embrollo pulls itself together, unless a protector's shield stops it.
+            if ($state['hp'] > 0 && $info['answered'] > 0 && 2 * $info['right'] < $info['answered']) {
+                if ($shield) {
+                    $info['shielded'] = (int) $shield[0]->team ?: -1;
+                } else {
+                    $info['counter'] = max(1, (int) round(self::COUNTER * $state['maxhp']));
+                    $state['hp'] = min($state['maxhp'], $state['hp'] + $info['counter']);
+                }
+            }
         }
         $info['revealed'] = true;
         $state['rounds'][$round] = $info;
@@ -652,6 +741,13 @@ final class live {
         $code = (string) ($mission->data['battle']['reward'] ?? '');
         $item = $code ? ($mission->data['items'][$code] ?? []) : [];
         $itemid = $code ? missions::item_id($code, $item['name'] ?? null, $item['description'] ?? null, $mission->code) : 0;
+        // The final battle gives what the mission saves for the end, once for each player.
+        $final = !empty($state['final']) ? ($mission->data['battle']['final'] ?? []) : [];
+        if ($final && !empty($final['lantern'])) {
+            // The whole class has beaten the Embrollo: the lantern of its place lights for everybody.
+            $where = 'missionid = ? AND code = ? AND litat = 0';
+            $DB->set_field_select(self::T . 'chapter', 'litat', $now, $where, [$mission->id, $final['lantern']]);
+        }
         $rewarded = [];
         foreach ($players as $charid => $team) {
             $member = $DB->get_record(self::T . 'member', ['charid' => $charid, 'courseid' => $courseid]);
@@ -661,12 +757,78 @@ final class live {
             $isbest = $best > 0 && ($byteam[$team] ?? 0) == $best;
             $got = $isbest && $itemid ? engine::item($member, $itemid, 'battle', $actorid, 0, $now) : null;
             $gems = self::WIN_GEMS + ($isbest && !$got ? self::TEAM_GEMS : 0);
-            $entry = engine::saber($member, self::WIN_SABER, 'battle', $actorid, 0, (int) $live->id, $now);
+            $first = $final && self::once((int) $charid, $courseid, (int) $mission->id, 'final', 'battle', $now);
+            $saber = $first ? (int) ($final['saber'] ?? self::WIN_SABER) : self::WIN_SABER;
+            $entry = engine::saber($member, $saber, 'battle', $actorid, 0, (int) $live->id, $now);
             engine::gems($member, $gems, 'battle', $actorid, 0, (int) $live->id, $now);
-            $rewarded[$charid] = ['saber' => (int) ($entry->amount ?? 0), 'capped' => (int) ($entry->capped ?? 0),
-                'gems' => $gems, 'best' => $isbest, 'item' => $got ? (string) ($item['name'] ?? $code) : ''];
+            $prize = ['saber' => (int) ($entry->amount ?? 0), 'capped' => (int) ($entry->capped ?? 0), 'gems' => $gems,
+                'best' => $isbest, 'item' => $got ? (string) ($item['name'] ?? $code) : '', 'final' => '', 'grew' => false];
+            if ($first) {
+                $prize = array_merge($prize, self::final_prize($member, $mission, $final, $actorid, $now));
+            }
+            $rewarded[$charid] = $prize;
         }
         return $rewarded;
+    }
+
+    /**
+     * What the final battle gives each player the first time: the object of the end, the lantern of its place and the
+     * creature growing.
+     *
+     * @param \stdClass $member
+     * @param \stdClass $mission
+     * @param array $final item, lantern, creature (grow).
+     * @param int $actorid
+     * @param int $now
+     * @return array final (name of the object), grew.
+     */
+    private static function final_prize(\stdClass $member, \stdClass $mission, array $final, int $actorid, int $now): array {
+        global $DB;
+        $prize = ['final' => '', 'grew' => false];
+        if (!empty($final['item'])) {
+            $code = (string) $final['item'];
+            $info = $mission->data['items'][$code] ?? [];
+            $itemid = missions::item_id($code, $info['name'] ?? null, $info['description'] ?? null, $mission->code);
+            if (engine::item($member, $itemid, 'battle', $actorid, 0, $now)) {
+                $prize['final'] = (string) ($info['name'] ?? $code);
+            }
+        }
+        if (!empty($final['lantern'])) {
+            $lantern = (string) $final['lantern'];
+            self::once((int) $member->charid, (int) $member->courseid, (int) $mission->id, 'lantern', $lantern, $now);
+        }
+        $char = $DB->get_record(self::T . 'char', ['id' => $member->charid], 'id, creaturestage', MUST_EXIST);
+        $grows = $char->creaturestage > 0 && $char->creaturestage < scenes::CREATURE_MAX_STAGE;
+        if (($final['creature'] ?? '') === 'grow' && $grows) {
+            $DB->set_field(self::T . 'char', 'creaturestage', $char->creaturestage + 1, ['id' => $char->id]);
+            $prize['grew'] = true;
+        }
+        return $prize;
+    }
+
+    /**
+     * Keeps that a character found something in a mission, once.
+     *
+     * @param int $charid
+     * @param int $courseid
+     * @param int $missionid
+     * @param string $kind
+     * @param string $code
+     * @param int $now
+     * @return bool It is the first time.
+     */
+    private static function once(int $charid, int $courseid, int $missionid, string $kind, string $code, int $now): bool {
+        global $DB;
+        $record = ['charid' => $charid, 'courseid' => $courseid, 'missionid' => $missionid, 'kind' => $kind, 'code' => $code];
+        if ($DB->record_exists(self::T . 'found', $record)) {
+            return false;
+        }
+        try {
+            $DB->insert_record(self::T . 'found', (object) ($record + ['timecreated' => $now]));
+        } catch (\dml_write_exception $e) {
+            return false;
+        }
+        return true;
     }
 
     /**

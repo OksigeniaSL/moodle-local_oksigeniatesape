@@ -33,7 +33,7 @@ final class observer {
 
     /** @var string[] Tables of what was played in a course, by courseid. */
     private const PLAYED_TABLES = ['member', 'team', 'ledger', 'validation', 'inventory', 'sceneattempt', 'found', 'minigame',
-        'idea', 'event', 'live', 'livein', 'nextclass'];
+        'idea', 'event', 'live', 'livein', 'livetoken', 'nextclass'];
 
     /** @var string[] Tables of how the game of a course is set up, by courseid. */
     private const SETUP_TABLES = ['region', 'challenge', 'power', 'mission'];

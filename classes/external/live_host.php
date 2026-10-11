@@ -50,6 +50,7 @@ final class live_host extends external_api {
             'text' => new external_value(PARAM_TEXT, 'vote: what the scene asks', VALUE_DEFAULT, ''),
             'options' => new external_value(PARAM_RAW, 'vote: the options, in JSON', VALUE_DEFAULT, '[]'),
             'round' => new external_value(PARAM_INT, 'next and reveal: round on the class screen (-1: any)', VALUE_DEFAULT, -1),
+            'final' => new external_value(PARAM_BOOL, 'start: the final battle of the mission', VALUE_DEFAULT, false),
         ]);
     }
 
@@ -67,6 +68,7 @@ final class live_host extends external_api {
      * @param string $text
      * @param string $options
      * @param int $round
+     * @param bool $final
      * @return array
      */
     public static function execute(
@@ -80,7 +82,8 @@ final class live_host extends external_api {
         int $sceneid = 0,
         string $text = '',
         string $options = '[]',
-        int $round = -1
+        int $round = -1,
+        bool $final = false
     ): array {
         global $USER;
         $params = self::validate_parameters(self::execute_parameters(), [
@@ -95,6 +98,7 @@ final class live_host extends external_api {
             'text' => $text,
             'options' => $options,
             'round' => $round,
+            'final' => $final,
         ]);
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
@@ -131,7 +135,7 @@ final class live_host extends external_api {
         $courseid = $params['courseid'];
         $from = $params['round'] >= 0 ? $params['round'] : null;
         if ($params['action'] === 'start') {
-            $live = live::start($courseid, $params['mode'], $params['count'], $params['secs'], $now);
+            $live = live::start($courseid, $params['mode'], $params['count'], $params['secs'], $now, $params['final']);
             return ['live' => live::board_view($live, $now)];
         }
         if ($params['action'] === 'startvote') {

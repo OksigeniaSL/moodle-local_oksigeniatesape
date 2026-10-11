@@ -124,15 +124,16 @@ final class live_test extends \advanced_testcase {
         }
         for ($round = 1; $round <= 4; $round++) {
             $live = live::next($live, self::NOW);
-            // The first team gets everything right; the second team, nothing.
+            // The first team gets everything right; the second team, only the first two.
             foreach ($members as $i => $member) {
                 $right = $this->correct($live);
-                live::answer($live, $member, $round, $i < 2 ? $right : ($right + 1) % 2, self::NOW);
+                live::answer($live, $member, $round, $i < 2 || $round < 3 ? $right : ($right + 1) % 2, self::NOW);
             }
             $live = live::reveal($live, self::NOW);
         }
         $view = live::board_view($live, self::NOW);
-        $this->assertEquals(8, $view['maxhp']);
+        // Six answers of ten right are needed: four players and four questions.
+        $this->assertEquals(10, $view['maxhp']);
         $this->assertEquals(0, $view['hp']);
         $live = live::finish($live, 2, self::NOW);
         $this->assertEquals('won', live::board_view($live, self::NOW)['outcome']);
@@ -224,14 +225,14 @@ final class live_test extends \advanced_testcase {
         $this->resetAfterTest();
         [$course, , $groups] = $this->make_class();
         $live = live::next(live::start($course->id, 'aloud', 4, 0, self::NOW), self::NOW);
-        $this->assertEquals(4, live::board_view($live, self::NOW)['maxhp']);
+        $this->assertEquals(5, live::board_view($live, self::NOW)['maxhp']);
         $live = live::reveal($live, self::NOW);
         $live = live::mark($live, (int) $groups[0]->id, true, self::NOW);
         $live = live::mark($live, (int) $groups[0]->id, true, self::NOW);
         $live = live::mark($live, (int) $groups[1]->id, true, self::NOW);
         $live = live::mark($live, (int) $groups[1]->id, false, self::NOW);
         $view = live::board_view($live, self::NOW);
-        $this->assertEquals(3, $view['hp']);
+        $this->assertEquals(4, $view['hp']);
         $this->assertEquals([1, 0], array_column($view['teams'], 'mark'));
     }
 
@@ -293,30 +294,151 @@ final class live_test extends \advanced_testcase {
         $this->assertEquals(0, scenes::play_class($course->id, (int) $scene->id, $events, null, $charids, self::NOW)['rewarded']);
     }
 
-    public function test_the_glance_shows_the_next_question_before_it_opens(): void {
+    /**
+     * Gives each member of the class a role: a sage and a scout in the first team, a protector and a healer in the
+     * second, and lets them all in a battle with phones.
+     *
+     * @param \stdClass $course
+     * @param \stdClass[] $members
+     * @param int $secs Seconds per question.
+     * @return \stdClass The battle.
+     */
+    private function battle_with_roles(\stdClass $course, array $members, int $secs = 0): \stdClass {
+        global $DB;
+        foreach (['sage', 'scout', 'protector', 'healer'] as $i => $role) {
+            $DB->set_field(self::T . 'char', 'role', $role, ['id' => $members[$i]->charid]);
+        }
+        $live = live::start($course->id, 'phones', 4, $secs, self::NOW);
+        foreach ($members as $member) {
+            live::join($live, $member, $member->userid, self::NOW);
+        }
+        return $live;
+    }
+
+    public function test_the_tokens_help_the_team_of_who_uses_them_once_a_battle(): void {
+        $this->resetAfterTest();
+        [$course, $members] = $this->make_class();
+        $live = $this->battle_with_roles($course, $members);
+        // Before the first question, no token can be used.
+        try {
+            live::token($live, $members[0], self::NOW);
+            $this->fail('A token was used before the first question');
+        } catch (\moodle_exception $e) {
+            $this->assertSame('roundclosed', $e->errorcode);
+        }
+        $live = live::next($live, self::NOW);
+        $this->assertSame('glance', live::device_view($live, $members[0], self::NOW)['token']);
+        $this->assertSame('glance', live::token($live, $members[0], self::NOW));
+        // The glance strikes out a wrong option for the whole team, the same on every phone; not for the other team.
+        $struck = live::device_view($live, $members[1], self::NOW)['struck'];
+        $this->assertNotEquals($this->correct($live), $struck);
+        $this->assertSame($struck, live::device_view($live, $members[0], self::NOW)['struck']);
+        $this->assertArrayNotHasKey('struck', live::device_view($live, $members[2], self::NOW));
+        $this->assertTrue(live::device_view($live, $members[0], self::NOW)['tokenused']);
+        // The trail tells the team in which place of the mission the answer is.
+        $this->assertSame('trail', live::token($live, $members[1], self::NOW));
+        $chapter = json_decode($live->state, true)['rounds'][1]['chapter'];
+        $this->assertNotSame('', $chapter);
+        $this->assertNotEmpty(live::device_view($live, $members[0], self::NOW)['trail']);
+        // The class screen announces them, with the team.
+        $tokens = live::board_view($live, self::NOW)['tokens'];
+        $this->assertSame(['glance', 'trail'], array_column($tokens, 'kind'));
+        $this->assertNotSame('', $tokens[0]['team']);
+        // Once a battle: not again in the next question.
+        $live = live::next(live::reveal($live, self::NOW), self::NOW);
+        $this->assertArrayNotHasKey('struck', live::device_view($live, $members[0], self::NOW));
+        try {
+            live::token($live, $members[0], self::NOW);
+            $this->fail('A token was used twice');
+        } catch (\moodle_exception $e) {
+            $this->assertSame('tokenused', $e->errorcode);
+        }
+    }
+
+    public function test_the_embrollo_pulls_itself_together_unless_a_shield_stops_it(): void {
+        $this->resetAfterTest();
+        [$course, $members] = $this->make_class();
+        $live = $this->battle_with_roles($course, $members, 30);
+        $answer = function (\stdClass $live, int $round, array $right) use ($members): void {
+            foreach ($members as $i => $member) {
+                $correct = $this->correct($live);
+                live::answer($live, $member, $round, in_array($i, $right, true) ? $correct : ($correct + 1) % 2, self::NOW);
+            }
+        };
+        // Round 1, all right: 10 - 4.
+        $live = live::next($live, self::NOW);
+        $this->assertEquals(30, live::board_view($live, self::NOW)['left']);
+        $answer($live, 1, [0, 1, 2, 3]);
+        $live = live::reveal($live, self::NOW);
+        $this->assertEquals(6, live::board_view($live, self::NOW)['hp']);
+        // Round 2, the class mostly wrong: the Embrollo gets back a tenth of its life.
+        $live = live::next($live, self::NOW);
+        $answer($live, 2, [0]);
+        $live = live::reveal($live, self::NOW);
+        $view = live::board_view($live, self::NOW);
+        $this->assertEquals(1, $view['counter']);
+        $this->assertEquals(6, $view['hp']);
+        $this->assertEquals(1, $view['phase']);
+        // Round 3, the same, but the protector holds up the shield.
+        $live = live::next($live, self::NOW);
+        $this->assertSame('shield', live::token($live, $members[2], self::NOW));
+        $answer($live, 3, [3]);
+        $live = live::reveal($live, self::NOW);
+        $view = live::board_view($live, self::NOW);
+        $this->assertEquals(0, $view['counter']);
+        $this->assertTrue($view['shielded']);
+        $this->assertEquals(5, $view['hp']);
+        // Down to half its life: the second phase, with less time for each question.
+        $this->assertEquals(2, $view['phase']);
+        $live = live::next($live, self::NOW);
+        $this->assertEquals(30 - live::PHASE_SECS, live::board_view($live, self::NOW)['left']);
+        // Round 4, the healer cheers: each right answer of their team takes double life.
+        $this->assertSame('cheer', live::token($live, $members[3], self::NOW));
+        $answer($live, 4, [2, 3]);
+        $live = live::reveal($live, self::NOW);
+        $this->assertEquals(1, live::board_view($live, self::NOW)['hp']);
+        $this->assertEquals('lost', live::board_view(live::finish($live, 2, self::NOW), self::NOW)['outcome']);
+    }
+
+    public function test_the_final_battle_gives_what_the_mission_saves_for_the_end_once(): void {
         global $DB;
         $this->resetAfterTest();
         [$course, $members] = $this->make_class();
-        $glance = $DB->get_record(self::T . 'power', ['courseid' => $course->id, 'code' => 'glance']);
-        if (!$glance) {
-            powers::catalog($course->id, self::NOW);
-            $glance = $DB->get_record(self::T . 'power', ['courseid' => $course->id, 'code' => 'glance'], '*', MUST_EXIST);
-        }
-        $request = (object) ['powerid' => $glance->id, 'memberid' => $members[0]->id, 'targetmemberid' => 0,
-            'status' => 'approved', 'decidedby' => 2, 'timecreated' => self::NOW, 'timedecided' => self::NOW];
-        $request->id = $DB->insert_record(self::T . 'powerreq', $request);
-        $live = live::start($course->id, 'phones', 4, 0, self::NOW);
-        live::join($live, $members[0], $members[0]->userid, self::NOW);
-        live::join($live, $members[1], $members[1]->userid, self::NOW);
-        $preview = live::device_view($live, $members[0], self::NOW)['preview'];
-        $this->assertArrayNotHasKey('preview', live::device_view($live, $members[1], self::NOW));
-        $this->assertEquals('used', $DB->get_field(self::T . 'powerreq', 'status', ['id' => $request->id]));
-        // It stays until the question opens, and it is that question, with its options in the same order.
-        $this->assertEquals($preview, live::device_view($live, $members[0], self::NOW)['preview']);
-        $live = live::next($live, self::NOW);
-        $view = live::device_view($live, $members[0], self::NOW);
-        $this->assertArrayNotHasKey('preview', $view);
-        $this->assertEquals($preview['text'], $view['question']['text']);
-        $this->assertEquals($preview['options'], $view['question']['options']);
+        $mission = missions::get($course->id);
+        $data = $mission->data;
+        $data['battle']['final'] = ['saber' => 30, 'item' => 'naturalistlens', 'lantern' => 'torre', 'creature' => 'grow'];
+        $DB->set_field(self::T . 'mission', 'definition', json_encode($data), ['id' => $mission->id]);
+        $DB->set_field(self::T . 'char', 'creaturestage', 1, ['id' => $members[0]->charid]);
+        $win = function (bool $final, int $at) use ($course, $members): \stdClass {
+            $live = live::start($course->id, 'phones', 4, 0, $at, $final);
+            live::join($live, $members[0], $members[0]->userid, $at);
+            for ($round = 1; $round <= 4; $round++) {
+                $live = live::next($live, $at);
+                live::answer($live, $members[0], $round, $this->correct($live), $at);
+                $live = live::reveal($live, $at);
+            }
+            return live::finish($live, 2, $at);
+        };
+        // An ordinary battle: the usual prize.
+        $live = $win(false, self::NOW);
+        $this->assertFalse(live::board_view($live, self::NOW)['final']);
+        $prize = live::device_view($live, $members[0], self::NOW)['prize'];
+        $this->assertEquals(live::WIN_SABER, $prize['saber']);
+        $this->assertSame('', $prize['final']);
+        // The final one: the saber of the end, its object, the lantern of the tower for the class and the creature grows.
+        $live = $win(true, self::NOW + 1);
+        $this->assertTrue(live::board_view($live, self::NOW + 1)['final']);
+        $prize = live::device_view($live, $members[0], self::NOW + 1)['prize'];
+        $this->assertEquals(30, $prize['saber']);
+        $this->assertSame('la lupa del naturalista', $prize['final']);
+        $this->assertTrue($prize['grew']);
+        $this->assertEquals(2, $DB->get_field(self::T . 'char', 'creaturestage', ['id' => $members[0]->charid]));
+        $this->assertNotEquals(0, $DB->get_field(self::T . 'chapter', 'litat', ['missionid' => $mission->id, 'code' => 'torre']));
+        // Winning it again gives the usual prize.
+        $live = $win(true, self::NOW + 2);
+        $prize = live::device_view($live, $members[0], self::NOW + 2)['prize'];
+        $this->assertEquals(live::WIN_SABER, $prize['saber']);
+        $this->assertSame('', $prize['final']);
+        $this->assertFalse($prize['grew']);
     }
 }

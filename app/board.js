@@ -148,7 +148,10 @@
       pills('count', [4, 6, 8, 10], String) + '</div><div class="battle-options-row"><span>' + esc(t('board_battle_secs')) +
       '</span>' + pills('secs', [0, 20, 30, 45, 60], function(v) {
         return v ? v + ' s' : t('board_battle_nolimit');
-      }) + '</div><div class="actions"><button class="btn btn-main" data-battlestart>' + esc(t('board_battle_start')) +
+      }) + '</div>' + (state.board.mission.final ? '<div class="battle-options-row">' + pills('final', [0, 1], function(v) {
+        return v ? t('board_battle_final') : t('board_battle');
+      }) + (b.final ? '<small class="help-soft">' + esc(t('board_battle_final_help')) + '</small>' : '') + '</div>' : '') +
+      '<div class="actions"><button class="btn btn-main" data-battlestart>' + esc(t('board_battle_start')) +
       '</button></div></section>';
   }
 
@@ -157,9 +160,12 @@
     var life = l.maxhp ? l.hp / l.maxhp : 1;
     var main;
     var buttons = '';
+    var ending = l.final && l.outcome === 'won' && state.board.mission && state.board.mission.ending ?
+      '<p class="battle-ending">' + esc(state.board.mission.ending) + '</p>' : '';
     if (l.outcome) {
-      main = '<div class="battle-end ' + l.outcome + '"><h2>' + esc(t('board_battle_' + l.outcome)) + '</h2><p class="lead">' +
-        esc(l.outcome === 'won' ? t('board_battle_wonhelp', l.rewarded) : t('board_battle_losthelp')) + '</p></div>';
+      main = '<div class="battle-end ' + l.outcome + '"><h2>' + esc(t('board_battle_' + l.outcome)) + '</h2>' + ending +
+        '<p class="lead">' + esc(l.outcome === 'won' ? t('board_battle_wonhelp', l.rewarded) : t('board_battle_losthelp')) +
+        '</p></div>';
       buttons = '<button class="btn btn-main" data-dismiss>' + esc(t('board_battle_back')) + '</button>';
     } else if (!l.round) {
       main = '<div class="battle-lobby"><p class="lead">' + esc(t(l.mode === 'phones' ? 'board_battle_join' :
@@ -173,10 +179,14 @@
         '</p><ol class="battle-board-options">' + q.options.map(function(o, i) {
           return '<li class="' + (l.revealed && q.correct === i ? 'right' : '') + '"><b>' + LETTERS[i] + '</b>' + esc(o) + '</li>';
         }).join('') + '</ol>';
+      main += (l.tokens || []).map(function(k) {
+        return '<p class="battle-token-used">' + esc(t('board_token_' + k.kind, k.team || '')) + '</p>';
+      }).join('');
       if (l.revealed) {
         main += '<p class="why">' + esc(q.why || '') + '</p>' + (l.mode === 'phones' ? '<p class="battle-count">' +
           esc(t('board_battle_rights', l.right || 0)) + '</p>' : '<p class="help-soft">' + esc(t('board_battle_markhelp')) +
-          '</p>');
+          '</p>') + (l.counter ? '<p class="battle-counter">' + esc(t('board_battle_counter', l.counter)) + '</p>' : '') +
+          (l.shielded ? '<p class="battle-counter shield">' + esc(t('board_battle_shielded')) + '</p>' : '');
         buttons = l.round < l.total ? '<button class="btn btn-main" data-battlenext>' + esc(t('board_battle_next')) +
           '</button>' : '';
       } else {
@@ -198,7 +208,8 @@
         marks + '</div>';
     }).join('');
     app.innerHTML = '<div class="board battle-board"><header class="board-top"><div><b>' + esc(cfg.coursename) + '</b><small>' +
-      esc(t('board_battle')) + '</small></div><div class="board-tools"><button class="btn btn-soft" data-full>' +
+      esc(t(l.final ? 'board_battle_final' : 'board_battle')) + (l.phase > 1 && !l.outcome ? ' · ' +
+      esc(t('board_battle_phase')) : '') + '</small></div><div class="board-tools"><button class="btn btn-soft" data-full>' +
       esc(t('board_fullscreen')) + '</button></div></header><div class="battle-stage"><div class="battle-boss' +
       (l.revealed && (l.right || 0) > 0 ? ' hit' : '') + '">' + T.embrollo(life) + '<span class="meter boss"><i style="width:' +
       Math.round(100 * life) + '%"></i></span><small>' + esc(t('board_battle_life')) + (l.maxhp ? ': ' + l.hp + ' / ' +
@@ -680,7 +691,7 @@
     });
     on('[data-battlestart]', function() {
       var b = state.battle;
-      host('start', {mode: b.mode, count: b.count, secs: b.secs});
+      host('start', {mode: b.mode, count: b.count, secs: b.secs, final: !!b.final});
     });
     on('[data-draw]', function() {
       state.reveal = false;
