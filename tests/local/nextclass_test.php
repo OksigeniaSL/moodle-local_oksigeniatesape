@@ -65,7 +65,7 @@ final class nextclass_test extends \advanced_testcase {
         $context = nextclass::context($w->course->id);
         $this->assertSame('Paraguay', $context['place']);
         $this->assertArrayHasKey('SV-01', $context['objectives']);
-        $this->assertSame('¿Qué cinco cosas lleváis al nido?', $context['mixups'][0]['question']);
+        $this->assertSame('¿Qué cinco cosas llevamos al nido?', $context['mixups'][0]['question']);
         $this->assertNotEmpty($context['challenges']);
         $prompt = nextclass::prompt($context, 'es');
         $this->assertStringContainsString('in Spanish', $prompt);
