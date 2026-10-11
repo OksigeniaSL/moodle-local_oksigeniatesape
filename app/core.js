@@ -230,6 +230,25 @@
   };
 
   /**
+   * What of the look shows on a character. Without an art pack the client draws all of it; with one, the hair and the
+   * clothes are painted in, and only the tone of skin can change, when the pack has an image for each tone.
+   *
+   * @param {Object} c role, nameform, lineage, stage.
+   * @return {Object} art, and skin, hair, haircolour and outfit: true when they show.
+   */
+  T.lookShows = function(c) {
+    var keys = function(skin) {
+      return T.characterKeys(T.family || 'storyheroes', c.role, c.lineage, c.nameform === 'f' ? 'f' : 'm', c.stage || 1,
+        skin, false);
+    };
+    if (!c.role || !T.artUrl(keys(-1))) {
+      return {art: false, skin: true, hair: true, haircolour: true, outfit: true};
+    }
+    return {art: true, skin: T.artUrl(keys(0)) !== T.artUrl(keys(T.SKINS.length - 1)), hair: false, haircolour: false,
+      outfit: false};
+  };
+
+  /**
    * Draws a character.
    *
    * @param {Object} c role, nameform, lineage, look (object or JSON), stage, label.

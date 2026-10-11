@@ -450,6 +450,13 @@ body.tesape {
   }
 }
 
+/* The character before it is created: as big as the screen allows, with its name and the buttons still in view. */
+.story:not(.reveal) > .halo .avatar {
+  width: auto;
+  height: min(56vh, 600px);
+  aspect-ratio: 6 / 7;
+}
+
 /* The reveal of a new character. */
 .reveal .avatar {
   width: 220px;

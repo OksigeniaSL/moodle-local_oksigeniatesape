@@ -66,7 +66,10 @@
     if (T.hasLineages(state.world.family)) {
       list.push('lineage');
     }
-    list.push('look', 'ready');
+    if (lookChanges(state.draft, 1)) {
+      list.push('look');
+    }
+    list.push('ready');
     var i = list.indexOf(current);
     return {
       list: list,
@@ -195,16 +198,32 @@
           '" aria-label="' + esc(t('app_' + key)) + ' ' + (i + 1) + '" aria-pressed="' + (d.look[key] === c) + '"></button>';
       }).join('') + '</div>';
     }
+    function row(key, html) {
+      return shows[key] ? '<div class="row"><span>' + esc(t('app_' + key)) + '</span>' + html + '</div>' : '';
+    }
+    // Only what shows: with an art pack, one tone of skin for each image of the pack, and nothing painted in.
+    var shows = T.lookShows({role: d.role, nameform: d.nameform, lineage: d.lineage, stage: stage});
     var hairs = '<div class="swatches">' + T.HAIRS.map(function(h) {
       return '<button class="chip" type="button" data-key="hair" data-value="' + h + '" aria-pressed="' + (d.look.hair === h) +
         '">' + esc(t('app_hair_' + h)) + '</button>';
     }).join('') + '</div>';
     return '<div class="builder"><div class="preview" data-preview>' + T.avatar({role: d.role, nameform: d.nameform,
       lineage: d.lineage, look: d.look, stage: stage}) + '</div><div class="rows">' +
-      '<div class="row"><span>' + esc(t('app_skin')) + '</span>' + swatches('skin', T.SKINS) + '</div>' +
-      '<div class="row"><span>' + esc(t('app_hair')) + '</span>' + hairs + '</div>' +
-      '<div class="row"><span>' + esc(t('app_haircolour')) + '</span>' + swatches('haircolour', T.HAIRCOLOURS) + '</div>' +
-      '<div class="row"><span>' + esc(t('app_outfit')) + '</span>' + swatches('outfit', T.OUTFITS) + '</div></div></div>';
+      row('skin', swatches('skin', shows.art ? [T.SKINS[0], T.SKINS[2], T.SKINS[5]] : T.SKINS)) +
+      row('hair', hairs) + row('haircolour', swatches('haircolour', T.HAIRCOLOURS)) +
+      row('outfit', swatches('outfit', T.OUTFITS)) + '</div></div>';
+  }
+
+  /**
+   * Whether the look of a character can change at all.
+   *
+   * @param {Object} d role, nameform, lineage.
+   * @param {number} stage
+   * @return {boolean}
+   */
+  function lookChanges(d, stage) {
+    var shows = T.lookShows({role: d.role, nameform: d.nameform, lineage: d.lineage, stage: stage});
+    return shows.skin || shows.hair || shows.haircolour || shows.outfit;
   }
 
   function bindBuilder(d, stage) {
@@ -915,8 +934,9 @@
       '<div class="stat"><span>' + esc(t('app_gems')) + '</span><b>' + c.gems + '</b></div>' +
       '<div class="stat"><span>' + esc(t('app_energy')) + '</span><b>' + (m.energy || 0) + ' / ' + w.energymax + '</b></div>' +
       '<div class="stat"><span>' + esc(t('app_breath')) + '</span><b>' + (m.breath || 0) + ' / ' + w.breathmax + '</b></div>' +
-      '<div class="actions no-print" style="justify-content:flex-start;margin-top:16px"><button class="btn btn-soft" ' +
-      'data-edit>' + esc(t('app_changelook')) + '</button><button class="btn btn-soft" data-print>' + esc(t('app_print')) +
+      '<div class="actions no-print" style="justify-content:flex-start;margin-top:16px">' + (lookChanges(c, c.stage) ?
+      '<button class="btn btn-soft" data-edit>' + esc(t('app_changelook')) + '</button>' : '') +
+      '<button class="btn btn-soft" data-print>' + esc(t('app_print')) +
       '</button><a class="btn btn-soft" href="' + esc(cfg.courseurl) + '">' + esc(t('app_exit')) + '</a></div></div>' +
       '</section>' + (w.hascoat && c.creature ? '<section class="card no-print" style="margin-top:16px"><h2>' +
       esc(t('app_coat_title', creatureName(c))) + '</h2><p class="help-soft">' + esc(t('app_coat_help')) + '</p>' +

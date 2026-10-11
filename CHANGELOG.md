@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.4 (2026-10-11)
+
+- The look of a character only offers what shows. With an art pack, hair and clothes are painted in, so the step of
+  the look and the button to change it appear only when the pack has an image for each tone of skin (then with three
+  tones); without a pack, the client draws everything, as before.
+- The character before it is created is as big as the screen allows, with its name and the buttons still in view.
+
 ## 0.4.3 (2026-10-11)
 
 - Choosing a character: in the families of people (story heroes, epic legends, without magic) every role comes as a
