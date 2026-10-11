@@ -170,10 +170,52 @@ final class demo {
             self::make_progress($charid, $course->id, $student->weeks, $now);
             $result->students[] = $user;
         }
+        if ($weeks > 0 && $mission !== '') {
+            self::make_plays($course->id, $result->students, $weeks, $seed, $now);
+        }
         if ($weeks > 0) {
             self::make_life($course->id, $result, $now);
         }
         return $result;
+    }
+
+    /**
+     * The scenes the class has played in the weeks of made-up progress: each student, the scenes of their step in the
+     * chapters they have reached, at the first try and with some mix-ups put right on the way, so that the teacher
+     * sees results and what confuses the class.
+     *
+     * @param int $courseid
+     * @param \stdClass[] $students
+     * @param int $weeks
+     * @param int $seed
+     * @param int $now
+     */
+    private static function make_plays(int $courseid, array $students, int $weeks, int $seed, int $now): void {
+        global $DB;
+        $mission = missions::get($courseid);
+        $chapters = array_values($DB->get_records(self::T . 'chapter', ['missionid' => $mission->id], 'sortorder'));
+        $scenes = $DB->get_records(self::T . 'scene', ['missionid' => $mission->id], 'code');
+        foreach ($students as $i => $user) {
+            $char = characters::get((int) $user->id);
+            $step = (int) $DB->get_field(self::T . 'member', 'step', ['charid' => $char->id, 'courseid' => $courseid]);
+            // Some go a chapter further than others.
+            $reached = min(count($chapters), $weeks + crc32($seed . '-' . $i) % 2);
+            foreach (array_slice($chapters, 0, $reached) as $c => $chapter) {
+                $mine = array_values(array_filter($scenes, fn($sc) => $sc->chapterid == $chapter->id));
+                foreach (scenes::for_step($mine, $step) as $scene) {
+                    [$items, $roles] = scenes::context($char, $courseid);
+                    $def = json_decode($scene->definition, true);
+                    $events = autoplayer::tangled($def, $seed . '-' . $i . '-' . $scene->code, 35, $items, $roles);
+                    $when = $now - ($reached - $c) * DAYSECS;
+                    try {
+                        scenes::play($courseid, (int) $user->id, (int) $scene->id, $events, null, $when);
+                    } catch (\moodle_exception $e) {
+                        // A play the scene does not take is left out: the demo goes on.
+                        continue;
+                    }
+                }
+            }
+        }
     }
 
     /**

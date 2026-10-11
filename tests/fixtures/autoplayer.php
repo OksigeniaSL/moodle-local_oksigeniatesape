@@ -34,61 +34,7 @@ final class autoplayer {
      * @return array
      */
     public static function play(array $scene, array $items = [], array $roles = []): array {
-        $runner = new \local_oksigeniatesape\local\scene_runner($scene, $items, $roles);
-        $events = [];
-        $node = $scene['start'];
-        $extra = 0;
-        $used = [];
-        for ($i = 0; $i < 200; $i++) {
-            $n = $scene['nodes'][$node];
-            switch ($n['type']) {
-                case 'story':
-                    $node = $n['next'];
-                    break;
-                case 'branch':
-                    $node = $n['rules'][0]['next'];
-                    break;
-                case 'choice':
-                    $options = array_values(array_filter($n['options'], fn($o) => $runner->has($o['requires'] ?? null)
-                        && ($o['correct'] ?? null) !== false));
-                    usort($options, fn($a, $b) => [!empty($b['correct']), $b['points'] ?? 0]
-                        <=> [!empty($a['correct']), $a['points'] ?? 0]);
-                    $max = (int) ($n['select']['max'] ?? 1);
-                    $picked = array_slice($options, 0, $max);
-                    $events[] = ['n' => $node, 'pick' => array_map(fn($o) => $o['id'], $picked)];
-                    foreach ($picked as $option) {
-                        foreach ($option['effects'] ?? [] as $effect) {
-                            $extra += (int) ($effect['extraquestion'] ?? 0);
-                        }
-                    }
-                    if ($max > 1) {
-                        $node = $n['next'];
-                    } else if ($extra > 0 && !empty($n['extra']) && empty($used[$node])) {
-                        $extra--;
-                        $used[$node] = true;
-                    } else {
-                        $node = $picked[0]['next'] ?? $n['next'];
-                    }
-                    break;
-                case 'classify':
-                    foreach ($n['items'] as $item) {
-                        if ($runner->has($item['requires'] ?? null)) {
-                            $events[] = ['n' => $node, 'item' => $item['id'], 'bin' => $item['bin']];
-                        }
-                    }
-                    $node = $n['next'];
-                    break;
-                case 'order':
-                    foreach ($n['steps'] as $step) {
-                        $events[] = ['n' => $node, 'step' => $step['id']];
-                    }
-                    $node = $n['next'];
-                    break;
-                case 'ending':
-                    return $events;
-            }
-        }
-        throw new \coding_exception('The scene does not end');
+        return \local_oksigeniatesape\local\autoplayer::play($scene, $items, $roles);
     }
 
     /**

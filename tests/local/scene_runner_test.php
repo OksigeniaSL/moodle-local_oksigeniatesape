@@ -39,7 +39,8 @@ final class scene_runner_test extends \advanced_testcase {
      * @return array
      */
     public static function scenes_provider(): array {
-        $codes = ['C1-2', 'C2-2', 'C3-2', 'C3-3', 'C4-2', 'C4-3', 'C5-2', 'C5-3', 'C6-2'];
+        $codes = ['C1-1', 'C1-2', 'C2-1', 'C2-2', 'C3-1', 'C3-2', 'C3-3', 'C4-1', 'C4-2', 'C4-3', 'C5-1', 'C5-2', 'C5-3', 'C6-1',
+            'C6-2'];
         return array_combine($codes, array_map(fn($c) => [$c], $codes));
     }
 
@@ -59,6 +60,23 @@ final class scene_runner_test extends \advanced_testcase {
         foreach ($result['objectives'] as $objective => $o) {
             $this->assertSame($o['total'], $o['ok'], "$code $objective");
         }
+    }
+
+    /**
+     * A first try with mix-ups put right on the way is taken by the server, ends as the good play, and the mix-ups
+     * count against the objectives.
+     *
+     * @param string $code
+     * @dataProvider scenes_provider
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('scenes_provider')]
+    public function test_tangled_play_of_every_scene(string $code): void {
+        $scene = autoplayer::scene($code);
+        $good = (new scene_runner($scene))->run(autoplayer::play($scene));
+        $events = \local_oksigeniatesape\local\autoplayer::tangled($scene, 'seed', 100);
+        $result = (new scene_runner($scene))->run($events);
+        $this->assertSame($good['ending'], $result['ending'], $code);
+        $this->assertLessThanOrEqual($good['points'], $result['points'], $code);
     }
 
     public function test_the_nest_sleeps_with_too_few_living_things(): void {

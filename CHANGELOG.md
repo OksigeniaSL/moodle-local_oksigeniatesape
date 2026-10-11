@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.13.1 (2026-10-11)
+
+- **The demo class has played**: with weeks of progress, each made-up student plays the scenes of their step in the
+  chapters they have reached, at the first try and with the mix-ups the scenes foresee (the mushroom with the plants),
+  put right on the way. A demo now shows results by scene and objective, what confuses the class, lanterns of the
+  class lit, creatures born, and the plan for the next class has something to go on.
+- The tests play every scene of the mission, the new ones too, both well and with mix-ups.
+
 ## 0.13.0 (2026-10-11)
 
 - **The time zone of the game, for each course**: the day and the week of the game (caps, the event of the day,
