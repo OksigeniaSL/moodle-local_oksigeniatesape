@@ -219,9 +219,17 @@ final class activities {
      * @param array $info The chapter in the package.
      * @param string $skin
      * @param int $now
+     * @param string $variant The local examples, for the voice of the texts.
      * @return int The id of the section.
      */
-    public static function make_for_chapter(\stdClass $course, \stdClass $chapter, array $info, string $skin, int $now): int {
+    public static function make_for_chapter(
+        \stdClass $course,
+        \stdClass $chapter,
+        array $info,
+        string $skin,
+        int $now,
+        string $variant = ''
+    ): int {
         global $CFG, $DB;
         require_once($CFG->dirroot . '/course/lib.php');
         require_once($CFG->dirroot . '/course/modlib.php');
@@ -239,7 +247,8 @@ final class activities {
             if (!in_array($activity['module'] ?? '', self::MODULES, true)) {
                 continue;
             }
-            $moduleinfo = self::moduleinfo($course, (int) $section->section, $activity, $skin, (int) ($region->groupingid ?? 0));
+            $groupingid = (int) ($region->groupingid ?? 0);
+            $moduleinfo = self::moduleinfo($course, (int) $section->section, $activity, $skin, $groupingid, $variant);
             $moduleinfo = add_moduleinfo($moduleinfo, $course);
             if ($activity['module'] === 'data') {
                 self::data_fields((int) $moduleinfo->instance, $course, $activity['fields'] ?? []);
@@ -263,12 +272,20 @@ final class activities {
      * @param array $activity
      * @param string $skin
      * @param int $groupingid The grouping of the teams, for team submissions.
+     * @param string $variant The local examples, for the voice of the texts.
      * @return \stdClass
      */
-    private static function moduleinfo(\stdClass $course, int $section, array $activity, string $skin, int $groupingid): \stdClass {
+    private static function moduleinfo(
+        \stdClass $course,
+        int $section,
+        array $activity,
+        string $skin,
+        int $groupingid,
+        string $variant = ''
+    ): \stdClass {
         global $DB;
         $module = $activity['module'];
-        $intro = missions::text($activity['intro'] ?? '', $skin);
+        $intro = missions::text($activity['intro'] ?? '', $skin, $variant);
         $info = [
             'modulename' => $module,
             'module' => (int) $DB->get_field('modules', 'id', ['name' => $module], MUST_EXIST),

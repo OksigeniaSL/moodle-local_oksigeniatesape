@@ -157,7 +157,7 @@ final class results {
         $node = $def['nodes'][$parts[0]];
         $text = function ($text) use ($def, $skin, $variant): string {
             return preg_replace_callback('/\{\{local:([a-z0-9_-]+)\}\}/', fn($m) => (string) ($def['locals'][$m[1]][$variant]
-                ?? $m[0]), missions::text($text ?? '', $skin));
+                ?? $m[0]), missions::text($text ?? '', $skin, $variant));
         };
         $question = $text($node['prompt'] ?? '');
         if (count($parts) === 2) {

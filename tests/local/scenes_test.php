@@ -224,6 +224,56 @@ final class scenes_test extends \advanced_testcase {
         $this->assertSame(0, $this->play($w, $w->users[0], 'C1-2')['rewards']['saber']);
     }
 
+    public function test_hints_cost_breath_and_the_sage_pays_less(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $w = $this->make_class(2);
+        $scene = $DB->get_record(self::T . 'scene', ['missionid' => $w->mission->id, 'code' => 'C2-2']);
+        $def = json_decode($scene->definition, true);
+        $def['nodes']['colocar']['hints'] = ['Una', 'Dos', 'Tres'];
+        $DB->set_field(self::T . 'scene', 'definition', json_encode($def), ['id' => $scene->id]);
+        $hints = [['n' => 'colocar', 'hint' => 0], ['n' => 'colocar', 'hint' => 1], ['n' => 'colocar', 'hint' => 2]];
+        $events = array_merge($hints, autoplayer::play($def));
+        // The sage: the first free, half for the rest.
+        $sage = scenes::play($w->course->id, $w->users[0]->id, $scene->id, $events, null);
+        $this->assertSame(1, $sage['rewards']['hints']);
+        $this->assertEquals(engine::BREATH_MAX - 1, engine::member(characters::get($w->users[0]->id), $w->course->id)->breath);
+        // Anyone else: one each.
+        $DB->set_field(self::T . 'char', 'role', 'scout', ['userid' => $w->users[1]->id]);
+        $scout = scenes::play($w->course->id, $w->users[1]->id, $scene->id, $events, null);
+        $this->assertSame(3, $scout['rewards']['hints']);
+    }
+
+    public function test_the_healer_looks_after_the_teammate_with_least_breath(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $w = $this->make_class(3);
+        $group = $this->getDataGenerator()->create_group(['courseid' => $w->course->id]);
+        foreach ($w->users as $user) {
+            $this->getDataGenerator()->create_group_member(['groupid' => $group->id, 'userid' => $user->id]);
+        }
+        $DB->set_field(self::T . 'char', 'role', 'healer', ['userid' => $w->users[0]->id]);
+        $low = engine::member(characters::get($w->users[2]->id), $w->course->id);
+        $DB->set_field(self::T . 'member', 'breath', 1, ['id' => $low->id]);
+        $result = $this->play($w, $w->users[0], 'C1-2');
+        $this->assertSame($w->users[2]->firstname, $result['rewards']['cared']);
+        $this->assertEquals(2, engine::member(characters::get($w->users[2]->id), $w->course->id)->breath);
+    }
+
+    public function test_flags_are_kept_for_other_scenes(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $w = $this->make_class(1);
+        $scene = $DB->get_record(self::T . 'scene', ['missionid' => $w->mission->id, 'code' => 'C1-2']);
+        $def = json_decode($scene->definition, true);
+        $def['nodes']['despierta']['effects'][] = ['flag' => 'nido'];
+        $DB->set_field(self::T . 'scene', 'definition', json_encode($def), ['id' => $scene->id]);
+        $this->play($w, $w->users[0], 'C1-2');
+        [, , $flags, $role] = scenes::context(characters::get($w->users[0]->id), $w->course->id);
+        $this->assertSame(['nido'], $flags);
+        $this->assertSame('sage', $role);
+    }
+
     public function test_results_for_the_teacher(): void {
         global $DB;
         $this->resetAfterTest();

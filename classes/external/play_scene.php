@@ -119,6 +119,9 @@ final class play_scene extends external_api {
                 'grew' => !empty($r['grew']),
                 'chapter' => ($r['chapter'] ?? '') === '' ? '' : $names([$r['chapter']], 'chapters')[0],
                 'classlantern' => ($r['classlantern'] ?? '') === '' ? '' : $names([$r['classlantern']], 'chapters')[0],
+                'hints' => (int) ($r['hints'] ?? 0),
+                'cared' => (string) ($r['cared'] ?? ''),
+                'shielded' => !empty($r['shielded']),
             ],
             'world' => view::world($params['courseid'], (int) $USER->id),
         ];
@@ -147,6 +150,9 @@ final class play_scene extends external_api {
                 'grew' => new external_value(PARAM_BOOL, 'The creature grew'),
                 'chapter' => new external_value(PARAM_TEXT, 'Chapter completed now'),
                 'classlantern' => new external_value(PARAM_TEXT, 'Lantern of the class lit now'),
+                'hints' => new external_value(PARAM_INT, 'Breath paid for hints', VALUE_DEFAULT, 0),
+                'cared' => new external_value(PARAM_TEXT, 'Teammate the healer gave a breath to', VALUE_DEFAULT, ''),
+                'shielded' => new external_value(PARAM_BOOL, 'The protector\'s shield stopped a mistake', VALUE_DEFAULT, false),
             ]),
             'world' => get_world::execute_returns(),
         ]);

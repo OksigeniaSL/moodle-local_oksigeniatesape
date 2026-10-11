@@ -127,6 +127,7 @@
         <FIELD NAME="refid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Other reference (power request, battle, item)"/>
         <FIELD NAME="actorid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Who did it: a teacher, the student or 0 (the game)"/>
         <FIELD NAME="capped" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="What a cap left out"/>
+        <FIELD NAME="mission" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="1: it comes from the mission (its scenes, battles and chapters), under no weekly cap"/>
         <FIELD NAME="undoneby" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Ledger entry that undid it (0: it stands)"/>
         <FIELD NAME="timeundone" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>

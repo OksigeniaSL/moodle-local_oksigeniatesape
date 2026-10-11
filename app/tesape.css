@@ -3091,3 +3091,31 @@ body.in-battle {
 .next-class small.help-soft {
   display: block;
 }
+
+/* The hints of a decision: one breath each (the sage, the first free). */
+.scene-hints {
+  margin-top: 14px;
+  display: grid;
+  gap: 8px;
+}
+
+.scene-hints .hint {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--r-s);
+  background: rgba(255, 200, 87, .1);
+  border: 1px dashed var(--lantern);
+}
+
+.scene-hints .hint svg {
+  width: 1.2em;
+  height: 1.2em;
+  flex: none;
+}
+
+.scene-hints .btn {
+  justify-self: start;
+}

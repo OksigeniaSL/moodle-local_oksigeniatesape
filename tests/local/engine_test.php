@@ -320,7 +320,8 @@ final class engine_test extends \advanced_testcase {
         $this->assertEquals(1, engine::regenerate());
         $member = $this->member($member);
         $this->assertEquals(engine::ENERGY_MAX, $member->energy);
-        $this->assertEquals(engine::BREATH_MAX, $member->breath);
+        // Breath comes back a little each day, up to the most.
+        $this->assertEquals(min(engine::BREATH_MAX, 1 + engine::BREATH_DAILY), $member->breath);
         $this->assertEquals(4, $this->member($paused)->energy);
         $this->assertEquals(4, $this->member($off)->energy);
         // Once a day.

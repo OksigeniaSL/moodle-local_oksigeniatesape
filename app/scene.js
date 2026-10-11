@@ -114,7 +114,8 @@
      */
     function tx(text) {
       if (text && typeof text === 'object') {
-        text = text[data.skin] || text[Object.keys(text)[0]];
+        // The voice of the place first (valley.py speaks with «ustedes»), then the story.
+        text = text[data.skin + '.' + data.variant] || text[data.skin] || text[Object.keys(text)[0]];
       }
       text = String(text || '');
       if (cm) {
@@ -133,6 +134,12 @@
     function has(req) {
       if (!req) {
         return true;
+      }
+      if (req.flag) {
+        return run.flags.indexOf(req.flag) >= 0;
+      }
+      if (req.role) {
+        return !cm && data.role === req.role;
       }
       if (cm && req.item) {
         return cm.items.indexOf(req.item) >= 0;
@@ -164,6 +171,9 @@
       if (req.item) {
         return t('app_needs', data.items[req.item] || req.item);
       }
+      if (req.role) {
+        return t('app_onlyrole', T.roleName(world ? world.family : '', req.role, 'm'));
+      }
       if (req.teamrole) {
         return t('app_needs', T.roleName(world.family, req.teamrole, 'm'));
       }
@@ -174,7 +184,8 @@
     }
 
     function start(from) {
-      run = {node: from || sc.start, from: from || '', events: [], extra: 0, extraused: {}};
+      run = {node: from || sc.start, from: from || '', events: [], extra: 0, extraused: {}, hints: 0, shield: false,
+        flags: (data.flags || []).slice(), opened: {}, spent: 0};
       next();
     }
 
@@ -195,6 +206,13 @@
       } else if (n.type === 'branch') {
         var target = n.else;
         (n.rules || []).some(function(rule) {
+          if (rule.if && rule.if.flag !== undefined) {
+            if (run.flags.indexOf(rule.if.flag) >= 0) {
+              target = rule.next;
+              return true;
+            }
+            return false;
+          }
           if (rule.if && rule.if.correct_at_least !== undefined && correctIn(rule.if.in) >= rule.if.correct_at_least) {
             target = rule.next;
             return true;
@@ -235,6 +253,70 @@
       return o.correct === false ? 'bad' : 'meh';
     }
 
+    /**
+     * A mistake: the protector's shield stops the points it costs, once a play.
+     */
+    function mistake() {
+      if (!cm && data.role === 'protector' && !run.shield) {
+        run.shield = true;
+        T.toast(esc(t('app_shield_stops')));
+      }
+    }
+
+    /**
+     * What the next hint costs: one breath; the sage gets the first free and pays half for the rest; free in class.
+     *
+     * @return {number}
+     */
+    function hintCost() {
+      if (cm) {
+        return 0;
+      }
+      if (data.role === 'sage') {
+        return run.hints % 2;
+      }
+      return 1;
+    }
+
+    /**
+     * The hints of a decision, if it has any: the ones already opened and a button for the next.
+     *
+     * @param {Object} n The node.
+     * @param {Element} body
+     */
+    function hintArea(n, body) {
+      if (!n.hints || !n.hints.length) {
+        return;
+      }
+      var box = document.createElement('div');
+      box.className = 'scene-hints';
+      body.appendChild(box);
+      var draw = function() {
+        var opened = run.opened[run.node] || [];
+        var cost = hintCost();
+        box.innerHTML = opened.map(function(i) {
+          return '<p class="hint">' + T.icon('idea') + ' ' + esc(tx(n.hints[i])) + '</p>';
+        }).join('') + (opened.length < n.hints.length ? '<button class="btn btn-soft" type="button" data-hint>' +
+          esc(cost ? t('app_hint_cost', cost) : t('app_hint_free')) + '</button>' : '');
+        var b = box.querySelector('[data-hint]');
+        if (b) {
+          b.onclick = function() {
+            if (cost > (data.breath || 0) - run.spent) {
+              T.toast(esc(t('app_hint_nobreath')), true);
+              return;
+            }
+            var index = opened.length;
+            run.events.push({n: run.node, hint: index});
+            run.opened[run.node] = opened.concat([index]);
+            run.hints++;
+            run.spent += cost;
+            draw();
+          };
+        }
+      };
+      draw();
+    }
+
     function choice(n) {
       var max = (n.select && n.select.max) || 1;
       var min = (n.select && n.select.min) || max;
@@ -243,7 +325,10 @@
       var open = n.options.filter(function(o) {
         return has(o.requires);
       });
-      var opts = n.options.map(function(o) {
+      var opts = n.options.filter(function(o) {
+        // What other scenes left (flags) is memory, not something to get: without it, the option is not there.
+        return !(o.requires && o.requires.flag) || has(o.requires);
+      }).map(function(o) {
         if (!has(o.requires)) {
           return '<button class="opt locked" type="button" disabled><b>' + esc(tx(o.label)) + '</b><small>' +
             esc(o.locked ? tx(o.locked) : missing(o.requires)) + '</small></button>';
@@ -259,6 +344,7 @@
         '<div class="opts">' + opts + '</div>' + (multi ? '<div class="counter" data-count>' + esc(t('app_chosen', '0/' + max)) +
         '</div><div class="actions"><button class="btn btn-main" data-confirm disabled>' + esc(t('app_confirm')) +
         '</button></div>' : '') + '<div data-out></div>');
+      hintArea(n, body);
       if (voting) {
         classVote(body, n, open);
       }
@@ -280,7 +366,13 @@
               var o = pick(id);
               (o.effects || []).forEach(function(e) {
                 run.extra += e.extraquestion || 0;
+                if (e.flag) {
+                  run.flags.push(e.flag);
+                }
               });
+              if (o.correct === false) {
+                mistake();
+              }
               var target = o.next || n.next;
               if (target === run.node) {
                 next();
@@ -317,7 +409,13 @@
           selected.forEach(function(id) {
             (pick(id).effects || []).forEach(function(e) {
               run.extra += e.extraquestion || 0;
+              if (e.flag) {
+                run.flags.push(e.flag);
+              }
             });
+            if (pick(id).correct === false) {
+              mistake();
+            }
           });
           reveal(body, selected.map(pick), function() {
             go(n.next);
@@ -382,6 +480,7 @@
         }).join('');
         var body = show('<p class="scene-prompt">' + esc(tx(n.prompt)) + '</p><div class="progress">' + dots + '</div>' +
           '<div class="current" data-cur>' + esc(tx(it.label)) + '</div><div class="bins">' + bins + '</div><div data-out></div>');
+        hintArea(n, body);
         body.querySelectorAll('.bin').forEach(function(b) {
           b.onclick = function() {
             var bin = b.dataset.bin;
@@ -405,6 +504,7 @@
             } else {
               // That group is not it: it stays off until the next item.
               b.disabled = true;
+              mistake();
               out.innerHTML = '<div class="conseq bad">' + esc(tx((it.feedback && it.feedback[bin]) || t('app_notthere'))) +
                 '</div>';
               var cur = body.querySelector('[data-cur]');
@@ -435,6 +535,7 @@
         }).map(function(s) {
           return '<button class="opt" type="button" data-id="' + esc(s.id) + '">' + esc(tx(s.label)) + '</button>';
         }).join('') + '</div><div data-out></div>');
+        hintArea(n, body);
         body.querySelectorAll('.opt').forEach(function(b) {
           b.onclick = function() {
             var s = n.steps.filter(function(x) {
@@ -451,6 +552,7 @@
               body.querySelector('[data-out]').innerHTML = '<div class="conseq bad">' + esc(tx(msg)) + '</div>';
               // Not this step yet: it stays off until the right one is in place.
               b.disabled = true;
+              mistake();
               b.classList.remove('shake');
               void b.offsetWidth;
               b.classList.add('shake');
@@ -582,6 +684,16 @@
         if (r.grew) {
           lines.push(t('app_creaturegrew', creatureName()));
         }
+        if (r.cared) {
+          lines.push(t('app_cared', r.cared));
+        }
+        if (r.hints) {
+          lines.push(t('app_hints_paid', r.hints));
+        }
+        if (world.character && world.character.member) {
+          // The breath left after the hints paid, for the next play.
+          data.breath = world.character.member.breath;
+        }
         var success = result.outcome !== 'retry';
         var hatch = r.hatched ? '<div class="hatch">' + T.creature(world.character.creature, 1, true) + '<p>' +
           esc(t('app_hatched', creatureName())) + '</p></div>' : '';
@@ -625,6 +737,7 @@
       data = d;
       data.speakers = JSON.parse(d.speakers || '{}');
       data.items = JSON.parse(d.items || '{}');
+      data.flags = JSON.parse(d.flags || '[]');
       sc = JSON.parse(d.definition);
       start(null);
     }).catch(function(e) {

@@ -79,7 +79,7 @@ final class scenes {
      *
      * @param \stdClass $char
      * @param int $courseid
-     * @return array [item codes, roles]
+     * @return array [item codes, roles of the team, flags of the mission (what they did in other scenes), own role]
      */
     public static function context(\stdClass $char, int $courseid): array {
         global $DB;
@@ -101,7 +101,62 @@ final class scenes {
                 $roles = array_merge($roles, $DB->get_fieldset_select(self::T . 'char', 'role', "userid $insql", $params));
             }
         }
-        return [$items, array_values(array_unique($roles))];
+        $mission = missions::get($courseid);
+        $flags = [];
+        if ($mission) {
+            $where = "charid = ? AND missionid = ? AND kind = 'flag'";
+            $flags = $DB->get_fieldset_select(self::T . 'found', 'code', $where, [$char->id, $mission->id]);
+        }
+        return [$items, array_values(array_unique($roles)), array_values($flags), (string) $char->role];
+    }
+
+    /**
+     * The hints opened in a play cost breath: one each; the sage gets the first free and pays half for the rest.
+     *
+     * @param \stdClass $char
+     * @param \stdClass $member
+     * @param int $sceneid
+     * @param int $hints Hints opened.
+     * @param int $now
+     * @return int Breath paid.
+     */
+    private static function pay_hints(\stdClass $char, \stdClass $member, int $sceneid, int $hints, int $now): int {
+        $cost = $char->role === 'sage' ? (int) ceil(max(0, $hints - 1) / 2) : $hints;
+        $fresh = engine::member($char, (int) $member->courseid, $now);
+        $cost = min($cost, (int) $fresh->breath);
+        if ($cost > 0) {
+            engine::breath($fresh, -$cost, 'hint', 0, $sceneid, $now);
+        }
+        return $cost;
+    }
+
+    /**
+     * The healer, when they finish a scene well: one breath for the teammate who has least.
+     *
+     * @param \stdClass $char
+     * @param \stdClass $member
+     * @param int $sceneid
+     * @param int $now
+     * @return string Name of the teammate, as classmates see it (empty: nobody needed it).
+     */
+    private static function care(\stdClass $char, \stdClass $member, int $sceneid, int $now): string {
+        $group = teams::of((int) $member->courseid, (int) $char->userid);
+        $least = null;
+        foreach ($group ? teams::members((int) $member->courseid, (int) $group->id) : [] as $mate) {
+            $other = (int) $mate->charid !== (int) $char->id;
+            if ($other && $mate->breath < engine::BREATH_MAX && (!$least || $mate->breath < $least->breath)) {
+                $least = $mate;
+            }
+        }
+        if (!$least) {
+            return '';
+        }
+        $userid = (int) $least->userid;
+        unset($least->userid);
+        engine::breath($least, 1, 'care', (int) $char->userid, $sceneid, $now);
+        $user = \core_user::get_user($userid);
+        $region = regions::get((int) $member->courseid);
+        return $user && $region ? view::display_name($user, characters::get($userid), $region) : '';
     }
 
     /**
@@ -130,8 +185,8 @@ final class scenes {
             throw new \moodle_exception('pausedgame', 'local_oksigeniatesape');
         }
         $scene = self::get($courseid, $sceneid);
-        [$items, $roles] = self::context($char, $courseid);
-        $result = (new scene_runner($scene->data, $items, $roles))->run($events, $from);
+        [$items, $roles, $flags] = self::context($char, $courseid);
+        $result = (new scene_runner($scene->data, $items, $roles, $flags, $char->role))->run($events, $from);
 
         $transaction = $DB->start_delegated_transaction();
         $attempt = (object) [
@@ -151,7 +206,12 @@ final class scenes {
         $rewards = [];
         if (in_array($result['outcome'], ['success', 'partial'], true)) {
             $rewards = self::reward($char, $member, $scene, $result, $now);
+            if ($rewards['saber'] > 0 && $char->role === 'healer') {
+                $rewards['cared'] = self::care($char, $member, (int) $scene->id, $now);
+            }
         }
+        $rewards['hints'] = self::pay_hints($char, $member, (int) $scene->id, (int) $result['hints'], $now);
+        $rewards['shielded'] = (bool) $result['shielded'];
         $transaction->allow_commit();
         return [
             'ending' => $result['ending'],
@@ -302,6 +362,10 @@ final class scenes {
             }
             if (isset($effect['page']) && self::found($char, $member, $mission, 'page', (string) $effect['page'], $now)) {
                 $rewards['pages'][] = (string) $effect['page'];
+            }
+            if (isset($effect['flag'])) {
+                // Memory of the mission: what they did here changes other scenes.
+                self::found($char, $member, $mission, 'flag', (string) $effect['flag'], $now);
             }
             if (isset($effect['breath']) && self::found($char, $member, $mission, 'breath', $scene->code, $now)) {
                 engine::breath($member, (int) $effect['breath'], 'scene', 0, (int) $scene->id, $now);

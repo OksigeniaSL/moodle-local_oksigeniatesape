@@ -21,6 +21,8 @@ use core_external\external_function_parameters;
 use core_external\external_multiple_structure;
 use core_external\external_single_structure;
 use core_external\external_value;
+use local_oksigeniatesape\local\characters;
+use local_oksigeniatesape\local\engine;
 use local_oksigeniatesape\local\missions;
 use local_oksigeniatesape\local\results;
 use local_oksigeniatesape\local\scenes;
@@ -57,6 +59,7 @@ final class get_scene extends external_api {
         int $courseid,
         int $sceneid
     ): array {
+        global $USER;
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
             'sceneid' => $sceneid,
@@ -77,6 +80,15 @@ final class get_scene extends external_api {
         foreach ($mission->data['items'] ?? [] as $code => $item) {
             $items[$code] = (string) ($item['name'] ?? $code);
         }
+        // What the student brings: flags of other scenes, their role and the breath they have for hints.
+        $flags = [];
+        $role = '';
+        $breath = 0;
+        $char = characters::get((int) $USER->id);
+        if ($char && has_capability('local/oksigeniatesape:play', $context)) {
+            [, , $flags, $role] = scenes::context($char, $params['courseid']);
+            $breath = (int) engine::member($char, $params['courseid'])->breath;
+        }
         return [
             'id' => (int) $scene->id,
             'definition' => $scene->definition,
@@ -84,6 +96,9 @@ final class get_scene extends external_api {
             'variant' => $mission->variant,
             'speakers' => json_encode($speakers),
             'items' => json_encode($items),
+            'flags' => json_encode($flags),
+            'role' => $role,
+            'breath' => $breath,
         ];
     }
 
@@ -100,6 +115,9 @@ final class get_scene extends external_api {
             'variant' => new external_value(PARAM_ALPHANUMEXT, 'Local examples'),
             'speakers' => new external_value(PARAM_RAW, 'Names of who speaks (JSON)'),
             'items' => new external_value(PARAM_RAW, 'Names of the items (JSON)'),
+            'flags' => new external_value(PARAM_RAW, 'Flags of the mission the student carries (JSON)', VALUE_DEFAULT, '[]'),
+            'role' => new external_value(PARAM_ALPHA, 'Role of the student (empty on the class screen)', VALUE_DEFAULT, ''),
+            'breath' => new external_value(PARAM_INT, 'Breath of the student, for the hints', VALUE_DEFAULT, 0),
         ]);
     }
 }

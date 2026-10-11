@@ -117,7 +117,8 @@ final class engine {
         }
         $region = regions::get((int) $member->courseid);
         $granted = $amount;
-        if (!$mission && !in_array($reason, self::MISSION_REASONS, true)) {
+        $mission = $mission || in_array($reason, self::MISSION_REASONS, true);
+        if (!$mission) {
             $week = self::week_start($now, (int) $member->courseid);
             $granted = progress::apply_cap($granted, self::earned($member, $week, false), self::site_weekly_cap())['granted'];
             if ($region && $region->weeklycap > 0) {
@@ -130,7 +131,7 @@ final class engine {
             }
         }
         $transaction = $DB->start_delegated_transaction();
-        $entry = self::record($member, 'saber', $granted, $reason, $actorid, $cmid, $refid, $amount - $granted, $now);
+        $entry = self::record($member, 'saber', $granted, $reason, $actorid, $cmid, $refid, $amount - $granted, $now, $mission);
         self::add_saber((int) $member->charid, $member, $granted, $now);
         if ($granted > 0) {
             teams::check_goal($member, $now);
@@ -552,20 +553,13 @@ final class engine {
      */
     private static function earned(\stdClass $member, int $since, bool $incourse): int {
         global $DB;
-        [$notmission, $params] = $DB->get_in_or_equal(self::MISSION_REASONS, SQL_PARAMS_NAMED, 'mr', false);
-        $params += ['charid' => $member->charid, 'since' => $since, 'courseid' => $member->courseid];
+        $params = ['charid' => $member->charid, 'since' => $since, 'courseid' => $member->courseid];
         $course = $incourse ? 'AND l.courseid = :courseid' : '';
         return (int) $DB->get_field_sql(
             'SELECT COALESCE(SUM(l.amount), 0)
                FROM {' . self::T . "ledger} l
-              WHERE l.charid = :charid AND l.resource = 'saber' AND l.amount > 0 AND l.undoneby = 0
-                    AND l.timecreated >= :since $course AND l.reason $notmission
-                    AND NOT (l.reason = 'completion' AND l.cmid IN (
-                        SELECT c.cmid FROM {" . self::T . "challenge} c WHERE c.chapterid > 0 AND c.cmid > 0))
-                    AND NOT (l.reason = 'classroom' AND l.refid IN (
-                        SELECT v.id FROM {" . self::T . "validation} v
-                          JOIN {" . self::T . "challenge} c ON c.id = v.challengeid
-                         WHERE c.chapterid > 0))",
+              WHERE l.charid = :charid AND l.resource = 'saber' AND l.amount > 0 AND l.undoneby = 0 AND l.mission = 0
+                    AND l.timecreated >= :since $course",
             $params
         );
     }
@@ -631,6 +625,7 @@ final class engine {
      * @param int $refid
      * @param int $capped
      * @param int $now
+     * @param bool $mission It comes from the mission (no weekly cap).
      * @return \stdClass
      */
     private static function record(
@@ -642,10 +637,12 @@ final class engine {
         int $cmid,
         int $refid,
         int $capped,
-        int $now
+        int $now,
+        bool $mission = false
     ): \stdClass {
         global $DB;
         $entry = (object) [
+            'mission' => $mission ? 1 : 0,
             'charid' => $member->charid,
             'courseid' => $member->courseid,
             'resource' => $resource,

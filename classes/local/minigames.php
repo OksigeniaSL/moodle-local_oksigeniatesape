@@ -71,9 +71,9 @@ final class minigames {
         return [
             'code' => $code,
             'title' => missions::text($game['title'] ?? $code, $mission->skin),
-            'intro' => missions::text($game['intro'] ?? '', $mission->skin),
-            'win' => missions::text($game['win'] ?? '', $mission->skin),
-            'lose' => missions::text($game['lose'] ?? '', $mission->skin),
+            'intro' => missions::text($game['intro'] ?? '', $mission->skin, $mission->variant),
+            'win' => missions::text($game['win'] ?? '', $mission->skin, $mission->variant),
+            'lose' => missions::text($game['lose'] ?? '', $mission->skin, $mission->variant),
             'nets' => $nets,
             'animals' => $animals,
             'goal' => (int) $level['goal'],

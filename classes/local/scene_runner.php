@@ -23,7 +23,12 @@ namespace local_oksigeniatesape\local;
  * What the student did is a list of events, in order:
  * - {"n": node, "pick": [option ids]} for each answer to a choice;
  * - {"n": node, "item": item id, "bin": bin id} for each try to put an item of a classify in a group;
- * - {"n": node, "step": step id} for each step put in an order.
+ * - {"n": node, "step": step id} for each step put in an order;
+ * - {"n": node, "hint": index} for each hint opened, before answering that node.
+ *
+ * What a character brings changes what can be done: the items they carry, the roles of their team, the flags other
+ * scenes of the mission left (what they did there) and their own role. The protector's shield stops the points lost to
+ * the first mistake of a play; the result per objective stays as it was, so that the teacher sees it.
  *
  * The rules are those of the client (and of the format of the scenes): an answer of one option may lead back to the
  * same question, a classify asks for each item until it is in its group (unless retry is none), an order asks for
@@ -45,6 +50,21 @@ final class scene_runner {
 
     /** @var string[] Roles in the student's team. */
     private array $teamroles;
+
+    /** @var string[] Flags of the mission the character carries, and those set in this play. */
+    private array $flags;
+
+    /** @var string The student's own role. */
+    private string $role;
+
+    /** @var array Hints opened: node => [index => true]. */
+    private array $hints = [];
+
+    /** @var bool The protector's shield is still up in this play. */
+    private bool $shield;
+
+    /** @var bool The shield has stopped a mistake in this play. */
+    private bool $shielded = false;
 
     /** @var array Events not yet used. */
     private array $events = [];
@@ -76,17 +96,22 @@ final class scene_runner {
      * @param array $scene The scene, as in its JSON.
      * @param string[] $items Codes of the items the student carries in the course.
      * @param string[] $teamroles Roles of the characters in the student's team.
+     * @param string[] $flags Flags of the mission the character carries (what they did in other scenes).
+     * @param string $role The student's own role.
      */
-    public function __construct(array $scene, array $items = [], array $teamroles = []) {
+    public function __construct(array $scene, array $items = [], array $teamroles = [], array $flags = [], string $role = '') {
         $this->scene = $scene;
         $this->items = $items;
         $this->teamroles = $teamroles;
+        $this->flags = $flags;
+        $this->role = $role;
+        $this->shield = $role === 'protector';
     }
 
     /**
      * Whether a requirement is met.
      *
-     * @param array|null $requires {item: code}, {teamrole: role} or {any: [...]}.
+     * @param array|null $requires {item: code}, {teamrole: role}, {role: own role}, {flag: code} or {any: [...]}.
      * @return bool
      */
     public function has(?array $requires): bool {
@@ -95,6 +120,12 @@ final class scene_runner {
         }
         if (isset($requires['item'])) {
             return in_array($requires['item'], $this->items, true);
+        }
+        if (isset($requires['flag'])) {
+            return in_array($requires['flag'], $this->flags, true);
+        }
+        if (isset($requires['role'])) {
+            return $requires['role'] === $this->role;
         }
         if (isset($requires['teamrole'])) {
             return in_array($requires['teamrole'], $this->teamroles, true);
@@ -176,6 +207,8 @@ final class scene_runner {
                         'points' => $this->points,
                         'objectives' => $this->objectives,
                         'path' => $path,
+                        'hints' => array_sum(array_map('count', $this->hints)),
+                        'shielded' => $this->shielded,
                     ];
                 default:
                     $this->fail('unknown type ' . $n['type']);
@@ -193,6 +226,12 @@ final class scene_runner {
     private function branch(array $n): string {
         foreach ($n['rules'] ?? [] as $rule) {
             $if = $rule['if'] ?? [];
+            if (isset($if['flag'])) {
+                if (in_array($if['flag'], $this->flags, true)) {
+                    return $rule['next'];
+                }
+                continue;
+            }
             if (isset($if['correct_at_least'], $if['in'])) {
                 if ($this->correct_in($if['in']) >= (int) $if['correct_at_least']) {
                     return $rule['next'];
@@ -260,7 +299,7 @@ final class scene_runner {
                 if (isset($effect['extraquestion'])) {
                     $this->extra += (int) $effect['extraquestion'];
                 } else {
-                    $this->inline[] = $effect;
+                    $this->effect($effect);
                 }
             }
         }
@@ -296,6 +335,7 @@ final class scene_runner {
                 continue;
             }
             $first = true;
+            $saved = false;
             $wrong = [];
             // Tapping the same wrong group again does not count: each wrong group once, then the right one.
             for ($tries = 0; $tries <= 4 * count($bins); $tries++) {
@@ -307,13 +347,13 @@ final class scene_runner {
                     continue;
                 }
                 if ($event['bin'] === $item['bin']) {
-                    $this->points += $first ? 2 : 1;
+                    $this->points += $first || $saved ? 2 : 1;
                     $this->tally($item['objective'] ?? null, $first);
                     if ($first) {
                         $this->placed[$node][] = $item['id'];
                     }
                     foreach ($item['effects'] ?? [] as $effect) {
-                        $this->inline[] = $effect;
+                        $this->effect($effect);
                     }
                     continue 2;
                 }
@@ -322,6 +362,9 @@ final class scene_runner {
                     continue 2;
                 }
                 $wrong[] = $event['bin'];
+                if ($first) {
+                    $saved = $this->guard();
+                }
                 $first = false;
             }
             $this->fail('too many tries for ' . $item['id']);
@@ -338,6 +381,7 @@ final class scene_runner {
         $steps = array_map(fn($s) => $s['id'], $n['steps']);
         $built = 0;
         $first = true;
+        $saved = false;
         $tries = 0;
         while ($built < count($steps)) {
             if (++$tries > count($steps) * count($steps)) {
@@ -351,10 +395,13 @@ final class scene_runner {
             if ($step === $steps[$built]) {
                 $built++;
             } else {
+                if ($first) {
+                    $saved = $this->guard();
+                }
                 $first = false;
             }
         }
-        $this->points += $first ? 6 : 3;
+        $this->points += $first || $saved ? 6 : 3;
         $this->tally($n['objective'] ?? null, $first);
     }
 
@@ -366,10 +413,46 @@ final class scene_runner {
      */
     private function take(string $node): array {
         $event = array_shift($this->events);
+        // The hints opened before answering: each one of the node, once.
+        while (is_array($event) && isset($event['hint'])) {
+            $hints = $this->scene['nodes'][$node]['hints'] ?? [];
+            $index = (int) $event['hint'];
+            if (($event['n'] ?? null) !== $node || !isset($hints[$index]) || isset($this->hints[$node][$index])) {
+                $this->fail('hint not available in ' . $node);
+            }
+            $this->hints[$node][$index] = true;
+            $event = array_shift($this->events);
+        }
         if (!is_array($event) || ($event['n'] ?? null) !== $node) {
             $this->fail('expected an event for ' . $node);
         }
         return $event;
+    }
+
+    /**
+     * An effect won on the way: a flag counts at once for the rest of the play.
+     *
+     * @param array $effect
+     */
+    private function effect(array $effect): void {
+        if (isset($effect['flag'])) {
+            $this->flags[] = (string) $effect['flag'];
+        }
+        $this->inline[] = $effect;
+    }
+
+    /**
+     * A mistake: the protector's shield stops the points it would cost, once a play.
+     *
+     * @return bool The shield stopped it.
+     */
+    private function guard(): bool {
+        if (!$this->shield) {
+            return false;
+        }
+        $this->shield = false;
+        $this->shielded = true;
+        return true;
     }
 
     /**

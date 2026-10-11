@@ -31,10 +31,12 @@ final class autoplayer {
      * @param array $scene
      * @param string[] $items Items the student carries.
      * @param string[] $roles Roles in the team.
+     * @param string[] $flags Flags of the mission the character carries.
+     * @param string $role The character's own role.
      * @return array
      */
-    public static function play(array $scene, array $items = [], array $roles = []): array {
-        $runner = new scene_runner($scene, $items, $roles);
+    public static function play(array $scene, array $items = [], array $roles = [], array $flags = [], string $role = ''): array {
+        $runner = new scene_runner($scene, $items, $roles, $flags, $role);
         $events = [];
         $node = $scene['start'];
         $extra = 0;
@@ -46,7 +48,14 @@ final class autoplayer {
                     $node = $n['next'];
                     break;
                 case 'branch':
-                    $node = $n['rules'][0]['next'];
+                    // The first rule that can hold: flags the character has, or a number of right answers.
+                    $node = $n['else'];
+                    foreach ($n['rules'] as $rule) {
+                        if (!isset($rule['if']['flag']) || in_array($rule['if']['flag'], $flags, true)) {
+                            $node = $rule['next'];
+                            break;
+                        }
+                    }
                     break;
                 case 'choice':
                     $options = array_values(array_filter($n['options'], fn($o) => $runner->has($o['requires'] ?? null)
@@ -59,6 +68,9 @@ final class autoplayer {
                     foreach ($picked as $option) {
                         foreach ($option['effects'] ?? [] as $effect) {
                             $extra += (int) ($effect['extraquestion'] ?? 0);
+                            if (isset($effect['flag'])) {
+                                $flags[] = (string) $effect['flag'];
+                            }
                         }
                     }
                     if ($max > 1) {
@@ -101,11 +113,21 @@ final class autoplayer {
      * @param int $chance Percent of the decisions with a mix-up.
      * @param string[] $items Items the student carries.
      * @param string[] $roles Roles in the team.
+     * @param string[] $flags Flags of the mission the character carries.
+     * @param string $role The character's own role.
      * @return array
      */
-    public static function tangled(array $scene, string $seed, int $chance = 35, array $items = [], array $roles = []): array {
+    public static function tangled(
+        array $scene,
+        string $seed,
+        int $chance = 35,
+        array $items = [],
+        array $roles = [],
+        array $flags = [],
+        string $role = ''
+    ): array {
         $events = [];
-        foreach (self::play($scene, $items, $roles) as $k => $event) {
+        foreach (self::play($scene, $items, $roles, $flags, $role) as $k => $event) {
             $n = $scene['nodes'][$event['n']];
             $roll = crc32($seed . '|' . $k) % 100;
             if ($roll < $chance) {

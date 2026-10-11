@@ -180,7 +180,7 @@ final class missions {
             foreach ($package['chapters'] as $chapter) {
                 $place = $DB->get_record(self::T . 'chapter', ['id' => $chapterids[$chapter['code']]], '*', MUST_EXIST);
                 if (!$place->sectionid && !empty($chapter['activities'])) {
-                    activities::make_for_chapter($course, $place, $chapter, $skin, $now);
+                    activities::make_for_chapter($course, $place, $chapter, $skin, $now, $variant);
                 }
             }
         }
@@ -269,15 +269,18 @@ final class missions {
     }
 
     /**
-     * A text of a mission in the skin of the course: texts may be one string or one per skin.
+     * A text of a mission in the skin of the course: texts may be one string, one per skin, or one per skin and place
+     * (key «skin.variant», for the voice of the place: «valley.py» speaks with «ustedes»).
      *
      * @param mixed $text
      * @param string $skin
+     * @param string $variant The local examples (es, py).
      * @return string
      */
-    public static function text($text, string $skin): string {
+    public static function text($text, string $skin, string $variant = ''): string {
         if (is_array($text)) {
-            return (string) ($text[$skin] ?? reset($text));
+            // The voice of the place first (valley.py speaks with «ustedes»), then the story, then whatever there is.
+            return (string) ($text[$skin . '.' . $variant] ?? $text[$skin] ?? reset($text));
         }
         return (string) $text;
     }

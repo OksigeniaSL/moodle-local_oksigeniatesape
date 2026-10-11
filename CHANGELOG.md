@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.15.0 (2026-10-11)
+
+The scene engine for the decisions of the design review (the scenes that use it come with the next version of the
+mission):
+
+- **Memory between scenes**: what a character does in one scene can leave a flag that changes another (a branch on it,
+  an option that only appears with it).
+- **Options of a role**: besides those a teammate's role opens, an option only the own role sees: the trail of the
+  scout.
+- **Hints in the decisions**: one breath each; the sage gets the first free and pays half for the rest; free on the
+  class screen. The breath is paid when the scene ends.
+- **Passives of the roles**: the protector's shield stops the points of the first mistake of a play (the teacher still
+  sees the mistake), and the healer, finishing a scene well, gives one breath to the teammate who has least.
+- **The voice of the place**: texts can have a version for each place («valley.py», with «ustedes»).
+- What the mission gives is marked in the ledger, so that the weekly cap neither cuts it nor counts it.
+
 ## 0.14.0 (2026-10-11)
 
 First part of the decisions of the design review:

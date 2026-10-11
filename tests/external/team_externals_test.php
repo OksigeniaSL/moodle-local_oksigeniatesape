@@ -113,7 +113,9 @@ final class team_externals_test extends \advanced_testcase {
         $this->assertSame('mate', $breather['target']);
         $this->assertFalse($breather['locked']);
 
-        // The healer gives a breather to the sage; a teacher approves it.
+        // The healer gives a breather to the sage; a teacher approves it (this teacher approves even the cheap ones).
+        global $DB;
+        $DB->set_field('local_oksigeniatesape_power', 'autoapprove', 0, ['id' => $breather['id']]);
         $world = $this->call('use_power', $w->students['healer'], [$w->course->id, $breather['id'],
             $w->students['sage']->id]);
         $this->assertSame('pending', $world['powerrequests'][0]['status']);

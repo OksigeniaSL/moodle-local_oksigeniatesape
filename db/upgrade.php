@@ -251,5 +251,29 @@ function xmldb_local_oksigeniatesape_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026101118, 'local', 'oksigeniatesape');
     }
 
+    if ($oldversion < 2026101119) {
+        // What comes from the mission is marked in the ledger, so that it neither goes under the weekly cap nor fills it.
+        $table = new xmldb_table('local_oksigeniatesape_ledger');
+        $field = new xmldb_field('mission', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'capped');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        $DB->execute("UPDATE {local_oksigeniatesape_ledger} SET mission = 1 WHERE reason IN ('scene', 'battle')");
+        $DB->execute(
+            "UPDATE {local_oksigeniatesape_ledger} SET mission = 1
+              WHERE reason = 'completion' AND cmid IN (
+                    SELECT cmid FROM {local_oksigeniatesape_challenge} WHERE chapterid > 0 AND cmid > 0)"
+        );
+        $DB->execute(
+            "UPDATE {local_oksigeniatesape_ledger} SET mission = 1
+              WHERE reason = 'classroom' AND refid IN (
+                    SELECT v.id FROM {local_oksigeniatesape_validation} v
+                      JOIN {local_oksigeniatesape_challenge} c ON c.id = v.challengeid
+                     WHERE c.chapterid > 0)"
+        );
+
+        upgrade_plugin_savepoint(true, 2026101119, 'local', 'oksigeniatesape');
+    }
+
     return true;
 }

@@ -137,6 +137,65 @@ final class scene_runner_test extends \advanced_testcase {
         $this->assertSame($good['ending'], $result['ending']);
     }
 
+    /**
+     * A small scene: a question that may leave a flag, a branch on it, and a sorting with hints.
+     *
+     * @return array
+     */
+    private static function memory_scene(): array {
+        return [
+            'id' => 'T-1', 'start' => 'q', 'nodes' => [
+                'q' => ['type' => 'choice', 'prompt' => 'Who goes?', 'next' => 'b', 'options' => [
+                    ['id' => 'brave', 'label' => 'Me', 'correct' => true, 'points' => 2, 'effects' => [['flag' => 'brave']]],
+                    ['id' => 'shy', 'label' => 'Not me', 'correct' => true, 'points' => 1],
+                    ['id' => 'old', 'label' => 'As last time', 'requires' => ['flag' => 'camped']],
+                    ['id' => 'trail', 'label' => 'The trail', 'requires' => ['role' => 'scout']],
+                ]],
+                'b' => ['type' => 'branch', 'rules' => [['if' => ['flag' => 'brave'], 'next' => 'sort']], 'else' => 'quiet'],
+                'quiet' => ['type' => 'ending', 'outcome' => 'partial', 'effects' => [['saber' => 5]]],
+                'sort' => ['type' => 'classify', 'prompt' => 'Sort', 'hints' => ['One', 'Two'], 'next' => 'end',
+                    'bins' => [['id' => 'x', 'label' => 'X'], ['id' => 'y', 'label' => 'Y']],
+                    'items' => [['id' => 'i', 'label' => 'I', 'bin' => 'x', 'objective' => 'O']]],
+                'end' => ['type' => 'ending', 'outcome' => 'success', 'effects' => [['saber' => 10]]],
+            ],
+        ];
+    }
+
+    public function test_flags_open_options_and_change_the_way(): void {
+        $scene = self::memory_scene();
+        $brave = (new scene_runner($scene))->run([['n' => 'q', 'pick' => ['brave']], ['n' => 'sort', 'item' => 'i', 'bin' => 'x']]);
+        $this->assertSame('end', $brave['ending']);
+        $this->assertSame('quiet', (new scene_runner($scene))->run([['n' => 'q', 'pick' => ['shy']]])['ending']);
+        // What another scene left opens an option; the own role, another.
+        $this->assertSame('quiet', (new scene_runner($scene, [], [], ['camped']))->run([['n' => 'q', 'pick' => ['old']]])['ending']);
+        $this->assertSame('quiet', (new scene_runner($scene, [], [], [], 'scout'))->run([['n' => 'q', 'pick' => ['trail']]])['ending']);
+        $this->expectException(\moodle_exception::class);
+        (new scene_runner($scene, [], ['scout']))->run([['n' => 'q', 'pick' => ['trail']]]);
+    }
+
+    public function test_hints_are_counted_once_each(): void {
+        $scene = self::memory_scene();
+        $events = [['n' => 'q', 'pick' => ['brave']], ['n' => 'sort', 'hint' => 0], ['n' => 'sort', 'hint' => 1],
+            ['n' => 'sort', 'item' => 'i', 'bin' => 'x']];
+        $this->assertSame(2, (new scene_runner($scene))->run($events)['hints']);
+        $twice = [['n' => 'q', 'pick' => ['brave']], ['n' => 'sort', 'hint' => 0], ['n' => 'sort', 'hint' => 0],
+            ['n' => 'sort', 'item' => 'i', 'bin' => 'x']];
+        $this->expectException(\moodle_exception::class);
+        (new scene_runner($scene))->run($twice);
+    }
+
+    public function test_the_shield_stops_the_points_of_the_first_mistake(): void {
+        $scene = self::memory_scene();
+        $events = [['n' => 'q', 'pick' => ['brave']], ['n' => 'sort', 'item' => 'i', 'bin' => 'y'],
+            ['n' => 'sort', 'item' => 'i', 'bin' => 'x']];
+        $plain = (new scene_runner($scene))->run($events);
+        $shielded = (new scene_runner($scene, [], [], [], 'protector'))->run($events);
+        $this->assertSame($plain['points'] + 1, $shielded['points']);
+        $this->assertTrue($shielded['shielded']);
+        // The teacher still sees the mistake.
+        $this->assertSame($plain['objectives'], $shielded['objectives']);
+    }
+
     public function test_order_with_a_stuck_step(): void {
         $scene = autoplayer::scene('C4-3');
         $events = autoplayer::play($scene);
