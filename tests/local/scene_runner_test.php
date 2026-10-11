@@ -63,8 +63,8 @@ final class scene_runner_test extends \advanced_testcase {
     }
 
     /**
-     * A first try with mix-ups put right on the way is taken by the server, ends as the good play, and the mix-ups
-     * count against the objectives.
+     * A first try with mix-ups put right on the way is taken by the server, ends as the good play (or in the partial
+     * ending, where the scene counts what was right at the first try), and the mix-ups count against the objectives.
      *
      * @param string $code
      * @dataProvider scenes_provider
@@ -75,7 +75,9 @@ final class scene_runner_test extends \advanced_testcase {
         $good = (new scene_runner($scene))->run(autoplayer::play($scene));
         $events = \local_oksigeniatesape\local\autoplayer::tangled($scene, 'seed', 100);
         $result = (new scene_runner($scene))->run($events);
-        $this->assertSame($good['ending'], $result['ending'], $code);
+        if ($result['outcome'] !== 'partial') {
+            $this->assertSame($good['ending'], $result['ending'], $code);
+        }
         $this->assertLessThanOrEqual($good['points'], $result['points'], $code);
     }
 
@@ -88,10 +90,14 @@ final class scene_runner_test extends \advanced_testcase {
         $this->assertSame('retry', $result['outcome']);
         $this->assertSame('elegir', $result['retry']);
         $this->assertSame(['SV-01' => ['ok' => 3, 'total' => 5]], $result['objectives']);
-        // Again from where the ending sent back.
+        // Again from where the ending sent back: four of five, the creature hatches asleep.
         $events = [['n' => 'elegir', 'pick' => ['seta', 'lombriz', 'musgo', 'hormiga', 'cristal']]];
         $result = (new scene_runner($scene))->run($events, 'elegir');
-        $this->assertSame('despierta', $result['ending']);
+        $this->assertSame('dormida', $result['ending']);
+        $this->assertSame('partial', $result['outcome']);
+        // All five: it wakes up.
+        $events = [['n' => 'elegir', 'pick' => ['seta', 'lombriz', 'musgo', 'hormiga', 'rana']]];
+        $this->assertSame('despierta', (new scene_runner($scene))->run($events, 'elegir')['ending']);
     }
 
     public function test_wrong_answers_lead_back_to_the_question(): void {

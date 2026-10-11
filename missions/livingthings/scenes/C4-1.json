@@ -16,8 +16,8 @@
    "speaker": "jardinera",
    "image": "jardin-planta-reves",
    "text": {
-    "valley": "En el Jardín de la Luz hay una planta al revés: la raíz al sol y la flor enterrada. ¡Cosas del Embrollo! La jardinera nos pide ayuda: «Cada parte hace un trabajo. Si sabemos cuál, la planta vuelve a su sitio».",
-    "azara": "En el huerto de la misión, alguien ha dibujado mal una planta en el cuaderno: la raíz arriba y la flor abajo. La jardinera nos pide ayuda para corregir el dibujo, parte por parte."
+    "valley": "En el Jardín de la Luz hay una planta al revés: la raíz al sol y la flor enterrada. ¡Cosas del Embrollo! La jardinera nos pide ayuda: «Cada parte hace un trabajo. Si sabemos cuál, la planta vuelve a su sitio». En la maceta hay una etiqueta escrita deprisa, con una letra que la jardinera conoce de algo.",
+    "azara": "En el huerto de la misión, alguien ha dibujado mal una planta en el cuaderno: la raíz arriba y la flor abajo. La jardinera nos pide ayuda para corregir el dibujo, parte por parte. El dibujo lleva una nota con una letra apurada que la jardinera conoce de algo."
    },
    "next": "partes"
   },
@@ -25,6 +25,10 @@
    "type": "classify",
    "prompt": "¿Qué parte hace cada trabajo?",
    "retry": "item",
+   "hints": [
+    "Lo que toca la tierra está abajo; lo que toca el sol, arriba.",
+    "El agua entra por un sitio, sube por otro y se usa en un tercero."
+   ],
    "bins": [
     {
      "id": "raiz",
@@ -106,8 +110,8 @@
    "type": "ending",
    "outcome": "success",
    "text": {
-    "valley": "La planta da la vuelta: la raíz bajo tierra, el tallo derecho, las hojas al sol y la flor arriba. El agua entra por la raíz, sube por el tallo y llega a las hojas, que fabrican el alimento con la luz. La linterna del jardín se enciende.",
-    "azara": "El dibujo queda bien: la raíz bajo tierra, el tallo derecho, las hojas al sol y la flor arriba. El agua entra por la raíz, sube por el tallo y llega a las hojas, que fabrican el alimento con la luz."
+    "valley": "La planta da la vuelta: la raíz bajo tierra, el tallo derecho, las hojas al sol y la flor arriba. El agua entra por la raíz, sube por el tallo y llega a las hojas, que fabrican el alimento con la luz. La jardinera arranca la etiqueta: «Esta letra es de alguien del valle que escribe de memoria. Las plantas no se fían de etiquetas: ellas solo entienden de luz». {{creature}} se tumba al sol junto a la maceta. La linterna del jardín se enciende.",
+    "azara": "El dibujo queda bien: la raíz bajo tierra, el tallo derecho, las hojas al sol y la flor arriba. El agua entra por la raíz, sube por el tallo y llega a las hojas, que fabrican el alimento con la luz. La jardinera tacha la nota: «Esta letra es de alguien de la expedición que escribe de memoria». {{creature}} se tumba al sol junto al cuaderno."
    },
    "effects": [
     {

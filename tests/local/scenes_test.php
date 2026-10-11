@@ -186,14 +186,34 @@ final class scenes_test extends \advanced_testcase {
         $this->assertSame(1, $night['rewards']['gems']);
     }
 
-    public function test_the_creature_grows_once(): void {
+    public function test_the_rehearsal_gives_only_saber(): void {
         $this->resetAfterTest();
         $w = $this->make_class(1);
         $user = $w->users[0];
         $this->play($w, $user, 'C1-2');
+        // What the end of the mission gives comes with the final battle: the rehearsal only trains.
         $result = $this->play($w, $user, 'C6-2');
-        $this->assertTrue($result['rewards']['grew']);
-        $this->assertContains('naturalistlens', $result['rewards']['items']);
+        $this->assertEquals(10, $result['rewards']['saber']);
+        $this->assertSame([], $result['rewards']['items']);
+        // It closes the chapter of the tower, but its lantern is lit by the battle.
+        $this->assertSame('torre', $result['rewards']['chapter']);
+        $this->assertSame([], $result['rewards']['lanterns']);
+        $this->assertFalse($result['rewards']['grew']);
+        $this->assertEquals(1, characters::get($user->id)->creaturestage);
+    }
+
+    public function test_the_creature_grows_once(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $w = $this->make_class(1);
+        $user = $w->users[0];
+        $this->play($w, $user, 'C1-2');
+        // A scene that makes the creature grow (in the pilot mission, the final battle does).
+        $scene = $DB->get_record(self::T . 'scene', ['missionid' => $w->mission->id, 'code' => 'C6-2']);
+        $def = json_decode($scene->definition, true);
+        $def['nodes']['fin']['effects'][] = ['creature' => 'grow'];
+        $DB->set_field(self::T . 'scene', 'definition', json_encode($def), ['id' => $scene->id]);
+        $this->assertTrue($this->play($w, $user, 'C6-2')['rewards']['grew']);
         $this->play($w, $user, 'C6-2');
         $this->assertEquals(2, characters::get($user->id)->creaturestage);
     }

@@ -628,9 +628,10 @@
         var success = result.outcome !== 'retry';
         var body = show(picture(n.image || sc.id) + '<p class="scene-text">' + esc(tx(n.text)) + '</p>' + (success ?
           '<div class="conseq good"><span class="what">' + esc(t('board_scene_rewarded', result.rewarded)) + '</span></div>' :
-          '') + '<div class="actions">' + (success ? '<button class="btn btn-main" data-focus data-map>' +
-          esc(t('board_battle_back')) + '</button>' : '<button class="btn btn-main" data-focus data-retry>' +
+          '') + better(result) + '<div class="actions">' + (success ? '<button class="btn btn-main" data-focus data-map>' +
+          esc(t('board_battle_back')) + '</button>' + replay(result) : '<button class="btn btn-main" data-focus data-retry>' +
           esc(t('app_tryagain')) + '</button>') + '</div>');
+        onReplay(body);
         var map = body.querySelector('[data-map]');
         if (map) {
           map.onclick = close;
@@ -646,6 +647,30 @@
           classEnding(n);
         };
       });
+    }
+
+    /**
+     * A partial ending: it counts, and playing the scene again can make it better.
+     *
+     * @param {Object} result
+     * @return {string}
+     */
+    function better(result) {
+      return result.outcome === 'partial' ? '<p class="help scene-better">' + esc(t('app_scene_partial')) + '</p>' : '';
+    }
+
+    function replay(result) {
+      return result.outcome === 'partial' ? '<button class="btn btn-soft" data-replay>' + esc(t('app_scene_replay')) +
+        '</button>' : '';
+    }
+
+    function onReplay(body) {
+      var again = body.querySelector('[data-replay]');
+      if (again) {
+        again.onclick = function() {
+          start();
+        };
+      }
     }
 
     function ending(n) {
@@ -701,11 +726,16 @@
           esc(t('app_levelup', world.character.level)) + '</span></div>' : '';
         var done = !success ? '' : (result.attempt > 1 && !lines.length ? '<p class="help">' + esc(t('app_alreadydone')) +
           '</p>' : '');
+        if (success) {
+          // What this play left (memory between scenes) counts for the next one.
+          data.flags = run.flags.slice();
+        }
         var body = show(picture(n.image || sc.id) + '<p class="scene-text">' + esc(tx(n.text)) + '</p>' + hatch + levelup +
           (lines.length ? '<div class="conseq good"><span class="what">' + esc(t('app_forcharacter')) + '</span>' +
-          lines.map(esc).join('<br>') + '</div>' : '') + done + '<div class="actions">' + (success ?
-          '<button class="btn btn-main" data-focus data-map>' + esc(t('app_backtomap')) + '</button>' :
+          lines.map(esc).join('<br>') + '</div>' : '') + done + better(result) + '<div class="actions">' + (success ?
+          '<button class="btn btn-main" data-focus data-map>' + esc(t('app_backtomap')) + '</button>' + replay(result) :
           '<button class="btn btn-main" data-focus data-retry>' + esc(t('app_tryagain')) + '</button>') + '</div>');
+        onReplay(body);
         var map = body.querySelector('[data-map]');
         if (map) {
           map.onclick = close;

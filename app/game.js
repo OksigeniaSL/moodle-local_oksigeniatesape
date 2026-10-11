@@ -498,7 +498,8 @@
     var lantern = ch.lit ? t('app_lantern_class') : ch.mine ? t('app_lantern_mine') : t('app_lantern_off');
     var scenes = ch.scenes.map(function(sc) {
       return '<li class="item"><span class="grow"><b>' + esc(sc.title) + '</b><small>' + (sc.minutes ?
-        esc(t('app_minutes', sc.minutes)) : '') + (sc.done ? ' · ' + esc(t('app_status_done')) : '') + '</small></span>' +
+        esc(t('app_minutes', sc.minutes)) : '') + (sc.done ? ' · ' + esc(t(sc.better ? 'app_status_better' :
+        'app_status_done')) : '') + '</small></span>' +
         '<button class="btn ' + (sc.done ? 'btn-soft' : 'btn-main') + '" data-scene="' + sc.id + '">' +
         esc(sc.done ? t('app_playagain') : t('app_play')) + '</button></li>';
     }).join('');

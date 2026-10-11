@@ -17,7 +17,7 @@
   },
   "hormigas": {
    "py": "Las hormigas cortadoras no se comen las hojas: con ellas cultivan un hongo del que se alimentan.",
-   "es": "Las hormigas se han llevado en fila las semillas y las migas de vuestra cena a su almacén."
+   "es": "Las hormigas se han llevado en fila las semillas y las migas de la cena a su almacén."
   }
  },
  "start": "intro",
@@ -26,18 +26,27 @@
    "type": "story",
    "speaker": "narrador",
    "image": "lago-atardecer",
-   "text": "Os acercáis a la orilla del Gran Lago y empieza a oscurecer. Hay que pasar aquí la noche. Primero, decidid dónde acampar.",
+   "text": "La expedición llega a la orilla del Gran Lago y empieza a oscurecer. Hay que pasar aquí la noche. Lo primero, decidir dónde acampar.",
    "next": "lugar"
   },
   "lugar": {
    "type": "choice",
-   "prompt": "¿Dónde acampáis?",
+   "prompt": "¿Dónde acampamos?",
+   "hints": [
+    "Donde hay agua quieta hay larvas. Y las larvas, al crecer, vuelan.",
+    "Un camino de hormigas lleva a algún sitio: a su almacén."
+   ],
    "options": [
     {
      "id": "agua",
      "label": "junto al agua quieta de la orilla",
      "points": 1,
      "objective": "SV-06",
+     "effects": [
+      {
+       "flag": "mosquitos"
+      }
+     ],
      "feedback": "Es un sitio llano y bonito.",
      "next": "noche-agua"
     },
@@ -46,7 +55,7 @@
      "label": "bajo un árbol hueco con un camino de hormigas",
      "points": 1,
      "objective": "SV-06",
-     "feedback": "El árbol os protege del viento.",
+     "feedback": "El árbol protege del viento.",
      "next": "noche-hormigas"
     },
     {
@@ -54,7 +63,18 @@
      "label": "en un alto seco entre arbustos",
      "points": 2,
      "objective": "SV-06",
-     "feedback": "Sube un poco, pero el suelo está seco.",
+     "feedback": "Hay que subir un poco, pero el suelo está seco.",
+     "next": "noche-alto"
+    },
+    {
+     "id": "escarmentados",
+     "label": "en el alto seco, lejos del agua, escarmentados de los mosquitos",
+     "requires": {
+      "flag": "mosquitos"
+     },
+     "points": 2,
+     "objective": "SV-06",
+     "feedback": "Esta vez, ni un mosquito. Lo que se vive también enseña.",
      "next": "noche-alto"
     }
    ]
@@ -62,12 +82,15 @@
   "noche-agua": {
    "type": "story",
    "image": "noche-mosquitos",
-   "text": "A medianoche os comen los mosquitos. Sus larvas viven en el agua quieta: son invertebrados y alimento de peces, ranas y murciélagos. No es grave, pero la noche se hace larga.",
+   "text": "A medianoche los mosquitos no dejan dormir a nadie. Sus larvas viven en el agua quieta: son invertebrados y alimento de peces, ranas y murciélagos. No es grave, pero la noche se hace larga.",
    "next": "charca"
   },
   "charca": {
    "type": "choice",
-   "prompt": "Al amanecer, en el agua quieta de la orilla, algo se mueve. ¿Qué hacéis?",
+   "prompt": "Al amanecer, en el agua quieta de la orilla, algo se mueve. ¿Qué hacemos?",
+   "hints": [
+    "Con la red se observa de cerca y se devuelve al agua."
+   ],
    "options": [
     {
      "id": "red",
@@ -82,14 +105,14 @@
        "gems": 1
       }
      ],
-     "feedback": "En la red, unas larvas de mosquito y un renacuajo. Los miráis bien y los devolvéis al agua: la red es para observar, no para llevarse nada."
+     "feedback": "En la red, unas larvas de mosquito y un renacuajo. Bien mirados, vuelven al agua: la red es para observar, no para llevarse nada."
     },
     {
      "id": "orilla",
      "label": "Mirarlo desde la orilla",
      "points": 1,
      "objective": "SV-06",
-     "feedback": "Desde la orilla solo se ven puntitos que se mueven. Algo vive ahí, pero no sabéis qué."
+     "feedback": "Desde la orilla solo se ven puntitos que se mueven. Algo vive ahí, pero no se sabe qué."
     }
    ],
    "next": "refugio"
@@ -103,12 +126,15 @@
   "noche-alto": {
    "type": "story",
    "image": "noche-buho",
-   "text": "Dormís bien. De madrugada se oye un aleteo y un chillido corto: un búho ha cazado un ratón.",
+   "text": "La expedición duerme bien. De madrugada se oye un aleteo y un chillido corto: un búho ha cazado un ratón. {{creature}} levanta las orejas.",
    "next": "farol"
   },
   "farol": {
    "type": "choice",
-   "prompt": "¿Encendéis el farol para mirar?",
+   "prompt": "¿Encendemos el farol para mirar?",
+   "hints": [
+    "Lo que un animal deja en el suelo también cuenta lo que come."
+   ],
    "options": [
     {
      "id": "farol",
@@ -123,25 +149,64 @@
        "gems": 1
       }
      ],
-     "feedback": "Con el farol veis al búho en una rama, con el ratón. A sus pies, unas bolitas grises: egagrópilas, con huesecillos de lo que comió."
+     "feedback": "Con el farol se ve al búho en una rama, con el ratón. A sus pies, unas bolitas grises: egagrópilas, con huesecillos de lo que comió."
     },
     {
      "id": "dormir",
      "label": "Seguir durmiendo",
      "points": 1,
      "objective": "SV-06",
-     "feedback": "Por la mañana, bajo el árbol, encontráis unas bolitas grises: egagrópilas del búho, con huesecillos de ratón dentro."
+     "feedback": "Por la mañana, bajo el árbol, aparecen unas bolitas grises: egagrópilas del búho, con huesecillos de ratón dentro."
+    },
+    {
+     "id": "guardia",
+     "label": "Que el protector se acerque despacio, sin luz, y mire",
+     "requires": {
+      "teamrole": "protector"
+     },
+     "locked": "Esto lo haría alguien que no tiene miedo de la noche: el protector del equipo.",
+     "points": 2,
+     "objective": "SV-06",
+     "feedback": "Sin luz y sin ruido, el protector ve al búho tragarse el ratón entero. Luego, nada: el bosque sigue. A la mañana, bajo la rama, las egagrópilas con los huesecillos."
+    },
+    {
+     "id": "conocido",
+     "label": "Llamar al búho en voz baja, que nos conoce del bosque",
+     "requires": {
+      "flag": "pregunta-buena"
+     },
+     "points": 2,
+     "objective": "SV-06",
+     "feedback": "El búho baja a una rama cercana. «Los que preguntan bien. Esta noche, un ratón. Mañana, bajo la rama, una bolita gris con sus huesos: una egagrópila.»"
+    },
+    {
+     "id": "bolitas",
+     "label": "Buscar a tientas bajo el árbol lo que el búho deja caer",
+     "requires": {
+      "role": "scout"
+     },
+     "points": 2,
+     "objective": "SV-06",
+     "effects": [
+      {
+       "page": "egagropilas"
+      }
+     ],
+     "feedback": "Entre las raíces, unas bolitas grises y secas. Dentro, huesecillos y pelo: lo que el búho no digiere. Una página nueva para el Gran Libro."
     }
    ],
    "next": "refugio"
   },
   "refugio": {
    "type": "choice",
-   "prompt": "Para la noche siguiente, ¿con qué improvisáis un refugio? (Elegid dos.)",
+   "prompt": "Para la noche siguiente, ¿con qué improvisamos un refugio? Elegimos dos.",
    "select": {
     "min": 2,
     "max": 2
    },
+   "hints": [
+    "Para el refugio sirve lo que ya no está vivo."
+   ],
    "options": [
     {
      "id": "ramas-caidas",
@@ -187,7 +252,10 @@
   },
   "cadena": {
    "type": "choice",
-   "prompt": "Con lo que habéis visto esta noche, ¿qué cadena alimentaria apuntáis en el Gran Libro?",
+   "prompt": "Con lo visto esta noche, ¿qué cadena alimentaria apuntamos en el Gran Libro?",
+   "hints": [
+    "Se empieza por quien fabrica su propio alimento. La flecha va hacia quien se lo come."
+   ],
    "options": [
     {
      "id": "buena",
@@ -209,15 +277,28 @@
      "label": "mosquito → búho → hierba",
      "correct": false,
      "objective": "SV-06",
-     "feedback": "La hierba no se come al búho. Empezad por quien fabrica su propio alimento."
+     "feedback": "La hierba no se come al búho. Se empieza por quien fabrica su propio alimento."
     }
    ],
-   "next": "fin"
+   "next": "apuntado"
+  },
+  "apuntado": {
+   "type": "branch",
+   "rules": [
+    {
+     "if": {
+      "correct_at_least": 1,
+      "in": "cadena"
+     },
+     "next": "fin"
+    }
+   ],
+   "else": "a-medias"
   },
   "fin": {
    "type": "ending",
    "outcome": "success",
-   "text": "Cuando las cadenas del lago vuelven a estar unidas, el agua refleja todas las linternas del valle a la vez. Solo queda una a oscuras: la de la torre, donde se esconde el Embrollo.",
+   "text": "Cuando las cadenas del lago vuelven a estar unidas, el agua refleja todas las linternas del valle a la vez. Solo queda una a oscuras: la de la torre, donde se esconde el Embrollo. {{creature}} se duerme junto al fuego con la barriga llena de nada: todavía no sabe qué come.",
    "effects": [
     {
      "saber": 25
@@ -227,6 +308,19 @@
     },
     {
      "page": "cadenas"
+    }
+   ]
+  },
+  "a-medias": {
+   "type": "ending",
+   "outcome": "partial",
+   "text": "Amanece y la página del lago queda apuntada a medias: las flechas van hacia donde no deben. El agua refleja las linternas, pero la del lago parpadea. «Otra noche aquí, y lo apuntamos bien», dice la garza desde el agua. {{creature}} bosteza.",
+   "effects": [
+    {
+     "saber": 15
+    },
+    {
+     "lantern": "lago"
     }
    ]
   }

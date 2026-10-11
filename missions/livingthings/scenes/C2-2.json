@@ -16,15 +16,41 @@
    "speaker": "bibliotecaria",
    "image": "biblioteca-torre",
    "text": {
-    "valley": "En la torre, el Gran Libro guarda a los seres vivos por grupos, cada uno en su estante. El Embrollo los ha cambiado de sitio y la torre cruje. Tenéis una carretilla llena de seres mal colocados.",
-    "azara": "Las muestras viajan en cajas, una por cada gran grupo de seres vivos. En el traslado se han caído las etiquetas. Hay que volver a colocarlas antes de que salga el barco."
+    "valley": "En la torre de la biblioteca, el Gran Libro guarda a los seres vivos por grupos, cada uno en su estante. El Embrollo los ha cambiado de sitio y la torre cruje. Doña Hebra, la bibliotecaria, cuenta páginas con los dedos y señala una carretilla llena de seres mal colocados: «Cada uno a su estante, por favor. Y nada de fiarse de lo que diga la etiqueta».",
+    "azara": "Las muestras viajan en cajas, una por cada gran grupo de seres vivos. En el traslado se han caído las etiquetas. La archivera cuenta las cajas con los dedos: «Hay que volver a colocarlas antes de que salga el barco. Y nada de fiarse de la etiqueta vieja»."
+   },
+   "next": "memoria"
+  },
+  "memoria": {
+   "type": "branch",
+   "rules": [
+    {
+     "if": {
+      "flag": "criatura-dormida"
+     },
+     "next": "dormida"
+    }
+   ],
+   "else": "colocar"
+  },
+  "dormida": {
+   "type": "story",
+   "speaker": "bibliotecaria",
+   "image": "biblioteca-torre",
+   "text": {
+    "valley": "Doña Hebra se fija en {{creature}}, que va con los ojos a medio abrir. «¿Nació dormida, eh? Aquí dentro se despierta cualquiera: con lo que cruje esta torre…» {{creature}} bosteza y mira los estantes.",
+    "azara": "La archivera se fija en {{creature}}, que va con los ojos a medio abrir. «¿Nació dormida, eh? Con el ruido de las cajas se despierta cualquiera.» {{creature}} bosteza y mira las etiquetas caídas."
    },
    "next": "colocar"
   },
   "colocar": {
    "type": "classify",
-   "prompt": "Devolved cada ser vivo a su estante.",
+   "prompt": "Cada ser vivo, a su estante.",
    "retry": "item",
+   "hints": [
+    "¿Fabrica su alimento con la luz, o se alimenta de otros seres o de sus restos?",
+    "Lo que es tan pequeño que no se ve a simple vista tiene estante propio."
+   ],
    "bins": [
     {
      "id": "animales",
@@ -116,7 +142,7 @@
        }
       ]
      },
-     "locked": "Solo se ven con una lupa potente. Pedidle la suya a un mago o una maga del equipo.",
+     "locked": "Solo se ven con una lupa potente. Esto lo haría alguien que sabe mirar de cerca: el sabio del equipo tiene una.",
      "effects": [
       {
        "gems": 1
@@ -127,14 +153,54 @@
      }
     }
    ],
+   "next": "crujido"
+  },
+  "crujido": {
+   "type": "choice",
+   "prompt": {
+    "valley": "Doña Hebra pregunta: «¿Y por qué crujía la torre?»",
+    "azara": "La archivera pregunta: «¿Y por qué se cayeron las etiquetas?»"
+   },
+   "hints": [
+    "Lo que cruje es lo que no está en su sitio."
+   ],
+   "options": [
+    {
+     "id": "sitio",
+     "label": "Porque cada ser pesaba en un estante que no era el suyo",
+     "correct": true,
+     "points": 2,
+     "feedback": "«Eso es. Lo mal colocado pesa el doble.» La torre, ahora, está en silencio."
+    },
+    {
+     "id": "vieja",
+     "label": "Porque la torre es muy vieja",
+     "correct": false,
+     "feedback": "«Vieja es. Pero crujía solo desde que el Embrollo pasó por aquí.»"
+    },
+    {
+     "id": "rastro",
+     "label": "Por el rastro de tinta que va de los estantes al pasillo",
+     "requires": {
+      "role": "scout"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "Doña Hebra palidece y se mira los dedos manchados. «Esa tinta es mía.» Una gema por mirar donde nadie miraba."
+    }
+   ],
    "next": "fin"
   },
   "fin": {
    "type": "ending",
    "outcome": "success",
    "text": {
-    "valley": "La torre deja de crujir. En lo alto se enciende una linterna con cuatro cristales de colores: uno por cada gran grupo de seres vivos.",
-    "azara": "Las cajas, bien etiquetadas, quedan listas para viajar a España."
+    "valley": "La torre deja de crujir. En lo alto se enciende una linterna con cuatro cristales de colores: uno por cada gran grupo de seres vivos. Doña Hebra cuenta las páginas una vez más y baja la voz: «La noche del enredo yo estaba aquí, copiando páginas de memoria, sin comprobar. A la mañana siguiente, el Embrollo». {{creature}} le olisquea los dedos manchados y estornuda.",
+    "azara": "Las cajas, bien etiquetadas, quedan listas para viajar a España. La archivera baja la voz: «Las etiquetas viejas las escribí de memoria, sin mirar la muestra. Por eso estaban mal». {{creature}} le olisquea los dedos manchados de tinta y estornuda."
    },
    "effects": [
     {

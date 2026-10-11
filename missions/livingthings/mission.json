@@ -1,6 +1,6 @@
 {
  "code": "livingthings",
- "version": 6,
+ "version": 7,
  "lang": "es",
  "ages": "9–11",
  "title": {
@@ -16,8 +16,8 @@
   "azara": "El cuaderno de Azara"
  },
  "prologue": {
-  "valley": "En el Valle de Tesapé nunca era del todo de noche: en cada sendero brillaba una linterna, y todas se alimentaban del Gran Libro de la Vida, donde estaba anotado cada ser vivo del valle. Una mañana, el libro apareció revuelto. Ha sido el Embrollo: no rompe nada, lo confunde todo. Cada página que enreda es una luz que se pierde. Vuestra misión: recorrer el valle, observar a cada ser vivo y volver a encender las linternas.",
-  "azara": "En 1781 llegó al Río de la Plata Félix de Azara, un ingeniero militar aragonés. Venía a medir fronteras, pero pasó veinte años observando y describiendo la fauna de estas tierras. Imaginemos que aparece un cuaderno de campo de su expedición, con páginas perdidas y notas mezcladas. Vuestra clase será la expedición que lo complete."
+  "valley": "Una noche, en el Valle de Tesapé, se apagó la primera linterna. Luego otra. En cada sendero brillaba una, y todas se alimentaban del Gran Libro de la Vida, donde estaba anotado cada ser vivo del valle. Por la mañana, el libro apareció revuelto y, junto a él, unas huellas que no eran de ningún animal conocido. Ha sido el Embrollo: no rompe nada, lo confunde todo. Cada página en su sitio, una linterna encendida; cada página enredada, un rincón del valle a oscuras. Los sabios del valle llevan semanas intentándolo y no pueden. Por eso han llamado a una expedición nueva: recorrer el valle, observar a cada ser vivo, seguir esas huellas y volver a encender las linternas.",
+  "azara": "En 1781 llegó al Río de la Plata Félix de Azara, un ingeniero militar aragonés. Venía a medir fronteras, pero pasó veinte años observando y describiendo la fauna de estas tierras. Imaginemos que aparece un cuaderno de campo de su expedición, con páginas perdidas, notas mezcladas y manchas de tinta corrida que nadie sabe explicar. La clase es la expedición que lo completará."
  },
  "skins": {
   "valley": "El valle",
@@ -43,7 +43,7 @@
    "azara": "El naturalista"
   },
   "bibliotecaria": {
-   "valley": "La bibliotecaria",
+   "valley": "Doña Hebra, la bibliotecaria",
    "azara": "La archivera"
   },
   "buho": {
@@ -98,41 +98,89 @@
   }
  },
  "battle": {
-  "reward": "thread"
+  "reward": "thread",
+  "final": {
+   "saber": 30,
+   "item": "naturalistlens",
+   "lantern": "torre",
+   "creature": "grow"
+  }
  },
  "pages": {
   "ser-vivo": {
    "title": "Ser vivo",
-   "text": "Un ser vivo se nutre, se relaciona y se reproduce. Una piedra que rueda o el humo que sube se mueven, pero no hacen ninguna de las tres cosas."
+   "text": "Un ser vivo se nutre, se relaciona y se reproduce. Una piedra que rueda o el humo que sube se mueven, pero no hacen ninguna de las tres cosas. Esta página la escribí de nuevo con la lombriz delante, para no fiarme de mi memoria."
   },
   "grupos": {
    "title": "Los grandes grupos",
-   "text": "Los seres vivos se agrupan en animales, plantas, hongos y seres tan pequeños que solo se ven con lupa o microscopio."
+   "text": "Los seres vivos se agrupan en animales, plantas, hongos y seres tan pequeños que solo se ven con lupa o microscopio. La seta se me coló tres veces entre las plantas antes de que la mirara de verdad."
   },
   "caracol": {
    "title": "El caracol",
-   "text": "Es un invertebrado de la familia de los moluscos. Lleva concha, necesita humedad y deja un rastro brillante al moverse."
+   "text": "Es un invertebrado de la familia de los moluscos. Lleva concha, necesita humedad y deja un rastro brillante al moverse. Lo seguí media mañana para comprobar lo del rastro."
   },
   "vertebrados": {
    "title": "Los vertebrados",
-   "text": "Tienen esqueleto por dentro, con columna vertebral. Son cinco grupos, mamíferos, aves, reptiles, anfibios y peces. Los demás animales son invertebrados."
+   "text": "Tienen esqueleto por dentro, con columna vertebral. Son cinco grupos, mamíferos, aves, reptiles, anfibios y peces. Los demás animales son invertebrados. El murciélago y el delfín me engañaron una vez; ya no."
   },
   "plantas": {
    "title": "Cómo se alimentan las plantas",
-   "text": "Las plantas fabrican su propio alimento con la luz del sol, el agua y el aire. Sin luz crecen pálidas y débiles."
+   "text": "Las plantas fabrican su propio alimento con la luz del sol, el agua y el aire. Sin luz crecen pálidas y débiles. Las del sótano lo demostraron sin que nadie se lo pidiera."
   },
   "viaje-agua": {
    "title": "El viaje del agua",
-   "text": "El agua entra por la raíz, sube por el tallo hasta las hojas y sale de ellas convertida en vapor."
+   "text": "El agua entra por la raíz, sube por el tallo hasta las hojas y sale de ellas convertida en vapor. Lo comprobé con un clavel blanco en agua con tinta; al día siguiente, el clavel era azul."
   },
   "ecosistema": {
    "title": "El ecosistema",
-   "text": "Un ecosistema son los seres vivos y el lugar donde viven, juntos, con todo lo que se relacionan."
+   "text": "Un ecosistema son los seres vivos y el lugar donde viven, juntos, con todo lo que se relacionan. El agua, la luz y las piedras del lago no están vivas, pero sin ellas no hay lago."
   },
   "cadenas": {
    "title": "Las cadenas alimentarias",
-   "text": "Las plantas producen el alimento, los herbívoros se comen a las plantas y los carnívoros a otros animales. Los descomponedores devuelven los restos al suelo."
+   "text": "Las plantas producen el alimento, los herbívoros se comen a las plantas y los carnívoros a otros animales. Los descomponedores devuelven los restos al suelo. La flecha va siempre del que es comido al que come."
+  },
+  "huellas-de-tinta": {
+   "title": "Las huellas que no son de nadie",
+   "text": "Las huellas del Embrollo no son de pata ni de pezuña. Son manchas de tinta corrida, de página escrita deprisa y sin comprobar. Donde alguien da algo por cierto sin mirarlo, aparece una."
+  },
+  "la-letra": {
+   "title": "La letra de las etiquetas",
+   "text": "Las etiquetas pálidas del sótano están escritas con la misma letra apurada que las páginas copiadas la noche del enredo. Las plantas no se fiaron de ellas. Ellas solo entienden de luz."
+  },
+  "egagropilas": {
+   "title": "Las egagrópilas",
+   "text": "El búho no mastica. Traga entero y, horas después, devuelve en una bolita gris lo que no digiere, huesos y pelo. Abrir una egagrópila es leer qué cenó."
   }
+ },
+ "letters": {
+  "claro": {
+   "valley": "¿Vivo, no vivo? Qué más da. Yo prefiero las pompas: brillan y no hacen preguntas. Lo de la tinta en el barro no fui yo. Bueno, un poco.",
+   "azara": "Nota suelta, de letra enredada: «¿Vivo, no vivo? Qué más da. Las pompas brillan y no hacen preguntas. La tinta del margen no es mía. Bueno, un poco»."
+  },
+  "biblioteca": {
+   "valley": "He puesto la seta con las lechugas. Las dos son blandas por dentro, ¿no? ¿No? Bah. La bibliotecaria copiaba sin mirar y yo solo… ayudé.",
+   "azara": "Nota suelta, de letra enredada: «La seta va con las lechugas. Las dos son blandas por dentro, ¿no? ¿No? Bah. Alguien copiaba sin mirar y yo solo ayudé»."
+  },
+  "bosque": {
+   "valley": "El búho dice que la pluma no es un animal. El búho tiene plumas. Que me lo expliquen. Y lo de mis huellas: no son de ningún animal, claro. Son mías.",
+   "azara": "Nota suelta, de letra enredada: «El baqueano dice que la pluma no es un animal. El baqueano no tiene plumas, así que no sabe. Las manchas del barro son mías»."
+  },
+  "jardin": {
+   "valley": "A las plantas les he dado leche. Es blanca y sana. Pues no sé qué les pasa. Las etiquetas las escribí yo con una letra prestada. Comprobar da mucha pereza.",
+   "azara": "Nota suelta, de letra enredada: «A las plantas les di leche. Es blanca y sana. Pues no sé qué les pasa. Las notas las escribí con una letra prestada. Comprobar da pereza»."
+  },
+  "lago": {
+   "valley": "Si quitas al ratón, el búho come hierba. Así de fácil. ¿Qué? ¿Que no? La garza me vio beber de las páginas tachadas. Estaban riquísimas: nadie las había comprobado.",
+   "azara": "Nota suelta, de letra enredada: «Si falta el ratón, el búho come hierba. Así de fácil. ¿Que no? La garza me vio con las notas tachadas. Estaban riquísimas: nadie las había comprobado»."
+  },
+  "torre": {
+   "valley": "Ya lo sé: estoy hecho de lo que se da por cierto sin mirar. Pues que se mire menos y así crezco. ¿No? Vale. A la torre, que espero con los nudos buenos.",
+   "azara": "Nota suelta, de letra enredada: «Ya lo sé: estoy hecho de lo que se da por cierto sin mirar. Pues que miren menos y así crezco. ¿No? Está bien. Que suban, que espero con los nudos buenos»."
+  }
+ },
+ "ending": {
+  "valley": "Sin enredos que lanzar, el Embrollo se encoge hasta quedarse en una madeja pequeña, que todavía rebulle. La druida mayor la guarda en un frasco y lo mira al trasluz. «No lo hemos destruido. Lo hemos ordenado. Y los nudos, ya se sabe, vuelven a hacerse solos: siempre habrá algo que demos por cierto sin mirar. Por eso existen los naturalistas.» La linterna de la torre se enciende y el Gran Libro queda completo, con las páginas de esta expedición dentro. Las criaturas se estiran, crecen un poco… y se quedan mirando el frasco: del tapón sale un hilo finísimo que se pierde ventana afuera, montaña arriba.",
+  "azara": "Las últimas notas mezcladas quedan en su sitio. El naturalista cierra el cuaderno y lo mira al trasluz: entre las páginas asoma un hilo de tinta que sigue más allá de la última, hacia tierras que todavía no están dibujadas. «Un cuaderno nunca se acaba», dice. «Siempre hay una página que comprobar.» Como hizo Azara con sus Apuntamientos, la expedición va a compartir lo que ha descubierto. Las criaturas crecen un poco y se quedan mirando el hilo."
  },
  "chapters": [
   {
@@ -146,6 +194,24 @@
     "azara": "La primera noche de la expedición. El cuaderno pide distinguir lo que vive de lo que no."
    },
    "offscreen": "El rastreo del patio, inventario de seres vivos e inertes",
+   "pacts": [
+    "Traer de casa una hoja, una semilla o una piedra para el inventario",
+    "Apuntar en el cuaderno de campo tres seres vivos del camino a clase",
+    "Regar las semillas del experimento el día que le toque al equipo",
+    "Subir la foto o el dibujo del inventario del equipo"
+   ],
+   "sessions": [
+    {
+     "do": "El rastreo del patio por equipos, con el cuaderno de campo. Se siembra el experimento de la luz.",
+     "materials": "Cuaderno de campo o folios, lápices; semillas, vasos, tierra y una caja para la oscuridad",
+     "minutes": 50
+    },
+    {
+     "do": "El nido en la pizarra, votado por la clase. Después, cada equipo pasa a limpio su inventario.",
+     "scene": "C1-2",
+     "minutes": 50
+    }
+   ],
    "x": 160,
    "y": 560,
    "activities": [
@@ -163,7 +229,7 @@
      "code": "inventario",
      "module": "assign",
      "name": "El inventario del equipo",
-     "intro": "Subid el inventario que hicisteis en el patio: los seres vivos y los inertes que encontrasteis, con un dibujo o una foto de cada uno y una frase que diga por qué lo pusisteis en cada lista.",
+     "intro": "El equipo sube el inventario del patio: los seres vivos y los inertes que encontró, con un dibujo o una foto de cada uno y una frase que diga por qué va en cada lista.",
      "saber": 20,
      "teamwork": true,
      "objectives": [
@@ -184,6 +250,23 @@
     "azara": "Las muestras viajan en cajas por grupos, pero se han caído las etiquetas."
    },
    "offscreen": "Al rincón de tu reino, juego en el patio",
+   "pacts": [
+    "Recortar en casa las tarjetas de los seres vivos del equipo",
+    "Buscar un hongo de verdad, en la cocina o en el parque, y contarlo en clase",
+    "Explicar a alguien de casa por qué una seta no es una planta"
+   ],
+   "sessions": [
+    {
+     "do": "Clasificar las tarjetas de seres vivos por equipos. Un hongo y una bacteria, para discutir.",
+     "materials": "Las tarjetas de seres vivos, impresas y recortadas",
+     "minutes": 50
+    },
+    {
+     "do": "Los estantes en la pizarra y, en el patio, al rincón de cada reino.",
+     "scene": "C2-2",
+     "minutes": 50
+    }
+   ],
    "x": 300,
    "y": 470
   },
@@ -198,6 +281,24 @@
     "azara": "En el cuaderno hay descripciones de animales sin nombre."
    },
    "offscreen": "Lupas de cartón y caza de bichos, sin dañarlos",
+   "pacts": [
+    "Traer hecha de casa una lupa o un visor de cartón",
+    "Dibujar o fotografiar un invertebrado sin tocarlo",
+    "Preguntar en casa cómo se llama un animal del lugar en otra lengua"
+   ],
+   "sessions": [
+    {
+     "do": "Las preguntas al búho en la pizarra. Después, cada equipo empieza su clave del patio.",
+     "scene": "C3-2",
+     "minutes": 50
+    },
+    {
+     "do": "Defensa del nido en la pizarra y búsqueda de invertebrados en el patio, sin dañarlos.",
+     "game": "nestdefence",
+     "materials": "Lupas o visores de cartón",
+     "minutes": 50
+    }
+   ],
    "x": 120,
    "y": 360,
    "games": [
@@ -215,6 +316,23 @@
     "azara": "Las plantas que viajaron a oscuras han salido pálidas."
    },
    "offscreen": "El experimento de la luz, semillas con luz y sin luz",
+   "pacts": [
+    "Regar y medir las semillas del experimento los días de su turno",
+    "Apuntar en la tabla del equipo lo medido cada día",
+    "Traer una hoja o una flor para el herbario de la clase"
+   ],
+   "sessions": [
+    {
+     "do": "Los resultados del experimento: qué se predijo, qué se ve y qué se concluye.",
+     "materials": "Las semillas sembradas en el primer capítulo, una regla",
+     "minutes": 50
+    },
+    {
+     "do": "El sótano de las linternas en la pizarra, comparado con lo que dijo el experimento.",
+     "scene": "C4-2",
+     "minutes": 50
+    }
+   ],
    "reward": "lantern",
    "x": 280,
    "y": 260,
@@ -223,7 +341,7 @@
      "code": "experimento",
      "module": "assign",
      "name": "El registro del experimento",
-     "intro": "Subid el registro del experimento de las semillas con luz y sin luz: fotos o dibujos de cada día, la tabla con lo que medisteis y vuestra conclusión. ¿Qué necesita una planta para fabricar su alimento?",
+     "intro": "El equipo sube el registro del experimento de las semillas con luz y sin luz: fotos o dibujos de cada día, la tabla con lo medido y la conclusión. ¿Qué necesita una planta para fabricar su alimento?",
      "saber": 25,
      "teamwork": true,
      "objectives": [
@@ -244,6 +362,23 @@
     "azara": "La expedición llega a la orilla de un gran río al caer la tarde."
    },
    "offscreen": "La carrera de la cadena, pilla-pilla de productores y consumidores",
+   "pacts": [
+    "Traer dibujada en una tira una cadena alimentaria del entorno",
+    "Leer lo del lince o lo del tagua y traer una pregunta",
+    "Contestar en el foro a la idea de alguien de otro equipo"
+   ],
+   "sessions": [
+    {
+     "do": "La noche junto al lago en la pizarra. Después, cada equipo representa una cadena alimentaria.",
+     "scene": "C5-2",
+     "materials": "Tiras de papel o cartulina",
+     "minutes": 50
+    },
+    {
+     "do": "Lectura con datos del lince ibérico o del tagua. ¿Y si desapareciera un eslabón?",
+     "minutes": 50
+    }
+   ],
    "x": 150,
    "y": 165,
    "activities": [
@@ -267,10 +402,27 @@
     "azara": "El cuaderno"
    },
    "intro": {
-    "valley": "En lo alto de la torre se esconde el Embrollo.",
+    "valley": "En lo alto de la torre se esconde el Embrollo. Las huellas de tinta acaban en su puerta.",
     "azara": "Antes de entregar el cuaderno hay que corregir lo que se mezcló."
    },
    "offscreen": "La exposición del naturalista, la guía de campo de la clase",
+   "pacts": [
+    "Terminar la ficha de su especie en la guía de campo",
+    "Comprobar un dato de la ficha de otro equipo y decir de dónde sale",
+    "Ensayar con el equipo la exposición de la guía"
+   ],
+   "sessions": [
+    {
+     "do": "La guía de campo de la clase. Cada equipo termina sus fichas y comprueba las de otro.",
+     "minutes": 50
+    },
+    {
+     "do": "El ensayo en la pizarra y, después, la batalla final contra el Embrollo.",
+     "scene": "C6-2",
+     "battle": "final",
+     "minutes": 50
+    }
+   ],
    "x": 290,
    "y": 75,
    "activities": [
@@ -278,7 +430,7 @@
      "code": "guia",
      "module": "data",
      "name": "La guía de campo de la clase",
-     "intro": "Cada equipo añade fichas de especies de vuestro entorno: nombre, dibujo o foto, grupo, cómo es, dónde vive y qué lugar ocupa en una cadena alimentaria. Entre todos, la guía de campo de la clase.",
+     "intro": "Cada equipo añade fichas de especies de su entorno: nombre, dibujo o foto, grupo, cómo es, dónde vive y qué lugar ocupa en una cadena alimentaria. Entre todos, la guía de campo de la clase.",
      "saber": 30,
      "teamwork": true,
      "objectives": [

@@ -15,13 +15,20 @@
    "type": "story",
    "speaker": "barquero",
    "image": "barcaza-lago",
-   "text": "Hay que cruzar el lago con los animales del bosque. La barcaza tiene cinco compartimentos para los vertebrados y una bodega para los invertebrados. Cada uno tiene que viajar donde le toca. Algunos pasajeros engañan.",
+   "text": {
+    "valley": "Hay que cruzar el lago con los animales del bosque. La barcaza tiene cinco compartimentos para los vertebrados y una bodega para los invertebrados. Cada uno tiene que viajar donde le toca. El barquero avisa: «Algunos pasajeros engañan. Y el que viaja donde no le toca protesta todo el camino».",
+    "azara": "Hay que cruzar el río con los animales que la expedición lleva a describir. La barcaza tiene cinco compartimentos para los vertebrados y una bodega para los invertebrados. El barquero avisa: «Algunos pasajeros engañan. Y el que viaja donde no le toca protesta todo el camino»."
+   },
    "next": "embarcar"
   },
   "embarcar": {
    "type": "classify",
    "prompt": "¿En qué compartimento viaja cada pasajero?",
    "retry": "item",
+   "hints": [
+    "Vivir en el agua no hace pez a nadie: ¿cómo respira?",
+    "Volar no hace ave a nadie: ¿plumas o pelo?"
+   ],
    "bins": [
     {
      "id": "mamiferos",
@@ -112,22 +119,93 @@
      "bin": "invertebrados",
      "objective": "SV-04",
      "feedback": {
-      "reptiles": "«No tengo huesos: voy a la bodega de los invertebrados. Y cuenta mis patas: ocho. No soy un insecto.»"
+      "reptiles": "«No tengo huesos: voy a la bodega de los invertebrados. Y a contar mis patas: ocho. No soy un insecto.»"
      }
     }
    ],
-   "next": "fin"
+   "next": "lastimada"
   },
-  "fin": {
+  "lastimada": {
+   "type": "choice",
+   "prompt": "Antes de zarpar, la salamandra se queda quieta en un rincón: tiene una pata lastimada. ¿Qué hacemos?",
+   "hints": [
+    "¿Cómo es la piel de un anfibio? Eso dice lo que necesita."
+   ],
+   "options": [
+    {
+     "id": "agua",
+     "label": "Mojarla con agua del lago y dejarla a la sombra",
+     "correct": true,
+     "points": 2,
+     "objective": "SV-04",
+     "feedback": "La piel húmeda es su vida: también respira por ella. Se recupera despacio durante el viaje."
+    },
+    {
+     "id": "sol",
+     "label": "Ponerla al sol para que se seque y entre en calor",
+     "correct": false,
+     "objective": "SV-04",
+     "feedback": "Se queda más quieta y la piel se le agrieta: un anfibio necesita humedad. El barquero la moja a tiempo."
+    },
+    {
+     "id": "sanador",
+     "label": "Que el sanador la cure con una hoja mojada sobre la pata, a la sombra",
+     "requires": {
+      "teamrole": "healer"
+     },
+     "locked": "Esto lo haría alguien que cuida a los demás: el sanador del equipo.",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-04",
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "Con la hoja húmeda, la salamandra vuelve a moverse antes de llegar a la otra orilla. «Un anfibio se cura con agua, no con sol.»"
+    }
+   ],
+   "next": "revision"
+  },
+  "revision": {
+   "type": "branch",
+   "rules": [
+    {
+     "if": {
+      "correct_at_least": 7,
+      "in": "embarcar"
+     },
+     "next": "llegada"
+    }
+   ],
+   "else": "protesta"
+  },
+  "llegada": {
    "type": "ending",
    "outcome": "success",
-   "text": "La barcaza llega a la otra orilla sin que nadie se maree. El barquero apunta en su libro: cinco grupos de vertebrados y una bodega llena de invertebrados.",
+   "text": {
+    "valley": "La barcaza llega a la otra orilla sin que nadie se maree ni proteste. El barquero apunta en su libro: cinco grupos de vertebrados y una bodega llena de invertebrados. {{creature}} se ha pasado el viaje asomada a la bodega, contando patas de araña.",
+    "azara": "La barcaza llega a la otra orilla sin que nadie se maree ni proteste. El cuaderno recupera su página: cinco grupos de vertebrados y una bodega llena de invertebrados. {{creature}} se ha pasado el viaje contando patas de araña."
+   },
    "effects": [
     {
      "saber": 20
     },
     {
      "page": "vertebrados"
+    }
+   ]
+  },
+  "protesta": {
+   "type": "ending",
+   "outcome": "partial",
+   "text": {
+    "valley": "La barcaza llega, pero un pasajero ha protestado todo el viaje: el que subió primero al compartimento equivocado. El barquero apunta su queja en el libro y deja la página de los vertebrados a medias. «Otro día, con la lista bien hecha a la primera, el viaje será tranquilo.» {{creature}} se tapa los oídos.",
+    "azara": "La barcaza llega, pero un pasajero ha protestado todo el viaje: el que subió primero al compartimento equivocado. El barquero deja la página de los vertebrados a medias. «Otro día, con la lista bien hecha a la primera, el viaje será tranquilo.» {{creature}} se tapa los oídos."
+   },
+   "effects": [
+    {
+     "saber": 10
     }
    ]
   }

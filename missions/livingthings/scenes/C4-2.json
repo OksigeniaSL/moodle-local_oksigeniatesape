@@ -17,18 +17,22 @@
    "speaker": "jardinera",
    "image": "sotano-plantas-palidas",
    "text": {
-    "valley": "En el sótano de la torre, las plantas del Jardín de la Luz están pálidas, largas y débiles. El Embrollo las encerró aquí y les dio de comer lo que se le ocurrió. Podéis llevarles tres cosas.",
-    "azara": "En el almacén de la expedición, las plantas que viajaron a oscuras han salido pálidas y larguiruchas. Hay que salvarlas antes de plantarlas en el huerto. Podéis darles tres cosas."
+    "valley": "En el sótano de la torre, las plantas del Jardín de la Luz están pálidas, largas y débiles. El Embrollo las encerró aquí y les dio de comer lo que se le ocurrió. Cada maceta lleva una etiqueta escrita deprisa, con una letra que la jardinera conoce de algo. Se les pueden llevar tres cosas.",
+    "azara": "En el almacén de la expedición, las plantas que viajaron a oscuras han salido pálidas y larguiruchas. Cada maceta lleva una nota escrita deprisa, con una letra apurada. Hay que salvarlas antes de plantarlas en el huerto. Se les pueden dar tres cosas."
    },
    "next": "elegir"
   },
   "elegir": {
    "type": "choice",
-   "prompt": "¿Qué tres cosas les lleváis?",
+   "prompt": "¿Qué tres cosas les llevamos?",
    "select": {
     "min": 3,
     "max": 3
    },
+   "hints": [
+    "Una planta no come como nosotros: fabrica su alimento. ¿Con qué?",
+    "Pálida y larga: así crece una planta que busca algo y no lo encuentra."
+   ],
    "options": [
     {
      "id": "luz",
@@ -82,7 +86,7 @@
      "correct": false,
      "points": 1,
      "objective": "SV-07",
-     "feedback": "La planta no cambia… o eso parece. ¿Cómo podríais comprobar si la música le hace algo? Apuntadlo para un experimento."
+     "feedback": "La planta no cambia… o eso parece. ¿Cómo se podría comprobar si la música le hace algo? Queda apuntado para un experimento."
     },
     {
      "id": "oscuridad",
@@ -92,11 +96,70 @@
      "feedback": "Al volver, la planta está aún más larga y pálida: crece estirándose para buscar una luz que no encuentra."
     }
    ],
+   "next": "etiquetas"
+  },
+  "etiquetas": {
+   "type": "choice",
+   "prompt": "Las etiquetas de las macetas dicen qué planta es cada una. ¿Las creemos?",
+   "hints": [
+    "Una etiqueta no es una prueba. ¿Qué haría un naturalista antes de fiarse?"
+   ],
+   "options": [
+    {
+     "id": "comprobar",
+     "label": "No: comprobamos cada planta antes de fiarnos de la etiqueta",
+     "correct": true,
+     "points": 2,
+     "objective": "SV-07",
+     "feedback": "La etiqueta dice «cactus» y la planta es una lechuga. Lo escrito de memoria no vale si nadie lo mira."
+    },
+    {
+     "id": "creer",
+     "label": "Sí: quien las escribió sabría lo que hacía",
+     "correct": false,
+     "objective": "SV-07",
+     "feedback": "La etiqueta dice «cactus» y la planta es una lechuga. De lo que se da por cierto sin comprobar se alimenta el Embrollo."
+    },
+    {
+     "id": "guardar",
+     "label": "Que el protector aparte las etiquetas dudosas para que nadie las copie otra vez",
+     "requires": {
+      "teamrole": "protector"
+     },
+     "locked": "Esto lo haría alguien que para los errores antes de que se repitan: el protector del equipo.",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-07",
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "Las etiquetas dudosas van a una caja aparte, con un cartel: «Sin comprobar». Un error que no se copia es un error que no crece."
+    },
+    {
+     "id": "letra",
+     "label": "Comparar la letra de las etiquetas con la de las páginas del Gran Libro",
+     "requires": {
+      "role": "scout"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "page": "la-letra"
+      }
+     ],
+     "feedback": "Es la misma letra apurada de las páginas copiadas la noche del enredo. Una página nueva para el Gran Libro."
+    }
+   ],
    "next": "apuesta"
   },
   "apuesta": {
    "type": "choice",
-   "prompt": "Antes de mirar vuestro experimento de verdad: ¿qué creéis que habrá pasado con las semillas que pusisteis a oscuras?",
+   "prompt": "Antes de mirar el experimento de verdad: ¿qué habrá pasado con las semillas que pusimos a oscuras?",
+   "hints": [
+    "Pensemos en las plantas del sótano: ¿qué les pasó sin luz?"
+   ],
    "options": [
     {
      "id": "palidas",
@@ -104,14 +167,14 @@
      "correct": true,
      "points": 2,
      "objective": "SV-07",
-     "feedback": "Apostado. Ahora id a mirar las macetas de la clase."
+     "feedback": "Apostado. Ahora, a mirar las macetas de la clase."
     },
     {
      "id": "igual",
      "label": "Estarán igual que las de la luz",
      "correct": false,
      "objective": "SV-07",
-     "feedback": "Apostado. Ahora id a mirar las macetas de la clase."
+     "feedback": "Apostado. Ahora, a mirar las macetas de la clase."
     },
     {
      "id": "nada",
@@ -119,17 +182,37 @@
      "correct": false,
      "points": 1,
      "objective": "SV-07",
-     "feedback": "Apostado. Ahora id a mirar las macetas: ¿germinar necesita luz, o solo crecer?"
+     "feedback": "Apostado. Ahora, a mirar las macetas: ¿germinar necesita luz, o solo crecer?"
     }
    ],
-   "next": "fin"
+   "next": "resultado"
+  },
+  "resultado": {
+   "type": "branch",
+   "rules": [
+    {
+     "if": {
+      "correct_at_least": 3,
+      "in": "elegir"
+     },
+     "next": "fin"
+    },
+    {
+     "if": {
+      "correct_at_least": 2,
+      "in": "elegir"
+     },
+     "next": "palida"
+    }
+   ],
+   "else": "marchitas"
   },
   "fin": {
    "type": "ending",
    "outcome": "success",
    "text": {
-    "valley": "Las plantas vuelven al Jardín de la Luz y se inclinan hacia el sol. La linterna mayor del valle se enciende con una luz verde y dorada. Por eso el valle se llama así: tesapé, en guaraní, es «iluminar».",
-    "azara": "El huerto vuelve a estar verde. El cuaderno añade: «Lo que crece a oscuras, crece buscando la luz»."
+    "valley": "Las plantas vuelven al Jardín de la Luz y se inclinan hacia el sol. La linterna mayor del valle se enciende con una luz verde y dorada. Por eso el valle se llama así: tesapé, en guaraní, es «iluminar». La jardinera se guarda una etiqueta en el bolsillo: «Esta letra la conozco. Es de alguien del valle que escribe de memoria». {{creature}} se tumba bajo la luz y se pone de un verde que no era el suyo.",
+    "azara": "El huerto vuelve a estar verde. El cuaderno añade: «Lo que crece a oscuras, crece buscando la luz». La jardinera se guarda una nota en el bolsillo: «Esta letra la conozco. Es de alguien de la expedición que escribe de memoria». {{creature}} se tumba al sol junto a las macetas."
    },
    "effects": [
     {
@@ -142,6 +225,28 @@
      "page": "plantas"
     }
    ]
+  },
+  "palida": {
+   "type": "ending",
+   "outcome": "partial",
+   "text": {
+    "valley": "Dos de las tres cosas ayudan; la tercera, no. Las plantas se enderezan, pero una se queda pálida en su rincón. La linterna mayor se enciende a medias, temblando. «Otro día, con las tres cosas justas, se encenderá del todo», dice la jardinera. {{creature}} se acurruca junto a la planta pálida para darle calor.",
+    "azara": "Dos de las tres cosas ayudan; la tercera, no. Las plantas se enderezan, pero una se queda pálida en su rincón. El cuaderno añade una página a medias. {{creature}} se acurruca junto a la planta pálida."
+   },
+   "effects": [
+    {
+     "saber": 10
+    },
+    {
+     "page": "plantas"
+    }
+   ]
+  },
+  "marchitas": {
+   "type": "ending",
+   "outcome": "retry",
+   "text": "Las plantas siguen pálidas y una se ha marchitado del todo. La jardinera las riega mientras pregunta: «¿Qué necesita una hoja para fabricar el alimento de la planta?».",
+   "retry": "elegir"
   }
  }
 }

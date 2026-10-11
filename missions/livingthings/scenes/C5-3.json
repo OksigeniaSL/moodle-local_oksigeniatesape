@@ -9,19 +9,48 @@
   "SV-06"
  ],
  "minutes": 5,
- "start": "intro",
+ "start": "memoria",
  "nodes": {
+  "memoria": {
+   "type": "branch",
+   "rules": [
+    {
+     "if": {
+      "flag": "mosquitos"
+     },
+     "next": "intro-picados"
+    }
+   ],
+   "else": "intro"
+  },
   "intro": {
    "type": "story",
    "speaker": "garza",
    "image": "lago-pagina",
-   "text": "Para devolver la página del lago al Gran Libro hay que apuntar todo lo que lo forma: lo vivo y lo que no está vivo pero también forma parte de él. Y quitar lo que no pinta nada aquí.",
+   "text": {
+    "valley": "Para devolver la página del lago al Gran Libro hay que apuntar todo lo que lo forma: lo vivo y lo que no está vivo pero también forma parte de él. Y quitar lo que no pinta nada aquí. La garza baja la voz: «Anoche vi al Embrollo bebiendo de las páginas tachadas, las que alguien escribió sin mirar. Se puso enorme».",
+    "azara": "Para completar la página del río hay que apuntar todo lo que lo forma: lo vivo y lo que no está vivo pero también forma parte de él. Y quitar lo que no pinta nada aquí. La garza mira las notas tachadas del cuaderno, manchadas de tinta corrida, como si alguien hubiera bebido de ellas."
+   },
+   "next": "anotar"
+  },
+  "intro-picados": {
+   "type": "story",
+   "speaker": "garza",
+   "image": "lago-pagina",
+   "text": {
+    "valley": "La garza nos ve llegar rascándonos las picaduras. «La noche junto al agua, ¿eh? Las larvas de esos mosquitos también son del lago: alimento de peces y ranas. Hoy las apuntamos.» Hay que apuntar todo lo que forma el lago: lo vivo y lo que no está vivo pero forma parte de él. Y quitar lo que no pinta nada. La garza baja la voz: «Anoche vi al Embrollo bebiendo de las páginas tachadas. Se puso enorme».",
+    "azara": "La garza nos ve llegar rascándonos las picaduras. «La noche junto al agua, ¿eh? Las larvas de esos mosquitos también son del río: alimento de peces y ranas. Hoy las apuntamos.» Hay que apuntar todo lo que forma el río: lo vivo y lo que no está vivo pero forma parte de él. Y quitar lo que no pinta nada."
+   },
    "next": "anotar"
   },
   "anotar": {
    "type": "classify",
-   "prompt": "¿Dónde apuntáis cada cosa?",
+   "prompt": "¿Dónde apuntamos cada cosa?",
    "retry": "item",
+   "hints": [
+    "Lo no vivo también forma parte del lago si los seres vivos lo necesitan.",
+    "¿Estaba aquí antes que nosotros, o lo trajo alguien de fuera?"
+   ],
    "bins": [
     {
      "id": "vivo",
@@ -92,6 +121,20 @@
      }
     },
     {
+     "id": "larvas",
+     "label": "las larvas de mosquito de la orilla",
+     "bin": "vivo",
+     "objective": "SV-06",
+     "requires": {
+      "flag": "mosquitos"
+     },
+     "locked": "Solo las vio de cerca quien pasó la noche junto al agua quieta.",
+     "feedback": {
+      "fuera": "«Pican, pero son del lago: alimento de peces, ranas y murciélagos.»",
+      "novivo": "«Se mueven, comen y se convierten en mosquitos: están vivas, por desgracia para la expedición.»"
+     }
+    },
+    {
      "id": "lata",
      "label": "una lata tirada",
      "bin": "fuera",
@@ -101,12 +144,57 @@
      }
     }
    ],
+   "next": "orilla"
+  },
+  "orilla": {
+   "type": "choice",
+   "prompt": "La garza pregunta: «Si el agua del lago se calentara mucho, ¿quién lo notaría?»",
+   "hints": [
+    "Lo vivo del lago necesita lo no vivo del lago."
+   ],
+   "options": [
+    {
+     "id": "todos",
+     "label": "Todos: lo vivo depende de lo no vivo",
+     "correct": true,
+     "points": 2,
+     "objective": "SV-06",
+     "feedback": "«Eso es. Con el agua caliente hay menos aire en ella, y los peces lo notan los primeros.»"
+    },
+    {
+     "id": "nadie",
+     "label": "Nadie: el agua no está viva",
+     "correct": false,
+     "objective": "SV-06",
+     "feedback": "«El agua no está viva, pero todo lo vivo del lago la necesita como es. En un ecosistema todo está unido.»"
+    },
+    {
+     "id": "explorador",
+     "label": "Que el explorador recorra la orilla y apunte dónde hay peces y dónde no",
+     "requires": {
+      "teamrole": "scout"
+     },
+     "locked": "Esto lo haría alguien que recorre el terreno: el explorador del equipo.",
+     "correct": true,
+     "points": 3,
+     "objective": "SV-06",
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "Donde el agua está más caliente y quieta, menos peces y más algas. Lo vivo y lo no vivo, unidos: eso es un ecosistema."
+    }
+   ],
    "next": "fin"
   },
   "fin": {
    "type": "ending",
    "outcome": "success",
-   "text": "La página del lago queda completa: un ecosistema son los seres vivos y el lugar donde viven, juntos. La garza se lleva la lata a la papelera del campamento.",
+   "text": {
+    "valley": "La página del lago queda completa: un ecosistema son los seres vivos y el lugar donde viven, juntos. La garza se lleva la lata a la papelera del campamento. {{creature}} se queda mirando el agua, donde se refleja la torre, todavía a oscuras.",
+    "azara": "La página del río queda completa: un ecosistema son los seres vivos y el lugar donde viven, juntos. La garza se lleva la lata a la papelera del campamento. {{creature}} se queda mirando el agua."
+   },
    "effects": [
     {
      "saber": 15

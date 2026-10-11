@@ -10,31 +10,60 @@
   "SV-07"
  ],
  "minutes": 8,
- "start": "intro",
+ "start": "memoria",
  "nodes": {
+  "memoria": {
+   "type": "branch",
+   "rules": [
+    {
+     "if": {
+      "flag": "pluma-en-el-nido"
+     },
+     "next": "intro-pluma"
+    }
+   ],
+   "else": "intro"
+  },
   "intro": {
    "type": "story",
    "speaker": "buho",
-   "image": "bosque-rastro-concha",
+   "image": "bosque-rastro",
    "text": {
-    "valley": "En el barro, junto a un tronco, hay un rastro que se pierde entre las hojas. El búho guardián lo mira y no dice nada: solo responde sí o no. «Tenéis tres preguntas. Elegidlas bien.»",
-    "azara": "El baqueano de la expedición se agacha junto al rastro. «Os contesto sí o no. Tres preguntas, ni una más.»"
+    "valley": "En el barro, junto a un tronco, hay un rastro que se pierde entre las hojas. Al lado, otras marcas que no se parecen a nada. El búho guardián mira el rastro y no dice nada: solo responde sí o no. «Tres preguntas. Hay que elegirlas bien.»",
+    "azara": "El baqueano de la expedición se agacha junto a un rastro que se pierde entre las hojas. Al lado, otras marcas que no se parecen a nada. «Contesto sí o no. Tres preguntas, ni una más.»"
+   },
+   "next": "p1"
+  },
+  "intro-pluma": {
+   "type": "story",
+   "speaker": "buho",
+   "image": "bosque-rastro",
+   "text": {
+    "valley": "El búho guardián nos mira antes de mirar el barro. «Alguien de esta expedición puso una pluma en el nido. Una pluma no es un animal: es lo que un animal deja. Hoy toca separar lo que es de lo que parece.» En el barro, junto a un tronco, hay un rastro que se pierde entre las hojas. El búho solo responde sí o no. «Tres preguntas. Hay que elegirlas bien.»",
+    "azara": "El baqueano nos mira antes de mirar el barro. «Alguien puso una pluma en el cajón de los seres vivos. Una pluma no es un animal: es lo que un animal deja.» Se agacha junto a un rastro que se pierde entre las hojas. «Contesto sí o no. Tres preguntas, ni una más.»"
    },
    "next": "p1"
   },
   "p1": {
    "type": "choice",
    "prompt": "Primera pregunta",
+   "hints": [
+    "La mejor pregunta es la que deja fuera a más animales de golpe.",
+    "Hay una pregunta que parte a todos los animales en dos grupos grandes."
+   ],
    "options": [
     {
      "id": "huesos",
      "label": "¿Tiene huesos por dentro?",
      "points": 3,
      "objective": "SV-04",
-     "feedback": "«No.» Y añade: «Buena pregunta: así se separan los vertebrados de los invertebrados». Os regala una pregunta más.",
+     "feedback": "«No.» Y añade: «Buena pregunta: así se separan los vertebrados de los invertebrados». Regala una pregunta más. Y se queda con la cara de quien la hizo.",
      "effects": [
       {
        "extraquestion": 1
+      },
+      {
+       "flag": "pregunta-buena"
       }
      ]
     },
@@ -43,21 +72,21 @@
      "label": "¿Pone huevos?",
      "points": 0,
      "objective": "SV-07",
-     "feedback": "«Sí.» Pero eso no ayuda mucho: ponen huevos las aves, los reptiles, los peces, muchos anfibios, los insectos… «Pregunta algo que separe más.»"
+     "feedback": "«Sí.» Pero eso no ayuda mucho: ponen huevos las aves, los reptiles, los peces, muchos anfibios, los insectos… «Mejor una pregunta que separe más.»"
     },
     {
      "id": "pelo",
      "label": "¿Tiene pelo?",
      "points": 1,
      "objective": "SV-04",
-     "feedback": "«No.» Al menos ya sabéis que no es un mamífero."
+     "feedback": "«No.» Al menos queda claro que no es un mamífero."
     },
     {
      "id": "plumas",
      "label": "¿Tiene plumas?",
      "points": 1,
      "objective": "SV-04",
-     "feedback": "«No.» Ya sabéis que no es un ave."
+     "feedback": "«No.» Queda claro que no es un ave."
     }
    ],
    "next": "p2"
@@ -65,6 +94,9 @@
   "p2": {
    "type": "choice",
    "prompt": "Segunda pregunta",
+   "hints": [
+    "Si no tiene huesos, ¿qué invertebrados conocemos y en qué se diferencian unos de otros?"
+   ],
    "options": [
     {
      "id": "patas6",
@@ -78,14 +110,14 @@
      "label": "¿Tiene concha?",
      "points": 3,
      "objective": "SV-04",
-     "feedback": "«Sí.» El caparazón del rastro era suyo."
+     "feedback": "«Sí.» Y señala, entre las hojas, un trozo de algo duro y curvo."
     },
     {
      "id": "humeda",
      "label": "¿Su piel está húmeda?",
      "points": 2,
      "objective": "SV-04",
-     "feedback": "«Sí.» Y el hilo brillante del rastro es la baba que deja al moverse."
+     "feedback": "«Sí.» Y el hilo brillante que sigue el rastro es lo que deja al moverse."
     },
     {
      "id": "agua",
@@ -93,6 +125,17 @@
      "points": 1,
      "objective": "SV-04",
      "feedback": "«No, este no.» Vive en tierra, en sitios húmedos."
+    },
+    {
+     "id": "seguir",
+     "label": "Que el explorador del equipo siga el rastro hasta donde acaba",
+     "requires": {
+      "teamrole": "scout"
+     },
+     "locked": "Esto lo haría alguien que sigue rastros: el explorador del equipo.",
+     "points": 3,
+     "objective": "SV-04",
+     "feedback": "El rastro acaba bajo una hoja mojada, en lo más húmedo del bosque. «Eso no es preguntar», dice el búho, «pero también es saber mirar.» Vive donde hay humedad."
     }
    ],
    "next": "p3"
@@ -100,7 +143,10 @@
   "p3": {
    "type": "choice",
    "extra": true,
-   "prompt": "Última pregunta (o dos, si os la ganasteis)",
+   "prompt": "Última pregunta (o dos, si el búho regaló una)",
+   "hints": [
+    "Una pregunta que confirme lo que ya sospechamos vale más que una al azar."
+   ],
    "options": [
     {
      "id": "concha",
@@ -122,6 +168,20 @@
      "points": 2,
      "objective": "SV-04",
      "feedback": "«No: se arrastra sobre un pie musculoso.»"
+    },
+    {
+     "id": "marcas",
+     "label": "En vez de preguntar, mirar las otras marcas, las que no se parecen a nada",
+     "requires": {
+      "role": "scout"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "Son manchas de tinta corrida, como las del nido. El búho las mira mucho rato: «Esas no son de ningún animal». Una gema por fijarse antes que nadie."
     }
    ],
    "next": "adivinar"
@@ -130,6 +190,10 @@
    "type": "choice",
    "prompt": "¿De quién es el rastro?",
    "image": "cuatro-candidatos",
+   "hints": [
+    "Repasemos las respuestas del búho: ¿cuál de los cuatro las cumple todas?",
+    "Caparazón no es lo mismo que concha: uno de los cuatro tiene huesos debajo."
+   ],
    "options": [
     {
      "id": "caracol",
@@ -170,8 +234,8 @@
    "type": "ending",
    "outcome": "success",
    "text": {
-    "valley": "El nombre del caracol vuelve al Gran Libro y una luciérnaga se enciende sobre el rastro. El búho abre las alas: «Preguntar bien es la mitad de saber».",
-    "azara": "El baqueano sonríe y el cuaderno recupera su página. «Así trabajaba el naturalista: preguntando a cada rastro.»"
+    "valley": "El nombre del caracol vuelve al Gran Libro y una luciérnaga se enciende sobre el rastro. El búho abre las alas: «Preguntar bien es la mitad de saber». Después mira las otras marcas, las que no se parecen a nada, y por una vez tarda en contestar: «Esas no son de ningún animal. Son de una idea mal escrita». {{creature}} intenta seguirlas y se mancha la nariz de tinta.",
+    "azara": "El baqueano sonríe y el cuaderno recupera su página. «Así trabajaba el naturalista: preguntando a cada rastro.» Mira las otras marcas y tarda en contestar: «Esas no son de ningún bicho. Son de alguien que escribió sin mirar». {{creature}} intenta seguirlas y se mancha la nariz de tinta."
    },
    "effects": [
     {

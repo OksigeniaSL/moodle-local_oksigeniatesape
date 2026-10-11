@@ -26,8 +26,8 @@
    "speaker": "garza",
    "image": "lago-cadenas",
    "text": {
-    "valley": "Junto al lago, la garza ha dibujado en el barro unas flechas que dicen quién se come a quién. El Embrollo las ha borrado. «Sin flechas no se entiende el lago», dice la garza. «¿Las ponemos otra vez?»",
-    "azara": "En la orilla, el cuaderno tiene una página de flechas que dicen quién se come a quién. La lluvia las ha borrado. La garza mira desde el agua mientras las volvemos a dibujar."
+    "valley": "Junto al lago, la garza ha dibujado en el barro unas flechas que dicen quién se come a quién. El Embrollo las ha borrado. «Sin flechas no se entiende el lago», dice la garza. «Anoche lo vi: bebía de las páginas tachadas, las que alguien escribió sin mirar. ¿Las ponemos otra vez?»",
+    "azara": "En la orilla, el cuaderno tiene una página de flechas que dicen quién se come a quién. La lluvia las ha borrado, y la tinta corrida ha manchado las notas tachadas de al lado. La garza mira desde el agua mientras las volvemos a dibujar."
    },
    "next": "cadena1"
   },
@@ -35,6 +35,10 @@
    "type": "order",
    "prompt": "Primera cadena: ¿quién va primero?",
    "objective": "SV-06",
+   "hints": [
+    "La cadena empieza por quien fabrica su propio alimento, sin comerse a nadie.",
+    "La flecha va del que es comido al que come."
+   ],
    "steps": [
     {
      "id": "hierba",
@@ -61,6 +65,9 @@
    "type": "order",
    "prompt": "Segunda cadena, en el árbol de la orilla:",
    "objective": "SV-06",
+   "hints": [
+    "Igual que la primera: ¿quién fabrica su alimento con la luz?"
+   ],
    "steps": [
     {
      "id": "hoja",
@@ -87,8 +94,8 @@
    "type": "ending",
    "outcome": "success",
    "text": {
-    "valley": "Las flechas se encienden en el barro. Las dos cadenas empiezan igual: por una planta, que fabrica su alimento con la luz. Sin plantas no hay nada que comer en el lago. La linterna del lago se enciende.",
-    "azara": "La página de flechas queda completa. Las dos cadenas empiezan igual: por una planta, que fabrica su alimento con la luz. Sin plantas no hay nada que comer en la orilla."
+    "valley": "Las flechas se encienden en el barro. Las dos cadenas empiezan igual: por una planta, que fabrica su alimento con la luz. Sin plantas no hay nada que comer en el lago. La garza señala con el pico la orilla: «Por ahí se fue el Embrollo, hacia la torre, chorreando tinta». {{creature}} mete una pata en el agua y la saca corriendo. La linterna del lago se enciende.",
+    "azara": "La página de flechas queda completa. Las dos cadenas empiezan igual: por una planta, que fabrica su alimento con la luz. Sin plantas no hay nada que comer en la orilla. {{creature}} mete una pata en el agua y la saca corriendo."
    },
    "effects": [
     {

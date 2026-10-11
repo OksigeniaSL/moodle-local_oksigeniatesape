@@ -98,6 +98,7 @@ final class structures {
                     'title' => new external_value(PARAM_TEXT, 'Title'),
                     'minutes' => new external_value(PARAM_INT, 'Minutes, more or less'),
                     'done' => new external_value(PARAM_BOOL, 'Done'),
+                    'better' => new external_value(PARAM_BOOL, 'Done with a partial ending', VALUE_DEFAULT, false),
                     'attempts' => new external_value(PARAM_INT, 'Plays'),
                 ])),
             ])),

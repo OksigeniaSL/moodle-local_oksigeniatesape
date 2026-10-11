@@ -26,8 +26,8 @@
    "speaker": "bibliotecaria",
    "image": "biblioteca-estantes",
    "text": {
-    "valley": "En la biblioteca hay dos estantes grandes, uno para los animales y otro para las plantas, y una caja pequeña al lado. El Embrollo lo ha revuelto todo. La bibliotecaria nos pide ayuda: «Cada uno a su sitio, por favor».",
-    "azara": "Las láminas de la expedición se han mezclado. Hay una carpeta para los animales, otra para las plantas y una caja pequeña al lado. La archivera nos pide ayuda para ordenarlas."
+    "valley": "En la biblioteca hay dos estantes grandes, uno para los animales y otro para las plantas, y una caja pequeña al lado. El Embrollo lo ha revuelto todo. Doña Hebra, la bibliotecaria, cuenta páginas con los dedos y nos pide ayuda: «Cada uno a su sitio, por favor. Y sin fiarse de las etiquetas: hay alguna escrita deprisa».",
+    "azara": "Las láminas de la expedición se han mezclado. Hay una carpeta para los animales, otra para las plantas y una caja pequeña al lado. La archivera nos pide ayuda para ordenarlas: «Sin fiarse de las etiquetas: hay alguna escrita deprisa»."
    },
    "next": "colocar"
   },
@@ -35,6 +35,10 @@
    "type": "classify",
    "prompt": "¿Dónde va cada uno?",
    "retry": "item",
+   "hints": [
+    "¿Se mueve de su sitio para buscar comida, o fabrica su alimento con la luz?",
+    "Hay uno que no es animal ni planta. Para eso está la caja pequeña."
+   ],
    "bins": [
     {
      "id": "animales",
@@ -137,8 +141,8 @@
    "type": "ending",
    "outcome": "success",
    "text": {
-    "valley": "Los estantes dejan de crujir. En la caja pequeña se ha quedado la seta: la bibliotecaria le pone una etiqueta nueva, «hongos». «Hay más grupos que animales y plantas», dice, «y algunos son tan pequeños que solo se ven con lupa.» La linterna de la biblioteca se enciende.",
-    "azara": "Las carpetas quedan en orden. La seta tiene ahora su propia etiqueta, «hongos». La archivera explica que hay más grupos que animales y plantas, y que algunos solo se ven con lupa."
+    "valley": "Los estantes dejan de crujir. En la caja pequeña se ha quedado la seta: Doña Hebra le pone una etiqueta nueva, «hongos». «Hay más grupos que animales y plantas», dice, «y algunos son tan pequeños que solo se ven con lupa.» Baja la voz: «La noche del enredo yo estaba copiando páginas de memoria, sin comprobar. Las etiquetas deprisa… son mías». {{creature}} le olisquea la manga y estornuda tinta. La linterna de la biblioteca se enciende.",
+    "azara": "Las carpetas quedan en orden. La seta tiene ahora su propia etiqueta, «hongos». La archivera explica que hay más grupos que animales y plantas, y que algunos solo se ven con lupa. Y confiesa en voz baja: «Las etiquetas escritas deprisa son mías. Las copié de memoria, sin mirar la lámina». {{creature}} estornuda tinta."
    },
    "effects": [
     {

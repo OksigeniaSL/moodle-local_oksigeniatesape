@@ -30,8 +30,8 @@
    "speaker": "druida-mayor",
    "image": "claro-semilla",
    "text": {
-    "valley": "La druida mayor nos da {{local:semilla}}. Al tocarla, tiembla un poco: dentro hay alguien. «Tiene hambre y frío», dice la druida. «Despertará si encuentra a otros como ella: seres que comen, crecen y tienen crías.»",
-    "azara": "En el cajón de muestras, {{local:semilla}} tiembla un poco: dentro hay alguien. El naturalista anota: «Antes de despertar, busca a otros como ella: seres que comen, crecen y tienen crías»."
+    "valley": "La druida mayor nos da {{local:semilla}}. Al tocarla, tiembla un poco: dentro hay alguien. «Tiene hambre y frío», dice la druida. «Despertará si encuentra a otros como ella: seres que comen, crecen y tienen crías.» En el barro del claro hay huellas raras. No son de pata ni de pezuña: parecen manchas de tinta.",
+    "azara": "En el cajón de muestras, {{local:semilla}} tiembla un poco: dentro hay alguien. El naturalista anota: «Antes de despertar, busca a otros como ella: seres que comen, crecen y tienen crías». En la página hay manchas de tinta corrida, como de alguien que escribió deprisa."
    },
    "next": "elegir"
   },
@@ -42,6 +42,10 @@
     "min": 3,
     "max": 4
    },
+   "hints": [
+    "Moverse no basta. ¿Quién necesita comer para seguir creciendo?",
+    "Una planta no corre ni maúlla, pero bebe, crece y da semillas."
+   ],
    "options": [
     {
      "id": "gatito",
@@ -116,8 +120,8 @@
    "type": "ending",
    "outcome": "success",
    "text": {
-    "valley": "La semilla se abre y sale {{creature}}, pequeña y distinta de todas. Tiene hambre, como el gatito y el caracol. La linterna del claro se enciende y en el Gran Libro aparece la primera página: «Ser vivo: el que se nutre, se relaciona y se reproduce».",
-    "azara": "La semilla se abre en el cajón y sale {{creature}}, que ya no se separa de nosotros. El cuaderno recupera su primera página: «Ser vivo: el que se nutre, se relaciona y se reproduce»."
+    "valley": "La semilla se abre y sale {{creature}}, pequeña y distinta de todas. Tiene hambre, como el gatito y el caracol. Olisquea las manchas de tinta del barro y estornuda: es lo primero que hace en su vida. La linterna del claro se enciende y en el Gran Libro aparece la primera página: «Ser vivo: el que se nutre, se relaciona y se reproduce».",
+    "azara": "La semilla se abre en el cajón y sale {{creature}}, que ya no se separa de nosotros. Olisquea la tinta corrida de la página y estornuda. El cuaderno recupera su primera página: «Ser vivo: el que se nutre, se relaciona y se reproduce»."
    },
    "effects": [
     {

@@ -394,10 +394,12 @@ final class scenes {
         if ($chapter && self::chapter_done($char, (int) $member->step, $chapter)) {
             if (self::found($char, $member, $mission, 'chapter', $chapter->code, $now)) {
                 $rewards['chapter'] = $chapter->code;
-                if (self::found($char, $member, $mission, 'lantern', $chapter->code, $now)) {
+                $data = json_decode((string) $mission->definition, true) ?: [];
+                // The lantern of the place of the final battle is lit by the battle, not by its scenes.
+                $battle = $chapter->code === ($data['battle']['final']['lantern'] ?? null);
+                if (!$battle && self::found($char, $member, $mission, 'lantern', $chapter->code, $now)) {
                     $rewards['lanterns'][] = $chapter->code;
                 }
-                $data = json_decode((string) $mission->definition, true) ?: [];
                 foreach ($data['chapters'] ?? [] as $info) {
                     if ($info['code'] === $chapter->code && !empty($info['reward'])) {
                         $itemid = missions::item_id((string) $info['reward']);

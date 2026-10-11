@@ -26,8 +26,8 @@
    "speaker": "buho",
    "image": "bosque-abrigos",
    "text": {
-    "valley": "En el bosque hace frío. El Embrollo ha escondido los abrigos de los animales y tiritan detrás de los árboles. El búho guardián tiene los abrigos en un montón: «¿De quién es cada uno? Ayudémoslos».",
-    "azara": "Esta noche ha helado en el monte. Los animales que vamos a dibujar se han escondido de frío. El baqueano nos enseña unas pieles, plumas y escamas: «Cada animal tiene su abrigo. ¿Cuál es el de cada uno?»."
+    "valley": "En el bosque hace frío. El Embrollo ha escondido los abrigos de los animales y tiritan detrás de los árboles. El búho guardián tiene los abrigos en un montón: «¿De quién es cada uno? Ayudémoslos». En el barro, entre las huellas de los animales, hay otras que el búho mira mucho rato sin decir nada.",
+    "azara": "Esta noche ha helado en el monte. Los animales que vamos a dibujar se han escondido de frío. El baqueano nos enseña unas pieles, plumas y escamas: «Cada animal tiene su abrigo. ¿Cuál es el de cada uno?». En el barro hay unas huellas que el baqueano mira mucho rato sin decir nada."
    },
    "next": "abrigos"
   },
@@ -35,6 +35,10 @@
    "type": "classify",
    "prompt": "¿Qué abrigo tiene cada animal?",
    "retry": "item",
+   "hints": [
+    "El abrigo dice el grupo: pelo, plumas, escamas, piel húmeda. ¿Y quién lleva la casa a cuestas?",
+    "Dos animales llevan algo duro encima, pero uno tiene huesos por dentro y el otro no."
+   ],
    "bins": [
     {
      "id": "pelo",
@@ -136,7 +140,10 @@
   "fin": {
    "type": "ending",
    "outcome": "success",
-   "text": "Cada animal sale del escondite con su abrigo. «¡Soy un mamífero!», «¡soy un ave!», «¡soy un pez!», «¡soy un anfibio!», «¡soy un reptil!». Todos ellos tienen huesos por dentro: son vertebrados. El caracol se asoma el último: «Yo no tengo huesos. Soy un invertebrado, como los insectos y las lombrices».",
+   "text": {
+    "valley": "Cada animal sale del escondite con su abrigo. «¡Soy un mamífero!», «¡soy un ave!», «¡soy un pez!», «¡soy un anfibio!», «¡soy un reptil!». Todos ellos tienen huesos por dentro: son vertebrados. El caracol se asoma el último: «Yo no tengo huesos. Soy un invertebrado, como los insectos y las lombrices». El búho vuelve a mirar las huellas raras del barro: «Esas no son de ningún animal. Son de una idea mal escrita». {{creature}} las olisquea y estornuda.",
+    "azara": "Cada animal sale del escondite con su abrigo: mamífero, ave, pez, anfibio, reptil. Todos tienen huesos por dentro: son vertebrados. El caracol se asoma el último: «Yo no tengo huesos. Soy un invertebrado». El baqueano vuelve a mirar las huellas raras del barro: «Esas no son de ningún bicho. Son de alguien que escribió sin mirar». {{creature}} las olisquea y estornuda."
+   },
    "effects": [
     {
      "saber": 20

@@ -153,6 +153,16 @@ final class view {
             'SELECT sceneid, COUNT(1) FROM {' . self::T . 'sceneattempt} WHERE charid = ? AND courseid = ? GROUP BY sceneid',
             [$char->id, $courseid]
         );
+        // The endings reached in each scene, to know which can still be made better.
+        $reached = [];
+        $rows = $DB->get_recordset_sql(
+            'SELECT DISTINCT sceneid, ending FROM {' . self::T . 'sceneattempt} WHERE charid = ? AND courseid = ?',
+            [$char->id, $courseid]
+        );
+        foreach ($rows as $row) {
+            $reached[$row->sceneid][] = $row->ending;
+        }
+        $rows->close();
         $chapters = $DB->get_records(self::T . 'chapter', ['missionid' => $mission->id], 'sortorder');
         $scenes = $DB->get_records(self::T . 'scene', ['missionid' => $mission->id], 'code');
         $challenges = $DB->get_records_select_menu(
@@ -192,14 +202,19 @@ final class view {
                 'mine' => !empty($found['lantern'][$chapter->code]),
                 'done' => !empty($found['chapter'][$chapter->code]),
                 'challengeid' => (int) ($challenges[$chapter->id] ?? 0),
-                'scenes' => array_map(function ($scene) use ($found, $attempts) {
+                'scenes' => array_map(function ($scene) use ($found, $attempts, $reached) {
                     $def = json_decode($scene->definition, true);
+                    $done = !empty($found['scene'][$scene->code]);
+                    // Done with a partial ending only: playing it again can make it better.
+                    $best = array_filter($reached[$scene->id] ?? [], fn($e) => ($def['nodes'][$e]['type'] ?? '') === 'ending'
+                        && ($def['nodes'][$e]['outcome'] ?? 'success') === 'success');
                     return [
                         'id' => (int) $scene->id,
                         'code' => $scene->code,
                         'title' => (string) ($def['title'] ?? $scene->code),
                         'minutes' => (int) ($def['minutes'] ?? 0),
-                        'done' => !empty($found['scene'][$scene->code]),
+                        'done' => $done,
+                        'better' => $done && !$best,
                         'attempts' => (int) ($attempts[$scene->id] ?? 0),
                     ];
                 }, $mine),

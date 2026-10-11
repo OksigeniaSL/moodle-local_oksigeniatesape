@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.16.1 (2026-10-11)
+
+The pilot mission, version 7, rewritten after the design review:
+
+- **Fifteen scenes with a voice that works in Spain and in Paraguay** (no «vosotros»), hints in every decision, an
+  option for each role in the core scenes and the scout's own trail in four of them.
+- **Partial endings** in the nest, the barge, the cellar and the night by the lake: they count, give less, and the
+  scene says it can be made better by playing it again (the map shows «Done, it can be better» until then). Playing it
+  again to the good ending gives what was missing.
+- **Memory between scenes**: the feather in the nest, the creature born asleep, the good question to the owl and the
+  mosquitoes of the lake change later scenes.
+- **The arc of the ink tracks**: Doña Hebra, the librarian, confesses she copied pages without checking; the Embrollo
+  leaves a letter for each chapter; the last scene is now «The rehearsal» (10 of saber) and the final battle on the
+  class screen gives what the end saves (30 of saber, the naturalist's lens, the lantern of the tower, the creature
+  grows), with the ending of the mission on the class screen. The lantern of the tower is lit by that battle.
+- Three new pages of the Big Book, for the scout's trail; commitments and sessions for each chapter in the mission data
+  (used by the next versions).
+
 ## 0.16.0 (2026-10-11)
 
 The battle against the Embrollo, after the design review:

@@ -16,8 +16,8 @@
    "speaker": "bibliotecaria",
    "image": "torre-ficha",
    "text": {
-    "valley": "Para terminar la guía de campo hace falta una ficha para cada ser vivo. La bibliotecaria nos enseña una en blanco: «Una buena ficha ayuda a reconocerlo a quien no lo ha visto nunca. ¿Qué apartados le ponemos?».",
-    "azara": "El cuaderno de campo necesita una ficha para cada ser vivo, como las que hacía Félix de Azara. La archivera nos enseña una en blanco: «Tiene que servir para reconocerlo sin haberlo visto. ¿Qué apartados le ponemos?»."
+    "valley": "Para terminar la guía de campo hace falta una ficha para cada ser vivo. Doña Hebra, la bibliotecaria, nos enseña una en blanco: «Una buena ficha ayuda a reconocerlo a quien no lo ha visto nunca. Y se escribe con el ser vivo delante, no de memoria: eso ya lo aprendí yo. ¿Qué apartados le ponemos?».",
+    "azara": "El cuaderno de campo necesita una ficha para cada ser vivo, como las que hacía Félix de Azara. La archivera nos enseña una en blanco: «Tiene que servir para reconocerlo sin haberlo visto. Y se escribe con el ser vivo delante, no de memoria. ¿Qué apartados le ponemos?»."
    },
    "next": "elegir"
   },
@@ -28,6 +28,10 @@
     "min": 5,
     "max": 5
    },
+   "hints": [
+    "La ficha cuenta lo que se puede observar del ser vivo, no lo que pensamos nosotros de él.",
+    "¿Qué necesitaría alguien que nunca lo ha visto para encontrarlo y reconocerlo?"
+   ],
    "options": [
     {
      "id": "nombre",
@@ -50,7 +54,7 @@
      "label": "Mi color favorito",
      "correct": false,
      "objective": "SV-07",
-     "feedback": "La bibliotecaria arruga la nariz: «Eso habla de nosotros, no del ser vivo. No ayuda a reconocerlo»."
+     "feedback": "Doña Hebra arruga la nariz: «Eso habla de nosotros, no del ser vivo. No ayuda a reconocerlo»."
     },
     {
      "id": "donde",
@@ -65,7 +69,7 @@
      "label": "Cuánto cuesta",
      "correct": false,
      "objective": "SV-07",
-     "feedback": "La bibliotecaria arruga la nariz: «Los seres vivos del valle no se venden. Eso no ayuda a reconocerlo»."
+     "feedback": "Doña Hebra arruga la nariz: «Los seres vivos del valle no se venden. Eso no ayuda a reconocerlo»."
     },
     {
      "id": "come",
@@ -109,7 +113,10 @@
   "aceptada": {
    "type": "ending",
    "outcome": "success",
-   "text": "La ficha queda aceptada en el Gran Libro. «Ahora cualquiera podrá reconocerlo», dice la bibliotecaria. Con fichas así se hace la guía de campo de la clase.",
+   "text": {
+    "valley": "La ficha queda aceptada en el Gran Libro. «Ahora cualquiera podrá reconocerlo», dice Doña Hebra. «Y si cada ficha se escribe mirando, el Embrollo no tendrá de qué alimentarse: está hecho de lo que se da por cierto sin comprobar.» Con fichas así se hace la guía de campo de la clase. {{creature}} estornuda sobre la ficha y no la mancha: ya no queda tinta corrida.",
+    "azara": "La ficha queda aceptada en el cuaderno. «Ahora cualquiera podrá reconocerlo», dice la archivera. «Y si cada ficha se escribe mirando, no volverá a haber notas mezcladas.» Con fichas así se hace la guía de campo de la clase. {{creature}} estornuda sobre la ficha y no la mancha."
+   },
    "effects": [
     {
      "saber": 15
@@ -119,7 +126,7 @@
   "arrugada": {
    "type": "ending",
    "outcome": "retry",
-   "text": "La bibliotecaria devuelve la ficha: «Hay un apartado que no ayuda a reconocer a nadie. ¿Cuál cambiamos?».",
+   "text": "Doña Hebra devuelve la ficha: «Hay un apartado que no ayuda a reconocer a nadie. ¿Cuál cambiamos?».",
    "retry": "elegir"
   }
  }
