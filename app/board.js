@@ -291,6 +291,20 @@
     return g ? g.name : '';
   }
 
+  /**
+   * The question to open the class, from the last plan the AI made for the teacher.
+   *
+   * @return {string}
+   */
+  function openerCard() {
+    if (!state.board.opener || state.openerhidden) {
+      return '';
+    }
+    return '<section class="card board-opener"><div class="kicker">' + esc(t('board_opener')) + '</div><p class="lead">' +
+      esc(state.board.opener) + '</p><div class="actions board-small"><button class="btn btn-soft" data-openerhide>' +
+      esc(t('board_opener_hide')) + '</button></div></section>';
+  }
+
   function eventCard() {
     var e = state.board.event;
     var head = '<div class="kicker">' + esc(t('board_event')) + '</div>';
@@ -605,8 +619,8 @@
       '</a>' : '') + '<a class="btn btn-soft" href="' + esc(cfg.wwwroot + '/local/oksigeniatesape/teach.php?id=' +
       cfg.courseid) + '">' + esc(t('board_panel')) + '</a><button class="btn btn-soft" data-full>' +
       esc(t('board_fullscreen')) + '</button></div></header>' +
-      '<div class="board-grid">' + map() + '<div class="board-side">' + eventCard() + battleCard() + sceneCard() + teams() +
-      printCard() + '</div></div>' + bar() + '</div>';
+      '<div class="board-grid">' + map() + '<div class="board-side">' + openerCard() + eventCard() + battleCard() +
+      sceneCard() + teams() + printCard() + '</div></div>' + bar() + '</div>';
     bind();
   }
 
@@ -619,6 +633,10 @@
       });
     };
     on('[data-full]', fullscreen);
+    on('[data-openerhide]', function() {
+      state.openerhidden = true;
+      render();
+    });
     on('[data-battle]', function(el) {
       var p = el.dataset.battle.split(':');
       state.battle[p[0]] = p[0] === 'mode' ? p[1] : +p[1];

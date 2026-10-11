@@ -54,6 +54,10 @@ privacy come from Moodle, and the game is a full-screen application of its own.
   with A, B, C, D cards, and printable material for classes without devices: vote cards, team cards, the characters
   of the class and a diploma for each student.
 
+- **A plan for the next class with the AI of the site** (Moodle's AI subsystem, any provider): what confuses the
+  class turned into what to review, a new example, a question to open the class and the classroom challenge that fits.
+  Counts only, never a name.
+
 The game is ready for **art packs** (`cli/art.php`), and its first pack is nearly done.
 
 ## Requirements
@@ -79,7 +83,8 @@ data is deleted. When a course is deleted, the game in it goes too; the characte
 
 Minors play this game, so it keeps only what the game needs: no external services, no CDN, no tracking, no
 individual public rankings and no purchases. The ideas students send stay in Moodle, for their teachers only; the
-images of art packs are served by Moodle itself.
+images of art packs are served by Moodle itself. The plan for the next class goes to the AI provider the site has
+chosen, with counts and the content of the mission only.
 
 ## Development
 

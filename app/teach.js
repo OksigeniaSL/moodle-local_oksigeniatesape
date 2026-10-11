@@ -704,14 +704,18 @@
   /* ---------- The mission ---------- */
 
   function tabMission() {
-    if (!state.missions || !state.results) {
+    if (!state.missions || !state.results || !state.nextclass) {
       content('<section class="card"><p class="empty">' + esc(t('app_loading')) + '</p></section>');
       Promise.all([
         T.api('get_missions', {courseid: cfg.courseid}),
-        can('viewlog') ? T.api('get_results', {courseid: cfg.courseid}) : Promise.resolve({chapters: []})
+        can('viewlog') ? T.api('get_results', {courseid: cfg.courseid}) : Promise.resolve({chapters: []}),
+        can('viewlog') ? T.api('next_class', {courseid: cfg.courseid, action: 'state'}).catch(function() {
+          return {ai: false};
+        }) : Promise.resolve({ai: false})
       ]).then(function(r) {
         state.missions = r[0];
         state.results = r[1];
+        state.nextclass = r[2];
         if (state.tab === 'mission') {
           tabMission();
         }
@@ -732,9 +736,10 @@
       html = '<section class="card"><div class="kicker">' + esc(t('teach_mission_installed')) + '</div><h2>' +
         esc(m.installed.title) + '</h2>' + (pkg ? '<p style="color:var(--text-soft)">' + esc(pkg.subtitle) + ' · ' +
         esc(t('teach_mission_ages', pkg.ages)) + '</p>' + (can('manageregion') ? packageForm(pkg, m.installed) : '') : '') +
-        '</section>' + games() + results();
+        '</section>' + nextClass() + games() + results();
     }
     var el = content(html);
+    bindNextClass(el);
     el.querySelectorAll('form[data-install]').forEach(function(f) {
       f.onsubmit = function(ev) {
         ev.preventDefault();
@@ -780,6 +785,74 @@
       esc(t('teach_mission_lang', p.lang)) : '') + '</p>' + (can('manageregion') ? packageForm(p, null) : '') + '</section>';
   }
 
+  /**
+   * The plan for the next class, made by the AI of the site from what confuses the class.
+   *
+   * @return {string}
+   */
+  function nextClass() {
+    var n = state.nextclass;
+    if (!n || !n.ai || !state.results || !state.results.chapters.length) {
+      return '';
+    }
+    var head = '<section class="card next-class" style="margin-top:16px"><div class="kicker">' + esc(t('teach_next')) +
+      '</div><h2>' + esc(t('teach_next_title')) + '</h2>';
+    if (!n.policy) {
+      // The policy of the site is a text of Moodle itself, with its own HTML.
+      return head + '<div class="ai-policy">' + n.policytext + '</div><div class="actions"><button class="btn btn-main" ' +
+        'data-aiaccept>' + esc(t('teach_next_accept')) + '</button></div></section>';
+    }
+    var p = n.plan;
+    var plan = p ? '<p class="lead">' + esc(p.summary) + '</p><h3>' + esc(t('teach_next_review')) + '</h3><ol>' +
+      p.review.map(function(r) {
+        return '<li><b>' + esc(r.point) + '</b>' + (r.how ? '<br>' + esc(r.how) : '') + '</li>';
+      }).join('') + '</ol>' + (p.example ? '<h3>' + esc(t('teach_next_example')) + '</h3><p>' + esc(p.example) + '</p>' :
+      '') + '<h3>' + esc(t('teach_next_opener')) + '</h3><p class="next-opener">' + esc(p.opener) + '</p>' +
+      '<small class="help-soft">' + esc(t('teach_next_onboard')) + '</small>' + (p.challenge ? '<h3>' +
+      esc(t('teach_next_challenge')) + '</h3><p><b>' + esc(p.challengename) + '</b>' + (p.challengewhy ? '<br>' +
+      esc(p.challengewhy) : '') + '</p>' : '') + '<small class="help-soft" style="display:block;margin-top:10px">' +
+      esc(t('teach_next_when', when(p.time))) + '</small>' : '<p style="color:var(--text-soft)">' +
+      esc(t('teach_next_help')) + '</p>';
+    return head + plan + '<div class="actions" style="justify-content:flex-start"><button class="btn ' +
+      (p ? 'btn-soft' : 'btn-main') + '" data-nextmake' + (state.nextbusy ? ' disabled' : '') + '>' +
+      esc(state.nextbusy ? t('teach_next_busy') : t(p ? 'teach_next_again' : 'teach_next_make')) + '</button></div>' +
+      '<small class="help-soft">' + esc(t('teach_next_privacy')) + '</small></section>';
+  }
+
+  /**
+   * The buttons of the plan for the next class.
+   *
+   * @param {Element} el
+   */
+  function bindNextClass(el) {
+    var call = function(action) {
+      return T.api('next_class', {courseid: cfg.courseid, action: action}).then(function(r) {
+        state.nextclass = r;
+      }).catch(function(e) {
+        T.toast(esc(e.message), true);
+      }).then(function() {
+        state.nextbusy = false;
+        if (state.tab === 'mission') {
+          tabMission();
+        }
+      });
+    };
+    var accept = el.querySelector('[data-aiaccept]');
+    if (accept) {
+      accept.onclick = function() {
+        call('accept');
+      };
+    }
+    var make = el.querySelector('[data-nextmake]');
+    if (make) {
+      make.onclick = function() {
+        state.nextbusy = true;
+        tabMission();
+        call('generate');
+      };
+    }
+  }
+
   function games() {
     var r = state.results;
     if (!r || !r.games || !r.games.length) {
@@ -813,7 +886,7 @@
             }).join('');
             var confusions = sc.confusions.length ? '<div class="note"><b>' + esc(t('teach_confusions')) + '</b><br>' +
               sc.confusions.map(function(c) {
-                return esc(c.text) + ' (' + c.count + ')';
+                return (c.question ? '<small>' + esc(c.question) + '</small><br>' : '') + esc(c.text) + ' (' + c.count + ')';
               }).join('<br>') + '</div>' : '';
             return '<div class="item" style="display:block"><b>' + esc(sc.title) + '</b><small style="display:block;color:' +
               'var(--text-soft)">' + esc(t('teach_scene_stats', sc.players + ' · ' + sc.done + ' · ' + sc.attempts)) +

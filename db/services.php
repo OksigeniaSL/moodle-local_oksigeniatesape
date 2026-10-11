@@ -250,6 +250,13 @@ $functions = [
         'readonlysession' => true,
         'capabilities' => 'local/oksigeniatesape:runclassscreen',
     ],
+    'local_oksigeniatesape_next_class' => [
+        'classname' => 'local_oksigeniatesape\\external\\next_class',
+        'description' => 'The plan for the next class, made by the AI of the site from what confuses the class.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:viewlog',
+    ],
     'local_oksigeniatesape_live_play' => [
         'classname' => 'local_oksigeniatesape\\external\\live_play',
         'description' => 'The battle on the phone of a student: whether there is one, come in, answer.',

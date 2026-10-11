@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.9.0 (2026-10-11)
+
+- **A plan for the next class, with the AI of the site**: in the mission tab of the teacher panel, one button turns
+  what confuses the class into a short plan: what to review first and how to do it in a few minutes, a new example from
+  the students' everyday life, a question to open the class and the classroom challenge that fits. It uses the AI
+  subsystem of Moodle with whatever provider the site has (from Moodle 4.5); without AI on the site, nothing shows.
+  Only counts and the content of the mission are sent, never a name; the teacher accepts the AI policy of the site
+  first. The answer is checked and asked for again once if it does not have the right shape.
+- The question to open the class shows on the class screen for a few days, and the teacher can hide it.
+- The mix-ups in the results of the teacher panel show their question, and their texts follow the story chosen for the
+  mission (they always used the one of the valley).
+
 ## 0.8.0 (2026-10-11)
 
 - **Glance**, a new power of the sage (the wizard, the owl…): once approved by the teacher, the phone shows the next

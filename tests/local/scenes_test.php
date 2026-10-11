@@ -230,5 +230,6 @@ final class scenes_test extends \advanced_testcase {
         $this->assertSame(15, $nest['objectives'][0]['total']);
         $this->assertCount(results::CONFUSIONS, $nest['confusions']);
         $this->assertSame(1, $nest['confusions'][0]['count']);
+        $this->assertSame('¿Qué cinco cosas lleváis al nido?', $nest['confusions'][0]['question']);
     }
 }

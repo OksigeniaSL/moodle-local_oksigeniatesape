@@ -143,7 +143,7 @@ final class provider_test extends provider_testcase {
         $collection = provider::get_metadata(new collection('local_oksigeniatesape'));
         $tables = array_map(fn($item) => $item->get_name(), $collection->get_collection());
         $expected = ['char', 'member', 'ledger', 'powerreq', 'inventory', 'sceneattempt', 'minigame', 'validation', 'found',
-            'idea', 'livein'];
+            'idea', 'livein', 'core_ai'];
         foreach ($expected as $table) {
             $this->assertContains(self::T . $table, $tables);
         }

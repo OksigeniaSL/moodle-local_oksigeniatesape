@@ -33,7 +33,7 @@ final class observer {
 
     /** @var string[] Tables of what belongs to one course, by courseid. */
     private const COURSE_TABLES = ['region', 'member', 'team', 'challenge', 'ledger', 'power', 'validation', 'inventory',
-        'mission', 'sceneattempt', 'found', 'minigame', 'idea', 'event', 'live', 'livein'];
+        'mission', 'sceneattempt', 'found', 'minigame', 'idea', 'event', 'live', 'livein', 'nextclass'];
 
     /**
      * An activity completed (or no longer completed): saber from its challenge, or from the rule of the course for

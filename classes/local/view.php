@@ -228,7 +228,7 @@ final class view {
      *
      * @param int $courseid
      * @param int|null $now
-     * @return array mission (if any), event (if drawn), cards.
+     * @return array mission (if any), event (if drawn), opener (if recent), cards.
      */
     public static function board(int $courseid, ?int $now = null): array {
         global $DB;
@@ -269,6 +269,10 @@ final class view {
         $event = events::export(events::today($courseid, $now));
         if ($event) {
             $board['event'] = $event;
+        }
+        $opener = nextclass::opener($courseid, $now ?? time());
+        if ($opener !== '') {
+            $board['opener'] = $opener;
         }
         return $board;
     }

@@ -3046,3 +3046,35 @@ body.in-battle {
   color: var(--lantern);
   font-family: var(--f-title);
 }
+
+/* The plan for the next class, made by the AI of the site, and its question to open the class on the board. */
+.next-class ol {
+  padding-left: 1.2em;
+}
+
+.next-class li {
+  margin-bottom: 8px;
+}
+
+.next-class .next-opener {
+  font-size: 1.1em;
+  font-style: italic;
+}
+
+.ai-policy {
+  max-height: 260px;
+  overflow: auto;
+  padding: 10px 12px;
+  border-radius: var(--r-s);
+  background: rgba(255, 255, 255, .05);
+  font-size: .92em;
+}
+
+.board-opener .lead {
+  font-size: 1.35em;
+  line-height: 1.35;
+}
+
+.next-class small.help-soft {
+  display: block;
+}

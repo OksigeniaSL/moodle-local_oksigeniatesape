@@ -123,7 +123,8 @@ final class results {
         arsort($counts);
         $confusions = [];
         foreach (array_slice($counts, 0, self::CONFUSIONS, true) as $key => $count) {
-            $confusions[] = ['text' => self::describe($def, $key, $mission->variant), 'count' => $count];
+            [$question, $text] = self::describe($def, $key, $mission->skin, $mission->variant);
+            $confusions[] = ['question' => $question, 'text' => $text, 'count' => $count];
         }
         $list = [];
         foreach ($objectives as $code => $o) {
@@ -143,24 +144,26 @@ final class results {
     }
 
     /**
-     * A mix-up in words: the wrong option chosen, or the item and the group it was put in.
+     * A mix-up in words: the question, and the wrong option chosen or the item and the group it was put in.
      *
      * @param array $def The scene.
      * @param string $key node|option or node|item|bin.
+     * @param string $skin Story of the mission.
      * @param string $variant Local examples.
-     * @return string
+     * @return string[] The question and the mix-up.
      */
-    private static function describe(array $def, string $key, string $variant): string {
+    private static function describe(array $def, string $key, string $skin, string $variant): array {
         $parts = explode('|', $key);
         $node = $def['nodes'][$parts[0]];
-        $local = function (string $text) use ($def, $variant): string {
+        $text = function ($text) use ($def, $skin, $variant): string {
             return preg_replace_callback('/\{\{local:([a-z0-9_-]+)\}\}/', fn($m) => (string) ($def['locals'][$m[1]][$variant]
-                ?? $m[0]), $text);
+                ?? $m[0]), missions::text($text ?? '', $skin));
         };
+        $question = $text($node['prompt'] ?? '');
         if (count($parts) === 2) {
             foreach ($node['options'] as $option) {
                 if ($option['id'] === $parts[1]) {
-                    return $local(missions::text($option['label'], 'valley'));
+                    return [$question, $text($option['label'])];
                 }
             }
         }
@@ -168,14 +171,14 @@ final class results {
         $bin = $parts[2] ?? '';
         foreach ($node['items'] ?? [] as $item) {
             if ($item['id'] === $parts[1]) {
-                $label = $local(missions::text($item['label'], 'valley'));
+                $label = $text($item['label']);
             }
         }
         foreach ($node['bins'] ?? [] as $b) {
             if ($b['id'] === $bin) {
-                $bin = $b['label'];
+                $bin = $text($b['label']);
             }
         }
-        return $label . ' → ' . $bin;
+        return [$question, $label . ' → ' . $bin];
     }
 }

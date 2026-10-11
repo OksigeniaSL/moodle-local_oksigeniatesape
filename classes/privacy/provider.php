@@ -79,6 +79,9 @@ class provider implements
             }
             $collection->add_database_table(self::T . $table, $described, "privacy:metadata:$table");
         }
+        // The plan for the next class goes to the AI of the site with counts and the content of the mission only; the
+        // AI subsystem keeps who asked for it.
+        $collection->add_subsystem_link('core_ai', [], 'privacy:metadata:core_ai');
         return $collection;
     }
 
