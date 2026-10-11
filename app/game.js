@@ -513,7 +513,8 @@
         t('app_play')) + '</button></li>';
     }).join('');
     return '<section class="card chapter"><div class="kicker">' + esc(lantern) + '</div><h2>' + esc(ch.name) + '</h2>' +
-      '<p>' + esc(ch.intro) + '</p>' + (scenes ? '<ul class="list">' + scenes + '</ul>' : '') +
+      '<p>' + esc(ch.intro) + '</p>' + (ch.letter ? '<blockquote class="letter"><small>' + esc(t('app_letter')) +
+      '</small>' + esc(ch.letter) + '</blockquote>' : '') + (scenes ? '<ul class="list">' + scenes + '</ul>' : '') +
       (games ? '<h3 style="margin-top:16px">' + esc(t('app_minigames')) + '</h3><ul class="list">' + games + '</ul>' : '') +
       (acts.length ? '<h3 style="margin-top:16px">' + esc(t('app_inmoodle')) + '</h3><ul class="list">' +
       acts.map(activityItem).join('') + '</ul>' : '') +

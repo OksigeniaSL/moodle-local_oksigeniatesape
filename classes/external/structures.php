@@ -87,6 +87,7 @@ final class structures {
                 'mine' => new external_value(PARAM_BOOL, 'Lantern of the student lit'),
                 'done' => new external_value(PARAM_BOOL, 'Scenes of the student done'),
                 'challengeid' => new external_value(PARAM_INT, 'Classroom challenge of the chapter (0: none)'),
+                'letter' => new external_value(PARAM_TEXT, 'Letter the Embrollo left once the class lit it', VALUE_DEFAULT, ''),
                 'games' => new external_multiple_structure(new external_single_structure([
                     'code' => new external_value(PARAM_ALPHANUMEXT, 'Minigame'),
                     'title' => new external_value(PARAM_TEXT, 'Title'),
@@ -125,6 +126,38 @@ final class structures {
             'reached' => new external_value(PARAM_BOOL, 'Goal reached'),
             'players' => new external_value(PARAM_INT, 'Members who play'),
         ]);
+    }
+
+    /**
+     * Today in the valley: what the mission proposes for the class sessions of the chapter the class is in.
+     *
+     * @return external_single_structure
+     */
+    public static function today(): external_single_structure {
+        return new external_single_structure([
+            'chapter' => new external_value(PARAM_TEXT, 'Chapter the class is in'),
+            'code' => new external_value(PARAM_ALPHANUMEXT, 'Its code'),
+            'intro' => new external_value(PARAM_TEXT, 'Its introduction'),
+            'offscreen' => new external_value(PARAM_TEXT, 'Its challenge away from the screen'),
+            'sessions' => new external_multiple_structure(new external_single_structure([
+                'n' => new external_value(PARAM_INT, 'Number of the session in the chapter'),
+                'do' => new external_value(PARAM_TEXT, 'What to do'),
+                'materials' => new external_value(PARAM_TEXT, 'Materials'),
+                'minutes' => new external_value(PARAM_INT, 'Minutes'),
+                'sceneid' => new external_value(PARAM_INT, 'Scene to play together (0: none)'),
+                'scene' => new external_value(PARAM_TEXT, 'Its title'),
+                'game' => new external_value(PARAM_TEXT, 'Minigame to play together'),
+                'final' => new external_value(PARAM_BOOL, 'The final battle'),
+            ])),
+            'letter' => new external_single_structure([
+                'chapter' => new external_value(PARAM_TEXT, 'Place where the Embrollo left it'),
+                'text' => new external_value(PARAM_TEXT, 'The letter'),
+            ], 'The last letter of the Embrollo', VALUE_OPTIONAL),
+            'mixup' => new external_single_structure([
+                'question' => new external_value(PARAM_TEXT, 'Question or game'),
+                'answer' => new external_value(PARAM_TEXT, 'The wrong answer most given'),
+            ], 'The mix-up that came up most', VALUE_OPTIONAL),
+        ], 'Today in the valley', VALUE_OPTIONAL);
     }
 
     /**

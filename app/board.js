@@ -16,6 +16,7 @@
   var esc = T.esc;
   var app = document.getElementById('app');
   var REFRESH = 5000;
+  var FULL = 30000;
   var LIVE = 1500;
   var LETTERS = 'ABCD';
   var CARD_ICON = {calm: 'energy', breeze: 'saber', footprint: 'world', exchange: 'breath'};
@@ -43,6 +44,7 @@
       T.api('get_class', {courseid: cfg.courseid}),
       T.api('live_host', {courseid: cfg.courseid, action: 'state'})
     ]).then(function(r) {
+      state.loaded = Date.now();
       state.board = r[0];
       state.cls = r[1];
       state.live = r[2].live || null;
@@ -65,9 +67,23 @@
   }
 
   function refresh() {
-    if (!document.hidden && !state.busy && !battling()) {
-      load(false);
+    if (document.hidden || state.busy || battling()) {
+      return;
     }
+    // Everything every half minute; in between, only whether a battle or a vote has started somewhere else.
+    if (Date.now() - (state.loaded || 0) >= FULL) {
+      load(false);
+      return;
+    }
+    T.api('live_host', {courseid: cfg.courseid, action: 'state'}).then(function(r) {
+      var live = r.live || null;
+      var was = state.live;
+      if ((live && live.id) !== (was && was.id) || (live && live.outcome) !== (was && was.outcome)) {
+        load(false);
+      }
+    }).catch(function() {
+      // A poll that fails is tried again at the next one.
+    });
   }
 
   /* ---------- The battle against the Embrollo ---------- */
@@ -328,6 +344,33 @@
    *
    * @return {string}
    */
+  /**
+   * Today in the valley: what the mission proposes for the sessions of the chapter the class is in, with the scene to
+   * play together, the last letter of the Embrollo and what confuses the class most.
+   *
+   * @return {string}
+   */
+  function todayCard() {
+    var d = state.board.today;
+    if (!d) {
+      return '';
+    }
+    var award = can('award');
+    var sessions = d.sessions.map(function(x) {
+      return '<li><b>' + esc(t('board_today_session', x.n)) + '</b>' + (x.minutes ? ' · ' + esc(t('app_minutes', x.minutes)) :
+        '') + '<p>' + esc(x.do) + '</p>' + (x.materials ? '<small>' + esc(t('board_today_materials', x.materials)) +
+        '</small>' : '') + (award && x.sceneid ? '<div class="actions board-small"><button class="btn btn-soft" ' +
+        'data-playscene="' + x.sceneid + '">' + esc(t('board_today_scene', x.scene)) + '</button></div>' : '') +
+        (award && x.final ? '<div class="actions board-small"><button class="btn btn-soft" data-battle="final:1">' +
+        esc(t('board_today_final')) + '</button></div>' : '') + '</li>';
+    }).join('');
+    return '<section class="card board-today"><div class="kicker">' + esc(t('board_today')) + '</div><h3>' +
+      esc(d.chapter) + '</h3>' + (d.letter ? '<blockquote class="letter"><small>' + esc(t('board_today_letter',
+      d.letter.chapter)) + '</small>' + esc(d.letter.text) + '</blockquote>' : '') + (sessions ? '<ol class="today-sessions">' +
+      sessions + '</ol>' : '') + (d.offscreen ? '<p class="help-soft">' + esc(t('board_today_offscreen', d.offscreen)) +
+      '</p>' : '') + (d.mixup ? '<p class="help-soft">' + esc(t('board_today_mixup', d.mixup)) + '</p>' : '') + '</section>';
+  }
+
   function openerCard() {
     if (!state.board.opener || state.openerhidden) {
       return '';
@@ -651,7 +694,7 @@
       '</a>' : '') + '<a class="btn btn-soft" href="' + esc(cfg.wwwroot + '/local/oksigeniatesape/teach.php?id=' +
       cfg.courseid) + '">' + esc(t('board_panel')) + '</a><button class="btn btn-soft" data-full>' +
       esc(t('board_fullscreen')) + '</button></div></header>' +
-      '<div class="board-grid">' + map() + '<div class="board-side">' + openerCard() + eventCard() + battleCard() +
+      '<div class="board-grid">' + map() + '<div class="board-side">' + todayCard() + openerCard() + eventCard() + battleCard() +
       sceneCard() + teams() + printCard() + '</div></div>' + bar() + '</div>';
     bind();
   }

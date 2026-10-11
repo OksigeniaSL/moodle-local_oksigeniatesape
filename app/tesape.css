@@ -3262,3 +3262,40 @@ body.in-battle {
   flex: 1;
   min-width: 0;
 }
+
+/* ---------- Today in the valley and the letters of the Embrollo ---------- */
+
+.letter {
+  margin: 12px 0;
+  padding: 12px 14px;
+  border-left: 3px solid #b48cff;
+  border-radius: 0 12px 12px 0;
+  background: rgba(180, 140, 255, .1);
+  font-style: italic;
+}
+
+.letter small {
+  display: block;
+  margin-bottom: 4px;
+  font-style: normal;
+  color: var(--text-soft);
+}
+
+.today-sessions {
+  margin: 8px 0 12px;
+  padding-left: 0;
+  list-style: none;
+}
+
+.today-sessions li + li {
+  margin-top: 12px;
+}
+
+.today-sessions p {
+  margin: 4px 0;
+}
+
+.today-sessions small {
+  display: block;
+  color: var(--text-soft);
+}

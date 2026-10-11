@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.19.0 (2026-10-12)
+
+- **Today in the valley**, on the class screen and at the top of the teacher's panel: the chapter the class is in and
+  what the mission proposes for each of its sessions (what to do, materials, minutes), with a button to play its scene
+  on the class screen or to get the final battle ready, the challenge away from the screen and, on the class screen,
+  what confuses the class most. In the panel, what is waiting for the teacher (powers, commitments, ideas), one tap
+  away.
+- **The letters of the Embrollo**: when the class lights the lantern of a place, the Embrollo leaves a letter there.
+  It shows in that place of the map of each student and on the class screen (the last one).
+- **The class screen asks less of the server**: every 5 seconds it only checks whether a battle or a vote has started
+  somewhere else; the rest is reloaded every 30 seconds (it was everything every 5 seconds).
+
 ## 0.18.0 (2026-10-12)
 
 - **The page of the day**: each day the creature asks for a page, a quick question from the chapters the student has

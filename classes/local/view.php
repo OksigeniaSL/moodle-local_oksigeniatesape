@@ -219,6 +219,7 @@ final class view {
                 'mine' => !empty($found['lantern'][$chapter->code]),
                 'done' => !empty($found['chapter'][$chapter->code]),
                 'challengeid' => (int) ($challenges[$chapter->id] ?? 0),
+                'letter' => $chapter->litat ? today::letter($mission, $chapter->code) : '',
                 'scenes' => array_map(function ($scene) use ($found, $attempts, $reached) {
                     $def = json_decode($scene->definition, true);
                     $done = !empty($found['scene'][$scene->code]);
@@ -307,6 +308,10 @@ final class view {
         $event = events::export(events::today($courseid, $now));
         if ($event) {
             $board['event'] = $event;
+        }
+        $today = today::get($courseid, true);
+        if ($today) {
+            $board['today'] = $today;
         }
         $opener = nextclass::opener($courseid, $now ?? time());
         if ($opener !== '') {
@@ -406,6 +411,10 @@ final class view {
         $pacts = pacts::for_teacher($courseid);
         if ($pacts) {
             $view['pacts'] = $pacts;
+        }
+        $today = today::get($courseid);
+        if ($today) {
+            $view['today'] = $today;
         }
         return $view;
     }

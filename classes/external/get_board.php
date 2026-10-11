@@ -87,6 +87,7 @@ final class get_board extends external_api {
             ], 'Mission of the course', VALUE_OPTIONAL),
             'event' => structures::event(),
             'opener' => new external_value(PARAM_TEXT, 'A question to open the class, from the plan of the AI', VALUE_OPTIONAL),
+            'today' => structures::today(),
         ]);
     }
 }

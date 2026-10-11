@@ -289,6 +289,41 @@
   }
 
   /**
+   * Today in the valley: what the mission proposes for the sessions of the chapter the class is in, and what is waiting
+   * for the teacher.
+   *
+   * @return {string}
+   */
+  function todayCard() {
+    var d = state.data;
+    var today = d.today;
+    if (!today) {
+      return '';
+    }
+    var waiting = [];
+    if (d.powerspending) {
+      waiting.push(['powers', t('teach_today_powers', d.powerspending)]);
+    }
+    if (d.pactspending) {
+      waiting.push(['challenges', t('teach_today_pacts', d.pactspending)]);
+    }
+    if (d.ideasunread) {
+      waiting.push(['ideas', t('teach_today_ideas', d.ideasunread)]);
+    }
+    var sessions = today.sessions.map(function(x) {
+      return '<li><b>' + esc(t('board_today_session', x.n)) + '</b>' + (x.minutes ? ' · ' + esc(t('app_minutes', x.minutes)) :
+        '') + '<p>' + esc(x.do) + '</p>' + (x.materials ? '<small>' + esc(t('board_today_materials', x.materials)) +
+        '</small>' : '') + (x.scene ? '<small>' + esc(t('teach_today_scene', x.scene)) + '</small>' : '') + '</li>';
+    }).join('');
+    return '<section class="card today-card" style="margin-bottom:16px"><div class="kicker">' + esc(t('board_today')) +
+      '</div><h2>' + esc(today.chapter) + '</h2>' + (sessions ? '<ol class="today-sessions">' + sessions + '</ol>' : '') +
+      (today.offscreen ? '<p class="help-soft">' + esc(t('board_today_offscreen', today.offscreen)) + '</p>' : '') +
+      (waiting.length ? '<div class="chips">' + waiting.map(function(x) {
+        return '<button type="button" class="chip" data-goto="' + x[0] + '">' + esc(x[1]) + '</button>';
+      }).join('') + '</div>' : '') + '</section>';
+  }
+
+  /**
    * Own names the students wrote for their hero or their creature: nobody else sees them until a teacher takes them.
    *
    * @return {string}
@@ -322,12 +357,19 @@
           '</button>';
       }).join('') + '</div>';
     var shown = studentsShown();
-    var el = content(namesCard() + teamsCard() + '<section class="card"><div class="section-title"><h2>' +
+    var el = content(todayCard() + namesCard() + teamsCard() + '<section class="card"><div class="section-title"><h2>' +
       esc(t('teach_tab_class')) +
       '</h2><button class="btn btn-soft" data-all>' + esc(t('teach_selectall')) + '</button></div>' + teams +
       (shown.length ? '<ul class="list">' + shown.map(studentCard).join('') + '</ul>' : '<p class="empty">' +
       esc(t('teach_nostudents')) + '</p>') + '</section><div id="actionbar"></div>');
     bindMakeTeams(el);
+    el.querySelectorAll('[data-goto]').forEach(function(b) {
+      b.onclick = function() {
+        state.tab = b.dataset.goto;
+        state.open = 0;
+        render();
+      };
+    });
     el.querySelectorAll('[data-namedecide]').forEach(function(b) {
       b.onclick = function() {
         var parts = b.dataset.namedecide.split(':');
