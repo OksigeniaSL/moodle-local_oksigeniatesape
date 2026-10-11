@@ -179,6 +179,20 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:play',
     ],
+    'local_oksigeniatesape_choose_pact' => [
+        'classname' => 'local_oksigeniatesape\\external\\choose_pact',
+        'description' => 'The current student chooses their commitment for the chapter the class is in.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:play',
+    ],
+    'local_oksigeniatesape_decide_pact' => [
+        'classname' => 'local_oksigeniatesape\\external\\decide_pact',
+        'description' => 'The teacher marks a commitment of a student: kept, not kept, or back to pending.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:award',
+    ],
     'local_oksigeniatesape_set_coat' => [
         'classname' => 'local_oksigeniatesape\\external\\set_coat',
         'description' => 'Dresses the creature of the current student with fur, feathers or scales.',

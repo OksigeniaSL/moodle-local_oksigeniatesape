@@ -716,7 +716,7 @@
             '<span class="meter energy" ' +
             'title="' + esc(t('app_energy')) + '"><i style="width:' + Math.round(100 * m.energy / w.energymax) +
             '%"></i></span></span>' : '') + '</li>';
-        }).join('') + '</ul></section>';
+        }).join('') + '</ul></section>' + pactsCard(team.pacts);
     }
     html += powersCard();
     if (w.standings.length > 1) {
@@ -733,6 +733,37 @@
         }).join('') + '</ul></section>';
     }
     return html;
+  }
+
+  /**
+   * The commitments of the team in the chapter the class is in: who chose what and how it went, and the student's own
+   * choice while the teacher has not marked it.
+   *
+   * @param {Object} p
+   * @return {string}
+   */
+  function pactsCard(p) {
+    if (!p) {
+      return '';
+    }
+    var tags = {open: ['todo', 'app_pact_open'], kept: ['done', 'app_pact_kept'], broken: ['notyet', 'app_pact_broken']};
+    var list = p.list.length ? '<ul class="list">' + p.list.map(function(x) {
+      var tag = tags[x.status] || tags.open;
+      return '<li class="item' + (x.me ? ' mine' : '') + '"><span class="grow"><b>' + esc(x.name) + (x.me ? ' (' +
+        esc(t('app_you')) + ')' : '') + '</b><small>' + esc(x.text) + '</small></span><span class="tag ' + tag[0] + '">' +
+        esc(t(tag[1])) + '</span></li>';
+    }).join('') + '</ul>' : '<p class="empty">' + esc(t('app_pacts_none')) + '</p>';
+    var choose = '';
+    if (!p.status || p.status === 'open') {
+      choose = '<p class="pact-ask"><b>' + esc(t(p.mine < 0 ? 'app_pacts_choose' : 'app_pacts_change')) + '</b></p>' +
+        '<div class="pact-options">' + p.options.map(function(text, i) {
+          return '<button type="button" class="opt pact-opt" data-pact="' + i + '" aria-pressed="' + (p.mine === i) + '">' +
+            esc(text) + '</button>';
+        }).join('') + '</div>';
+    }
+    return '<section class="card pacts-card"><h3>' + esc(t('app_pacts', p.chapter)) + '</h3><p class="help-soft">' +
+      esc(t('app_pacts_help', {breath: p.breath, loss: p.loss})) + '</p>' + (p.done ? '<p class="conseq good">' +
+      '<span class="what">' + esc(t('app_pacts_done', p.breath)) + '</span></p>' : '') + list + choose + '</section>';
   }
 
   /**
@@ -813,6 +844,24 @@
   }
 
   function bindTeam() {
+    app.querySelectorAll('[data-pact]').forEach(function(b) {
+      b.onclick = function() {
+        if (b.getAttribute('aria-pressed') === 'true') {
+          return;
+        }
+        app.querySelectorAll('[data-pact]').forEach(function(o) {
+          o.disabled = true;
+        });
+        T.api('choose_pact', {courseid: cfg.courseid, option: Number(b.dataset.pact)}).then(function(w) {
+          state.world = w;
+          T.toast(esc(t('app_pact_chosen')));
+          world();
+        }).catch(function(e) {
+          T.toast(esc(e.message), true);
+          world();
+        });
+      };
+    });
     app.querySelectorAll('[data-power]').forEach(function(b) {
       b.onclick = function() {
         var id = Number(b.dataset.power);

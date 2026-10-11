@@ -146,7 +146,8 @@
       'btn-soft exit" href="' + esc(cfg.courseurl) + '" aria-label="' + esc(t('app_exit')) + '">' + T.icon('exit') +
       '<span>' + esc(t('app_exit')) + '</span></a></div></header><nav class="tabs" ' +
       'aria-label="Tesapé">' + TABS.map(function(tab) {
-        var badge = tab === 'powers' && d.powerspending ? '<span class="badge">' + d.powerspending + '</span>' : '';
+        var count = tab === 'powers' ? d.powerspending : tab === 'challenges' ? d.pactspending : 0;
+        var badge = count ? '<span class="badge">' + count + '</span>' : '';
         return '<button type="button" data-tab="' + tab + '"' + (state.tab === tab ? ' aria-current="page"' : '') + '>' +
           T.icon({class: 'team', powers: 'power', mission: 'world', challenges: 'challenges', log: 'log'}[tab]) + badge +
           '<span>' + esc(t('teach_tab_' + tab)) + '</span></button>';
@@ -1019,7 +1020,8 @@
         a.done + ' / ' + d.students.length + '</span>' + (can('manageregion') ? '<a class="chip" href="' + esc(a.url) + '">' +
         esc(t('teach_edit')) + '</a>' : '') + '</span></li>';
     }).join('');
-    var el = content('<section class="card"><div class="section-title"><h2>' + esc(t('teach_tab_challenges')) + '</h2>' +
+    var el = content(pactsSection() + '<section class="card"><div class="section-title"><h2>' +
+      esc(t('teach_tab_challenges')) + '</h2>' +
       (can('manageregion') ? '<button class="btn btn-main" data-new>' + esc(t('teach_newchallenge')) + '</button>' : '') +
       '</div><p style="color:var(--text-soft)">' + esc(t('teach_challenges_help')) + '</p>' + (list ? '<ul class="list">' +
       list + '</ul>' : '<p class="empty">' + esc(t('app_nochallenges')) + '</p>') + '</section><div id="form"></div>' +
@@ -1044,6 +1046,72 @@
         challengeForm(null);
       };
     }
+    el.querySelectorAll('[data-pactmark]').forEach(function(b) {
+      b.onclick = function() {
+        var parts = b.dataset.pactmark.split(':');
+        // Tapping the mark it has takes it back to pending.
+        var status = b.getAttribute('aria-pressed') === 'true' ? 'open' : parts[1];
+        el.querySelectorAll('[data-pactmark]').forEach(function(o) {
+          o.disabled = true;
+        });
+        T.api('decide_pact', {courseid: cfg.courseid, pactid: Number(parts[0]), status: status}).then(function() {
+          return load(true);
+        }).catch(function(e) {
+          T.toast(esc(e.message), true);
+          render();
+        });
+      };
+    });
+  }
+
+  /**
+   * The commitments of the teams in the chapter the class is in (and those still pending from earlier ones), to mark
+   * kept or not kept.
+   *
+   * @return {string}
+   */
+  function pactsSection() {
+    var d = state.data;
+    var p = d.pacts;
+    if (!p || !p.options) {
+      return '';
+    }
+    var names = {};
+    d.students.forEach(function(s) {
+      names[s.userid] = s.fullname;
+    });
+    var chose = {};
+    p.list.forEach(function(x) {
+      if (!x.chapter) {
+        chose[x.userid] = true;
+      }
+    });
+    var teams = d.teams.map(function(g) {
+      var mine = p.list.filter(function(x) {
+        return x.teamid === g.id;
+      });
+      var missing = d.students.filter(function(s) {
+        return s.teamid === g.id && s.character && !chose[s.userid];
+      }).map(function(s) {
+        return s.firstname;
+      });
+      if (!mine.length && !missing.length) {
+        return '';
+      }
+      var marks = can('award');
+      return '<h3 class="pact-team">' + esc(g.name) + '</h3><ul class="list">' + mine.map(function(x) {
+        return '<li class="item"><span class="grow"><b>' + esc(names[x.userid] || '') + '</b><small>' + esc(x.text) +
+          (x.chapter ? ' · ' + esc(t('teach_pact_from', x.chapter)) : '') + '</small></span>' + (marks ?
+          '<span class="row-actions"><button class="chip" type="button" data-pactmark="' + x.id + ':kept" aria-pressed="' +
+          (x.status === 'kept') + '">' + esc(t('teach_pact_kept')) + '</button><button class="chip" type="button" ' +
+          'data-pactmark="' + x.id + ':broken" aria-pressed="' + (x.status === 'broken') + '">' +
+          esc(t('teach_pact_broken')) + '</button></span>' : '') + '</li>';
+      }).join('') + '</ul>' + (missing.length ? '<p class="help-soft">' + esc(t('teach_pacts_missing', missing.join(', '))) + '</p>' : '');
+    }).join('');
+    return '<section class="card pacts-teach" style="margin-bottom:16px"><h2>' + esc(t('teach_pacts')) + '</h2><p ' +
+      'style="color:var(--text-soft)">' + esc(t('teach_pacts_help', {breath: p.breath, loss: p.loss})) + '</p><p><b>' +
+      esc(t('teach_pacts_chapter', p.chapter)) + '</b></p>' + (teams || '<p class="empty">' + esc(t('teach_pacts_none')) +
+      '</p>') + '</section>';
   }
 
   function rewards(ch) {

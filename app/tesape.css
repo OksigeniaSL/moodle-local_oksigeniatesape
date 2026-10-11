@@ -3142,3 +3142,28 @@ body.in-battle {
   font-size: 1.1em;
   line-height: 1.5;
 }
+
+/* ---------- Commitments of the team ---------- */
+
+.pacts-card .list {
+  margin-bottom: 12px;
+}
+
+.pact-ask {
+  margin: 12px 0 8px;
+}
+
+.pact-options {
+  display: grid;
+  gap: 8px;
+}
+
+.pact-opt[aria-pressed="true"] {
+  border-color: var(--lantern);
+  background: rgba(255, 200, 87, .14);
+}
+
+.pact-team {
+  margin: 16px 0 6px;
+  font-size: 1.05rem;
+}

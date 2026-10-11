@@ -128,6 +128,52 @@ final class structures {
     }
 
     /**
+     * The commitments of a team in the chapter the class is in, for one of its members.
+     *
+     * @param int $required
+     * @return external_single_structure
+     */
+    public static function team_pacts(int $required = VALUE_OPTIONAL): external_single_structure {
+        return new external_single_structure([
+            'chapter' => new external_value(PARAM_TEXT, 'Chapter the class is in'),
+            'options' => new external_multiple_structure(new external_value(PARAM_TEXT, 'Commitment of the mission')),
+            'mine' => new external_value(PARAM_INT, 'The one the student chose (-1: none yet)'),
+            'status' => new external_value(PARAM_ALPHA, 'open, kept, broken or empty'),
+            'done' => new external_value(PARAM_BOOL, 'The team kept them all and got the breath'),
+            'breath' => new external_value(PARAM_INT, 'Breath for each member when the team keeps them all'),
+            'loss' => new external_value(PARAM_INT, 'Energy a commitment not kept costs'),
+            'list' => new external_multiple_structure(new external_single_structure([
+                'name' => new external_value(PARAM_TEXT, 'Name shown to classmates'),
+                'text' => new external_value(PARAM_TEXT, 'Commitment'),
+                'status' => new external_value(PARAM_ALPHA, 'open, kept or broken'),
+                'me' => new external_value(PARAM_BOOL, 'The current student'),
+            ])),
+        ], 'Commitments of the team', $required);
+    }
+
+    /**
+     * The commitments to mark, for the teacher.
+     *
+     * @return external_single_structure
+     */
+    public static function teacher_pacts(): external_single_structure {
+        return new external_single_structure([
+            'chapter' => new external_value(PARAM_TEXT, 'Chapter the class is in'),
+            'options' => new external_value(PARAM_INT, 'Commitments the mission brings for it'),
+            'breath' => new external_value(PARAM_INT, 'Breath for each member when the team keeps them all'),
+            'loss' => new external_value(PARAM_INT, 'Energy a commitment not kept costs'),
+            'list' => new external_multiple_structure(new external_single_structure([
+                'id' => new external_value(PARAM_INT, 'Commitment'),
+                'userid' => new external_value(PARAM_INT, 'Student'),
+                'teamid' => new external_value(PARAM_INT, 'Group of the team'),
+                'chapter' => new external_value(PARAM_TEXT, 'Earlier chapter it belongs to (empty: the current one)'),
+                'text' => new external_value(PARAM_TEXT, 'Commitment'),
+                'status' => new external_value(PARAM_ALPHA, 'open, kept or broken'),
+            ])),
+        ], 'Commitments of the teams', VALUE_OPTIONAL);
+    }
+
+    /**
      * The powers of a course, and the requests, for its teachers.
      *
      * @return external_single_structure

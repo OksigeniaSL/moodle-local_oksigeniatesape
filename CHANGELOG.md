@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.17.0 (2026-10-11)
+
+- **Team commitments**: in each chapter, each member of a team chooses one of the commitments the mission brings
+  («bring a leaf, a seed or a stone for the inventory»), and can change it until the teacher marks it. The teacher
+  marks them kept or not kept in the panel (tab of classroom challenges, with a count of those pending): one not kept
+  costs whoever chose it 2 energy (the Wall, the Shield and the day of Calm still stop it); a team that keeps all of
+  its own gets 1 breath for each member, once. Taking a mark back undoes what it did. Energy is lost for what one
+  chose, never for behaviour. The chapter the class is in is the first one whose lantern the class has not lit.
+- **The Spanish texts, revised**: «tu docente» always in the singular, no «vosotros» on the class screen or in the
+  events, the same name for the same thing everywhere («poder», not «privilegio»; «Pelaje» for the coat of the
+  creature, not the hair of the hero), verb tenses aligned, and clearer help for teachers. The English uses
+  «knowledge» everywhere. A locked option that needs a role in the team now reads «Your team needs a Sage».
+
 ## 0.16.1 (2026-10-11)
 
 The pilot mission, version 7, rewritten after the design review:

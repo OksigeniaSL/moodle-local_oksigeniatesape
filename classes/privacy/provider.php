@@ -46,7 +46,7 @@ class provider implements
 
     /** @var string[] Tables of a character in a course, all with charid and courseid. */
     public const COURSE_TABLES = ['member', 'ledger', 'inventory', 'sceneattempt', 'minigame', 'validation', 'found', 'idea',
-        'livein', 'livetoken'];
+        'livein', 'livetoken', 'pact'];
 
     /**
      * What is stored.
@@ -72,6 +72,8 @@ class provider implements
             'idea' => ['courseid', 'charid', 'anonymous', 'message', 'status', 'timecreated'],
             'livein' => ['liveid', 'courseid', 'charid', 'round', 'team', 'answer', 'timecreated'],
             'livetoken' => ['liveid', 'courseid', 'charid', 'round', 'team', 'kind', 'timecreated'],
+            'pact' => ['courseid', 'charid', 'missionid', 'chapter', 'groupid', 'text', 'status', 'decidedby', 'timecreated',
+                'timedecided'],
         ];
         foreach ($fields as $table => $names) {
             $described = [];
@@ -141,6 +143,13 @@ class provider implements
               WHERE v.validatedby = :userid',
             ['level' => CONTEXT_COURSE, 'userid' => $userid]
         );
+        $contextlist->add_from_sql(
+            'SELECT ctx.id
+               FROM {context} ctx
+               JOIN {' . self::T . 'pact} p ON p.courseid = ctx.instanceid AND ctx.contextlevel = :level
+              WHERE p.decidedby = :userid',
+            ['level' => CONTEXT_COURSE, 'userid' => $userid]
+        );
         return $contextlist;
     }
 
@@ -194,6 +203,11 @@ class provider implements
                FROM {' . self::T . 'powerreq} r
                JOIN {' . self::T . 'member} m ON m.id = r.memberid
               WHERE m.courseid = :courseid AND r.decidedby > 0',
+            $params
+        );
+        $userlist->add_from_sql(
+            'decidedby',
+            'SELECT decidedby FROM {' . self::T . 'pact} WHERE courseid = :courseid AND decidedby > 0',
             $params
         );
     }
@@ -389,6 +403,18 @@ class provider implements
                 ], $tokens)),
             ]);
         }
+        $pacts = $DB->get_records(self::T . 'pact', ['charid' => $charid, 'courseid' => $courseid], 'timecreated');
+        if ($pacts) {
+            $writer->export_data(self::path('commitments'), (object) [
+                'commitments' => array_values(array_map(fn($p) => [
+                    'chapter' => $p->chapter,
+                    'text' => $p->text,
+                    'status' => $p->status,
+                    'timecreated' => transform::datetime($p->timecreated),
+                    'timedecided' => $p->timedecided ? transform::datetime($p->timedecided) : null,
+                ], $pacts)),
+            ]);
+        }
         $games = $DB->get_records(self::T . 'minigame', ['charid' => $charid, 'courseid' => $courseid], 'timecreated');
         if ($games) {
             $writer->export_data(self::path('minigames'), (object) [
@@ -507,6 +533,10 @@ class provider implements
             'UPDATE {' . self::T . "validation} SET validatedby = 0 WHERE courseid = ? AND validatedby $insql",
             array_merge([$courseid], $params)
         );
+        $DB->execute(
+            'UPDATE {' . self::T . "pact} SET decidedby = 0 WHERE courseid = ? AND decidedby $insql",
+            array_merge([$courseid], $params)
+        );
         $members = $DB->get_fieldset_select(self::T . 'member', 'id', 'courseid = ?', [$courseid]);
         if ($members) {
             [$inmember, $memberparams] = $DB->get_in_or_equal($members);
@@ -559,6 +589,7 @@ class provider implements
         $DB->set_field(self::T . 'member', 'statusby', 0, ['statusby' => $userid]);
         $DB->set_field(self::T . 'ledger', 'actorid', 0, ['actorid' => $userid]);
         $DB->set_field(self::T . 'validation', 'validatedby', 0, ['validatedby' => $userid]);
+        $DB->set_field(self::T . 'pact', 'decidedby', 0, ['decidedby' => $userid]);
         $DB->set_field(self::T . 'powerreq', 'decidedby', 0, ['decidedby' => $userid]);
     }
 

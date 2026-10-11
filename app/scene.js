@@ -175,7 +175,7 @@
         return t('app_onlyrole', T.roleName(world ? world.family : '', req.role, 'm'));
       }
       if (req.teamrole) {
-        return t('app_needs', T.roleName(world.family, req.teamrole, 'm'));
+        return t('app_needsrole', T.roleName(world.family, req.teamrole, 'm'));
       }
       if (req.any) {
         return req.any.map(missing).join(' · ');

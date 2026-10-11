@@ -75,6 +75,11 @@ final class view {
         $team = self::team($courseid, $userid, (int) ($region->groupingid ?? 0), $region);
         if ($team) {
             $team['week'] = teams::week($courseid, $team['id']);
+            $names = array_column($team['members'], 'name', 'userid');
+            $pacts = pacts::for_team($courseid, (object) ['id' => $team['id']], $userid, $names);
+            if ($pacts) {
+                $team['pacts'] = $pacts;
+            }
             $world['team'] = $team;
         }
         if ($region->leaderboard) {
@@ -368,7 +373,7 @@ final class view {
                 'validations' => $validations,
             ];
         }
-        return [
+        $view = [
             'region' => self::region($region),
             'students' => $list,
             'teams' => array_values(array_map(fn($g) => ['id' => (int) $g->id, 'name' => format_string($g->name)], $groups)),
@@ -383,7 +388,13 @@ final class view {
             'activities' => activities::for_teacher($courseid, array_keys($students)),
             'powerspending' => powers::pending_count($courseid),
             'ideasunread' => ideas::unread($courseid),
+            'pactspending' => pacts::pending($courseid),
         ];
+        $pacts = pacts::for_teacher($courseid);
+        if ($pacts) {
+            $view['pacts'] = $pacts;
+        }
+        return $view;
     }
 
     /**
