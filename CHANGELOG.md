@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.12.0 (2026-10-11)
+
+- **First steps have their own scenes**: the living things, version 6, brings the six scenes of the first step, one
+  per chapter, with short texts and examples of each place: who is hungry like the creature (it hatches there for
+  those on first steps), animal or plant, the lost coats of the animals, the plant upside down, who eats whom, and
+  the card of the field guide. Each one gives what the core scene of its chapter gives (the creature, the lantern, the
+  pages of the Great Book), so nobody misses anything for being on another step.
+- The Embrollo, the final scene, is for every step.
+
 ## 0.11.0 (2026-10-11)
 
 - **The game goes with the backup of a course**: its settings, the mission (installed again from the package of the

@@ -1,0 +1,126 @@
+{
+ "id": "C6-1",
+ "mission": "livingthings",
+ "chapter": "torre",
+ "title": "La ficha de la guía",
+ "step": 1,
+ "mode": "both",
+ "objectives": [
+  "SV-07"
+ ],
+ "minutes": 5,
+ "start": "intro",
+ "nodes": {
+  "intro": {
+   "type": "story",
+   "speaker": "bibliotecaria",
+   "image": "torre-ficha",
+   "text": {
+    "valley": "Para terminar la guía de campo hace falta una ficha para cada ser vivo. La bibliotecaria nos enseña una en blanco: «Una buena ficha ayuda a reconocerlo a quien no lo ha visto nunca. ¿Qué apartados le ponemos?».",
+    "azara": "El cuaderno de campo necesita una ficha para cada ser vivo, como las que hacía Félix de Azara. La archivera nos enseña una en blanco: «Tiene que servir para reconocerlo sin haberlo visto. ¿Qué apartados le ponemos?»."
+   },
+   "next": "elegir"
+  },
+  "elegir": {
+   "type": "choice",
+   "prompt": "¿Qué cinco apartados ponemos en la ficha?",
+   "select": {
+    "min": 5,
+    "max": 5
+   },
+   "options": [
+    {
+     "id": "nombre",
+     "label": "Su nombre",
+     "correct": true,
+     "points": 2,
+     "objective": "SV-07",
+     "feedback": "«Con el nombre, cualquiera puede buscarlo en otros libros.»"
+    },
+    {
+     "id": "dibujo",
+     "label": "Un dibujo o una foto",
+     "correct": true,
+     "points": 2,
+     "objective": "SV-07",
+     "feedback": "«Un dibujo cuidado dice más que muchas palabras.»"
+    },
+    {
+     "id": "color",
+     "label": "Mi color favorito",
+     "correct": false,
+     "objective": "SV-07",
+     "feedback": "La bibliotecaria arruga la nariz: «Eso habla de nosotros, no del ser vivo. No ayuda a reconocerlo»."
+    },
+    {
+     "id": "donde",
+     "label": "Dónde vive",
+     "correct": true,
+     "points": 2,
+     "objective": "SV-07",
+     "feedback": "«Así sabremos dónde buscarlo.»"
+    },
+    {
+     "id": "precio",
+     "label": "Cuánto cuesta",
+     "correct": false,
+     "objective": "SV-07",
+     "feedback": "La bibliotecaria arruga la nariz: «Los seres vivos del valle no se venden. Eso no ayuda a reconocerlo»."
+    },
+    {
+     "id": "come",
+     "label": "Qué come",
+     "correct": true,
+     "points": 2,
+     "objective": "SV-07",
+     "feedback": "«Así sabremos en qué cadena está.»"
+    },
+    {
+     "id": "gusta",
+     "label": "Si nos gusta o no",
+     "correct": false,
+     "objective": "SV-07",
+     "feedback": "«Que nos guste o no es una opinión. La ficha cuenta lo que se puede observar.»"
+    },
+    {
+     "id": "grupo",
+     "label": "Su grupo",
+     "correct": true,
+     "points": 2,
+     "objective": "SV-07",
+     "feedback": "«¿Animal, planta, hongo? ¿Vertebrado o invertebrado? Eso lo ordena en el Gran Libro.»"
+    }
+   ],
+   "next": "resultado"
+  },
+  "resultado": {
+   "type": "branch",
+   "rules": [
+    {
+     "if": {
+      "correct_at_least": 5,
+      "in": "elegir"
+     },
+     "next": "aceptada"
+    }
+   ],
+   "else": "arrugada"
+  },
+  "aceptada": {
+   "type": "ending",
+   "outcome": "success",
+   "text": "La ficha queda aceptada en el Gran Libro. «Ahora cualquiera podrá reconocerlo», dice la bibliotecaria. Con fichas así se hace la guía de campo de la clase.",
+   "effects": [
+    {
+     "saber": 15
+    }
+   ]
+  },
+  "arrugada": {
+   "type": "ending",
+   "outcome": "retry",
+   "text": "La bibliotecaria devuelve la ficha: «Hay un apartado que no ayuda a reconocer a nadie. ¿Cuál cambiamos?».",
+   "retry": "elegir"
+  }
+ }
+}

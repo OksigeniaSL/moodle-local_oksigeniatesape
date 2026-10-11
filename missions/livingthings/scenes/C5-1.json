@@ -1,0 +1,109 @@
+{
+ "id": "C5-1",
+ "mission": "livingthings",
+ "chapter": "lago",
+ "title": "¿Quién se come a quién?",
+ "step": 1,
+ "mode": "both",
+ "objectives": [
+  "SV-06"
+ ],
+ "minutes": 6,
+ "locals": {
+  "herbivoro": {
+   "py": "El carpincho",
+   "es": "El conejo"
+  },
+  "carnivoro": {
+   "py": "El yaguareté",
+   "es": "El lince"
+  }
+ },
+ "start": "intro",
+ "nodes": {
+  "intro": {
+   "type": "story",
+   "speaker": "garza",
+   "image": "lago-cadenas",
+   "text": {
+    "valley": "Junto al lago, la garza ha dibujado en el barro unas flechas que dicen quién se come a quién. El Embrollo las ha borrado. «Sin flechas no se entiende el lago», dice la garza. «¿Las ponemos otra vez?»",
+    "azara": "En la orilla, el cuaderno tiene una página de flechas que dicen quién se come a quién. La lluvia las ha borrado. La garza mira desde el agua mientras las volvemos a dibujar."
+   },
+   "next": "cadena1"
+  },
+  "cadena1": {
+   "type": "order",
+   "prompt": "Primera cadena: ¿quién va primero?",
+   "objective": "SV-06",
+   "steps": [
+    {
+     "id": "hierba",
+     "label": "La hierba fabrica su alimento con la luz"
+    },
+    {
+     "id": "herbivoro",
+     "label": "{{local:herbivoro}} se come la hierba"
+    },
+    {
+     "id": "carnivoro",
+     "label": "{{local:carnivoro}} caza para comer"
+    }
+   ],
+   "stuck": {
+    "default": "La flecha no se enciende. «Así no va. Pensemos quién come a quién.»",
+    "herbivoro-antes-de-hierba": "«¿Yo, el primero? Yo no fabrico mi alimento: necesito comer hierba.»",
+    "carnivoro-antes-de-hierba": "«¿Yo, el primero? Yo no como luz del sol: necesito comer a otros.»",
+    "carnivoro-antes-de-herbivoro": "Se oye una risa: «¿Yo comerme a un cazador tan grande? ¡Al revés!»"
+   },
+   "next": "cadena2"
+  },
+  "cadena2": {
+   "type": "order",
+   "prompt": "Segunda cadena, en el árbol de la orilla:",
+   "objective": "SV-06",
+   "steps": [
+    {
+     "id": "hoja",
+     "label": "La hoja fabrica su alimento con la luz"
+    },
+    {
+     "id": "oruga",
+     "label": "La oruga se come la hoja"
+    },
+    {
+     "id": "pajaro",
+     "label": "El pájaro se come la oruga"
+    }
+   ],
+   "stuck": {
+    "default": "La flecha no se enciende. «Así no va. Pensemos quién come a quién.»",
+    "oruga-antes-de-hoja": "«Yo no puedo empezar: sin hojas no tengo nada que comer.»",
+    "pajaro-antes-de-hoja": "«Yo no como hojas: como orugas.»",
+    "pajaro-antes-de-oruga": "La oruga se ríe: «¿Yo comerme a un pájaro? ¡Al revés!»"
+   },
+   "next": "fin"
+  },
+  "fin": {
+   "type": "ending",
+   "outcome": "success",
+   "text": {
+    "valley": "Las flechas se encienden en el barro. Las dos cadenas empiezan igual: por una planta, que fabrica su alimento con la luz. Sin plantas no hay nada que comer en el lago. La linterna del lago se enciende.",
+    "azara": "La página de flechas queda completa. Las dos cadenas empiezan igual: por una planta, que fabrica su alimento con la luz. Sin plantas no hay nada que comer en la orilla."
+   },
+   "effects": [
+    {
+     "saber": 25
+    },
+    {
+     "lantern": "lago"
+    },
+    {
+     "page": "cadenas"
+    },
+    {
+     "page": "ecosistema"
+    }
+   ]
+  }
+ }
+}

@@ -1,0 +1,153 @@
+{
+ "id": "C3-1",
+ "mission": "livingthings",
+ "chapter": "bosque",
+ "title": "Los abrigos perdidos",
+ "step": 1,
+ "mode": "both",
+ "objectives": [
+  "SV-04"
+ ],
+ "minutes": 6,
+ "locals": {
+  "mamifero": {
+   "py": "un carpincho",
+   "es": "un perro"
+  },
+  "ave": {
+   "py": "un ñandú",
+   "es": "una gallina"
+  }
+ },
+ "start": "intro",
+ "nodes": {
+  "intro": {
+   "type": "story",
+   "speaker": "buho",
+   "image": "bosque-abrigos",
+   "text": {
+    "valley": "En el bosque hace frío. El Embrollo ha escondido los abrigos de los animales y tiritan detrás de los árboles. El búho guardián tiene los abrigos en un montón: «¿De quién es cada uno? Ayudémoslos».",
+    "azara": "Esta noche ha helado en el monte. Los animales que vamos a dibujar se han escondido de frío. El baqueano nos enseña unas pieles, plumas y escamas: «Cada animal tiene su abrigo. ¿Cuál es el de cada uno?»."
+   },
+   "next": "abrigos"
+  },
+  "abrigos": {
+   "type": "classify",
+   "prompt": "¿Qué abrigo tiene cada animal?",
+   "retry": "item",
+   "bins": [
+    {
+     "id": "pelo",
+     "label": "Pelo"
+    },
+    {
+     "id": "plumas",
+     "label": "Plumas"
+    },
+    {
+     "id": "escamas",
+     "label": "Escamas"
+    },
+    {
+     "id": "piel",
+     "label": "Piel húmeda y lisa"
+    },
+    {
+     "id": "concha",
+     "label": "Caparazón o concha"
+    }
+   ],
+   "items": [
+    {
+     "id": "mamifero",
+     "label": "{{local:mamifero}}",
+     "bin": "pelo",
+     "objective": "SV-04",
+     "feedback": {
+      "plumas": "«¡Yo no tengo plumas! Tengo pelo y mis crías toman leche: soy un mamífero.»",
+      "escamas": "«¡Escamas no! Tengo pelo y mis crías toman leche: soy un mamífero.»",
+      "piel": "«Mi piel no está mojada: está cubierta de pelo.»",
+      "concha": "«No llevo caparazón: llevo pelo.»"
+     }
+    },
+    {
+     "id": "ave",
+     "label": "{{local:ave}}",
+     "bin": "plumas",
+     "objective": "SV-04",
+     "feedback": {
+      "pelo": "«¡Pelo no! Tengo plumas, pico y pongo huevos: soy un ave.»",
+      "escamas": "«Solo tengo escamas en las patas. Todo lo demás son plumas.»",
+      "piel": "«Mi piel está tapada de plumas.»",
+      "concha": "«Los huevos tienen cáscara, pero yo llevo plumas.»"
+     }
+    },
+    {
+     "id": "pez",
+     "label": "un pez",
+     "bin": "escamas",
+     "objective": "SV-04",
+     "feedback": {
+      "pelo": "«¿Pelo debajo del agua? Yo llevo escamas: soy un pez.»",
+      "plumas": "«¿Plumas en el agua? Yo llevo escamas: soy un pez.»",
+      "piel": "«Mi piel está cubierta de escamas brillantes.»",
+      "concha": "«No llevo caparazón: llevo escamas.»"
+     }
+    },
+    {
+     "id": "rana",
+     "label": "una rana",
+     "bin": "piel",
+     "objective": "SV-04",
+     "feedback": {
+      "pelo": "«¡Me daría mucho calor! Mi piel es húmeda y lisa: soy un anfibio.»",
+      "plumas": "«Mi piel es húmeda y lisa: soy un anfibio.»",
+      "escamas": "«Con escamas se me secaría la piel, y yo también respiro por ella.»",
+      "concha": "«No llevo caparazón: mi piel es húmeda y lisa.»"
+     }
+    },
+    {
+     "id": "tortuga",
+     "label": "una tortuga",
+     "bin": "concha",
+     "objective": "SV-04",
+     "feedback": {
+      "pelo": "«¡Pelo no! Llevo un caparazón duro y escamas en las patas: soy un reptil.»",
+      "plumas": "«Llevo un caparazón duro: soy un reptil.»",
+      "escamas": "«Tengo escamas en las patas, pero mi abrigo es el caparazón.»",
+      "piel": "«Mi piel es seca, no húmeda: soy un reptil.»"
+     }
+    },
+    {
+     "id": "caracol",
+     "label": "un caracol",
+     "bin": "concha",
+     "objective": "SV-04",
+     "feedback": {
+      "pelo": "«Llevo mi casa a cuestas: una concha.»",
+      "plumas": "«Llevo mi casa a cuestas: una concha.»",
+      "escamas": "«Llevo mi casa a cuestas: una concha.»",
+      "piel": "«Mi cuerpo es húmedo, sí, pero lo guardo dentro de una concha.»"
+     }
+    }
+   ],
+   "next": "fin"
+  },
+  "fin": {
+   "type": "ending",
+   "outcome": "success",
+   "text": "Cada animal sale del escondite con su abrigo. «¡Soy un mamífero!», «¡soy un ave!», «¡soy un pez!», «¡soy un anfibio!», «¡soy un reptil!». Todos ellos tienen huesos por dentro: son vertebrados. El caracol se asoma el último: «Yo no tengo huesos. Soy un invertebrado, como los insectos y las lombrices».",
+   "effects": [
+    {
+     "saber": 20
+    },
+    {
+     "page": "vertebrados"
+    },
+    {
+     "page": "caracol"
+    }
+   ]
+  }
+ }
+}

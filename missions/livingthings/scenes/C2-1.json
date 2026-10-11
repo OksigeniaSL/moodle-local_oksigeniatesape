@@ -1,0 +1,156 @@
+{
+ "id": "C2-1",
+ "mission": "livingthings",
+ "chapter": "biblioteca",
+ "title": "¿Animal o planta?",
+ "step": 1,
+ "mode": "both",
+ "objectives": [
+  "SV-03"
+ ],
+ "minutes": 6,
+ "locals": {
+  "arbol": {
+   "py": "un lapacho",
+   "es": "una encina"
+  },
+  "perro": {
+   "py": "un perro que mueve la cola",
+   "es": "un perro que mueve el rabo"
+  }
+ },
+ "start": "intro",
+ "nodes": {
+  "intro": {
+   "type": "story",
+   "speaker": "bibliotecaria",
+   "image": "biblioteca-estantes",
+   "text": {
+    "valley": "En la biblioteca hay dos estantes grandes, uno para los animales y otro para las plantas, y una caja pequeña al lado. El Embrollo lo ha revuelto todo. La bibliotecaria nos pide ayuda: «Cada uno a su sitio, por favor».",
+    "azara": "Las láminas de la expedición se han mezclado. Hay una carpeta para los animales, otra para las plantas y una caja pequeña al lado. La archivera nos pide ayuda para ordenarlas."
+   },
+   "next": "colocar"
+  },
+  "colocar": {
+   "type": "classify",
+   "prompt": "¿Dónde va cada uno?",
+   "retry": "item",
+   "bins": [
+    {
+     "id": "animales",
+     "label": "Animales"
+    },
+    {
+     "id": "plantas",
+     "label": "Plantas"
+    },
+    {
+     "id": "otros",
+     "label": "Ni animal ni planta"
+    }
+   ],
+   "items": [
+    {
+     "id": "arbol",
+     "label": "{{local:arbol}}",
+     "bin": "plantas",
+     "objective": "SV-03",
+     "feedback": {
+      "animales": "«No se mueve de su sitio y fabrica su alimento con la luz: es una planta.»",
+      "otros": "«Tiene raíz, tronco y hojas: es una planta.»"
+     }
+    },
+    {
+     "id": "perro",
+     "label": "{{local:perro}}",
+     "bin": "animales",
+     "objective": "SV-03",
+     "feedback": {
+      "plantas": "«Come, corre y ladra: es un animal.»",
+      "otros": "«Come, corre y ladra: es un animal.»"
+     }
+    },
+    {
+     "id": "flor",
+     "label": "una flor amarilla",
+     "bin": "plantas",
+     "objective": "SV-03",
+     "feedback": {
+      "animales": "«La flor es una parte de la planta: de ella salen las semillas.»",
+      "otros": "«La flor es una parte de la planta: de ella salen las semillas.»"
+     }
+    },
+    {
+     "id": "pez",
+     "label": "un pez de colores",
+     "bin": "animales",
+     "objective": "SV-03",
+     "feedback": {
+      "plantas": "«Nada, come y respira en el agua: es un animal.»",
+      "otros": "«Nada, come y respira en el agua: es un animal.»"
+     }
+    },
+    {
+     "id": "seta",
+     "label": "una seta del bosque",
+     "bin": "otros",
+     "objective": "SV-03",
+     "feedback": {
+      "animales": "La seta rueda hasta la caja pequeña. «No es un animal ni una planta: es un hongo.»",
+      "plantas": "La seta rueda hasta la caja pequeña. «No fabrica su alimento con la luz: es un hongo.»"
+     }
+    },
+    {
+     "id": "mariposa",
+     "label": "una mariposa",
+     "bin": "animales",
+     "objective": "SV-03",
+     "feedback": {
+      "plantas": "«Vuela de flor en flor, pero es un animal: un insecto.»",
+      "otros": "«Es un insecto, y los insectos son animales.»"
+     }
+    },
+    {
+     "id": "cactus",
+     "label": "un cactus con pinchos",
+     "bin": "plantas",
+     "objective": "SV-03",
+     "feedback": {
+      "animales": "«Pincha, pero es una planta: sus pinchos son sus hojas.»",
+      "otros": "«No tiene hojas como las demás, pero es una planta: sus pinchos son hojas.»"
+     }
+    },
+    {
+     "id": "lombriz",
+     "label": "una lombriz",
+     "bin": "animales",
+     "objective": "SV-03",
+     "feedback": {
+      "plantas": "«Vive bajo tierra, pero come y se mueve: es un animal.»",
+      "otros": "«No tiene patas ni huesos, pero es un animal.»"
+     }
+    }
+   ],
+   "next": "fin"
+  },
+  "fin": {
+   "type": "ending",
+   "outcome": "success",
+   "text": {
+    "valley": "Los estantes dejan de crujir. En la caja pequeña se ha quedado la seta: la bibliotecaria le pone una etiqueta nueva, «hongos». «Hay más grupos que animales y plantas», dice, «y algunos son tan pequeños que solo se ven con lupa.» La linterna de la biblioteca se enciende.",
+    "azara": "Las carpetas quedan en orden. La seta tiene ahora su propia etiqueta, «hongos». La archivera explica que hay más grupos que animales y plantas, y que algunos solo se ven con lupa."
+   },
+   "effects": [
+    {
+     "saber": 20
+    },
+    {
+     "lantern": "biblioteca"
+    },
+    {
+     "page": "grupos"
+    }
+   ]
+  }
+ }
+}

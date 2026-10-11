@@ -1,0 +1,128 @@
+{
+ "id": "C4-1",
+ "mission": "livingthings",
+ "chapter": "jardin",
+ "title": "La planta al revés",
+ "step": 1,
+ "mode": "both",
+ "objectives": [
+  "SV-05"
+ ],
+ "minutes": 6,
+ "start": "intro",
+ "nodes": {
+  "intro": {
+   "type": "story",
+   "speaker": "jardinera",
+   "image": "jardin-planta-reves",
+   "text": {
+    "valley": "En el Jardín de la Luz hay una planta al revés: la raíz al sol y la flor enterrada. ¡Cosas del Embrollo! La jardinera nos pide ayuda: «Cada parte hace un trabajo. Si sabemos cuál, la planta vuelve a su sitio».",
+    "azara": "En el huerto de la misión, alguien ha dibujado mal una planta en el cuaderno: la raíz arriba y la flor abajo. La jardinera nos pide ayuda para corregir el dibujo, parte por parte."
+   },
+   "next": "partes"
+  },
+  "partes": {
+   "type": "classify",
+   "prompt": "¿Qué parte hace cada trabajo?",
+   "retry": "item",
+   "bins": [
+    {
+     "id": "raiz",
+     "label": "La raíz"
+    },
+    {
+     "id": "tallo",
+     "label": "El tallo"
+    },
+    {
+     "id": "hojas",
+     "label": "Las hojas"
+    },
+    {
+     "id": "flor",
+     "label": "La flor"
+    }
+   ],
+   "items": [
+    {
+     "id": "agua",
+     "label": "Sujeta la planta al suelo y toma el agua de la tierra",
+     "bin": "raiz",
+     "objective": "SV-05",
+     "feedback": {
+      "tallo": "«El tallo sostiene, pero no está bajo tierra.» La raíz se queda al sol y se seca: «Yo vivo abajo, buscando agua».",
+      "hojas": "«Las hojas están arriba, al sol. Lo que toma el agua de la tierra está abajo.»",
+      "flor": "«La flor no toca la tierra. Lo que toma el agua está abajo.»"
+     }
+    },
+    {
+     "id": "sube",
+     "label": "Sostiene la planta y lleva el agua hacia arriba",
+     "bin": "tallo",
+     "objective": "SV-05",
+     "feedback": {
+      "raiz": "«La raíz toma el agua, pero quien la sube por dentro es el tallo, como una tubería.»",
+      "hojas": "«Las hojas reciben el agua, pero no la suben.»",
+      "flor": "«La flor no sostiene la planta.»"
+     }
+    },
+    {
+     "id": "alimento",
+     "label": "Fabrica el alimento de la planta con la luz del sol",
+     "bin": "hojas",
+     "objective": "SV-05",
+     "feedback": {
+      "raiz": "«La raíz está a oscuras, bajo tierra. El alimento se fabrica con luz.»",
+      "tallo": "«El tallo lleva el agua, pero el alimento se fabrica donde da el sol: en las hojas.»",
+      "flor": "«La flor sirve para las semillas. El alimento se fabrica en las hojas.»"
+     }
+    },
+    {
+     "id": "semillas",
+     "label": "Da las semillas para que nazcan plantas nuevas",
+     "bin": "flor",
+     "objective": "SV-05",
+     "feedback": {
+      "raiz": "«De la raíz no salen semillas. Salen de la flor.»",
+      "tallo": "«Del tallo no salen semillas. Salen de la flor.»",
+      "hojas": "«De las hojas no salen semillas. Salen de la flor.»"
+     }
+    },
+    {
+     "id": "abejas",
+     "label": "Tiene colores y olor que atraen a las abejas",
+     "bin": "flor",
+     "objective": "SV-05",
+     "feedback": {
+      "raiz": "«Las abejas no bajan bajo tierra. Buscan la flor.»",
+      "tallo": "«Las abejas buscan colores y olor: la flor.»",
+      "hojas": "«Las abejas buscan colores y olor: la flor.»"
+     }
+    }
+   ],
+   "next": "fin"
+  },
+  "fin": {
+   "type": "ending",
+   "outcome": "success",
+   "text": {
+    "valley": "La planta da la vuelta: la raíz bajo tierra, el tallo derecho, las hojas al sol y la flor arriba. El agua entra por la raíz, sube por el tallo y llega a las hojas, que fabrican el alimento con la luz. La linterna del jardín se enciende.",
+    "azara": "El dibujo queda bien: la raíz bajo tierra, el tallo derecho, las hojas al sol y la flor arriba. El agua entra por la raíz, sube por el tallo y llega a las hojas, que fabrican el alimento con la luz."
+   },
+   "effects": [
+    {
+     "saber": 20
+    },
+    {
+     "lantern": "jardin"
+    },
+    {
+     "page": "plantas"
+    },
+    {
+     "page": "viaje-agua"
+    }
+   ]
+  }
+ }
+}

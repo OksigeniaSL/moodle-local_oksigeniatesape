@@ -1,0 +1,144 @@
+{
+ "id": "C1-1",
+ "mission": "livingthings",
+ "chapter": "claro",
+ "title": "¿Quién tiene hambre?",
+ "step": 1,
+ "mode": "both",
+ "objectives": [
+  "SV-01"
+ ],
+ "minutes": 6,
+ "locals": {
+  "semilla": {
+   "py": "una semilla seca de lapacho",
+   "es": "una bellota de encina"
+  },
+  "pez": {
+   "py": "un pez en un balde",
+   "es": "un pez en un cubo"
+  },
+  "juguete": {
+   "py": "un autito de juguete a cuerda",
+   "es": "un coche de juguete con cuerda"
+  }
+ },
+ "start": "intro",
+ "nodes": {
+  "intro": {
+   "type": "story",
+   "speaker": "druida-mayor",
+   "image": "claro-semilla",
+   "text": {
+    "valley": "La druida mayor nos da {{local:semilla}}. Al tocarla, tiembla un poco: dentro hay alguien. «Tiene hambre y frío», dice la druida. «Despertará si encuentra a otros como ella: seres que comen, crecen y tienen crías.»",
+    "azara": "En el cajón de muestras, {{local:semilla}} tiembla un poco: dentro hay alguien. El naturalista anota: «Antes de despertar, busca a otros como ella: seres que comen, crecen y tienen crías»."
+   },
+   "next": "elegir"
+  },
+  "elegir": {
+   "type": "choice",
+   "prompt": "¿Quiénes son como ella? Buscamos tres o cuatro.",
+   "select": {
+    "min": 3,
+    "max": 4
+   },
+   "options": [
+    {
+     "id": "gatito",
+     "label": "un gatito que maúlla",
+     "correct": true,
+     "points": 2,
+     "objective": "SV-01",
+     "feedback": "La semilla se calienta. «El gatito come, crece y algún día tendrá gatitos.»"
+    },
+    {
+     "id": "piedra",
+     "label": "una piedra lisa y redonda",
+     "correct": false,
+     "objective": "SV-01",
+     "feedback": "No pasa nada. La piedra no come, no crece y no tiene crías."
+    },
+    {
+     "id": "flor",
+     "label": "una flor mustia, con la cabeza caída",
+     "correct": true,
+     "points": 2,
+     "objective": "SV-01",
+     "feedback": "Le damos un poco de agua y la flor se endereza. «Las plantas también están vivas: beben y crecen.»"
+    },
+    {
+     "id": "juguete",
+     "label": "{{local:juguete}}",
+     "correct": false,
+     "objective": "SV-01",
+     "feedback": "Se mueve un rato y se para. «No tiene hambre: le falta cuerda, no comida.»"
+    },
+    {
+     "id": "nube",
+     "label": "una nube que cambia de forma",
+     "correct": false,
+     "objective": "SV-01",
+     "feedback": "La nube se estira y se va. «Se mueve y crece, pero no come ni tiene crías.»"
+    },
+    {
+     "id": "caracol",
+     "label": "un caracol que come una hoja",
+     "correct": true,
+     "points": 2,
+     "objective": "SV-01",
+     "feedback": "La semilla se calienta. «El caracol come, crece y pone huevos.»"
+    },
+    {
+     "id": "pez",
+     "label": "{{local:pez}}",
+     "correct": true,
+     "points": 2,
+     "objective": "SV-01",
+     "feedback": "La semilla se calienta. «El pez come, crece y pone huevos en el agua.»"
+    }
+   ],
+   "next": "resultado"
+  },
+  "resultado": {
+   "type": "branch",
+   "rules": [
+    {
+     "if": {
+      "correct_at_least": 3,
+      "in": "elegir"
+     },
+     "next": "despierta"
+    }
+   ],
+   "else": "duerme"
+  },
+  "despierta": {
+   "type": "ending",
+   "outcome": "success",
+   "text": {
+    "valley": "La semilla se abre y sale {{creature}}, pequeña y distinta de todas. Tiene hambre, como el gatito y el caracol. La linterna del claro se enciende y en el Gran Libro aparece la primera página: «Ser vivo: el que se nutre, se relaciona y se reproduce».",
+    "azara": "La semilla se abre en el cajón y sale {{creature}}, que ya no se separa de nosotros. El cuaderno recupera su primera página: «Ser vivo: el que se nutre, se relaciona y se reproduce»."
+   },
+   "effects": [
+    {
+     "saber": 20
+    },
+    {
+     "creature": "hatch"
+    },
+    {
+     "lantern": "claro"
+    },
+    {
+     "page": "ser-vivo"
+    }
+   ]
+  },
+  "duerme": {
+   "type": "ending",
+   "outcome": "retry",
+   "text": "La semilla sigue quieta. La druida mayor sonríe: «Moverse o cambiar de forma no basta. ¿Quién necesita comer para crecer?».",
+   "retry": "elegir"
+  }
+ }
+}

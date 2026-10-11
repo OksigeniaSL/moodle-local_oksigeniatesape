@@ -86,7 +86,7 @@ final class scenes_test extends \advanced_testcase {
         $w = $this->make_class(0);
         $this->assertSame('py', $w->mission->variant);
         $this->assertEquals(6, $DB->count_records(self::T . 'chapter', ['missionid' => $w->mission->id]));
-        $this->assertEquals(9, $DB->count_records(self::T . 'scene', ['missionid' => $w->mission->id]));
+        $this->assertEquals(15, $DB->count_records(self::T . 'scene', ['missionid' => $w->mission->id]));
         $this->assertTrue($DB->record_exists(self::T . 'item', ['code' => 'naturalistlens']));
         // A classroom challenge per chapter, from the activity off the screen.
         $challenges = classroom::list($w->course->id);
@@ -95,7 +95,7 @@ final class scenes_test extends \advanced_testcase {
         // Installing again changes the skin and keeps everything else.
         missions::install($w->course->id, 'livingthings', 'azara', 'es');
         $this->assertEquals(1, $DB->count_records(self::T . 'mission', ['courseid' => $w->course->id]));
-        $this->assertEquals(9, $DB->count_records(self::T . 'scene', ['missionid' => $w->mission->id]));
+        $this->assertEquals(15, $DB->count_records(self::T . 'scene', ['missionid' => $w->mission->id]));
         $this->assertCount(6, classroom::list($w->course->id));
         $this->assertSame('azara', missions::get($w->course->id)->skin);
         $this->expectException(\invalid_parameter_exception::class);
@@ -128,6 +128,29 @@ final class scenes_test extends \advanced_testcase {
         $this->assertSame(2, $again['attempt']);
         $this->assertEquals(20, characters::get($user->id)->saber);
         $this->assertEquals(2, $DB->count_records(self::T . 'sceneattempt', ['charid' => $char->id]));
+    }
+
+    public function test_first_steps_have_their_own_scenes_and_everybody_meets_the_embrollo(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $w = $this->make_class(1);
+        $user = $w->users[0];
+        $codes = function (string $chapter, int $step) use ($DB, $w): array {
+            $chapterid = $DB->get_field(self::T . 'chapter', 'id', ['missionid' => $w->mission->id, 'code' => $chapter]);
+            $scenes = array_values($DB->get_records(self::T . 'scene', ['chapterid' => $chapterid], 'code'));
+            return array_map(fn($sc) => $sc->code, scenes::for_step($scenes, $step));
+        };
+        $this->assertSame(['C1-1'], $codes('claro', 1));
+        $this->assertSame(['C1-2'], $codes('claro', 2));
+        $this->assertSame(['C6-1', 'C6-2'], $codes('torre', 1));
+        $this->assertSame(['C6-2'], $codes('torre', 2));
+        // The first scene of first steps gives what the nest gives: the creature, the lantern and the first page.
+        $member = engine::member(characters::get($user->id), $w->course->id);
+        $DB->set_field(self::T . 'member', 'step', 1, ['id' => $member->id]);
+        $r = $this->play($w, $user, 'C1-1')['rewards'];
+        $this->assertTrue($r['hatched']);
+        $this->assertSame(['claro'], $r['lanterns']);
+        $this->assertSame(['ser-vivo'], $r['pages']);
     }
 
     public function test_a_retry_ending_gives_nothing(): void {

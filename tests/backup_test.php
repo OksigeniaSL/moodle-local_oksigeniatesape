@@ -31,6 +31,8 @@ use local_oksigeniatesape\local\regions;
  * @covers     \backup_local_oksigeniatesape_plugin
  * @covers     \restore_local_oksigeniatesape_plugin
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\backup_local_oksigeniatesape_plugin::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\restore_local_oksigeniatesape_plugin::class)]
 final class backup_test extends \advanced_testcase {
     /** @var string Prefix of the plugin tables. */
     private const T = 'local_oksigeniatesape_';
