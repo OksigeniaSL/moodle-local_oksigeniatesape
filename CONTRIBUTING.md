@@ -8,6 +8,8 @@ the approach.
 - PHP follows the Moodle Coding Style: <https://moodledev.io/general/development/policies/codingstyle>.
 - License header: GPL v3 or later, copyright `Oksigenia <dev@oksigenia.cc>`.
 - Code, comments and commit messages in **English**. Lang files carry the localised strings.
+- No commit message carries the signature of an AI tool. Turn on the hook once in your clone:
+  `git config core.hooksPath .githooks`; CI checks the new commits too.
 - The code must run on every supported Moodle branch (4.5 to 5.3) and on PHP 8.1.
 
 ## Translations
@@ -17,7 +19,8 @@ the Moodle Marketplace. GitHub PRs are for the English strings and for fixes.
 
 ## Tests
 
-GitHub Actions runs `moodle-plugin-ci` (validate, lint, code checker, PHPDoc, savepoints, PHPUnit and Behat). To run
+GitHub Actions runs `moodle-plugin-ci` (validate, lint, code checker, PHPDoc, savepoints, PHPUnit and Behat), a
+secret scan (Gitleaks) and the check of commit messages. To run
 the PHPUnit tests on your own site:
 
 ```bash
