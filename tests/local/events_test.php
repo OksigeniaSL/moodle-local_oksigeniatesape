@@ -153,8 +153,8 @@ final class events_test extends \advanced_testcase {
         events::gift($course->id, (int) $groups[0]->id, (int) $groups[1]->id, 2, self::NOW);
         $this->assertEquals(engine::BREATH_MAX - 2 + events::EXCHANGE_BREATH, $this->member($members[2])->breath);
         $this->assertEquals(engine::BREATH_MAX - 2, $this->member($members[0])->breath);
-        $this->assertEquals([['from' => (int) $groups[0]->id, 'to' => (int) $groups[1]->id]],
-            events::export(events::today($course->id, self::NOW))['gifts']);
+        $gifts = events::export(events::today($course->id, self::NOW))['gifts'];
+        $this->assertEquals([['from' => (int) $groups[0]->id, 'to' => (int) $groups[1]->id]], $gifts);
         $this->expectException(\invalid_parameter_exception::class);
         events::gift($course->id, (int) $groups[1]->id, (int) $groups[1]->id, 2, self::NOW);
     }
