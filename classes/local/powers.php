@@ -356,7 +356,7 @@ final class powers {
      */
     public static function guard(\stdClass $member, int $now): ?array {
         global $DB;
-        $today = engine::day_start($now);
+        $today = engine::day_start($now, (int) $member->courseid);
         $userid = (int) $DB->get_field(self::T . 'char', 'userid', ['id' => $member->charid]);
         $group = $userid ? teams::of((int) $member->courseid, $userid) : null;
         if ($group) {
@@ -412,7 +412,7 @@ final class powers {
                JOIN {' . self::T . "power} p ON p.id = r.powerid
               WHERE p.code = 'glance' AND r.status = 'approved' AND r.timedecided >= ? AND r.memberid = ?
            ORDER BY r.timedecided",
-            [engine::day_start($now), $member->id],
+            [engine::day_start($now, (int) $member->courseid), $member->id],
             0,
             1
         );

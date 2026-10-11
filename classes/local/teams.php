@@ -105,7 +105,7 @@ final class teams {
                    FROM {' . self::T . "ledger}
                   WHERE charid $insql AND courseid = ? AND resource = 'saber' AND amount > 0 AND undoneby = 0
                         AND timecreated >= ?",
-                array_merge($params, [$courseid, engine::week_start($now)])
+                array_merge($params, [$courseid, engine::week_start($now, $courseid)])
             );
         }
         return ['saber' => $saber, 'goal' => $goal, 'reached' => $goal > 0 && $saber >= $goal, 'players' => count($members)];
@@ -132,7 +132,7 @@ final class teams {
             $already = $DB->record_exists_select(
                 self::T . 'ledger',
                 "charid = ? AND courseid = ? AND reason = 'teamgoal' AND refid = ? AND undoneby = 0 AND timecreated >= ?",
-                [$mate->charid, $member->courseid, $group->id, engine::week_start($now)]
+                [$mate->charid, $member->courseid, $group->id, engine::week_start($now, (int) $member->courseid)]
             );
             if (!$already) {
                 unset($mate->userid);

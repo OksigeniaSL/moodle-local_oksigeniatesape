@@ -258,6 +258,25 @@ final class engine_test extends \advanced_testcase {
         $this->assertEquals('fallen', $member->status);
     }
 
+    public function test_the_days_of_a_course_follow_its_time_zone(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setTimezone('Europe/Madrid');
+        [$course, , $member] = $this->make_player(['timezone' => 'America/Asuncion']);
+        $now = 1791720000;
+        $asuncion = (new \DateTimeImmutable('@' . $now))->setTimezone(new \DateTimeZone('America/Asuncion'));
+        $madrid = (new \DateTimeImmutable('@' . $now))->setTimezone(new \DateTimeZone('Europe/Madrid'));
+        $this->assertEquals($asuncion->setTime(0, 0)->getTimestamp(), engine::day_start($now, $course->id));
+        $this->assertEquals($madrid->setTime(0, 0)->getTimestamp(), engine::day_start($now));
+        // Energy and breath come back when the day starts in Asunción, not in Madrid.
+        $today = engine::day_start($now, $course->id);
+        $DB->update_record(self::T . 'member', (object) ['id' => $member->id, 'energy' => 4, 'lastregen' => $today - 1]);
+        $this->assertEquals(1, engine::regenerate($now));
+        $this->assertEquals(0, engine::regenerate($now));
+        $this->expectException(\invalid_parameter_exception::class);
+        regions::save($course->id, ['timezone' => 'Mars/Olympus']);
+    }
+
     public function test_regenerate(): void {
         global $DB;
         $this->resetAfterTest();

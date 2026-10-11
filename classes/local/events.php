@@ -52,7 +52,7 @@ final class events {
      */
     public static function today(int $courseid, ?int $now = null): ?\stdClass {
         global $DB;
-        $day = engine::day_start($now ?? time());
+        $day = engine::day_start($now ?? time(), $courseid);
         return $DB->get_record(self::T . 'event', ['courseid' => $courseid, 'day' => $day]) ?: null;
     }
 
@@ -89,7 +89,7 @@ final class events {
             throw new \moodle_exception('eventdone', 'local_oksigeniatesape');
         }
         if ($code === '') {
-            $yesterday = self::today($courseid, engine::day_start($now) - 1);
+            $yesterday = self::today($courseid, engine::day_start($now, $courseid) - 1);
             $avoid = array_filter([$event->code ?? null, $yesterday->code ?? null]);
             $cards = array_values(array_diff(self::CARDS, $avoid)) ?: self::CARDS;
             if (questions::pick($courseid) === null) {
@@ -108,7 +108,7 @@ final class events {
         }
         $record = (object) [
             'courseid' => $courseid,
-            'day' => engine::day_start($now),
+            'day' => engine::day_start($now, $courseid),
             'code' => $code,
             'status' => 'drawn',
             'data' => json_encode($data),

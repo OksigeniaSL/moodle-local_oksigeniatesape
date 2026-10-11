@@ -64,6 +64,7 @@ final class save_region extends external_api {
                 null,
                 NULL_ALLOWED
             ),
+            'timezone' => new external_value(PARAM_TEXT, 'Time zone of the days (99: the site)', VALUE_DEFAULT, null, NULL_ALLOWED),
         ]);
     }
 
@@ -80,6 +81,7 @@ final class save_region extends external_api {
      * @param bool|null $leaderboard
      * @param int|null $nicknames
      * @param int|null $completionrule
+     * @param string|null $timezone
      * @return array
      */
     public static function execute(
@@ -92,7 +94,8 @@ final class save_region extends external_api {
         ?int $dailyenergylosscap = null,
         ?bool $leaderboard = null,
         ?int $nicknames = null,
-        ?int $completionrule = null
+        ?int $completionrule = null,
+        ?string $timezone = null
     ): array {
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
@@ -105,6 +108,7 @@ final class save_region extends external_api {
             'leaderboard' => $leaderboard,
             'nicknames' => $nicknames,
             'completionrule' => $completionrule,
+            'timezone' => $timezone,
         ]);
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);

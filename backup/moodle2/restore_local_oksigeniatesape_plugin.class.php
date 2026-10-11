@@ -73,6 +73,7 @@ class restore_local_oksigeniatesape_plugin extends restore_local_plugin {
             'rules' => $data->rules,
             'leaderboard' => (int) $data->leaderboard,
             'nicknames' => (int) $data->nicknames,
+            'timezone' => $data->timezone ?? '99',
             'timemodified' => $now,
         ];
         $existing = $DB->get_field(self::T . 'region', 'id', ['courseid' => $courseid]);

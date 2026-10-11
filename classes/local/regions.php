@@ -59,11 +59,24 @@ final class regions {
     }
 
     /**
+     * A time zone of the settings as PHP knows it: 99 is the one of the site.
+     *
+     * @param string $zone
+     * @return \DateTimeZone
+     */
+    public static function zone(string $zone): \DateTimeZone {
+        if ($zone === '' || $zone === '99') {
+            return \core_date::get_server_timezone_object();
+        }
+        return new \DateTimeZone(\core_date::normalise_timezone($zone));
+    }
+
+    /**
      * Turns the game on or off in a course, or changes its settings. What is not given keeps its value.
      *
      * @param int $courseid
      * @param array $settings Any of enabled, family, groupingid, weeklycap, dailymanualcap, dailyenergylosscap,
-     *     leaderboard, nicknames and rules (an array).
+     *     leaderboard, nicknames, timezone (99: the one of the site) and rules (an array).
      * @param int|null $now
      * @return \stdClass
      */
@@ -91,6 +104,13 @@ final class regions {
             if (array_key_exists($number, $settings)) {
                 $region->$number = max(0, (int) $settings[$number]);
             }
+        }
+        if (array_key_exists('timezone', $settings)) {
+            $zone = (string) $settings['timezone'];
+            if ($zone !== '99' && !array_key_exists($zone, \core_date::get_list_of_timezones())) {
+                throw new \invalid_parameter_exception('Unknown time zone: ' . $zone);
+            }
+            $region->timezone = $zone;
         }
         if (array_key_exists('nicknames', $settings)) {
             $region->nicknames = max(0, min(2, (int) $settings['nicknames']));

@@ -224,5 +224,16 @@ function xmldb_local_oksigeniatesape_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026101109, 'local', 'oksigeniatesape');
     }
 
+    if ($oldversion < 2026101114) {
+        // The time zone of the days and weeks of each course: a school of Asunción on a site in Madrid.
+        $table = new xmldb_table('local_oksigeniatesape_region');
+        $field = new xmldb_field('timezone', XMLDB_TYPE_CHAR, '100', null, XMLDB_NOTNULL, null, '99', 'nicknames');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_plugin_savepoint(true, 2026101114, 'local', 'oksigeniatesape');
+    }
+
     return true;
 }

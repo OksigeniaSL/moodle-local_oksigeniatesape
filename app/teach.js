@@ -1310,6 +1310,18 @@
       esc(t('teach_allgroups')) + '</option>' + state.data.groupings.map(function(g) {
         return '<option value="' + g.id + '"' + (r.groupingid === g.id ? ' selected' : '') + '>' + esc(g.name) + '</option>';
       }).join('') + '</select>';
+    // The days of the game (caps, event of the day, energy and breath) start at midnight in this time zone.
+    var zones = ['99', 'Europe/Madrid', 'Atlantic/Canary', 'America/Asuncion', 'America/Argentina/Buenos_Aires',
+      'America/Montevideo', 'America/Santiago', 'America/La_Paz', 'America/Lima', 'America/Bogota', 'America/Caracas',
+      'America/Mexico_City'];
+    if (zones.indexOf(r.timezone) < 0) {
+      zones.push(r.timezone);
+    }
+    var timezone = '<select name="timezone"' + (editable ? '' : ' disabled') + '>' + zones.map(function(z) {
+      return '<option value="' + esc(z) + '"' + (r.timezone === z ? ' selected' : '') + '>' +
+        esc(z === '99' ? t('teach_tz_site') : z.replace(/_/g, ' ')) + '</option>';
+    }).join('') + '</select><small style="display:block;color:var(--text-soft);margin-top:4px">' +
+      esc(t('teach_set_timezone_help')) + '</small>';
     var nick = [0, 1, 2].map(function(n) {
       return '<label class="chip" style="display:flex;gap:8px;align-items:center;margin-bottom:6px"><input type="radio" ' +
         'name="nicknames" value="' + n + '"' + (r.nicknames === n ? ' checked' : '') + (editable ? '' : ' disabled') +
@@ -1320,7 +1332,8 @@
       'type="checkbox" name="enabled"' + (r.enabled ? ' checked' : '') + (editable ? '' : ' disabled') + '> ' +
       esc(t('teach_set_enabled')) + '</label><h3>' + esc(t('teach_family')) + '</h3><div class="pills" style="' +
       'justify-content:flex-start;margin-bottom:14px">' + families(r.family) + '</div>' +
-      field('groupingid', t('teach_set_groupingid'), groupings) + (editable ? '<div style="margin:-6px 0 14px">' +
+      field('groupingid', t('teach_set_groupingid'), groupings) + field('timezone', t('teach_set_timezone'), timezone) +
+      (editable ? '<div style="margin:-6px 0 14px">' +
       makeTeamsForm() + '</div>' : '') + '<div class="grid2" style="gap:10px">' +
       num('weeklycap', r.weeklycap, true) + num('dailymanualcap', r.dailymanualcap, false) +
       num('dailyenergylosscap', r.dailyenergylosscap, false) + num('completionrule', r.completionrule, true) + '</div>' +
@@ -1348,7 +1361,8 @@
         dailyenergylosscap: Number(f.dailyenergylosscap.value),
         completionrule: Number(f.completionrule.value),
         leaderboard: f.leaderboard.checked,
-        nicknames: picked ? Number(picked.value) : 0
+        nicknames: picked ? Number(picked.value) : 0,
+        timezone: f.timezone.value
       }).then(function() {
         T.toast(esc(t('app_saved')));
         state.tab = 'class';

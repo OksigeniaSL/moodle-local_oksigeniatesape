@@ -208,6 +208,7 @@ final class structures {
             'dailyenergylosscap' => new external_value(PARAM_INT, 'Daily cap of energy lost (0: none)'),
             'leaderboard' => new external_value(PARAM_BOOL, 'Team ranking shown'),
             'nicknames' => new external_value(PARAM_INT, '0 Moodle names, 1 hero names from a list, 2 also their own'),
+            'timezone' => new external_value(PARAM_TEXT, 'Time zone of the days and weeks (99: the one of the site)'),
             'completionrule' => new external_value(PARAM_INT, 'Knowledge for an activity that is not a challenge'),
         ]);
     }

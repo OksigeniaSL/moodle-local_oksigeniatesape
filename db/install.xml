@@ -41,6 +41,7 @@
         <FIELD NAME="rules" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Values of the automatic rules (JSON)"/>
         <FIELD NAME="leaderboard" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Show the team ranking"/>
         <FIELD NAME="nicknames" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="0: Moodle names; 1: hero names from a list; 2: from a list or their own, approved by a teacher"/>
+        <FIELD NAME="timezone" TYPE="char" LENGTH="100" NOTNULL="true" DEFAULT="99" SEQUENCE="false" COMMENT="Time zone of the days and weeks of the game (99: the one of the site)"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>

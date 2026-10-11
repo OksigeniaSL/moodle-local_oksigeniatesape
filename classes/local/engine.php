@@ -105,10 +105,11 @@ final class engine {
         $region = regions::get((int) $member->courseid);
         $granted = $amount;
         if ($region) {
-            $earned = self::sum($member, 'saber', self::week_start($now), "l.amount > 0");
+            $earned = self::sum($member, 'saber', self::week_start($now, (int) $member->courseid), "l.amount > 0");
             $granted = progress::apply_cap($granted, $earned, (int) $region->weeklycap)['granted'];
             if ($reason === 'manual') {
-                $manual = self::sum($member, 'saber', self::day_start($now), "l.amount > 0 AND l.reason = 'manual'");
+                $today = self::day_start($now, (int) $member->courseid);
+                $manual = self::sum($member, 'saber', $today, "l.amount > 0 AND l.reason = 'manual'");
                 $granted = progress::apply_cap($granted, $manual, (int) $region->dailymanualcap)['granted'];
             }
         }
@@ -202,7 +203,8 @@ final class engine {
             $region = regions::get((int) $member->courseid);
             $loss = min(-$amount, (int) $member->energy);
             if ($region && $region->dailyenergylosscap > 0) {
-                $lost = -self::sum($member, 'energy', self::day_start($now), "l.amount < 0 AND l.reason <> 'undo'");
+                $today = self::day_start($now, (int) $member->courseid);
+                $lost = -self::sum($member, 'energy', $today, "l.amount < 0 AND l.reason <> 'undo'");
                 $loss = min($loss, max(0, $region->dailyenergylosscap - $lost));
             }
             $capped = -$amount - $loss;
@@ -452,17 +454,27 @@ final class engine {
     public static function regenerate(?int $now = null): int {
         global $DB;
         $now = $now ?? time();
-        $where = "status = 'active' AND lastregen < :today
-                  AND courseid IN (SELECT courseid FROM {" . self::T . "region} WHERE enabled = 1)";
-        $params = ['today' => self::day_start($now)];
-        $count = $DB->count_records_select(self::T . 'member', $where, $params);
-        if ($count) {
-            $DB->execute(
-                'UPDATE {' . self::T . "member}
-                    SET energy = :energy, breath = :breath, lastregen = :now, timemodified = :now2
-                  WHERE $where",
-                $params + ['energy' => self::ENERGY_MAX, 'breath' => self::BREATH_MAX, 'now' => $now, 'now2' => $now]
-            );
+        // The day starts at a different time in each time zone: the courses go by zone.
+        $zones = [];
+        foreach ($DB->get_records_menu(self::T . 'region', ['enabled' => 1], '', 'courseid, timezone') as $courseid => $zone) {
+            $zones[(string) $zone][] = (int) $courseid;
+        }
+        $count = 0;
+        foreach ($zones as $zone => $courseids) {
+            $today = (new \DateTimeImmutable('@' . $now))->setTimezone(regions::zone($zone))->setTime(0, 0)->getTimestamp();
+            [$insql, $params] = $DB->get_in_or_equal($courseids, SQL_PARAMS_NAMED);
+            $where = "status = 'active' AND lastregen < :today AND courseid $insql";
+            $params['today'] = $today;
+            $found = $DB->count_records_select(self::T . 'member', $where, $params);
+            if ($found) {
+                $DB->execute(
+                    'UPDATE {' . self::T . "member}
+                        SET energy = :energy, breath = :breath, lastregen = :now, timemodified = :now2
+                      WHERE $where",
+                    $params + ['energy' => self::ENERGY_MAX, 'breath' => self::BREATH_MAX, 'now' => $now, 'now2' => $now]
+                );
+            }
+            $count += $found;
         }
         return $count;
     }
@@ -473,8 +485,8 @@ final class engine {
      * @param int $now
      * @return int
      */
-    public static function week_start(int $now): int {
-        return progress::week_start($now, \core_date::get_server_timezone_object());
+    public static function week_start(int $now, int $courseid = 0): int {
+        return progress::week_start($now, self::timezone($courseid));
     }
 
     /**
@@ -483,9 +495,20 @@ final class engine {
      * @param int $now
      * @return int
      */
-    public static function day_start(int $now): int {
-        $date = (new \DateTimeImmutable('@' . $now))->setTimezone(\core_date::get_server_timezone_object());
+    public static function day_start(int $now, int $courseid = 0): int {
+        $date = (new \DateTimeImmutable('@' . $now))->setTimezone(self::timezone($courseid));
         return $date->setTime(0, 0)->getTimestamp();
+    }
+
+    /**
+     * The time zone of the days and weeks of a course: the one of its region, or the one of the site.
+     *
+     * @param int $courseid 0: the site.
+     * @return \DateTimeZone
+     */
+    public static function timezone(int $courseid = 0): \DateTimeZone {
+        $zone = $courseid ? (string) (regions::get($courseid)->timezone ?? '99') : '99';
+        return regions::zone($zone);
     }
 
     /**

@@ -466,6 +466,7 @@ final class view {
             'dailyenergylosscap' => (int) ($region->dailyenergylosscap ?? 3),
             'leaderboard' => (bool) ($region->leaderboard ?? true),
             'nicknames' => (int) ($region->nicknames ?? 0),
+            'timezone' => (string) ($region->timezone ?? '99'),
             'completionrule' => $region ? regions::rule($region, 'completion') : regions::RULES['completion'],
         ];
     }

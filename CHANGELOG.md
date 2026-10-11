@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.13.0 (2026-10-11)
+
+- **The time zone of the game, for each course**: the day and the week of the game (caps, the event of the day,
+  energy and breath filled again, the weekly goal of the teams) start at midnight in the time zone the teacher
+  chooses in the settings, so a school in Asunción on a site in Madrid no longer changes day at seven in the
+  evening. By default, the one of the site, as before; it goes with the backup of the course.
+
 ## 0.12.0 (2026-10-11)
 
 - **First steps have their own scenes**: the living things, version 6, brings the six scenes of the first step, one

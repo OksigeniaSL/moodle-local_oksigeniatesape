@@ -61,7 +61,7 @@ final class ideas {
         $today = $DB->count_records_select(
             self::TABLE,
             'courseid = ? AND charid = ? AND timecreated >= ?',
-            [$courseid, $char->id, engine::day_start($now)]
+            [$courseid, $char->id, engine::day_start($now, $courseid)]
         );
         if ($today >= self::DAILY) {
             throw new \moodle_exception('ideastoday', 'local_oksigeniatesape', '', self::DAILY);
