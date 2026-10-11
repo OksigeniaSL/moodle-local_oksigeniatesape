@@ -242,4 +242,20 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:runclassscreen',
     ],
+    'local_oksigeniatesape_live_host' => [
+        'classname' => 'local_oksigeniatesape\\external\\live_host',
+        'description' => 'The battle on the class screen: open it, next question, answer, mark teams, finish; and its state.',
+        'type' => 'write',
+        'ajax' => true,
+        'readonlysession' => true,
+        'capabilities' => 'local/oksigeniatesape:runclassscreen',
+    ],
+    'local_oksigeniatesape_live_play' => [
+        'classname' => 'local_oksigeniatesape\\external\\live_play',
+        'description' => 'The battle on the phone of a student: whether there is one, come in, answer.',
+        'type' => 'write',
+        'ajax' => true,
+        'readonlysession' => true,
+        'capabilities' => 'local/oksigeniatesape:play',
+    ],
 ];

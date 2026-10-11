@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.6.0 (2026-10-11)
+
+- **The battle against the Embrollo**, from the class screen: questions of the mission for the whole class, four to
+  ten, with or without a time limit. Each right answer takes life from the Embrollo (a mischievous skein of yarn, not a
+  monster); a wrong one takes nothing from anybody. If the class wins, saber and gems for everybody who played, and
+  more gems for the team that helped most.
+- **With the phones of the students**: the game on the phone shows a call by itself when a battle opens; inside, the
+  question with big buttons, what happened when the answer is shown, and the prize. The class screen shows who is in
+  and how many answered, and shows the answer by itself when time is up or everybody answered.
+- **Without devices**: teams answer aloud or with their A, B, C, D cards, and the teacher marks on the class screen the
+  teams that got it right.
+- Live sessions adapted from Oksigenia Classtools (new tables `local_oksigeniatesape_live` and `_livein`): the state
+  is polled, a unique index keeps anybody from answering twice, the server closes each question on time, and the right
+  answer never reaches the phones before it is shown. Players always use their Moodle account; the team comes from the
+  groups of the course. Answers are in the privacy provider and old battles are deleted by a daily task.
+
 ## 0.5.0 (2026-10-11)
 
 - **The class screen** (`board.php`), for the projector or the whiteboard, opened from the teacher panel: the map of

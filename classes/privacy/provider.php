@@ -45,7 +45,8 @@ class provider implements
     private const T = 'local_oksigeniatesape_';
 
     /** @var string[] Tables of a character in a course, all with charid and courseid. */
-    public const COURSE_TABLES = ['member', 'ledger', 'inventory', 'sceneattempt', 'minigame', 'validation', 'found', 'idea'];
+    public const COURSE_TABLES = ['member', 'ledger', 'inventory', 'sceneattempt', 'minigame', 'validation', 'found', 'idea',
+        'livein'];
 
     /**
      * What is stored.
@@ -69,6 +70,7 @@ class provider implements
             'validation' => ['challengeid', 'charid', 'courseid', 'status', 'note', 'validatedby', 'timemodified'],
             'found' => ['charid', 'courseid', 'missionid', 'kind', 'code', 'timecreated'],
             'idea' => ['courseid', 'charid', 'anonymous', 'message', 'status', 'timecreated'],
+            'livein' => ['liveid', 'courseid', 'charid', 'round', 'team', 'answer', 'timecreated'],
         ];
         foreach ($fields as $table => $names) {
             $described = [];
@@ -361,6 +363,17 @@ class provider implements
                     'status' => $i->status,
                     'timecreated' => transform::datetime($i->timecreated),
                 ], $ideas)),
+            ]);
+        }
+        $live = $DB->get_records(self::T . 'livein', ['charid' => $charid, 'courseid' => $courseid], 'liveid, round');
+        if ($live) {
+            $writer->export_data(self::path('battles'), (object) [
+                'answers' => array_values(array_map(fn($a) => [
+                    'session' => (int) $a->liveid,
+                    'round' => (int) $a->round,
+                    'answer' => (int) $a->answer,
+                    'timecreated' => transform::datetime($a->timecreated),
+                ], $live)),
             ]);
         }
         $games = $DB->get_records(self::T . 'minigame', ['charid' => $charid, 'courseid' => $courseid], 'timecreated');

@@ -241,6 +241,72 @@ final class structures {
     }
 
     /**
+     * What both the class screen and the phones see of a battle.
+     *
+     * @return array
+     */
+    private static function live_common(): array {
+        return [
+            'id' => new external_value(PARAM_INT, 'Session'),
+            'kind' => new external_value(PARAM_ALPHA, 'battle'),
+            'mode' => new external_value(PARAM_ALPHA, 'phones or aloud'),
+            'round' => new external_value(PARAM_INT, 'Question being played (0: players coming in)'),
+            'total' => new external_value(PARAM_INT, 'Questions of the battle'),
+            'open' => new external_value(PARAM_BOOL, 'The question takes answers'),
+            'left' => new external_value(PARAM_INT, 'Seconds left (-1: no limit)'),
+            'revealed' => new external_value(PARAM_BOOL, 'The answer of the question is shown'),
+            'hp' => new external_value(PARAM_INT, 'Life of the Embrollo'),
+            'maxhp' => new external_value(PARAM_INT, 'Life of the Embrollo at the start'),
+            'outcome' => new external_value(PARAM_ALPHA, 'won, lost or empty while playing'),
+            'question' => new external_single_structure([
+                'id' => new external_value(PARAM_RAW, 'Question'),
+                'text' => new external_value(PARAM_TEXT, 'Question'),
+                'options' => new external_multiple_structure(new external_value(PARAM_TEXT, 'Option')),
+                'correct' => new external_value(PARAM_INT, 'Right option, once revealed', VALUE_OPTIONAL),
+                'why' => new external_value(PARAM_TEXT, 'Why, once revealed', VALUE_OPTIONAL),
+            ], 'Question of the round', VALUE_OPTIONAL),
+        ];
+    }
+
+    /**
+     * A battle on the class screen.
+     *
+     * @return external_single_structure
+     */
+    public static function live_board(): external_single_structure {
+        return new external_single_structure(self::live_common() + [
+            'joined' => new external_value(PARAM_INT, 'Players who came in with their phone'),
+            'answered' => new external_value(PARAM_INT, 'Answers to the question of the round'),
+            'right' => new external_value(PARAM_INT, 'Right answers in the round, once revealed', VALUE_OPTIONAL),
+            'rewarded' => new external_value(PARAM_INT, 'Players who got the prize'),
+            'teams' => new external_multiple_structure(new external_single_structure([
+                'id' => new external_value(PARAM_INT, 'Group'),
+                'name' => new external_value(PARAM_TEXT, 'Team'),
+                'joined' => new external_value(PARAM_INT, 'Players of the team who came in'),
+                'right' => new external_value(PARAM_INT, 'Right answers of the team so far'),
+                'mark' => new external_value(PARAM_INT, 'Aloud: marked right (1), not (0) or not yet (-1) in this round'),
+            ])),
+        ], 'Battle of the course', VALUE_OPTIONAL);
+    }
+
+    /**
+     * A battle on the phone of a student.
+     *
+     * @return external_single_structure
+     */
+    public static function live_device(): external_single_structure {
+        return new external_single_structure(self::live_common() + [
+            'joined' => new external_value(PARAM_BOOL, 'The student came in'),
+            'mine' => new external_value(PARAM_INT, 'Their answer in the round (-1: none)'),
+            'prize' => new external_single_structure([
+                'saber' => new external_value(PARAM_INT, 'Saber'),
+                'gems' => new external_value(PARAM_INT, 'Gems'),
+                'best' => new external_value(PARAM_BOOL, 'Their team helped most'),
+            ], 'What they got for the win', VALUE_OPTIONAL),
+        ], 'Battle of the course', VALUE_OPTIONAL);
+    }
+
+    /**
      * What happened to each user of a teacher's action.
      *
      * @return external_multiple_structure

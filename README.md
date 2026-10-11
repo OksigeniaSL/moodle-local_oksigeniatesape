@@ -47,8 +47,12 @@ privacy come from Moodle, and the game is a full-screen application of its own.
 - **The game engine**: knowledge with weekly and daily caps, gems, energy and falling worn out, breath, items, undo,
   and completed Moodle activities turned into progress. Privacy provider from the first day.
 
-The game is ready for **art packs** (`cli/art.php`), and its first pack is nearly done. Next come the battles with
-the students' phones and the scenes voted by the class.
+- **The battle against the Embrollo**: questions of the mission for the whole class, with the students' phones or
+  aloud by teams; each right answer takes life from it, a wrong one takes nothing from anybody, and winning gives saber
+  and gems.
+
+The game is ready for **art packs** (`cli/art.php`), and its first pack is nearly done. Next come the scenes voted by
+the class and the printable material.
 
 ## Requirements
 

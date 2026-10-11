@@ -16,8 +16,11 @@
   var esc = T.esc;
   var app = document.getElementById('app');
   var REFRESH = 5000;
+  var LIVE = 1500;
+  var LETTERS = 'ABCD';
   var CARD_ICON = {calm: 'energy', breeze: 'saber', footprint: 'world', exchange: 'breath'};
-  var state = {board: null, cls: null, sel: {}, reveal: false, busy: false, sig: ''};
+  var state = {board: null, cls: null, sel: {}, reveal: false, busy: false, sig: '', live: null, seen: 0, timer: 0,
+    battle: {mode: 'phones', count: 6, secs: 30}, auto: 0};
 
   function can(cap) {
     return cfg.caps && cfg.caps[cap];
@@ -31,11 +34,14 @@
     }
     return Promise.all([
       T.api('get_board', {courseid: cfg.courseid}),
-      T.api('get_class', {courseid: cfg.courseid})
+      T.api('get_class', {courseid: cfg.courseid}),
+      T.api('live_host', {courseid: cfg.courseid, action: 'state'})
     ]).then(function(r) {
       state.board = r[0];
       state.cls = r[1];
+      state.live = r[2].live || null;
       T.family = r[1].region.family;
+      schedule();
       var sig = JSON.stringify(r);
       if (first || sig !== state.sig) {
         state.sig = sig;
@@ -53,8 +59,171 @@
   }
 
   function refresh() {
-    if (!document.hidden && !state.busy) {
+    if (!document.hidden && !state.busy && !battling()) {
       load(false);
+    }
+  }
+
+  /* ---------- The battle against the Embrollo ---------- */
+
+  function battling() {
+    var l = state.live;
+    return !!(l && (!l.outcome || state.seen !== l.id));
+  }
+
+  function schedule() {
+    clearTimeout(state.timer);
+    if (battling() && !document.hidden) {
+      state.timer = setTimeout(function() {
+        host('state');
+      }, LIVE);
+    }
+  }
+
+  /**
+   * Asks the server to do something with the battle, and shows how it is going.
+   *
+   * @param {string} action
+   * @param {Object} extra
+   * @return {Promise}
+   */
+  function host(action, extra) {
+    clearTimeout(state.timer);
+    return T.api('live_host', Object.assign({courseid: cfg.courseid, action: action}, extra || {})).then(function(r) {
+      state.live = r.live || null;
+      if (battling()) {
+        drawBattle();
+      } else {
+        load(false);
+      }
+    }).catch(function(e) {
+      if (action !== 'state') {
+        T.toast(esc(e.message), true);
+      }
+    }).then(schedule);
+  }
+
+  function battleCard() {
+    if (!state.board.mission || !can('award')) {
+      return '';
+    }
+    var b = state.battle;
+    var pills = function(key, values, label) {
+      return '<span class="pills">' + values.map(function(v) {
+        return '<button class="chip" data-battle="' + key + ':' + v + '" aria-pressed="' + (String(b[key]) === String(v)) + '">' +
+          esc(label(v)) + '</button>';
+      }).join('') + '</span>';
+    };
+    return '<section class="card board-battle"><div class="kicker">' + esc(t('board_battle')) + '</div><div class="event-head">' +
+      '<span class="event-icon">' + T.embrollo(1) + '</span><p>' + esc(t('board_battle_help')) + '</p></div>' +
+      '<div class="battle-options-row">' + pills('mode', ['phones', 'aloud'], function(v) {
+        return t('board_battle_' + v);
+      }) + '</div><div class="battle-options-row"><span>' + esc(t('board_battle_count')) + '</span>' +
+      pills('count', [4, 6, 8, 10], String) + '</div><div class="battle-options-row"><span>' + esc(t('board_battle_secs')) +
+      '</span>' + pills('secs', [0, 20, 30, 45, 60], function(v) {
+        return v ? v + ' s' : t('board_battle_nolimit');
+      }) + '</div><div class="actions"><button class="btn btn-main" data-battlestart>' + esc(t('board_battle_start')) +
+      '</button></div></section>';
+  }
+
+  function drawBattle() {
+    var l = state.live;
+    var life = l.maxhp ? l.hp / l.maxhp : 1;
+    var main;
+    var buttons = '';
+    if (l.outcome) {
+      main = '<div class="battle-end ' + l.outcome + '"><h2>' + esc(t('board_battle_' + l.outcome)) + '</h2><p class="lead">' +
+        esc(l.outcome === 'won' ? t('board_battle_wonhelp', l.rewarded) : t('board_battle_losthelp')) + '</p></div>';
+      buttons = '<button class="btn btn-main" data-dismiss>' + esc(t('board_battle_back')) + '</button>';
+    } else if (!l.round) {
+      main = '<div class="battle-lobby"><p class="lead">' + esc(t(l.mode === 'phones' ? 'board_battle_join' :
+        'board_battle_aloudhelp')) + '</p>' + (l.mode === 'phones' ? '<p class="battle-count">' +
+        esc(t('board_battle_joined', l.joined)) + '</p>' : '') + '</div>';
+      buttons = '<button class="btn btn-main" data-battlenext' + (l.mode === 'phones' && !l.joined ? ' disabled' : '') + '>' +
+        esc(t('board_battle_first')) + '</button>';
+    } else {
+      var q = l.question;
+      main = '<p class="battle-qround">' + esc(t('board_battle_round', l)) + '</p><p class="battle-q">' + esc(q.text) +
+        '</p><ol class="battle-board-options">' + q.options.map(function(o, i) {
+          return '<li class="' + (l.revealed && q.correct === i ? 'right' : '') + '"><b>' + LETTERS[i] + '</b>' + esc(o) + '</li>';
+        }).join('') + '</ol>';
+      if (l.revealed) {
+        main += '<p class="why">' + esc(q.why || '') + '</p>' + (l.mode === 'phones' ? '<p class="battle-count">' +
+          esc(t('board_battle_rights', l.right || 0)) + '</p>' : '<p class="help-soft">' + esc(t('board_battle_markhelp')) +
+          '</p>');
+        buttons = l.round < l.total ? '<button class="btn btn-main" data-battlenext>' + esc(t('board_battle_next')) +
+          '</button>' : '';
+      } else {
+        main += '<p class="battle-count">' + (l.mode === 'phones' ? esc(t('board_battle_answered', l)) : '') +
+          (l.left >= 0 ? ' <span class="battle-left" data-left="' + l.left + '">' + l.left + ' s</span>' : '') + '</p>';
+        buttons = '<button class="btn btn-main" data-battlereveal>' + esc(t('board_battle_reveal')) + '</button>';
+      }
+    }
+    if (!l.outcome && l.round) {
+      buttons += '<button class="btn btn-soft" data-battlefinish>' + esc(t('board_battle_finish')) + '</button>';
+    }
+    var teams = l.teams.map(function(team) {
+      var marks = l.mode === 'aloud' && l.revealed && !l.outcome ? '<span class="pills"><button class="chip" data-mark="' +
+        team.id + ':1" aria-pressed="' + (team.mark === 1) + '" aria-label="' + esc(t('board_battle_markright', team.name)) +
+        '">✓</button><button class="chip" data-mark="' + team.id + ':0" aria-pressed="' + (team.mark === 0) +
+        '" aria-label="' + esc(t('board_battle_markwrong', team.name)) + '">✗</button></span>' : '';
+      return '<div class="battle-team"><b>' + esc(team.name) + '</b><small>' + (l.mode === 'phones' ?
+        esc(t('board_battle_joined', team.joined)) + ' · ' : '') + esc(t('board_battle_teamright', team.right)) + '</small>' +
+        marks + '</div>';
+    }).join('');
+    app.innerHTML = '<div class="board battle-board"><header class="board-top"><div><b>' + esc(cfg.coursename) + '</b><small>' +
+      esc(t('board_battle')) + '</small></div><div class="board-tools"><button class="btn btn-soft" data-full>' +
+      esc(t('board_fullscreen')) + '</button></div></header><div class="battle-stage"><div class="battle-boss' +
+      (l.revealed && (l.right || 0) > 0 ? ' hit' : '') + '">' + T.embrollo(life) + '<span class="meter boss"><i style="width:' +
+      Math.round(100 * life) + '%"></i></span><small>' + esc(t('board_battle_life')) + (l.maxhp ? ': ' + l.hp + ' / ' +
+      l.maxhp : '') + '</small></div><div class="battle-main">' + main + '<div class="actions">' + buttons + '</div></div></div>' +
+      '<div class="battle-teams">' + teams + '</div></div>';
+    bindBattle();
+  }
+
+  function bindBattle() {
+    var l = state.live;
+    var on = function(sel, fn) {
+      app.querySelectorAll(sel).forEach(function(el) {
+        el.onclick = function() {
+          fn(el);
+        };
+      });
+    };
+    on('[data-full]', fullscreen);
+    on('[data-battlenext]', function() {
+      host('next');
+    });
+    on('[data-battlereveal]', function() {
+      host('reveal');
+    });
+    on('[data-battlefinish]', function() {
+      host('finish');
+    });
+    on('[data-mark]', function(el) {
+      var p = el.dataset.mark.split(':');
+      host('mark', {groupid: +p[0], right: p[1] === '1'});
+    });
+    on('[data-dismiss]', function() {
+      state.seen = l.id;
+      render();
+      load(false);
+    });
+    // The answer shows by itself when the time is up or, with phones, when everybody in has answered.
+    var done = l.round && !l.revealed && !l.outcome && (!l.open || (l.mode === 'phones' && l.joined && l.answered >= l.joined));
+    if (done && state.auto !== l.id * 100 + l.round) {
+      state.auto = l.id * 100 + l.round;
+      setTimeout(function() {
+        host('reveal');
+      }, 900);
+    }
+  }
+
+  function fullscreen() {
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    } else if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen();
     }
   }
 
@@ -237,6 +406,10 @@
   /* ---------- The screen ---------- */
 
   function render() {
+    if (battling()) {
+      drawBattle();
+      return;
+    }
     var pending = state.cls.powerspending;
     app.innerHTML = '<div class="board">' +
       '<header class="board-top"><div><b>' + esc(cfg.coursename) + '</b><small>' + esc(t('board_title')) + '</small></div>' +
@@ -245,8 +418,8 @@
       '</a>' : '') + '<a class="btn btn-soft" href="' + esc(cfg.wwwroot + '/local/oksigeniatesape/teach.php?id=' +
       cfg.courseid) + '">' + esc(t('board_panel')) + '</a><button class="btn btn-soft" data-full>' +
       esc(t('board_fullscreen')) + '</button></div></header>' +
-      '<div class="board-grid">' + map() + '<div class="board-side">' + eventCard() + teams() + '</div></div>' + bar() +
-      '</div>';
+      '<div class="board-grid">' + map() + '<div class="board-side">' + eventCard() + battleCard() + teams() + '</div></div>' +
+      bar() + '</div>';
     bind();
   }
 
@@ -258,12 +431,15 @@
         };
       });
     };
-    on('[data-full]', function() {
-      if (document.fullscreenElement) {
-        document.exitFullscreen();
-      } else if (document.documentElement.requestFullscreen) {
-        document.documentElement.requestFullscreen();
-      }
+    on('[data-full]', fullscreen);
+    on('[data-battle]', function(el) {
+      var p = el.dataset.battle.split(':');
+      state.battle[p[0]] = p[0] === 'mode' ? p[1] : +p[1];
+      render();
+    });
+    on('[data-battlestart]', function() {
+      var b = state.battle;
+      host('start', {mode: b.mode, count: b.count, secs: b.secs});
     });
     on('[data-draw]', function() {
       state.reveal = false;
@@ -334,5 +510,8 @@
 
   load(true);
   setInterval(refresh, REFRESH);
-  document.addEventListener('visibilitychange', refresh);
+  document.addEventListener('visibilitychange', function() {
+    refresh();
+    schedule();
+  });
 })();

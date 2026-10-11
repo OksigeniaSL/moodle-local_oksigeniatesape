@@ -74,6 +74,30 @@ final class questions {
     }
 
     /**
+     * Several questions without repeating, for a battle: from the chapters the class has reached first, then from the
+     * rest of the mission if those are not enough.
+     *
+     * @param int $courseid
+     * @param int $count
+     * @return string[] Their ids.
+     */
+    public static function pick_many(int $courseid, int $count): array {
+        $mission = missions::get($courseid);
+        $all = $mission ? count($mission->data['questions'] ?? []) : 0;
+        $ids = [];
+        while (count($ids) < min($count, $all)) {
+            $id = self::pick($courseid, $ids);
+            if (in_array($id, $ids, true)) {
+                // The chapters reached are used up: any other question of the mission.
+                $rest = array_values(array_diff(array_column($mission->data['questions'], 'id'), $ids));
+                $id = $rest[random_int(0, count($rest) - 1)];
+            }
+            $ids[] = $id;
+        }
+        return $ids;
+    }
+
+    /**
      * A question as the class screen shows it.
      *
      * @param array $question As in the package.

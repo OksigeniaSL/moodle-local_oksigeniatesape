@@ -49,8 +49,11 @@ pantalla completa.
 - **El motor del juego**: saber con topes semanal y diario, gemas, energía y caída, aliento, objetos, deshacer, y las
   actividades completadas de Moodle convertidas en progreso. Proveedor de privacidad desde el primer día.
 
+- **La batalla contra el Embrollo**: preguntas de la misión para toda la clase, con los móviles de los alumnos o en
+  voz alta por equipos; cada acierto le quita vida, fallar no le quita nada a nadie, y ganar da saber y gemas.
+
 El juego está preparado para **paquetes de arte** (`cli/art.php`), y el primero está casi terminado. Después llegan
-las batallas con los móviles de los alumnos y las escenas votadas por la clase.
+las escenas votadas por la clase y el material imprimible.
 
 ## Requisitos
 

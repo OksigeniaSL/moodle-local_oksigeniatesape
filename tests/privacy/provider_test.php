@@ -107,6 +107,16 @@ final class provider_test extends provider_testcase {
             'timecreated' => time(),
             'timemodified' => time(),
         ]);
+        // Ana answers a question of a battle with her phone.
+        $DB->insert_record(self::T . 'livein', (object) [
+            'liveid' => 1,
+            'courseid' => $w->course1->id,
+            'charid' => $w->anachar->id,
+            'round' => 1,
+            'team' => 0,
+            'answer' => 2,
+            'timecreated' => time(),
+        ]);
         $w->ctx1 = \context_course::instance($w->course1->id);
         $w->ctx2 = \context_course::instance($w->course2->id);
         $w->anactx = \context_user::instance($w->ana->id);
@@ -133,7 +143,7 @@ final class provider_test extends provider_testcase {
         $collection = provider::get_metadata(new collection('local_oksigeniatesape'));
         $tables = array_map(fn($item) => $item->get_name(), $collection->get_collection());
         $expected = ['char', 'member', 'ledger', 'powerreq', 'inventory', 'sceneattempt', 'minigame', 'validation', 'found',
-            'idea'];
+            'idea', 'livein'];
         foreach ($expected as $table) {
             $this->assertContains(self::T . $table, $tables);
         }
@@ -195,6 +205,7 @@ final class provider_test extends provider_testcase {
         $this->assertEquals('C1-2', $writer->get_data($path('scenes'))->attempts[0]['scene']);
         $this->assertEquals('nestdefence', $writer->get_data($path('minigames'))->results[0]['game']);
         $this->assertEquals('approved', $writer->get_data($path('powers'))->requests[0]['status']);
+        $this->assertEquals(2, $writer->get_data($path('battles'))->answers[0]['answer']);
 
         // Leo sees why he was paused, and what the teacher said of his drawing.
         $this->export_context_data_for_user($w->leo->id, $w->ctx1, 'local_oksigeniatesape');

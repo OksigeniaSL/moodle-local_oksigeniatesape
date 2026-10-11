@@ -2437,3 +2437,310 @@ a.chip {
     grid-template-columns: 1fr;
   }
 }
+
+/* The battle against the Embrollo: on the class screen. */
+.meter.boss i {
+  background: linear-gradient(90deg, var(--lilac), #8e7cc3);
+}
+
+.board-battle .event-icon .embrollo {
+  width: 100%;
+  height: 100%;
+}
+
+.battle-options-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.battle-options-row > span:first-child:not(.pills) {
+  color: var(--text-soft);
+  min-width: 9em;
+}
+
+.battle-stage {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) 3fr;
+  gap: 28px;
+  align-items: start;
+}
+
+.battle-boss {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.battle-boss .embrollo {
+  width: 100%;
+  max-width: 280px;
+  height: auto;
+  transition: transform .4s ease;
+}
+
+.battle-boss .meter {
+  width: 100%;
+}
+
+.battle-boss.hit .embrollo {
+  animation: tangle-hit .6s ease;
+}
+
+@keyframes tangle-hit {
+  0%, 100% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-10px) rotate(-6deg);
+  }
+
+  75% {
+    transform: translateX(10px) rotate(6deg);
+  }
+}
+
+.battle-qround {
+  color: var(--lantern);
+  font-weight: 600;
+  margin: 0;
+}
+
+.battle-board .battle-q {
+  font-size: 1.7em;
+  font-weight: 600;
+  margin: 8px 0 18px;
+}
+
+.battle-board-options {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.battle-board-options li {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding: 18px 20px;
+  border-radius: var(--r);
+  border: 2px solid var(--line);
+  background: rgba(255, 255, 255, .06);
+  font-size: 1.35em;
+}
+
+.battle-board-options b {
+  font-family: var(--f-title);
+  color: var(--lantern);
+  font-size: 1.2em;
+}
+
+.battle-board-options li.right {
+  border-color: var(--leaf);
+  background: rgba(124, 198, 127, .2);
+}
+
+.battle-board .why {
+  margin-top: 14px;
+  color: var(--text-soft);
+  font-size: 1.1em;
+}
+
+.battle-count {
+  font-size: 1.2em;
+  margin: 16px 0 0;
+}
+
+.battle-left {
+  font-family: var(--f-title);
+  color: var(--lantern);
+  margin-left: 12px;
+}
+
+.battle-teams {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.battle-team {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: var(--r-s);
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, .05);
+}
+
+.battle-team small {
+  color: var(--text-soft);
+}
+
+.battle-end h2,
+.battle-phone .battle-end h2 {
+  font-family: var(--f-title);
+  font-size: 2em;
+  margin: 0 0 8px;
+}
+
+.battle-end.won h2 {
+  color: var(--lantern);
+}
+
+/* The battle on the phone of a student. */
+.battle-call {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: 84px;
+  z-index: 50;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: var(--r);
+  border: 2px solid var(--lilac);
+  background: rgba(15, 33, 49, .97);
+  box-shadow: var(--shadow);
+}
+
+.battle-call p {
+  flex: 1;
+  margin: 0;
+}
+
+.battle-mini {
+  width: 52px;
+  height: 52px;
+  flex: none;
+}
+
+.battle-mini .embrollo {
+  width: 100%;
+  height: 100%;
+}
+
+body.in-battle {
+  overflow: hidden;
+}
+
+.battle-phone {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  overflow-y: auto;
+  padding: 16px 16px 28px;
+  background: radial-gradient(circle at 50% 0, var(--mist), var(--night));
+}
+
+.battle-head {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.battle-head b {
+  display: block;
+  font-family: var(--f-title);
+}
+
+.battle-head small {
+  color: var(--text-soft);
+}
+
+.battle-head .meter {
+  display: block;
+  margin-top: 6px;
+}
+
+.battle-phone .battle-q {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.battle-options {
+  display: grid;
+  gap: 12px;
+}
+
+.battle-option {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  min-height: 64px;
+  padding: 12px 16px;
+  border-radius: var(--r);
+  border: 2px solid var(--line);
+  background: rgba(255, 255, 255, .07);
+  color: var(--text);
+  font-size: 18px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.battle-option b {
+  font-family: var(--f-title);
+  font-size: 24px;
+  color: var(--lantern);
+}
+
+.battle-option:disabled {
+  cursor: default;
+  opacity: .7;
+}
+
+.battle-option.mine {
+  border-color: var(--lantern);
+  background: rgba(255, 200, 87, .14);
+  opacity: 1;
+}
+
+.battle-option.right {
+  border-color: var(--leaf);
+  background: rgba(124, 198, 127, .22);
+  opacity: 1;
+}
+
+.battle-note {
+  font-size: 18px;
+  font-weight: 600;
+  margin-top: 16px;
+}
+
+.battle-wait {
+  font-size: 18px;
+  text-align: center;
+  margin-top: 40px;
+}
+
+.battle-phone .battle-left {
+  display: block;
+  margin: 14px 0 0;
+  font-size: 22px;
+}
+
+@media (max-width: 900px) {
+  .battle-stage {
+    grid-template-columns: 1fr;
+  }
+
+  .battle-board-options {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .battle-boss.hit .embrollo {
+    animation: none;
+  }
+}

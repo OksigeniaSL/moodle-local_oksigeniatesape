@@ -524,6 +524,31 @@
   };
 
   /**
+   * The Embrollo: a mischievous skein of yarn with eyes, not a monster. It shrinks as it loses life.
+   *
+   * @param {number} life From 0 to 1.
+   * @return {string} SVG, or the image of the art pack.
+   */
+  T.embrollo = function(life) {
+    var art = T.artUrl(['boss.embrollo']);
+    var s = 0.45 + 0.55 * Math.max(0, Math.min(1, life));
+    if (art) {
+      return '<img class="embrollo art" src="' + T.esc(art) + '" alt="" style="transform:scale(' + s + ')">';
+    }
+    var loops = '';
+    for (var i = 0; i < 9; i++) {
+      loops += '<ellipse cx="100" cy="100" rx="' + (62 - i * 3) + '" ry="' + (30 + i * 4) + '" transform="rotate(' + (i * 41) +
+        ' 100 100)" fill="none" stroke="' + (i % 2 ? '#8e7cc3' : '#b9a6ff') + '" stroke-width="5"/>';
+    }
+    return '<svg class="embrollo" viewBox="0 0 200 200" aria-hidden="true"><g transform="translate(100 100) scale(' + s +
+      ') translate(-100 -100)"><circle cx="100" cy="100" r="64" fill="#5b4a8e"/>' + loops +
+      '<path d="M150 140 Q178 160 168 186 Q160 196 176 198" fill="none" stroke="#b9a6ff" stroke-width="5" ' +
+      'stroke-linecap="round"/><ellipse cx="82" cy="94" rx="13" ry="15" fill="#fff"/><ellipse cx="120" cy="94" rx="13" ' +
+      'ry="15" fill="#fff"/><circle cx="86" cy="98" r="6" fill="#2a2219"/><circle cx="116" cy="98" r="6" fill="#2a2219"/>' +
+      '<path d="M84 124 Q100 134 118 122" fill="none" stroke="#2a2219" stroke-width="4" stroke-linecap="round"/></g></svg>';
+  };
+
+  /**
    * A picture of the valley at dusk, for the story screens and the region card.
    *
    * @param {string} kind prologue or region.
