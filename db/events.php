@@ -38,6 +38,10 @@ $observers = [
         'callback' => '\local_oksigeniatesape\observer::course_deleted',
     ],
     [
+        'eventname' => '\core\event\course_reset_ended',
+        'callback' => '\local_oksigeniatesape\observer::course_reset_ended',
+    ],
+    [
         'eventname' => '\core\event\user_deleted',
         'callback' => '\local_oksigeniatesape\observer::user_deleted',
     ],

@@ -159,6 +159,35 @@ final class observer_test extends \advanced_testcase {
         $this->assertFalse($DB->record_exists(self::T . 'ledger', ['charid' => $char->id]));
     }
 
+    public function test_a_reset_for_next_year_keeps_the_game_set_up(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $class = demo::create_class('NEXTYEAR', 6, 3, 'storyheroes', 2);
+        $courseid = (int) $class->course->id;
+        $mission = \local_oksigeniatesape\local\missions::get($courseid);
+        $DB->set_field(self::T . 'chapter', 'litat', time(), ['missionid' => $mission->id]);
+        $setup = [];
+        foreach (['region', 'challenge', 'power', 'mission'] as $table) {
+            $setup[$table] = $DB->count_records(self::T . $table, ['courseid' => $courseid]);
+        }
+        // A reset that only clears, for instance, the forum posts leaves the game alone.
+        $context = \context_course::instance($courseid);
+        $reset = fn(array $options) => \core\event\course_reset_ended::create(['context' => $context,
+            'courseid' => $courseid, 'other' => ['reset_options' => $options]])->trigger();
+        $reset(['reset_forum_all' => 1]);
+        $this->assertGreaterThan(0, $DB->count_records(self::T . 'member', ['courseid' => $courseid]));
+        $reset(['unenrol_users' => [$DB->get_field('role', 'id', ['shortname' => 'student'])]]);
+        foreach (['member', 'ledger', 'idea', 'team'] as $table) {
+            $this->assertEquals(0, $DB->count_records(self::T . $table, ['courseid' => $courseid]), $table);
+        }
+        foreach ($setup as $table => $count) {
+            $this->assertEquals($count, $DB->count_records(self::T . $table, ['courseid' => $courseid]), $table);
+        }
+        $this->assertEquals(0, $DB->count_records_select(self::T . 'chapter', 'missionid = ? AND litat > 0', [$mission->id]));
+        $this->assertGreaterThan(0, $DB->count_records(self::T . 'char'));
+    }
+
     public function test_deleted_course_takes_its_game_with_it(): void {
         global $DB;
         $this->resetAfterTest();

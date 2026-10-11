@@ -31,9 +31,12 @@ final class observer {
     /** @var string Prefix of the plugin tables. */
     private const T = 'local_oksigeniatesape_';
 
-    /** @var string[] Tables of what belongs to one course, by courseid. */
-    private const COURSE_TABLES = ['region', 'member', 'team', 'challenge', 'ledger', 'power', 'validation', 'inventory',
-        'mission', 'sceneattempt', 'found', 'minigame', 'idea', 'event', 'live', 'livein', 'nextclass'];
+    /** @var string[] Tables of what was played in a course, by courseid. */
+    private const PLAYED_TABLES = ['member', 'team', 'ledger', 'validation', 'inventory', 'sceneattempt', 'found', 'minigame',
+        'idea', 'event', 'live', 'livein', 'nextclass'];
+
+    /** @var string[] Tables of how the game of a course is set up, by courseid. */
+    private const SETUP_TABLES = ['region', 'challenge', 'power', 'mission'];
 
     /**
      * An activity completed (or no longer completed): saber from its challenge, or from the rule of the course for
@@ -115,18 +118,53 @@ final class observer {
     public static function course_deleted(\core\event\course_deleted $event): void {
         global $DB;
         $courseid = (int) $event->objectid;
-        $powers = $DB->get_fieldset_select(self::T . 'power', 'id', 'courseid = ?', [$courseid]);
-        if ($powers) {
-            [$insql, $params] = $DB->get_in_or_equal($powers);
-            $DB->delete_records_select(self::T . 'powerreq', "powerid $insql", $params);
-        }
+        self::clear_played($courseid);
         $missions = $DB->get_fieldset_select(self::T . 'mission', 'id', 'courseid = ?', [$courseid]);
         if ($missions) {
             [$insql, $params] = $DB->get_in_or_equal($missions);
             $DB->delete_records_select(self::T . 'scene', "missionid $insql", $params);
             $DB->delete_records_select(self::T . 'chapter', "missionid $insql", $params);
         }
-        foreach (self::COURSE_TABLES as $table) {
+        foreach (self::SETUP_TABLES as $table) {
+            $DB->delete_records(self::T . $table, ['courseid' => $courseid]);
+        }
+    }
+
+    /**
+     * A course reset that takes the students out (the course ready for next year): what was played goes, and the game
+     * stays set up as it was (settings, mission, challenges, powers), with the lanterns of the class off again. The
+     * characters stay with their students.
+     *
+     * @param \core\event\course_reset_ended $event
+     */
+    public static function course_reset_ended(\core\event\course_reset_ended $event): void {
+        global $DB;
+        $options = (array) ($event->other['reset_options'] ?? []);
+        if (empty($options['unenrol_users'])) {
+            return;
+        }
+        $courseid = (int) $event->courseid;
+        self::clear_played($courseid);
+        $missions = $DB->get_fieldset_select(self::T . 'mission', 'id', 'courseid = ?', [$courseid]);
+        if ($missions) {
+            [$insql, $params] = $DB->get_in_or_equal($missions);
+            $DB->set_field_select(self::T . 'chapter', 'litat', 0, "missionid $insql", $params);
+        }
+    }
+
+    /**
+     * Deletes what was played in a course: progress, requests of powers, events, battles, plans.
+     *
+     * @param int $courseid
+     */
+    private static function clear_played(int $courseid): void {
+        global $DB;
+        $powers = $DB->get_fieldset_select(self::T . 'power', 'id', 'courseid = ?', [$courseid]);
+        if ($powers) {
+            [$insql, $params] = $DB->get_in_or_equal($powers);
+            $DB->delete_records_select(self::T . 'powerreq', "powerid $insql", $params);
+        }
+        foreach (self::PLAYED_TABLES as $table) {
             $DB->delete_records(self::T . $table, ['courseid' => $courseid]);
         }
     }

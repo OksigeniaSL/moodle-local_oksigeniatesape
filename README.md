@@ -79,7 +79,9 @@ Then visit *Site administration → Notifications* to finish the install.
 The character belongs to the student's user context; what happens in a course belongs to the course. The privacy
 provider covers every table that holds something about a student (export and deletion), and teachers who paused a
 student, gave them something or decided on a power stay in the student's records without their name once their own
-data is deleted. When a course is deleted, the game in it goes too; the characters stay with their students.
+data is deleted. When a course is deleted, the game in it goes too; the characters stay with their students. Course
+backups keep how the game is set up, never what students did; a course reset that takes the students out clears what
+was played.
 
 Minors play this game, so it keeps only what the game needs: no external services, no CDN, no tracking, no
 individual public rankings and no purchases. The ideas students send stay in Moodle, for their teachers only; the

@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.11.0 (2026-10-11)
+
+- **The game goes with the backup of a course**: its settings, the mission (installed again from the package of the
+  plugin, without making its activities twice), the classroom challenges, the challenge of each activity (tied to the
+  activity the restore makes) and the powers of the course. Nothing of the students goes: their characters belong to
+  the whole site. Duplicating a course for next year, or moving it to another Moodle, keeps the game set up.
+- **A course reset for next year** (one that takes the students out) clears what was played in the course and turns
+  the lanterns of the class off again; the game stays set up as it was. A reset that takes nobody out leaves the game
+  alone.
+
 ## 0.10.0 (2026-10-11)
 
 - **The teacher makes the characters of a class without devices**: in the sheet of a student who has none, the
