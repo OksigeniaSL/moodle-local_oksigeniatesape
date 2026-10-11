@@ -143,10 +143,12 @@ final class provider_test extends provider_testcase {
         $collection = provider::get_metadata(new collection('local_oksigeniatesape'));
         $tables = array_map(fn($item) => $item->get_name(), $collection->get_collection());
         $expected = ['char', 'member', 'ledger', 'powerreq', 'inventory', 'sceneattempt', 'minigame', 'validation', 'found',
-            'idea', 'livein', 'core_ai'];
+            'idea', 'livein'];
         foreach ($expected as $table) {
             $this->assertContains(self::T . $table, $tables);
         }
+        // The plan for the next class goes through the AI subsystem.
+        $this->assertContains('core_ai', $tables);
     }
 
     public function test_contexts_for_userid(): void {
