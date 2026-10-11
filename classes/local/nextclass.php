@@ -143,7 +143,12 @@ final class nextclass {
         $plan = null;
         // A second try if the answer does not have the shape asked for: smaller models sometimes add words around it.
         foreach ([$prompt, $prompt . "\n\n" . self::AGAIN] as $text) {
-            $response = $manager->process_action(new generate_text($contextid, $userid, $text));
+            try {
+                $response = $manager->process_action(new generate_text($contextid, $userid, $text));
+            } catch (\Throwable $e) {
+                // A provider that cannot be reached throws instead of answering: the teacher gets the plain message.
+                throw new \moodle_exception('nextclass_failed', 'local_oksigeniatesape', '', null, $e->getMessage());
+            }
             if (!$response->get_success()) {
                 $error = $response->get_errormessage();
                 throw new \moodle_exception('nextclass_failed', 'local_oksigeniatesape', '', null, $error);

@@ -149,4 +149,32 @@ final class nextclass_test extends \advanced_testcase {
         $this->assertSame('¿Está vivo el fuego?', nextclass::opener($w->course->id, time()));
         $this->assertSame('', nextclass::opener($w->course->id, time() + (nextclass::OPENER_DAYS + 1) * DAYSECS));
     }
+
+    public function test_a_provider_that_cannot_be_reached_gives_a_plain_message(): void {
+        if ((new \ReflectionMethod(\core_ai\manager::class, 'is_action_available'))->isStatic()) {
+            $this->markTestSkipped('The AI manager of Moodle 4.5 cannot be replaced in a test.');
+        }
+        $this->resetAfterTest();
+        $w = $this->make_class();
+        $methods = ['is_action_available', 'process_action'];
+        if (method_exists(\core_ai\manager::class, 'is_action_enabled_in_context')) {
+            $methods[] = 'is_action_enabled_in_context';
+        }
+        $manager = $this->getMockBuilder(\core_ai\manager::class)->disableOriginalConstructor()->onlyMethods($methods)
+            ->getMock();
+        $manager->method('is_action_available')->willReturn(true);
+        if (in_array('is_action_enabled_in_context', $methods, true)) {
+            $manager->method('is_action_enabled_in_context')->willReturn(true);
+        }
+        $manager->method('process_action')->willThrowException(new \RuntimeException('cURL error 6: Could not resolve host'));
+        \core\di::set(\core_ai\manager::class, $manager);
+        nextclass::accept_policy($w->course->id, $w->teacher->id);
+        try {
+            nextclass::generate($w->course->id, $w->teacher->id);
+            $this->fail('A provider that cannot be reached makes no plan');
+        } catch (\moodle_exception $e) {
+            $this->assertSame('nextclass_failed', $e->errorcode);
+            $this->assertStringContainsString('cURL', $e->debuginfo);
+        }
+    }
 }

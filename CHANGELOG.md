@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.13.3 (2026-10-11)
+
+- When the AI provider of the site cannot be reached, the teacher sees «The AI of the site could not make the plan»
+  instead of the technical error of the connection (which stays in the debugging information).
+
 ## 0.13.2 (2026-10-11)
 
 - The Embrollo of the card of the battle on the class screen had no size of its own and filled the whole card.
