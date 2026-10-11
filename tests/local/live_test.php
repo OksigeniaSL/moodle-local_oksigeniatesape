@@ -192,6 +192,22 @@ final class live_test extends \advanced_testcase {
         }
     }
 
+    public function test_a_second_tap_on_the_class_screen_does_nothing(): void {
+        $this->resetAfterTest();
+        [$course, $members] = $this->make_class();
+        $live = live::start($course->id, 'phones', 4, 0, self::NOW);
+        live::join($live, $members[0], $members[0]->userid, self::NOW);
+        $live = live::locked($course->id, fn() => live::next($live, self::NOW, 0));
+        $this->assertEquals(1, $live->round);
+        // The second tap of "Next" still says round 0: the class stays on question 1.
+        $this->assertEquals(1, live::next($live, self::NOW, 0)->round);
+        // The answer shown by itself for round 1 does not close round 2 if the teacher already went on.
+        $live = live::next(live::reveal($live, self::NOW, 1), self::NOW, 1);
+        $this->assertEquals(2, $live->round);
+        $live = live::reveal($live, self::NOW, 1);
+        $this->assertFalse(live::board_view($live, self::NOW)['revealed']);
+    }
+
     public function test_losing_takes_nothing_from_anybody(): void {
         global $DB;
         $this->resetAfterTest();

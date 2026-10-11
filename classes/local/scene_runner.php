@@ -296,10 +296,15 @@ final class scene_runner {
                 continue;
             }
             $first = true;
-            for ($tries = 0; $tries <= count($bins); $tries++) {
+            $wrong = [];
+            // Tapping the same wrong group again does not count: each wrong group once, then the right one.
+            for ($tries = 0; $tries <= 4 * count($bins); $tries++) {
                 $event = $this->take($node);
                 if (($event['item'] ?? null) !== $item['id'] || !in_array($event['bin'] ?? null, $bins, true)) {
                     $this->fail('expected ' . $item['id'] . ' in a group of ' . $node);
+                }
+                if ($event['bin'] !== $item['bin'] && !$once && in_array($event['bin'], $wrong, true)) {
+                    continue;
                 }
                 if ($event['bin'] === $item['bin']) {
                     $this->points += $first ? 2 : 1;
@@ -316,6 +321,7 @@ final class scene_runner {
                     $this->tally($item['objective'] ?? null, false);
                     continue 2;
                 }
+                $wrong[] = $event['bin'];
                 $first = false;
             }
             $this->fail('too many tries for ' . $item['id']);

@@ -73,15 +73,19 @@ final class class_scene extends external_api {
             throw new \invalid_parameter_exception('The events are not a list');
         }
         $charids = [];
+        $live = null;
         if ($params['phones']) {
             $live = live::current($params['courseid']);
             if (!$live || $live->kind !== 'vote') {
                 throw new \moodle_exception('nobattle', 'local_oksigeniatesape');
             }
             $charids = live::joined($live) ?: [0];
-            live::finish($live, 0);
         }
         $result = scenes::play_class($params['courseid'], $params['sceneid'], $list, $params['start'] ?: null, $charids);
+        // The vote ends only once the scene is played: if playing it fails, the class screen can try again.
+        if ($live) {
+            live::finish($live, 0);
+        }
         $result['objectives'] = json_encode($result['objectives']);
         return $result;
     }

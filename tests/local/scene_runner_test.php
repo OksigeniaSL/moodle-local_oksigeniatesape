@@ -102,6 +102,23 @@ final class scene_runner_test extends \advanced_testcase {
         $this->assertSame($good['objectives'][$objective]['ok'] - 1, $result['objectives'][$objective]['ok']);
     }
 
+    public function test_classify_takes_the_same_wrong_group_tapped_again(): void {
+        $scene = autoplayer::scene('C2-2');
+        $events = autoplayer::play($scene);
+        $first = $events[0];
+        $wrong = array_values(array_filter(
+            array_column($scene['nodes'][$first['n']]['bins'], 'id'),
+            fn($b) => $b !== $first['bin']
+        ))[0];
+        // A child taps the same wrong group six times before the right one: more taps than there are groups.
+        $taps = array_fill(0, 6, ['n' => $first['n'], 'item' => $first['item'], 'bin' => $wrong]);
+        array_splice($events, 0, 0, $taps);
+        $good = (new scene_runner($scene))->run(autoplayer::play($scene));
+        $result = (new scene_runner($scene))->run($events);
+        $this->assertSame($good['points'] - 1, $result['points']);
+        $this->assertSame($good['ending'], $result['ending']);
+    }
+
     public function test_order_with_a_stuck_step(): void {
         $scene = autoplayer::scene('C4-3');
         $events = autoplayer::play($scene);

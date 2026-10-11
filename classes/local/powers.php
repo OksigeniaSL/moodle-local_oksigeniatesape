@@ -81,6 +81,13 @@ final class powers {
         $powers = $DB->get_records(self::T . 'power', ['courseid' => $courseid], 'id');
         $codes = array_map(fn($p) => $p->code, $powers);
         $now = $now ?? time();
+        $lock = null;
+        if (array_diff(array_keys(self::CATALOG), $codes)) {
+            // Missing powers are made once: the whole class opening the game at the same time would make them twice.
+            $lock = \core\lock\lock_config::get_lock_factory('local_oksigeniatesape')->get_lock('powers-' . $courseid, 10);
+            $powers = $DB->get_records(self::T . 'power', ['courseid' => $courseid], 'id');
+            $codes = array_map(fn($p) => $p->code, $powers);
+        }
         foreach (self::CATALOG as $code => [$role, $cost, $level]) {
             if (!in_array($code, $codes, true)) {
                 $power = (object) [
@@ -99,6 +106,9 @@ final class powers {
                 $power->id = $DB->insert_record(self::T . 'power', $power);
                 $powers[$power->id] = $power;
             }
+        }
+        if ($lock) {
+            $lock->release();
         }
         $order = array_flip(array_keys(self::CATALOG));
         uasort($powers, fn($a, $b) => ($order[$a->code] ?? 999) <=> ($order[$b->code] ?? 999) ?: $a->id <=> $b->id);

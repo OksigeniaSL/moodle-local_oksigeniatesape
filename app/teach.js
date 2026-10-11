@@ -81,7 +81,7 @@
    */
   function sendValidation(args) {
     return T.api('validate', args).catch(function(e) {
-      if (navigator.onLine !== false && !/fetch|network|load failed/i.test(e.message)) {
+      if (!e.network && navigator.onLine !== false) {
         throw e;
       }
       var list = queued();
@@ -106,8 +106,15 @@
         T.toast(esc(t('teach_sent')));
         load(true);
       }
-    }).catch(function() {
-      // Still no luck; it will try again when the connection comes back.
+    }).catch(function(e) {
+      if (e.network) {
+        // Still no luck; it will try again when the connection comes back.
+        return;
+      }
+      // The server said no (the challenge was deleted meanwhile, for instance): it will not say yes later.
+      T.toast(esc(e.message), true);
+      setQueue(queued().slice(1));
+      flush();
     });
   }
 
@@ -150,6 +157,10 @@
         state.open = 0;
         if (state.tab === 'powers') {
           state.powers = null;
+        }
+        if (state.tab === 'mission') {
+          // The results change as the class plays: read them again on each visit.
+          state.results = null;
         }
         if (state.tab === 'ideas') {
           state.ideas = null;
@@ -266,7 +277,7 @@
     var fam = state.data.region.family;
     var sel = !!state.selected[s.userid];
     return '<li class="item" style="cursor:pointer;' + (sel ? 'border-color:var(--lantern);background:rgba(255,200,87,.1)' :
-      '') + '" data-student="' + s.userid + '"><input type="checkbox" aria-label="' + esc(s.fullname) + '" ' +
+      '') + '" data-student="' + s.userid + '" tabindex="0"><input type="checkbox" aria-label="' + esc(s.fullname) + '" ' +
       (sel ? 'checked' : '') + ' data-check="' + s.userid + '" style="width:22px;height:22px;flex:none">' +
       faces(s) + '<span class="grow"><b>' + esc(s.fullname) +
       '</b><small>' + (c ? esc(T.roleName(fam, c.role, c.nameform)) + ' · ' + esc(t('app_level')) + ' ' + c.level +
@@ -316,6 +327,12 @@
     el.querySelectorAll('[data-student]').forEach(function(li) {
       li.onclick = function() {
         openStudent(Number(li.dataset.student));
+      };
+      li.onkeydown = function(ev) {
+        if (ev.target === li && (ev.key === 'Enter' || ev.key === ' ')) {
+          ev.preventDefault();
+          openStudent(Number(li.dataset.student));
+        }
       };
     });
     actionBar();
@@ -395,13 +412,21 @@
       esc(t('app_energy')) + '</button></div></section>';
     bar.querySelectorAll('[data-award]').forEach(function(b) {
       b.onclick = function() {
-        award(ids, b.dataset.award, Number(b.dataset.amount));
+        // A second tap while the first is on its way would give it twice.
+        bar.querySelectorAll('[data-award]').forEach(function(x) {
+          x.disabled = true;
+        });
+        award(ids, b.dataset.award, Number(b.dataset.amount)).then(function() {
+          bar.querySelectorAll('[data-award]').forEach(function(x) {
+            x.disabled = false;
+          });
+        });
       };
     });
   }
 
   function award(ids, resource, amount) {
-    T.api('award', {courseid: cfg.courseid, userids: ids, resource: resource, amount: amount}).then(function(results) {
+    return T.api('award', {courseid: cfg.courseid, userids: ids, resource: resource, amount: amount}).then(function(results) {
       var given = results.filter(function(r) {
         return r.status === 'given';
       }).length;
@@ -908,7 +933,8 @@
       var done = ch.validations.filter(function(v) {
         return v.status !== 'notyet';
       }).length;
-      return '<li class="item" data-open="' + ch.id + '" style="cursor:pointer"><span class="grow"><b>' + esc(ch.name) +
+      return '<li class="item" data-open="' + ch.id + '" style="cursor:pointer" tabindex="0" role="button"><span class="grow">' +
+        '<b>' + esc(ch.name) +
         '</b><small>' + rewards(ch) + (ch.teamwork ? ' · ' + esc(t('teach_teamwork')) : '') + '</small></span>' +
         '<span class="tag done">' + done + ' / ' + d.students.length + '</span></li>';
     }).join('');
@@ -931,6 +957,12 @@
       li.onclick = function() {
         state.challenge = Number(li.dataset.open);
         render();
+      };
+      li.onkeydown = function(ev) {
+        if (ev.key === 'Enter' || ev.key === ' ') {
+          ev.preventDefault();
+          li.onclick();
+        }
       };
     });
     var add = el.querySelector('[data-new]');

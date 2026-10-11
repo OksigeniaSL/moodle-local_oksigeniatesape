@@ -201,10 +201,24 @@ final class missions {
         if (!$mission) {
             return null;
         }
-        // A newer package came with the plugin: bring the mission up to date, keeping what the students did.
+        // A newer package came with the plugin: bring the mission up to date, keeping what the students did. Once:
+        // the first requests after an upgrade come all at the same time.
         $package = self::packages()[$mission->code] ?? null;
         if ($mission->origin === 'catalog' && $package && (int) ($package['version'] ?? 1) > (int) $mission->version) {
-            $mission = self::install($courseid, $mission->code, $mission->skin, $mission->variant);
+            $factory = \core\lock\lock_config::get_lock_factory('local_oksigeniatesape');
+            $lock = $factory->get_lock('mission-' . $courseid, 30);
+            try {
+                $fresh = $DB->get_record(self::T . 'mission', ['id' => $mission->id]);
+                if ($fresh && (int) ($package['version'] ?? 1) > (int) $fresh->version) {
+                    $mission = self::install($courseid, $mission->code, $mission->skin, $mission->variant);
+                } else if ($fresh) {
+                    $mission = $fresh;
+                }
+            } finally {
+                if ($lock) {
+                    $lock->release();
+                }
+            }
         }
         $mission->data = json_decode((string) $mission->definition, true) ?: [];
         return $mission;

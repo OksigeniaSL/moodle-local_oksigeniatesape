@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.9.1 (2026-10-11)
+
+Fixes from a review of the code:
+
+- **Class screen**: a second tap on Next, Show the answer or Finish, or a second class screen, no longer acts twice
+  (Finish gave the rewards of a battle twice; Next skipped a question). The actions of the class screen run one at a
+  time for each course, and Next and Show the answer only act on the round the class screen is showing, so the answer
+  shown by itself when the time runs out no longer closes the next question. The buttons wait for the answer of the
+  server, and so do the buttons that give saber and gems on the class screen and in the teacher panel.
+- **Scenes**: a group or a step that is not the right one goes off after one tap, and the server no longer turns down a
+  whole scene because a child tapped the same wrong group several times. If the server does not take what was played,
+  the scene can be started again instead of sending the same thing again.
+- A scene played by the whole class with phones closes its vote only once the scene is played, so it can be tried
+  again if something fails.
+- When a user account is deleted, their character and everything of theirs in the game go too, and their name goes
+  from what they did as a teacher.
+- The powers of a course and the update of a mission to a newer version are made once, even when the whole class opens
+  the game at the same time.
+- Battles and votes only when the game is on in the course; a battle stops with a message if its mission no longer has
+  a question; the footprint is not drawn when the mission has no questions; players without a team do not count as the
+  team that helped most.
+- Undoing saber no longer leaves renown below zero, undoing a recovery leaves the student worn out again, and the
+  recovery is saved in one step.
+- A grouping of another course is not taken for the teams.
+- The teacher panel: the offline queue of validations no longer gets stuck on one the server turns down; the results
+  of the mission are read again on each visit; students and challenges in the lists open with the keyboard.
+- The phone: the battle layer no longer draws everything again every second and a half during a question with a time
+  limit, and the world shows the new saber and gems after a battle won.
+- The privacy export tells coming into a battle, answering and glancing apart.
+
 ## 0.9.0 (2026-10-11)
 
 - **A plan for the next class, with the AI of the site**: in the mission tab of the teacher panel, one button turns

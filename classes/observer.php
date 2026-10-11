@@ -98,6 +98,15 @@ final class observer {
     }
 
     /**
+     * A user account deleted: their character and everything of theirs go too (students are minors).
+     *
+     * @param \core\event\user_deleted $event
+     */
+    public static function user_deleted(\core\event\user_deleted $event): void {
+        \local_oksigeniatesape\privacy\provider::delete_deleted_user((int) $event->objectid);
+    }
+
+    /**
      * A course deleted: the region goes with it, and everything played there. The characters stay, with what they
      * earned: they belong to the students, not to the course.
      *

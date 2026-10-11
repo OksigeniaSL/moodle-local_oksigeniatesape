@@ -92,12 +92,19 @@ final class events {
             $yesterday = self::today($courseid, engine::day_start($now) - 1);
             $avoid = array_filter([$event->code ?? null, $yesterday->code ?? null]);
             $cards = array_values(array_diff(self::CARDS, $avoid)) ?: self::CARDS;
+            if (questions::pick($courseid) === null) {
+                // Without questions in the mission there is no footprint to follow.
+                $cards = array_values(array_diff($cards, ['footprint'])) ?: ['calm'];
+            }
             $code = $cards[random_int(0, count($cards) - 1)];
         }
         $data = [];
         if ($code === 'footprint') {
             $previous = json_decode($event->data ?? '', true) ?: [];
             $data['question'] = questions::pick($courseid, array_filter([$previous['question'] ?? null]));
+            if ($data['question'] === null) {
+                throw new \moodle_exception('noquestions', 'local_oksigeniatesape');
+            }
         }
         $record = (object) [
             'courseid' => $courseid,

@@ -262,16 +262,41 @@ final class live {
     }
 
     /**
+     * Runs an action of the class screen on the session of a course with nobody else acting on it at the same time:
+     * two taps on a button, or two class screens, would otherwise act twice.
+     *
+     * @param int $courseid
+     * @param callable $action
+     * @return mixed What the action returns.
+     */
+    public static function locked(int $courseid, callable $action) {
+        $lock = \core\lock\lock_config::get_lock_factory('local_oksigeniatesape')->get_lock('live-' . $courseid, 10);
+        if (!$lock) {
+            throw new \moodle_exception('livebusy', 'local_oksigeniatesape');
+        }
+        try {
+            return $action();
+        } finally {
+            $lock->release();
+        }
+    }
+
+    /**
      * The next question. The first one sets the life of the Embrollo, from the players there are.
      *
      * @param \stdClass $live
      * @param int|null $now
+     * @param int|null $from The round the class screen was showing: if it is not the current one any more (a second
+     *     tap, another class screen), nothing happens.
      * @return \stdClass The session.
      */
-    public static function next(\stdClass $live, ?int $now = null): \stdClass {
+    public static function next(\stdClass $live, ?int $now = null, ?int $from = null): \stdClass {
         $now = $now ?? time();
         $state = self::state($live);
         $round = (int) $live->round;
+        if ($from !== null && $from !== $round) {
+            return $live;
+        }
         if ($state['outcome'] !== '' || $round >= count($state['questions'])) {
             throw new \moodle_exception('battleover', 'local_oksigeniatesape');
         }
@@ -285,6 +310,10 @@ final class live {
         }
         $round++;
         $question = questions::get((int) $live->courseid, $state['questions'][$round - 1], self::seed($live, $round));
+        if (!$question) {
+            // The mission changed in the middle of the battle and the question is gone.
+            throw new \moodle_exception('noquestions', 'local_oksigeniatesape');
+        }
         // The question stays in the state, so that the phones do not read the mission on every poll.
         $state['rounds'][$round] = ['q' => $question['id'], 'options' => count($question['options']),
             'correct' => $question['correct'], 'question' => array_diff_key($question, ['chapter' => 1, 'objective' => 1]),
@@ -299,13 +328,15 @@ final class live {
      *
      * @param \stdClass $live
      * @param int|null $now
+     * @param int|null $from The round the class screen was showing: if it is not the current one any more (the time
+     *     ran out just as the teacher went on), nothing happens.
      * @return \stdClass The session.
      */
-    public static function reveal(\stdClass $live, ?int $now = null): \stdClass {
+    public static function reveal(\stdClass $live, ?int $now = null, ?int $from = null): \stdClass {
         $now = $now ?? time();
         $state = self::state($live);
         $round = (int) $live->round;
-        if ($round < 1 || !empty($state['rounds'][$round]['revealed'])) {
+        if ($round < 1 || !empty($state['rounds'][$round]['revealed']) || ($from !== null && $from !== $round)) {
             return $live;
         }
         $state = self::count($live, $state);
@@ -600,7 +631,10 @@ final class live {
         $byteam = [];
         foreach ($state['rounds'] as $info) {
             foreach ($info['teams'] as $team => $right) {
-                $byteam[$team] = ($byteam[$team] ?? 0) + $right;
+                // Those without a team play, but there is no team of them to help most.
+                if ($team) {
+                    $byteam[$team] = ($byteam[$team] ?? 0) + $right;
+                }
             }
         }
         if ($state['mode'] === 'phones') {

@@ -417,6 +417,8 @@
       T.toast(esc(e.message), true);
     });
   }
+  // The battle layer refreshes the world when a battle gives something.
+  T.refreshWorld = refresh;
 
   function res(kind, value, label) {
     return '<span class="r" title="' + esc(label) + '">' + T.icon(kind) + '<b>' + esc(value) + '</b><span class="sr-only"> ' +

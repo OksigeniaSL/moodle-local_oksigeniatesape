@@ -114,8 +114,11 @@ final class save_region extends external_api {
         if ($params['completionrule'] !== null) {
             $settings['rules'] = ['completion' => $params['completionrule']];
         }
-        if (!empty($settings['groupingid']) && !groups_get_grouping($settings['groupingid'])) {
-            throw new \invalid_parameter_exception('Unknown grouping');
+        if (!empty($settings['groupingid'])) {
+            $grouping = groups_get_grouping($settings['groupingid']);
+            if (!$grouping || (int) $grouping->courseid !== $params['courseid']) {
+                throw new \invalid_parameter_exception('Unknown grouping');
+            }
         }
         return view::region(regions::save($params['courseid'], $settings));
     }

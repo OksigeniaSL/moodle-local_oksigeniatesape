@@ -371,9 +371,11 @@ class provider implements
         $live = $DB->get_records(self::T . 'livein', ['charid' => $charid, 'courseid' => $courseid], 'liveid, round');
         if ($live) {
             $writer->export_data(self::path('battles'), (object) [
+                // Round 0 is coming in; a negative round is a glance at that question before it opened (-2: round 2).
                 'answers' => array_values(array_map(fn($a) => [
                     'session' => (int) $a->liveid,
-                    'round' => (int) $a->round,
+                    'round' => abs((int) $a->round),
+                    'what' => (int) $a->round > 0 ? 'answer' : ((int) $a->round === 0 ? 'joined' : 'glance'),
                     'answer' => (int) $a->answer,
                     'timecreated' => transform::datetime($a->timecreated),
                 ], $live)),
@@ -532,6 +534,24 @@ class provider implements
         foreach (self::COURSE_TABLES as $table) {
             $DB->delete_records_select(self::T . $table, $where, $params);
         }
+    }
+
+    /**
+     * A deleted user account: their character goes, with everything that hangs from it, and their name goes from what
+     * they did as a teacher. Moodle does not ask the privacy providers when an account is deleted by hand.
+     *
+     * @param int $userid
+     */
+    public static function delete_deleted_user(int $userid): void {
+        global $DB;
+        $charid = $DB->get_field(self::T . 'char', 'id', ['userid' => $userid]);
+        if ($charid) {
+            self::delete_character((int) $charid);
+        }
+        $DB->set_field(self::T . 'member', 'statusby', 0, ['statusby' => $userid]);
+        $DB->set_field(self::T . 'ledger', 'actorid', 0, ['actorid' => $userid]);
+        $DB->set_field(self::T . 'validation', 'validatedby', 0, ['validatedby' => $userid]);
+        $DB->set_field(self::T . 'powerreq', 'decidedby', 0, ['decidedby' => $userid]);
     }
 
     /**

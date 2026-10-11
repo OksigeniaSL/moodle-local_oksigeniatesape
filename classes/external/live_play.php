@@ -23,6 +23,7 @@ use core_external\external_value;
 use local_oksigeniatesape\local\characters;
 use local_oksigeniatesape\local\engine;
 use local_oksigeniatesape\local\live;
+use local_oksigeniatesape\local\regions;
 
 /**
  * The battle on the phone of a student: whether there is one, come in, answer.
@@ -70,7 +71,7 @@ final class live_play extends external_api {
         $live = $params['action'] === 'state' ? live::recent($params['courseid'], $now) :
             live::current($params['courseid'], $now);
         $char = characters::get((int) $USER->id);
-        if (!$live || !$char) {
+        if (!$live || !$char || !regions::enabled($params['courseid'])) {
             if ($params['action'] !== 'state') {
                 throw new \moodle_exception('nobattle', 'local_oksigeniatesape');
             }

@@ -245,6 +245,19 @@ final class engine_test extends \advanced_testcase {
         $this->assertEquals(engine::ENERGY_MAX, $member->energy);
     }
 
+    public function test_undoing_the_recovery_leaves_them_worn_out(): void {
+        $this->resetAfterTest();
+        [, , $member] = $this->make_player(['dailyenergylosscap' => 0]);
+        engine::energy($member, -10, 'commitment', 2);
+        $member = $this->member($member);
+        $entry = engine::recover($member, 'recovery', 2);
+        $this->assertEquals('active', $this->member($member)->status);
+        engine::undo($entry->id, 2);
+        $member = $this->member($member);
+        $this->assertEquals(0, $member->energy);
+        $this->assertEquals('fallen', $member->status);
+    }
+
     public function test_regenerate(): void {
         global $DB;
         $this->resetAfterTest();

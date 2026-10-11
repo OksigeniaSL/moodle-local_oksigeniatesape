@@ -49,12 +49,14 @@
     state.live = live;
     var playing = live && live.mode === 'phones' && state.dismissed !== live.id;
     state.inside = !!(playing && live.joined);
-    var sig = JSON.stringify([live, state.inside]);
+    // The seconds left change on every poll; the countdown shows them without drawing everything again.
+    var sig = JSON.stringify([live ? Object.assign({}, live, {left: 0}) : null, state.inside]);
     if (sig === state.sig) {
       return;
     }
     state.sig = sig;
     if (!playing || (!live.joined && live.outcome)) {
+      clearInterval(state.tick);
       layer.innerHTML = '';
       document.body.classList.remove('in-battle');
       return;
@@ -199,6 +201,9 @@
       back.onclick = function() {
         state.dismissed = live.id;
         show(live);
+        if (live.prize && T.refreshWorld) {
+          T.refreshWorld();
+        }
       };
     }
     clearInterval(state.tick);

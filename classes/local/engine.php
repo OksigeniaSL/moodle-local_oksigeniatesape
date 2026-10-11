@@ -353,8 +353,9 @@ final class engine {
                 $field = $entry->resource;
                 $change = max(0, min($max, $member->$field + $change)) - $member->$field;
                 $member->$field += $change;
-                if ($field === 'energy' && $member->status === 'fallen' && $member->energy > 0) {
-                    $member->status = 'active';
+                if ($field === 'energy' && $member->status !== 'paused') {
+                    // Worn out with no energy, playing with some, whichever way the undo goes.
+                    $member->status = $member->energy > 0 ? 'active' : 'fallen';
                 }
                 $member->timemodified = $now;
                 $DB->update_record(self::T . 'member', $member);
@@ -434,9 +435,12 @@ final class engine {
         if ($member->status !== 'fallen') {
             return null;
         }
+        $transaction = $DB->start_delegated_transaction();
         $member->status = 'active';
         $DB->set_field(self::T . 'member', 'status', 'active', ['id' => $member->id]);
-        return self::energy($member, self::RECOVERED_ENERGY - (int) $member->energy, $reason, $actorid, 0, $now);
+        $entry = self::energy($member, self::RECOVERED_ENERGY - (int) $member->energy, $reason, $actorid, 0, $now);
+        $transaction->allow_commit();
+        return $entry;
     }
 
     /**
@@ -518,11 +522,10 @@ final class engine {
             return;
         }
         if ($member) {
-            $DB->execute(
-                'UPDATE {' . self::T . 'member} SET renown = renown + ?, timemodified = ? WHERE id = ?',
-                [$amount, $now, $member->id]
-            );
-            $member->renown += $amount;
+            // Like the saber, renown does not go below zero when something is undone.
+            $renown = max(0, (int) $DB->get_field(self::T . 'member', 'renown', ['id' => $member->id]) + $amount);
+            $DB->update_record(self::T . 'member', (object) ['id' => $member->id, 'renown' => $renown, 'timemodified' => $now]);
+            $member->renown = $renown;
         }
         $char = $DB->get_record(self::T . 'char', ['id' => $charid], 'id, saber', MUST_EXIST);
         $saber = max(0, $char->saber + $amount);

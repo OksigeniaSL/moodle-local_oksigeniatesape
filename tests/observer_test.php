@@ -143,6 +143,22 @@ final class observer_test extends \advanced_testcase {
         $this->assertFalse($DB->record_exists(self::T . 'challenge', ['cmid' => $w->page1->cmid]));
     }
 
+    public function test_deleted_user_takes_their_character_with_them(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $w = $this->make_course();
+        $teacher = $this->getDataGenerator()->create_and_enrol($w->course, 'editingteacher');
+        $char = characters::create($w->student->id, 'sage', 'f');
+        $member = \local_oksigeniatesape\local\engine::member($char, $w->course->id);
+        \local_oksigeniatesape\local\engine::saber($member, 10, 'manual', $teacher->id);
+        delete_user($teacher);
+        $this->assertFalse($DB->record_exists(self::T . 'ledger', ['actorid' => $teacher->id]));
+        delete_user($w->student);
+        $this->assertFalse($DB->record_exists(self::T . 'char', ['id' => $char->id]));
+        $this->assertFalse($DB->record_exists(self::T . 'member', ['charid' => $char->id]));
+        $this->assertFalse($DB->record_exists(self::T . 'ledger', ['charid' => $char->id]));
+    }
+
     public function test_deleted_course_takes_its_game_with_it(): void {
         global $DB;
         $this->resetAfterTest();

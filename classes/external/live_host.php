@@ -21,6 +21,7 @@ use core_external\external_function_parameters;
 use core_external\external_single_structure;
 use core_external\external_value;
 use local_oksigeniatesape\local\live;
+use local_oksigeniatesape\local\regions;
 
 /**
  * The battle on the class screen: open it, the next question, show the answer, mark the teams that answered aloud,
@@ -48,6 +49,7 @@ final class live_host extends external_api {
             'sceneid' => new external_value(PARAM_INT, 'startvote: the scene the class plays', VALUE_DEFAULT, 0),
             'text' => new external_value(PARAM_TEXT, 'vote: what the scene asks', VALUE_DEFAULT, ''),
             'options' => new external_value(PARAM_RAW, 'vote: the options, in JSON', VALUE_DEFAULT, '[]'),
+            'round' => new external_value(PARAM_INT, 'next and reveal: round on the class screen (-1: any)', VALUE_DEFAULT, -1),
         ]);
     }
 
@@ -64,6 +66,7 @@ final class live_host extends external_api {
      * @param int $sceneid
      * @param string $text
      * @param string $options
+     * @param int $round
      * @return array
      */
     public static function execute(
@@ -76,7 +79,8 @@ final class live_host extends external_api {
         bool $right = false,
         int $sceneid = 0,
         string $text = '',
-        string $options = '[]'
+        string $options = '[]',
+        int $round = -1
     ): array {
         global $USER;
         $params = self::validate_parameters(self::execute_parameters(), [
@@ -90,12 +94,42 @@ final class live_host extends external_api {
             'sceneid' => $sceneid,
             'text' => $text,
             'options' => $options,
+            'round' => $round,
         ]);
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
         require_capability('local/oksigeniatesape:runclassscreen', $context);
         $courseid = $params['courseid'];
         $now = time();
+        if ($params['action'] === 'state') {
+            $live = live::recent($courseid, $now);
+            if (!$live) {
+                return [];
+            }
+            if (!$live->timeend) {
+                live::heartbeat($live, $now);
+            }
+            return ['live' => live::board_view($live, $now)];
+        }
+        if (!regions::enabled($courseid)) {
+            throw new \moodle_exception('gameoff', 'local_oksigeniatesape');
+        }
+        $userid = (int) $USER->id;
+        return live::locked($courseid, fn() => self::act($params, $context, $userid, $now));
+    }
+
+    /**
+     * Does an action of the class screen, with the session read again inside the lock.
+     *
+     * @param array $params
+     * @param \context_course $context
+     * @param int $userid
+     * @param int $now
+     * @return array
+     */
+    private static function act(array $params, \context_course $context, int $userid, int $now): array {
+        $courseid = $params['courseid'];
+        $from = $params['round'] >= 0 ? $params['round'] : null;
         if ($params['action'] === 'start') {
             $live = live::start($courseid, $params['mode'], $params['count'], $params['secs'], $now);
             return ['live' => live::board_view($live, $now)];
@@ -104,24 +138,16 @@ final class live_host extends external_api {
             $live = live::start_vote($courseid, $params['sceneid'], $now);
             return ['live' => live::board_view($live, $now)];
         }
-        $live = $params['action'] === 'state' ? live::recent($courseid, $now) : live::current($courseid, $now);
+        $live = live::current($courseid, $now);
         if (!$live) {
-            if ($params['action'] !== 'state') {
-                throw new \moodle_exception('nobattle', 'local_oksigeniatesape');
-            }
-            return [];
+            throw new \moodle_exception('nobattle', 'local_oksigeniatesape');
         }
         switch ($params['action']) {
-            case 'state':
-                if (!$live->timeend) {
-                    live::heartbeat($live, $now);
-                }
-                break;
             case 'next':
-                $live = live::next($live, $now);
+                $live = live::next($live, $now, $from);
                 break;
             case 'reveal':
-                $live = live::reveal($live, $now);
+                $live = live::reveal($live, $now, $from);
                 break;
             case 'mark':
                 require_capability('local/oksigeniatesape:award', $context);
@@ -129,7 +155,7 @@ final class live_host extends external_api {
                 break;
             case 'finish':
                 require_capability('local/oksigeniatesape:award', $context);
-                $live = live::finish($live, (int) $USER->id, $now);
+                $live = live::finish($live, $userid, $now);
                 break;
             case 'vote':
                 $list = json_decode($params['options'], true);

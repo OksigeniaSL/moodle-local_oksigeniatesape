@@ -94,8 +94,24 @@
    * @return {Promise}
    */
   function host(action, extra) {
+    if (action !== 'state') {
+      // One action at a time: a second tap while the first is on its way would act twice.
+      if (state.hosting) {
+        return Promise.resolve();
+      }
+      state.hosting = true;
+      clearTimeout(state.autotimer);
+      app.querySelectorAll('.battle-board button').forEach(function(b) {
+        if (!b.hasAttribute('data-full')) {
+          b.disabled = true;
+        }
+      });
+    }
     clearTimeout(state.timer);
     return T.api('live_host', Object.assign({courseid: cfg.courseid, action: action}, extra || {})).then(function(r) {
+      if (action !== 'state') {
+        state.hosting = false;
+      }
       state.live = r.live || null;
       if (battling()) {
         drawBattle();
@@ -104,7 +120,11 @@
       }
     }).catch(function(e) {
       if (action !== 'state') {
+        state.hosting = false;
         T.toast(esc(e.message), true);
+        if (battling()) {
+          drawBattle();
+        }
       }
     }).then(schedule);
   }
@@ -198,10 +218,10 @@
     };
     on('[data-full]', fullscreen);
     on('[data-battlenext]', function() {
-      host('next');
+      host('next', {round: l.round});
     });
     on('[data-battlereveal]', function() {
-      host('reveal');
+      host('reveal', {round: l.round});
     });
     on('[data-battlefinish]', function() {
       host('finish');
@@ -219,8 +239,9 @@
     var done = l.round && !l.revealed && !l.outcome && (!l.open || (l.mode === 'phones' && l.joined && l.answered >= l.joined));
     if (done && state.auto !== l.id * 100 + l.round) {
       state.auto = l.id * 100 + l.round;
-      setTimeout(function() {
-        host('reveal');
+      clearTimeout(state.autotimer);
+      state.autotimer = setTimeout(function() {
+        host('reveal', {round: l.round});
       }, 900);
     }
   }
@@ -710,8 +731,16 @@
       render();
     });
     on('[data-give]', function(el) {
+      // A second tap while the first is on its way would give it twice.
+      if (state.giving) {
+        return;
+      }
       var p = el.dataset.give.split(':');
       var ids = Object.keys(state.sel).map(Number);
+      state.giving = true;
+      app.querySelectorAll('[data-give]').forEach(function(b) {
+        b.disabled = true;
+      });
       state.busy = true;
       T.api('award', {courseid: cfg.courseid, userids: ids, resource: p[0], amount: +p[1]}).then(function(results) {
         var given = results.filter(function(r) {
@@ -723,6 +752,7 @@
         T.toast(esc(e.message), true);
       }).then(function() {
         state.busy = false;
+        state.giving = false;
         return load(false);
       });
     });

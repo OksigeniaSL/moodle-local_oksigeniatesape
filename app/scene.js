@@ -403,6 +403,8 @@
                 draw();
               };
             } else {
+              // That group is not it: it stays off until the next item.
+              b.disabled = true;
               out.innerHTML = '<div class="conseq bad">' + esc(tx((it.feedback && it.feedback[bin]) || t('app_notthere'))) +
                 '</div>';
               var cur = body.querySelector('[data-cur]');
@@ -447,6 +449,8 @@
               var stuck = n.stuck || {};
               var msg = stuck[s.id + '-antes-de-' + expected.id] || stuck.default || t('app_stuck');
               body.querySelector('[data-out]').innerHTML = '<div class="conseq bad">' + esc(tx(msg)) + '</div>';
+              // Not this step yet: it stays off until the right one is in place.
+              b.disabled = true;
               b.classList.remove('shake');
               void b.offsetWidth;
               b.classList.add('shake');
@@ -599,6 +603,15 @@
           };
         }
       }).catch(function(e) {
+        if (!e.network) {
+          // The server did not take what was played: sending it again would not help, playing it again does.
+          var tangled = show('<p class="scene-text">' + esc(t('app_scene_tangled')) + '</p><div class="actions">' +
+            '<button class="btn btn-main" data-focus data-restart>' + esc(t('app_scene_restart')) + '</button></div>');
+          tangled.querySelector('[data-restart]').onclick = function() {
+            start(run.from);
+          };
+          return;
+        }
         var body = show('<p class="scene-text">' + esc(t('app_error')) + '</p><p class="help">' + esc(e.message) + '</p>' +
           '<div class="actions"><button class="btn btn-main" data-again>' + esc(t('app_retry')) + '</button></div>');
         body.querySelector('[data-again]').onclick = function() {

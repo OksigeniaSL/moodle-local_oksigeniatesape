@@ -53,13 +53,26 @@
   T.api = function(name, args) {
     var url = cfg.wwwroot + '/lib/ajax/service.php?sesskey=' + encodeURIComponent(cfg.sesskey) +
       '&info=local_oksigeniatesape_' + name;
+    // Errors say whether the server answered (errorcode) or did not (network), so that queues know what to retry.
+    var offline = function() {
+      var err = new Error(T.t('app_error'));
+      err.network = true;
+      return err;
+    };
     return fetch(url, {
       method: 'POST',
       credentials: 'same-origin',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify([{index: 0, methodname: 'local_oksigeniatesape_' + name, args: args || {}}])
+    }).catch(function() {
+      throw offline();
     }).then(function(response) {
-      return response.json();
+      if (!response.ok) {
+        throw offline();
+      }
+      return response.json().catch(function() {
+        throw offline();
+      });
     }).then(function(data) {
       var result = Array.isArray(data) ? data[0] : data;
       if (!result || result.error) {
@@ -67,7 +80,9 @@
         if (e.errorcode === 'servicerequireslogin' || e.errorcode === 'invalidsesskey') {
           window.location.reload();
         }
-        throw new Error(e.message || T.t('app_error'));
+        var err = new Error(e.message || T.t('app_error'));
+        err.errorcode = e.errorcode || 'error';
+        throw err;
       }
       return result.data;
     });
