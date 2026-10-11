@@ -473,6 +473,26 @@
         <INDEX NAME="courseid-status" UNIQUE="false" FIELDS="courseid, status"/>
       </INDEXES>
     </TABLE>
+    <TABLE NAME="local_oksigeniatesape_daily" COMMENT="The page of the day: the question the creature asked each student each day, and how it went.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="charid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="daystart" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Start of the day, in the time zone of the region"/>
+        <FIELD NAME="question" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false" COMMENT="Id of the question of the mission"/>
+        <FIELD NAME="answer" TYPE="int" LENGTH="4" NOTNULL="true" SEQUENCE="false" COMMENT="Option chosen, as shown"/>
+        <FIELD NAME="success" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="charid" TYPE="foreign" FIELDS="charid" REFTABLE="local_oksigeniatesape_char" REFFIELDS="id"/>
+        <KEY NAME="courseid" TYPE="foreign" FIELDS="courseid" REFTABLE="course" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="charid-courseid-daystart" UNIQUE="true" FIELDS="charid, courseid, daystart"/>
+      </INDEXES>
+    </TABLE>
     <TABLE NAME="local_oksigeniatesape_nextclass" COMMENT="Plans for the next class made by the AI of the site from what confuses the class. No personal data.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>

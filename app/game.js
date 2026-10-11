@@ -614,11 +614,61 @@
     }).length;
     return '<div class="mission"><div class="mission-head"><div><div class="kicker">' + esc(m.subtitle) + '</div><h2>' +
       esc(m.title) + '</h2></div><div class="tally"><span>' + T.icon('lantern') + ' ' + lit + '/' + m.chapters.length +
-      '</span><span>' + T.icon('log') + ' ' + m.pages.length + '/' + m.pagecount + '</span></div></div>' +
+      '</span><span>' + T.icon('log') + ' ' + m.pages.length + '/' + m.pagecount + '</span></div></div>' + pageCard() +
       '<div class="mission-grid">' + missionMap(m) + chapterPanel(m, chapter) + '</div></div>';
   }
 
+  /**
+   * The page of the day: the creature asks for a quick question of what the student has played; answered right, it
+   * eats it and gives breath. Three days in a row and it glows.
+   *
+   * @return {string}
+   */
+  function pageCard() {
+    var p = state.world.page;
+    var c = state.world.character;
+    if (!p) {
+      return '';
+    }
+    var name = creatureName(c);
+    var glow = p.streak >= p.glow;
+    var title = !p.answered ? t('app_page_hungry', name) : p.right ? t('app_page_fed', name) : t('app_page_missed', name);
+    var note = glow ? t('app_page_glow', {name: name, days: p.streak}) : p.streak > 1 ? t('app_page_streak', p.streak) : '';
+    var options = p.question.options.map(function(o, i) {
+      var cls = 'opt';
+      if (p.answered) {
+        cls += i === p.correct ? ' right' : i === p.mine ? ' wrong' : '';
+      }
+      return '<button type="button" class="' + cls + '" data-page="' + i + '"' + (p.answered ? ' disabled' : '') + '>' +
+        esc(o) + '</button>';
+    }).join('');
+    var after = '';
+    if (p.answered) {
+      after = (p.why ? '<p class="help">' + esc(p.why) + '</p>' : '') + '<p class="conseq ' + (p.right ? 'good' : '') + '">' +
+        '<span class="what">' + esc(p.right ? t('app_page_breath', p.breath) : t('app_page_tomorrow')) + '</span></p>';
+    }
+    return '<section class="card page-card' + (glow ? ' glow' : '') + '"><div class="page-head">' +
+      T.creature(c.creature, c.creaturestage) + '<div><b>' + esc(title) + '</b>' + (note ? '<small>' + esc(note) +
+      '</small>' : '') + (!p.answered ? '<small>' + esc(t('app_page_help', {name: name, breath: p.breath})) + '</small>' :
+      '') + '</div></div><p class="page-q">' + esc(p.question.text) + '</p><div class="opts">' + options + '</div>' + after +
+      '</section>';
+  }
+
   function bindWorld() {
+    app.querySelectorAll('[data-page]:not([disabled])').forEach(function(b) {
+      b.onclick = function() {
+        app.querySelectorAll('[data-page]').forEach(function(o) {
+          o.disabled = true;
+        });
+        T.api('answer_page', {courseid: cfg.courseid, answer: Number(b.dataset.page)}).then(function(w) {
+          state.world = w;
+          world();
+        }).catch(function(e) {
+          T.toast(esc(e.message), true);
+          world();
+        });
+      };
+    });
     var begin = app.querySelector('[data-begin]');
     if (begin) {
       begin.onclick = function() {
@@ -978,7 +1028,8 @@
         '</button></div></div></section>';
     }
     var pct = c.levelneeded ? Math.round(100 * c.levelinto / c.levelneeded) : 100;
-    var creature = c.creature ? '<div class="creature-box">' + T.creature(c.creature, c.creaturestage) + '<b>' +
+    var glow = w.page && w.page.streak >= w.page.glow ? ' glow' : '';
+    var creature = c.creature ? '<div class="creature-box' + glow + '">' + T.creature(c.creature, c.creaturestage) + '<b>' +
       esc(creatureName(c)) + '</b><small>' + esc(t('app_creaturestage', c.creaturestage)) + '</small></div>' : '';
     return '<section class="card sheet"><div class="sheet-art">' + avatarOf(c, title(c)) + creature + '</div><div class="stats"><h2>' + esc(myName()) +
       '</h2><p style="color:var(--text-soft)">' + esc(title(c)) + ' · ' + esc(t('app_stage', c.stage)) + '</p>' +
@@ -996,7 +1047,38 @@
       '</button><a class="btn btn-soft" href="' + esc(cfg.courseurl) + '">' + esc(t('app_exit')) + '</a></div></div>' +
       '</section>' + (w.hascoat && c.creature ? '<section class="card no-print" style="margin-top:16px"><h2>' +
       esc(t('app_coat_title', creatureName(c))) + '</h2><p class="help-soft">' + esc(t('app_coat_help')) + '</p>' +
-      T.coatPicker(w, function() {}).html + '</section>' : '') + ideasCard();
+      T.coatPicker(w, function() {}).html + '</section>' : '') + namesCard() + ideasCard();
+  }
+
+  /**
+   * The names the student can give: their hero name, where the course allows it, and the name of their creature. From
+   * the list it counts at once; their own waits for a teacher.
+   *
+   * @return {string}
+   */
+  function namesCard() {
+    var w = state.world;
+    var c = w.character;
+    var n = w.names;
+    if (!n || (!n.heroes && !c.creature)) {
+      return '';
+    }
+    function part(what, title, current, options, pending) {
+      return '<div class="names-part"><h3>' + esc(title) + '</h3><p class="help-soft">' + esc(current ?
+        t('app_name_now', current) : t('app_hero_none')) + '</p><p><b>' + esc(t('app_name_pick')) + '</b></p>' +
+        '<div class="chips">' + options.map(function(o, i) {
+          return '<button type="button" class="chip" data-name="' + what + ':' + i + '" aria-pressed="' + (o === current) +
+            '">' + esc(o) + '</button>';
+        }).join('') + '</div>' + (n.own ? '<label class="names-own"><span>' + esc(t('app_name_own')) + '</span><span ' +
+        'class="row"><input type="text" maxlength="20" data-ownname="' + what + '"><button type="button" class="btn ' +
+        'btn-soft" data-sendname="' + what + '">' + esc(t('app_name_send')) + '</button></span></label><small ' +
+        'class="help-soft">' + esc(t('app_name_own_help')) + '</small>' : '') + (pending ? '<p class="tag todo">' +
+        esc(t('app_name_pending', pending)) + '</p>' : '') + '</div>';
+    }
+    return '<section class="card no-print names-card" style="margin-top:16px"><h2>' + esc(t('app_names')) + '</h2>' +
+      (n.heroes ? part('hero', t('app_hero_name'), c.nickname, n.hero, n.heropending) : '') +
+      (c.creature ? part('creature', t('app_creature_name'), creatureName(c), n.creature, n.creaturepending) : '') +
+      '</section>';
   }
 
   /**
@@ -1031,6 +1113,35 @@
 
   function bindMe() {
     var c = state.world.character;
+    var saveName = function(what, option, own) {
+      app.querySelectorAll('[data-name], [data-sendname]').forEach(function(o) {
+        o.disabled = true;
+      });
+      T.api('set_name', {courseid: cfg.courseid, what: what, option: option, own: own || ''}).then(function(w) {
+        state.world = w;
+        T.toast(esc(t(option < 0 ? 'app_name_sent' : 'app_name_saved')));
+        world();
+      }).catch(function(e) {
+        T.toast(esc(e.message), true);
+        world();
+      });
+    };
+    app.querySelectorAll('[data-name]').forEach(function(b) {
+      b.onclick = function() {
+        var parts = b.dataset.name.split(':');
+        if (b.getAttribute('aria-pressed') !== 'true') {
+          saveName(parts[0], Number(parts[1]));
+        }
+      };
+    });
+    app.querySelectorAll('[data-sendname]').forEach(function(b) {
+      b.onclick = function() {
+        var input = app.querySelector('[data-ownname="' + b.dataset.sendname + '"]');
+        if (input && input.value.trim()) {
+          saveName(b.dataset.sendname, -1, input.value.trim());
+        }
+      };
+    });
     var edit = app.querySelector('[data-edit]');
     var send = app.querySelector('[data-sendidea]');
     if (send) {

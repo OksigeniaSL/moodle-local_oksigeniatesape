@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.18.0 (2026-10-12)
+
+- **The page of the day**: each day the creature asks for a page, a quick question from the chapters the student has
+  played (those answered wrong come back first). Answered right, the creature eats it and gives 1 breath, never saber;
+  answered wrong, it shows why and asks again tomorrow. One a day. Three days in a row right and the creature glows.
+- **Names**: the student can rename their creature from a list made for it (the name it was born with comes first),
+  and, where the course allows hero names, choose one from a list of their own («Lince de Plata»); a hero name is
+  never repeated in a class. Where the course allows own names, the student can write one for each: it waits in the
+  teacher's panel («Names to approve»), and nobody else sees it until a teacher approves it. The hero name setting of
+  the panel now works.
+
 ## 0.17.0 (2026-10-11)
 
 - **Team commitments**: in each chapter, each member of a team chooses one of the commitments the mission brings

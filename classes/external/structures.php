@@ -128,6 +128,19 @@ final class structures {
     }
 
     /**
+     * Own names waiting for a teacher.
+     *
+     * @return external_multiple_structure
+     */
+    public static function names_pending(): external_multiple_structure {
+        return new external_multiple_structure(new external_single_structure([
+            'userid' => new external_value(PARAM_INT, 'Student'),
+            'what' => new external_value(PARAM_ALPHA, 'hero or creature'),
+            'name' => new external_value(PARAM_TEXT, 'The name proposed'),
+        ]));
+    }
+
+    /**
      * The commitments of a team in the chapter the class is in, for one of its members.
      *
      * @param int $required

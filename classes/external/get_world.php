@@ -91,6 +91,28 @@ final class get_world extends external_api {
                 'carer' => new external_value(PARAM_BOOL, 'The student sees who is low on energy (healer, protector)'),
                 'pacts' => structures::team_pacts(),
             ], 'Team', VALUE_OPTIONAL),
+            'names' => new external_single_structure([
+                'heroes' => new external_value(PARAM_BOOL, 'Hero names allowed in the course'),
+                'own' => new external_value(PARAM_BOOL, 'Own names allowed, read by a teacher first'),
+                'hero' => new external_multiple_structure(new external_value(PARAM_TEXT, 'Hero name offered')),
+                'creature' => new external_multiple_structure(new external_value(PARAM_TEXT, 'Creature name offered')),
+                'heropending' => new external_value(PARAM_TEXT, 'Own hero name waiting for a teacher'),
+                'creaturepending' => new external_value(PARAM_TEXT, 'Own creature name waiting for a teacher'),
+            ], 'Names the student can give', VALUE_OPTIONAL),
+            'page' => new external_single_structure([
+                'question' => new external_single_structure([
+                    'text' => new external_value(PARAM_TEXT, 'Question'),
+                    'options' => new external_multiple_structure(new external_value(PARAM_TEXT, 'Option')),
+                ]),
+                'answered' => new external_value(PARAM_BOOL, 'Answered today'),
+                'right' => new external_value(PARAM_BOOL, 'Answered right'),
+                'mine' => new external_value(PARAM_INT, 'Option chosen (-1: none yet)'),
+                'correct' => new external_value(PARAM_INT, 'Right option, once answered', VALUE_OPTIONAL),
+                'why' => new external_value(PARAM_TEXT, 'Why, once answered', VALUE_OPTIONAL),
+                'breath' => new external_value(PARAM_INT, 'Breath it gives answered right'),
+                'streak' => new external_value(PARAM_INT, 'Days in a row answered right'),
+                'glow' => new external_value(PARAM_INT, 'Days in a row for the creature to glow'),
+            ], 'The page of the day the creature asks for', VALUE_OPTIONAL),
             'challenges' => new external_multiple_structure(new external_single_structure([
                 'id' => new external_value(PARAM_INT, 'Challenge'),
                 'name' => new external_value(PARAM_TEXT, 'Name'),

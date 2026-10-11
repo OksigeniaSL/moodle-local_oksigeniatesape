@@ -288,6 +288,31 @@
       Math.round(100 * m.breath / state.data.breathmax) + '%"></i></span></span>' : '') + '</li>';
   }
 
+  /**
+   * Own names the students wrote for their hero or their creature: nobody else sees them until a teacher takes them.
+   *
+   * @return {string}
+   */
+  function namesCard() {
+    var d = state.data;
+    if (!d.namespending || !d.namespending.length) {
+      return '';
+    }
+    var names = {};
+    d.students.forEach(function(s) {
+      names[s.userid] = s.fullname;
+    });
+    var marks = can('award');
+    return '<section class="card" style="margin-bottom:16px"><h2>' + esc(t('teach_names')) + '</h2><p style="color:' +
+      'var(--text-soft)">' + esc(t('teach_names_help')) + '</p><ul class="list">' + d.namespending.map(function(x) {
+        var key = x.userid + ':' + x.what;
+        return '<li class="item"><span class="grow"><b>' + esc(x.name) + '</b><small>' + esc(names[x.userid] || '') + ' · ' +
+          esc(t('teach_name_' + x.what)) + '</small></span>' + (marks ? '<span class="row-actions"><button class="chip" ' +
+          'type="button" data-namedecide="' + key + ':1">' + esc(t('teach_name_ok')) + '</button><button class="chip" ' +
+          'type="button" data-namedecide="' + key + ':0">' + esc(t('teach_name_no')) + '</button></span>' : '') + '</li>';
+      }).join('') + '</ul></section>';
+  }
+
   function tabClass() {
     var d = state.data;
     var teams = '<div class="pills" style="justify-content:flex-start;margin-bottom:12px"><button class="chip" ' +
@@ -297,11 +322,27 @@
           '</button>';
       }).join('') + '</div>';
     var shown = studentsShown();
-    var el = content(teamsCard() + '<section class="card"><div class="section-title"><h2>' + esc(t('teach_tab_class')) +
+    var el = content(namesCard() + teamsCard() + '<section class="card"><div class="section-title"><h2>' +
+      esc(t('teach_tab_class')) +
       '</h2><button class="btn btn-soft" data-all>' + esc(t('teach_selectall')) + '</button></div>' + teams +
       (shown.length ? '<ul class="list">' + shown.map(studentCard).join('') + '</ul>' : '<p class="empty">' +
       esc(t('teach_nostudents')) + '</p>') + '</section><div id="actionbar"></div>');
     bindMakeTeams(el);
+    el.querySelectorAll('[data-namedecide]').forEach(function(b) {
+      b.onclick = function() {
+        var parts = b.dataset.namedecide.split(':');
+        el.querySelectorAll('[data-namedecide]').forEach(function(o) {
+          o.disabled = true;
+        });
+        T.api('decide_name', {courseid: cfg.courseid, userid: Number(parts[0]), what: parts[1],
+          approve: parts[2] === '1'}).then(function() {
+          return load(true);
+        }).catch(function(e) {
+          T.toast(esc(e.message), true);
+          render();
+        });
+      };
+    });
     el.querySelectorAll('[data-team]').forEach(function(b) {
       b.onclick = function() {
         state.team = Number(b.dataset.team);
@@ -1106,7 +1147,8 @@
           (x.status === 'kept') + '">' + esc(t('teach_pact_kept')) + '</button><button class="chip" type="button" ' +
           'data-pactmark="' + x.id + ':broken" aria-pressed="' + (x.status === 'broken') + '">' +
           esc(t('teach_pact_broken')) + '</button></span>' : '') + '</li>';
-      }).join('') + '</ul>' + (missing.length ? '<p class="help-soft">' + esc(t('teach_pacts_missing', missing.join(', '))) + '</p>' : '');
+      }).join('') + '</ul>' + (missing.length ? '<p class="help-soft">' + esc(t('teach_pacts_missing', missing.join(', '))) +
+        '</p>' : '');
     }).join('');
     return '<section class="card pacts-teach" style="margin-bottom:16px"><h2>' + esc(t('teach_pacts')) + '</h2><p ' +
       'style="color:var(--text-soft)">' + esc(t('teach_pacts_help', {breath: p.breath, loss: p.loss})) + '</p><p><b>' +

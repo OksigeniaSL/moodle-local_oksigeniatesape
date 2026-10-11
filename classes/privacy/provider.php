@@ -46,7 +46,7 @@ class provider implements
 
     /** @var string[] Tables of a character in a course, all with charid and courseid. */
     public const COURSE_TABLES = ['member', 'ledger', 'inventory', 'sceneattempt', 'minigame', 'validation', 'found', 'idea',
-        'livein', 'livetoken', 'pact'];
+        'livein', 'livetoken', 'pact', 'daily'];
 
     /**
      * What is stored.
@@ -74,6 +74,7 @@ class provider implements
             'livetoken' => ['liveid', 'courseid', 'charid', 'round', 'team', 'kind', 'timecreated'],
             'pact' => ['courseid', 'charid', 'missionid', 'chapter', 'groupid', 'text', 'status', 'decidedby', 'timecreated',
                 'timedecided'],
+            'daily' => ['charid', 'courseid', 'daystart', 'question', 'answer', 'success', 'timecreated'],
         ];
         foreach ($fields as $table => $names) {
             $described = [];
@@ -401,6 +402,17 @@ class provider implements
                     'token' => $t->kind,
                     'timecreated' => transform::datetime($t->timecreated),
                 ], $tokens)),
+            ]);
+        }
+        $pages = $DB->get_records(self::T . 'daily', ['charid' => $charid, 'courseid' => $courseid], 'daystart');
+        if ($pages) {
+            $writer->export_data(self::path('dailypages'), (object) [
+                'pages' => array_values(array_map(fn($p) => [
+                    'day' => transform::date($p->daystart),
+                    'question' => $p->question,
+                    'answer' => (int) $p->answer,
+                    'right' => (bool) $p->success,
+                ], $pages)),
             ]);
         }
         $pacts = $DB->get_records(self::T . 'pact', ['charid' => $charid, 'courseid' => $courseid], 'timecreated');

@@ -3167,3 +3167,98 @@ body.in-battle {
   margin: 16px 0 6px;
   font-size: 1.05rem;
 }
+
+/* ---------- The page of the day ---------- */
+
+.page-card {
+  margin: 12px 0 16px;
+}
+
+.page-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.page-head .creature {
+  width: 72px;
+  height: 72px;
+  flex: none;
+}
+
+.page-head b {
+  display: block;
+  font-size: 18px;
+}
+
+.page-head small {
+  display: block;
+  color: var(--text-soft);
+}
+
+.page-q {
+  margin: 14px 0 4px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.opt.right {
+  border-color: #6fd08c;
+  background: rgba(111, 208, 140, .16);
+}
+
+.opt.wrong {
+  border-color: #e98a8a;
+  background: rgba(233, 138, 138, .12);
+}
+
+/* Three days in a row: the creature glows. */
+.glow .creature {
+  animation: tesape-glow 2.4s ease-in-out infinite;
+}
+
+@keyframes tesape-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 4px rgba(255, 200, 87, .45));
+  }
+
+  50% {
+    filter: drop-shadow(0 0 14px rgba(255, 200, 87, .95));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glow .creature {
+    animation: none;
+    filter: drop-shadow(0 0 10px rgba(255, 200, 87, .8));
+  }
+}
+
+/* ---------- Names ---------- */
+
+.names-part + .names-part {
+  margin-top: 18px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.names-own {
+  display: block;
+  margin-top: 12px;
+}
+
+.names-own .row {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.names-own input {
+  flex: 1;
+  min-width: 0;
+}

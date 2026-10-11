@@ -92,6 +92,18 @@ final class view {
         $world['activities'] = activities::for_student($courseid, $userid, $member);
         $world['ideas'] = ideas::mine($courseid, (int) $char->id);
         $world['hascoat'] = minigames::has_coat($char, $courseid);
+        $world['names'] = [
+            'heroes' => (bool) $region->nicknames,
+            'own' => (int) $region->nicknames === 2,
+            'hero' => $region->nicknames ? names::hero_options($char) : [],
+            'creature' => $char->creature ? names::creature_options($char) : [],
+            'heropending' => (string) $char->nicknamepending,
+            'creaturepending' => (string) ((json_decode((string) $char->creature, true) ?: [])['pending'] ?? ''),
+        ];
+        $page = daily::today($char, $member);
+        if ($page) {
+            $world['page'] = $page;
+        }
         foreach (classroom::list($courseid) as $challenge) {
             if (!in_array((string) $member->step, explode(',', $challenge->steps), true)) {
                 continue;
@@ -389,6 +401,7 @@ final class view {
             'powerspending' => powers::pending_count($courseid),
             'ideasunread' => ideas::unread($courseid),
             'pactspending' => pacts::pending($courseid),
+            'namespending' => names::pending($courseid),
         ];
         $pacts = pacts::for_teacher($courseid);
         if ($pacts) {
@@ -508,11 +521,19 @@ final class view {
      *
      * @param \stdClass $char
      * @param \stdClass|null $member
-     * @param bool $private With what only the student and the teachers see (why they fell or were paused).
+     * @param bool $private With what only the student and the teachers see (why they fell or were paused, an own name for
+     *     the creature still to be read).
      * @return array
      */
     private static function character(\stdClass $char, ?\stdClass $member, bool $private): array {
         $level = progress::level_progress((int) $char->saber);
+        $creature = (string) $char->creature;
+        if (!$private && $creature !== '') {
+            // An own name for the creature that no teacher has read yet is not for classmates.
+            $traits = json_decode($creature, true) ?: [];
+            unset($traits['pending']);
+            $creature = json_encode($traits);
+        }
         $character = [
             'role' => $char->role,
             'nameform' => $char->nameform,
@@ -526,7 +547,7 @@ final class view {
             'stage' => progress::stage_for_level($level['level']),
             'gems' => (int) $char->gems,
             'creaturestage' => (int) $char->creaturestage,
-            'creature' => (string) $char->creature,
+            'creature' => $creature,
         ];
         if ($member) {
             $character['member'] = [

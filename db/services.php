@@ -193,6 +193,27 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:award',
     ],
+    'local_oksigeniatesape_set_name' => [
+        'classname' => 'local_oksigeniatesape\\external\\set_name',
+        'description' => 'The current student names their hero or their creature.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:play',
+    ],
+    'local_oksigeniatesape_decide_name' => [
+        'classname' => 'local_oksigeniatesape\\external\\decide_name',
+        'description' => 'A teacher takes or turns down the own name a student proposed.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:award',
+    ],
+    'local_oksigeniatesape_answer_page' => [
+        'classname' => 'local_oksigeniatesape\\external\\answer_page',
+        'description' => 'The current student answers the page of the day their creature asks for.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:play',
+    ],
     'local_oksigeniatesape_set_coat' => [
         'classname' => 'local_oksigeniatesape\\external\\set_coat',
         'description' => 'Dresses the creature of the current student with fur, feathers or scales.',
