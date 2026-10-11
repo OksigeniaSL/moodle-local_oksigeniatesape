@@ -244,6 +244,19 @@
     return '';
   }
 
+  /**
+   * The round portrait of the character of a student and, at its foot, the photo, if the student has one.
+   *
+   * @param {Object} s
+   * @return {string}
+   */
+  function faces(s) {
+    var c = s.character;
+    return '<span class="faces">' + (c ? '<span class="face">' + T.avatar({role: c.role, nameform: c.nameform,
+      lineage: c.lineage, look: c.appearance, stage: c.stage, portrait: true}) + '</span>' : '') +
+      (s.picture ? '<img class="photo" src="' + esc(s.picture) + '" alt="">' : '') + '</span>';
+  }
+
   function studentCard(s) {
     var c = s.character;
     var m = c && c.member;
@@ -252,9 +265,7 @@
     return '<li class="item" style="cursor:pointer;' + (sel ? 'border-color:var(--lantern);background:rgba(255,200,87,.1)' :
       '') + '" data-student="' + s.userid + '"><input type="checkbox" aria-label="' + esc(s.fullname) + '" ' +
       (sel ? 'checked' : '') + ' data-check="' + s.userid + '" style="width:22px;height:22px;flex:none">' +
-      '<img src="' + esc(s.picture) + '" alt="" width="44" height="44" style="border-radius:50%;flex:none">' +
-      '<span class="mini" style="width:40px;height:46px">' + (c ? T.avatar({role: c.role, nameform: c.nameform,
-      lineage: c.lineage, look: c.appearance, stage: c.stage}) : '') + '</span><span class="grow"><b>' + esc(s.fullname) +
+      faces(s) + '<span class="grow"><b>' + esc(s.fullname) +
       '</b><small>' + (c ? esc(T.roleName(fam, c.role, c.nameform)) + ' · ' + esc(t('app_level')) + ' ' + c.level +
       (c.nickname ? ' · «' + esc(c.nickname) + '»' : '') : '') + '</small></span>' + badge(s) +
       (m ? '<span class="bars" aria-hidden="true"><span class="meter energy"><i style="width:' +
@@ -408,8 +419,9 @@
     var m = c && c.member;
     var fam = state.data.region.family;
     var html = '<section class="card"><button class="btn btn-soft" data-back>← ' + esc(t('app_back')) + '</button>' +
-      '<div class="sheet" style="margin-top:12px"><div style="text-align:center"><img src="' + esc(s.picture) +
-      '" alt="" width="88" height="88" style="border-radius:50%;border:3px solid var(--lantern)">' + (c ? T.avatar({
+      '<div class="sheet" style="margin-top:12px"><div style="text-align:center">' + (s.picture ? '<img src="' +
+      esc(s.picture) + '" alt="" width="88" height="88" style="border-radius:50%;border:3px solid var(--lantern)">' : '') +
+      (c ? T.avatar({
       role: c.role, nameform: c.nameform, lineage: c.lineage, look: c.appearance, stage: c.stage}) : '') + '</div>' +
       '<div class="stats"><h2>' + esc(s.fullname) + '</h2>';
     if (!c) {
@@ -940,8 +952,8 @@
     var rows = function(list) {
       return list.map(function(s) {
         var v = word[s.userid];
-        return '<li class="item" style="flex-wrap:wrap"><img src="' + esc(s.picture) + '" alt="" width="36" height="36" ' +
-          'style="border-radius:50%"><span class="grow"><b>' + esc(s.fullname) + '</b>' + (v && v.note ? '<small>' +
+        return '<li class="item" style="flex-wrap:wrap">' + faces(s) + '<span class="grow"><b>' + esc(s.fullname) +
+          '</b>' + (v && v.note ? '<small>' +
           esc(v.note) + '</small>' : '') + '</span><span class="pills">' + STATUSES.map(function(st) {
             return '<button class="chip" data-val="' + st + '" data-user="' + s.userid + '" aria-pressed="' +
               (v ? v.status === st : false) + '"' + (s.character ? '' : ' disabled') + '>' + esc(t('teach_short_' + st)) +

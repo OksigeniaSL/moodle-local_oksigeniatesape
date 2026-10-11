@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.2 (2026-10-11)
+
+- Lists show the round portrait of each character instead of a tiny full figure: the team in the game, and the
+  class and the challenges to check in the teacher panel. The photo of the student goes at the foot of the
+  portrait, only when the student has one: the empty picture of Moodle is no longer shown.
+
 ## 0.4.1 (2026-10-10)
 
 - Art packs: the images of characters are looked up by the family of names of the course too (a druid is not a

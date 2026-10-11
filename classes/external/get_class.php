@@ -74,7 +74,7 @@ final class get_class extends external_api {
                 'userid' => new external_value(PARAM_INT, 'User'),
                 'fullname' => new external_value(PARAM_TEXT, 'Full name'),
                 'firstname' => new external_value(PARAM_TEXT, 'First name'),
-                'picture' => new external_value(PARAM_URL, 'Picture'),
+                'picture' => new external_value(PARAM_URL, 'Picture (empty: none)'),
                 'teamid' => new external_value(PARAM_INT, 'Group of the team (0: none)'),
                 'character' => structures::character(VALUE_OPTIONAL),
             ])),

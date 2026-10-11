@@ -507,13 +507,17 @@ final class view {
     }
 
     /**
-     * The address of a user's picture.
+     * The address of a user's picture, empty if the user has none: the teacher sees the portrait of the character
+     * instead of the empty picture of Moodle.
      *
      * @param \stdClass $user
      * @return string
      */
     private static function picture(\stdClass $user): string {
-        global $PAGE;
+        global $CFG, $PAGE;
+        if (empty($user->picture) && empty($CFG->enablegravatar)) {
+            return '';
+        }
         $picture = new \user_picture($user);
         $picture->size = 100;
         return $picture->get_url($PAGE)->out(false);

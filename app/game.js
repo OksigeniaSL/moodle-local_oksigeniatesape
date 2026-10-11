@@ -678,7 +678,7 @@
           var m = c && c.member;
           var tag = m && m.status === 'paused' ? '<span class="tag todo">' + esc(t('app_resting')) + '</span>' :
             m && m.status === 'fallen' ? '<span class="tag notyet">' + esc(t('app_wornout')) + '</span>' : '';
-          return '<li class="item"><span class="mini">' + (c ? avatarOf(c) : '') + '</span><span class="grow"><b>' +
+          return '<li class="item"><span class="face">' + (c ? avatarOf(c, '', true) : '') + '</span><span class="grow"><b>' +
             esc(mate.name) + (mate.me ? ' (' + esc(t('app_you')) + ')' : '') + '</b><small>' +
             (c ? esc(T.roleName(fam, c.role, c.nameform)) + ' · ' + esc(t('app_level')) + ' ' + c.level :
             esc(t('app_nocharacter'))) + '</small></span>' + tag + (m ? '<span class="bars"><span class="meter energy" ' +
