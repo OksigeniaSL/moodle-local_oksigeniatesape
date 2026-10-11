@@ -128,18 +128,20 @@ final class market_test extends \advanced_testcase {
         $w = $this->make_class(0);
         $data = $this->getDataGenerator()->create_module('data', ['course' => $w->course->id]);
         $gen = $this->getDataGenerator()->get_plugin_generator('mod_data');
-        $name = $gen->create_field((object) ['name' => 'Nombre', 'type' => 'text'], $data);
-        $group = $gen->create_field((object) ['name' => 'Grupo', 'type' => 'menu', 'param1' => "Ave\nPlanta"], $data);
-        $chain = $gen->create_field((object) ['name' => 'Cadena', 'type' => 'menu', 'param1' => "Productor\nHerbívoro"], $data);
+        $gen->create_field((object) ['name' => 'Nombre', 'type' => 'text'], $data);
+        $gen->create_field((object) ['name' => 'Grupo', 'type' => 'menu', 'param1' => "Ave\nPlanta"], $data);
+        $gen->create_field((object) ['name' => 'Cadena', 'type' => 'menu', 'param1' => "Productor\nHerbívoro"], $data);
+        $ids = $DB->get_records_menu('data_fields', ['dataid' => $data->id], 'id', 'name, id');
+        $entry = fn(string $name, string $group, string $chain) => [$ids['Nombre'] => $name, $ids['Grupo'] => $group,
+            $ids['Cadena'] => $chain];
         activities::save($w->course->id, (int) $data->cmid, ['saber' => 30]);
         $other = $this->getDataGenerator()->create_and_enrol($w->course, 'student');
         $this->setUser($w->users[0]);
-        $gen->create_entry($data, [$name->field->id => 'Hornero', $group->field->id => 'Ave',
-            $chain->field->id => 'Herbívoro']);
+        $gen->create_entry($data, $entry('Hornero', 'Ave', 'Herbívoro'));
         $this->setUser($w->users[1]);
-        $gen->create_entry($data, [$name->field->id => 'Lapacho', $group->field->id => 'Planta']);
+        $gen->create_entry($data, $entry('Lapacho', 'Planta', ''));
         $this->setUser($other);
-        $gen->create_entry($data, [$name->field->id => 'Yacaré']);
+        $gen->create_entry($data, $entry('Yacaré', '', ''));
         $album = album::for_student($w->course->id, $w->users[0]->id);
         $this->assertSame(['Hornero', 'Lapacho'], array_column($album['cards'], 'name'));
         $this->assertSame([true, false], array_column($album['cards'], 'golden'));
