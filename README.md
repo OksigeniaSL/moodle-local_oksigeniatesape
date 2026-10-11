@@ -51,8 +51,10 @@ privacy come from Moodle, and the game is a full-screen application of its own.
   aloud by teams; each right answer takes life from it, a wrong one takes nothing from anybody, and winning gives saber
   and gems.
 
-The game is ready for **art packs** (`cli/art.php`), and its first pack is nearly done. Next come the scenes voted by
-the class and the printable material.
+- **Scenes with the whole class**: a scene on the class screen where the class decides at each step, with phones or
+  with A, B, C, D cards, and printable material for classes without devices.
+
+The game is ready for **art packs** (`cli/art.php`), and its first pack is nearly done.
 
 ## Requirements
 

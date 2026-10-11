@@ -65,6 +65,8 @@ final class get_board extends external_api {
         return new external_single_structure([
             'cards' => new external_multiple_structure(new external_value(PARAM_ALPHA, 'Card of the deck')),
             'mission' => new external_single_structure([
+                'items' => new external_multiple_structure(new external_value(PARAM_ALPHANUMEXT, 'Item somebody carries')),
+                'roles' => new external_multiple_structure(new external_value(PARAM_ALPHA, 'Role somebody plays')),
                 'code' => new external_value(PARAM_ALPHANUMEXT, 'Mission'),
                 'title' => new external_value(PARAM_TEXT, 'Title'),
                 'skin' => new external_value(PARAM_ALPHANUMEXT, 'Story'),
@@ -75,6 +77,10 @@ final class get_board extends external_api {
                     'x' => new external_value(PARAM_INT, 'Place on the map'),
                     'y' => new external_value(PARAM_INT, 'Place on the map'),
                     'lit' => new external_value(PARAM_BOOL, 'Lantern of the class lit'),
+                    'scenes' => new external_multiple_structure(new external_single_structure([
+                        'id' => new external_value(PARAM_INT, 'Scene'),
+                        'title' => new external_value(PARAM_TEXT, 'Title'),
+                    ])),
                 ])),
             ], 'Mission of the course', VALUE_OPTIONAL),
             'event' => structures::event(),

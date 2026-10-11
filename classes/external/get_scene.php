@@ -63,7 +63,10 @@ final class get_scene extends external_api {
         ]);
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
-        require_capability('local/oksigeniatesape:play', $context);
+        if (!has_capability('local/oksigeniatesape:play', $context)) {
+            // The class screen plays scenes with the whole class.
+            require_capability('local/oksigeniatesape:runclassscreen', $context);
+        }
         $scene = scenes::get($params['courseid'], $params['sceneid']);
         $mission = missions::get($params['courseid']);
         $speakers = [];

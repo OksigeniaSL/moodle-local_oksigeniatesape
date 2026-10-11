@@ -52,8 +52,10 @@ pantalla completa.
 - **La batalla contra el Embrollo**: preguntas de la misión para toda la clase, con los móviles de los alumnos o en
   voz alta por equipos; cada acierto le quita vida, fallar no le quita nada a nadie, y ganar da saber y gemas.
 
-El juego está preparado para **paquetes de arte** (`cli/art.php`), y el primero está casi terminado. Después llegan
-las escenas votadas por la clase y el material imprimible.
+- **Escenas con toda la clase**: una escena en la pantalla de clase donde la clase decide en cada momento, con los
+  móviles o con tarjetas A, B, C, D, y material imprimible para jugar sin dispositivos.
+
+El juego está preparado para **paquetes de arte** (`cli/art.php`), y el primero está casi terminado.
 
 ## Requisitos
 

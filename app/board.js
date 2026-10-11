@@ -20,7 +20,7 @@
   var LETTERS = 'ABCD';
   var CARD_ICON = {calm: 'energy', breeze: 'saber', footprint: 'world', exchange: 'breath'};
   var state = {board: null, cls: null, sel: {}, reveal: false, busy: false, sig: '', live: null, seen: 0, timer: 0,
-    battle: {mode: 'phones', count: 6, secs: 30}, auto: 0, print: ''};
+    battle: {mode: 'phones', count: 6, secs: 30}, auto: 0, print: '', scene: {chapter: 0, mode: 'phones'}};
   var VOTES = [
     {letter: 'A', colour: '#3f6fb5', shape: '<circle cx="50" cy="50" r="44"/>'},
     {letter: 'B', colour: '#2f8f6a', shape: '<path d="M50 4 L96 92 L4 92Z"/>'},
@@ -74,7 +74,7 @@
 
   function battling() {
     var l = state.live;
-    return !!(l && (!l.outcome || state.seen !== l.id));
+    return !!(l && l.kind === 'battle' && (!l.outcome || state.seen !== l.id));
   }
 
   function schedule() {
@@ -409,6 +409,90 @@
       '<button class="btn btn-soft" data-clear>' + esc(t('board_clear')) + '</button></div>';
   }
 
+  /* ---------- A scene played by the whole class ---------- */
+
+  function sceneCard() {
+    var m = state.board.mission;
+    if (!m || !can('award')) {
+      return '';
+    }
+    var sc = state.scene;
+    var chapter = m.chapters.filter(function(ch) {
+      return ch.id === sc.chapter;
+    })[0] || m.chapters[0];
+    return '<section class="card board-scene"><div class="kicker">' + esc(t('board_scene')) + '</div><p class="help-soft">' +
+      esc(t('board_scene_help')) + '</p><div class="battle-options-row"><span class="pills">' + ['phones', 'cards']
+      .map(function(mode) {
+        return '<button class="chip" data-scenemode="' + mode + '" aria-pressed="' + (sc.mode === mode) + '">' +
+          esc(t('board_scene_' + mode)) + '</button>';
+      }).join('') + '</span></div><div class="battle-options-row"><span class="pills">' + m.chapters.map(function(ch) {
+        return '<button class="chip" data-scenechapter="' + ch.id + '" aria-pressed="' + (ch.id === chapter.id) + '">' +
+          esc(ch.name) + '</button>';
+      }).join('') + '</span></div><ul class="list">' + chapter.scenes.map(function(scene) {
+        return '<li class="item"><span class="grow"><b>' + esc(scene.title) + '</b></span><button class="btn btn-main" ' +
+          'data-playscene="' + scene.id + '">' + esc(t('board_scene_play')) + '</button></li>';
+      }).join('') + '</ul></section>';
+  }
+
+  function playScene(sceneid) {
+    var phones = state.scene.mode === 'phones';
+    var m = state.board.mission;
+    var host = function(action, extra) {
+      return T.api('live_host', Object.assign({courseid: cfg.courseid, action: action}, extra || {})).then(function(r) {
+        return r.live || null;
+      });
+    };
+    var classmode = {
+      name: t('board_scene_us'),
+      creature: t('board_scene_creatures'),
+      items: m.items,
+      roles: m.roles,
+      vote: phones ? {
+        open: function(text, labels) {
+          return host('vote', {text: text, options: JSON.stringify(labels)});
+        },
+        state: function() {
+          return host('state');
+        },
+        close: function() {
+          return host('reveal');
+        }
+      } : null,
+      finish: function(events, from) {
+        return T.api('class_scene', {courseid: cfg.courseid, sceneid: sceneid, events: JSON.stringify(events), start: from || '',
+          phones: phones}).then(function(result) {
+          if (result.outcome === 'retry' && phones) {
+            // A new vote for the retry: the phones come in again.
+            return host('startvote', {sceneid: sceneid}).then(function() {
+              return result;
+            });
+          }
+          return result;
+        });
+      }
+    };
+    var world = {family: state.cls.region.family, character: {role: 'sage', creature: '{}'}, items: [], team: null};
+    var go = function() {
+      T.playScene({sceneid: sceneid, world: world, classmode: classmode, onclose: function() {
+        if (phones) {
+          host('state').then(function(live) {
+            if (live && live.kind === 'vote' && !live.outcome) {
+              host('finish');
+            }
+          });
+        }
+        load(false);
+      }});
+    };
+    if (phones) {
+      host('startvote', {sceneid: sceneid}).then(go).catch(function(e) {
+        T.toast(esc(e.message), true);
+      });
+    } else {
+      go();
+    }
+  }
+
   /* ---------- Printable material ---------- */
 
   function printCard() {
@@ -496,9 +580,8 @@
       '</a>' : '') + '<a class="btn btn-soft" href="' + esc(cfg.wwwroot + '/local/oksigeniatesape/teach.php?id=' +
       cfg.courseid) + '">' + esc(t('board_panel')) + '</a><button class="btn btn-soft" data-full>' +
       esc(t('board_fullscreen')) + '</button></div></header>' +
-      '<div class="board-grid">' + map() + '<div class="board-side">' + eventCard() + battleCard() + teams() + printCard() +
-      '</div></div>' +
-      bar() + '</div>';
+      '<div class="board-grid">' + map() + '<div class="board-side">' + eventCard() + battleCard() + sceneCard() + teams() +
+      printCard() + '</div></div>' + bar() + '</div>';
     bind();
   }
 
@@ -515,6 +598,17 @@
       var p = el.dataset.battle.split(':');
       state.battle[p[0]] = p[0] === 'mode' ? p[1] : +p[1];
       render();
+    });
+    on('[data-scenemode]', function(el) {
+      state.scene.mode = el.dataset.scenemode;
+      render();
+    });
+    on('[data-scenechapter]', function(el) {
+      state.scene.chapter = +el.dataset.scenechapter;
+      render();
+    });
+    on('[data-playscene]', function(el) {
+      playScene(+el.dataset.playscene);
     });
     on('[data-print]', function(el) {
       state.print = el.dataset.print;

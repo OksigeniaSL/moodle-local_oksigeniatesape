@@ -26,7 +26,7 @@ namespace local_oksigeniatesape\local;
  */
 final class page {
     /** @var array Scripts of each app, after the core. */
-    private const SCRIPTS = ['game' => ['scene', 'nest', 'game', 'battle'], 'teach' => ['teach'], 'board' => ['board']];
+    private const SCRIPTS = ['game' => ['scene', 'nest', 'game', 'battle'], 'teach' => ['teach'], 'board' => ['scene', 'board']];
 
     /** @var string[] Prefixes of the language strings the client uses. */
     private const PREFIXES = ['app_', 'teach_', 'board_', 'event_', 'role_', 'roledesc_', 'lineage_'];

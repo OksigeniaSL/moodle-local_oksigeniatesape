@@ -258,4 +258,11 @@ $functions = [
         'readonlysession' => true,
         'capabilities' => 'local/oksigeniatesape:play',
     ],
+    'local_oksigeniatesape_class_scene' => [
+        'classname' => 'local_oksigeniatesape\\external\\class_scene',
+        'description' => 'A scene played by the whole class on the class screen: its decisions and what each player gets.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:runclassscreen, local/oksigeniatesape:award',
+    ],
 ];

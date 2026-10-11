@@ -240,8 +240,11 @@ final class view {
                 $info[$chapter['code']] = $chapter;
             }
             $chapters = [];
+            $scenes = $DB->get_records(self::T . 'scene', ['missionid' => $mission->id], 'code');
             foreach ($DB->get_records(self::T . 'chapter', ['missionid' => $mission->id], 'sortorder') as $chapter) {
                 $meta = $info[$chapter->code] ?? [];
+                // The scenes the class can play together: those of the core step.
+                $mine = scenes::for_step(array_values(array_filter($scenes, fn($sc) => $sc->chapterid == $chapter->id)), 2);
                 $chapters[] = [
                     'id' => (int) $chapter->id,
                     'code' => $chapter->code,
@@ -249,9 +252,14 @@ final class view {
                     'x' => (int) ($meta['x'] ?? 0),
                     'y' => (int) ($meta['y'] ?? 0),
                     'lit' => (bool) $chapter->litat,
+                    'scenes' => array_map(fn($sc) => ['id' => (int) $sc->id,
+                        'title' => (string) (json_decode($sc->definition, true)['title'] ?? $sc->code)], $mine),
                 ];
             }
+            [$items, $roles] = scenes::class_context($courseid);
             $board['mission'] = [
+                'items' => $items,
+                'roles' => $roles,
                 'code' => $mission->code,
                 'title' => missions::text($mission->data['title'] ?? $mission->code, $mission->skin),
                 'skin' => $mission->skin,

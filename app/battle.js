@@ -16,7 +16,7 @@
   var esc = T.esc;
   var FAST = 1500;
   var SLOW = 8000;
-  var LETTERS = 'ABCD';
+  var LETTERS = 'ABCDEF';
   var layer = document.createElement('div');
   layer.className = 'battle-layer';
   document.body.appendChild(layer);
@@ -59,10 +59,11 @@
       document.body.classList.remove('in-battle');
       return;
     }
+    var vote = live.kind === 'vote';
     if (!live.joined) {
-      layer.innerHTML = '<div class="battle-call"><span class="battle-mini">' + T.embrollo(1) + '</span><p>' +
-        esc(t('app_battle_call')) + '</p><button class="btn btn-main" data-join>' + esc(t('app_battle_join')) +
-        '</button></div>';
+      layer.innerHTML = '<div class="battle-call"><span class="battle-mini">' + (vote ? T.icon('world') : T.embrollo(1)) +
+        '</span><p>' + esc(t(vote ? 'app_vote_call' : 'app_battle_call')) + '</p><button class="btn btn-main" data-join>' +
+        esc(t('app_battle_join')) + '</button></div>';
       layer.querySelector('[data-join]').onclick = function(e) {
         e.target.disabled = true;
         api('join').then(function(r) {
@@ -81,6 +82,10 @@
   }
 
   function head(live) {
+    if (live.kind === 'vote') {
+      return '<div class="battle-head"><span class="battle-mini">' + T.icon('world') + '</span><div class="grow"><b>' +
+        esc(t('app_vote_title')) + '</b></div></div>';
+    }
     var life = live.maxhp ? live.hp / live.maxhp : 1;
     return '<div class="battle-head"><span class="battle-mini">' + T.embrollo(life) + '</span><div class="grow"><b>' +
       esc(t('app_battle_title')) + '</b>' + (live.round ? '<small>' + esc(t('app_battle_round', live)) + '</small>' : '') +
@@ -88,6 +93,9 @@
   }
 
   function body(live) {
+    if (live.kind === 'vote') {
+      return voteBody(live);
+    }
     if (live.outcome === 'won') {
       var p = live.prize;
       return '<div class="battle-end won"><h2>' + esc(t('app_battle_won')) + '</h2>' + (p ? '<p class="lead">' +
@@ -120,6 +128,26 @@
       note = '<p class="battle-left" data-left="' + live.left + '">' + esc(t('app_battle_left', live.left)) + '</p>';
     }
     return '<p class="battle-q">' + esc(q.text) + '</p><div class="battle-options">' + options + '</div>' + note;
+  }
+
+  function voteBody(live) {
+    if (live.outcome) {
+      return '<div class="battle-end"><h2>' + esc(t('app_vote_done')) + '</h2><button class="btn btn-main" data-back>' +
+        esc(t('app_battle_back')) + '</button></div>';
+    }
+    if (!live.round || !live.question) {
+      return '<p class="battle-wait">' + esc(t('app_vote_wait')) + '</p>';
+    }
+    var q = live.question;
+    var tally = live.tally || [];
+    var options = q.options.map(function(o, i) {
+      return '<button type="button" class="battle-option' + (live.mine === i ? ' mine' : '') + '" data-answer="' + i + '"' +
+        (live.mine >= 0 || !live.open ? ' disabled' : '') + '><b>' + LETTERS[i] + '</b><span>' + esc(o) +
+        (live.revealed ? ' · ' + esc(t('board_scene_optvotes', tally[i] || 0)) : '') + '</span></button>';
+    }).join('');
+    var note = live.revealed ? t('app_vote_closed') : live.mine >= 0 ? t('app_vote_sent') : '';
+    return '<p class="battle-q">' + esc(q.text) + '</p><div class="battle-options">' + options + '</div>' +
+      (note ? '<p class="battle-note">' + esc(note) + '</p>' : '');
   }
 
   function bind(live) {

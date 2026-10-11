@@ -46,11 +46,19 @@
   /**
    * Plays a scene.
    *
-   * @param {Object} opts sceneid, world (the world of the student), onclose(world) when the student leaves.
+   * With classmode, the whole class plays it on the class screen: the texts speak of the class, the class has the items
+   * and roles of any of its players, each option has its letter (for the vote cards), the phones can vote, and the
+   * ending goes to the server as a play of the class.
+   *
+   * @param {Object} opts sceneid, world (the world of the student), onclose(world) when the student leaves; classmode:
+   *     name, creature, items, roles, vote ({open(prompt, labels), state(), close()}, or null without phones), finish(events,
+   *     from).
    */
   T.playScene = function(opts) {
+    var cm = opts.classmode || null;
+    var LETTERS = 'ABCDEF';
     var layer = document.createElement('div');
-    layer.className = 'scene-layer';
+    layer.className = 'scene-layer' + (cm ? ' class-mode' : '');
     layer.setAttribute('role', 'dialog');
     layer.setAttribute('aria-modal', 'true');
     document.body.appendChild(layer);
@@ -80,11 +88,17 @@
     }
 
     function myName() {
+      if (cm) {
+        return cm.name;
+      }
       var c = world.character;
       return world.nicknames && c && c.nickname ? c.nickname : cfg.firstname;
     }
 
     function creatureName() {
+      if (cm) {
+        return cm.creature;
+      }
       try {
         return JSON.parse(world.character.creature || '{}').name || t('app_creature');
       } catch (e) {
@@ -102,7 +116,15 @@
       if (text && typeof text === 'object') {
         text = text[data.skin] || text[Object.keys(text)[0]];
       }
-      return String(text || '').replace(/\{\{local:([a-z0-9_-]+)\}\}/g, function(m, key) {
+      text = String(text || '');
+      if (cm) {
+        // In class, a placeholder that opens a sentence gets a capital letter.
+        text = text.replace(/(^|[.!?¡¿]\s*)\{\{(name|creature)\}\}/g, function(m, before, key) {
+          var word = key === 'name' ? myName() : creatureName();
+          return before + word.charAt(0).toUpperCase() + word.slice(1);
+        });
+      }
+      return text.replace(/\{\{local:([a-z0-9_-]+)\}\}/g, function(m, key) {
         var local = sc.locals && sc.locals[key];
         return local ? (local[data.variant] || local[Object.keys(local)[0]]) : m;
       }).replace(/\{\{name\}\}/g, myName()).replace(/\{\{creature\}\}/g, creatureName());
@@ -111,6 +133,12 @@
     function has(req) {
       if (!req) {
         return true;
+      }
+      if (cm && req.item) {
+        return cm.items.indexOf(req.item) >= 0;
+      }
+      if (cm && req.teamrole) {
+        return cm.roles.indexOf(req.teamrole) >= 0;
       }
       if (req.item) {
         return (world.items || []).some(function(i) {
@@ -212,17 +240,28 @@
       var min = (n.select && n.select.min) || max;
       var multi = max > 1;
       var selected = [];
+      var open = n.options.filter(function(o) {
+        return has(o.requires);
+      });
       var opts = n.options.map(function(o) {
         if (!has(o.requires)) {
           return '<button class="opt locked" type="button" disabled><b>' + esc(tx(o.label)) + '</b><small>' +
             esc(o.locked ? tx(o.locked) : missing(o.requires)) + '</small></button>';
         }
-        return '<button class="opt" type="button" data-id="' + esc(o.id) + '">' + esc(tx(o.label)) + '</button>';
+        var letter = cm ? '<span class="opt-letter">' + LETTERS[open.indexOf(o)] + '</span>' : '';
+        return '<button class="opt" type="button" data-id="' + esc(o.id) + '">' + letter + esc(tx(o.label)) +
+          '<span class="opt-votes" data-votes></span></button>';
       }).join('');
+      var voting = cm && cm.vote && !multi && open.length >= 2;
       var body = show((n.image ? picture(n.image) : '') + '<p class="scene-prompt">' + esc(tx(n.prompt)) + '</p>' +
+        (voting ? '<div class="class-vote" data-vote><button class="btn btn-soft" data-voteopen>' +
+        esc(t('board_scene_voteopen')) + '</button></div>' : '') +
         '<div class="opts">' + opts + '</div>' + (multi ? '<div class="counter" data-count>' + esc(t('app_chosen', '0/' + max)) +
         '</div><div class="actions"><button class="btn btn-main" data-confirm disabled>' + esc(t('app_confirm')) +
         '</button></div>' : '') + '<div data-out></div>');
+      if (voting) {
+        classVote(body, n, open);
+      }
       function pick(id) {
         return n.options.filter(function(o) {
           return o.id === id;
@@ -418,7 +457,96 @@
       draw();
     }
 
+    /**
+     * The phones of the class vote a decision: the class screen shows how many have voted and, once closed, the votes of
+     * each option. The teacher then taps the option the class chose.
+     *
+     * @param {Element} body
+     * @param {Object} n The node.
+     * @param {Array} open The options that can be chosen.
+     */
+    function classVote(body, n, open) {
+      var box = body.querySelector('[data-vote]');
+      var timer = 0;
+      function count(live) {
+        box.innerHTML = '<span>' + esc(t('board_scene_votes', {answered: live.answered, joined: live.joined})) + '</span>' +
+          '<button class="btn btn-main" data-voteclose>' + esc(t('board_scene_voteclose')) + '</button>';
+        box.querySelector('[data-voteclose]').onclick = function() {
+          clearTimeout(timer);
+          cm.vote.close().then(tally);
+        };
+      }
+      function poll() {
+        timer = setTimeout(function() {
+          if (!document.body.contains(box)) {
+            return;
+          }
+          cm.vote.state().then(function(live) {
+            if (live && live.open) {
+              count(live);
+              poll();
+            }
+          });
+        }, 1500);
+      }
+      function tally(live) {
+        var votes = (live && live.tally) || [];
+        var best = Math.max.apply(null, votes.concat([0]));
+        box.innerHTML = '<span>' + esc(t('board_scene_voted')) + '</span>';
+        open.forEach(function(o, i) {
+          var b = body.querySelector('.opt[data-id="' + o.id + '"]');
+          if (b) {
+            b.querySelector('[data-votes]').textContent = t('board_scene_optvotes', votes[i] || 0);
+            if (best > 0 && votes[i] === best) {
+              b.classList.add('voted');
+            }
+          }
+        });
+      }
+      box.querySelector('[data-voteopen]').onclick = function() {
+        this.disabled = true;
+        cm.vote.open(tx(n.prompt), open.map(function(o) {
+          return tx(o.label);
+        })).then(function(live) {
+          count(live);
+          poll();
+        }).catch(function(e) {
+          T.toast(esc(e.message), true);
+        });
+      };
+    }
+
+    function classEnding(n) {
+      show('<div class="loading-inline"><div class="lamp"></div>' + esc(t('app_saving')) + '</div>');
+      cm.finish(run.events, run.from).then(function(result) {
+        var success = result.outcome !== 'retry';
+        var body = show(picture(n.image || sc.id) + '<p class="scene-text">' + esc(tx(n.text)) + '</p>' + (success ?
+          '<div class="conseq good"><span class="what">' + esc(t('board_scene_rewarded', result.rewarded)) + '</span></div>' :
+          '') + '<div class="actions">' + (success ? '<button class="btn btn-main" data-focus data-map>' +
+          esc(t('board_battle_back')) + '</button>' : '<button class="btn btn-main" data-focus data-retry>' +
+          esc(t('app_tryagain')) + '</button>') + '</div>');
+        var map = body.querySelector('[data-map]');
+        if (map) {
+          map.onclick = close;
+        } else {
+          body.querySelector('[data-retry]').onclick = function() {
+            start(result.retry || n.retry);
+          };
+        }
+      }).catch(function(e) {
+        var body = show('<p class="scene-text">' + esc(t('app_error')) + '</p><p class="help">' + esc(e.message) + '</p>' +
+          '<div class="actions"><button class="btn btn-main" data-again>' + esc(t('app_retry')) + '</button></div>');
+        body.querySelector('[data-again]').onclick = function() {
+          classEnding(n);
+        };
+      });
+    }
+
     function ending(n) {
+      if (cm) {
+        classEnding(n);
+        return;
+      }
       show('<div class="loading-inline"><div class="lamp"></div>' + esc(t('app_saving')) + '</div>');
       T.api('play_scene', {courseid: cfg.courseid, sceneid: data.id, events: JSON.stringify(run.events),
         start: run.from}).then(function(result) {

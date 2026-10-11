@@ -165,6 +165,90 @@ final class scenes {
     }
 
     /**
+     * What the whole class brings to a scene played together: the items any of its players carries, and their roles.
+     *
+     * @param int $courseid
+     * @return array [item codes, roles]
+     */
+    public static function class_context(int $courseid): array {
+        global $DB;
+        $items = $DB->get_fieldset_sql(
+            'SELECT DISTINCT i.code
+               FROM {' . self::T . 'inventory} v
+               JOIN {' . self::T . 'item} i ON i.id = v.itemid
+              WHERE v.courseid = ?',
+            [$courseid]
+        );
+        $roles = $DB->get_fieldset_sql(
+            'SELECT DISTINCT c.role
+               FROM {' . self::T . 'char} c
+               JOIN {' . self::T . 'member} m ON m.charid = c.id
+              WHERE m.courseid = ? AND m.status <> ?',
+            [$courseid, 'paused']
+        );
+        return [array_values($items), array_values($roles)];
+    }
+
+    /**
+     * A scene played by the whole class on the class screen: the server plays it again with the decisions of the class
+     * (which has what any of its players carries, and their roles), and each player gets what the scene gives that they
+     * did not have yet. It is not kept as anybody's own try, so that what the teacher sees of each student stays theirs.
+     *
+     * @param int $courseid
+     * @param int $sceneid
+     * @param array $events
+     * @param string|null $from Where the play started (null: the start of the scene).
+     * @param int[] $charids The players; none: everybody who plays in the course.
+     * @param int|null $now
+     * @return array ending, outcome, retry, points, objectives, rewarded (players who got something).
+     */
+    public static function play_class(
+        int $courseid,
+        int $sceneid,
+        array $events,
+        ?string $from,
+        array $charids,
+        ?int $now = null
+    ): array {
+        global $DB;
+        $now = $now ?? time();
+        if (!regions::enabled($courseid)) {
+            throw new \moodle_exception('gameoff', 'local_oksigeniatesape');
+        }
+        $scene = self::get($courseid, $sceneid);
+        [$items, $roles] = self::class_context($courseid);
+        $members = array_filter(
+            $DB->get_records(self::T . 'member', ['courseid' => $courseid]),
+            fn($m) => $m->status !== 'paused' && (!$charids || in_array((int) $m->charid, $charids, true))
+        );
+        $chars = [];
+        foreach ($members as $member) {
+            $chars[$member->id] = $DB->get_record(self::T . 'char', ['id' => $member->charid], '*', MUST_EXIST);
+        }
+        $runner = new scene_runner($scene->data, $items, $roles);
+        $result = $runner->run($events, $from);
+        $rewarded = 0;
+        if (in_array($result['outcome'], ['success', 'partial'], true)) {
+            $transaction = $DB->start_delegated_transaction();
+            foreach ($members as $member) {
+                $got = self::reward($chars[$member->id], $member, $scene, $result, $now);
+                if ($got['saber'] || $got['gems'] || $got['items'] || $got['lanterns'] || $got['pages'] || $got['hatched']) {
+                    $rewarded++;
+                }
+            }
+            $transaction->allow_commit();
+        }
+        return [
+            'ending' => $result['ending'],
+            'outcome' => $result['outcome'],
+            'retry' => (string) $result['retry'],
+            'points' => $result['points'],
+            'objectives' => $result['objectives'],
+            'rewarded' => $rewarded,
+        ];
+    }
+
+    /**
      * Gives what a good ending gives, only what was not given yet for this scene.
      *
      * @param \stdClass $char

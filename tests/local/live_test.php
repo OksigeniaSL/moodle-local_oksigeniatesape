@@ -16,6 +16,12 @@
 
 namespace local_oksigeniatesape\local;
 
+use local_oksigeniatesape\autoplayer;
+
+defined('MOODLE_INTERNAL') || die();
+
+require_once(__DIR__ . '/../fixtures/autoplayer.php');
+
 /**
  * Tests for the battle against the Embrollo, with phones and aloud.
  *
@@ -24,8 +30,10 @@ namespace local_oksigeniatesape\local;
  * @copyright  2026 Oksigenia <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \local_oksigeniatesape\local\live
+ * @covers     \local_oksigeniatesape\local\scenes
  */
 #[\PHPUnit\Framework\Attributes\CoversClass(live::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(scenes::class)]
 final class live_test extends \advanced_testcase {
     /** @var string Prefix of the plugin tables. */
     private const T = 'local_oksigeniatesape_';
@@ -178,5 +186,50 @@ final class live_test extends \advanced_testcase {
         $this->assertNull(live::current($course->id, self::NOW + live::IDLE + 1));
         $this->assertEquals(2, live::cleanup(self::NOW + DAYSECS + 1));
         $this->assertEquals(0, $DB->count_records(self::T . 'livein'));
+    }
+
+    public function test_a_vote_of_the_class_counts_each_option(): void {
+        global $DB;
+        $this->resetAfterTest();
+        [$course, $members] = $this->make_class();
+        $scene = $DB->get_records('local_oksigeniatesape_scene', [], 'code', 'id', 0, 1);
+        $live = live::start_vote($course->id, (int) reset($scene)->id, self::NOW);
+        foreach ($members as $member) {
+            live::join($live, $member, $member->userid, self::NOW);
+        }
+        $live = live::vote($live, 'Which one?', ['North', 'South', 'East'], self::NOW);
+        $this->assertArrayNotHasKey('tally', live::board_view($live, self::NOW));
+        foreach ($members as $i => $member) {
+            live::answer($live, $member, 1, $i === 3 ? 2 : 0, self::NOW);
+        }
+        $live = live::reveal($live, self::NOW);
+        $this->assertEquals([3, 0, 1], live::board_view($live, self::NOW)['tally']);
+        $this->assertEquals([3, 0, 1], live::device_view($live, $members[0], self::NOW)['tally']);
+        $this->assertCount(4, live::joined($live));
+        // A vote ends without prizes.
+        $live = live::finish($live, 2, self::NOW);
+        $this->assertEquals('done', live::board_view($live, self::NOW)['outcome']);
+        $this->assertEquals(0, $DB->count_records(self::T . 'ledger', ['courseid' => $course->id, 'reason' => 'battle']));
+    }
+
+    public function test_a_scene_played_by_the_class_rewards_its_players_once(): void {
+        global $DB;
+        $this->resetAfterTest();
+        [$course, $members] = $this->make_class();
+        $mission = missions::get($course->id);
+        $scene = $DB->get_record('local_oksigeniatesape_scene', ['missionid' => $mission->id, 'code' => 'C3-2'], '*', MUST_EXIST);
+        [$items, $roles] = scenes::class_context($course->id);
+        $events = autoplayer::play(json_decode($scene->definition, true), $items, $roles);
+        // Only the first two played (with their phones).
+        $charids = [(int) $members[0]->charid, (int) $members[1]->charid];
+        $result = scenes::play_class($course->id, (int) $scene->id, $events, null, $charids, self::NOW);
+        $this->assertEquals('success', $result['outcome']);
+        $this->assertEquals(2, $result['rewarded']);
+        $this->assertEquals(0, $DB->count_records(self::T . 'sceneattempt', ['courseid' => $course->id]));
+        $saber = $DB->get_field(self::T . 'char', 'saber', ['id' => $members[0]->charid]);
+        $this->assertGreaterThan(0, $saber);
+        $this->assertEquals(0, $DB->get_field(self::T . 'char', 'saber', ['id' => $members[2]->charid]));
+        // Again: nothing more for anybody.
+        $this->assertEquals(0, scenes::play_class($course->id, (int) $scene->id, $events, null, $charids, self::NOW)['rewarded']);
     }
 }

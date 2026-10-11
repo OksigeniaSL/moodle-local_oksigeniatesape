@@ -248,7 +248,7 @@ final class structures {
     private static function live_common(): array {
         return [
             'id' => new external_value(PARAM_INT, 'Session'),
-            'kind' => new external_value(PARAM_ALPHA, 'battle'),
+            'kind' => new external_value(PARAM_ALPHA, 'battle or vote'),
             'mode' => new external_value(PARAM_ALPHA, 'phones or aloud'),
             'round' => new external_value(PARAM_INT, 'Question being played (0: players coming in)'),
             'total' => new external_value(PARAM_INT, 'Questions of the battle'),
@@ -257,7 +257,12 @@ final class structures {
             'revealed' => new external_value(PARAM_BOOL, 'The answer of the question is shown'),
             'hp' => new external_value(PARAM_INT, 'Life of the Embrollo'),
             'maxhp' => new external_value(PARAM_INT, 'Life of the Embrollo at the start'),
-            'outcome' => new external_value(PARAM_ALPHA, 'won, lost or empty while playing'),
+            'outcome' => new external_value(PARAM_ALPHA, 'won, lost, done (a vote) or empty while playing'),
+            'tally' => new external_multiple_structure(
+                new external_value(PARAM_INT, 'Votes'),
+                'Votes for each option, once a vote is closed',
+                VALUE_OPTIONAL
+            ),
             'question' => new external_single_structure([
                 'id' => new external_value(PARAM_RAW, 'Question'),
                 'text' => new external_value(PARAM_TEXT, 'Question'),

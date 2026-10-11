@@ -2884,3 +2884,58 @@ body.in-battle {
     box-shadow: none;
   }
 }
+
+/* A scene played by the whole class: letters for the vote cards, the votes of the phones. */
+.opt .opt-letter {
+  display: inline-grid;
+  place-items: center;
+  width: 1.8em;
+  height: 1.8em;
+  margin-right: 10px;
+  border-radius: 50%;
+  background: var(--lantern);
+  color: var(--ink);
+  font-family: var(--f-title);
+  flex: none;
+}
+
+.opt .opt-votes {
+  margin-left: auto;
+  padding-left: 12px;
+  color: var(--text-soft);
+  font-size: .9em;
+  white-space: nowrap;
+}
+
+.opt.voted {
+  border-color: var(--lantern);
+  box-shadow: 0 0 0 3px rgba(255, 200, 87, .25);
+}
+
+.class-vote {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin: 0 0 14px;
+  padding: 10px 14px;
+  border-radius: var(--r-s);
+  border: 1px dashed var(--lilac);
+}
+
+.battle-mini svg.icon,
+.battle-mini img.icon,
+.battle-mini > svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* A scene on the class screen: big enough for the projector. */
+.scene-layer.class-mode .scene {
+  width: min(1200px, 96vw);
+  font-size: clamp(18px, 1.6vw, 26px);
+}
+
+.scene-layer.class-mode .opts {
+  grid-template-columns: repeat(auto-fit, minmax(16em, 1fr));
+}

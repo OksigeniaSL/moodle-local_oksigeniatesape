@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.7.0 (2026-10-11)
+
+- **Scenes played by the whole class** on the class screen: the teacher picks a scene of the core step and plays it on
+  the board, big enough for the projector. The class decides at each step, with phones (a vote: the board shows how
+  many voted and, once closed, the votes of each option) or with the A, B, C, D cards or a show of hands; the teacher
+  taps the option the class chose, and does the steps of sorting and ordering with what the class says aloud. Each
+  option shows its letter for the cards.
+- The class has the items any of its players carries and their roles. At the end the server plays the scene again with
+  the decisions of the class, and everybody who played (those who came in with the phone, or the whole class without
+  devices) gets what the scene gives that they did not have yet. It is not kept as anybody's own try, so that the
+  results of each student in the teacher panel stay theirs.
+- On the phone, the same layer as the battles shows the vote: the decision with big buttons and, once closed, the
+  votes of the class.
+
 ## 0.6.1 (2026-10-11)
 
 - **Printable material** from the class screen, for classes without devices, as A4 pages straight from the browser:

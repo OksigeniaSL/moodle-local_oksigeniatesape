@@ -93,6 +93,69 @@ final class live {
     }
 
     /**
+     * Opens a vote of the class with the phones, for a scene played on the class screen, and closes the session that was
+     * open, if any.
+     *
+     * @param int $courseid
+     * @param int $sceneid
+     * @param int|null $now
+     * @return \stdClass The session.
+     */
+    public static function start_vote(int $courseid, int $sceneid, ?int $now = null): \stdClass {
+        global $DB;
+        $now = $now ?? time();
+        scenes::get($courseid, $sceneid);
+        $DB->set_field_select(self::T . 'live', 'timeend', $now, 'courseid = ? AND timeend = 0', [$courseid]);
+        $state = ['mode' => 'phones', 'secs' => 0, 'sceneid' => $sceneid, 'questions' => [], 'rounds' => [], 'open' => false,
+            'closesat' => 0, 'hp' => 0, 'maxhp' => 0, 'outcome' => '', 'rewarded' => []];
+        $record = (object) ['courseid' => $courseid, 'kind' => 'vote', 'state' => json_encode($state), 'round' => 0,
+            'timecreated' => $now, 'timemodified' => $now, 'timeend' => 0];
+        $id = $DB->insert_record(self::T . 'live', $record);
+        return $DB->get_record(self::T . 'live', ['id' => $id], '*', MUST_EXIST);
+    }
+
+    /**
+     * A decision of the scene put to the vote: the class screen sends what it says and its options.
+     *
+     * @param \stdClass $live
+     * @param string $text
+     * @param string[] $options Two to six.
+     * @param int|null $now
+     * @return \stdClass The session.
+     */
+    public static function vote(\stdClass $live, string $text, array $options, ?int $now = null): \stdClass {
+        $now = $now ?? time();
+        $state = self::state($live);
+        if ($live->kind !== 'vote' || count($options) < 2 || count($options) > 6) {
+            throw new \invalid_parameter_exception('Not a vote that can be held');
+        }
+        $round = (int) $live->round;
+        if ($round > 0 && empty($state['rounds'][$round]['revealed'])) {
+            $state = self::count($live, $state);
+        }
+        $round++;
+        $options = array_values(array_map(fn($o) => clean_param((string) $o, PARAM_TEXT), $options));
+        $question = ['id' => 'v' . $round, 'text' => clean_param($text, PARAM_TEXT), 'options' => $options];
+        $state['rounds'][$round] = ['q' => $question['id'], 'options' => count($options), 'correct' => -1,
+            'question' => $question, 'revealed' => false, 'answered' => 0, 'right' => 0, 'teams' => [], 'tally' => []];
+        $state['open'] = true;
+        $state['closesat'] = 0;
+        return self::save($live, $state, $round, $now);
+    }
+
+    /**
+     * Who came in with their phone, by character.
+     *
+     * @param \stdClass $live
+     * @return int[]
+     */
+    public static function joined(\stdClass $live): array {
+        global $DB;
+        $charids = $DB->get_fieldset_select(self::T . 'livein', 'charid', 'liveid = ? AND round = 0', [$live->id]);
+        return array_map('intval', $charids);
+    }
+
+    /**
      * The session open in a course, if any: not ended, and with the class screen alive.
      *
      * @param int $courseid
@@ -298,7 +361,11 @@ final class live {
             $state = self::count($live, $state);
         }
         $state['open'] = false;
-        $state['outcome'] = $round > 0 && $state['hp'] <= 0 ? 'won' : 'lost';
+        if ($live->kind === 'vote') {
+            $state['outcome'] = 'done';
+        } else {
+            $state['outcome'] = $round > 0 && $state['hp'] <= 0 ? 'won' : 'lost';
+        }
         $transaction = $DB->start_delegated_transaction();
         if ($state['outcome'] === 'won') {
             $state['rewarded'] = self::reward($live, $state, $actorid, $now);
@@ -341,6 +408,9 @@ final class live {
                 $DB->count_records(self::T . 'livein', ['liveid' => $live->id, 'round' => $round]);
             $view['question'] = self::question($info);
             $view['right'] = (int) $info['right'];
+            if ($info['revealed'] && $live->kind === 'vote') {
+                $view['tally'] = $info['tally'];
+            }
         }
         $view['rewarded'] = count($state['rewarded']);
         return $view;
@@ -366,6 +436,9 @@ final class live {
             $info = $state['rounds'][$round];
             $view['mine'] = (int) ($mine[$round] ?? -1);
             $view['question'] = self::question($info);
+            if ($info['revealed'] && $live->kind === 'vote') {
+                $view['tally'] = $info['tally'];
+            }
         }
         if ($state['outcome'] === 'won') {
             $view['prize'] = $state['rewarded'][$member->charid] ?? null;
@@ -442,7 +515,12 @@ final class live {
         $info = $state['rounds'][$round];
         $answers = $DB->get_records(self::T . 'livein', ['liveid' => $live->id, 'round' => $round], '', 'id, team, answer');
         $info['answered'] = count($answers);
-        if ($state['mode'] === 'phones') {
+        if ($live->kind === 'vote') {
+            $info['tally'] = array_fill(0, (int) $info['options'], 0);
+            foreach ($answers as $answer) {
+                $info['tally'][(int) $answer->answer]++;
+            }
+        } else if ($state['mode'] === 'phones') {
             foreach ($answers as $answer) {
                 if ((int) $answer->answer === (int) $info['correct']) {
                     $info['right']++;

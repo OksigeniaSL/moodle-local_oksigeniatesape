@@ -39,12 +39,15 @@ final class live_host extends external_api {
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
             'courseid' => new external_value(PARAM_INT, 'Course'),
-            'action' => new external_value(PARAM_ALPHA, 'state, start, next, reveal, mark or finish'),
+            'action' => new external_value(PARAM_ALPHA, 'state, start, next, reveal, mark, finish, startvote or vote'),
             'mode' => new external_value(PARAM_ALPHA, 'start: phones or aloud', VALUE_DEFAULT, 'phones'),
             'count' => new external_value(PARAM_INT, 'start: questions', VALUE_DEFAULT, 6),
             'secs' => new external_value(PARAM_INT, 'start: seconds per question (0: no limit)', VALUE_DEFAULT, 30),
             'groupid' => new external_value(PARAM_INT, 'mark: the team', VALUE_DEFAULT, 0),
             'right' => new external_value(PARAM_BOOL, 'mark: it got it right', VALUE_DEFAULT, false),
+            'sceneid' => new external_value(PARAM_INT, 'startvote: the scene the class plays', VALUE_DEFAULT, 0),
+            'text' => new external_value(PARAM_TEXT, 'vote: what the scene asks', VALUE_DEFAULT, ''),
+            'options' => new external_value(PARAM_RAW, 'vote: the options, in JSON', VALUE_DEFAULT, '[]'),
         ]);
     }
 
@@ -58,6 +61,9 @@ final class live_host extends external_api {
      * @param int $secs
      * @param int $groupid
      * @param bool $right
+     * @param int $sceneid
+     * @param string $text
+     * @param string $options
      * @return array
      */
     public static function execute(
@@ -67,7 +73,10 @@ final class live_host extends external_api {
         int $count = 6,
         int $secs = 30,
         int $groupid = 0,
-        bool $right = false
+        bool $right = false,
+        int $sceneid = 0,
+        string $text = '',
+        string $options = '[]'
     ): array {
         global $USER;
         $params = self::validate_parameters(self::execute_parameters(), [
@@ -78,6 +87,9 @@ final class live_host extends external_api {
             'secs' => $secs,
             'groupid' => $groupid,
             'right' => $right,
+            'sceneid' => $sceneid,
+            'text' => $text,
+            'options' => $options,
         ]);
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
@@ -86,6 +98,10 @@ final class live_host extends external_api {
         $now = time();
         if ($params['action'] === 'start') {
             $live = live::start($courseid, $params['mode'], $params['count'], $params['secs'], $now);
+            return ['live' => live::board_view($live, $now)];
+        }
+        if ($params['action'] === 'startvote') {
+            $live = live::start_vote($courseid, $params['sceneid'], $now);
             return ['live' => live::board_view($live, $now)];
         }
         $live = $params['action'] === 'state' ? live::recent($courseid, $now) : live::current($courseid, $now);
@@ -114,6 +130,10 @@ final class live_host extends external_api {
             case 'finish':
                 require_capability('local/oksigeniatesape:award', $context);
                 $live = live::finish($live, (int) $USER->id, $now);
+                break;
+            case 'vote':
+                $list = json_decode($params['options'], true);
+                $live = live::vote($live, $params['text'], is_array($list) ? $list : [], $now);
                 break;
             default:
                 throw new \invalid_parameter_exception('Unknown action');
