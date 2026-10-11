@@ -17,9 +17,9 @@
 namespace local_oksigeniatesape\local;
 
 /**
- * The album of the field guide: each approved entry of the field guide of the class (a Moodle database of the mission)
- * made by the student or by their team is a card; the card is golden if the entry says what place the species takes in
- * a food chain. It reads the database: nothing is kept apart.
+ * The album of the field guide: each entry of the field guide of the class (a Moodle database of the mission) made by
+ * the student or by their team is a card (once approved, if the guide asks for approval); the card is golden if the
+ * entry says what place the species takes in a food chain. It reads the database: nothing is kept apart.
  *
  * @package    local_oksigeniatesape
  * @copyright  2026 Oksigenia <dev@oksigenia.cc>
@@ -37,9 +37,10 @@ final class album {
     public static function for_student(int $courseid, int $userid): ?array {
         global $DB;
         $guides = $DB->get_records_sql(
-            "SELECT cm.id, cm.instance
+            "SELECT cm.id, cm.instance, d.approval
                FROM {course_modules} cm
                JOIN {modules} m ON m.id = cm.module AND m.name = 'data'
+               JOIN {data} d ON d.id = cm.instance
                JOIN {local_oksigeniatesape_challenge} c ON c.cmid = cm.id
               WHERE cm.course = ? AND cm.deletioninprogress = 0
            ORDER BY cm.id",
@@ -59,9 +60,12 @@ final class album {
         $texts = array_keys(array_filter($fields, fn($f) => $f->type === 'text'));
         $menus = array_keys(array_filter($fields, fn($f) => $f->type === 'menu'));
         [$insql, $params] = $DB->get_in_or_equal($users);
+        // Where the guide asks for approval, only approved entries count; otherwise Moodle does not use the mark.
+        $approved = $guide->approval ? ' AND approved = 1' : '';
+        $approvedonly = $guide->approval ? ['approved' => 1] : [];
         $records = $DB->get_records_select(
             'data_records',
-            "dataid = ? AND approved = 1 AND userid $insql",
+            "dataid = ?$approved AND userid $insql",
             array_merge([$guide->instance], $params),
             'timecreated, id',
             'id, userid'
@@ -90,7 +94,7 @@ final class album {
         }
         return [
             'cards' => $cards,
-            'class' => $DB->count_records('data_records', ['dataid' => $guide->instance, 'approved' => 1]),
+            'class' => $DB->count_records('data_records', ['dataid' => $guide->instance] + $approvedonly),
             'cmid' => (int) $guide->id,
         ];
     }

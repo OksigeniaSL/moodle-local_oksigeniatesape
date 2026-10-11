@@ -148,8 +148,9 @@ final class market_test extends \advanced_testcase {
         $this->assertSame([true, false], array_column($album['cards'], 'mine'));
         $this->assertEquals(3, $album['class']);
         $this->assertEquals($data->cmid, $album['cmid']);
-        // An entry not approved yet is no card.
-        $DB->set_field('data_records', 'approved', 0, ['userid' => $w->users[1]->id]);
+        // Where the guide asks for approval, an entry not approved yet is no card.
+        $DB->set_field('data', 'approval', 1, ['id' => $data->id]);
+        $DB->set_field('data_records', 'approved', 1, ['userid' => $w->users[0]->id]);
         $this->assertCount(1, album::for_student($w->course->id, $w->users[0]->id)['cards']);
     }
 }
