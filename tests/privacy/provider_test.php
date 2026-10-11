@@ -239,7 +239,7 @@ final class provider_test extends provider_testcase {
         $this->assertFalse($DB->record_exists(self::T . 'powerreq', ['decidedby' => $w->teacher->id]));
         $this->assertFalse($DB->record_exists(self::T . 'validation', ['validatedby' => $w->teacher->id]));
         $this->assertSame(1, $DB->count_records(self::T . 'powerreq'));
-        $this->assertSame(5, $this->rows($w->anachar->id, $w->course1->id));
+        $this->assertSame(6, $this->rows($w->anachar->id, $w->course1->id));
     }
 
     public function test_delete_the_character(): void {
@@ -280,7 +280,7 @@ final class provider_test extends provider_testcase {
         $userlist = new approved_userlist($w->ctx1, 'local_oksigeniatesape', [$w->leo->id, $w->teacher->id]);
         provider::delete_data_for_users($userlist);
         $this->assertSame(0, $this->rows($w->leochar->id, $w->course1->id));
-        $this->assertSame(5, $this->rows($w->anachar->id, $w->course1->id));
+        $this->assertSame(6, $this->rows($w->anachar->id, $w->course1->id));
         // Ana's power request stays, without its target and without the teacher.
         $request = $DB->get_record(self::T . 'powerreq', ['memberid' => $w->ana1->id]);
         $this->assertSame(0, (int) $request->targetmemberid);

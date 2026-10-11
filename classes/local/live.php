@@ -86,8 +86,9 @@ final class live {
         $DB->set_field_select(self::T . 'live', 'timeend', $now, 'courseid = ? AND timeend = 0', [$courseid]);
         $state = ['mode' => $mode, 'secs' => $secs, 'questions' => $questions, 'rounds' => [], 'open' => false,
             'closesat' => 0, 'hp' => 0, 'maxhp' => 0, 'outcome' => '', 'rewarded' => []];
-        $id = $DB->insert_record(self::T . 'live', (object) ['courseid' => $courseid, 'kind' => 'battle',
-            'state' => json_encode($state), 'round' => 0, 'timecreated' => $now, 'timemodified' => $now, 'timeend' => 0]);
+        $record = (object) ['courseid' => $courseid, 'kind' => 'battle', 'state' => json_encode($state), 'round' => 0,
+            'timecreated' => $now, 'timemodified' => $now, 'timeend' => 0];
+        $id = $DB->insert_record(self::T . 'live', $record);
         return $DB->get_record(self::T . 'live', ['id' => $id], '*', MUST_EXIST);
     }
 
@@ -101,8 +102,8 @@ final class live {
     public static function current(int $courseid, ?int $now = null): ?\stdClass {
         global $DB;
         $now = $now ?? time();
-        $records = $DB->get_records_select(self::T . 'live', 'courseid = ? AND timeend = 0 AND timemodified > ?',
-            [$courseid, $now - self::IDLE], 'id DESC', '*', 0, 1);
+        $where = 'courseid = ? AND timeend = 0 AND timemodified > ?';
+        $records = $DB->get_records_select(self::T . 'live', $where, [$courseid, $now - self::IDLE], 'id DESC', '*', 0, 1);
         return reset($records) ?: null;
     }
 
@@ -121,8 +122,8 @@ final class live {
         if ($live) {
             return $live;
         }
-        $records = $DB->get_records_select(self::T . 'live', 'courseid = ? AND timeend > ?', [$courseid, $now - self::SHOWN],
-            'timeend DESC', '*', 0, 1);
+        $params = [$courseid, $now - self::SHOWN];
+        $records = $DB->get_records_select(self::T . 'live', 'courseid = ? AND timeend > ?', $params, 'timeend DESC', '*', 0, 1);
         $last = reset($records);
         return $last && self::state($last)['outcome'] !== '' ? $last : null;
     }
@@ -159,9 +160,9 @@ final class live {
         }
         $team = teams::of((int) $live->courseid, $userid);
         try {
-            $DB->insert_record(self::T . 'livein', (object) ['liveid' => $live->id, 'courseid' => $live->courseid,
-                'charid' => $member->charid, 'round' => 0, 'team' => (int) ($team->id ?? 0), 'answer' => -1,
-                'timecreated' => $now ?? time()]);
+            $record = (object) ['liveid' => $live->id, 'courseid' => $live->courseid, 'charid' => $member->charid,
+                'round' => 0, 'team' => (int) ($team->id ?? 0), 'answer' => -1, 'timecreated' => $now ?? time()];
+            $DB->insert_record(self::T . 'livein', $record);
         } catch (\dml_write_exception $e) {
             // Two taps at once: the first one counts.
             return;
@@ -189,9 +190,9 @@ final class live {
             throw new \invalid_parameter_exception('Not an option of the question');
         }
         try {
-            $DB->insert_record(self::T . 'livein', (object) ['liveid' => $live->id, 'courseid' => $live->courseid,
-                'charid' => $member->charid, 'round' => $round, 'team' => $joined->team, 'answer' => $answer,
-                'timecreated' => $now]);
+            $record = (object) ['liveid' => $live->id, 'courseid' => $live->courseid, 'charid' => $member->charid,
+                'round' => $round, 'team' => $joined->team, 'answer' => $answer, 'timecreated' => $now];
+            $DB->insert_record(self::T . 'livein', $record);
         } catch (\dml_write_exception $e) {
             return;
         }
@@ -358,8 +359,8 @@ final class live {
         $now = $now ?? time();
         $state = self::state($live);
         $round = (int) $live->round;
-        $mine = $DB->get_records_menu(self::T . 'livein', ['liveid' => $live->id, 'charid' => $member->charid], '',
-            'round, answer');
+        $conditions = ['liveid' => $live->id, 'charid' => $member->charid];
+        $mine = $DB->get_records_menu(self::T . 'livein', $conditions, '', 'round, answer');
         $view = self::common($live, $state, $now) + ['joined' => array_key_exists(0, $mine), 'mine' => -1];
         if ($round > 0) {
             $info = $state['rounds'][$round];
