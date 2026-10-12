@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.28.3 (2026-10-12)
+
+- The result of a battle shows on the phones for five minutes after it ends: once a student closes it, it does not
+  show again when the page is opened again in that time.
+- The opening of the mission shows only to whoever has not begun it: a student who has played a scene goes straight
+  to the map, also on another tablet of the class.
+- A test plays the whole mission with a class of eight, on every change: the scenes, the quests, the final battle, the
+  lanterns, the badge, the competencies, the gradebook and the report.
+
 ## 0.28.2 (2026-10-12)
 
 - The badge of the mission is made from a copy of its medallion: Moodle deletes the image it is given, and it took the

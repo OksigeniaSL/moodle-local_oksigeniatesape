@@ -611,9 +611,15 @@
 
   function missionView(m, past) {
     var key = 'tesape-mission-' + cfg.courseid + '-' + m.id + '-' + cfg.userid;
+    // Whoever has played a scene has begun, also on another device (the tablets of a class are shared).
+    var begun = m.chapters.some(function(ch) {
+      return ch.mine || ch.scenes.some(function(sc) {
+        return sc.done;
+      });
+    });
     var seen = true;
     try {
-      seen = past || !!window.localStorage.getItem(key);
+      seen = past || begun || !!window.localStorage.getItem(key);
     } catch (e) {
       seen = true;
     }

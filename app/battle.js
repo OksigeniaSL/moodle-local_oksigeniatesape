@@ -21,6 +21,13 @@
   layer.className = 'battle-layer';
   document.body.appendChild(layer);
   var state = {live: null, inside: false, dismissed: 0, timer: 0, sig: '', sending: false, tick: 0};
+  // The result of a battle shows for a few minutes after it ends: once closed, not again on the next page.
+  var SEEN = 'tesape-battle-' + cfg.courseid + '-' + cfg.userid;
+  try {
+    state.dismissed = +window.sessionStorage.getItem(SEEN) || 0;
+  } catch (e) {
+    state.dismissed = 0;
+  }
 
   function api(action, extra) {
     return T.api('live_play', Object.assign({courseid: cfg.courseid, action: action}, extra || {}));
@@ -220,6 +227,11 @@
     if (back) {
       back.onclick = function() {
         state.dismissed = live.id;
+        try {
+          window.sessionStorage.setItem(SEEN, String(live.id));
+        } catch (e) {
+          // Without storage it shows again on the next page, as before.
+        }
         show(live);
         if (live.prize && T.refreshWorld) {
           T.refreshWorld();
