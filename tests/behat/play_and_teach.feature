@@ -38,7 +38,7 @@ Feature: A teacher runs the game from the panel and a student plays the mission
     When I open the Tesapé world of course "C1"
     Then I should see "Begin the mission"
     When I click on "Begin the mission" "button"
-    And I click on "[data-chapter] rect.hit" "css_element"
+    And I click on "[data-chapter]" "css_element"
     And I click on "[data-scene]" "css_element"
     Then I should see "Continue"
     And I click on "Continue" "button"
