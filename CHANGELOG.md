@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.25.2 (2026-10-12)
+
+- The settings page of the plugin says whether the site uses the competencies of Moodle, and where to turn them on if
+  it does not (found on campus.oksigenia.com, where they were off). The game works the same without them; if they are
+  turned on later, the framework of the mission is made the first time a teacher opens the «Competencies» tab or a
+  student plays a scene.
+- In Spanish, the page of the site where competencies and hidden activities are turned on goes by its name in Moodle
+  («Opciones avanzadas»).
+
 ## 0.25.1 (2026-10-12)
 
 - Making the framework of a mission could stop with an error on a site where the libraries of grades were not loaded

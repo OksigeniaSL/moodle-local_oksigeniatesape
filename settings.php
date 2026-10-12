@@ -42,5 +42,20 @@ if ($hassiteconfig) {
             ''
         ));
         $settings->add(new \local_oksigeniatesape\admin\setting_allowstealth());
+        // The competencies of Moodle: the game works without them, but then the scenes leave no evidence.
+        if (\core_competency\api::is_enabled()) {
+            $competencies = get_string('settings_competencies_on', 'local_oksigeniatesape');
+        } else {
+            $where = html_writer::link(
+                new moodle_url('/admin/settings.php', ['section' => 'optionalsubsystems']),
+                get_string('advancedfeatures', 'admin') . ' › ' . get_string('enablecompetencies', 'core_competency')
+            );
+            $competencies = get_string('settings_competencies_off', 'local_oksigeniatesape', $where);
+        }
+        $settings->add(new admin_setting_description(
+            'local_oksigeniatesape/competencies',
+            get_string('settings_competencies', 'local_oksigeniatesape'),
+            $competencies
+        ));
     }
 }
