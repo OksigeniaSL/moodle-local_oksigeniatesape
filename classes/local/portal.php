@@ -180,12 +180,17 @@ final class portal {
             if (!$section) {
                 continue;
             }
-            set_section_visible($courseid, $section->section, $inside ? 0 : 1);
+            if (method_exists(\core_courseformat\local\sectionactions::class, 'set_visibility')) {
+                // Moodle 5.2 and later.
+                $info = get_fast_modinfo($courseid)->get_section_info_by_id((int) $sectionid);
+                \core_courseformat\formatactions::section($courseid)->set_visibility($info, !$inside);
+            } else {
+                set_section_visible($courseid, $section->section, $inside ? 0 : 1);
+            }
             foreach (array_filter(explode(',', (string) $section->sequence)) as $cmid) {
-                set_coursemodule_visible((int) $cmid, 1, $inside ? 0 : 1, false);
+                set_coursemodule_visible((int) $cmid, 1, $inside ? 0 : 1);
             }
         }
-        rebuild_course_cache($courseid, true);
     }
 
     /**

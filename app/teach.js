@@ -1516,6 +1516,8 @@
       'type="checkbox" name="hideacts"' + (r.hideacts ? ' checked' : '') + (editable && (r.allowstealth || r.hideacts) ? '' :
       ' disabled') + '> <span>' + esc(t('teach_set_hideacts')) + '</span></label><small style="display:block;color:' +
       'var(--text-soft);margin-bottom:14px">' + esc(t(r.allowstealth ? 'teach_set_hideacts_help' : 'teach_set_nostealth')) +
+      (!r.allowstealth && can('siteconfig') ? ' <a href="' + esc(cfg.wwwroot +
+      '/admin/settings.php?section=local_oksigeniatesape') + '">' + esc(t('teach_set_stealth_admin')) + '</a>' : '') +
       '</small>';
     var coverCard = '<h3>' + esc(t('teach_cover')) + '</h3><p style="color:var(--text-soft)">' + esc(t('teach_cover_help')) +
       '</p><div class="cover-options">' + covers + '</div>' + inside + '<p><a href="' +

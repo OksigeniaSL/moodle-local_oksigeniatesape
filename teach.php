@@ -35,4 +35,6 @@ $caps = [];
 foreach (['manageregion', 'award', 'approvepowers', 'pause', 'viewlog', 'undo', 'runclassscreen'] as $cap) {
     $caps[$cap] = has_capability('local/oksigeniatesape:' . $cap, $context);
 }
+// The administration of the site, who can turn on what the game needs from it.
+$caps['siteconfig'] = has_capability('moodle/site:config', context_system::instance());
 \local_oksigeniatesape\local\page::output('teach', $course, ['caps' => $caps]);

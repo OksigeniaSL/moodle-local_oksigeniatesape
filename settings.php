@@ -35,5 +35,12 @@ if ($hassiteconfig) {
             \local_oksigeniatesape\local\engine::SITE_WEEKLY_CAP,
             PARAM_INT
         ));
+        // What the game needs from the site, asked when the plugin is installed.
+        $settings->add(new admin_setting_heading(
+            'local_oksigeniatesape/requirements',
+            get_string('settings_requirements', 'local_oksigeniatesape'),
+            ''
+        ));
+        $settings->add(new \local_oksigeniatesape\admin\setting_allowstealth());
     }
 }

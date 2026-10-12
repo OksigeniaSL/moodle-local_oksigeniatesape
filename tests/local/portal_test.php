@@ -93,9 +93,10 @@ final class portal_test extends \advanced_testcase {
         $cms = array_filter($modinfo->get_cms(), fn($cm) => in_array($cm->section, $sectionids));
         $this->assertNotEmpty($cms);
         foreach ($cms as $cm) {
-            // Available to the student, not on the course page.
+            // Available to the student, but stealth: not on the course page, in a hidden section.
             $this->assertTrue($cm->uservisible, $cm->name);
-            $this->assertFalse($cm->is_visible_on_course_page(), $cm->name);
+            $this->assertTrue($cm->is_stealth(), $cm->name);
+            $this->assertFalse($cm->get_section_info()->uservisible, $cm->name);
         }
         foreach ($sectionids as $sectionid) {
             $this->assertEquals(0, $DB->get_field('course_sections', 'visible', ['id' => $sectionid]));
@@ -104,8 +105,26 @@ final class portal_test extends \advanced_testcase {
         regions::save($course->id, ['hideacts' => 0]);
         $modinfo = get_fast_modinfo($course->id, $student->id);
         foreach (array_filter($modinfo->get_cms(), fn($cm) => in_array($cm->section, $sectionids)) as $cm) {
-            $this->assertTrue($cm->is_visible_on_course_page(), $cm->name);
+            $this->assertFalse($cm->is_stealth(), $cm->name);
+            $this->assertTrue($cm->get_section_info()->uservisible, $cm->name);
         }
+    }
+
+    public function test_the_site_is_asked_for_what_the_game_needs(): void {
+        global $CFG;
+        $this->resetAfterTest();
+        require_once($CFG->libdir . '/adminlib.php');
+        set_config('allowstealth', 0);
+        $setting = new \local_oksigeniatesape\admin\setting_allowstealth();
+        // Not answered yet: it shows among the new settings of the site, checked.
+        $this->assertNull($setting->get_setting());
+        $this->assertSame(1, $setting->get_defaultsetting());
+        $this->assertSame('', $setting->write_setting('1'));
+        $this->assertEquals(1, get_config('core', 'allowstealth'));
+        $this->assertSame('1', $setting->get_setting());
+        // Turned off where the site keeps it, the box says so.
+        set_config('allowstealth', 0);
+        $this->assertSame('0', $setting->get_setting());
     }
 
     public function test_my_world_lists_the_courses_with_the_game(): void {
