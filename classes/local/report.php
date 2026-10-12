@@ -66,8 +66,8 @@ final class report {
             if (strpos($key, 'objective:') === 0) {
                 $code = substr($key, strlen('objective:'));
                 $heads[] = $code;
-                $legend[] = '<b>' . s($code) . '</b> ' . s(missions::text($mission->data['objectives'][$code] ?? '',
-                    $mission->skin));
+                $name = missions::text($mission->data['objectives'][$code] ?? '', $mission->skin);
+                $legend[] = '<b>' . s($code) . '</b> ' . s($name);
             } else {
                 $heads[] = get_string('report_short_' . $key, 'local_oksigeniatesape');
             }
