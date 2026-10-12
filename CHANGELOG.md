@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.26.2 (2026-10-12)
+
+- The moments of a scene without a picture of their own (its endings, for instance) show the picture of the scene's
+  first moment, not the background of its chapter: the end of the crossing in the barge stays on the lake.
+
 ## 0.26.1 (2026-10-12)
 
 - The paintings of the scenes are shown at 16:9 (1440 × 810 in the pack), never taller than about half the screen,

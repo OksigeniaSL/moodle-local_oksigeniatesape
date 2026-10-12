@@ -227,6 +227,15 @@
       next();
     }
 
+    /**
+     * The picture of the scene, for its nodes without one of their own: that of its first node, or its place.
+     *
+     * @return {string}
+     */
+    function sceneImage() {
+      return (sc.nodes[sc.start] || {}).image || sc.id;
+    }
+
     function go(node) {
       run.node = node;
       next();
@@ -235,7 +244,7 @@
     function next() {
       var n = sc.nodes[run.node];
       if (n.type === 'story') {
-        var body = show(picture(n.image || sc.id, data) + (n.speaker ? speaker(n.speaker, data) : '') +
+        var body = show(picture(n.image || sceneImage(), data) + (n.speaker ? speaker(n.speaker, data) : '') +
           '<p class="scene-text">' + esc(tx(n.text)) + '</p><div class="actions">' +
           '<button class="btn btn-main" data-focus data-next>' + esc(t('app_continue')) + '</button></div>');
         body.querySelector('[data-next]').onclick = function() {
@@ -664,7 +673,7 @@
       show('<div class="loading-inline"><div class="lamp"></div>' + esc(t('app_saving')) + '</div>');
       cm.finish(run.events, run.from).then(function(result) {
         var success = result.outcome !== 'retry';
-        var body = show(picture(n.image || sc.id, data) + '<p class="scene-text">' + esc(tx(n.text)) + '</p>' + (success ?
+        var body = show(picture(n.image || sceneImage(), data) + '<p class="scene-text">' + esc(tx(n.text)) + '</p>' + (success ?
           '<div class="conseq good"><span class="what">' + esc(t('board_scene_rewarded', result.rewarded)) + '</span></div>' :
           '') + better(result) + '<div class="actions">' + (success ? '<button class="btn btn-main" data-focus data-map>' +
           esc(t('board_battle_back')) + '</button>' + replay(result) : '<button class="btn btn-main" data-focus data-retry>' +
@@ -768,7 +777,7 @@
           // What this play left (memory between scenes) counts for the next one.
           data.flags = run.flags.slice();
         }
-        var body = show(picture(n.image || sc.id, data) + '<p class="scene-text">' + esc(tx(n.text)) + '</p>' + hatch + levelup +
+        var body = show(picture(n.image || sceneImage(), data) + '<p class="scene-text">' + esc(tx(n.text)) + '</p>' + hatch + levelup +
           (lines.length ? '<div class="conseq good"><span class="what">' + esc(t('app_forcharacter')) + '</span>' +
           lines.map(esc).join('<br>') + '</div>' : '') + done + better(result) + '<div class="actions">' + (success ?
           '<button class="btn btn-main" data-focus data-map>' + esc(t('app_backtomap')) + '</button>' + replay(result) :
