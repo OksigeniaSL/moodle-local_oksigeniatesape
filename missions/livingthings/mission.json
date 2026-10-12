@@ -1,6 +1,6 @@
 {
  "code": "livingthings",
- "version": 10,
+ "version": 11,
  "lang": "es",
  "ages": "9–11",
  "title": {
@@ -496,7 +496,7 @@
      "minutes": 50
     },
     {
-     "do": "Defensa del nido en la pizarra y búsqueda de invertebrados en el patio, sin dañarlos.",
+     "do": "Defensa del nido, cada uno en su dispositivo (o por turnos, si hay pocos), y búsqueda de invertebrados en el patio, sin dañarlos.",
      "game": "nestdefence",
      "materials": "Lupas o visores de cartón",
      "minutes": 50
@@ -526,13 +526,13 @@
    ],
    "sessions": [
     {
-     "do": "Los resultados del experimento: qué se predijo, qué se ve y qué se concluye.",
-     "materials": "Las semillas sembradas en el primer capítulo, una regla",
+     "do": "El sótano de las linternas en la pizarra: la clase apuesta qué habrá pasado con las semillas a oscuras antes de mirarlas.",
+     "scene": "C4-2",
      "minutes": 50
     },
     {
-     "do": "El sótano de las linternas en la pizarra, comparado con lo que dijo el experimento.",
-     "scene": "C4-2",
+     "do": "Los resultados del experimento: qué se apostó, qué se ve y qué se concluye.",
+     "materials": "Las semillas sembradas en el primer capítulo, una regla",
      "minutes": 50
     }
    ],
@@ -564,7 +564,7 @@
     "valley": "A orillas del lago todo depende de todo. Cae la tarde y hay que pasar aquí la noche.",
     "azara": "La expedición llega a la orilla de un gran río al caer la tarde."
    },
-   "offscreen": "La carrera de la cadena, pilla-pilla de productores y consumidores",
+   "offscreen": "La carrera de la cadena, un juego de atrapar entre productores y consumidores",
    "pacts": [
     "Traer dibujada en una tira una cadena alimentaria del entorno",
     "Leer lo del lince o lo del tagua y traer una pregunta",

@@ -101,6 +101,7 @@ final class regions {
             }
             $region->family = $settings['family'];
         }
+        $regroup = array_key_exists('groupingid', $settings) && (int) $settings['groupingid'] !== (int) ($region->groupingid ?? 0);
         foreach (['groupingid', 'weeklycap', 'dailymanualcap', 'dailyenergylosscap'] as $number) {
             if (array_key_exists($number, $settings)) {
                 $region->$number = max(0, (int) $settings[$number]);
@@ -152,6 +153,9 @@ final class regions {
         if ($grades) {
             // Turned on: the ratings already given go to the gradebook too.
             gradebook::sync($courseid);
+        }
+        if ($regroup) {
+            activities::regroup($courseid, (int) $region->groupingid);
         }
         return $DB->get_record(self::TABLE, ['id' => $region->id], '*', MUST_EXIST);
     }

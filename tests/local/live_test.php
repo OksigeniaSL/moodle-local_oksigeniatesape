@@ -434,6 +434,12 @@ final class live_test extends \advanced_testcase {
         $this->assertTrue($prize['grew']);
         $this->assertEquals(2, $DB->get_field(self::T . 'char', 'creaturestage', ['id' => $members[0]->charid]));
         $this->assertNotEquals(0, $DB->get_field(self::T . 'chapter', 'litat', ['missionid' => $mission->id, 'code' => 'torre']));
+        // Who was not in class that day gets the lantern of the tower too, so as not to miss the badge; nothing else.
+        foreach ([1, 2, 3] as $i) {
+            $mine = ['charid' => $members[$i]->charid, 'missionid' => $mission->id];
+            $this->assertTrue($DB->record_exists(self::T . 'found', $mine + ['kind' => 'lantern', 'code' => 'torre']));
+            $this->assertFalse($DB->record_exists(self::T . 'found', $mine + ['kind' => 'final']));
+        }
         // Winning it again gives the usual prize.
         $live = $win(true, self::NOW + 2);
         $prize = live::device_view($live, $members[0], self::NOW + 2)['prize'];

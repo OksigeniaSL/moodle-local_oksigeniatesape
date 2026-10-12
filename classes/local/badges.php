@@ -133,6 +133,32 @@ final class badges {
     }
 
     /**
+     * The badge of the mission of a course, just turned on, goes at once to every student who has already lit the
+     * lanterns of every place. Never in the way of the teacher.
+     *
+     * @param int $courseid
+     * @param int $badgeid The badge turned on: nothing happens if it is not the one of the mission.
+     */
+    public static function check_course(int $courseid, int $badgeid): void {
+        global $DB;
+        try {
+            $mission = missions::get($courseid);
+            if (!$mission || self::find($courseid, $mission) !== $badgeid) {
+                return;
+            }
+            $sql = 'SELECT c.userid
+                      FROM {' . self::T . 'member} m
+                      JOIN {' . self::T . 'char} c ON c.id = m.charid
+                     WHERE m.courseid = ?';
+            foreach ($DB->get_fieldset_sql($sql, [$courseid]) as $userid) {
+                self::check($courseid, (int) $userid);
+            }
+        } catch (\Throwable $e) {
+            debugging('Tesapé could not give the badge of the mission: ' . $e->getMessage(), DEBUG_DEVELOPER);
+        }
+    }
+
+    /**
      * Gives the badge of the mission of a course to a student who has lit the lanterns of every place, if the teacher
      * turned it on. Never in the way of the game.
      *

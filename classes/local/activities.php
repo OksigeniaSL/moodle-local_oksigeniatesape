@@ -107,6 +107,30 @@ final class activities {
     }
 
     /**
+     * The team activities of a course follow the teams of the game: when the teams change, their team submissions
+     * use the new grouping, so that nobody is in two teams for Moodle.
+     *
+     * @param int $courseid
+     * @param int $groupingid
+     * @return int Activities changed.
+     */
+    public static function regroup(int $courseid, int $groupingid): int {
+        global $DB;
+        $sql = "SELECT a.id
+                  FROM {" . self::T . "challenge} c
+                  JOIN {course_modules} cm ON cm.id = c.cmid
+                  JOIN {modules} m ON m.id = cm.module AND m.name = 'assign'
+                  JOIN {assign} a ON a.id = cm.instance
+                 WHERE c.courseid = ? AND c.teamwork = 1 AND a.teamsubmission = 1
+                       AND a.teamsubmissiongroupingid <> ?";
+        $ids = $DB->get_fieldset_sql($sql, [$courseid, $groupingid]);
+        foreach ($ids as $id) {
+            $DB->set_field('assign', 'teamsubmissiongroupingid', $groupingid, ['id' => $id]);
+        }
+        return count($ids);
+    }
+
+    /**
      * The activities a student sees in the game: the challenges of their step and the activities in the section of
      * each chapter, with whether they have completed them.
      *

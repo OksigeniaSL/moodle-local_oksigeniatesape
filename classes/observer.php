@@ -16,6 +16,7 @@
 
 namespace local_oksigeniatesape;
 
+use local_oksigeniatesape\local\badges;
 use local_oksigeniatesape\local\characters;
 use local_oksigeniatesape\local\engine;
 use local_oksigeniatesape\local\regions;
@@ -99,6 +100,18 @@ final class observer {
     public static function module_deleted(\core\event\course_module_deleted $event): void {
         global $DB;
         $DB->delete_records(self::T . 'challenge', ['cmid' => $event->contextinstanceid]);
+    }
+
+    /**
+     * A badge turned on: if it is the badge of the mission of its course, it goes at once to whoever has already lit the
+     * lanterns of every place (the teacher may turn it on halfway through the mission, or at the end).
+     *
+     * @param \core\event\badge_enabled $event
+     */
+    public static function badge_enabled(\core\event\badge_enabled $event): void {
+        if ($event->courseid) {
+            badges::check_course((int) $event->courseid, (int) $event->objectid);
+        }
     }
 
     /**

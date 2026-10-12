@@ -112,6 +112,21 @@ final class badges_test extends \advanced_testcase {
         $this->assertSame(1, $DB->count_records('badge_issued', ['badgeid' => $id, 'userid' => $w->student->id]));
     }
 
+    public function test_turned_on_at_the_end_it_goes_to_who_has_every_lantern(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $w = $this->make_class();
+        $id = badges::find($w->course->id, $w->mission);
+        $this->light($w, $DB->get_fieldset_select(self::T . 'chapter', 'code', 'missionid = ?', [$w->mission->id]));
+        $other = $this->getDataGenerator()->create_and_enrol($w->course, 'student');
+        engine::member(characters::create($other->id, 'scout', 'm'), $w->course->id);
+        // The teacher turns it on when the mission is over: whoever lit every lantern gets it at once.
+        (new \core_badges\badge($id))->set_status(BADGE_STATUS_ACTIVE);
+        $this->assertTrue((new \core_badges\badge($id))->is_issued($w->student->id));
+        $this->assertFalse((new \core_badges\badge($id))->is_issued($other->id));
+    }
+
     public function test_without_badges_in_courses_there_is_none(): void {
         global $DB;
         $this->resetAfterTest();

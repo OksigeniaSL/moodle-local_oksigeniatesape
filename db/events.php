@@ -45,4 +45,8 @@ $observers = [
         'eventname' => '\core\event\user_deleted',
         'callback' => '\local_oksigeniatesape\observer::user_deleted',
     ],
+    [
+        'eventname' => '\core\event\badge_enabled',
+        'callback' => '\local_oksigeniatesape\observer::badge_enabled',
+    ],
 ];

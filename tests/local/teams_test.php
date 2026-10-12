@@ -91,6 +91,24 @@ final class teams_test extends \advanced_testcase {
         $this->assertCount(2, groups_get_all_groups($w->course->id, 0, regions::get($w->course->id)->groupingid));
     }
 
+    public function test_the_team_activities_follow_the_teams(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $w = $this->make_class(['protector', 'healer', 'sage', 'scout', 'protector', 'healer']);
+        // The mission first and the teams after: its team activities use the teams of the game, also made again.
+        missions::install($w->course->id, 'livingthings', 'valley', 'es');
+        $sql = 'SELECT id, teamsubmissiongroupingid FROM {assign} WHERE course = ? AND teamsubmission = 1';
+        $this->assertNotEmpty($DB->get_records_sql($sql, [$w->course->id]));
+        foreach ([3, 6] as $size) {
+            teams::make($w->course->id, $size);
+            $grouping = (int) regions::get($w->course->id)->groupingid;
+            foreach ($DB->get_records_sql($sql, [$w->course->id]) as $assign) {
+                $this->assertEquals($grouping, $assign->teamsubmissiongroupingid);
+            }
+        }
+    }
+
     public function test_make_needs_students(): void {
         $this->resetAfterTest();
         $course = $this->getDataGenerator()->create_course();

@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.28.4 (2026-10-12)
+
+- **The team activities follow the teams of the game**: made or made again after the mission is installed, or chosen
+  in the settings, the team submissions of its activities use the new teams (before, they kept the first grouping, and
+  a student could be in two teams for Moodle).
+- **The lantern of the tower, for the whole class**: when the class wins the final battle, whoever was not in class
+  that day gets it too (not the prize of the battle), so that missing that day does not leave anyone without the badge.
+- **The badge, turned on late**: when the teacher turns on the badge of the mission, it goes at once to whoever has
+  already lit every lantern.
+- The pilot mission, version 11: the order of the sessions of the garden (the class bets in the cellar before looking
+  at the experiment), «Defensa del nido» on each device, and a challenge of the lake named the same everywhere.
+
 ## 0.28.3 (2026-10-12)
 
 - The result of a battle shows on the phones for five minutes after it ends: once a student closes it, it does not

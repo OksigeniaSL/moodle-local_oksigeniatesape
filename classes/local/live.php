@@ -768,6 +768,18 @@ final class live {
             }
             $rewarded[$charid] = $prize;
         }
+        if ($final && !empty($final['lantern'])) {
+            // The lantern of the place is the class beating the Embrollo, also for whoever was not in class that day: missing
+            // the battle does not leave anyone without the badge of the mission.
+            $lantern = (string) $final['lantern'];
+            $where = 'courseid = ? AND status <> ?';
+            foreach ($DB->get_records_select(self::T . 'member', $where, [$courseid, 'paused'], '', 'id, charid') as $member) {
+                $charid = (int) $member->charid;
+                if (!isset($players[$charid]) && self::once($charid, $courseid, (int) $mission->id, 'lantern', $lantern, $now)) {
+                    badges::check($courseid, (int) $DB->get_field(self::T . 'char', 'userid', ['id' => $charid]));
+                }
+            }
+        }
         return $rewarded;
     }
 
