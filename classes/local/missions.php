@@ -186,8 +186,12 @@ final class missions {
             }
         }
         $transaction->allow_commit();
-        // The framework of the mission in the site, and its competencies in the course.
-        competencies::links($courseid);
+        // The framework of the mission in the site, and its competencies in the course; never in the way of the game.
+        try {
+            competencies::links($courseid);
+        } catch (\Throwable $e) {
+            debugging('Tesapé could not link the competencies of the mission: ' . $e->getMessage(), DEBUG_DEVELOPER);
+        }
         if ($activities && !empty(regions::get($courseid)->hideacts)) {
             // The course keeps the activities of the mission inside the valley: the new ones too.
             portal::keep_inside($courseid, true);

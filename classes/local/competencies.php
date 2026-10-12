@@ -61,12 +61,15 @@ final class competencies {
         if ($existing) {
             return $existing;
         }
-        require_once($CFG->libdir . '/grade/grade_scale.php');
+        require_once($CFG->libdir . '/gradelib.php');
         $levels = $info['scale']['levels'];
-        // A scale of the whole site (no course), as frameworks need.
-        $scale = new \grade_scale(['name' => $info['scale']['name'], 'scale' => implode(',', $levels), 'courseid' => 0,
-            'userid' => 0, 'description' => '']);
-        $scale->insert();
+        // A scale of the whole site (no course), as frameworks need; the one already there if a first try left it.
+        $scale = \grade_scale::fetch(['courseid' => 0, 'name' => $info['scale']['name'], 'scale' => implode(',', $levels)]);
+        if (!$scale) {
+            $scale = new \grade_scale(['name' => $info['scale']['name'], 'scale' => implode(',', $levels), 'courseid' => 0,
+                'userid' => 0, 'description' => '']);
+            $scale->insert();
+        }
         $configuration = [['scaleid' => (int) $scale->id]];
         foreach ($levels as $i => $level) {
             $position = $i + 1;
@@ -208,6 +211,24 @@ final class competencies {
         if (!$objectives || !self::enabled()) {
             return;
         }
+        try {
+            self::add_evidence($courseid, $userid, $scene, $objectives, $attempt);
+        } catch (\Throwable $e) {
+            // The competencies never stop the game: the play counts, and the trouble is told to the developers.
+            debugging('Tesapé could not leave evidence in the competencies: ' . $e->getMessage(), DEBUG_DEVELOPER);
+        }
+    }
+
+    /**
+     * Leaves the evidence of a play.
+     *
+     * @param int $courseid
+     * @param int $userid
+     * @param \stdClass $scene
+     * @param array $objectives
+     * @param int $attempt
+     */
+    private static function add_evidence(int $courseid, int $userid, \stdClass $scene, array $objectives, int $attempt): void {
         $links = self::links($courseid);
         $context = \context_course::instance($courseid);
         $title = (string) ($scene->data['title'] ?? $scene->code);

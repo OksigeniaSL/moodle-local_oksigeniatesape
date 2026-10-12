@@ -72,6 +72,10 @@ final class competencies_test extends \advanced_testcase {
         $other = $this->getDataGenerator()->create_course();
         missions::install($other->id, 'livingthings', 'azara', 'py');
         $this->assertSame(1, competency_framework::count_records(['idnumber' => 'tesape-seres-vivos']));
+        // Made again (a first try that stopped half way): the scale already there is used, not a second one.
+        $framework->delete();
+        competencies::framework(missions::get($w->course->id));
+        $this->assertSame(1, $GLOBALS['DB']->count_records('scale', ['name' => 'Tesapé · Escala de dominio']));
     }
 
     public function test_a_scene_leaves_evidence_and_the_teacher_rates(): void {

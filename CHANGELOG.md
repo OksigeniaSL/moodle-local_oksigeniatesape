@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.25.1 (2026-10-12)
+
+- Making the framework of a mission could stop with an error on a site where the libraries of grades were not loaded
+  yet (found on dev.redescuela.com): the scale of the framework now loads them. A scale left by a first try that
+  stopped half way is used again instead of making a second one.
+- The competencies never stop the game: if the evidence of a play cannot be left, the play counts and the trouble is
+  told to the developers.
+
 ## 0.25.0 (2026-10-12)
 
 - **Competencies of Moodle**: each mission brings its own framework of Tesapé, installed in the site with the mission
