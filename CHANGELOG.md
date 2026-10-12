@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.26.11 (2026-10-12)
+
+- The font rules of the cover follow the style checks of Moodle (one value per line in long lists).
+
 ## 0.26.10 (2026-10-12)
 
 - The title of the cover of the course is written in the title font of the game (Cherry Swash, its brand), served by
