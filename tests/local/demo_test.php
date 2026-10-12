@@ -104,7 +104,7 @@ final class demo_test extends \advanced_testcase {
         $visitor = $this->getDataGenerator()->create_and_enrol($class->course, 'student', ['username' => 'alumno']);
         $joined = demo::join_class($courseid, 'alumno', 2, 'f');
         // In the smallest team, with the role it lacked, and some progress like the rest.
-        $this->assertContains($joined->team, $class->teams);
+        $this->assertContains($joined->team, array_map('intval', $class->teams));
         $this->assertTrue(groups_is_member($joined->team, $visitor->id));
         $char = characters::get((int) $visitor->id);
         $this->assertSame('f', $char->nameform);
