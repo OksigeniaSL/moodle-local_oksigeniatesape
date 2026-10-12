@@ -1101,12 +1101,13 @@
    */
   function nextClass() {
     var n = state.nextclass;
-    if (!n || !n.ai || !state.results || !state.results.chapters.length) {
+    // Whoever cannot use the AI still sees the last plan of the class, if there is one.
+    if (!n || !(n.canuse || n.plan) || !state.results || !state.results.chapters.length) {
       return '';
     }
     var head = '<section class="card next-class" style="margin-top:16px"><div class="kicker">' + esc(t('teach_next')) +
       '</div><h2>' + esc(t('teach_next_title')) + '</h2>';
-    if (!n.policy) {
+    if (n.canuse && !n.policy) {
       // The policy of the site is a text of Moodle itself, with its own HTML.
       return head + '<div class="ai-policy">' + n.policytext + '</div><div class="actions"><button class="btn btn-main" ' +
         'data-aiaccept>' + esc(t('teach_next_accept')) + '</button></div></section>';
@@ -1122,6 +1123,9 @@
       esc(p.challengewhy) : '') + '</p>' : '') + '<small class="help-soft" style="display:block;margin-top:10px">' +
       esc(t('teach_next_when', when(p.time))) + '</small>' : '<p style="color:var(--text-soft)">' +
       esc(t('teach_next_help')) + '</p>';
+    if (!n.canuse) {
+      return head + plan + '<small class="help-soft" style="display:block">' + esc(t('teach_next_readonly')) + '</small></section>';
+    }
     return head + plan + '<div class="actions" style="justify-content:flex-start"><button class="btn ' +
       (p ? 'btn-soft' : 'btn-main') + '" data-nextmake' + (state.nextbusy ? ' disabled' : '') + '>' +
       esc(state.nextbusy ? t('teach_next_busy') : t(p ? 'teach_next_again' : 'teach_next_make')) + '</button></div>' +

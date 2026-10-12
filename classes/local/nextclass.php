@@ -48,11 +48,11 @@ final class nextclass {
     private const AGAIN = 'Your previous answer was not valid JSON with exactly that shape. Answer again with only the JSON.';
 
     /**
-     * Whether the site has AI for this course and whether the teacher accepted its policy.
+     * Whether the site has AI for this course, whether the teacher accepted its policy and whether they can use it.
      *
      * @param int $courseid
      * @param int $userid
-     * @return array ai, policy.
+     * @return array ai, policy, canuse.
      */
     public static function status(int $courseid, int $userid): array {
         $manager = \core\di::get(\core_ai\manager::class);
@@ -61,7 +61,10 @@ final class nextclass {
         if ($ai && method_exists($manager, 'is_action_enabled_in_context')) {
             $ai = $manager->is_action_enabled_in_context(\context_course::instance($courseid), generate_text::class);
         }
-        return ['ai' => $ai, 'policy' => \core_ai\manager::get_user_policy_status($userid)];
+        $policy = \core_ai\manager::get_user_policy_status($userid);
+        // Someone who has not accepted the policy and may not accept it (a public account of a demo site) cannot use it.
+        $canuse = $ai && ($policy || has_capability('moodle/ai:acceptpolicy', \context_course::instance($courseid), $userid));
+        return ['ai' => $ai, 'policy' => $policy, 'canuse' => $canuse];
     }
 
     /**

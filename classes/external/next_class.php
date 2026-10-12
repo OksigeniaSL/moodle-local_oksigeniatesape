@@ -67,8 +67,9 @@ final class next_class extends external_api {
             throw new \invalid_parameter_exception('Unknown action');
         }
         $status = nextclass::status($params['courseid'], (int) $USER->id);
-        $result = $status + ['policytext' => $status['ai'] && !$status['policy'] ? get_string('userpolicy', 'core_ai') : ''];
-        $plan = $status['ai'] ? nextclass::last($params['courseid']) : null;
+        $result = $status + ['policytext' => $status['canuse'] && !$status['policy'] ? get_string('userpolicy', 'core_ai') : ''];
+        // The last plan of the class is shown even to whoever cannot make another.
+        $plan = nextclass::last($params['courseid']);
         if ($plan) {
             $result['plan'] = $plan;
         }
@@ -84,6 +85,7 @@ final class next_class extends external_api {
         return new external_single_structure([
             'ai' => new external_value(PARAM_BOOL, 'The site has AI for this course'),
             'policy' => new external_value(PARAM_BOOL, 'The teacher accepted the AI policy of the site'),
+            'canuse' => new external_value(PARAM_BOOL, 'The teacher can use the AI (or accept its policy)', VALUE_DEFAULT, false),
             'policytext' => new external_value(PARAM_RAW, 'The AI policy of the site, to accept it (empty if accepted)'),
             'plan' => new external_single_structure([
                 'summary' => new external_value(PARAM_TEXT, 'What confuses the class most'),

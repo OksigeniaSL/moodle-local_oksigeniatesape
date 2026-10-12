@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.26.8 (2026-10-12)
+
+- The plan for the next class: whoever cannot use the AI of the site, such as a public account of a demo site that may
+  not accept its policy, still sees the last plan of the class, with a note and without the buttons to accept the policy
+  or to ask for another (they gave an error).
+
 ## 0.26.7 (2026-10-12)
 
 - The test of joining a class compares the ids of the teams as numbers.

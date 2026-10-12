@@ -153,6 +153,43 @@ final class nextclass_test extends \advanced_testcase {
         $this->assertSame('', nextclass::opener($w->course->id, time() + (nextclass::OPENER_DAYS + 1) * DAYSECS));
     }
 
+    public function test_whoever_may_not_use_the_ai_still_sees_the_last_plan(): void {
+        global $DB;
+        if ((new \ReflectionMethod(\core_ai\manager::class, 'is_action_available'))->isStatic()) {
+            $this->markTestSkipped('The AI manager of Moodle 4.5 cannot be replaced in a test.');
+        }
+        $this->resetAfterTest();
+        $w = $this->make_class();
+        $methods = ['is_action_available'];
+        if (method_exists(\core_ai\manager::class, 'is_action_enabled_in_context')) {
+            $methods[] = 'is_action_enabled_in_context';
+        }
+        $manager = $this->getMockBuilder(\core_ai\manager::class)->disableOriginalConstructor()->onlyMethods($methods)
+            ->getMock();
+        $manager->method('is_action_available')->willReturn(true);
+        if (in_array('is_action_enabled_in_context', $methods, true)) {
+            $manager->method('is_action_enabled_in_context')->willReturn(true);
+        }
+        \core\di::set(\core_ai\manager::class, $manager);
+        // A public account of a demo site: it may not accept the policy of the AI.
+        $context = \context_course::instance($w->course->id);
+        $role = $DB->get_field('role', 'id', ['shortname' => 'editingteacher']);
+        assign_capability('moodle/ai:acceptpolicy', CAP_PROHIBIT, $role, $context->id);
+        $status = nextclass::status($w->course->id, $w->teacher->id);
+        $this->assertTrue($status['ai']);
+        $this->assertFalse($status['canuse']);
+        // The plan someone made before, frozen in the demo, is still shown, with nothing to accept.
+        $plan = ['summary' => 'Setas y plantas', 'review' => [['point' => 'Las setas', 'how' => 'Mirar una']],
+            'example' => '', 'opener' => '¿Está viva una seta?', 'challenge' => 0, 'challengewhy' => ''];
+        $DB->insert_record(self::T . 'nextclass', (object) ['courseid' => $w->course->id, 'data' => json_encode($plan),
+            'timecreated' => time()]);
+        $this->setUser($w->teacher);
+        $result = \local_oksigeniatesape\external\next_class::execute($w->course->id, 'state');
+        $this->assertFalse($result['canuse']);
+        $this->assertSame('', $result['policytext']);
+        $this->assertSame('¿Está viva una seta?', $result['plan']['opener']);
+    }
+
     public function test_a_provider_that_cannot_be_reached_gives_a_plain_message(): void {
         if ((new \ReflectionMethod(\core_ai\manager::class, 'is_action_available'))->isStatic()) {
             $this->markTestSkipped('The AI manager of Moodle 4.5 cannot be replaced in a test.');

@@ -877,6 +877,7 @@ $string['teach_next_make'] = 'Make the plan';
 $string['teach_next_onboard'] = 'It also shows on the class screen for a few days.';
 $string['teach_next_opener'] = 'A question to open the class';
 $string['teach_next_privacy'] = 'Only counts and the content of the mission are sent, never a name. Check it before you use it.';
+$string['teach_next_readonly'] = 'This is the last plan of the class. Your account cannot ask the AI of the site for another one.';
 $string['teach_next_review'] = 'What to review';
 $string['teach_next_title'] = 'For your next class';
 $string['teach_next_when'] = 'Made on {$a}';
