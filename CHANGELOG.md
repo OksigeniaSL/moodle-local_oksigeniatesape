@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.26.0 (2026-10-12)
+
+- **Paintings in the scenes**: the art pack can bring a background for each place (`scene.<place>`, such as
+  `scene.lago`) and, if a moment needs it, its own picture (`scene.<image>`, such as `scene.lago-red`). The game looks
+  for the image of the node, then the place its name starts with, then the place of the scene's chapter; each one first
+  in the skin of the mission (`scene.lago.azara`). Without them, it draws its own picture as before.
+- **Who speaks, with their portrait**: `speaker.<code>` (round, 256 × 256), or `speaker.<code>.<skin>` when that
+  speaker is someone else in another skin (the elder druid is the naturalist in Azara's). The Embrollo uses its battle
+  picture if it has no portrait.
+- The opening of the mission and the card of the region can show a painting of the valley (`scene.prologue`,
+  `scene.region`; one serves both).
+
 ## 0.25.2 (2026-10-12)
 
 - The settings page of the plugin says whether the site uses the competencies of Moodle, and where to turn them on if

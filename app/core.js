@@ -575,12 +575,18 @@
   };
 
   /**
-   * A picture of the valley at dusk, for the story screens and the region card.
+   * A picture of the valley at dusk, for the story screens and the region card: the painting of the art pack, or one
+   * drawn here.
    *
    * @param {string} kind prologue or region.
    * @return {string}
    */
   T.vignette = function(kind) {
+    // One painting serves both, if the pack has only one.
+    var art = T.artUrl(['scene.' + kind, 'scene.' + (kind === 'region' ? 'prologue' : 'region')]);
+    if (art) {
+      return '<div class="vignette art" aria-hidden="true"><img src="' + T.esc(art) + '" alt=""></div>';
+    }
     var lamps = kind === 'region' ? [[90, 96, 0.5], [170, 84, 1], [250, 92, 0.35]] : [[170, 86, 1]];
     var lights = lamps.map(function(l) {
       return '<circle cx="' + l[0] + '" cy="' + l[1] + '" r="16" fill="#ffc857" opacity="' + (0.18 * l[2]) + '"/>' +

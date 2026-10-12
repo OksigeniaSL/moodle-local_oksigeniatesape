@@ -14,12 +14,36 @@
   var esc = T.esc;
 
   /**
-   * A picture for a node, drawn from words in its key (placeholder until the art arrives).
+   * The keys of the art pack for the picture of a node, from the most precise to the most general: the image of the
+   * node, the place its name starts with (lago-red: the lake), and the place of the scene's chapter; each one first in
+   * the skin of the mission. A skin without its own pictures uses those of the first skin.
+   *
+   * @param {string} key Image of the node, or the code of the scene.
+   * @param {Object} where skin and place of the scene.
+   * @return {string[]}
+   */
+  function pictureKeys(key, where) {
+    var keys = [];
+    [String(key || '').toLowerCase(), String(key || '').toLowerCase().split('-')[0], where.place].forEach(function(k) {
+      if (k && keys.indexOf('scene.' + k) < 0) {
+        keys.push('scene.' + k + '.' + where.skin, 'scene.' + k);
+      }
+    });
+    return keys;
+  }
+
+  /**
+   * A picture for a node: the painting of the art pack, or one drawn from words in its key until the art arrives.
    *
    * @param {string} key
+   * @param {Object} where skin and place of the scene.
    * @return {string}
    */
-  function picture(key) {
+  function picture(key, where) {
+    var art = T.artUrl(pictureKeys(key, where || {}));
+    if (art) {
+      return '<div class="vignette scene-pic art" aria-hidden="true"><img src="' + esc(art) + '" alt=""></div>';
+    }
     var k = String(key || '');
     var mid = '';
     if (/lago|gota|agua|barcaza|rio/.test(k)) {
@@ -41,6 +65,20 @@
     return '<div class="vignette scene-pic" aria-hidden="true"><svg viewBox="0 0 340 120" ' +
       'preserveAspectRatio="xMidYMid slice"><rect width="340" height="120" fill="#16314a"/><circle cx="300" cy="26" r="12" ' +
       'fill="#fff3c4" opacity=".8"/><path d="M0 120 Q80 64 160 100 T340 92 V120Z" fill="#183528"/>' + mid + '</svg></div>';
+  }
+
+  /**
+   * Who speaks: their name, with their round portrait if the art pack has it. A portrait for one skin only
+   * (speaker.druida-mayor.valley) is not shown in another skin, where that speaker can be someone else.
+   *
+   * @param {string} code
+   * @param {Object} data speakers (code => name) and skin.
+   * @return {string}
+   */
+  function speaker(code, data) {
+    var art = T.artUrl(['speaker.' + code + '.' + data.skin, 'speaker.' + code, 'boss.' + code]);
+    return '<div class="speaker-row">' + (art ? '<img class="speaker-face" src="' + esc(art) + '" alt="">' : '') +
+      '<div class="speaker">' + esc(data.speakers[code] || code) + '</div></div>';
   }
 
   /**
@@ -197,8 +235,8 @@
     function next() {
       var n = sc.nodes[run.node];
       if (n.type === 'story') {
-        var body = show(picture(n.image || sc.id) + (n.speaker ? '<div class="speaker">' + esc(data.speakers[n.speaker] ||
-          n.speaker) + '</div>' : '') + '<p class="scene-text">' + esc(tx(n.text)) + '</p><div class="actions">' +
+        var body = show(picture(n.image || sc.id, data) + (n.speaker ? speaker(n.speaker, data) : '') +
+          '<p class="scene-text">' + esc(tx(n.text)) + '</p><div class="actions">' +
           '<button class="btn btn-main" data-focus data-next>' + esc(t('app_continue')) + '</button></div>');
         body.querySelector('[data-next]').onclick = function() {
           go(n.next);
@@ -338,7 +376,7 @@
           '<span class="opt-votes" data-votes></span></button>';
       }).join('');
       var voting = cm && cm.vote && !multi && open.length >= 2;
-      var body = show((n.image ? picture(n.image) : '') + '<p class="scene-prompt">' + esc(tx(n.prompt)) + '</p>' +
+      var body = show((n.image ? picture(n.image, data) : '') + '<p class="scene-prompt">' + esc(tx(n.prompt)) + '</p>' +
         (voting ? '<div class="class-vote" data-vote><button class="btn btn-soft" data-voteopen>' +
         esc(t('board_scene_voteopen')) + '</button></div>' : '') +
         '<div class="opts">' + opts + '</div>' + (multi ? '<div class="counter" data-count>' + esc(t('app_chosen', '0/' + max)) +
@@ -626,7 +664,7 @@
       show('<div class="loading-inline"><div class="lamp"></div>' + esc(t('app_saving')) + '</div>');
       cm.finish(run.events, run.from).then(function(result) {
         var success = result.outcome !== 'retry';
-        var body = show(picture(n.image || sc.id) + '<p class="scene-text">' + esc(tx(n.text)) + '</p>' + (success ?
+        var body = show(picture(n.image || sc.id, data) + '<p class="scene-text">' + esc(tx(n.text)) + '</p>' + (success ?
           '<div class="conseq good"><span class="what">' + esc(t('board_scene_rewarded', result.rewarded)) + '</span></div>' :
           '') + better(result) + '<div class="actions">' + (success ? '<button class="btn btn-main" data-focus data-map>' +
           esc(t('board_battle_back')) + '</button>' + replay(result) : '<button class="btn btn-main" data-focus data-retry>' +
@@ -730,7 +768,7 @@
           // What this play left (memory between scenes) counts for the next one.
           data.flags = run.flags.slice();
         }
-        var body = show(picture(n.image || sc.id) + '<p class="scene-text">' + esc(tx(n.text)) + '</p>' + hatch + levelup +
+        var body = show(picture(n.image || sc.id, data) + '<p class="scene-text">' + esc(tx(n.text)) + '</p>' + hatch + levelup +
           (lines.length ? '<div class="conseq good"><span class="what">' + esc(t('app_forcharacter')) + '</span>' +
           lines.map(esc).join('<br>') + '</div>' : '') + done + better(result) + '<div class="actions">' + (success ?
           '<button class="btn btn-main" data-focus data-map>' + esc(t('app_backtomap')) + '</button>' + replay(result) :

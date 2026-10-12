@@ -86,6 +86,8 @@ final class scenes_externals_test extends \advanced_testcase {
         $scene = $this->call('get_scene', $student, [$course->id, $nest['id']]);
         $this->assertSame('es', $scene['variant']);
         $this->assertSame('La druida mayor', json_decode($scene['speakers'], true)['druida-mayor']);
+        // The place of its chapter, for the painting of the art pack.
+        $this->assertSame('claro', $scene['place']);
         $events = autoplayer::play(json_decode($scene['definition'], true));
         $result = $this->call('play_scene', $student, [$course->id, $nest['id'], json_encode($events)]);
         $this->assertSame('success', $result['outcome']);

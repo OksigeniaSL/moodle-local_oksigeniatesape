@@ -59,7 +59,7 @@ final class get_scene extends external_api {
         int $courseid,
         int $sceneid
     ): array {
-        global $USER;
+        global $DB, $USER;
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
             'sceneid' => $sceneid,
@@ -93,6 +93,8 @@ final class get_scene extends external_api {
             'id' => (int) $scene->id,
             'definition' => $scene->definition,
             'skin' => $mission->skin,
+            // The place of the scene's chapter, for its picture when a node has none of its own.
+            'place' => (string) $DB->get_field('local_oksigeniatesape_chapter', 'code', ['id' => $scene->chapterid]),
             'variant' => $mission->variant,
             'speakers' => json_encode($speakers),
             'items' => json_encode($items),
@@ -112,6 +114,7 @@ final class get_scene extends external_api {
             'id' => new external_value(PARAM_INT, 'Scene'),
             'definition' => new external_value(PARAM_RAW, 'The scene (JSON)'),
             'skin' => new external_value(PARAM_ALPHANUMEXT, 'Skin of the mission'),
+            'place' => new external_value(PARAM_ALPHANUMEXT, 'Place of the chapter of the scene', VALUE_DEFAULT, ''),
             'variant' => new external_value(PARAM_ALPHANUMEXT, 'Local examples'),
             'speakers' => new external_value(PARAM_RAW, 'Names of who speaks (JSON)'),
             'items' => new external_value(PARAM_RAW, 'Names of the items (JSON)'),

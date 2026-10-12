@@ -1387,6 +1387,44 @@ body.in-scene {
   margin-bottom: 14px;
 }
 
+/* The paintings of the art pack: a wide band, cut to fit, whatever their size. */
+.vignette.art img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 12 / 5;
+  object-fit: cover;
+}
+
+/* Who speaks: the round portrait sits on the edge of the picture, with the name beside it. */
+.speaker-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.speaker-row .speaker {
+  margin-bottom: 0;
+}
+
+.speaker-face {
+  width: 72px;
+  height: 72px;
+  margin: -44px 0 0 10px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #16304a;
+  border: 3px solid var(--lantern);
+  box-shadow: var(--shadow);
+}
+
+.scene-layer.class-mode .speaker-face {
+  width: 112px;
+  height: 112px;
+  margin-top: -70px;
+}
+
 .speaker {
   display: inline-block;
   margin-bottom: 6px;
