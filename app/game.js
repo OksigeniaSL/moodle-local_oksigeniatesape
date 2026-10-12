@@ -1344,21 +1344,27 @@
         world();
       }).bind(app);
     }
-    if (edit) {
-      edit.onclick = function() {
-        var look = {};
-        try {
-          look = JSON.parse(c.appearance || '{}') || {};
-        } catch (e) {
-          look = {};
-        }
-        state.editing = {role: c.role, nameform: c.nameform, lineage: c.lineage,
-          look: Object.assign(T.defaultLook(c.role), look)};
-        world();
-      };
-      app.querySelector('[data-print]').onclick = function() {
-        window.print();
-      };
+    if (!state.editing) {
+      // The sheet; the button to change the look is only there when the stage has something to change.
+      if (edit) {
+        edit.onclick = function() {
+          var look = {};
+          try {
+            look = JSON.parse(c.appearance || '{}') || {};
+          } catch (e) {
+            look = {};
+          }
+          state.editing = {role: c.role, nameform: c.nameform, lineage: c.lineage,
+            look: Object.assign(T.defaultLook(c.role), look)};
+          world();
+        };
+      }
+      var print = app.querySelector('[data-print]');
+      if (print) {
+        print.onclick = function() {
+          window.print();
+        };
+      }
       return;
     }
     bindBuilder(state.editing, c.stage);

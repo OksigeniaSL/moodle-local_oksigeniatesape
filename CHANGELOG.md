@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.22.1 (2026-10-12)
+
+- The character sheet of a student with nothing to change in their look at their stage stopped with an error, and its
+  print button did nothing. Found testing 0.22.0 on campus.
+
 ## 0.22.0 (2026-10-12)
 
 - **Quests**: the twelve scenes of extension (the Path of the Mountain) and expert (the Summit) of the pilot mission,
