@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.28.6 (2026-10-12)
+
+- The card of the game shows on the page of the course only, not on its participants (Moodle gives that page a type
+  that also starts with «course-view»; seen by the agent of campus).
+
 ## 0.28.5 (2026-10-12)
 
 - **The core completes a chapter for everybody**: a student of first steps who plays the core scenes of a place (with

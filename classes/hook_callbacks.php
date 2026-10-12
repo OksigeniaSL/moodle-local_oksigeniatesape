@@ -119,13 +119,14 @@ final class hook_callbacks {
     }
 
     /**
-     * Whether the page is the page of a course (not the site's front page).
+     * Whether the page is the page of a course (not the site's front page, nor the participants, whose page type also
+     * starts with course-view).
      *
      * @return bool
      */
     private static function is_course_page(): bool {
         global $PAGE;
-        return strpos((string) $PAGE->pagetype, 'course-view-') === 0 && !empty($PAGE->course->id) &&
-            $PAGE->course->id != SITEID;
+        return !empty($PAGE->course->id) && $PAGE->course->id != SITEID &&
+            (string) $PAGE->pagetype === 'course-view-' . $PAGE->course->format;
     }
 }
