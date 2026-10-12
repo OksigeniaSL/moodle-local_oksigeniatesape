@@ -74,6 +74,8 @@ final class nextclass {
      * @param int $userid
      */
     public static function accept_policy(int $courseid, int $userid): void {
+        // Whoever may not accept it (a public account of a demo site) does not, whatever the client sends.
+        require_capability('moodle/ai:acceptpolicy', \context_course::instance($courseid), $userid);
         if (!\core_ai\manager::get_user_policy_status($userid)) {
             \core_ai\manager::user_policy_accepted($userid, \context_course::instance($courseid)->id);
         }

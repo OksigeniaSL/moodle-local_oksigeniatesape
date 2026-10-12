@@ -188,6 +188,9 @@ final class nextclass_test extends \advanced_testcase {
         $this->assertFalse($result['canuse']);
         $this->assertSame('', $result['policytext']);
         $this->assertSame('¿Está viva una seta?', $result['plan']['opener']);
+        // Nor can it accept the policy by calling the web service itself.
+        $this->expectException(\required_capability_exception::class);
+        \local_oksigeniatesape\external\next_class::execute($w->course->id, 'accept');
     }
 
     public function test_a_provider_that_cannot_be_reached_gives_a_plain_message(): void {

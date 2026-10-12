@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.26.9 (2026-10-12)
+
+- Accepting the policy of the AI for the plan checks on the server that the teacher may accept it
+  (`moodle/ai:acceptpolicy`), not only in the panel (seen by the agent of campus.oksigenia.com).
+
 ## 0.26.8 (2026-10-12)
 
 - The plan for the next class: whoever cannot use the AI of the site, such as a public account of a demo site that may
