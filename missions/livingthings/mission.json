@@ -1,6 +1,6 @@
 {
  "code": "livingthings",
- "version": 11,
+ "version": 12,
  "lang": "es",
  "ages": "9–11",
  "title": {
@@ -415,6 +415,7 @@
      "minutes": 50
     }
    ],
+   "reward": "magnifier",
    "x": 160,
    "y": 560,
    "activities": [

@@ -155,6 +155,20 @@ final class scenes_test extends \advanced_testcase {
         $this->assertTrue($r['hatched']);
         $this->assertSame(['claro'], $r['lanterns']);
         $this->assertSame(['ser-vivo'], $r['pages']);
+        // And the clearing done, the magnifier that some options of the next places ask for.
+        $this->assertContains('magnifier', $r['items']);
+    }
+
+    public function test_whoever_plays_the_core_has_done_the_chapter(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $w = $this->make_class(1);
+        $user = $w->users[0];
+        $member = engine::member(characters::get($user->id), $w->course->id);
+        $DB->set_field(self::T . 'member', 'step', 1, ['id' => $member->id]);
+        // First steps, but the core of the forest played (with the class on the class screen): the forest is done.
+        $this->assertSame([], $this->play($w, $user, 'C3-2')['rewards']['lanterns']);
+        $this->assertSame(['bosque'], $this->play($w, $user, 'C3-3')['rewards']['lanterns']);
     }
 
     public function test_a_retry_ending_gives_nothing(): void {

@@ -446,7 +446,8 @@ final class scenes {
     }
 
     /**
-     * Whether a student has done the scenes of a chapter for their step.
+     * Whether a student has done the scenes of a chapter: those of their step, or those of the core. Whoever has played
+     * the core (with the class on the class screen, for instance) has done the chapter, whatever their step.
      *
      * @param \stdClass $char
      * @param int $step
@@ -455,19 +456,20 @@ final class scenes {
      */
     public static function chapter_done(\stdClass $char, int $step, \stdClass $chapter): bool {
         global $DB;
-        $scenes = self::for_step(array_values($DB->get_records(self::T . 'scene', ['chapterid' => $chapter->id])), $step);
-        if (!$scenes) {
-            return false;
-        }
-        foreach ($scenes as $scene) {
-            if (
-                !$DB->record_exists(self::T . 'found', ['charid' => $char->id, 'missionid' => $chapter->missionid,
-                    'kind' => 'scene', 'code' => $scene->code])
-            ) {
-                return false;
+        $all = array_values($DB->get_records(self::T . 'scene', ['chapterid' => $chapter->id]));
+        $found = $DB->get_fieldset_select(
+            self::T . 'found',
+            'code',
+            'charid = ? AND missionid = ? AND kind = ?',
+            [$char->id, $chapter->missionid, 'scene']
+        );
+        foreach (array_unique([$step, self::CORE_STEP]) as $route) {
+            $scenes = self::for_step($all, $route);
+            if ($scenes && !array_diff(array_map(fn($s) => $s->code, $scenes), $found)) {
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
     /**

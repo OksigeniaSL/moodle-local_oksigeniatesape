@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.28.5 (2026-10-12)
+
+- **The core completes a chapter for everybody**: a student of first steps who plays the core scenes of a place (with
+  the class on the class screen, for instance) has done it, and lights its lantern. Without devices, the class screen
+  is enough for every step.
+- The pilot mission, version 12: the clearing gives **the powerful magnifier** when it is done; some options of the
+  next places asked for it, and nothing gave it (only a mage in the team opened them).
+
 ## 0.28.4 (2026-10-12)
 
 - **The team activities follow the teams of the game**: made or made again after the mission is installed, or chosen
