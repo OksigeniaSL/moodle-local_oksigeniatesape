@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.26.10 (2026-10-12)
+
+- The title of the cover of the course is written in the title font of the game (Cherry Swash, its brand), served by
+  the plugin itself, whatever the theme of the site: with a theme of its own fonts, it took them. The font moves to
+  `fonts/`, where Moodle serves the fonts of a plugin to its styles; the game takes it from there too.
+
 ## 0.26.9 (2026-10-12)
 
 - Accepting the policy of the AI for the plan checks on the server that the teacher may accept it

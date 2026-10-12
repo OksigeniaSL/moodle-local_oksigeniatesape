@@ -17,17 +17,17 @@
         <licenseversion>1.1</licenseversion>
     </library>
     <library>
-        <location>app/fonts/cherry-swash-latin-700-normal.woff2</location>
+        <location>fonts/cherry-swash-latin-700-normal.woff2</location>
         <name>Cherry Swash</name>
-        <description>Cherry Swash Bold (Latin subset) by Natalia Kasatkina, from Fontsource 5.3.0. License text in app/fonts/OFL-CherrySwash.txt.</description>
+        <description>Cherry Swash Bold (Latin subset) by Natalia Kasatkina, from Fontsource 5.3.0. License text in fonts/OFL-CherrySwash.txt.</description>
         <version>5.3.0</version>
         <license>OFL</license>
         <licenseversion>1.1</licenseversion>
     </library>
     <library>
-        <location>app/fonts/cherry-swash-latin-ext-700-normal.woff2</location>
+        <location>fonts/cherry-swash-latin-ext-700-normal.woff2</location>
         <name>Cherry Swash (Latin Extended)</name>
-        <description>Cherry Swash Bold (Latin Extended subset) by Natalia Kasatkina, from Fontsource 5.3.0. License text in app/fonts/OFL-CherrySwash.txt.</description>
+        <description>Cherry Swash Bold (Latin Extended subset) by Natalia Kasatkina, from Fontsource 5.3.0. License text in fonts/OFL-CherrySwash.txt.</description>
         <version>5.3.0</version>
         <license>OFL</license>
         <licenseversion>1.1</licenseversion>
