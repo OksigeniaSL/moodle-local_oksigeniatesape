@@ -415,6 +415,7 @@ final class structures {
             'badge' => new external_value(PARAM_TEXT, 'Name of the badge of the mission (empty: none)', VALUE_DEFAULT, ''),
             'badgeid' => new external_value(PARAM_INT, 'The badge of the mission in the course (0: none)', VALUE_DEFAULT, 0),
             'badgeon' => new external_value(PARAM_BOOL, 'The teacher turned the badge on', VALUE_DEFAULT, false),
+            'gradebook' => new external_value(PARAM_BOOL, 'The ratings go to the gradebook', VALUE_DEFAULT, false),
         ]);
     }
 

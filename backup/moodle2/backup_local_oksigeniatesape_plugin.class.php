@@ -39,7 +39,8 @@ class backup_local_oksigeniatesape_plugin extends backup_local_plugin {
         $plugin->add_child($game);
 
         $region = new backup_nested_element('region', ['id'], ['enabled', 'family', 'groupingid', 'weeklycap',
-            'dailymanualcap', 'dailyenergylosscap', 'rules', 'leaderboard', 'nicknames', 'timezone', 'portal', 'hideacts']);
+            'dailymanualcap', 'dailyenergylosscap', 'rules', 'leaderboard', 'nicknames', 'timezone', 'portal', 'hideacts',
+            'gradebook']);
         $mission = new backup_nested_element('mission', ['id'], ['code', 'skin', 'variant', 'origin']);
         $challenges = new backup_nested_element('challenges');
         $challenge = new backup_nested_element('challenge', ['id'], self::CHALLENGE);

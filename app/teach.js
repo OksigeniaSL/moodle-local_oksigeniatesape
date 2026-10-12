@@ -1631,6 +1631,11 @@
     var badgeCard = r.badgeid ? '<h3>' + esc(t('teach_badge')) + '</h3><p style="color:var(--text-soft)">' +
       esc(t(r.badgeon ? 'teach_badge_on' : 'teach_badge_off', r.badge)) + ' <a href="' +
       esc(cfg.wwwroot + '/badges/overview.php?id=' + r.badgeid) + '">' + esc(t('teach_badge_manage')) + '</a></p>' : '';
+    // The gradebook of Moodle, off by default: only the ratings the teacher gives in the competencies.
+    var gradesCard = '<h3>' + esc(t('teach_gradebook')) + '</h3><label class="chip" style="display:flex;gap:8px;' +
+      'align-items:flex-start;margin:4px 0"><input type="checkbox" name="gradebook"' + (r.gradebook ? ' checked' : '') +
+      (editable ? '' : ' disabled') + '> <span>' + esc(t('teach_set_gradebook')) + '</span></label><small style="' +
+      'display:block;color:var(--text-soft);margin-bottom:14px">' + esc(t('teach_set_gradebook_help')) + '</small>';
     var el = content('<section class="card"><h2>' + esc(t('teach_tab_settings')) + '</h2><form data-settings>' +
       '<label class="chip" style="display:inline-flex;gap:8px;align-items:center;margin-bottom:14px"><input ' +
       'type="checkbox" name="enabled"' + (r.enabled ? ' checked' : '') + (editable ? '' : ' disabled') + '> ' +
@@ -1643,7 +1648,8 @@
       num('dailyenergylosscap', r.dailyenergylosscap, false) + num('completionrule', r.completionrule, true) + '</div>' +
       '<label class="chip" style="display:inline-flex;gap:8px;align-items:center;margin:4px 0 14px"><input ' +
       'type="checkbox" name="leaderboard"' + (r.leaderboard ? ' checked' : '') + (editable ? '' : ' disabled') + '> ' +
-      esc(t('teach_set_leaderboard')) + '</label><h3>' + esc(t('teach_set_nicknames')) + '</h3>' + nick + coverCard + badgeCard +
+      esc(t('teach_set_leaderboard')) + '</label><h3>' + esc(t('teach_set_nicknames')) + '</h3>' + nick + coverCard +
+      badgeCard + gradesCard +
       (editable ? '<div class="actions" style="justify-content:flex-start;margin-top:14px"><button class="btn btn-main" ' +
       'type="submit">' + esc(t('app_save')) + '</button></div>' : '') + '</form></section>');
     var family = r.family;
@@ -1669,7 +1675,8 @@
         nicknames: picked ? Number(picked.value) : 0,
         timezone: f.timezone.value,
         portal: cover ? cover.value : 'door',
-        hideacts: f.hideacts.checked
+        hideacts: f.hideacts.checked,
+        gradebook: f.gradebook.checked
       }).then(function() {
         T.toast(esc(t('app_saved')));
         state.tab = 'class';

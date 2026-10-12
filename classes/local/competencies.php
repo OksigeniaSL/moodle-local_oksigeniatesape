@@ -347,5 +347,7 @@ final class competencies {
             throw new \invalid_parameter_exception('Nothing to rate');
         }
         api::grade_competency_in_course($courseid, $userid, $links[$objective], $grade);
+        // And to the gradebook, if the teacher wants it.
+        gradebook::set($courseid, $userid, $objective, $grade);
     }
 }

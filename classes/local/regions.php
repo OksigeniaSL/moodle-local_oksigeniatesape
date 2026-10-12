@@ -127,6 +127,11 @@ final class regions {
             $inside = (bool) $settings['hideacts'];
             $region->hideacts = (int) $inside;
         }
+        $grades = false;
+        if (array_key_exists('gradebook', $settings) && (int) (bool) $settings['gradebook'] !== (int) ($region->gradebook ?? 0)) {
+            $region->gradebook = (int) (bool) $settings['gradebook'];
+            $grades = (bool) $settings['gradebook'];
+        }
         if (array_key_exists('rules', $settings)) {
             $rules = [];
             foreach (self::RULES as $key => $default) {
@@ -143,6 +148,10 @@ final class regions {
             $region->id = $DB->insert_record(self::TABLE, $region);
         } else {
             $DB->update_record(self::TABLE, $region);
+        }
+        if ($grades) {
+            // Turned on: the ratings already given go to the gradebook too.
+            gradebook::sync($courseid);
         }
         return $DB->get_record(self::TABLE, ['id' => $region->id], '*', MUST_EXIST);
     }

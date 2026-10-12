@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.28.0 (2026-10-12)
+
+- **The gradebook, if the teacher wants it** (off by default, in the settings of the panel): the rating the teacher
+  gives in the «Competencies» tab goes to the gradebook of Moodle, one item for each objective, with the scale of its
+  competency, in a category of the mission («Tesapé · Los seres vivos»). Turned on, the ratings given before go too;
+  turned off, the items stay as they are. Only what the teacher rates: never the behaviour or the resources of the game.
+  The option goes in the copies of the course.
+
 ## 0.27.0 (2026-10-12)
 
 - **The badge of the mission**: each mission can bring a badge of Moodle (the pilot, «Naturalista del Valle de

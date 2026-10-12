@@ -577,6 +577,7 @@ final class view {
             'portal' => (string) ($region->portal ?? 'door'),
             'hideacts' => (bool) ($region->hideacts ?? false),
             'allowstealth' => !empty($GLOBALS['CFG']->allowstealth),
+            'gradebook' => (bool) ($region->gradebook ?? false),
         ];
     }
 
