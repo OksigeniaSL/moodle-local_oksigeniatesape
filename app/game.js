@@ -1082,7 +1082,9 @@
     }
     var items = w.items.length ? '<section class="card"><h2>' + esc(t('app_items')) + '</h2><ul class="list">' +
       w.items.map(function(i) {
-        return '<li class="item"><span style="width:22px;height:22px;flex:none">' + T.icon('gems') + '</span>' +
+        var art = T.artUrl(['item.' + i.code]);
+        return '<li class="item">' + (art ? '<img class="item-art" src="' + esc(art) + '" alt="">' :
+          '<span style="width:22px;height:22px;flex:none">' + T.icon('gems') + '</span>') +
           '<span class="grow"><b>' + esc(i.name) + '</b><small>' + esc(i.description) + '</small></span></li>';
       }).join('') + '</ul></section>' : '';
     return '<div class="grid2">' + book + items + '</div><section class="card" style="margin-top:16px"><h2>' +
@@ -1136,13 +1138,15 @@
     }
     var items = w.market.map(function(x) {
       var action;
+      var art = T.artUrl(['market.' + x.code]);
+      var pic = art ? '<img class="item-art" src="' + esc(art) + '" alt="">' : '';
       if (x.team) {
         var pct = Math.min(100, Math.round(100 * x.given / x.price));
         action = x.owned ? '<span class="tag done">' + esc(t('app_market_team_done')) + '</span>' : '<span class="row-actions">' +
           '<button class="chip" type="button" data-give="' + x.code + ':1"' + (c.gems < 1 ? ' disabled' : '') + '>+1</button>' +
           '<button class="chip" type="button" data-give="' + x.code + ':5"' + (c.gems < 1 ? ' disabled' : '') + '>+5</button>' +
           '</span>';
-        return '<li class="item"><span class="grow"><b>' + esc(t('app_market_' + x.code)) + '</b><small>' +
+        return '<li class="item">' + pic + '<span class="grow"><b>' + esc(t('app_market_' + x.code)) + '</b><small>' +
           esc(t('app_market_team_help', {given: x.given, price: x.price, mine: x.mine})) + '</small><span class="meter level">' +
           '<i style="width:' + pct + '%"></i></span></span>' + action + '</li>';
       }
@@ -1155,7 +1159,7 @@
       } else {
         action = '<button class="chip" type="button" data-wear="' + x.code + '">' + esc(t('app_market_wear')) + '</button>';
       }
-      return '<li class="item"><span class="grow"><b>' + esc(t('app_market_' + x.code)) + '</b><small>' +
+      return '<li class="item">' + pic + '<span class="grow"><b>' + esc(t('app_market_' + x.code)) + '</b><small>' +
         esc(t('app_market_kind_' + x.kind)) + '</small></span>' + action + '</li>';
     }).join('');
     return '<section class="card no-print market-card" style="margin-top:16px"><h2>' + esc(t('app_market')) + '</h2>' +
@@ -1178,7 +1182,11 @@
     return '<section class="card no-print album-card" style="margin-top:16px"><h2>' + esc(t('app_album')) + '</h2>' +
       '<p class="help-soft">' + esc(t('app_album_help', {cards: a.cards.length, golden: golden, class: a['class']})) + '</p>' +
       (a.cards.length ? '<div class="album">' + a.cards.map(function(x) {
-        return '<div class="album-card' + (x.golden ? ' golden' : '') + '"><b>' + esc(x.name) + '</b>' + (x.group ?
+        // The picture of its group, from the art pack: the name of the group without accents (Mamífero: album.mamifero).
+        var art = x.group ? T.artUrl(['album.' + String(x.group).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')]) : null;
+        return '<div class="album-card' + (x.golden ? ' golden' : '') + '">' + (art ? '<img src="' + esc(art) + '" alt="">' : '') +
+          '<b>' + esc(x.name) + '</b>' + (x.group ?
           '<small>' + esc(x.group) + '</small>' : '') + (x.mine ? '<small class="mine">' + esc(t('app_album_mine')) + '</small>' :
           '') + '</div>';
       }).join('') + '</div>' : '<p class="empty">' + esc(t('app_album_empty')) + '</p>') + '<div class="actions" style="' +

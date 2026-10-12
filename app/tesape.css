@@ -767,6 +767,14 @@ body.tesape {
   min-width: 0;
 }
 
+/* The picture of an item of the mission or of the market, from the art pack. */
+.item-art {
+  width: 48px;
+  height: 48px;
+  flex: none;
+  object-fit: contain;
+}
+
 .item {
   display: flex;
   gap: 12px;
@@ -3403,6 +3411,19 @@ body.in-battle {
   border-radius: 12px;
   border: 2px solid var(--line);
   background: rgba(255, 255, 255, .05);
+}
+
+.album-card img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.album-card.golden img {
+  box-shadow: 0 0 0 2px var(--lantern), 0 0 14px rgba(255, 200, 87, .45);
 }
 
 .album-card.golden {

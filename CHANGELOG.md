@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.26.3 (2026-10-12)
+
+- **Pictures for the items, the market and the album**, from the art pack: each item of the mission (`item.<code>`,
+  such as `item.lantern`) in the list of items, each thing of the market (`market.<code>`, such as
+  `market.paint-gold`), and the picture of its group on each card of the album (`album.<group>`: the name of the group
+  in lower case and without accents, such as `album.mamifero`). Without them, everything looks as before.
+
 ## 0.26.2 (2026-10-12)
 
 - The moments of a scene without a picture of their own (its endings, for instance) show the picture of the scene's
