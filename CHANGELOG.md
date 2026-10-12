@@ -11,8 +11,9 @@
 - **The activities of the mission, only inside the valley**: an option of the course that keeps them available but off
   the course page (the places of the mission become hidden sections, which teachers see), so students open them from
   the map of the game. It needs the site to allow activities available but not shown on the course page: the
-  settings of the plugin ask for it, checked by default, when Tesapé is installed or upgraded (it is the setting of the
-  whole site «allowstealth»), and the panel takes the administration there if it is off.
+  settings of the plugin ask the administration for it when Tesapé is installed or upgraded from the web (it is the
+  setting of the whole site «allowstealth»; its default is what the site already has, so an install from the command
+  line changes nothing), and the panel takes administrators there if it is off.
 - **«Tesapé» in the top bar** of the site, for those who play or teach it somewhere: «your world», the courses with
   the game, each with its way in.
 

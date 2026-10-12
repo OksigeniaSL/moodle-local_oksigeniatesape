@@ -23,7 +23,8 @@ require_once($CFG->libdir . '/adminlib.php');
 /**
  * What the game needs from the site: activities available but not shown on the course page («stealth»), so that the
  * activities of a mission can stay inside the valley. The box writes the setting of the site itself. Until the
- * administration has answered it once, it counts as new: it shows when the plugin is installed or upgraded.
+ * administration has answered it once, it counts as new: it shows when the plugin is installed or upgraded. Its default
+ * is what the site already has, so that installing from the command line, which takes the defaults, changes nothing.
  *
  * @package    local_oksigeniatesape
  * @copyright  2026 Oksigenia <dev@oksigenia.cc>
@@ -31,14 +32,15 @@ require_once($CFG->libdir . '/adminlib.php');
  */
 class setting_allowstealth extends \admin_setting_configcheckbox {
     /**
-     * The box, checked by default.
+     * The box.
      */
     public function __construct() {
+        global $CFG;
         parent::__construct(
             'local_oksigeniatesape/allowstealth',
             get_string('settings_allowstealth', 'local_oksigeniatesape'),
             get_string('settings_allowstealth_desc', 'local_oksigeniatesape'),
-            1
+            empty($CFG->allowstealth) ? 0 : 1
         );
     }
 

@@ -115,10 +115,15 @@ final class portal_test extends \advanced_testcase {
         $this->resetAfterTest();
         require_once($CFG->libdir . '/adminlib.php');
         set_config('allowstealth', 0);
+        unset_config('allowstealthasked', 'local_oksigeniatesape');
         $setting = new \local_oksigeniatesape\admin\setting_allowstealth();
-        // Not answered yet: it shows among the new settings of the site, checked.
+        // Not answered yet: it shows among the new settings of the site, with what the site has as default, so that an
+        // install from the command line, which takes the defaults, changes nothing.
         $this->assertNull($setting->get_setting());
-        $this->assertSame(1, $setting->get_defaultsetting());
+        $this->assertSame(0, $setting->get_defaultsetting());
+        $this->assertSame('', $setting->write_setting((string) $setting->get_defaultsetting()));
+        $this->assertEquals(0, get_config('core', 'allowstealth'));
+        // The administration checks it.
         $this->assertSame('', $setting->write_setting('1'));
         $this->assertEquals(1, get_config('core', 'allowstealth'));
         $this->assertSame('1', $setting->get_setting());
