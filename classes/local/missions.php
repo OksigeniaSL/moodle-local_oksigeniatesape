@@ -186,6 +186,10 @@ final class missions {
             }
         }
         $transaction->allow_commit();
+        if ($activities && !empty(regions::get($courseid)->hideacts)) {
+            // The course keeps the activities of the mission inside the valley: the new ones too.
+            portal::keep_inside($courseid, true);
+        }
         return $DB->get_record(self::T . 'mission', ['id' => $record->id], '*', MUST_EXIST);
     }
 

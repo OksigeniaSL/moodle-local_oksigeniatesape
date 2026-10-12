@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.23.0 (2026-10-12)
+
+- **The cover of the course page**: where the game is on, the course page opens with the way into the valley, as each
+  teacher chooses in the settings of the panel (each mode with a small drawing): a **big door** with the map of the
+  mission, the place the class is in, its lanterns and «Enter the valley»; a **card**, the same but smaller; **straight
+  into the valley**, so students opening the course go into the game (and leave it to their dashboard); or **only in
+  the menu**. Teachers see the cover with the panel and the class screen; where the game is not on yet, with the way
+  to turn it on. A student whose creature is waiting for the page of the day is told so on the cover.
+- **The activities of the mission, only inside the valley**: an option of the course that keeps them available but off
+  the course page (the places of the mission become hidden sections, which teachers see), so students open them from
+  the map of the game. It needs the site to allow activities available but not shown on the course page.
+- **«Tesapé» in the top bar** of the site, for those who play or teach it somewhere: «your world», the courses with
+  the game, each with its way in.
+
 ## 0.22.1 (2026-10-12)
 
 - The character sheet of a student with nothing to change in their look at their stage stopped with an error, and its

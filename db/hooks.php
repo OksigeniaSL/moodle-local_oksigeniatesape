@@ -29,4 +29,16 @@ $callbacks = [
         'hook' => \core\hook\navigation\secondary_extend::class,
         'callback' => '\local_oksigeniatesape\hook_callbacks::secondary_extend',
     ],
+    [
+        'hook' => \core\hook\navigation\primary_extend::class,
+        'callback' => '\local_oksigeniatesape\hook_callbacks::primary_extend',
+    ],
+    [
+        'hook' => \core\hook\output\before_http_headers::class,
+        'callback' => '\local_oksigeniatesape\hook_callbacks::before_http_headers',
+    ],
+    [
+        'hook' => \core\hook\output\before_standard_top_of_body_html_generation::class,
+        'callback' => '\local_oksigeniatesape\hook_callbacks::before_standard_top_of_body_html_generation',
+    ],
 ];

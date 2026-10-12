@@ -65,6 +65,8 @@ final class save_region extends external_api {
                 NULL_ALLOWED
             ),
             'timezone' => new external_value(PARAM_TEXT, 'Time zone of the days (99: the site)', VALUE_DEFAULT, null, NULL_ALLOWED),
+            'portal' => new external_value(PARAM_ALPHA, 'Cover of the course page', VALUE_DEFAULT, null, NULL_ALLOWED),
+            'hideacts' => new external_value(PARAM_BOOL, 'Activities only inside the valley', VALUE_DEFAULT, null, NULL_ALLOWED),
         ]);
     }
 
@@ -82,6 +84,8 @@ final class save_region extends external_api {
      * @param int|null $nicknames
      * @param int|null $completionrule
      * @param string|null $timezone
+     * @param string|null $portal
+     * @param bool|null $hideacts
      * @return array
      */
     public static function execute(
@@ -95,7 +99,9 @@ final class save_region extends external_api {
         ?bool $leaderboard = null,
         ?int $nicknames = null,
         ?int $completionrule = null,
-        ?string $timezone = null
+        ?string $timezone = null,
+        ?string $portal = null,
+        ?bool $hideacts = null
     ): array {
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
@@ -109,6 +115,8 @@ final class save_region extends external_api {
             'nicknames' => $nicknames,
             'completionrule' => $completionrule,
             'timezone' => $timezone,
+            'portal' => $portal,
+            'hideacts' => $hideacts,
         ]);
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);

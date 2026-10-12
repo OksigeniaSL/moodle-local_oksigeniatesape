@@ -3379,3 +3379,82 @@ body.in-battle {
 .album-card small.mine {
   color: var(--lantern);
 }
+
+/* ---------- The cover of the course page, in the settings ---------- */
+
+.cover-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.cover-option {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  cursor: pointer;
+}
+
+.cover-option:has(input:checked) {
+  border-color: var(--lantern);
+  background: rgba(255, 200, 87, .1);
+}
+
+.cover-option input {
+  position: absolute;
+  opacity: 0;
+}
+
+.cover-option small {
+  display: block;
+  color: var(--text-soft);
+}
+
+/* A small drawing of the course page: the cover (i) and the rows of the course (b). */
+.cover-sketch {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  height: 84px;
+  padding: 6px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .9);
+}
+
+.cover-sketch i {
+  display: block;
+  border-radius: 5px;
+  background: linear-gradient(135deg, #2f6b4f, #16304a);
+}
+
+.cover-sketch b {
+  display: block;
+  height: 10px;
+  border-radius: 3px;
+  background: #d5dbe3;
+}
+
+.cover-door i {
+  flex: 1;
+}
+
+.cover-card i {
+  height: 22px;
+  width: 70%;
+}
+
+.cover-direct i {
+  flex: 1;
+  background: linear-gradient(135deg, #ffc857, #2f6b4f 60%, #16304a);
+}
+
+.cover-direct b {
+  display: none;
+}
+
+.cover-menu i {
+  display: none;
+}

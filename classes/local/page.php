@@ -56,7 +56,9 @@ final class page {
             'sesskey' => sesskey(),
             'courseid' => (int) $course->id,
             'coursename' => format_string($course->fullname, true, ['context' => $context]),
-            'courseurl' => (new \moodle_url('/course/view.php', ['id' => $course->id]))->out(false),
+            // Students who go straight into the valley leave to their dashboard: the course would send them back.
+            'courseurl' => (portal::goes_straight_in((int) $course->id) ? new \moodle_url('/my/') :
+                new \moodle_url('/course/view.php', ['id' => $course->id]))->out(false),
             'userid' => (int) $USER->id,
             'firstname' => $USER->firstname,
             'lang' => str_replace('_', '-', $lang),

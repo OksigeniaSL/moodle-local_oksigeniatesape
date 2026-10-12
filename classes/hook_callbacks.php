@@ -16,11 +16,15 @@
 
 namespace local_oksigeniatesape;
 
+use core\hook\navigation\primary_extend;
 use core\hook\navigation\secondary_extend;
+use core\hook\output\before_http_headers;
+use core\hook\output\before_standard_top_of_body_html_generation;
+use local_oksigeniatesape\local\portal;
 use local_oksigeniatesape\local\regions;
 
 /**
- * Hook callbacks: the way into the game from a course.
+ * Hook callbacks: the ways into the game from Moodle: the cover of the course page, the course bar and the top bar.
  *
  * @package    local_oksigeniatesape
  * @copyright  2026 Oksigenia <dev@oksigenia.cc>
@@ -58,5 +62,70 @@ final class hook_callbacks {
             new \pix_icon('i/star', '')
         );
         $view->add_node($node);
+    }
+
+    /**
+     * In the top bar of the site: «Tesapé», to the courses where one plays or teaches it.
+     *
+     * @param primary_extend $hook
+     */
+    public static function primary_extend(primary_extend $hook): void {
+        global $USER;
+        if (!isloggedin() || isguestuser() || !portal::has_world((int) $USER->id)) {
+            return;
+        }
+        $hook->get_primaryview()->add(
+            get_string('navworld', 'local_oksigeniatesape'),
+            new \moodle_url('/local/oksigeniatesape/index.php'),
+            \navigation_node::TYPE_CUSTOM,
+            null,
+            'local_oksigeniatesape_world'
+        );
+    }
+
+    /**
+     * Before the course page is sent: where the teacher chose so, students go straight into the valley.
+     *
+     * @param before_http_headers $hook
+     */
+    public static function before_http_headers(before_http_headers $hook): void {
+        global $PAGE;
+        if (!self::is_course_page() || !portal::goes_straight_in((int) $PAGE->course->id)) {
+            return;
+        }
+        redirect(new \moodle_url('/local/oksigeniatesape/play.php', ['id' => $PAGE->course->id]));
+    }
+
+    /**
+     * On the course page: the cover of the game the teacher chose, moved to the top of the content.
+     *
+     * @param before_standard_top_of_body_html_generation $hook
+     */
+    public static function before_standard_top_of_body_html_generation(before_standard_top_of_body_html_generation $hook): void {
+        global $PAGE;
+        if (!self::is_course_page()) {
+            return;
+        }
+        $cover = portal::cover($PAGE->course);
+        if ($cover === '') {
+            return;
+        }
+        $hook->add_html(str_replace('<section id="tesape-portal"', '<section hidden id="tesape-portal"', $cover));
+        $PAGE->requires->js_init_code(
+            "var p = document.getElementById('tesape-portal');" .
+            "var main = document.querySelector('#region-main [role=\"main\"]') || document.getElementById('region-main');" .
+            "if (p && main) { main.insertBefore(p, main.firstChild); p.hidden = false; }"
+        );
+    }
+
+    /**
+     * Whether the page is the page of a course (not the site's front page).
+     *
+     * @return bool
+     */
+    private static function is_course_page(): bool {
+        global $PAGE;
+        return strpos((string) $PAGE->pagetype, 'course-view-') === 0 && !empty($PAGE->course->id) &&
+            $PAGE->course->id != SITEID;
     }
 }

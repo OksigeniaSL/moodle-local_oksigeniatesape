@@ -404,5 +404,20 @@ function xmldb_local_oksigeniatesape_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026101203, 'local', 'oksigeniatesape');
     }
 
+    if ($oldversion < 2026101205) {
+        // The cover of the course page, and the activities of the mission only inside the valley.
+        $table = new xmldb_table('local_oksigeniatesape_region');
+        $field = new xmldb_field('portal', XMLDB_TYPE_CHAR, '10', null, XMLDB_NOTNULL, null, 'door', 'timezone');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        $field = new xmldb_field('hideacts', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'portal');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_plugin_savepoint(true, 2026101205, 'local', 'oksigeniatesape');
+    }
+
     return true;
 }

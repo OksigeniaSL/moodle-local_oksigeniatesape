@@ -76,7 +76,8 @@ final class regions {
      *
      * @param int $courseid
      * @param array $settings Any of enabled, family, groupingid, weeklycap, dailymanualcap, dailyenergylosscap,
-     *     leaderboard, nicknames, timezone (99: the one of the site) and rules (an array).
+     *     leaderboard, nicknames, timezone (99: the one of the site), rules (an array), portal (the cover of the course
+     *     page) and hideacts (the activities of the mission only inside the valley).
      * @param int|null $now
      * @return \stdClass
      */
@@ -115,6 +116,17 @@ final class regions {
         if (array_key_exists('nicknames', $settings)) {
             $region->nicknames = max(0, min(2, (int) $settings['nicknames']));
         }
+        if (array_key_exists('portal', $settings)) {
+            if (!in_array($settings['portal'], portal::MODES, true)) {
+                throw new \invalid_parameter_exception('Unknown cover: ' . $settings['portal']);
+            }
+            $region->portal = $settings['portal'];
+        }
+        $inside = null;
+        if (array_key_exists('hideacts', $settings) && (int) (bool) $settings['hideacts'] !== (int) ($region->hideacts ?? 0)) {
+            $inside = (bool) $settings['hideacts'];
+            $region->hideacts = (int) $inside;
+        }
         if (array_key_exists('rules', $settings)) {
             $rules = [];
             foreach (self::RULES as $key => $default) {
@@ -123,6 +135,10 @@ final class regions {
             $region->rules = json_encode($rules);
         }
         $region->timemodified = $now;
+        if ($inside !== null) {
+            // The activities of the mission go inside the valley, or back to the course page.
+            portal::keep_inside($courseid, $inside);
+        }
         if (empty($region->id)) {
             $region->id = $DB->insert_record(self::TABLE, $region);
         } else {

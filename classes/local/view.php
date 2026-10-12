@@ -565,6 +565,9 @@ final class view {
             'nicknames' => (int) ($region->nicknames ?? 0),
             'timezone' => (string) ($region->timezone ?? '99'),
             'completionrule' => $region ? regions::rule($region, 'completion') : regions::RULES['completion'],
+            'portal' => (string) ($region->portal ?? 'door'),
+            'hideacts' => (bool) ($region->hideacts ?? false),
+            'allowstealth' => !empty($GLOBALS['CFG']->allowstealth),
         ];
     }
 

@@ -1505,6 +1505,21 @@
         'name="nicknames" value="' + n + '"' + (r.nicknames === n ? ' checked' : '') + (editable ? '' : ' disabled') +
         '> ' + esc(t('teach_nick_' + n)) + '</label>';
     }).join('');
+    // The cover of the course page: each mode with a small drawing of how it looks.
+    var covers = ['door', 'card', 'direct', 'menu'].map(function(mode) {
+      return '<label class="cover-option"><input type="radio" name="portal" value="' + mode + '"' +
+        (r.portal === mode ? ' checked' : '') + (editable ? '' : ' disabled') + '><span class="cover-sketch cover-' + mode +
+        '" aria-hidden="true"><i></i><b></b><b></b><b></b></span><span class="cover-text"><b>' +
+        esc(t('teach_cover_' + mode)) + '</b><small>' + esc(t('teach_cover_' + mode + '_help')) + '</small></span></label>';
+    }).join('');
+    var inside = '<label class="chip" style="display:flex;gap:8px;align-items:flex-start;margin:10px 0 4px"><input ' +
+      'type="checkbox" name="hideacts"' + (r.hideacts ? ' checked' : '') + (editable && (r.allowstealth || r.hideacts) ? '' :
+      ' disabled') + '> <span>' + esc(t('teach_set_hideacts')) + '</span></label><small style="display:block;color:' +
+      'var(--text-soft);margin-bottom:14px">' + esc(t(r.allowstealth ? 'teach_set_hideacts_help' : 'teach_set_nostealth')) +
+      '</small>';
+    var coverCard = '<h3>' + esc(t('teach_cover')) + '</h3><p style="color:var(--text-soft)">' + esc(t('teach_cover_help')) +
+      '</p><div class="cover-options">' + covers + '</div>' + inside + '<p><a href="' +
+      esc(cfg.wwwroot + '/course/view.php?id=' + cfg.courseid) + '">' + esc(t('teach_cover_see')) + '</a></p>';
     var el = content('<section class="card"><h2>' + esc(t('teach_tab_settings')) + '</h2><form data-settings>' +
       '<label class="chip" style="display:inline-flex;gap:8px;align-items:center;margin-bottom:14px"><input ' +
       'type="checkbox" name="enabled"' + (r.enabled ? ' checked' : '') + (editable ? '' : ' disabled') + '> ' +
@@ -1517,7 +1532,7 @@
       num('dailyenergylosscap', r.dailyenergylosscap, false) + num('completionrule', r.completionrule, true) + '</div>' +
       '<label class="chip" style="display:inline-flex;gap:8px;align-items:center;margin:4px 0 14px"><input ' +
       'type="checkbox" name="leaderboard"' + (r.leaderboard ? ' checked' : '') + (editable ? '' : ' disabled') + '> ' +
-      esc(t('teach_set_leaderboard')) + '</label><h3>' + esc(t('teach_set_nicknames')) + '</h3>' + nick +
+      esc(t('teach_set_leaderboard')) + '</label><h3>' + esc(t('teach_set_nicknames')) + '</h3>' + nick + coverCard +
       (editable ? '<div class="actions" style="justify-content:flex-start;margin-top:14px"><button class="btn btn-main" ' +
       'type="submit">' + esc(t('app_save')) + '</button></div>' : '') + '</form></section>');
     var family = r.family;
@@ -1529,6 +1544,7 @@
     f.onsubmit = function(ev) {
       ev.preventDefault();
       var picked = f.querySelector('[name="nicknames"]:checked');
+      var cover = f.querySelector('[name="portal"]:checked');
       T.api('save_region', {
         courseid: cfg.courseid,
         enabled: f.enabled.checked,
@@ -1540,7 +1556,9 @@
         completionrule: Number(f.completionrule.value),
         leaderboard: f.leaderboard.checked,
         nicknames: picked ? Number(picked.value) : 0,
-        timezone: f.timezone.value
+        timezone: f.timezone.value,
+        portal: cover ? cover.value : 'door',
+        hideacts: f.hideacts.checked
       }).then(function() {
         T.toast(esc(t('app_saved')));
         state.tab = 'class';

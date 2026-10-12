@@ -1,0 +1,124 @@
+/* The cover of the game on the course page and in «my world»: a big door with the map of the mission, or a card. */
+
+.tesape-portal {
+    position: relative;
+    display: flex;
+    overflow: hidden;
+    margin: 0 0 1.5rem;
+    border-radius: 1rem;
+    background: #10233a;
+    color: #f4efe3;
+    box-shadow: 0 0.5rem 1.5rem rgba(16, 35, 58, .25);
+}
+
+.tesape-portal[hidden] {
+    display: none;
+}
+
+.tesape-portal-art {
+    background: #16304a center / cover no-repeat;
+}
+
+.tesape-portal-body {
+    position: relative;
+    padding: 1.5rem 1.75rem;
+}
+
+.tesape-portal-kicker {
+    font-size: .8rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #ffc857;
+}
+
+.tesape-portal h2 {
+    margin: .25rem 0 .5rem;
+    color: #fff;
+}
+
+.tesape-portal p {
+    margin: 0 0 .5rem;
+}
+
+.tesape-portal-note {
+    color: #ffe3a3;
+}
+
+.tesape-portal-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    margin-top: 1rem;
+}
+
+.tesape-portal .btn-primary {
+    border-color: #ffc857;
+    background: #ffc857;
+    color: #2b2219;
+    font-weight: 700;
+}
+
+.tesape-portal .btn-secondary {
+    border-color: rgba(255, 255, 255, .4);
+    background: rgba(255, 255, 255, .12);
+    color: #fff;
+}
+
+/* The big door: the map fills it, and the words sit on a shade at its foot. */
+.tesape-door {
+    min-height: 18rem;
+    align-items: flex-end;
+}
+
+.tesape-door .tesape-portal-art {
+    position: absolute;
+    inset: 0;
+}
+
+.tesape-door .tesape-portal-body {
+    width: 100%;
+    padding-top: 6rem;
+    background: linear-gradient(180deg, rgba(16, 35, 58, 0) 0%, rgba(16, 35, 58, .85) 45%, #10233a 100%);
+}
+
+.tesape-door h2 {
+    font-size: 2rem;
+}
+
+.tesape-door .btn {
+    padding: .65rem 1.4rem;
+    font-size: 1.1rem;
+}
+
+/* The card: the map at one side. */
+.tesape-card {
+    align-items: stretch;
+}
+
+.tesape-card .tesape-portal-art {
+    flex: 0 0 9rem;
+    min-height: 9rem;
+}
+
+.tesape-card .tesape-portal-body {
+    flex: 1;
+}
+
+.tesape-card h2 {
+    font-size: 1.4rem;
+}
+
+@media (max-width: 575px) {
+    .tesape-card {
+        flex-direction: column;
+    }
+
+    .tesape-card .tesape-portal-art {
+        flex-basis: 7rem;
+    }
+}
+
+.tesape-world-help {
+    max-width: 48rem;
+}
