@@ -1,6 +1,6 @@
 {
  "code": "livingthings",
- "version": 9,
+ "version": 10,
  "lang": "es",
  "ages": "9–11",
  "title": {
@@ -181,6 +181,16 @@
     ]
    }
   ]
+ },
+ "badge": {
+  "name": {
+   "valley": "Naturalista del Valle de Tesapé",
+   "azara": "Naturalista de la expedición"
+  },
+  "description": {
+   "valley": "Ha devuelto cada página a su sitio en «Los seres vivos»: ha encendido las linternas de los seis lugares del valle, del Claro del Despertar a la Torre.",
+   "azara": "Ha completado el cuaderno de la expedición en «Los seres vivos»: ha encendido las linternas de los seis lugares, del campamento a la mesa del naturalista."
+  }
  },
  "speakers": {
   "druida-mayor": {

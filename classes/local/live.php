@@ -797,7 +797,10 @@ final class live {
             $lantern = (string) $final['lantern'];
             self::once((int) $member->charid, (int) $member->courseid, (int) $mission->id, 'lantern', $lantern, $now);
         }
-        $char = $DB->get_record(self::T . 'char', ['id' => $member->charid], 'id, creaturestage', MUST_EXIST);
+        $char = $DB->get_record(self::T . 'char', ['id' => $member->charid], 'id, userid, creaturestage', MUST_EXIST);
+        if (!empty($final['lantern'])) {
+            badges::check((int) $member->courseid, (int) $char->userid);
+        }
         $grows = $char->creaturestage > 0 && $char->creaturestage < scenes::CREATURE_MAX_STAGE;
         if (($final['creature'] ?? '') === 'grow' && $grows) {
             $DB->set_field(self::T . 'char', 'creaturestage', $char->creaturestage + 1, ['id' => $char->id]);

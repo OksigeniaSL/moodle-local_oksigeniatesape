@@ -412,6 +412,9 @@ final class structures {
             'portal' => new external_value(PARAM_ALPHA, 'Cover: door, card, direct or menu', VALUE_DEFAULT, 'door'),
             'hideacts' => new external_value(PARAM_BOOL, 'Mission activities only inside the valley', VALUE_DEFAULT, false),
             'allowstealth' => new external_value(PARAM_BOOL, 'Site allows available but hidden activities', VALUE_DEFAULT, false),
+            'badge' => new external_value(PARAM_TEXT, 'Name of the badge of the mission (empty: none)', VALUE_DEFAULT, ''),
+            'badgeid' => new external_value(PARAM_INT, 'The badge of the mission in the course (0: none)', VALUE_DEFAULT, 0),
+            'badgeon' => new external_value(PARAM_BOOL, 'The teacher turned the badge on', VALUE_DEFAULT, false),
         ]);
     }
 

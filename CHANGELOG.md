@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.27.0 (2026-10-12)
+
+- **The badge of the mission**: each mission can bring a badge of Moodle (the pilot, «Naturalista del Valle de
+  Tesapé», mission version 10). Tesapé makes it in the course with the mission, with its medallion, **turned off**: the
+  teacher turns it on if they want it. Then the game gives it to whoever lights the lanterns of every place (the last
+  one, in the final battle), and the teacher can give it by hand too. It is found by its name, so a copy of the course
+  keeps it. Nothing happens if the site does not use badges in courses.
+- The settings of the panel say whether the badge is on, with a link to manage it.
+
 ## 0.26.11 (2026-10-12)
 
 - The font rules of the cover follow the style checks of Moodle (one value per line in long lists).

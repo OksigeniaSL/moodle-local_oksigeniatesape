@@ -554,7 +554,16 @@ final class view {
      * @return array
      */
     public static function region(?\stdClass $region): array {
-        return [
+        // The badge of the mission, for the teacher to know it is there and whether it is on.
+        $badge = ['badge' => '', 'badgeid' => 0, 'badgeon' => false];
+        $mission = $region && badges::enabled() ? missions::get((int) $region->courseid) : null;
+        $id = $mission ? badges::find((int) $region->courseid, $mission) : 0;
+        if ($id) {
+            $status = (int) $GLOBALS['DB']->get_field('badge', 'status', ['id' => $id]);
+            $on = in_array($status, [BADGE_STATUS_ACTIVE, BADGE_STATUS_ACTIVE_LOCKED], true);
+            $badge = ['badge' => badges::name($mission), 'badgeid' => $id, 'badgeon' => $on];
+        }
+        return $badge + [
             'enabled' => (bool) ($region->enabled ?? false),
             'family' => $region->family ?? 'storyheroes',
             'groupingid' => (int) ($region->groupingid ?? 0),

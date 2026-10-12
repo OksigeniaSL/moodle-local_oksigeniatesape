@@ -1627,6 +1627,10 @@
     var coverCard = '<h3>' + esc(t('teach_cover')) + '</h3><p style="color:var(--text-soft)">' + esc(t('teach_cover_help')) +
       '</p><div class="cover-options">' + covers + '</div>' + inside + '<p><a href="' +
       esc(cfg.wwwroot + '/course/view.php?id=' + cfg.courseid) + '">' + esc(t('teach_cover_see')) + '</a></p>';
+    // The badge of Moodle the mission brings: whether it is on, and where the teacher turns it on.
+    var badgeCard = r.badgeid ? '<h3>' + esc(t('teach_badge')) + '</h3><p style="color:var(--text-soft)">' +
+      esc(t(r.badgeon ? 'teach_badge_on' : 'teach_badge_off', r.badge)) + ' <a href="' +
+      esc(cfg.wwwroot + '/badges/overview.php?id=' + r.badgeid) + '">' + esc(t('teach_badge_manage')) + '</a></p>' : '';
     var el = content('<section class="card"><h2>' + esc(t('teach_tab_settings')) + '</h2><form data-settings>' +
       '<label class="chip" style="display:inline-flex;gap:8px;align-items:center;margin-bottom:14px"><input ' +
       'type="checkbox" name="enabled"' + (r.enabled ? ' checked' : '') + (editable ? '' : ' disabled') + '> ' +
@@ -1639,7 +1643,7 @@
       num('dailyenergylosscap', r.dailyenergylosscap, false) + num('completionrule', r.completionrule, true) + '</div>' +
       '<label class="chip" style="display:inline-flex;gap:8px;align-items:center;margin:4px 0 14px"><input ' +
       'type="checkbox" name="leaderboard"' + (r.leaderboard ? ' checked' : '') + (editable ? '' : ' disabled') + '> ' +
-      esc(t('teach_set_leaderboard')) + '</label><h3>' + esc(t('teach_set_nicknames')) + '</h3>' + nick + coverCard +
+      esc(t('teach_set_leaderboard')) + '</label><h3>' + esc(t('teach_set_nicknames')) + '</h3>' + nick + coverCard + badgeCard +
       (editable ? '<div class="actions" style="justify-content:flex-start;margin-top:14px"><button class="btn btn-main" ' +
       'type="submit">' + esc(t('app_save')) + '</button></div>' : '') + '</form></section>');
     var family = r.family;

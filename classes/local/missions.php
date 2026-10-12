@@ -192,6 +192,14 @@ final class missions {
         } catch (\Throwable $e) {
             debugging('Tesapé could not link the competencies of the mission: ' . $e->getMessage(), DEBUG_DEVELOPER);
         }
+        // The badge of the mission in the course, not turned on; never in the way of the game either.
+        try {
+            $fresh = $DB->get_record(self::T . 'mission', ['id' => $record->id], '*', MUST_EXIST);
+            $fresh->data = json_decode((string) $fresh->definition, true) ?: [];
+            badges::make($fresh);
+        } catch (\Throwable $e) {
+            debugging('Tesapé could not make the badge of the mission: ' . $e->getMessage(), DEBUG_DEVELOPER);
+        }
         if ($activities && !empty(regions::get($courseid)->hideacts)) {
             // The course keeps the activities of the mission inside the valley: the new ones too.
             portal::keep_inside($courseid, true);

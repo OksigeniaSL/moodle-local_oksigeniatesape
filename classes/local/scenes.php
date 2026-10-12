@@ -438,6 +438,10 @@ final class scenes {
             }
         }
         $rewards['lanterns'] = array_values(array_unique($rewards['lanterns']));
+        if ($rewards['lanterns']) {
+            // The last lantern may give the badge of the mission.
+            badges::check((int) $member->courseid, (int) $char->userid);
+        }
         return $rewards;
     }
 
