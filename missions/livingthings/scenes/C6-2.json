@@ -6,11 +6,10 @@
  "step": 0,
  "mode": "both",
  "objectives": [
-  "SV-01",
   "SV-03",
   "SV-04",
-  "SV-05",
-  "SV-06"
+  "SV-06",
+  "SV-07"
  ],
  "minutes": 10,
  "classscreen": true,

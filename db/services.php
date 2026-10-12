@@ -235,6 +235,27 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:play',
     ],
+    'local_oksigeniatesape_get_competencies' => [
+        'classname' => 'local_oksigeniatesape\\external\\get_competencies',
+        'description' => 'The competencies of the objectives of the mission of a course, and the grid of the class to rate them.',
+        'type' => 'read',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:award',
+    ],
+    'local_oksigeniatesape_set_competency' => [
+        'classname' => 'local_oksigeniatesape\\external\\set_competency',
+        'description' => 'The teacher chooses the Moodle competency an objective of the mission leaves evidence in.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:manageregion',
+    ],
+    'local_oksigeniatesape_rate_competency' => [
+        'classname' => 'local_oksigeniatesape\\external\\rate_competency',
+        'description' => 'The teacher rates a student in the competency of an objective of the mission, in the course.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:award',
+    ],
     'local_oksigeniatesape_set_coat' => [
         'classname' => 'local_oksigeniatesape\\external\\set_coat',
         'description' => 'Dresses the creature of the current student with fur, feathers or scales.',

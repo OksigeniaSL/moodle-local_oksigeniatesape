@@ -218,6 +218,8 @@ final class scenes {
             'timefinished' => $now,
         ];
         $attempt->id = $DB->insert_record(self::T . 'sceneattempt', $attempt);
+        // The competencies of the objectives get the evidence of the play; the teacher rates.
+        competencies::evidence($courseid, (int) $userid, $scene, $result['objectives'], (int) $attempt->attempt);
         $rewards = [];
         if (in_array($result['outcome'], ['success', 'partial'], true)) {
             $rewards = self::reward($char, $member, $scene, $result, $now);

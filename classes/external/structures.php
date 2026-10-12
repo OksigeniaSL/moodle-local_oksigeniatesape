@@ -232,6 +232,38 @@ final class structures {
     }
 
     /**
+     * The competencies of the objectives of a mission and the grid of the class to rate them.
+     *
+     * @return external_single_structure
+     */
+    public static function competencies(): external_single_structure {
+        return new external_single_structure([
+            'enabled' => new external_value(PARAM_BOOL, 'The site uses competencies and the course has a mission'),
+            'objectives' => new external_multiple_structure(new external_single_structure([
+                'code' => new external_value(PARAM_ALPHANUMEXT, 'Objective'),
+                'name' => new external_value(PARAM_TEXT, 'Its name'),
+                'competencyid' => new external_value(PARAM_INT, 'Competency it leaves evidence in (0: none)'),
+                'competency' => new external_value(PARAM_TEXT, 'Its name'),
+                'levels' => new external_multiple_structure(new external_value(PARAM_TEXT, 'Level of its scale')),
+            ])),
+            'options' => new external_multiple_structure(new external_single_structure([
+                'id' => new external_value(PARAM_INT, 'Competency'),
+                'name' => new external_value(PARAM_TEXT, 'Its name'),
+                'framework' => new external_value(PARAM_TEXT, 'Its framework'),
+            ])),
+            'students' => new external_multiple_structure(new external_single_structure([
+                'userid' => new external_value(PARAM_INT, 'Student'),
+                'fullname' => new external_value(PARAM_TEXT, 'Name'),
+                'cells' => new external_multiple_structure(new external_single_structure([
+                    'objective' => new external_value(PARAM_ALPHANUMEXT, 'Objective'),
+                    'percent' => new external_value(PARAM_INT, 'Right at the first try (-1: no evidence yet)'),
+                    'rating' => new external_value(PARAM_INT, 'Rating in the course (0: none)'),
+                ])),
+            ])),
+        ]);
+    }
+
+    /**
      * Own names waiting for a teacher.
      *
      * @return external_multiple_structure

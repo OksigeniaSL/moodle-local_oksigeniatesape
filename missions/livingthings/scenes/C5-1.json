@@ -6,7 +6,8 @@
  "step": 1,
  "mode": "both",
  "objectives": [
-  "SV-06"
+  "SV-06",
+  "SV-08"
  ],
  "minutes": 6,
  "locals": {
@@ -88,6 +89,39 @@
     "pajaro-antes-de-hoja": "«Yo no como hojas: como orugas.»",
     "pajaro-antes-de-oruga": "La oruga se ríe: «¿Yo comerme a un pájaro? ¡Al revés!»"
    },
+   "next": "personas"
+  },
+  "personas": {
+   "type": "choice",
+   "prompt": "La garza cuenta algo que pasó hace años: unos cazadores se llevaron del valle a todos los zorros. ¿Qué pasó después con la hierba?",
+   "objective": "SV-08",
+   "hints": [
+    "Sigue la cadena: ¿a quién cazaban los zorros?",
+    "Si nadie caza a los que comen hierba, ¿cuántos habrá dentro de un tiempo?"
+   ],
+   "options": [
+    {
+     "id": "ok",
+     "label": "Hubo más animales comiendo hierba, y la hierba se acabó antes.",
+     "correct": true,
+     "points": 2,
+     "feedback": "«Eso pasó», dice la garza. «Hasta que volvieron los zorros, la orilla se quedó pelada.»"
+    },
+    {
+     "id": "nada",
+     "label": "Nada: los zorros no comen hierba, así que no le afecta.",
+     "correct": false,
+     "feedback": "Ellos no la comen, pero cazan a los que sí. ¿Qué pasa si nadie los caza?",
+     "next": "personas"
+    },
+    {
+     "id": "mas",
+     "label": "Creció más hierba, porque en el valle había menos animales.",
+     "correct": false,
+     "feedback": "Había menos zorros, sí. Pero ¿qué pasó con los animales que ellos cazaban?",
+     "next": "personas"
+    }
+   ],
    "next": "fin"
   },
   "fin": {

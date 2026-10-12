@@ -3458,3 +3458,35 @@ body.in-battle {
 .cover-menu i {
   display: none;
 }
+
+/* ---------- Competencies: the grid of the class ---------- */
+
+.comp-grid {
+  overflow-x: auto;
+}
+
+.comp-grid table {
+  border-collapse: collapse;
+  min-width: 100%;
+}
+
+.comp-grid th,
+.comp-grid td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.comp-grid td small {
+  display: block;
+  color: var(--text-soft);
+}
+
+.comp-grid select {
+  max-width: 9rem;
+}
+
+.comp-grid td.rated select {
+  border-color: var(--lantern);
+}

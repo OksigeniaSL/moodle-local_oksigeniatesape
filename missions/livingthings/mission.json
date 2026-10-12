@@ -1,6 +1,6 @@
 {
  "code": "livingthings",
- "version": 8,
+ "version": 9,
  "lang": "es",
  "ages": "9–11",
  "title": {
@@ -28,14 +28,159 @@
   "py": "Paraguay"
  },
  "objectives": {
-  "SV-01": "Distinguir seres vivos de seres inertes por las funciones vitales",
-  "SV-02": "Reconocer la célula como unidad de los seres vivos",
-  "SV-03": "Clasificar los seres vivos en los grandes grupos",
-  "SV-04": "Clasificar animales en vertebrados e invertebrados",
-  "SV-05": "Partes de una planta, cómo se nutre y cómo se reproduce",
-  "SV-06": "Ecosistemas y cadenas alimentarias",
+  "SV-01": "Distinguir lo vivo de lo inerte",
+  "SV-02": "La célula",
+  "SV-03": "Los grandes grupos de seres vivos",
+  "SV-04": "Vertebrados e invertebrados",
+  "SV-05": "Cómo vive una planta",
+  "SV-06": "El ecosistema y sus cadenas alimentarias",
   "SV-07": "Trabajar como un científico",
-  "SV-08": "Cómo influyen las personas en los ecosistemas"
+  "SV-08": "Lo que hacen las personas en un ecosistema"
+ },
+ "framework": {
+  "idnumber": "tesape-seres-vivos",
+  "name": "Tesapé · Los seres vivos",
+  "description": "Competencias de la misión «Los seres vivos» de Oksigenia Tesapé, para alumnos de 9 a 11 años. Cada competencia concreta corresponde a un objetivo de la misión. Une lo que se sabe, lo que se hace con ello y una actitud: comprobar antes de dar algo por cierto. Las escenas de la misión dejan evidencias, y la valoración la pone el docente.",
+  "scale": {
+   "name": "Tesapé · Escala de dominio",
+   "levels": [
+    "Empezando",
+    "En camino",
+    "Lo consigue",
+    "Lo domina"
+   ],
+   "default": 3,
+   "proficient": [
+    3,
+    4
+   ]
+  },
+  "competencies": [
+   {
+    "idnumber": "tesape-sv-vida",
+    "name": "Los seres vivos y cómo funcionan",
+    "description": "Reconoce qué hace que algo esté vivo y explica cómo funciona un ser vivo, desde la célula hasta la planta entera.",
+    "children": [
+     {
+      "idnumber": "tesape-sv-01",
+      "objective": "SV-01",
+      "name": "Distinguir lo vivo de lo inerte",
+      "description": "Distingue los seres vivos de los inertes porque se nutren, se relacionan y se reproducen. Lo explica con esas tres funciones, también en los casos que engañan.",
+      "levels": [
+       "Separa por lo que se ve: lo que se mueve, crece o es verde está vivo. Un fuego, una nube o un cristal que «crece» le parecen vivos.",
+       "Nombra las tres funciones vitales y acierta con animales y plantas corrientes. Duda con una seta, una semilla seca o un fuego.",
+       "Clasifica bien también esos casos y lo justifica: «se nutre, se relaciona y se reproduce», o «se mueve, pero no hace ninguna de las tres».",
+       "Argumenta casos límite, como un virus o una semilla guardada durante años, y sabe que la reproducción se le pide a la especie, no a cada individuo."
+      ]
+     },
+     {
+      "idnumber": "tesape-sv-02",
+      "objective": "SV-02",
+      "name": "La célula",
+      "description": "Reconoce que todos los seres vivos están formados por células y que algunos tienen una sola. Distingue, a grandes rasgos, una célula vegetal de una animal. **Opcional**: el docente la usa si trabaja la célula con su clase.",
+      "levels": [
+       "Sabe que hay seres y partes tan pequeños que no se ven a simple vista, pero no los relaciona con todos los seres vivos.",
+       "Dice que los seres vivos están hechos de células y que algunos tienen una sola, pero no distingue tipos de células.",
+       "Explica que la célula es la parte más pequeña con vida. En una imagen reconoce una célula vegetal (con pared y, si es de hoja, con partes verdes) y una animal.",
+       "Explica por qué la parte de una planta que crece a oscuras no tiene partes verdes. Usa la célula para ordenar los seres vivos: de una célula o de muchas, con núcleo o sin él."
+      ]
+     },
+     {
+      "idnumber": "tesape-sv-05",
+      "objective": "SV-05",
+      "name": "Cómo vive una planta",
+      "description": "Identifica las partes de una planta y lo que hace cada una. Explica de forma sencilla cómo fabrica su alimento con la luz y cómo se reproduce.",
+      "levels": [
+       "Señala la raíz, el tallo, las hojas y la flor. Piensa que la planta se alimenta de la tierra.",
+       "Dice para qué sirve cada parte y sabe que la planta necesita luz y agua, pero no explica que fabrica su propio alimento.",
+       "Explica que la hoja fabrica el alimento con la luz, el agua y el aire, y que suelta oxígeno. Relaciona la flor con las semillas. Predice qué le pasa a una planta sin luz y lo comprueba.",
+       "Relaciona la forma de una flor o de una semilla con la manera en que viaja su polen o se dispersa la semilla. Propone su propia comprobación de lo que necesita una planta."
+      ]
+     }
+    ]
+   },
+   {
+    "idnumber": "tesape-sv-clasificar",
+    "name": "Clasificar la diversidad de la vida",
+    "description": "Agrupa los seres vivos por rasgos que se pueden observar y comprobar, y usa claves para identificarlos.",
+    "children": [
+     {
+      "idnumber": "tesape-sv-03",
+      "objective": "SV-03",
+      "name": "Los grandes grupos de seres vivos",
+      "description": "Clasifica los seres vivos en animales, plantas, hongos y microorganismos por sus características, sobre todo por cómo consiguen su alimento.",
+      "levels": [
+       "Distingue animales y plantas. Pone las setas con las plantas y no sabe que hay seres vivos que no se ven a simple vista.",
+       "Coloca bien los ejemplos corrientes en los cuatro grupos. Se equivoca con los que engañan, como una seta, el moho o una bacteria.",
+       "Clasifica también los que engañan y dice qué decide el grupo: si fabrica su alimento con la luz o lo toma de otros, y si tiene una célula o muchas.",
+       "Clasifica un ser vivo que no conocía a partir de su descripción. Explica con varias características por qué un hongo no es una planta."
+      ]
+     },
+     {
+      "idnumber": "tesape-sv-04",
+      "objective": "SV-04",
+      "name": "Vertebrados e invertebrados",
+      "description": "Clasifica animales en vertebrados (mamíferos, aves, reptiles, anfibios y peces) e invertebrados (insectos, arácnidos, moluscos, gusanos…). Usa rasgos que se pueden comprobar y claves sencillas.",
+      "levels": [
+       "Clasifica por el aspecto o por dónde vive el animal: lo que vuela es un ave y lo que nada es un pez.",
+       "Distingue vertebrados e invertebrados y reconoce los cinco grupos de vertebrados en animales corrientes. Falla con los que engañan, como el murciélago, la ballena, la salamandra o la araña.",
+       "Clasifica también los que engañan con rasgos que no cambian: pelo o plumas, cómo respira, cuántas patas tiene. Sigue una clave de preguntas hasta dar con el nombre del animal.",
+       "Elige buenas preguntas para una clave, las que separan por rasgos fijos y no por el color o el tamaño. Crea una clave corta para los animales de su entorno."
+      ]
+     }
+    ]
+   },
+   {
+    "idnumber": "tesape-sv-ecosistemas",
+    "name": "Los ecosistemas y las personas",
+    "description": "Explica cómo se relacionan los seres vivos entre sí y con el lugar donde viven, y qué cambia cuando intervienen las personas.",
+    "children": [
+     {
+      "idnumber": "tesape-sv-06",
+      "objective": "SV-06",
+      "name": "El ecosistema y sus cadenas alimentarias",
+      "description": "Describe un ecosistema: los seres vivos, el lugar donde viven y las relaciones entre ellos. Representa cadenas alimentarias con productores, consumidores y descomponedores.",
+      "levels": [
+       "Dice qué come algún animal conocido. No cuenta el agua, la luz o el suelo como parte del ecosistema.",
+       "Ordena una cadena sencilla y señala el productor, pero olvida a los descomponedores o pone las flechas al revés.",
+       "Construye cadenas de un ecosistema concreto con productor, consumidores y descomponedores, y con las flechas bien puestas. Separa lo vivo de lo no vivo del lugar y explica qué pasa si falta un eslabón.",
+       "Une varias cadenas en una red y sigue los efectos encadenados: si falta una especie, quién se queda sin alimento y quién aumenta. Relaciona los rasgos de un ser vivo con el lugar donde vive."
+      ]
+     },
+     {
+      "idnumber": "tesape-sv-08",
+      "objective": "SV-08",
+      "name": "Lo que hacen las personas en un ecosistema",
+      "description": "Toma un caso concreto y explica, con sus datos, qué cambia en un ecosistema cuando una persona o una comunidad caza, tala, ensucia un río, protege una especie o recupera un humedal. Sigue el efecto por la cadena alimentaria y propone acciones razonables a su alcance.",
+      "levels": [
+       "Nombra acciones que dañan o que cuidan un lugar, como dejar basura o plantar un árbol, sin decir a quién afectan.",
+       "Dice a quién afecta directamente una acción (al talar un árbol, los pájaros pierden el nido), pero no sigue el efecto más allá.",
+       "Con un caso concreto, explica qué hicieron las personas, qué cambió y cómo lo notó la cadena alimentaria. Reconoce acciones que dañan y otras que recuperan. En una salida, toma solo lo que ya no está vivo y observa sin dañar.",
+       "Lee datos de antes y después, con su fecha y su fuente. Explica por qué una medida funcionó y otra no: recuperar la presa de un cazador frente a una medida que no cambia nada en la cadena. Distingue lo que dicen los datos de lo que se opina."
+      ]
+     }
+    ]
+   },
+   {
+    "idnumber": "tesape-sv-ciencia",
+    "name": "Investigar con método científico",
+    "description": "Investiga con método: pregunta, predice, observa, registra, comprueba y comunica. Se fía más de las pruebas que de lo que se da por cierto sin mirar.",
+    "children": [
+     {
+      "idnumber": "tesape-sv-07",
+      "objective": "SV-07",
+      "name": "Trabajar como un científico",
+      "description": "Observa con atención, se hace preguntas que se pueden comprobar, predice y registra en un cuaderno de campo. Saca conclusiones de lo que ha visto y las comunica. Comprueba antes de dar algo por cierto.",
+      "levels": [
+       "Observa y dibuja con ayuda. Anota sin fecha ni orden y da por buena la primera idea.",
+       "Registra lo que observa con fecha y lugar, y hace una predicción cuando se le pide, pero mezcla lo que vio con lo que cree.",
+       "Hace preguntas que se pueden comprobar y predice antes de observar. Registra con orden (dibujo, tabla, medidas) y compara el resultado con su predicción. Se lo cuenta a otros y explica los pasos que siguió.",
+       "Plantea una comprobación cambiando una sola cosa. Pregunta de dónde sale un dato antes de fiarse de él. Distingue lo que dicen los datos de lo que se opina y cambia de idea cuando las pruebas lo piden."
+      ]
+     }
+    ]
+   }
+  ]
  },
  "speakers": {
   "druida-mayor": {

@@ -8,6 +8,7 @@
  "mode": "both",
  "objectives": [
   "SV-06",
+  "SV-07",
   "SV-08"
  ],
  "minutes": 10,

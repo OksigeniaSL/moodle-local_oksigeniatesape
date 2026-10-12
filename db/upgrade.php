@@ -419,5 +419,26 @@ function xmldb_local_oksigeniatesape_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026101205, 'local', 'oksigeniatesape');
     }
 
+    if ($oldversion < 2026101208) {
+        // The competency of Moodle each objective of a mission leaves evidence in.
+        $table = new xmldb_table('local_oksigeniatesape_objcomp');
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('courseid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('missionid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('objective', XMLDB_TYPE_CHAR, '30', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('competencyid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('courseid', XMLDB_KEY_FOREIGN, ['courseid'], 'course', ['id']);
+        $table->add_key('missionid', XMLDB_KEY_FOREIGN, ['missionid'], 'local_oksigeniatesape_mission', ['id']);
+        $table->add_key('competencyid', XMLDB_KEY_FOREIGN, ['competencyid'], 'competency', ['id']);
+        $table->add_index('courseid-missionid-objective', XMLDB_INDEX_UNIQUE, ['courseid', 'missionid', 'objective']);
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        upgrade_plugin_savepoint(true, 2026101208, 'local', 'oksigeniatesape');
+    }
+
     return true;
 }

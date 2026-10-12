@@ -122,7 +122,7 @@
 
   /* ---------- Frame ---------- */
 
-  var TABS = ['class', 'powers', 'mission', 'challenges', 'log'];
+  var TABS = ['class', 'powers', 'mission', 'competencies', 'challenges', 'log'];
 
   function render() {
     var d = state.data;
@@ -149,7 +149,8 @@
         var count = tab === 'powers' ? d.powerspending : tab === 'challenges' ? d.pactspending : 0;
         var badge = count ? '<span class="badge">' + count + '</span>' : '';
         return '<button type="button" data-tab="' + tab + '"' + (state.tab === tab ? ' aria-current="page"' : '') + '>' +
-          T.icon({class: 'team', powers: 'power', mission: 'world', challenges: 'challenges', log: 'log'}[tab]) + badge +
+          T.icon({class: 'team', powers: 'power', mission: 'world', competencies: 'saber', challenges: 'challenges',
+            log: 'log'}[tab]) + badge +
           '<span>' + esc(t('teach_tab_' + tab)) + '</span></button>';
       }).join('') + '</nav><main class="content" id="content"></main></div>';
     app.querySelectorAll('[data-tab]').forEach(function(b) {
@@ -166,12 +167,15 @@
         if (state.tab === 'ideas') {
           state.ideas = null;
         }
+        if (state.tab === 'competencies') {
+          state.comp = null;
+        }
         render();
         window.scrollTo(0, 0);
       };
     });
-    ({class: tabClass, powers: tabPowers, mission: tabMission, challenges: tabChallenges, log: tabLog, settings: tabSettings,
-      ideas: tabIdeas})[state.tab]();
+    ({class: tabClass, powers: tabPowers, mission: tabMission, competencies: tabCompetencies, challenges: tabChallenges,
+      log: tabLog, settings: tabSettings, ideas: tabIdeas})[state.tab]();
   }
 
   function content(html) {
@@ -884,6 +888,86 @@
   }
 
   /* ---------- The mission ---------- */
+
+  /**
+   * The competencies: which competency of Moodle each objective of the mission leaves evidence in, and the grid of the
+   * class to rate each student with a tap, with the share right at the first try as a clue.
+   */
+  function tabCompetencies() {
+    if (!state.comp) {
+      content('<section class="card"><p class="empty">' + esc(t('app_loading')) + '</p></section>');
+      T.api('get_competencies', {courseid: cfg.courseid}).then(function(r) {
+        state.comp = r;
+        if (state.tab === 'competencies') {
+          tabCompetencies();
+        }
+      }).catch(function(e) {
+        T.toast(esc(e.message), true);
+      });
+      return;
+    }
+    var c = state.comp;
+    if (!c.enabled) {
+      content('<section class="card"><h2>' + esc(t('teach_tab_competencies')) + '</h2><p class="empty">' +
+        esc(t('teach_comp_off')) + '</p></section>');
+      return;
+    }
+    var editable = can('manageregion');
+    var mapping = c.objectives.map(function(o) {
+      var options = '<option value="0">' + esc(t('teach_comp_none')) + '</option>' + c.options.map(function(x) {
+        return '<option value="' + x.id + '"' + (x.id === o.competencyid ? ' selected' : '') + '>' + esc(x.framework + ' · ' +
+          x.name) + '</option>';
+      }).join('');
+      return '<li class="item"><span class="grow"><b>' + esc(o.code) + '</b><small>' + esc(o.name) + '</small></span>' +
+        '<select data-compobj="' + esc(o.code) + '"' + (editable ? '' : ' disabled') + '>' + options + '</select></li>';
+    }).join('');
+    var head = '<th>' + esc(t('teach_comp_student')) + '</th>' + c.objectives.map(function(o) {
+      return '<th title="' + esc(o.name) + '">' + esc(o.code) + '</th>';
+    }).join('');
+    var rows = c.students.map(function(st) {
+      return '<tr><th>' + esc(st.fullname) + '</th>' + st.cells.map(function(cell, i) {
+        var o = c.objectives[i];
+        if (!o.competencyid) {
+          return '<td class="comp-none">—</td>';
+        }
+        var levels = '<option value="0"' + (cell.rating ? '' : ' selected') + ' disabled>·</option>' +
+          o.levels.map(function(level, n) {
+            return '<option value="' + (n + 1) + '"' + (cell.rating === n + 1 ? ' selected' : '') + '>' + esc(level) +
+              '</option>';
+          }).join('');
+        return '<td><small>' + (cell.percent < 0 ? '—' : cell.percent + ' %') + '</small><select data-rate="' + st.userid +
+          ':' + esc(o.code) + '" aria-label="' + esc(st.fullname + ' · ' + o.code) + '">' + levels + '</select></td>';
+      }).join('') + '</tr>';
+    }).join('');
+    var el = content('<section class="card"><h2>' + esc(t('teach_tab_competencies')) + '</h2><p style="color:' +
+      'var(--text-soft)">' + esc(t('teach_comp_help')) + '</p><div class="comp-grid"><table><thead><tr>' + head +
+      '</tr></thead><tbody>' + rows + '</tbody></table></div></section><section class="card" style="margin-top:16px">' +
+      '<h2>' + esc(t('teach_comp_links')) + '</h2><p style="color:var(--text-soft)">' + esc(t('teach_comp_links_help')) +
+      '</p><ul class="list">' + mapping + '</ul></section>');
+    el.querySelectorAll('[data-compobj]').forEach(function(sel) {
+      sel.onchange = function() {
+        T.api('set_competency', {courseid: cfg.courseid, objective: sel.dataset.compobj,
+          competencyid: Number(sel.value)}).then(function(r) {
+          state.comp = r;
+          T.toast(esc(t('app_saved')));
+          tabCompetencies();
+        }).catch(function(e) {
+          T.toast(esc(e.message), true);
+        });
+      };
+    });
+    el.querySelectorAll('[data-rate]').forEach(function(sel) {
+      sel.onchange = function() {
+        var parts = sel.dataset.rate.split(':');
+        T.api('rate_competency', {courseid: cfg.courseid, userid: Number(parts[0]), objective: parts[1],
+          grade: Number(sel.value)}).then(function() {
+          sel.closest('td').classList.add('rated');
+        }).catch(function(e) {
+          T.toast(esc(e.message), true);
+        });
+      };
+    });
+  }
 
   function tabMission() {
     if (!state.missions || !state.results || !state.nextclass) {

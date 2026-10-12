@@ -36,7 +36,7 @@ final class observer {
         'idea', 'event', 'live', 'livein', 'livetoken', 'nextclass', 'pact', 'daily'];
 
     /** @var string[] Tables of how the game of a course is set up, by courseid. */
-    private const SETUP_TABLES = ['region', 'challenge', 'power', 'mission'];
+    private const SETUP_TABLES = ['region', 'challenge', 'power', 'mission', 'objcomp'];
 
     /**
      * An activity completed (or no longer completed): saber from its challenge, or from the rule of the course for

@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.25.0 (2026-10-12)
+
+- **Competencies of Moodle**: each mission brings its own framework of Tesapé, installed in the site with the mission
+  («Tesapé · Los seres vivos»: four general competencies and one concrete competency for each objective, with what is
+  seen at each level of a four-level scale: Starting · On the way · Achieves it · Masters it, achieving it being
+  proficient). Each objective of the mission is linked to its competency in the course, or to any other the teacher
+  chooses, such as those of the school's own framework added to the course. Each scene a student plays leaves evidence
+  in the competencies of its objectives («Scene «The nest»: 4 of 5 right, try 1»). The game gives no marks: the teacher
+  rates. Nothing happens if the site does not use competencies.
+- **A tab of competencies in the panel**: the grid of the class, with the share right at the first try of each student
+  in each objective as a clue, to rate each one with a tap (the rating goes to the competencies of the course in
+  Moodle), and the competency of each objective.
+- The pilot mission, version 9: a decision on what people do in an ecosystem in the route of first steps, the names of
+  its objectives as in the framework, and the objectives each scene declares matching the ones it records.
+
 ## 0.24.1 (2026-10-12)
 
 - The plan for the next class asks the AI of the site to keep the editorial line of the game: no political or

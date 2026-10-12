@@ -517,6 +517,25 @@
         <INDEX NAME="courseid-groupid-code" UNIQUE="false" FIELDS="courseid, groupid, code"/>
       </INDEXES>
     </TABLE>
+    <TABLE NAME="local_oksigeniatesape_objcomp" COMMENT="The Moodle competency each objective of the mission of a course leaves evidence in.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="missionid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="objective" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false" COMMENT="Code of the objective of the mission"/>
+        <FIELD NAME="competencyid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Competency of Moodle (0: none)"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="courseid" TYPE="foreign" FIELDS="courseid" REFTABLE="course" REFFIELDS="id"/>
+        <KEY NAME="missionid" TYPE="foreign" FIELDS="missionid" REFTABLE="local_oksigeniatesape_mission" REFFIELDS="id"/>
+        <KEY NAME="competencyid" TYPE="foreign" FIELDS="competencyid" REFTABLE="competency" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="courseid-missionid-objective" UNIQUE="true" FIELDS="courseid, missionid, objective"/>
+      </INDEXES>
+    </TABLE>
     <TABLE NAME="local_oksigeniatesape_nextclass" COMMENT="Plans for the next class made by the AI of the site from what confuses the class. No personal data.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
