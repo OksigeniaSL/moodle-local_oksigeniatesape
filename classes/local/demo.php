@@ -180,6 +180,92 @@ final class demo {
     }
 
     /**
+     * Brings an account that is already in the course into its made-up class, as one more student: a character if it
+     * has none, a place in the smallest team, with the role that team lacks most, and some weeks of made-up progress
+     * with scenes played, like the rest. For the public accounts of a demo site; it does nothing twice.
+     *
+     * @param int $courseid
+     * @param string $username
+     * @param int $weeks Weeks of made-up progress.
+     * @param string $nameform m or f, the form of the role name.
+     * @param int $seed
+     * @return \stdClass user, charid and team (group id).
+     */
+    public static function join_class(
+        int $courseid,
+        string $username,
+        int $weeks = 2,
+        string $nameform = 'm',
+        int $seed = 1
+    ): \stdClass {
+        global $CFG, $DB;
+        require_once($CFG->dirroot . '/group/lib.php');
+        $user = $DB->get_record('user', ['username' => $username, 'deleted' => 0], '*', MUST_EXIST);
+        if (!is_enrolled(\context_course::instance($courseid), $user)) {
+            throw new \invalid_parameter_exception('The account is not in the course: enrol it first.');
+        }
+        $teams = $DB->get_fieldset_select(self::T . 'team', 'groupid', 'courseid = ?', [$courseid]);
+        if (!$teams) {
+            throw new \invalid_parameter_exception('The course has no teams: make the class first.');
+        }
+        $now = time();
+        $result = (object) ['user' => $user, 'charid' => 0, 'team' => 0];
+        // Already in a team of the class: that one.
+        foreach ($teams as $groupid) {
+            if (groups_is_member($groupid, $user->id)) {
+                $result->team = (int) $groupid;
+            }
+        }
+        if (!$result->team) {
+            $sizes = [];
+            foreach ($teams as $groupid) {
+                $sizes[$groupid] = count(groups_get_members($groupid, 'u.id'));
+            }
+            asort($sizes);
+            $result->team = (int) array_key_first($sizes);
+            groups_add_member($result->team, $user->id);
+        }
+        $char = characters::get((int) $user->id);
+        if (!$char) {
+            // The role the team lacks most.
+            $count = array_fill_keys(self::ROLES, 0);
+            $members = array_keys(groups_get_members($result->team, 'u.id'));
+            [$insql, $params] = $DB->get_in_or_equal($members);
+            foreach ($DB->get_fieldset_select(self::T . 'char', 'role', "userid $insql", $params) as $role) {
+                $count[$role] = ($count[$role] ?? 0) + 1;
+            }
+            asort($count);
+            $charid = $DB->insert_record(self::T . 'char', (object) [
+                'userid' => $user->id,
+                'role' => array_key_first($count),
+                'nameform' => $nameform === 'f' ? 'f' : 'm',
+                'lineage' => 'human',
+                'gems' => 10,
+                'timecreated' => $now,
+                'timemodified' => $now,
+            ]);
+            $char = characters::get((int) $user->id);
+        }
+        $result->charid = (int) $char->id;
+        if (!$DB->record_exists(self::T . 'member', ['charid' => $char->id, 'courseid' => $courseid])) {
+            $DB->insert_record(self::T . 'member', (object) [
+                'charid' => $char->id,
+                'courseid' => $courseid,
+                'step' => 2,
+                'lastregen' => $now,
+                'timecreated' => $now,
+                'timemodified' => $now,
+            ]);
+            mt_srand($seed);
+            self::make_progress((int) $char->id, $courseid, self::plan_weeks($weeks), $now);
+            if ($weeks > 0 && missions::get($courseid)) {
+                self::make_plays($courseid, [$user], $weeks, $seed, $now);
+            }
+        }
+        return $result;
+    }
+
+    /**
      * The scenes the class has played in the weeks of made-up progress: each student, the scenes of their step in the
      * chapters they have reached, at the first try and with some mix-ups put right on the way, so that the teacher
      * sees results and what confuses the class.

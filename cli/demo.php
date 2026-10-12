@@ -38,6 +38,9 @@ require_once($CFG->libdir . '/clilib.php');
         'weeks' => 0,
         'seed' => 1,
         'mission' => 'livingthings',
+        'join' => '',
+        'course' => 0,
+        'nameform' => 'm',
     ],
     ['h' => 'help']
 );
@@ -63,11 +66,34 @@ Options:
 --weeks=N           Weeks of made-up progress (default 0)
 --seed=N            Seed of the random choices: the same seed gives the same class (default 1)
 --mission=CODE      Mission to install (default livingthings, the sample that comes with the plugin; empty for none)
+--join=USERNAME     Instead of making a class: bring an account already enrolled in the course of a made-up class into
+                    it, with a character, a place in the smallest team and some weeks of progress (the public accounts
+                    of a demo site). It does nothing twice. With --course=ID, and --weeks (default 2) and
+                    --nameform=m|f (default m)
 -h, --help          Print this help
 
-Example:
+Examples:
 \$ sudo -u www-data /usr/bin/php local/oksigeniatesape/cli/demo.php --run --weeks=3
+\$ sudo -u www-data /usr/bin/php local/oksigeniatesape/cli/demo.php --run --join=alumno --course=11
 ";
+    exit(0);
+}
+
+if ($options['join'] !== '') {
+    if (!$options['course'] || !$DB->record_exists('course', ['id' => (int) $options['course']])) {
+        cli_error('Say the course with --course=ID.');
+    }
+    \core\session\manager::set_user(get_admin());
+    $joined = \local_oksigeniatesape\local\demo::join_class(
+        (int) $options['course'],
+        $options['join'],
+        $options['weeks'] ? (int) $options['weeks'] : 2,
+        $options['nameform'],
+        (int) $options['seed']
+    );
+    $char = \local_oksigeniatesape\local\characters::get((int) $joined->user->id);
+    cli_writeln($joined->user->username . ': ' . $char->role . ', level ' . $char->level . ', team ' .
+        groups_get_group_name($joined->team));
     exit(0);
 }
 

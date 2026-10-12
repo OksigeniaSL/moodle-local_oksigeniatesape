@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.26.6 (2026-10-12)
+
+- `cli/demo.php --join=USERNAME --course=ID`: brings an account already enrolled in the course of a made-up class into
+  it, as one more student, with a character, a place in the smallest team (with the role it lacks most) and some weeks
+  of made-up progress with scenes played. For the public accounts of a demo site; it does nothing twice.
+
 ## 0.26.5 (2026-10-12)
 
 - **The emblem of Tesapé**, drawn by the art director: in the header of the teacher's panel and of the class screen,

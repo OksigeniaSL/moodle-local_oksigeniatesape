@@ -95,6 +95,31 @@ final class demo_test extends \advanced_testcase {
         $this->assertSame($names($first), $names($second));
     }
 
+    public function test_an_account_joins_the_class(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $class = demo::create_class('DEMO4', 8, 4);
+        $courseid = $class->course->id;
+        $visitor = $this->getDataGenerator()->create_and_enrol($class->course, 'student', ['username' => 'alumno']);
+        $joined = demo::join_class($courseid, 'alumno', 2, 'f');
+        // In the smallest team, with the role it lacked, and some progress like the rest.
+        $this->assertContains($joined->team, $class->teams);
+        $this->assertTrue(groups_is_member($joined->team, $visitor->id));
+        $char = characters::get((int) $visitor->id);
+        $this->assertSame('f', $char->nameform);
+        $this->assertGreaterThan(0, (int) $char->saber);
+        $this->assertTrue($DB->record_exists(self::T . 'member', ['charid' => $char->id, 'courseid' => $courseid]));
+        // Twice does nothing twice.
+        demo::join_class($courseid, 'alumno', 2, 'f');
+        $this->assertSame(1, $DB->count_records(self::T . 'member', ['charid' => $char->id, 'courseid' => $courseid]));
+        $this->assertSame(1, $DB->count_records(self::T . 'char', ['userid' => $visitor->id]));
+        // An account outside the course cannot join.
+        $this->getDataGenerator()->create_user(['username' => 'fuera']);
+        $this->expectException(\invalid_parameter_exception::class);
+        demo::join_class($courseid, 'fuera');
+    }
+
     public function test_taken_shortname(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
