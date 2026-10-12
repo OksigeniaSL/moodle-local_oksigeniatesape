@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.26.4 (2026-10-12)
+
+- The market on a phone: with the picture of each thing, its button goes to its own line when the name would be
+  squeezed, instead of covering the text.
+
 ## 0.26.3 (2026-10-12)
 
 - **Pictures for the items, the market and the album**, from the art pack: each item of the mission (`item.<code>`,

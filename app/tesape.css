@@ -790,6 +790,22 @@ body.tesape {
   min-width: 0;
 }
 
+/* The market: with its picture, the button goes to its own line when the name would be squeezed. */
+.market-card .item {
+  flex-wrap: wrap;
+}
+
+.market-card .item .grow {
+  flex: 1 1 9em;
+}
+
+.market-card .item > .btn,
+.market-card .item > .chip,
+.market-card .item > .row-actions,
+.market-card .item > .tag {
+  margin-left: auto;
+}
+
 .item .grow small {
   display: block;
   color: var(--text-soft);
