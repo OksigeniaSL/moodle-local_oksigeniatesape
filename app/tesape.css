@@ -1387,11 +1387,12 @@ body.in-scene {
   margin-bottom: 14px;
 }
 
-/* The paintings of the art pack: a wide band, cut to fit, whatever their size. */
+/* The paintings of the art pack: 16:9, never taller than about half the screen (the text goes below), cut to fit. */
 .vignette.art img {
   display: block;
   width: 100%;
-  aspect-ratio: 12 / 5;
+  aspect-ratio: 16 / 9;
+  max-height: 46vh;
   object-fit: cover;
 }
 

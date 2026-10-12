@@ -618,7 +618,10 @@
       seen = true;
     }
     if (!seen) {
-      return '<section class="card story-card"><div class="kicker">' + esc(m.subtitle) + '</div><h2>' + esc(m.title) +
+      // The opening of the mission, with the painting of the valley if the art pack has it.
+      var opening = T.artUrl(['scene.prologue.' + m.skin, 'scene.prologue']);
+      return '<section class="card story-card">' + (opening ? '<div class="vignette art" aria-hidden="true"><img src="' +
+        esc(opening) + '" alt=""></div>' : '') + '<div class="kicker">' + esc(m.subtitle) + '</div><h2>' + esc(m.title) +
         '</h2><p class="lead">' + esc(m.prologue) + '</p><div class="actions" style="justify-content:flex-start">' +
         '<button class="btn btn-main" data-begin="' + esc(key) + '">' + esc(t('app_beginmission')) + '</button></div></section>';
     }

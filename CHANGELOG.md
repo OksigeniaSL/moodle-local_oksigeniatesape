@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.26.1 (2026-10-12)
+
+- The paintings of the scenes are shown at 16:9 (1440 × 810 in the pack), never taller than about half the screen,
+  so that the text stays in sight on the class screen.
+- The opening of the mission, before the student begins it, shows the painting of the valley (`scene.prologue`) if the
+  art pack has it.
+
 ## 0.26.0 (2026-10-12)
 
 - **Paintings in the scenes**: the art pack can bring a background for each place (`scene.<place>`, such as
