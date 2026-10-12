@@ -203,9 +203,9 @@ final class demo {
             foreach (array_slice($chapters, 0, $reached) as $c => $chapter) {
                 $mine = array_values(array_filter($scenes, fn($sc) => $sc->chapterid == $chapter->id));
                 foreach (scenes::for_step($mine, $step) as $scene) {
-                    [$items, $roles] = scenes::context($char, $courseid);
+                    [$items, $roles, $flags, $role] = scenes::context($char, $courseid);
                     $def = json_decode($scene->definition, true);
-                    $events = autoplayer::tangled($def, $seed . '-' . $i . '-' . $scene->code, 35, $items, $roles);
+                    $events = autoplayer::tangled($def, $seed . '-' . $i . '-' . $scene->code, 35, $items, $roles, $flags, $role);
                     $when = $now - ($reached - $c) * DAYSECS;
                     try {
                         scenes::play($courseid, (int) $user->id, (int) $scene->id, $events, null, $when);

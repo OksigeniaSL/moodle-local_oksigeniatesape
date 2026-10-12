@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.24.0 (2026-10-12)
+
+- **The report of the class**, in the mission tab of the panel: one row for each student, to take to a spreadsheet, to
+  iDoceo or to a PDF, in Excel, ODS, CSV or PDF. Their team and step, their level and knowledge in the course, the
+  scenes and quests done, for each objective of the mission the share of answers right at the first try of each scene
+  (empty while there is no evidence), the classroom challenges done, the Moodle activities completed, the pages of the
+  day right and their entries in the field guide. The game gives no marks: this is evidence for the teacher's. Nothing
+  about behaviour (energy, commitments, powers). The PDF is laid out to be read: landscape, short headings and a legend
+  of the objectives.
+- The demo class plays its scenes with the memory and the role of each character, so that no play is left out.
+
 ## 0.23.0 (2026-10-12)
 
 - **The cover of the course page**: where the game is on, the course page opens with the way into the valley, as each

@@ -924,7 +924,7 @@
       html = '<section class="card"><div class="kicker">' + esc(t('teach_mission_installed')) + '</div><h2>' +
         esc(m.installed.title) + '</h2>' + (pkg ? '<p style="color:var(--text-soft)">' + esc(pkg.subtitle) + ' · ' +
         esc(t('teach_mission_ages', pkg.ages)) + '</p>' + (can('manageregion') ? packageForm(pkg, m.installed) : '') : '') +
-        '</section>' + nextClass() + games() + results() + expeditionsCard(m.expeditions) +
+        '</section>' + reportCard() + nextClass() + games() + results() + expeditionsCard(m.expeditions) +
         (others.length && can('manageregion') ? '<section class="card" style="margin-top:16px"><h2>' +
         esc(t('teach_expedition_new')) + '</h2><p style="color:var(--text-soft)">' + esc(t('teach_expedition_new_help')) +
         '</p></section>' + others.map(packageCard).join('') : '');
@@ -948,6 +948,24 @@
         });
       };
     });
+  }
+
+  /**
+   * The report of the class, to take to a spreadsheet, iDoceo or a PDF: one row for each student.
+   *
+   * @return {string}
+   */
+  function reportCard() {
+    if (!can('viewlog')) {
+      return '';
+    }
+    var link = function(format, label) {
+      return '<a class="btn btn-soft" href="' + esc(cfg.wwwroot + '/local/oksigeniatesape/download.php?id=' + cfg.courseid +
+        '&format=' + format + '&sesskey=' + cfg.sesskey) + '">' + esc(label) + '</a>';
+    };
+    return '<section class="card" style="margin-top:16px"><h2>' + esc(t('teach_report')) + '</h2><p style="color:' +
+      'var(--text-soft)">' + esc(t('teach_report_help')) + '</p><div class="actions" style="justify-content:flex-start">' +
+      link('excel', 'Excel') + link('ods', 'ODS') + link('csv', 'CSV') + link('pdf', 'PDF') + '</div></section>';
   }
 
   /**
