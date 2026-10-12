@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.26.7 (2026-10-12)
+
+- The test of joining a class compares the ids of the teams as numbers.
+
 ## 0.26.6 (2026-10-12)
 
 - `cli/demo.php --join=USERNAME --course=ID`: brings an account already enrolled in the course of a made-up class into
