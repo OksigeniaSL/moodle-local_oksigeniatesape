@@ -17,7 +17,7 @@
 namespace local_oksigeniatesape\local;
 
 /**
- * The report of a class, for the teacher to take wherever they keep their marks (a spreadsheet, iDoceo, a PDF): one row
+ * The report of a class, for the teacher to take wherever they keep their marks (a spreadsheet, a gradebook, a PDF): one row
  * for each student with what they learnt and did in the mission. The game gives no marks: for each objective of the
  * mission, the share right at the first try of each scene. Nothing about behaviour (energy, commitments, powers).
  *

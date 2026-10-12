@@ -951,7 +951,7 @@
   }
 
   /**
-   * The report of the class, to take to a spreadsheet, iDoceo or a PDF: one row for each student.
+   * The report of the class, to take to a spreadsheet, a gradebook or a PDF: one row for each student.
    *
    * @return {string}
    */

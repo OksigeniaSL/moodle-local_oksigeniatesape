@@ -275,7 +275,10 @@ final class nextclass {
             'the answer away), in plain words a ten-year-old understands;';
         $lines[] = '- the classroom challenge that fits best, by its id, and why (0 and an empty reason if none fits).';
         $lines[] = '';
-        $lines[] = 'Rules: scientifically correct and objective, without ideology, campaigns or catastrophism; standard ' .
+        $lines[] = 'Rules: scientifically correct and objective, without ideology, campaigns or catastrophism; no political ' .
+            'or institutional agendas (no 2030 Agenda, no sustainable development goals); the environment as concrete ' .
+            'ecosystems and what people do in them, never climate change or global warming; people appear for what they ' .
+            'did, never framed by their sex (no «girls in science», no international days); standard ' .
             "{$language} with the generic masculine; speak to the teacher informally (in Spanish, «tú»); never the " .
             'Spanish verb «coger» in any form; no names of students; short sentences.';
         $lines[] = '';

@@ -72,6 +72,9 @@ final class nextclass_test extends \advanced_testcase {
         $this->assertStringContainsString('SV-01', $prompt);
         $this->assertStringNotContainsString('Zacarías', $prompt);
         $this->assertStringNotContainsString('Quiroga', $prompt);
+        // The editorial line goes to the AI too.
+        $this->assertStringContainsString('never climate change', $prompt);
+        $this->assertStringContainsString('never framed by their sex', $prompt);
     }
 
     public function test_nothing_to_go_on_before_anybody_plays(): void {

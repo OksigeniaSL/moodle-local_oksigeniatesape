@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.24.1 (2026-10-12)
+
+- The plan for the next class asks the AI of the site to keep the editorial line of the game: no political or
+  institutional agendas, the environment as concrete ecosystems (never climate change or global warming), and people
+  for what they did, never framed by their sex.
+- The help of the report names no application: a spreadsheet, a gradebook or a PDF.
+
 ## 0.24.0 (2026-10-12)
 
 - **The report of the class**, in the mission tab of the panel: one row for each student, to take to a spreadsheet, to
