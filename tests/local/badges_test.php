@@ -74,6 +74,10 @@ final class badges_test extends \advanced_testcase {
         $badge = new \core_badges\badge($id);
         $this->assertSame('Naturalista del Valle de Tesapé', $badge->name);
         $this->assertFalse($badge->is_active());
+        // With its medallion, and the one of the plugin still there for the next course.
+        $fs = get_file_storage();
+        $this->assertTrue($fs->file_exists($badge->get_context()->id, 'badges', 'badgeimage', $id, '/', 'f3.png'));
+        $this->assertFileExists(__DIR__ . '/../../pix/badge.png');
         // Given by the game or by the teacher by hand.
         $this->assertTrue($badge->has_criteria());
         $this->assertTrue($DB->record_exists('badge_criteria', ['badgeid' => $id, 'criteriatype' => BADGE_CRITERIA_TYPE_MANUAL]));

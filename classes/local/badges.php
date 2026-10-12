@@ -115,7 +115,10 @@ final class badges {
             'imagecaption' => $name,
         ]);
         $badge = new \core_badges\badge($id);
-        badges_process_badge_image($badge, __DIR__ . '/../../pix/badge.png');
+        // Moodle deletes the file it is given: a copy, never the medallion of the plugin.
+        $copy = make_request_directory() . '/badge.png';
+        copy(__DIR__ . '/../../pix/badge.png', $copy);
+        badges_process_badge_image($badge, $copy);
         // Given by the game, or by the teacher by hand.
         \award_criteria::build(['criteriatype' => BADGE_CRITERIA_TYPE_OVERALL, 'badgeid' => $id])
             ->save(['agg' => BADGE_CRITERIA_AGGREGATION_ANY]);

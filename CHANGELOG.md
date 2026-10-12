@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.28.2 (2026-10-12)
+
+- The badge of the mission is made from a copy of its medallion: Moodle deletes the image it is given, and it took the
+  one of the plugin, so the next courses would have had badges without an image (found by the tests on Moodle 4.5,
+  before the badge reached any site).
+
 ## 0.28.1 (2026-10-12)
 
 - The medallion of the badge is a full-colour PNG: Moodle 4.5 could not write the badge into it when it was given.
