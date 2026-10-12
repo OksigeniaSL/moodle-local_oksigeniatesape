@@ -83,6 +83,9 @@ final class page {
 <meta name="theme-color" content="#0f2131">
 <meta name="robots" content="noindex">
 <title>' . s($config['coursename']) . ' · Tesapé</title>
+<link rel="icon" href="' . $base . 'favicon.ico" sizes="16x16 32x32 48x48">
+<link rel="icon" href="' . $base . 'favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="' . $base . 'apple-touch-icon.png">
 <link rel="preload" href="' . $base . 'fonts/lexend-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="' . $base . 'tesape.css?v=' . $version . '">
 </head>

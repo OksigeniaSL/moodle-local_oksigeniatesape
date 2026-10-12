@@ -132,8 +132,7 @@
     }
     var pending = queued().length;
     app.innerHTML = '<div class="sky"></div><div class="world">' +
-      '<header class="hud"><div class="me"><span class="face" style="display:grid;place-items:center">' +
-      '<span style="width:26px;height:26px;color:var(--lantern)">' + T.icon('saber') + '</span></span><span class="who">' +
+      '<header class="hud"><div class="me"><span class="face emblem-face">' + T.emblem() + '</span><span class="who">' +
       '<b>' + esc(cfg.coursename) + '</b><small>' + esc(t('teach_title')) + (pending ? ' · ' + esc(t('teach_pending',
       pending)) : '') + '</small></span></div><div class="hud-actions"><button class="btn btn-soft icon-btn" type="button" ' +
       'data-tab="ideas" aria-label="' + esc(t('teach_tab_ideas')) + '"' + (state.tab === 'ideas' ? ' aria-current="page"' : '') +

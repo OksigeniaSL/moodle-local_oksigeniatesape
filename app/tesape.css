@@ -527,6 +527,20 @@ body.tesape {
   flex: none;
 }
 
+/* The emblem of Tesapé where there is no character: it brings its own rim. */
+.hud .face.emblem-face {
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 0;
+  background: none;
+}
+
+.emblem-face .emblem {
+  width: 100%;
+  height: 100%;
+}
+
 .hud .face .avatar {
   width: 100%;
   height: 100%;
@@ -2288,6 +2302,16 @@ a.chip {
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 14px;
+}
+
+.board-top .emblem {
+  width: 52px;
+  height: 52px;
+  flex: none;
+}
+
+.board-top .emblem + div {
+  margin-right: auto;
 }
 
 .board-top b {

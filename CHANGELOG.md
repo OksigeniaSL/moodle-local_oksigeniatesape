@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.26.5 (2026-10-12)
+
+- **The emblem of Tesapé**, drawn by the art director: in the header of the teacher's panel and of the class screen,
+  as the icon of the pages of the game in the browser (favicon, and the icon of a phone's home screen), and as the
+  icon of the plugin.
+
 ## 0.26.4 (2026-10-12)
 
 - The market on a phone: with the picture of each thing, its button goes to its own line when the name would be

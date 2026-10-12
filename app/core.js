@@ -158,6 +158,15 @@
     return lineage ? T.t('lineage_' + lineage + '_' + (form || 'm')) : '';
   };
 
+  /**
+   * The emblem of Tesapé, in its small drawing (for 24 to 48 px).
+   *
+   * @return {string}
+   */
+  T.emblem = function() {
+    return '<img class="emblem" src="' + T.esc(cfg.wwwroot) + '/local/oksigeniatesape/app/emblem.svg" alt="">';
+  };
+
   /* ---------- Art packs ---------- */
 
   /**

@@ -223,7 +223,7 @@
         esc(t('board_battle_joined', team.joined)) + ' · ' : '') + esc(t('board_battle_teamright', team.right)) + '</small>' +
         marks + '</div>';
     }).join('');
-    app.innerHTML = '<div class="board battle-board"><header class="board-top"><div><b>' + esc(cfg.coursename) + '</b><small>' +
+    app.innerHTML = '<div class="board battle-board"><header class="board-top">' + T.emblem() + '<div><b>' + esc(cfg.coursename) + '</b><small>' +
       esc(t(l.final ? 'board_battle_final' : 'board_battle')) + (l.phase > 1 && !l.outcome ? ' · ' +
       esc(t('board_battle_phase')) : '') + '</small></div><div class="board-tools"><button class="btn btn-soft" data-full>' +
       esc(t('board_fullscreen')) + '</button></div></header><div class="battle-stage"><div class="battle-boss' +
@@ -703,7 +703,7 @@
     }
     var pending = state.cls.powerspending;
     app.innerHTML = '<div class="board">' +
-      '<header class="board-top"><div><b>' + esc(cfg.coursename) + '</b><small>' + esc(t('board_title')) + '</small></div>' +
+      '<header class="board-top">' + T.emblem() + '<div><b>' + esc(cfg.coursename) + '</b><small>' + esc(t('board_title')) + '</small></div>' +
       '<div class="board-tools">' + (pending && can('approvepowers') ? '<a class="btn btn-soft" href="' +
       esc(cfg.wwwroot + '/local/oksigeniatesape/teach.php?id=' + cfg.courseid) + '">' + esc(t('board_powers', pending)) +
       '</a>' : '') + '<a class="btn btn-soft" href="' + esc(cfg.wwwroot + '/local/oksigeniatesape/teach.php?id=' +
