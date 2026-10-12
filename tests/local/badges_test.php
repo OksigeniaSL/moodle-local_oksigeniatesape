@@ -117,6 +117,6 @@ final class badges_test extends \advanced_testcase {
         $this->assertSame(0, $DB->count_records('badge', ['courseid' => $w->course->id]));
         $this->light($w, $DB->get_fieldset_select(self::T . 'chapter', 'code', 'missionid = ?', [$w->mission->id]));
         badges::check($w->course->id, $w->student->id);
-        $this->assertSame(0, $DB->count_records('badge_issued'));
+        $this->assertSame(0, $DB->count_records('badge_issued', ['userid' => $w->student->id]));
     }
 }

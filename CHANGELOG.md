@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.28.1 (2026-10-12)
+
+- The medallion of the badge is a full-colour PNG: Moodle 4.5 could not write the badge into it when it was given.
+
 ## 0.28.0 (2026-10-12)
 
 - **The gradebook, if the teacher wants it** (off by default, in the settings of the panel): the rating the teacher
