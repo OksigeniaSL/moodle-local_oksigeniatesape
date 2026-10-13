@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.34.1 (2026-10-13)
+
+- The map in layers ends in the mountain, where the last place is (the meadow at the bottom, forest and lake between),
+  and its bands overlap a little, so that no line shows between them. Its art comes with the art pack of the valley,
+  version 14 (the four bands and the six landmarks).
+
 ## 0.34.0 (2026-10-13)
 
 - **Maps of any size, in layers**: a mission made by a teacher can have from three to fifteen places. Up to six, the

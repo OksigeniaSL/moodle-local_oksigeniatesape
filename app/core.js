@@ -220,10 +220,12 @@
       var count = Math.ceil(height / band);
       var bands = '';
       for (var i = 0; i < count; i++) {
-        var zone = ZONES[Math.min(ZONES.length - 1, Math.floor(i * ZONES.length / count))];
+        // The meadow at the bottom and the mountain at the top, where the last place is; forest and lake between.
+        var zone = i === count - 1 ? 'mountain' : i === 0 ? 'meadow' : ZONES[1 + (i - 1) % 2];
         var art = T.artUrl(['band.' + m.mapworld + '.' + zone]);
-        bands += art ? '<image href="' + T.esc(art) + '" x="0" y="' + (height - (i + 1) * band) + '" width="400" height="' +
-          band + '" preserveAspectRatio="xMidYMid slice"/>' : '';
+        // A little taller than their place, so that no line shows between two of them.
+        bands += art ? '<image href="' + T.esc(art) + '" x="0" y="' + (height - (i + 1) * band - 2) + '" width="400" ' +
+          'height="' + (band + 4) + '" preserveAspectRatio="xMidYMid slice"/>' : '';
       }
       return night + bands;
     }
