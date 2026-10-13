@@ -3687,3 +3687,22 @@ body.in-battle {
   padding: 12px 14px;
   margin-bottom: 12px;
 }
+
+/* ---------- The workshop, part 2: a mission from scratch ---------- */
+
+.tesape .ws-steps {
+  justify-content: flex-start;
+  margin-top: 12px;
+}
+
+.tesape .ws-steps .chip.on {
+  background: var(--lantern);
+  color: var(--ink);
+}
+
+.tesape .ws-check {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+}

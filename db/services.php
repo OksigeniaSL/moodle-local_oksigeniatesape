@@ -242,6 +242,13 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:award',
     ],
+    'local_oksigeniatesape_author_mission' => [
+        'classname' => 'local_oksigeniatesape\\external\\author_mission',
+        'description' => 'The teacher makes a mission from scratch: drafts, what is missing, and making it the mission.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:manageregion',
+    ],
     'local_oksigeniatesape_edit_mission' => [
         'classname' => 'local_oksigeniatesape\\external\\edit_mission',
         'description' => 'The teacher changes the texts and questions of the mission of the course, or goes back to them.',

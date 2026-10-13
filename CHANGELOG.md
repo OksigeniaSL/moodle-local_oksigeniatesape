@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.32.0 (2026-10-13)
+
+- **The workshop, part 2: make a mission from scratch** (panel, «Mission» tab, «Make a mission from scratch»), in six
+  steps: the mission (title, topic, ages, beginning and end of the story), what is learnt (objectives, with how each
+  looks at the four levels), the places of the map (three to six, with the classroom challenge, commitments and
+  sessions), the guided scenes of each place (narration, who speaks, one to three moments: choose one, choose several,
+  classify or order, with hints and endings), the questions of the battle, and «Check and publish», with what is still
+  missing as a teacher would say it. What is written is saved by itself. Published, it is the mission of the course;
+  published again, the students keep what they did. A draft never played can be deleted.
+- The text workshop of 0.29 is not offered for a mission the teacher made: that one is changed where it was made.
+
 ## 0.31.0 (2026-10-13)
 
 - **The workshop, part 2, the base: a mission from scratch** (the screens come next). A teacher's mission is a draft

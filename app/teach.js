@@ -993,7 +993,7 @@
     var html = '';
     if (!m.installed) {
       html = '<section class="card"><h2>' + esc(t('teach_tab_mission')) + '</h2><p style="color:var(--text-soft)">' +
-        esc(t('teach_mission_none')) + '</p></section>' + m.packages.map(packageCard).join('');
+        esc(t('teach_mission_none')) + '</p></section>' + m.packages.map(packageCard).join('') + authorCard();
     } else {
       var pkg = m.packages.filter(function(p) {
         return p.code === m.installed.code;
@@ -1007,13 +1007,25 @@
       html = '<section class="card"><div class="kicker">' + esc(t('teach_mission_installed')) + '</div><h2>' +
         esc(m.installed.title) + '</h2>' + (pkg ? '<p style="color:var(--text-soft)">' + esc(pkg.subtitle) + ' · ' +
         esc(t('teach_mission_ages', pkg.ages)) + '</p>' + (can('manageregion') ? packageForm(pkg, m.installed) : '') : '') +
-        '</section>' + workshopCard() + reportCard() + nextClass() + games() + results() + expeditionsCard(m.expeditions) +
+        '</section>' + workshopCard(m.installed) + authorCard() + reportCard() + nextClass() + games() + results() +
+        expeditionsCard(m.expeditions) +
         (others.length && can('manageregion') ? '<section class="card" style="margin-top:16px"><h2>' +
         esc(t('teach_expedition_new')) + '</h2><p style="color:var(--text-soft)">' + esc(t('teach_expedition_new_help')) +
         '</p></section>' + others.map(packageCard).join('') : '');
     }
     var el = content(html);
     bindNextClass(el);
+    var author = el.querySelector('[data-authorcard]');
+    if (author) {
+      T.author.card(author, function(code) {
+        T.author.open(content(''), code, function() {
+          // The mission of the course may be another one now.
+          state.missions = null;
+          state.results = null;
+          tabMission();
+        });
+      });
+    }
     var workshop = el.querySelector('[data-workshop]');
     if (workshop) {
       workshop.onclick = function() {
@@ -1044,17 +1056,28 @@
   }
 
   /**
-   * The way into the workshop, where the teacher changes the texts and the questions of the mission of the course.
+   * The way into the workshop, where the teacher changes the texts and the questions of the mission of the course. Not
+   * for a mission the teacher made: that one is changed where it was made.
    *
+   * @param {Object} installed
    * @return {string}
    */
-  function workshopCard() {
-    if (!can('manageregion')) {
+  function workshopCard(installed) {
+    if (!can('manageregion') || /^own[0-9]+$/.test(installed.code || '')) {
       return '';
     }
     return '<section class="card" style="margin-top:16px"><h2>' + esc(t('teach_ws_title')) + '</h2><p style="color:' +
       'var(--text-soft)">' + esc(t('teach_ws_help')) + '</p><div class="actions" style="justify-content:flex-start">' +
       '<button class="btn btn-main" data-workshop>' + esc(t('teach_ws_open')) + '</button></div></section>';
+  }
+
+  /**
+   * The place of the missions the teacher makes from scratch; it fills itself (author.js).
+   *
+   * @return {string}
+   */
+  function authorCard() {
+    return can('manageregion') ? '<section class="card" data-authorcard style="margin-top:16px"></section>' : '';
   }
 
   /**
