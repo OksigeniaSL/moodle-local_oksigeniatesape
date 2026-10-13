@@ -204,6 +204,17 @@
       btn('del-moment', t('teach_au_delete_moment'), ' data-m="' + i + '"') + '</div></section>';
   }
 
+  /** A draft of the scene by the AI of the site, if the course has it: the teacher reads it and changes it. */
+  function aiBox() {
+    if (!st.info.ai || !st.info.ai.canuse) {
+      return '';
+    }
+    return '<details class="card ws-chapter"><summary><h3>' + esc(t('teach_au_ai')) + '</h3></summary><p class="help">' +
+      esc(t('teach_au_ai_help')) + '</p><label class="ws-field"><textarea rows="3" data-aiask placeholder="' +
+      esc(t('teach_au_ai_placeholder')) + '"></textarea></label><div class="actions" style="justify-content:flex-start">' +
+      btn('ai-propose', t('teach_au_ai_go'), '', true) + '</div></details>';
+  }
+
   function sceneEditor() {
     var sc = st.d.scenes[st.scene];
     var p = 'scenes.' + st.scene;
@@ -215,7 +226,7 @@
       select(p + '.place', t('teach_au_its_place'), places()) +
       input(p + '.title', t('teach_ws_k_title')) + select(p + '.speaker', t('teach_au_speaker'), speakers,
         t('teach_au_narrator')) + input(p + '.text', t('teach_ws_k_story'), {area: true, rows: 4}) + '</section>' +
-      (sc.moments || []).map(momentEditor).join('') + ((sc.moments || []).length < st.info.limits.maxmoments ?
+      aiBox() + (sc.moments || []).map(momentEditor).join('') + ((sc.moments || []).length < st.info.limits.maxmoments ?
         '<div class="actions" style="justify-content:flex-start">' + btn('add-moment', t('teach_au_add_moment')) + '</div>' :
         '') + '<details class="card ws-chapter"><summary><h3>' + esc(t('teach_au_endings')) + '</h3></summary>' +
       '<p class="help">' + esc(t('teach_au_endings_help')) + '</p>' +
@@ -432,6 +443,26 @@
       var act = b.dataset.act;
       if (act === 'back') {
         save().then(st.done);
+      } else if (act === 'ai-propose') {
+        var ask = st.el.querySelector('[data-aiask]').value.trim();
+        var scene = st.d.scenes[st.scene];
+        if (!ask) {
+          return;
+        }
+        b.disabled = true;
+        b.textContent = t('teach_au_ai_wait');
+        save().then(function() {
+          return api('propose', {code: st.info.code, value: scene.code + '\n' + ask});
+        }).then(function(proposal) {
+          // The proposal takes the place of the texts and moments; the scene keeps its place and who speaks.
+          st.d.scenes[st.scene] = Object.assign({}, proposal, {code: scene.code, place: scene.place, speaker: scene.speaker});
+          render();
+          later();
+          T.toast(esc(t('teach_au_ai_done')));
+        }).catch(function(e) {
+          T.toast(esc(e.message), true);
+          render();
+        });
       } else if (act === 'try-scene') {
         var code = st.d.scenes[st.scene].code;
         save().then(function() {

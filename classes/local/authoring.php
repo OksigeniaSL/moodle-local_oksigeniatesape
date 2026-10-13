@@ -232,6 +232,99 @@ final class authoring {
     }
 
     /**
+     * A draft of a scene written by the AI of the site (if the course has it and the teacher accepted its policy), from
+     * what the teacher tells: the narration, from one to three moments and the endings, as the workshop shows them.
+     * Always a draft: the teacher reads it, changes it and the checker looks at it like any other.
+     *
+     * @param int $courseid
+     * @param string $code
+     * @param string $scenecode
+     * @param string $ask What the teacher wants to happen in the scene.
+     * @param int $userid
+     * @return array The scene, as in a draft, with its code and its place.
+     */
+    public static function propose(int $courseid, string $code, string $scenecode, string $ask, int $userid): array {
+        global $DB;
+        $status = nextclass::status($courseid, $userid);
+        if (!$status['ai'] || !$status['canuse']) {
+            throw new \moodle_exception('authoring_noai', 'local_oksigeniatesape');
+        }
+        if (!$status['policy']) {
+            throw new \moodle_exception('authoring_aipolicy', 'local_oksigeniatesape');
+        }
+        $json = $DB->get_field(self::T . 'own', 'draft', ['courseid' => $courseid, 'code' => $code], MUST_EXIST);
+        $draft = self::tidy(json_decode((string) $json, true) ?: []);
+        $scene = null;
+        foreach ($draft['scenes'] as $candidate) {
+            if ($candidate['code'] === $scenecode) {
+                $scene = $candidate;
+            }
+        }
+        if (!$scene) {
+            throw new \invalid_parameter_exception('Not a scene of the draft');
+        }
+        $place = [];
+        foreach ($draft['places'] as $candidate) {
+            if ($candidate['code'] === $scene['place']) {
+                $place = $candidate;
+            }
+        }
+        $objectives = implode("\n", array_map(fn($o) => '- ' . $o['code'] . ': ' . $o['name'] .
+            ($o['description'] !== '' ? ' (' . $o['description'] . ')' : ''), $draft['objectives']));
+        $prompt = "You write a scene of an educational role-playing game for a class of students aged " .
+            ($draft['ages'] !== '' ? $draft['ages'] : '9-11') . ", in the language of this code: " . current_language() .
+            ". The teacher will read and change it.\n\n" .
+            "Mission: " . $draft['title'] . ($draft['subtitle'] !== '' ? ' (' . $draft['subtitle'] . ')' : '') . "\n" .
+            "Story: " . $draft['prologue'] . "\n" .
+            "Place of the map: " . ($place['name'] ?? '') . '. ' . ($place['intro'] ?? '') . "\n" .
+            "Objectives (codes):\n" . $objectives . "\n\n" .
+            "What the teacher wants in this scene: " . self::clean($ask, 1500) . "\n\n" .
+            "Rules: correct and checked knowledge, without opinions, politics or agendas; speak to one student as «tú» " .
+            "(never to the group: no «vosotros» or «ustedes» forms); " .
+            "standard language, generic masculine, no doubled forms; short sentences for that age; no real names of " .
+            "people of the class; the wrong options are reasonable mistakes, and their feedback explains why.\n\n" .
+            "Answer with only this JSON: {\"title\": text, \"text\": narration of 2 to 5 sentences, \"moments\": " .
+            "1 to 3 of [{\"type\": \"one\", \"prompt\": text, \"objective\": code, \"hints\": [text], " .
+            "\"options\": [{\"label\": text, \"correct\": true or false, \"feedback\": text}] (2 to 4, one correct)}, " .
+            "{\"type\": \"many\", the same with 2 or more correct}, {\"type\": \"classify\", \"prompt\": text, " .
+            "\"objective\": code, \"bins\": [{\"label\": text}] (2 to 4), \"items\": [{\"label\": text, \"bin\": number " .
+            "of its bin from 1, \"feedback\": text if put in a wrong bin}] (3 to 8)}, {\"type\": \"order\", \"prompt\": text, " .
+            "\"objective\": code, \"steps\": [texts in their right order] (3 to 6), \"stuck\": text}], \"success\": text, " .
+            "\"partial\": text, \"retry\": text}";
+        $manager = \core\di::get(\core_ai\manager::class);
+        $contextid = \context_course::instance($courseid)->id;
+        $again = 'Your previous answer was not valid JSON with exactly that shape. Answer again with only the JSON.';
+        foreach ([$prompt, $prompt . "\n\n" . $again] as $text) {
+            try {
+                $response = $manager->process_action(new \core_ai\aiactions\generate_text($contextid, $userid, $text));
+            } catch (\Throwable $e) {
+                throw new \moodle_exception('authoring_aifailed', 'local_oksigeniatesape', '', null, $e->getMessage());
+            }
+            if (!$response->get_success()) {
+                throw new \moodle_exception(
+                    'authoring_aifailed',
+                    'local_oksigeniatesape',
+                    '',
+                    null,
+                    $response->get_errormessage()
+                );
+            }
+            $answer = (string) ($response->get_response_data()['generatedcontent'] ?? '');
+            $start = strpos($answer, '{');
+            $end = strrpos($answer, '}');
+            $data = $start !== false && $end !== false ? json_decode(substr($answer, $start, $end - $start + 1), true) : null;
+            if (!is_array($data) || empty($data['moments'])) {
+                continue;
+            }
+            // Cleaned as any scene of the teacher, keeping its code, its place and who speaks.
+            $proposal = self::tidy(['objectives' => $draft['objectives'], 'places' => $draft['places'],
+                'scenes' => [['code' => $scene['code'], 'place' => $scene['place'], 'speaker' => $scene['speaker']] + $data]]);
+            return $proposal['scenes'][0];
+        }
+        throw new \moodle_exception('authoring_aifailed', 'local_oksigeniatesape');
+    }
+
+    /**
      * A copy of a draft in the same course, to make another mission from it.
      *
      * @param int $courseid

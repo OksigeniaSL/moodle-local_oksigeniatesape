@@ -86,6 +86,16 @@ final class authoring_test extends \advanced_testcase {
         authoring::publish($course->id, $own->code);
     }
 
+    public function test_no_draft_by_the_ai_without_the_ai_of_the_site(): void {
+        $this->resetAfterTest();
+        $course = $this->getDataGenerator()->create_course();
+        $teacher = $this->getDataGenerator()->create_and_enrol($course, 'editingteacher');
+        $own = authoring::create($course->id, 'Las fracciones');
+        $draft = $this->draft($course->id, $own->code);
+        $this->expectException(\moodle_exception::class);
+        authoring::propose($course->id, $own->code, $draft['scenes'][0]['code'], 'Una escena', (int) $teacher->id);
+    }
+
     public function test_more_than_six_places_go_on_a_map_in_layers(): void {
         $this->resetAfterTest();
         $course = $this->getDataGenerator()->create_course();

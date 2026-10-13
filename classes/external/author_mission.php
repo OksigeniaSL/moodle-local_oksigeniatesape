@@ -33,7 +33,7 @@ use local_oksigeniatesape\local\missions;
  */
 final class author_mission extends external_api {
     /** @var string[] What can be done. */
-    private const ACTIONS = ['list', 'create', 'get', 'save', 'publish', 'delete', 'preview', 'duplicate'];
+    private const ACTIONS = ['list', 'create', 'get', 'save', 'publish', 'delete', 'preview', 'duplicate', 'propose'];
 
     /**
      * Parameters.
@@ -59,7 +59,7 @@ final class author_mission extends external_api {
      * @return array json
      */
     public static function execute(int $courseid, string $action, string $code = '', string $value = ''): array {
-        global $DB;
+        global $DB, $USER;
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
             'action' => $action,
@@ -84,6 +84,12 @@ final class author_mission extends external_api {
         }
         if ($params['action'] === 'preview') {
             return ['json' => json_encode(authoring::preview($courseid, $code, clean_param($params['value'], PARAM_ALPHANUMEXT)))];
+        }
+        if ($params['action'] === 'propose') {
+            // The value: the code of the scene, a line break and what the teacher wants to happen in it.
+            [$scene, $ask] = array_pad(explode("\n", $params['value'], 2), 2, '');
+            $proposal = authoring::propose($courseid, $code, clean_param($scene, PARAM_ALPHANUMEXT), $ask, (int) $USER->id);
+            return ['json' => json_encode($proposal)];
         }
         if ($params['action'] === 'duplicate') {
             authoring::duplicate($courseid, $code);
@@ -129,6 +135,7 @@ final class author_mission extends external_api {
      * @return array
      */
     private static function draft(int $courseid, string $code): array {
+        global $USER;
         foreach (authoring::drafts($courseid) as $record) {
             if ($record->code !== $code) {
                 continue;
@@ -143,6 +150,7 @@ final class author_mission extends external_api {
             }
             $current = missions::get($courseid);
             return ['code' => $code, 'version' => (int) $record->version, 'draft' => $record->data,
+                'ai' => \local_oksigeniatesape\local\nextclass::status($courseid, (int) $USER->id),
                 'problems' => $problems, 'speakers' => $speakers, 'current' => $current && $current->code === $code,
                 'limits' => ['minplaces' => authoring::MIN_PLACES, 'maxplaces' => authoring::MAX_PLACES,
                     'maxobjectives' => authoring::MAX_OBJECTIVES, 'maxmoments' => authoring::MAX_MOMENTS,

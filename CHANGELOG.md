@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.35.0 (2026-10-13)
+
+- **A draft of a scene with the AI of the site** (if the course has it and the teacher accepted its policy): in the
+  scene of the workshop, the teacher tells what they want to happen and the AI writes the narration, one to three
+  moments and the endings, cleaned as any scene of the teacher. Always a draft: the teacher reads it and changes it,
+  and the checker looks at it like any other. Without AI, nothing changes.
+
 ## 0.34.1 (2026-10-13)
 
 - The map in layers ends in the mountain, where the last place is (the meadow at the bottom, forest and lake between),
