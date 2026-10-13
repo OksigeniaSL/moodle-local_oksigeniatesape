@@ -377,7 +377,9 @@
       '<header class="hud"><button class="me" data-tab="me" aria-label="' + esc(t('app_tab_me')) + '"><span class="face">' +
       avatarOf(c, '', true) + '</span><span class="who"><b>' + esc(myName()) + '</b><small>' + esc(title(c)) + '</small></span>' +
       '</button><div class="ring" style="--p:' + pct + '" title="' + esc(t('app_level')) + ' ' + c.level + '"><b>' +
-      c.level + '</b></div><div class="res">' +
+      c.level + '</b></div>' + (T.fx ? '<button type="button" class="sound" data-sound aria-pressed="' + !T.fx.muted() +
+      '" aria-label="' + esc(t('app_sound')) + '" title="' + esc(t('app_sound')) + '">' + (T.fx.muted() ? '🔇' : '🔊') +
+      '</button>' : '') + '<div class="res">' +
       res('saber', c.saber, t('app_saber')) + res('gems', c.gems, t('app_gems')) +
       res('energy', m.energy + '/' + w.energymax, t('app_energy')) + res('breath', m.breath + '/' + w.breathmax,
         t('app_breath')) + '</div></header>' +
@@ -386,6 +388,14 @@
         return '<button type="button" data-tab="' + tab + '"' + (state.tab === tab ? ' aria-current="page"' : '') + '>' +
           T.icon(tab) + '<span>' + esc(t('app_tab_' + tab)) + badge + '</span></button>';
       }).join('') + '</nav><main class="content" id="content"></main></div>';
+    var sound = app.querySelector('[data-sound]');
+    if (sound) {
+      sound.onclick = function() {
+        var on = T.fx.toggle();
+        sound.textContent = on ? '🔊' : '🔇';
+        sound.setAttribute('aria-pressed', String(on));
+      };
+    }
     app.querySelectorAll('[data-tab]').forEach(function(b) {
       b.onclick = function() {
         state.tab = b.dataset.tab;
@@ -480,9 +490,12 @@
       lineage: c.lineage, look: c.appearance, stage: c.stage, portrait: true}) + '</div></foreignObject>';
     // The painted map of the art pack, the bands of a long map in layers, or a drawing of the valley.
     var height = T.mapHeight(m);
+    if (T.fx) {
+      T.fx.ambient(T.fx.place(current.art || current.code));
+    }
     return '<div class="map-wrap' + (height > 640 ? ' tall' : '') + '"><svg class="map" viewBox="0 0 400 ' + height +
       '" role="group" aria-label="' + esc(m.title) + '"><defs>' + T.MAPGLOW + '</defs>' + T.mapGround(m) +
-      T.mapLandmarks(m) + '<polyline points="' + pts + '" class="road"/>' +
+      T.mapLandmarks(m) + T.mapNight(m) + '<polyline points="' + pts + '" class="road"/>' +
       (walked ? '<polyline points="' + walked + '" class="road walked"/>' : '') + places + me + '</svg></div>';
   }
 

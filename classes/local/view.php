@@ -238,6 +238,7 @@ final class view {
                 'x' => (int) ($meta['x'] ?? 0),
                 'y' => (int) ($meta['y'] ?? 0),
                 'landmark' => (string) ($meta['landmark'] ?? ''),
+                'art' => (string) ($meta['art'] ?? $chapter->code),
                 'lit' => (bool) $chapter->litat,
                 'mine' => !empty($found['lantern'][$chapter->code]),
                 'done' => !empty($found['chapter'][$chapter->code]),

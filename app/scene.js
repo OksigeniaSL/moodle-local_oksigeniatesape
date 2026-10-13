@@ -115,6 +115,61 @@
       opts.onclose(world);
     }
 
+    /**
+     * What is heard and seen at an ending: confetti and applause for a good one, hearts halfway, and the lanterns lit
+     * and the creature born after it.
+     *
+     * @param {string} outcome
+     * @param {Object} r What it gave, if anything.
+     * @param {boolean} levelup
+     */
+    function celebrate(outcome, r, levelup) {
+      if (!T.fx) {
+        return;
+      }
+      if (outcome === 'success') {
+        T.fx.sound('win');
+        T.fx.confetti();
+        setTimeout(function() {
+          T.fx.sound('applause');
+        }, 500);
+      } else if (outcome === 'partial') {
+        T.fx.sound('heart');
+        T.fx.hearts();
+      } else {
+        T.fx.sound('wrong');
+      }
+      if (r && r.lanterns && r.lanterns.length) {
+        setTimeout(function() {
+          T.fx.sound('lantern');
+          T.fx.sparkles();
+        }, 1100);
+      }
+      if (r && r.hatched) {
+        setTimeout(function() {
+          T.fx.sound('hatch');
+          T.fx.hearts();
+        }, 1700);
+      }
+      if (levelup) {
+        setTimeout(function() {
+          T.fx.sound('levelup');
+          T.fx.confetti();
+        }, 2300);
+      }
+    }
+
+    /** The drum roll before a result, and a promise that waits for it. */
+    function drumroll() {
+      if (!T.fx) {
+        return Promise.resolve();
+      }
+      T.fx.drumroll(layer.querySelector('.scene'));
+      return new Promise(function(resolve) {
+        setTimeout(resolve, 1100);
+      });
+    }
+
     function show(html) {
       layer.innerHTML = '<div class="scene"><div class="scene-top"><span class="scene-title">' + esc(sc ? sc.title : '') +
         '</span><button class="btn btn-soft scene-close" type="button" aria-label="' + esc(t('app_close')) + '">✕</button>' +
@@ -518,6 +573,9 @@
           return;
         }
         var o = list[i++];
+        if (T.fx) {
+          T.fx.sound(kind(o) === 'good' ? 'right' : kind(o) === 'bad' ? 'wrong' : 'choose');
+        }
         out.innerHTML = '<div class="conseq ' + kind(o) + '"><span class="what">' + esc(tx(o.label)) + '</span>' +
           esc(tx(o.feedback || '')) + '</div><div class="actions"><button class="btn btn-main" data-more>' +
           esc(i < list.length ? t('app_next') : t('app_continue')) + '</button></div>';
@@ -569,6 +627,9 @@
                 x.disabled = true;
               });
               var good = bin === it.bin;
+              if (T.fx) {
+                T.fx.sound(good ? 'right' : 'wrong');
+              }
               out.innerHTML = '<div class="conseq ' + (good ? 'good' : 'bad') + '"><span class="what">' + esc(tx(it.label)) +
                 '</span>' + esc(good ? tx(it.ok || t('app_inplace')) : tx((it.feedback && it.feedback[bin]) ||
                 t('app_notthere'))) + '</div><div class="actions"><button class="btn btn-main" data-more>' +
@@ -583,6 +644,9 @@
               // That group is not it: it stays off until the next item.
               b.disabled = true;
               mistake();
+              if (T.fx) {
+                T.fx.sound('wrong');
+              }
               out.innerHTML = '<div class="conseq bad">' + esc(tx((it.feedback && it.feedback[bin]) || t('app_notthere'))) +
                 '</div>';
               var cur = body.querySelector('[data-cur]');
@@ -628,6 +692,9 @@
               var stuck = n.stuck || {};
               var msg = stuck[s.id + '-antes-de-' + expected.id] || stuck.default || t('app_stuck');
               body.querySelector('[data-out]').innerHTML = '<div class="conseq bad">' + esc(tx(msg)) + '</div>';
+              if (T.fx) {
+                T.fx.sound('wrong');
+              }
               // Not this step yet: it stays off until the right one is in place.
               b.disabled = true;
               mistake();
@@ -702,8 +769,10 @@
 
     function classEnding(n) {
       show('<div class="loading-inline"><div class="lamp"></div>' + esc(t('app_saving')) + '</div>');
-      cm.finish(run.events, run.from).then(function(result) {
+      Promise.all([cm.finish(run.events, run.from), drumroll()]).then(function(answers) {
+        var result = answers[0];
         var success = result.outcome !== 'retry';
+        celebrate(result.outcome, null, false);
         var body = show(picture(n.image || sceneImage(), data) + '<p class="scene-text">' + esc(tx(n.text)) + '</p>' + (success ?
           '<div class="conseq good"><span class="what">' + esc(t('board_scene_rewarded', result.rewarded)) + '</span></div>' :
           '') + better(result) + '<div class="actions">' + (success ? '<button class="btn btn-main" data-focus data-map>' +
@@ -765,11 +834,13 @@
           '<button class="btn btn-main" data-focus data-previewclose>' + esc(t('app_close')) + '</button></div>');
         end.querySelector('[data-previewclose]').onclick = close;
         onReplay(end);
+        celebrate(n.outcome, null, false);
         return;
       }
       show('<div class="loading-inline"><div class="lamp"></div>' + esc(t('app_saving')) + '</div>');
-      T.api('play_scene', {courseid: cfg.courseid, sceneid: data.id, events: JSON.stringify(run.events),
-        start: run.from}).then(function(result) {
+      Promise.all([T.api('play_scene', {courseid: cfg.courseid, sceneid: data.id, events: JSON.stringify(run.events),
+        start: run.from}), drumroll()]).then(function(answers) {
+        var result = answers[0];
         var before = world.character;
         world = result.world;
         var r = result.rewards;
@@ -825,6 +896,7 @@
           '<button class="btn btn-main" data-focus data-map>' + esc(t('app_backtomap')) + '</button>' + replay(result) :
           '<button class="btn btn-main" data-focus data-retry>' + esc(t('app_tryagain')) + '</button>') + '</div>');
         onReplay(body);
+        celebrate(result.outcome, r, !!levelup);
         var map = body.querySelector('[data-map]');
         if (map) {
           map.onclick = close;
@@ -859,6 +931,10 @@
         data.items = JSON.parse(d.items || '{}');
         data.flags = JSON.parse(d.flags || '[]');
         sc = JSON.parse(d.definition);
+        if (T.fx) {
+          // The soft sound of the place of the scene.
+          T.fx.ambient(T.fx.place(d.place));
+        }
         start(null);
       }).catch(function(e) {
         show('<p class="scene-text">' + esc(t('app_error')) + '</p><p class="help">' + esc(e.message) + '</p>');

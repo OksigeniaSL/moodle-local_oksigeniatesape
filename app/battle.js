@@ -85,6 +85,16 @@
       return;
     }
     document.body.classList.add('in-battle');
+    if (live.outcome && state.celebrated !== live.id && T.fx) {
+      // The end of the battle, heard and seen once on each phone.
+      state.celebrated = live.id;
+      if (live.outcome === 'won') {
+        T.fx.sound('win');
+        T.fx.confetti();
+      } else {
+        T.fx.sound('wrong');
+      }
+    }
     layer.innerHTML = '<div class="battle-phone" role="dialog" aria-modal="true" aria-label="' +
       esc(t('app_battle_title')) + '">' + head(live) + body(live) + '</div>';
     bind(live);

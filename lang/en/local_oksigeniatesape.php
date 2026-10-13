@@ -296,6 +296,7 @@ $string['app_scene_restart'] = 'Start the scene again';
 $string['app_scene_tangled'] = 'Something got tangled in this scene. Start it again: what you already have is not lost.';
 $string['app_shield_stops'] = 'Your shield stops the blow: this mistake costs you no points.';
 $string['app_skin'] = 'Skin';
+$string['app_sound'] = 'Sound on or off';
 $string['app_stage'] = 'Stage {$a}';
 $string['app_standings'] = 'The teams this week';
 $string['app_standings_help'] = 'Knowledge each team has earned this week.';

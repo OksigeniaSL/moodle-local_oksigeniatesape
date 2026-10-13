@@ -171,6 +171,35 @@
       '</button></div></section>';
   }
 
+  /**
+   * What the class hears and sees on the class screen, once each: a hit on the Embrollo, and the end of the battle.
+   *
+   * @param {Object} l
+   */
+  function battleFx(l) {
+    if (!T.fx) {
+      return;
+    }
+    var key = l.id + ':' + (l.outcome || (l.revealed ? 'r' + l.round : ''));
+    if (key === state.fxlast || key === l.id + ':') {
+      return;
+    }
+    state.fxlast = key;
+    if (l.outcome === 'won') {
+      T.fx.sound('win');
+      T.fx.confetti();
+      setTimeout(function() {
+        T.fx.sound('applause');
+      }, 600);
+    } else if (l.outcome) {
+      T.fx.sound('wrong');
+    } else if ((l.right || 0) > 0) {
+      T.fx.sound('hit');
+    } else {
+      T.fx.sound('wrong');
+    }
+  }
+
   function drawBattle() {
     var l = state.live;
     var life = l.maxhp ? l.hp / l.maxhp : 1;
@@ -231,6 +260,7 @@
       Math.round(100 * life) + '%"></i></span><small>' + esc(t('board_battle_life')) + (l.maxhp ? ': ' + l.hp + ' / ' +
       l.maxhp : '') + '</small></div><div class="battle-main">' + main + '<div class="actions">' + buttons + '</div></div></div>' +
       '<div class="battle-teams">' + teams + '</div></div>';
+    battleFx(l);
     bindBattle();
   }
 
@@ -324,7 +354,7 @@
     var height = T.mapHeight(m);
     return '<section class="board-map"><h2>' + esc(m.title) + '</h2><div class="map-wrap' + (height > 640 ? ' tall' : '') +
       '"><svg class="map" viewBox="0 0 400 ' + height + '" role="img" aria-label="' + esc(m.title) + '"><defs>' + T.MAPGLOW +
-      '</defs>' + T.mapGround(m) + T.mapLandmarks(m) +
+      '</defs>' + T.mapGround(m) + T.mapLandmarks(m) + T.mapNight(m) +
       '<polyline points="' + pts + '" class="road"/>' + (lit ? '<polyline points="' + walked + '" class="road walked"/>' : '') +
       places + '</svg></div>' + pastExpeditions() + '</section>';
   }

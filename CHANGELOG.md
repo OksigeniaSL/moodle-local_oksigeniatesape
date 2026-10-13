@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.36.0 (2026-10-13)
+
+- **The game feels alive**: sounds made by the browser itself (Web Audio: no files, nothing from outside) for choosing,
+  right and wrong answers, lanterns, levels, the creature being born, the hits and the end of a battle; a drum roll,
+  heard and seen, before the ending of a scene; confetti and applause for a good ending, hearts for one halfway,
+  sparkles for a lantern; and a soft sound of the place (wind and birds in the meadow and the forest, water at the lake,
+  the wind of the mountain).
+- **The valley lights up**: the map starts at night and gets clearer with each lantern the class lights, on the phones
+  and on the class screen.
+- **A button of silence** in the game, remembered on the device. The sounds wait for the first touch, and the movement
+  respects «less motion» of the device.
+
 ## 0.35.0 (2026-10-13)
 
 - **A draft of a scene with the AI of the site** (if the course has it and the teacher accepted its policy): in the

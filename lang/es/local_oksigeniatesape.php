@@ -296,6 +296,7 @@ $string['app_scene_restart'] = 'Empezar la escena de nuevo';
 $string['app_scene_tangled'] = 'Algo se ha enredado en esta escena. Empiézala de nuevo: lo que ya tenías no se pierde.';
 $string['app_shield_stops'] = 'Tu escudo detiene el golpe: este fallo no te quita puntos.';
 $string['app_skin'] = 'Piel';
+$string['app_sound'] = 'Sonido sí o no';
 $string['app_stage'] = 'Etapa {$a}';
 $string['app_standings'] = 'Los equipos esta semana';
 $string['app_standings_help'] = 'El saber que ha ganado cada equipo esta semana.';

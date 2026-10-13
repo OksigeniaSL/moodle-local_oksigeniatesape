@@ -255,6 +255,21 @@
     }).join('');
   };
 
+  /**
+   * The night over the valley, lighter with each lantern the class lights: dark at the beginning, clear at the end.
+   *
+   * @param {Object} m
+   * @return {string}
+   */
+  T.mapNight = function(m) {
+    var lit = m.chapters.filter(function(ch) {
+      return ch.lit;
+    }).length;
+    var dark = 0.55 * (1 - lit / Math.max(1, m.chapters.length));
+    return dark > 0.01 ? '<rect class="night" width="400" height="' + T.mapHeight(m) + '" fill="#081322" opacity="' +
+      dark.toFixed(2) + '"/>' : '';
+  };
+
   /** The gradient of the night under the drawn map, for the defs of its SVG. */
   T.MAPGLOW = '<radialGradient id="mapglow" cx="50%" cy="40%" r="70%"><stop offset="0" stop-color="#21465c"/>' +
     '<stop offset="1" stop-color="#10283b"/></radialGradient>';

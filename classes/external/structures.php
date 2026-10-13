@@ -106,6 +106,7 @@ final class structures {
                 'x' => new external_value(PARAM_INT, 'Place on the map'),
                 'y' => new external_value(PARAM_INT, 'Place on the map'),
                 'landmark' => new external_value(PARAM_ALPHANUMEXT, 'Landmark on a map in layers', VALUE_DEFAULT, ''),
+                'art' => new external_value(PARAM_ALPHANUMEXT, 'Landscape of the place', VALUE_DEFAULT, ''),
                 'lit' => new external_value(PARAM_BOOL, 'Lantern of the class lit'),
                 'mine' => new external_value(PARAM_BOOL, 'Lantern of the student lit'),
                 'done' => new external_value(PARAM_BOOL, 'Scenes of the student done'),
