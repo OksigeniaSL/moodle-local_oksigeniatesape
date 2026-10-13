@@ -21,6 +21,7 @@ use core_external\external_function_parameters;
 use core_external\external_single_structure;
 use core_external\external_value;
 use local_oksigeniatesape\local\edits;
+use local_oksigeniatesape\local\missions;
 
 /**
  * The teacher changes the mission of the course: sees its texts, changes one, changes the questions of the battle or
@@ -32,7 +33,7 @@ use local_oksigeniatesape\local\edits;
  */
 final class edit_mission extends external_api {
     /** @var string[] What can be done. */
-    private const ACTIONS = ['view', 'save', 'questions', 'restore'];
+    private const ACTIONS = ['view', 'save', 'questions', 'restore', 'export', 'import', 'courses', 'copy'];
 
     /**
      * Parameters.
@@ -42,7 +43,7 @@ final class edit_mission extends external_api {
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
             'courseid' => new external_value(PARAM_INT, 'Course'),
-            'action' => new external_value(PARAM_ALPHA, 'view, save, questions or restore'),
+            'action' => new external_value(PARAM_ALPHA, 'view, save, questions, restore, export, import, courses or copy'),
             'scene' => new external_value(
                 PARAM_RAW,
                 'Code of the scene, # for the places of the mission, empty: all',
@@ -52,10 +53,11 @@ final class edit_mission extends external_api {
             'path' => new external_value(PARAM_RAW, 'Where the text is', VALUE_DEFAULT, ''),
             'value' => new external_value(
                 PARAM_RAW,
-                'The text (empty: the original), or the questions in JSON',
+                'The text (empty: the original), or the questions or the changes in JSON',
                 VALUE_DEFAULT,
                 ''
             ),
+            'target' => new external_value(PARAM_INT, 'The course the changes are copied to', VALUE_DEFAULT, 0),
         ]);
     }
 
@@ -67,14 +69,16 @@ final class edit_mission extends external_api {
      * @param string $scene
      * @param string $path
      * @param string $value
-     * @return array json: what the teacher sees after it.
+     * @param int $target
+     * @return array json: what the teacher sees after it (or the changes, or the courses, or what was copied).
      */
     public static function execute(
         int $courseid,
         string $action,
         string $scene = '',
         string $path = '',
-        string $value = ''
+        string $value = '',
+        int $target = 0
     ): array {
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
@@ -82,6 +86,7 @@ final class edit_mission extends external_api {
             'scene' => $scene,
             'path' => $path,
             'value' => $value,
+            'target' => $target,
         ]);
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
@@ -103,8 +108,48 @@ final class edit_mission extends external_api {
             edits::save_questions($params['courseid'], $questions);
         } else if ($params['action'] === 'restore') {
             edits::restore($params['courseid'], $scene === '' ? null : $scene);
+        } else if ($params['action'] === 'export') {
+            return ['json' => json_encode(edits::export($params['courseid']))];
+        } else if ($params['action'] === 'import') {
+            $data = json_decode($params['value'], true);
+            $done = edits::import($params['courseid'], is_array($data) ? $data : []);
+            return ['json' => json_encode(['done' => $done] + edits::view($params['courseid']))];
+        } else if ($params['action'] === 'courses') {
+            return ['json' => json_encode(self::courses($params['courseid']))];
+        } else if ($params['action'] === 'copy') {
+            if (!array_key_exists($params['target'], self::courses($params['courseid']))) {
+                throw new \invalid_parameter_exception('Not a course to copy to');
+            }
+            $done = edits::import($params['target'], edits::export($params['courseid']));
+            return ['json' => json_encode(['done' => $done] + edits::view($params['courseid']))];
         }
         return ['json' => json_encode(edits::view($params['courseid']))];
+    }
+
+    /**
+     * The other courses of the teacher with the same mission where they can change it.
+     *
+     * @param int $courseid
+     * @return array id => full name.
+     */
+    private static function courses(int $courseid): array {
+        global $USER;
+        $mission = missions::get($courseid);
+        $list = [];
+        if (!$mission) {
+            return $list;
+        }
+        foreach (enrol_get_users_courses((int) $USER->id, true, 'id, fullname') as $course) {
+            if ((int) $course->id === $courseid) {
+                continue;
+            }
+            $context = \context_course::instance((int) $course->id);
+            $other = missions::get((int) $course->id);
+            if ($other && $other->code === $mission->code && has_capability('local/oksigeniatesape:manageregion', $context)) {
+                $list[(int) $course->id] = format_string($course->fullname, true, ['context' => $context]);
+            }
+        }
+        return $list;
     }
 
     /**

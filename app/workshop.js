@@ -285,12 +285,84 @@
     }
   }
 
+  /* ---------- The changes, to another course or another teacher ---------- */
+
+  function shareHtml() {
+    return '<details class="card ws-chapter" data-share><summary><h3>' + esc(t('teach_ws_share')) + '</h3></summary>' +
+      '<p class="help">' + esc(t('teach_ws_share_help')) + '</p><div class="actions" style="justify-content:flex-start">' +
+      '<button class="btn btn-soft" data-copy>' + esc(t('teach_ws_copy')) + '</button><button class="btn btn-soft" ' +
+      'data-export>' + esc(t('teach_ws_export')) + '</button><label class="btn btn-soft">' + esc(t('teach_ws_import')) +
+      '<input type="file" accept=".json,application/json" data-import hidden></label></div><div data-copyto></div>' +
+      '</details>';
+  }
+
+  function done(d) {
+    T.toast(esc(t('teach_ws_done', d.done)));
+  }
+
+  function bindShare() {
+    var box = state.el.querySelector('[data-share]');
+    box.querySelector('[data-export]').onclick = function() {
+      T.api('edit_mission', {courseid: cfg.courseid, action: 'export'}).then(function(r) {
+        var link = document.createElement('a');
+        link.href = URL.createObjectURL(new Blob([r.json], {type: 'application/json'}));
+        link.download = 'tesape-' + JSON.parse(r.json).mission + '-' + cfg.courseid + '.json';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      }).catch(function(e) {
+        T.toast(esc(e.message), true);
+      });
+    };
+    box.querySelector('[data-import]').onchange = function(ev) {
+      var file = ev.target.files[0];
+      if (!file) {
+        return;
+      }
+      file.text().then(function(text) {
+        return api('import', {value: text});
+      }).then(function(d) {
+        done(d);
+        render();
+      }).catch(function(e) {
+        T.toast(esc(e.message), true);
+      });
+    };
+    box.querySelector('[data-copy]').onclick = function() {
+      var to = box.querySelector('[data-copyto]');
+      T.api('edit_mission', {courseid: cfg.courseid, action: 'courses'}).then(function(r) {
+        var courses = JSON.parse(r.json);
+        var ids = Object.keys(courses);
+        if (!ids.length) {
+          to.innerHTML = '<p class="help">' + esc(t('teach_ws_copy_none')) + '</p>';
+          return;
+        }
+        to.innerHTML = '<div class="actions" style="justify-content:flex-start"><select data-target>' + ids.map(function(id) {
+          return '<option value="' + esc(id) + '">' + esc(courses[id]) + '</option>';
+        }).join('') + '</select><button class="btn btn-main" data-copygo>' + esc(t('teach_ws_copy_go')) +
+          '</button></div>';
+        to.querySelector('[data-copygo]').onclick = function() {
+          var select = to.querySelector('[data-target]');
+          if (!window.confirm(t('teach_ws_copy_confirm', courses[select.value]))) {
+            return;
+          }
+          api('copy', {target: +select.value}).then(done).catch(function(e) {
+            T.toast(esc(e.message), true);
+          });
+        };
+      }).catch(function(e) {
+        T.toast(esc(e.message), true);
+      });
+    };
+  }
+
   function render() {
     state.questions = state.data.questions.slice();
     state.el.innerHTML = '<section class="card ws-head" data-wshead></section>' +
-      state.data.chapters.map(chapterHtml).join('') + questionsHtml();
+      state.data.chapters.map(chapterHtml).join('') + questionsHtml() + shareHtml();
     header();
     bindQuestions();
+    bindShare();
   }
 
   /** Fills a scene or a place when it is opened: there are many texts, and most stay closed. */

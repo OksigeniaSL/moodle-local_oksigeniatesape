@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.29.2 (2026-10-13)
+
+- **The changes of the workshop, elsewhere**: take them to another course of the teacher with the same mission, or
+  download them as a file and load it in another course or another site. The file has only the texts of the teacher,
+  never the mission: whoever loads it needs the same mission, and what does not fit their version is left out.
+
 ## 0.29.1 (2026-10-13)
 
 - **Local examples for anywhere**: the pilot mission (version 13) brings a third set of local examples, «General, for

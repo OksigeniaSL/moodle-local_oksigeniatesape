@@ -132,6 +132,31 @@ final class edits_test extends \advanced_testcase {
         $this->assertCount(18, missions::get($course->id)->data['questions']);
     }
 
+    public function test_the_changes_go_to_another_course_with_the_same_mission(): void {
+        $this->resetAfterTest();
+        $from = $this->make_course();
+        $to = $this->make_course();
+        edits::save($from->id, 'C1-2', 'title', 'Un título propio');
+        edits::save($to->id, 'C1-2', 'nodes/intro/text', 'Una narración que se queda');
+        $questions = edits::view($from->id)['questions'];
+        $questions[0]['text'] = '¿Una pregunta mía?';
+        edits::save_questions($from->id, $questions);
+        $data = edits::export($from->id);
+        $this->assertSame('livingthings', $data['mission']);
+        // A text the other mission does not have is left out; the rest goes.
+        $data['edits'][] = ['scene' => 'C1-2', 'path' => 'nodes/nope/text', 'value' => 'No encaja'];
+        $done = edits::import($to->id, $data);
+        $this->assertSame(['applied' => 2, 'skipped' => 1], $done);
+        $scene = $this->scene($to->id, 'C1-2')->data;
+        $this->assertSame('Un título propio', $scene['title']);
+        $this->assertSame('Una narración que se queda', $scene['nodes']['intro']['text']);
+        $this->assertSame('¿Una pregunta mía?', missions::get($to->id)->data['questions'][0]['text']);
+        // Changes of another mission do not fit.
+        $data['mission'] = 'fractions';
+        $this->expectException(\moodle_exception::class);
+        edits::import($to->id, $data);
+    }
+
     public function test_a_newer_version_of_the_mission_keeps_the_changes(): void {
         global $DB;
         $this->resetAfterTest();

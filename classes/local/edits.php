@@ -248,6 +248,64 @@ final class edits {
     }
 
     /**
+     * The changes of the mission of a course, to take to another course or another site: only the texts of the teacher,
+     * never the mission, which the other course needs to have.
+     *
+     * @param int $courseid
+     * @return array format, mission, version, edits (scene, path, value; the questions as a list).
+     */
+    public static function export(int $courseid): array {
+        $mission = missions::get($courseid);
+        if (!$mission) {
+            throw new \moodle_exception('nomission', 'local_oksigeniatesape');
+        }
+        $list = [];
+        foreach (self::of($courseid, (string) $mission->code) as $scene => $changes) {
+            foreach ($changes as $path => $value) {
+                $list[] = ['scene' => (string) $scene, 'path' => (string) $path, 'value' => $value];
+            }
+        }
+        return ['format' => 'tesape-edits', 'formatversion' => 1, 'mission' => (string) $mission->code,
+            'version' => (int) $mission->version, 'edits' => $list];
+    }
+
+    /**
+     * Takes changes (exported from another course) to the mission of a course: those that fit its mission; a text
+     * changed in both is replaced, the others stay.
+     *
+     * @param int $courseid
+     * @param array $data As export() gives it.
+     * @return array applied, skipped.
+     */
+    public static function import(int $courseid, array $data): array {
+        $mission = missions::get($courseid);
+        if (!$mission || ($data['format'] ?? '') !== 'tesape-edits' || ($data['mission'] ?? '') !== $mission->code) {
+            throw new \moodle_exception('editsnotfit', 'local_oksigeniatesape');
+        }
+        $applied = 0;
+        $skipped = 0;
+        foreach ((array) ($data['edits'] ?? []) as $edit) {
+            $path = (string) ($edit['path'] ?? '');
+            $value = $edit['value'] ?? '';
+            try {
+                if ($path === 'questions' && is_array($value)) {
+                    self::save_questions($courseid, $value);
+                } else if (is_string($value) && $value !== '') {
+                    self::save($courseid, (string) ($edit['scene'] ?? self::MISSION), $path, $value);
+                } else {
+                    $skipped++;
+                    continue;
+                }
+                $applied++;
+            } catch (\Throwable $e) {
+                // A text the mission of this course does not have (another version, a scene that is not there).
+                $skipped++;
+            }
+        }
+        return ['applied' => $applied, 'skipped' => $skipped];
+    }
+
+    /**
      * Back to the original: one scene, the places and questions (MISSION), or the whole mission (null).
      *
      * @param int $courseid
