@@ -13,7 +13,8 @@
  "locals": {
   "fruta": {
    "py": "una guayaba madura",
-   "es": "una mora madura"
+   "es": "una mora madura",
+   "gen": "un fruto pequeño y maduro"
   }
  },
  "start": "intro",

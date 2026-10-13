@@ -14,6 +14,7 @@
  "minutes": 10,
  "locals": {
   "tagua": {
+   "gen": "Y en el Chaco, una región de América del Sur, hay otro caso para el informe: el tagua, un pariente del jabalí. Se describió en 1930 a partir de huesos fósiles, y todos lo daban por desaparecido hace mucho. En 1975 se encontró vivo. Hoy sigue en peligro.",
    "py": "Y aquí mismo, en el Chaco, hay otro caso para el informe: el tagua. Se describió en 1930 a partir de huesos fósiles, y todos lo daban por desaparecido hace mucho. En 1975 se encontró vivo en el Chaco paraguayo. Hoy sigue en peligro.",
    "es": "Y muy lejos, en el Chaco paraguayo, hay otro caso para el informe: el tagua, un pariente del jabalí. Se describió en 1930 a partir de huesos fósiles, y todos lo daban por desaparecido hace mucho. En 1975 se encontró vivo. Hoy sigue en peligro."
   }

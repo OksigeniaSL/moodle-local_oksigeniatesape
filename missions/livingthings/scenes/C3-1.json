@@ -12,11 +12,13 @@
  "locals": {
   "mamifero": {
    "py": "un carpincho",
-   "es": "un perro"
+   "es": "un perro",
+   "gen": "un perro"
   },
   "ave": {
    "py": "un ñandú",
-   "es": "una gallina"
+   "es": "una gallina",
+   "gen": "una gallina"
   }
  },
  "start": "intro",

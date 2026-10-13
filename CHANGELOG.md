@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.29.1 (2026-10-13)
+
+- **Local examples for anywhere**: the pilot mission (version 13) brings a third set of local examples, «General, for
+  any place», first and chosen by default, with animals, plants and words that are understood in any Spanish-speaking
+  country; Spain and Paraguay stay as options. A set for another place is thirty texts, and each teacher can change
+  theirs in the workshop. The demo classes use the general examples.
+
 ## 0.29.0 (2026-10-13)
 
 - **The workshop, part 1: change the mission** (panel, «Mission» tab, «Change the mission»). The teacher changes, for

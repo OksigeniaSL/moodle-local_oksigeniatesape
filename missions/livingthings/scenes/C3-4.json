@@ -14,11 +14,13 @@
  "locals": {
   "pajaro": {
    "py": "un benteveo",
-   "es": "un gorrión"
+   "es": "un gorrión",
+   "gen": "una paloma"
   },
   "lagartija": {
    "py": "un teyú",
-   "es": "una lagartija"
+   "es": "una lagartija",
+   "gen": "una lagartija"
   }
  },
  "start": "memoria",

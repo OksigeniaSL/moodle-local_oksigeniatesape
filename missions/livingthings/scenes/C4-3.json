@@ -12,7 +12,8 @@
  "locals": {
   "arbol": {
    "py": "un lapacho",
-   "es": "una encina"
+   "es": "una encina",
+   "gen": "un roble"
   }
  },
  "start": "intro",

@@ -122,7 +122,7 @@ final class demo {
 
         if ($mission !== '') {
             // With its Moodle activities, a section per chapter.
-            missions::install($course->id, $mission, 'valley', 'es', $now, true);
+            missions::install($course->id, $mission, 'valley', 'gen', $now, true);
         }
 
         $tag = self::USERNAME_PREFIX . $course->id;

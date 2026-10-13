@@ -13,11 +13,13 @@
  "locals": {
   "herbivoro": {
    "py": "El carpincho",
-   "es": "El conejo"
+   "es": "El conejo",
+   "gen": "El conejo"
   },
   "carnivoro": {
    "py": "El yaguareté",
-   "es": "El lince"
+   "es": "El lince",
+   "gen": "El águila"
   }
  },
  "start": "intro",

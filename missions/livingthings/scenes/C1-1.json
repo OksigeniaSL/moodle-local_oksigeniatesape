@@ -12,15 +12,18 @@
  "locals": {
   "semilla": {
    "py": "una semilla seca de lapacho",
-   "es": "una bellota de encina"
+   "es": "una bellota de encina",
+   "gen": "una semilla seca de girasol"
   },
   "pez": {
    "py": "un pez en un balde",
-   "es": "un pez en un cubo"
+   "es": "un pez en un cubo",
+   "gen": "un pez en un recipiente con agua"
   },
   "juguete": {
    "py": "un autito de juguete a cuerda",
-   "es": "un coche de juguete con cuerda"
+   "es": "un coche de juguete con cuerda",
+   "gen": "un juguete de cuerda que anda solo"
   }
  },
  "start": "intro",

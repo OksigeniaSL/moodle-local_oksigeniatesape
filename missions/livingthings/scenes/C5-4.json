@@ -13,7 +13,8 @@
  "locals": {
   "herbivoro": {
    "py": "el carpincho, que pasta en la orilla",
-   "es": "el conejo, que pasta en la orilla"
+   "es": "el conejo, que pasta en la orilla",
+   "gen": "el conejo, que pasta en la orilla"
   }
  },
  "start": "memoria",

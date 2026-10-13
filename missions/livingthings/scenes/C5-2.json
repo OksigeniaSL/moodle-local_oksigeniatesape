@@ -13,9 +13,11 @@
  "locals": {
   "hojas": {
    "py": "hojas grandes de palmera",
-   "es": "hojas grandes de helecho"
+   "es": "hojas grandes de helecho",
+   "gen": "hojas grandes caídas"
   },
   "hormigas": {
+   "gen": "Las hormigas se han llevado en fila las semillas y las migas de la cena a su almacén.",
    "py": "Las hormigas cortadoras no se comen las hojas: con ellas cultivan un hongo del que se alimentan.",
    "es": "Las hormigas se han llevado en fila las semillas y las migas de la cena a su almacén."
   }

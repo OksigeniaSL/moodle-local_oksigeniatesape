@@ -12,11 +12,13 @@
  "locals": {
   "arbol": {
    "py": "un lapacho",
-   "es": "una encina"
+   "es": "una encina",
+   "gen": "un roble"
   },
   "perro": {
    "py": "un perro que mueve la cola",
-   "es": "un perro que mueve el rabo"
+   "es": "un perro que mueve el rabo",
+   "gen": "un perro que mueve la cola"
   }
  },
  "start": "intro",

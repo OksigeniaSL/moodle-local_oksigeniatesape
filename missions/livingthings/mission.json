@@ -1,6 +1,6 @@
 {
  "code": "livingthings",
- "version": 12,
+ "version": 13,
  "lang": "es",
  "ages": "9–11",
  "title": {
@@ -24,6 +24,7 @@
   "azara": "La expedición de Azara"
  },
  "variants": {
+  "gen": "Generales, para cualquier lugar",
   "es": "España",
   "py": "Paraguay"
  },
@@ -757,14 +758,16 @@
     "felino": {
      "label": {
       "es": "lince ibérico",
-      "py": "yaguareté"
+      "py": "yaguareté",
+      "gen": "gato montés"
      },
      "group": "mammal"
     },
     "roedor": {
      "label": {
       "es": "conejo",
-      "py": "carpincho"
+      "py": "carpincho",
+      "gen": "ardilla"
      },
      "group": "mammal"
     },
@@ -781,14 +784,16 @@
     "zancuda": {
      "label": {
       "es": "cigüeña",
-      "py": "tucán"
+      "py": "tucán",
+      "gen": "garza"
      },
      "group": "bird"
     },
     "pajarillo": {
      "label": {
       "es": "gorrión",
-      "py": "benteveo"
+      "py": "benteveo",
+      "gen": "paloma"
      },
      "group": "bird"
     },
@@ -800,7 +805,8 @@
     "corredora": {
      "label": {
       "es": "avestruz",
-      "py": "ñandú"
+      "py": "ñandú",
+      "gen": "avestruz"
      },
      "group": "bird",
      "why": "No vuela, pero tiene plumas y pico. Es un ave."
@@ -808,7 +814,8 @@
     "lagarto": {
      "label": {
       "es": "lagartija",
-      "py": "teyú"
+      "py": "teyú",
+      "gen": "lagartija"
      },
      "group": "reptile"
     },
@@ -820,7 +827,8 @@
     "caiman": {
      "label": {
       "es": "cocodrilo",
-      "py": "yacaré"
+      "py": "yacaré",
+      "gen": "cocodrilo"
      },
      "group": "reptile"
     },
@@ -840,7 +848,8 @@
     "pezrio": {
      "label": {
       "es": "trucha",
-      "py": "dorado"
+      "py": "dorado",
+      "gen": "trucha"
      },
      "group": "fish"
     },
@@ -856,7 +865,8 @@
     "mariquita": {
      "label": {
       "es": "mariquita",
-      "py": "vaquita de San Antonio"
+      "py": "vaquita de San Antonio",
+      "gen": "mariquita"
      },
      "group": "insect"
     },
@@ -880,7 +890,8 @@
     "escorpion": {
      "label": {
       "es": "escorpión",
-      "py": "alacrán"
+      "py": "alacrán",
+      "gen": "escorpión"
      },
      "group": "arachnid",
      "why": "Tiene ocho patas. Es un arácnido, como las arañas."
@@ -1140,11 +1151,13 @@
     "La rana",
     {
      "es": "La trucha",
-     "py": "El dorado"
+     "py": "El dorado",
+     "gen": "La trucha"
     },
     {
      "es": "La lagartija",
-     "py": "El teyú"
+     "py": "El teyú",
+     "gen": "La lagartija"
     }
    ],
    "why": "El caracol no tiene columna vertebral. Es un molusco, de cuerpo blando y con concha."
