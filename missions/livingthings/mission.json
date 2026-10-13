@@ -1,6 +1,35 @@
 {
  "code": "livingthings",
  "version": 13,
+ "edition": 1,
+ "licence": "free",
+ "publisher": "Oksigenia SL",
+ "changes": [
+  {
+   "version": 13,
+   "kind": "improvement",
+   "date": "2026-10-13",
+   "text": "Ejemplos del lugar generales, para cualquier sitio"
+  },
+  {
+   "version": 12,
+   "kind": "fix",
+   "date": "2026-10-12",
+   "text": "La lupa potente al completar el claro"
+  },
+  {
+   "version": 11,
+   "kind": "fix",
+   "date": "2026-10-12",
+   "text": "El orden de las sesiones del jardín y el nombre del reto del lago"
+  },
+  {
+   "version": 10,
+   "kind": "improvement",
+   "date": "2026-10-12",
+   "text": "La insignia de la misión"
+  }
+ ],
  "lang": "es",
  "ages": "9–11",
  "title": {

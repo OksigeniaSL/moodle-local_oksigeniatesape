@@ -27,6 +27,13 @@ defined('MOODLE_INTERNAL') || die();
 if ($hassiteconfig) {
     $settings = new admin_settingpage('local_oksigeniatesape', get_string('pluginname', 'local_oksigeniatesape'));
     $ADMIN->add('localplugins', $settings);
+    // The missions on the site, and the upload of a package.
+    $ADMIN->add('localplugins', new admin_externalpage(
+        'local_oksigeniatesape_missions',
+        get_string('missions_admin', 'local_oksigeniatesape'),
+        new moodle_url('/local/oksigeniatesape/missions.php'),
+        'moodle/site:config'
+    ));
     if ($ADMIN->fulltree) {
         $settings->add(new admin_setting_configtext(
             'local_oksigeniatesape/weeklycap',

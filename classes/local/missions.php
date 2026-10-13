@@ -33,27 +33,31 @@ final class missions {
     /** @var int Saber of the classroom challenge made for each chapter. */
     public const CHAPTER_CHALLENGE_SABER = 20;
 
+    /** @var string Folder of the site data where the missions uploaded to the site are kept. */
+    public const SITE_FOLDER = 'local_oksigeniatesape/missions';
+
+    /** @var int Largest package of a mission that can be uploaded (bytes, unpacked). */
+    public const MAX_PACKAGE = 20 * 1024 * 1024;
+
     /**
-     * The packages that come with the plugin.
+     * The packages of missions on the site: those that come with the plugin and those uploaded to the site (a newer
+     * version of a mission of the plugin, or one from the catalog). Of each mission, its newest version.
      *
+     * @param bool $fresh Read them again (after an upload).
      * @return array code => mission.json, decoded.
      */
-    public static function packages(): array {
-        global $CFG;
-        static $cache = null;
-        if ($cache !== null) {
-            return $cache;
-        }
-        $packages = [];
-        foreach (glob($CFG->dirroot . '/local/oksigeniatesape/missions/*/mission.json') as $file) {
-            $mission = json_decode(file_get_contents($file), true);
-            if (is_array($mission) && !empty($mission['code'])) {
-                $packages[$mission['code']] = $mission;
-            }
-        }
-        ksort($packages);
-        $cache = $packages;
-        return $packages;
+    public static function packages(bool $fresh = false): array {
+        return array_map(fn($entry) => $entry['mission'], self::index($fresh));
+    }
+
+    /**
+     * Where the newest package of a mission came from.
+     *
+     * @param string $code
+     * @return string plugin, site, or empty if there is none.
+     */
+    public static function package_origin(string $code): string {
+        return (string) (self::index()[$code]['origin'] ?? '');
     }
 
     /**
@@ -63,18 +67,118 @@ final class missions {
      * @return array Code of the scene => scene.
      */
     public static function package_scenes(string $code): array {
-        global $CFG;
         if (!preg_match('/^[a-z0-9]+$/', $code)) {
             throw new \invalid_parameter_exception('Unknown mission');
         }
+        $folder = self::index()[$code]['folder'] ?? null;
         $scenes = [];
-        foreach (glob($CFG->dirroot . '/local/oksigeniatesape/missions/' . $code . '/scenes/*.json') as $file) {
+        foreach ($folder ? (glob($folder . '/scenes/*.json') ?: []) : [] as $file) {
             $scene = json_decode(file_get_contents($file), true);
             if (is_array($scene) && !empty($scene['id'])) {
                 $scenes[$scene['id']] = $scene;
             }
         }
         return $scenes;
+    }
+
+    /**
+     * Keeps on the site the package of a mission, from a zip with its mission.json and its scenes (scenes/*.json),
+     * at the top of the zip or in one folder. It replaces an older version of the same mission; courses with it are
+     * brought up to date when they are opened, keeping what the students did and the changes of the teacher.
+     *
+     * @param string $zippath
+     * @return array The mission.json of the package.
+     */
+    public static function upload(string $zippath): array {
+        global $CFG;
+        $tmp = make_request_directory();
+        if (!get_file_packer('application/zip')->extract_to_pathname($zippath, $tmp)) {
+            throw new \moodle_exception('missionbad', 'local_oksigeniatesape', '', 'zip');
+        }
+        $found = glob($tmp . '/mission.json') ?: glob($tmp . '/*/mission.json') ?: [];
+        if (count($found) !== 1) {
+            throw new \moodle_exception('missionbad', 'local_oksigeniatesape', '', 'mission.json');
+        }
+        $root = dirname($found[0]);
+        $size = 0;
+        foreach (array_merge([$found[0]], glob($root . '/scenes/*.json') ?: []) as $file) {
+            $size += filesize($file);
+        }
+        if ($size > self::MAX_PACKAGE) {
+            throw new \moodle_exception('missionbad', 'local_oksigeniatesape', '', 'size');
+        }
+        $mission = json_decode((string) file_get_contents($found[0]), true);
+        $code = (string) ($mission['code'] ?? '');
+        $version = (int) ($mission['version'] ?? 0);
+        if (
+            !is_array($mission) || !preg_match('/^[a-z0-9]{2,40}$/', $code) || $version < 1 || empty($mission['title'])
+            || empty($mission['chapters']) || !is_array($mission['chapters'])
+        ) {
+            throw new \moodle_exception('missionbad', 'local_oksigeniatesape', '', 'mission.json');
+        }
+        $scenes = [];
+        foreach (glob($root . '/scenes/*.json') ?: [] as $file) {
+            $scene = json_decode((string) file_get_contents($file), true);
+            $id = (string) ($scene['id'] ?? '');
+            if (!is_array($scene) || !preg_match('/^[A-Za-z0-9_-]{1,40}$/', $id) || empty($scene['nodes'])) {
+                throw new \moodle_exception('missionbad', 'local_oksigeniatesape', '', basename($file));
+            }
+            $scenes[$id] = $file;
+        }
+        if (!$scenes) {
+            throw new \moodle_exception('missionbad', 'local_oksigeniatesape', '', 'scenes');
+        }
+        $current = self::packages(true)[$code] ?? null;
+        if ($current && (int) ($current['version'] ?? 1) > $version) {
+            throw new \moodle_exception('missionolder', 'local_oksigeniatesape', '', (int) $current['version']);
+        }
+        $folder = $CFG->dataroot . '/' . self::SITE_FOLDER . '/' . $code;
+        if (is_dir($folder)) {
+            remove_dir($folder);
+        }
+        make_writable_directory($folder . '/scenes');
+        copy($found[0], $folder . '/mission.json');
+        foreach ($scenes as $id => $file) {
+            copy($file, $folder . '/scenes/' . $id . '.json');
+        }
+        self::index(true);
+        return $mission;
+    }
+
+    /**
+     * The newest package of each mission, with where it is.
+     *
+     * @param bool $fresh
+     * @return array code => folder, origin (plugin or site), mission.
+     */
+    private static function index(bool $fresh = false): array {
+        global $CFG;
+        // Read once a request; the cache of the request, not a static, so that tests do not see packages of another.
+        $cache = \cache::make_from_params(\cache_store::MODE_REQUEST, 'local_oksigeniatesape', 'packages');
+        $index = $fresh ? false : $cache->get('index');
+        if ($index !== false) {
+            return $index;
+        }
+        $index = [];
+        $folders = ['plugin' => $CFG->dirroot . '/local/oksigeniatesape/missions', 'site' => $CFG->dataroot . '/' .
+            self::SITE_FOLDER];
+        foreach ($folders as $origin => $folder) {
+            foreach (glob($folder . '/*/mission.json') ?: [] as $file) {
+                $mission = json_decode((string) file_get_contents($file), true);
+                if (!is_array($mission) || empty($mission['code'])) {
+                    continue;
+                }
+                $code = (string) $mission['code'];
+                // A package uploaded to the site counts only if it is newer than the one of the plugin.
+                if (isset($index[$code]) && (int) ($index[$code]['mission']['version'] ?? 1) >= (int) ($mission['version'] ?? 1)) {
+                    continue;
+                }
+                $index[$code] = ['folder' => dirname($file), 'origin' => $origin, 'mission' => $mission];
+            }
+        }
+        ksort($index);
+        $cache->set('index', $index);
+        return $index;
     }
 
     /**

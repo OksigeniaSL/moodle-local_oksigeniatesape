@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.30.0 (2026-10-13)
+
+- **Missions uploaded to the site**: besides those that come with the plugin, Tesapé reads the missions kept in the
+  site data (`local_oksigeniatesape/missions`); of each mission, the newest version wins. A mission bought, or a newer
+  version of one (also of the free one, without a new version of the plugin), is uploaded as a zip by the site
+  administration, in the new page «Missions of Tesapé» (Site administration › Plugins › Local plugins), which lists
+  every mission with its version, licence, origin and last change. Courses with it are brought up to date when they
+  are opened, keeping what the students did and the changes of the teacher; an older version is refused.
+- **The identity of each package**: its edition, its licence (free or paid), its publisher and what each version
+  brought, saying whether it was a fix or an improvement, so that the catalog server can offer the updates each
+  licence allows, also of missions uploaded by hand.
+
 ## 0.29.2 (2026-10-13)
 
 - **The changes of the workshop, elsewhere**: take them to another course of the teacher with the same mission, or
