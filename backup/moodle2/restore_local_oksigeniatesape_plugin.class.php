@@ -83,6 +83,7 @@ class restore_local_oksigeniatesape_plugin extends restore_local_plugin {
             'portal' => in_array($data->portal ?? '', \local_oksigeniatesape\local\portal::MODES, true) ? $data->portal : 'door',
             'hideacts' => (int) ($data->hideacts ?? 0),
             'gradebook' => (int) ($data->gradebook ?? 0),
+            'quiet' => (int) ($data->quiet ?? 0),
             'timemodified' => $now,
         ];
         $existing = $DB->get_field(self::T . 'region', 'id', ['courseid' => $courseid]);
