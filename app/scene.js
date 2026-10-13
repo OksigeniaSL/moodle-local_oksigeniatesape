@@ -88,7 +88,10 @@
    * and roles of any of its players, each option has its letter (for the vote cards), the phones can vote, and the
    * ending goes to the server as a play of the class.
    *
-   * @param {Object} opts sceneid, world (the world of the student), onclose(world) when the student leaves; classmode:
+   * With preview, a teacher tries a scene of the mission they are making: the scene comes in it, as get_scene gives it,
+   * and nothing is kept.
+   *
+   * @param {Object} opts sceneid or preview, world (the world of the student), onclose(world) when they leave; classmode:
    *     name, creature, items, roles, vote ({open(prompt, labels), state(), close()}, or null without phones), finish(events,
    *     from).
    */
@@ -753,6 +756,17 @@
         classEnding(n);
         return;
       }
+      if (opts.preview) {
+        // A teacher trying a scene of their mission: the ending, and nothing is kept.
+        var outcome = t(n.outcome === 'success' ? 'app_preview_success' : n.outcome === 'partial' ? 'app_preview_partial' :
+          'app_preview_retry');
+        var end = show('<p class="scene-text">' + esc(tx(n.text || '')) + '</p><p class="help">' + esc(outcome) + '</p>' +
+          '<div class="actions"><button class="btn btn-soft" data-replay>' + esc(t('app_playagain')) + '</button>' +
+          '<button class="btn btn-main" data-focus data-previewclose>' + esc(t('app_close')) + '</button></div>');
+        end.querySelector('[data-previewclose]').onclick = close;
+        onReplay(end);
+        return;
+      }
       show('<div class="loading-inline"><div class="lamp"></div>' + esc(t('app_saving')) + '</div>');
       T.api('play_scene', {courseid: cfg.courseid, sceneid: data.id, events: JSON.stringify(run.events),
         start: run.from}).then(function(result) {
@@ -838,15 +852,16 @@
     }
 
     show('<div class="loading-inline"><div class="lamp"></div>' + esc(t('app_loading')) + '</div>');
-    T.api('get_scene', {courseid: cfg.courseid, sceneid: opts.sceneid}).then(function(d) {
-      data = d;
-      data.speakers = JSON.parse(d.speakers || '{}');
-      data.items = JSON.parse(d.items || '{}');
-      data.flags = JSON.parse(d.flags || '[]');
-      sc = JSON.parse(d.definition);
-      start(null);
-    }).catch(function(e) {
-      show('<p class="scene-text">' + esc(t('app_error')) + '</p><p class="help">' + esc(e.message) + '</p>');
-    });
+    (opts.preview ? Promise.resolve(opts.preview) : T.api('get_scene', {courseid: cfg.courseid, sceneid: opts.sceneid}))
+      .then(function(d) {
+        data = d;
+        data.speakers = JSON.parse(d.speakers || '{}');
+        data.items = JSON.parse(d.items || '{}');
+        data.flags = JSON.parse(d.flags || '[]');
+        sc = JSON.parse(d.definition);
+        start(null);
+      }).catch(function(e) {
+        show('<p class="scene-text">' + esc(t('app_error')) + '</p><p class="help">' + esc(e.message) + '</p>');
+      });
   };
 })();

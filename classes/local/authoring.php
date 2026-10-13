@@ -65,9 +65,6 @@ final class authoring {
     /** @var string[] Kinds of moment. */
     public const MOMENTS = ['one', 'many', 'classify', 'order'];
 
-    /** @var int[][] Where the places go on the map of the valley, from the first to the sixth. */
-    private const SPOTS = [[160, 560], [300, 470], [120, 360], [280, 260], [140, 170], [300, 80]];
-
     /**
      * Whether a mission is one of a teacher.
      *
@@ -229,6 +226,38 @@ final class authoring {
     }
 
     /**
+     * A scene of a draft, made as the game plays it, for the teacher to try it before the mission is made: what
+     * get_scene gives a student, without anything to keep.
+     *
+     * @param int $courseid
+     * @param string $code
+     * @param string $scenecode
+     * @return array
+     */
+    public static function preview(int $courseid, string $code, string $scenecode): array {
+        global $DB;
+        $json = $DB->get_field(self::T . 'own', 'draft', ['courseid' => $courseid, 'code' => $code], MUST_EXIST);
+        $draft = self::tidy(json_decode((string) $json, true) ?: []);
+        $pilot = missions::packages()['livingthings'] ?? [];
+        $spots = array_values($pilot['chapters'] ?? []);
+        $placecodes = array_column($draft['places'], 'code');
+        foreach ($draft['scenes'] as $scene) {
+            if ($scene['code'] !== $scenecode) {
+                continue;
+            }
+            $index = (int) array_search($scene['place'], $placecodes, true);
+            $speakers = [];
+            foreach ($pilot['speakers'] ?? [] as $speaker => $name) {
+                $speakers[$speaker] = missions::text($name, self::WORLD);
+            }
+            return ['id' => 0, 'definition' => json_encode(self::scene($scene, $code, $index === 0)),
+                'skin' => self::WORLD, 'place' => (string) ($spots[$index]['code'] ?? ''), 'variant' => 'gen',
+                'speakers' => json_encode($speakers), 'items' => '{}', 'flags' => '[]', 'role' => '', 'breath' => 99];
+        }
+        throw new \invalid_parameter_exception('Not a scene of the draft');
+    }
+
+    /**
      * The mission and the scenes a draft becomes, in the format of the packages.
      *
      * @param array $draft Tidy.
@@ -250,6 +279,7 @@ final class authoring {
                 'levels' => $objective['levels']];
         }
         $places = array_values($draft['places']);
+        $spots = array_values($pilot['chapters'] ?? []);
         $last = end($places)['code'];
         $chapters = [];
         foreach ($places as $i => $place) {
@@ -259,7 +289,9 @@ final class authoring {
                     fn($s) => ['do' => $s['do'], 'materials' => $s['materials'], 'minutes' => 50],
                     $place['sessions']
                 ),
-                'x' => self::SPOTS[$i][0], 'y' => self::SPOTS[$i][1], 'activities' => []];
+                // The place of the valley at the same spot of the map: its position and its landscape.
+                'x' => (int) ($spots[$i]['x'] ?? 200), 'y' => (int) ($spots[$i]['y'] ?? 320),
+                'art' => (string) ($spots[$i]['code'] ?? ''), 'activities' => []];
         }
         $scenes = [];
         $first = $places[0]['code'];
@@ -305,6 +337,7 @@ final class authoring {
             'ending' => $t($draft['ending'] !== '' ? $draft['ending'] : get_string('authoring_ending', 'local_oksigeniatesape')),
             'chapters' => $chapters,
             'games' => [],
+            'map' => 'livingthings',
             'questions' => array_map(
                 fn($q, $i) => ['id' => 'Q' . ($i + 1), 'chapter' => $q['place'],
                 'objective' => $q['objective'], 'text' => $q['text'], 'options' => $q['options'], 'why' => $q['why']],

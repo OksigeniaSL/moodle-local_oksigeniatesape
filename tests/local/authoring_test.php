@@ -101,6 +101,14 @@ final class authoring_test extends \advanced_testcase {
         $this->assertSame('own', $mission->origin);
         $this->assertSame(3, $DB->count_records(self::T . 'chapter', ['missionid' => $mission->id]));
         $this->assertNotSame(0, badges::find($course->id, $mission));
+        // Its places take the spots and the landscapes of the valley, and its map is the one of the valley.
+        $this->assertSame('livingthings', $mission->data['map']);
+        $this->assertSame(['claro', 'biblioteca', 'bosque'], array_column($mission->data['chapters'], 'art'));
+        // A scene of the draft can be tried before: as the game plays it, with the landscape of its place.
+        $scene = $mission->data['scenes'][1];
+        $preview = authoring::preview($course->id, $own->code, $scene);
+        $this->assertSame('biblioteca', $preview['place']);
+        $this->assertArrayHasKey('fin', json_decode($preview['definition'], true)['nodes']);
         // A student plays every scene well: the lanterns of the first two places, and the creature.
         $user = $dg->create_and_enrol($course, 'student');
         $char = characters::create($user->id, 'sage', 'f');

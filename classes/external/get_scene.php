@@ -97,7 +97,11 @@ final class get_scene extends external_api {
                 json_encode($scene->data),
             'skin' => $mission->skin,
             // The place of the scene's chapter, for its picture when a node has none of its own.
-            'place' => (string) $DB->get_field('local_oksigeniatesape_chapter', 'code', ['id' => $scene->chapterid]),
+            'place' => self::place($mission, (string) $DB->get_field(
+                'local_oksigeniatesape_chapter',
+                'code',
+                ['id' => $scene->chapterid]
+            )),
             'variant' => $mission->variant,
             'speakers' => json_encode($speakers),
             'items' => json_encode($items),
@@ -105,6 +109,22 @@ final class get_scene extends external_api {
             'role' => $role,
             'breath' => $breath,
         ];
+    }
+
+    /**
+     * The place whose pictures a scene uses: its chapter, or the landscape a chapter of a teacher's mission takes.
+     *
+     * @param \stdClass $mission With data.
+     * @param string $chapter
+     * @return string
+     */
+    private static function place(\stdClass $mission, string $chapter): string {
+        foreach ($mission->data['chapters'] ?? [] as $info) {
+            if (($info['code'] ?? '') === $chapter) {
+                return (string) ($info['art'] ?? $chapter);
+            }
+        }
+        return $chapter;
     }
 
     /**

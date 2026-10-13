@@ -211,7 +211,8 @@
       return {value: s.code, label: s.name};
     });
     return '<div class="actions" style="justify-content:flex-start">' + btn('back-scenes', t('teach_au_back_scenes')) +
-      '</div><section class="card">' + select(p + '.place', t('teach_au_its_place'), places()) +
+      btn('try-scene', t('teach_au_try'), '', true) + '</div><section class="card">' +
+      select(p + '.place', t('teach_au_its_place'), places()) +
       input(p + '.title', t('teach_ws_k_title')) + select(p + '.speaker', t('teach_au_speaker'), speakers,
         t('teach_au_narrator')) + input(p + '.text', t('teach_ws_k_story'), {area: true, rows: 4}) + '</section>' +
       (sc.moments || []).map(momentEditor).join('') + ((sc.moments || []).length < st.info.limits.maxmoments ?
@@ -431,6 +432,19 @@
       var act = b.dataset.act;
       if (act === 'back') {
         save().then(st.done);
+      } else if (act === 'try-scene') {
+        var code = st.d.scenes[st.scene].code;
+        save().then(function() {
+          return api('preview', {code: st.info.code, value: code});
+        }).then(function(scene) {
+          // As a student would see it, with a made-up character; nothing is kept.
+          T.playScene({preview: scene, world: {character: {role: '', creature: '{}', stage: 1}, items: [], team: null,
+            family: 'storyheroes', nicknames: false}, onclose: function() {
+            return null;
+          }});
+        }).catch(function(e) {
+          T.toast(esc(e.message), true);
+        });
       } else if (act === 'publish') {
         if (!window.confirm(t('teach_au_publish_confirm'))) {
           return;

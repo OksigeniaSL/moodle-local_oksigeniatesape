@@ -479,7 +479,8 @@
       '<div xmlns="http://www.w3.org/1999/xhtml" class="face">' + T.avatar({role: c.role, nameform: c.nameform,
       lineage: c.lineage, look: c.appearance, stage: c.stage, portrait: true}) + '</div></foreignObject>';
     // The painted map of the art pack, or a drawing of the valley.
-    var art = T.artUrl(['map.' + m.code + '.' + m.skin, 'map.' + m.code]);
+    var map = m.map || m.code;
+    var art = T.artUrl(['map.' + map + '.' + m.skin, 'map.' + map]);
     var ground = art ? '<image href="' + esc(art) + '" x="0" y="0" width="400" height="640" ' +
       'preserveAspectRatio="xMidYMid slice"/>' : '<rect width="400" height="640" rx="18" fill="url(#mapglow)"/>' +
       '<path d="M0 600 Q120 520 220 590 T400 560 V640 H0Z" fill="#183a2b"/>' +

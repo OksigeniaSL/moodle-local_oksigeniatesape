@@ -95,6 +95,7 @@ final class structures {
             'skin' => new external_value(PARAM_ALPHANUMEXT, 'Skin'),
             'variant' => new external_value(PARAM_ALPHANUMEXT, 'Local examples'),
             'pagecount' => new external_value(PARAM_INT, 'Pages of the book in the mission'),
+            'map' => new external_value(PARAM_ALPHANUMEXT, 'Code of the painted map', VALUE_DEFAULT, ''),
             'chapters' => new external_multiple_structure(new external_single_structure([
                 'id' => new external_value(PARAM_INT, 'Chapter'),
                 'code' => new external_value(PARAM_ALPHANUMEXT, 'Code'),

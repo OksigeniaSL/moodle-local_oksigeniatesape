@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.32.2 (2026-10-13)
+
+- **Try a scene before publishing** («Try this scene», in the scene of the workshop): the scene opens as a student
+  would see it, made from what has been written, and is played to an ending; nothing is kept.
+- The places of a mission made by a teacher take the spots and the landscapes of the valley in their order (the
+  clearing, the library, the forest, the garden, the lake and the tower), and the mission uses the painted map of the
+  valley: place, background and map always match.
+
 ## 0.32.1 (2026-10-13)
 
 - **The missions the teacher made go in the backups of the course**: the draft and the mission it became come back in

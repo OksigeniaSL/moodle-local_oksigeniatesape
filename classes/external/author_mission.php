@@ -33,7 +33,7 @@ use local_oksigeniatesape\local\missions;
  */
 final class author_mission extends external_api {
     /** @var string[] What can be done. */
-    private const ACTIONS = ['list', 'create', 'get', 'save', 'publish', 'delete'];
+    private const ACTIONS = ['list', 'create', 'get', 'save', 'publish', 'delete', 'preview'];
 
     /**
      * Parameters.
@@ -81,6 +81,9 @@ final class author_mission extends external_api {
             $code = authoring::create($courseid, $params['value'])->code;
         } else if (!$DB->record_exists('local_oksigeniatesape_own', ['courseid' => $courseid, 'code' => $code])) {
             throw new \invalid_parameter_exception('Not a draft of this course');
+        }
+        if ($params['action'] === 'preview') {
+            return ['json' => json_encode(authoring::preview($courseid, $code, clean_param($params['value'], PARAM_ALPHANUMEXT)))];
         }
         if ($params['action'] === 'save') {
             $draft = json_decode($params['value'], true);

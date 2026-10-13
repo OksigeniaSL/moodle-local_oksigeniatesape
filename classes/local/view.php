@@ -263,6 +263,8 @@ final class view {
             'skin' => $skin,
             'variant' => $mission->variant,
             'pagecount' => count($data['pages'] ?? []),
+            // The painted map: that of the mission, or of the world a mission of a teacher lives in.
+            'map' => (string) ($data['map'] ?? $mission->code),
             'chapters' => $list,
             'pages' => $pages,
         ];
