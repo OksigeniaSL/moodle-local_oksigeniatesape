@@ -48,9 +48,6 @@ final class edits {
     /** @var string[] Lists of elements with an id, in a node. */
     private const ELEMENTS = ['options', 'items', 'bins', 'steps'];
 
-    /** @var array Changes of each course for this request: courseid => mission code => scene => path => value. */
-    private static $cache = [];
-
     /**
      * The changes of the mission of a course.
      *
@@ -60,7 +57,9 @@ final class edits {
      */
     public static function of(int $courseid, string $mission): array {
         global $DB;
-        if (!isset(self::$cache[$courseid][$mission])) {
+        $key = $courseid . '_' . $mission;
+        $list = self::cache()->get($key);
+        if ($list === false) {
             $list = [];
             $records = $DB->get_records(
                 self::T . 'edit',
@@ -72,9 +71,18 @@ final class edits {
                 $list[(string) $record->scene][$record->path] = $record->path === 'questions' ?
                     (json_decode($record->value, true) ?: []) : $record->value;
             }
-            self::$cache[$courseid][$mission] = $list;
+            self::cache()->set($key, $list);
         }
-        return self::$cache[$courseid][$mission];
+        return $list;
+    }
+
+    /**
+     * The changes read in this request: every scene of a map reads them.
+     *
+     * @return \cache
+     */
+    private static function cache(): \cache {
+        return \cache::make_from_params(\cache_store::MODE_REQUEST, 'local_oksigeniatesape', 'edits');
     }
 
     /**
@@ -256,7 +264,7 @@ final class edits {
             $conditions['scene'] = $scene;
         }
         $DB->delete_records(self::T . 'edit', $conditions);
-        unset(self::$cache[$courseid]);
+        self::cache()->purge();
     }
 
     /**
@@ -273,7 +281,7 @@ final class edits {
         global $DB;
         $key = ['courseid' => $courseid, 'mission' => $mission, 'scene' => $scene, 'path' => $path];
         $record = $DB->get_record(self::T . 'edit', $key);
-        unset(self::$cache[$courseid]);
+        self::cache()->purge();
         if ($value === '') {
             if ($record) {
                 $DB->delete_records(self::T . 'edit', ['id' => $record->id]);
