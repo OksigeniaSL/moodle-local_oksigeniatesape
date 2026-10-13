@@ -233,7 +233,12 @@ final class scene_runner {
                 continue;
             }
             if (isset($if['correct_at_least'], $if['in'])) {
-                if ($this->correct_in($if['in']) >= (int) $if['correct_at_least']) {
+                // One node, or several (the right answers of all of them are added up).
+                $count = 0;
+                foreach ((array) $if['in'] as $in) {
+                    $count += $this->correct_in((string) $in);
+                }
+                if ($count >= (int) $if['correct_at_least']) {
                     return $rule['next'];
                 }
             }

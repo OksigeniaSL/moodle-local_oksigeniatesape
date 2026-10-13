@@ -555,6 +555,26 @@
         <INDEX NAME="courseid-mission-scene-path" UNIQUE="true" FIELDS="courseid, mission, scene, path"/>
       </INDEXES>
     </TABLE>
+    <TABLE NAME="local_oksigeniatesape_own" COMMENT="The missions a teacher makes from scratch in a course: the draft and the mission it last became.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="code" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false" COMMENT="own and the id"/>
+        <FIELD NAME="version" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Times it was made into a mission"/>
+        <FIELD NAME="draft" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="What the teacher writes (JSON)"/>
+        <FIELD NAME="mission" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="The mission it last became (JSON, as a package)"/>
+        <FIELD NAME="scenes" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Its scenes (JSON)"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="courseid" TYPE="foreign" FIELDS="courseid" REFTABLE="course" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="code" UNIQUE="false" FIELDS="code"/>
+      </INDEXES>
+    </TABLE>
     <TABLE NAME="local_oksigeniatesape_nextclass" COMMENT="Plans for the next class made by the AI of the site from what confuses the class. No personal data.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>

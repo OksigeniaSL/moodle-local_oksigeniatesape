@@ -278,14 +278,42 @@
       }
     }
 
-    function correctIn(node) {
+    /**
+     * The right answers in a node, or in several added up: options marked correct in a choice, items placed at the first
+     * try in a classify (as the server counts them).
+     *
+     * @param {string|Array} nodes
+     * @return {number}
+     */
+    function correctIn(nodes) {
+      return [].concat(nodes).reduce(function(sum, node) {
+        return sum + correctInOne(node);
+      }, 0);
+    }
+
+    function correctInOne(node) {
+      var n = sc.nodes[node] || {};
+      if (n.type === 'classify') {
+        var seen = {};
+        var right = 0;
+        run.events.forEach(function(e) {
+          if (e.n === node && e.item && !seen[e.item]) {
+            seen[e.item] = true;
+            var item = (n.items || []).filter(function(i) {
+              return i.id === e.item;
+            })[0];
+            right += item && item.bin === e.bin ? 1 : 0;
+          }
+        });
+        return right;
+      }
       var picks = [];
       run.events.forEach(function(e) {
         if (e.n === node && e.pick) {
           picks = e.pick;
         }
       });
-      var opts = sc.nodes[node].options || [];
+      var opts = n.options || [];
       return picks.filter(function(id) {
         return opts.some(function(o) {
           return o.id === id && o.correct === true;

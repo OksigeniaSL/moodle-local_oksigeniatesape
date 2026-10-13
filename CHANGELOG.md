@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.31.0 (2026-10-13)
+
+- **The workshop, part 2, the base: a mission from scratch** (the screens come next). A teacher's mission is a draft
+  in the course (new table `own`): the mission, its objectives, from three to six places, its guided scenes and the
+  questions of the battle. A checker says what is still missing, as a teacher would say it; while something is
+  missing, it cannot be played. Made into a mission, it is played as any other: map, lanterns, creature, classroom
+  challenges, competencies, badge, final battle and report. Made again, a new version, keeping what the students did.
+- **Guided scenes**: a narration, from one to three moments (choose one, choose several, classify or order) and
+  three endings; the game makes the nodes and the rules under them.
+- A rule of a scene can add up the right answers of several moments; the game of the student and the server count
+  the right answers of a classify the same way.
+
 ## 0.30.0 (2026-10-13)
 
 - **Missions uploaded to the site**: besides those that come with the plugin, Tesapé reads the missions kept in the

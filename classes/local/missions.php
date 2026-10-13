@@ -203,11 +203,12 @@ final class missions {
         bool $activities = false
     ): \stdClass {
         global $DB;
-        $packages = self::packages();
-        if (!isset($packages[$code])) {
+        // A mission of the site, or one the teacher of the course made.
+        $own = authoring::is_own($code);
+        $package = $own ? authoring::package($courseid, $code) : (self::packages()[$code] ?? null);
+        if (!$package) {
             throw new \invalid_parameter_exception('Unknown mission: ' . $code);
         }
-        $package = $packages[$code];
         if (!isset($package['skins'][$skin]) || !isset($package['variants'][$variant])) {
             throw new \invalid_parameter_exception('Unknown skin or local examples');
         }
@@ -219,7 +220,7 @@ final class missions {
         $record = (object) [
             'courseid' => $courseid,
             'code' => $code,
-            'origin' => 'catalog',
+            'origin' => $own ? 'own' : 'catalog',
             'skin' => $skin,
             'variant' => $variant,
             'version' => (int) ($package['version'] ?? 1),
@@ -257,7 +258,7 @@ final class missions {
                 }
             }
         }
-        foreach (self::package_scenes($code) as $scenecode => $scene) {
+        foreach ($own ? authoring::scenes($courseid, $code) : self::package_scenes($code) as $scenecode => $scene) {
             $data = (object) [
                 'missionid' => $record->id,
                 'chapterid' => $chapterids[$scene['chapter']] ?? 0,
