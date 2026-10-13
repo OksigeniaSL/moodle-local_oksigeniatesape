@@ -30,6 +30,9 @@ class restore_local_oksigeniatesape_plugin extends restore_local_plugin {
     /** @var string Prefix of the plugin tables. */
     private const T = 'local_oksigeniatesape_';
 
+    /** @var array The codes of the missions the teacher made: in the backup => in this course. */
+    private $owncodes = [];
+
     /**
      * What the course part of the backup has.
      *
@@ -38,6 +41,7 @@ class restore_local_oksigeniatesape_plugin extends restore_local_plugin {
     protected function define_course_plugin_structure() {
         return [
             new restore_path_element('oksigeniatesape_region', $this->get_pathfor('/region')),
+            new restore_path_element('oksigeniatesape_own', $this->get_pathfor('/owns/own')),
             new restore_path_element('oksigeniatesape_mission', $this->get_pathfor('/mission')),
             new restore_path_element('oksigeniatesape_challenge', $this->get_pathfor('/challenges/challenge')),
             new restore_path_element('oksigeniatesape_power', $this->get_pathfor('/powers/power')),
@@ -99,11 +103,46 @@ class restore_local_oksigeniatesape_plugin extends restore_local_plugin {
     public function process_oksigeniatesape_mission($data) {
         $data = (object) $data;
         $courseid = $this->task->get_courseid();
+        if (isset($this->owncodes[$data->code])) {
+            // A mission the teacher made: it comes back with the code of its copy.
+            missions::install($courseid, $this->owncodes[$data->code], $data->skin, $data->variant);
+            return;
+        }
         if (!isset(missions::packages()[$data->code])) {
             $this->log('local_oksigeniatesape: this site does not have the mission ' . $data->code, backup::LOG_WARNING);
             return;
         }
         missions::install($courseid, $data->code, $data->skin, $data->variant);
+    }
+
+    /**
+     * A mission the teacher made, with a code of its own in this course.
+     *
+     * @param array|object $data
+     */
+    public function process_oksigeniatesape_own($data) {
+        global $DB;
+        $data = (object) $data;
+        $now = time();
+        $id = $DB->insert_record(self::T . 'own', (object) ['courseid' => $this->task->get_courseid(), 'code' => '',
+            'version' => (int) $data->version, 'draft' => (string) $data->draft, 'timecreated' => $now, 'timemodified' => $now]);
+        $code = \local_oksigeniatesape\local\authoring::PREFIX . $id;
+        // The mission and its scenes, as they were made, with the new code.
+        $mission = json_decode((string) ($data->mission ?? ''), true);
+        $scenes = json_decode((string) ($data->scenes ?? ''), true);
+        if (is_array($mission)) {
+            $mission['code'] = $code;
+        }
+        if (is_array($scenes)) {
+            foreach ($scenes as &$scene) {
+                $scene['mission'] = $code;
+            }
+            unset($scene);
+        }
+        $DB->update_record(self::T . 'own', (object) ['id' => $id, 'code' => $code,
+            'mission' => is_array($mission) ? json_encode($mission) : null,
+            'scenes' => is_array($scenes) ? json_encode($scenes) : null]);
+        $this->owncodes[(string) $data->code] = $code;
     }
 
     /**

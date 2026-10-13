@@ -47,7 +47,12 @@ class backup_local_oksigeniatesape_plugin extends backup_local_plugin {
         $powers = new backup_nested_element('powers');
         $power = new backup_nested_element('power', ['id'], ['role', 'code', 'name', 'description', 'cost', 'minlevel',
             'enabled', 'autoapprove']);
+        // The missions the teacher made, before the mission of the course, which may be one of them.
+        $owns = new backup_nested_element('owns');
+        $own = new backup_nested_element('own', ['id'], ['code', 'version', 'draft', 'mission', 'scenes']);
         $game->add_child($region);
+        $game->add_child($owns);
+        $owns->add_child($own);
         $game->add_child($mission);
         $game->add_child($challenges);
         $challenges->add_child($challenge);
@@ -69,6 +74,7 @@ class backup_local_oksigeniatesape_plugin extends backup_local_plugin {
         $challenge->set_source_sql(self::challenges('c.courseid = ? AND c.cmid = 0'), [backup::VAR_COURSEID]);
         $power->set_source_table('local_oksigeniatesape_power', ['courseid' => backup::VAR_COURSEID]);
         $edit->set_source_table('local_oksigeniatesape_edit', ['courseid' => backup::VAR_COURSEID]);
+        $own->set_source_table('local_oksigeniatesape_own', ['courseid' => backup::VAR_COURSEID]);
         return $plugin;
     }
 

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.32.1 (2026-10-13)
+
+- **The missions the teacher made go in the backups of the course**: the draft and the mission it became come back in
+  the copy, with a code of their own there, and the copy plays it as the original did.
+
 ## 0.32.0 (2026-10-13)
 
 - **The workshop, part 2: make a mission from scratch** (panel, «Mission» tab, «Make a mission from scratch»), in six

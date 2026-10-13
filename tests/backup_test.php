@@ -16,6 +16,7 @@
 
 namespace local_oksigeniatesape;
 
+use local_oksigeniatesape\local\authoring;
 use local_oksigeniatesape\local\classroom;
 use local_oksigeniatesape\local\edits;
 use local_oksigeniatesape\local\missions;
@@ -105,5 +106,63 @@ final class backup_test extends \advanced_testcase {
         $this->assertEquals(1, $DB->get_field(self::T . 'power', 'cost', ['courseid' => $newid, 'code' => 'shield']));
         $this->assertCount(1, $DB->get_records(self::T . 'power', ['courseid' => $newid, 'code' => 'shield']));
         $this->assertSame('Un título propio', edits::of($newid, 'livingthings')['C1-2']['title'] ?? '');
+    }
+
+    public function test_a_mission_the_teacher_made_comes_back_with_its_backup(): void {
+        global $CFG, $DB, $USER;
+        require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
+        require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $CFG->keeptempdirectoriesonbackup = true;
+        $course = $this->getDataGenerator()->create_course();
+        regions::save($course->id, ['enabled' => 1]);
+        $own = authoring::create($course->id, 'Mi misión');
+        $o = fn($label, $correct) => ['label' => $label, 'correct' => $correct, 'feedback' => ''];
+        $draft = authoring::save($course->id, $own->code, ['title' => 'Mi misión', 'objectives' => [['name' => 'Uno']],
+            'places' => [['name' => 'A'], ['name' => 'B'], ['name' => 'C']]]);
+        foreach ($draft['places'] as $i => $place) {
+            $draft['scenes'][] = ['place' => $place['code'], 'title' => 'Escena ' . $i, 'text' => 'Texto.',
+                'moments' => [['type' => 'one', 'prompt' => '¿Sí?', 'options' => [$o('Sí', true), $o('No', false)]]]];
+        }
+        for ($i = 0; $i < 4; $i++) {
+            $draft['questions'][] = ['text' => '¿Pregunta?', 'options' => ['Buena', 'Mala']];
+        }
+        authoring::save($course->id, $own->code, $draft);
+        authoring::publish($course->id, $own->code);
+
+        $bc = new \backup_controller(
+            \backup::TYPE_1COURSE,
+            $course->id,
+            \backup::FORMAT_MOODLE,
+            \backup::INTERACTIVE_NO,
+            \backup::MODE_GENERAL,
+            $USER->id
+        );
+        $backupid = $bc->get_backupid();
+        $bc->execute_plan();
+        $bc->destroy();
+        $newid = \restore_dbops::create_new_course('Copia', 'COPIA', $course->category);
+        $rc = new \restore_controller(
+            $backupid,
+            $newid,
+            \backup::INTERACTIVE_NO,
+            \backup::MODE_GENERAL,
+            $USER->id,
+            \backup::TARGET_NEW_COURSE
+        );
+        $this->assertTrue($rc->execute_precheck());
+        $rc->execute_plan();
+        $rc->destroy();
+
+        // The draft and the mission come back, with a code of their own in the copy, and the mission is played there.
+        $copies = authoring::drafts($newid);
+        $this->assertCount(1, $copies);
+        $this->assertNotSame($own->code, $copies[0]->code);
+        $this->assertSame('Mi misión', $copies[0]->data['title']);
+        $mission = missions::get($newid);
+        $this->assertSame($copies[0]->code, $mission->code);
+        $this->assertSame(3, $DB->count_records(self::T . 'scene', ['missionid' => $mission->id]));
+        $this->assertCount(3, authoring::scenes($newid, $copies[0]->code));
     }
 }
