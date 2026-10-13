@@ -365,6 +365,9 @@
 
   function world() {
     var w = state.world;
+    if (T.fx) {
+      T.fx.quiet(w.quiet);
+    }
     var c = w.character;
     var m = c.member || {energy: 0, breath: 0};
     var pct = c.levelneeded ? Math.round(100 * c.levelinto / c.levelneeded) : 100;
@@ -377,7 +380,7 @@
       '<header class="hud"><button class="me" data-tab="me" aria-label="' + esc(t('app_tab_me')) + '"><span class="face">' +
       avatarOf(c, '', true) + '</span><span class="who"><b>' + esc(myName()) + '</b><small>' + esc(title(c)) + '</small></span>' +
       '</button><div class="ring" style="--p:' + pct + '" title="' + esc(t('app_level')) + ' ' + c.level + '"><b>' +
-      c.level + '</b></div>' + (T.fx ? '<button type="button" class="sound" data-sound aria-pressed="' + !T.fx.muted() +
+      c.level + '</b></div>' + (T.fx && !w.quiet ? '<button type="button" class="sound" data-sound aria-pressed="' + !T.fx.muted() +
       '" aria-label="' + esc(t('app_sound')) + '" title="' + esc(t('app_sound')) + '">' + (T.fx.muted() ? '🔇' : '🔊') +
       '</button>' : '') + '<div class="res">' +
       res('saber', c.saber, t('app_saber')) + res('gems', c.gems, t('app_gems')) +

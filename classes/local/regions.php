@@ -90,7 +90,7 @@ final class regions {
             'family' => 'storyheroes',
             'timecreated' => $now,
         ];
-        foreach (['enabled', 'leaderboard'] as $flag) {
+        foreach (['enabled', 'leaderboard', 'quiet'] as $flag) {
             if (array_key_exists($flag, $settings)) {
                 $region->$flag = $settings[$flag] ? 1 : 0;
             }

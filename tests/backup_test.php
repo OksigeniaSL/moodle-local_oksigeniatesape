@@ -49,7 +49,7 @@ final class backup_test extends \advanced_testcase {
         $dg = $this->getDataGenerator();
         $course = $dg->create_course();
         $page = $dg->create_module('page', ['course' => $course->id]);
-        regions::save($course->id, ['enabled' => 1, 'family' => 'animals', 'weeklycap' => 150]);
+        regions::save($course->id, ['enabled' => 1, 'family' => 'animals', 'weeklycap' => 150, 'quiet' => 1]);
         missions::install($course->id, 'livingthings', 'azara', 'py');
         classroom::save($course->id, ['name' => 'Un reto propio', 'saber' => 7]);
         // A text the teacher changed in the mission.
@@ -91,6 +91,7 @@ final class backup_test extends \advanced_testcase {
 
         $region = regions::get($newid);
         $this->assertEquals(1, $region->enabled);
+        $this->assertEquals(1, $region->quiet);
         $this->assertEquals('animals', $region->family);
         $this->assertEquals(150, $region->weeklycap);
         $mission = missions::get($newid);

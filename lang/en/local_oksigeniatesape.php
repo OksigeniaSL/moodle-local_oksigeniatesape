@@ -1105,6 +1105,7 @@ $string['teach_set_hideacts_help'] = 'They stay available, but they do not show 
 $string['teach_set_leaderboard'] = 'Show the team ranking';
 $string['teach_set_nicknames'] = 'Names in the game';
 $string['teach_set_nostealth'] = 'To use it, the administration of the site has to allow activities «available but not shown on the course page» (allowstealth).';
+$string['teach_set_quiet'] = 'No sound on the devices of the students (the class screen still sounds)';
 $string['teach_set_stealth_admin'] = 'Turn it on in the settings of Tesapé.';
 $string['teach_set_timezone'] = 'Time zone of the game';
 $string['teach_set_timezone_help'] = 'When the day and the week of the game start: caps, the event of the day, energy and breath filled again. If the school is in a different time zone from the site, choose it here.';

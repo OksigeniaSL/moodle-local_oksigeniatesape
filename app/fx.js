@@ -17,8 +17,13 @@
   var ambient = null;
   var wanted = null;
   var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // The teacher took the sound away from the devices of the class.
+  var quiet = false;
 
   function muted() {
+    if (quiet) {
+      return true;
+    }
     try {
       return window.localStorage.getItem(KEY) === 'off';
     } catch (e) {
@@ -315,6 +320,17 @@
         torre: 'mountain'}[place] || 'meadow';
     },
     muted: muted,
+    /**
+     * No sound at all on this device, because the teacher said so for the class.
+     *
+     * @param {boolean} on
+     */
+    quiet: function(on) {
+      quiet = !!on;
+      if (quiet) {
+        stopAmbient();
+      }
+    },
     /** Silence on or off, remembered on the device. */
     toggle: function() {
       try {

@@ -73,6 +73,7 @@ final class get_world extends external_api {
             'enabled' => new external_value(PARAM_BOOL, 'The game is on in the course'),
             'family' => new external_value(PARAM_ALPHA, 'Family of role names'),
             'nicknames' => new external_value(PARAM_INT, 'Hero names allowed'),
+            'quiet' => new external_value(PARAM_BOOL, 'No sound on the devices of the students', VALUE_DEFAULT, false),
             'energymax' => new external_value(PARAM_INT, 'Most energy'),
             'breathmax' => new external_value(PARAM_INT, 'Most breath'),
             'character' => structures::character(VALUE_OPTIONAL),

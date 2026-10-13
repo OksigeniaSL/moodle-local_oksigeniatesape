@@ -1695,7 +1695,9 @@
       num('dailyenergylosscap', r.dailyenergylosscap, false) + num('completionrule', r.completionrule, true) + '</div>' +
       '<label class="chip" style="display:inline-flex;gap:8px;align-items:center;margin:4px 0 14px"><input ' +
       'type="checkbox" name="leaderboard"' + (r.leaderboard ? ' checked' : '') + (editable ? '' : ' disabled') + '> ' +
-      esc(t('teach_set_leaderboard')) + '</label><h3>' + esc(t('teach_set_nicknames')) + '</h3>' + nick + coverCard +
+      esc(t('teach_set_leaderboard')) + '</label><label class="chip" style="display:inline-flex;gap:8px;align-items:center;' +
+      'margin:4px 0 14px"><input type="checkbox" name="quiet"' + (r.quiet ? ' checked' : '') + (editable ? '' : ' disabled') +
+      '> ' + esc(t('teach_set_quiet')) + '</label><h3>' + esc(t('teach_set_nicknames')) + '</h3>' + nick + coverCard +
       badgeCard + gradesCard +
       (editable ? '<div class="actions" style="justify-content:flex-start;margin-top:14px"><button class="btn btn-main" ' +
       'type="submit">' + esc(t('app_save')) + '</button></div>' : '') + '</form></section>');
@@ -1719,6 +1721,7 @@
         dailyenergylosscap: Number(f.dailyenergylosscap.value),
         completionrule: Number(f.completionrule.value),
         leaderboard: f.leaderboard.checked,
+        quiet: f.quiet.checked,
         nicknames: picked ? Number(picked.value) : 0,
         timezone: f.timezone.value,
         portal: cover ? cover.value : 'door',

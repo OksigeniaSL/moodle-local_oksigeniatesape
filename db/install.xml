@@ -46,6 +46,7 @@
         <FIELD NAME="portal" TYPE="char" LENGTH="10" NOTNULL="true" DEFAULT="door" SEQUENCE="false" COMMENT="Cover of the course page: door, card, direct or menu"/>
         <FIELD NAME="hideacts" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The activities of the mission only inside the valley, not on the course page"/>
         <FIELD NAME="gradebook" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The ratings of the competencies go to the gradebook"/>
+        <FIELD NAME="quiet" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="No sound on the devices of the students"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>

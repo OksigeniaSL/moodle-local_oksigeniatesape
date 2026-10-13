@@ -490,5 +490,15 @@ function xmldb_local_oksigeniatesape_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026101312, 'local', 'oksigeniatesape');
     }
 
+    if ($oldversion < 2026101321) {
+        // The teacher may take the sound away from the devices of the students.
+        $table = new xmldb_table('local_oksigeniatesape_region');
+        $field = new xmldb_field('quiet', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'gradebook');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        upgrade_plugin_savepoint(true, 2026101321, 'local', 'oksigeniatesape');
+    }
+
     return true;
 }

@@ -52,6 +52,7 @@ final class view {
             'enabled' => $enabled,
             'family' => $region->family ?? 'storyheroes',
             'nicknames' => (int) ($region->nicknames ?? 0),
+            'quiet' => (bool) ($region->quiet ?? false),
             'energymax' => engine::ENERGY_MAX,
             'breathmax' => engine::BREATH_MAX,
             'challenges' => [],
@@ -588,6 +589,7 @@ final class view {
             'hideacts' => (bool) ($region->hideacts ?? false),
             'allowstealth' => !empty($GLOBALS['CFG']->allowstealth),
             'gradebook' => (bool) ($region->gradebook ?? false),
+            'quiet' => (bool) ($region->quiet ?? false),
         ];
     }
 

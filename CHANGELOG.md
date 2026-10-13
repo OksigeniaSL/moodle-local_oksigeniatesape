@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.36.1 (2026-10-13)
+
+- **The teacher can take the sound away** from the devices of the whole class (settings of the panel: «No sound on the
+  devices of the students»); the class screen still sounds. It goes in the backups of the course.
+
 ## 0.36.0 (2026-10-13)
 
 - **The game feels alive**: sounds made by the browser itself (Web Audio: no files, nothing from outside) for choosing,
