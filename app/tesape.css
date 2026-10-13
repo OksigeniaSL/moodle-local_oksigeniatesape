@@ -3590,3 +3590,100 @@ body.in-battle {
 .comp-grid td.rated select {
   border-color: var(--lantern);
 }
+
+/* ---------- The workshop: the teacher changes the mission ---------- */
+
+.tesape .ws-chapter {
+  margin-top: 16px;
+}
+
+.tesape .ws-chapter > summary,
+.tesape .ws-scene > summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.tesape .ws-chapter > summary h3 {
+  margin: 0;
+  flex: 1;
+}
+
+.tesape .ws-scene {
+  margin-top: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-s);
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, .03);
+}
+
+.tesape .ws-scene > summary b {
+  flex: 1;
+}
+
+.tesape .ws-scene > summary small {
+  color: var(--text-soft);
+}
+
+.tesape .ws-scene[open] > summary {
+  margin-bottom: 10px;
+}
+
+.tesape .ws-node {
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+  margin-top: 10px;
+}
+
+.tesape .ws-field {
+  display: block;
+  margin-bottom: 12px;
+}
+
+.tesape .ws-field > span {
+  display: block;
+  font-size: 14px;
+  color: var(--text-soft);
+  margin-bottom: 4px;
+}
+
+.tesape .ws-field textarea,
+.tesape .ws-field input,
+.tesape .ws-field select {
+  width: 100%;
+}
+
+.tesape .ws-field.changed textarea {
+  border-color: var(--lantern-deep);
+}
+
+.tesape .ws-field.right > span {
+  color: var(--leaf);
+}
+
+.tesape .ws-field > small {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-soft);
+}
+
+.tesape .ws-link {
+  border: 0;
+  background: none;
+  color: var(--lantern);
+  padding: 0;
+  margin-left: 6px;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.tesape .ws-question {
+  border: 1px solid var(--line);
+  border-radius: var(--r-s);
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}

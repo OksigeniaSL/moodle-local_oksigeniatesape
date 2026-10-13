@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.29.0 (2026-10-13)
+
+- **The workshop, part 1: change the mission** (panel, «Mission» tab, «Change the mission»). The teacher changes, for
+  the class of the course, the texts of every scene (title, narration, questions, options, what is said after them,
+  hints, endings) and of every place («Today in the valley», the classroom challenge, the commitments), and the
+  questions of the battle (change, add and delete them). More than a thousand texts in the pilot mission.
+- The changes are kept apart, as a layer over the mission (new table `edit`): a newer version of the mission keeps
+  them, a text left empty goes back to the original, and a scene or the whole mission can go back to the original in
+  one go. A changed text is used with every story and every set of local examples.
+- The changes go in the backups of the course, and away with the course when it is deleted.
+
 ## 0.28.6 (2026-10-12)
 
 - The card of the game shows on the page of the course only, not on its participants (Moodle gives that page a type

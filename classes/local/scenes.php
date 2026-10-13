@@ -48,14 +48,20 @@ final class scenes {
     public static function get(int $courseid, int $sceneid): \stdClass {
         global $DB;
         $scene = $DB->get_record_sql(
-            'SELECT s.*
+            'SELECT s.*, m.code AS missioncode
                FROM {' . self::T . 'scene} s
                JOIN {' . self::T . 'mission} m ON m.id = s.missionid
               WHERE s.id = ? AND m.courseid = ?',
             [$sceneid, $courseid],
             MUST_EXIST
         );
-        $scene->data = json_decode($scene->definition, true);
+        // With the changes of the teacher on it.
+        $scene->data = edits::apply(
+            json_decode($scene->definition, true) ?: [],
+            $courseid,
+            (string) $scene->missioncode,
+            (string) $scene->code
+        );
         return $scene;
     }
 

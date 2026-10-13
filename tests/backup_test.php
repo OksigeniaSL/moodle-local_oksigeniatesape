@@ -17,6 +17,7 @@
 namespace local_oksigeniatesape;
 
 use local_oksigeniatesape\local\classroom;
+use local_oksigeniatesape\local\edits;
 use local_oksigeniatesape\local\missions;
 use local_oksigeniatesape\local\powers;
 use local_oksigeniatesape\local\regions;
@@ -50,6 +51,8 @@ final class backup_test extends \advanced_testcase {
         regions::save($course->id, ['enabled' => 1, 'family' => 'animals', 'weeklycap' => 150]);
         missions::install($course->id, 'livingthings', 'azara', 'py');
         classroom::save($course->id, ['name' => 'Un reto propio', 'saber' => 7]);
+        // A text the teacher changed in the mission.
+        edits::save($course->id, 'C1-2', 'title', 'Un título propio');
         $now = time();
         $record = ['courseid' => $course->id, 'cmid' => $page->cmid, 'kind' => 'activity', 'saber' => 12,
             'timecreated' => $now, 'timemodified' => $now];
@@ -101,5 +104,6 @@ final class backup_test extends \advanced_testcase {
         $this->assertEquals($newid, $DB->get_field('course_modules', 'course', ['id' => $newcm]));
         $this->assertEquals(1, $DB->get_field(self::T . 'power', 'cost', ['courseid' => $newid, 'code' => 'shield']));
         $this->assertCount(1, $DB->get_records(self::T . 'power', ['courseid' => $newid, 'code' => 'shield']));
+        $this->assertSame('Un título propio', edits::of($newid, 'livingthings')['C1-2']['title'] ?? '');
     }
 }

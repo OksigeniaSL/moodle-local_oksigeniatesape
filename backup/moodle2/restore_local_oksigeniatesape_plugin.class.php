@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
+use local_oksigeniatesape\local\edits;
 use local_oksigeniatesape\local\missions;
 
 /**
@@ -40,6 +41,7 @@ class restore_local_oksigeniatesape_plugin extends restore_local_plugin {
             new restore_path_element('oksigeniatesape_mission', $this->get_pathfor('/mission')),
             new restore_path_element('oksigeniatesape_challenge', $this->get_pathfor('/challenges/challenge')),
             new restore_path_element('oksigeniatesape_power', $this->get_pathfor('/powers/power')),
+            new restore_path_element('oksigeniatesape_edit', $this->get_pathfor('/edits/edit')),
         ];
     }
 
@@ -102,6 +104,22 @@ class restore_local_oksigeniatesape_plugin extends restore_local_plugin {
             return;
         }
         missions::install($courseid, $data->code, $data->skin, $data->variant);
+    }
+
+    /**
+     * A change of the teacher to the mission, on top of any the course already has.
+     *
+     * @param array|object $data
+     */
+    public function process_oksigeniatesape_edit($data) {
+        $data = (object) $data;
+        edits::store(
+            $this->task->get_courseid(),
+            (string) $data->mission,
+            (string) $data->scene,
+            (string) $data->path,
+            (string) $data->value
+        );
     }
 
     /**

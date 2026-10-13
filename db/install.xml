@@ -537,6 +537,24 @@
         <INDEX NAME="courseid-missionid-objective" UNIQUE="true" FIELDS="courseid, missionid, objective"/>
       </INDEXES>
     </TABLE>
+    <TABLE NAME="local_oksigeniatesape_edit" COMMENT="What a teacher changes in the mission of a course: a layer over it, so that a newer version of the mission keeps it.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="mission" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false" COMMENT="Code of the mission"/>
+        <FIELD NAME="scene" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false" COMMENT="Code of the scene; # for the mission itself (its places and questions)"/>
+        <FIELD NAME="path" TYPE="char" LENGTH="200" NOTNULL="true" SEQUENCE="false" COMMENT="Where the text is in the definition"/>
+        <FIELD NAME="value" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="The text of the teacher (the questions, in JSON)"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="courseid" TYPE="foreign" FIELDS="courseid" REFTABLE="course" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="courseid-mission-scene-path" UNIQUE="true" FIELDS="courseid, mission, scene, path"/>
+      </INDEXES>
+    </TABLE>
     <TABLE NAME="local_oksigeniatesape_nextclass" COMMENT="Plans for the next class made by the AI of the site from what confuses the class. No personal data.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>

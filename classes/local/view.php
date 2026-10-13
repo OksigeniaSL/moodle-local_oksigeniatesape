@@ -200,8 +200,8 @@ final class view {
         foreach ($data['chapters'] ?? [] as $chapter) {
             $info[$chapter['code']] = $chapter;
         }
-        $sceneview = function ($scene) use ($found, $attempts, $reached) {
-            $def = json_decode($scene->definition, true);
+        $sceneview = function ($scene) use ($found, $attempts, $reached, $mission) {
+            $def = edits::scene($scene, $mission);
             $done = !empty($found['scene'][$scene->code]);
             // Done with a partial ending only: playing it again can make it better.
             $best = array_filter($reached[$scene->id] ?? [], fn($e) => ($def['nodes'][$e]['type'] ?? '') === 'ending'
@@ -330,7 +330,7 @@ final class view {
                     'y' => (int) ($meta['y'] ?? 0),
                     'lit' => (bool) $chapter->litat,
                     'scenes' => array_map(fn($sc) => ['id' => (int) $sc->id,
-                        'title' => (string) (json_decode($sc->definition, true)['title'] ?? $sc->code)], $mine),
+                        'title' => (string) (edits::scene($sc, $mission)['title'] ?? $sc->code)], $mine),
                 ];
             }
             [$items, $roles] = scenes::class_context($courseid);

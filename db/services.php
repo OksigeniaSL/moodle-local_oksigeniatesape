@@ -242,6 +242,13 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:award',
     ],
+    'local_oksigeniatesape_edit_mission' => [
+        'classname' => 'local_oksigeniatesape\\external\\edit_mission',
+        'description' => 'The teacher changes the texts and questions of the mission of the course, or goes back to them.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:manageregion',
+    ],
     'local_oksigeniatesape_set_competency' => [
         'classname' => 'local_oksigeniatesape\\external\\set_competency',
         'description' => 'The teacher chooses the Moodle competency an objective of the mission leaves evidence in.',

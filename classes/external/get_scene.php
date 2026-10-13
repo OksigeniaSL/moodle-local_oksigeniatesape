@@ -22,6 +22,7 @@ use core_external\external_multiple_structure;
 use core_external\external_single_structure;
 use core_external\external_value;
 use local_oksigeniatesape\local\characters;
+use local_oksigeniatesape\local\edits;
 use local_oksigeniatesape\local\engine;
 use local_oksigeniatesape\local\missions;
 use local_oksigeniatesape\local\results;
@@ -91,7 +92,9 @@ final class get_scene extends external_api {
         }
         return [
             'id' => (int) $scene->id,
-            'definition' => $scene->definition,
+            // With the changes of the teacher of the course on it, if there are any.
+            'definition' => empty(edits::of($params['courseid'], (string) $mission->code)[$scene->code]) ? $scene->definition :
+                json_encode($scene->data),
             'skin' => $mission->skin,
             // The place of the scene's chapter, for its picture when a node has none of its own.
             'place' => (string) $DB->get_field('local_oksigeniatesape_chapter', 'code', ['id' => $scene->chapterid]),

@@ -239,7 +239,11 @@ final class missions {
                 }
             }
         }
-        $mission->data = json_decode((string) $mission->definition, true) ?: [];
+        $mission->data = edits::apply(
+            json_decode((string) $mission->definition, true) ?: [],
+            $courseid,
+            (string) $mission->code
+        );
         return $mission;
     }
 
@@ -255,7 +259,11 @@ final class missions {
         $missions = array_values($DB->get_records(self::T . 'mission', ['courseid' => $courseid], 'id DESC'));
         array_shift($missions);
         foreach ($missions as $mission) {
-            $mission->data = json_decode((string) $mission->definition, true) ?: [];
+            $mission->data = edits::apply(
+                json_decode((string) $mission->definition, true) ?: [],
+                $courseid,
+                (string) $mission->code
+            );
         }
         return $missions;
     }
@@ -270,7 +278,11 @@ final class missions {
     public static function expedition(int $courseid, int $missionid): \stdClass {
         global $DB;
         $mission = $DB->get_record(self::T . 'mission', ['id' => $missionid, 'courseid' => $courseid], '*', MUST_EXIST);
-        $mission->data = json_decode((string) $mission->definition, true) ?: [];
+        $mission->data = edits::apply(
+            json_decode((string) $mission->definition, true) ?: [],
+            $courseid,
+            (string) $mission->code
+        );
         return $mission;
     }
 

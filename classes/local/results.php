@@ -82,7 +82,7 @@ final class results {
      */
     private static function scene(\stdClass $scene, \stdClass $mission, array $names): array {
         global $DB;
-        $def = json_decode($scene->definition, true);
+        $def = edits::scene($scene, $mission);
         $attempts = $DB->get_records(self::T . 'sceneattempt', ['sceneid' => $scene->id], 'id');
         $objectives = [];
         $players = [];

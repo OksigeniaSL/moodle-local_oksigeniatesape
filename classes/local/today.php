@@ -52,7 +52,7 @@ final class today {
         $scenes = [];
         foreach ($DB->get_records(self::T . 'scene', ['missionid' => $mission->id], '', 'id, code, definition') as $scene) {
             $scenes[$scene->code] = ['id' => (int) $scene->id,
-                'title' => (string) (json_decode($scene->definition, true)['title'] ?? $scene->code)];
+                'title' => (string) (edits::scene($scene, $mission)['title'] ?? $scene->code)];
         }
         $sessions = [];
         foreach ($meta['sessions'] ?? [] as $i => $session) {

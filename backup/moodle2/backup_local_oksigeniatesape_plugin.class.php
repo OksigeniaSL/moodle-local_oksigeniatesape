@@ -53,6 +53,11 @@ class backup_local_oksigeniatesape_plugin extends backup_local_plugin {
         $challenges->add_child($challenge);
         $game->add_child($powers);
         $powers->add_child($power);
+        // What the teacher changed in the mission.
+        $edits = new backup_nested_element('edits');
+        $edit = new backup_nested_element('edit', ['id'], ['mission', 'scene', 'path', 'value']);
+        $game->add_child($edits);
+        $edits->add_child($edit);
 
         $region->set_source_table('local_oksigeniatesape_region', ['courseid' => backup::VAR_COURSEID]);
         $region->annotate_ids('grouping', 'groupingid');
@@ -63,6 +68,7 @@ class backup_local_oksigeniatesape_plugin extends backup_local_plugin {
         );
         $challenge->set_source_sql(self::challenges('c.courseid = ? AND c.cmid = 0'), [backup::VAR_COURSEID]);
         $power->set_source_table('local_oksigeniatesape_power', ['courseid' => backup::VAR_COURSEID]);
+        $edit->set_source_table('local_oksigeniatesape_edit', ['courseid' => backup::VAR_COURSEID]);
         return $plugin;
     }
 

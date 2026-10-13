@@ -1007,13 +1007,23 @@
       html = '<section class="card"><div class="kicker">' + esc(t('teach_mission_installed')) + '</div><h2>' +
         esc(m.installed.title) + '</h2>' + (pkg ? '<p style="color:var(--text-soft)">' + esc(pkg.subtitle) + ' · ' +
         esc(t('teach_mission_ages', pkg.ages)) + '</p>' + (can('manageregion') ? packageForm(pkg, m.installed) : '') : '') +
-        '</section>' + reportCard() + nextClass() + games() + results() + expeditionsCard(m.expeditions) +
+        '</section>' + workshopCard() + reportCard() + nextClass() + games() + results() + expeditionsCard(m.expeditions) +
         (others.length && can('manageregion') ? '<section class="card" style="margin-top:16px"><h2>' +
         esc(t('teach_expedition_new')) + '</h2><p style="color:var(--text-soft)">' + esc(t('teach_expedition_new_help')) +
         '</p></section>' + others.map(packageCard).join('') : '');
     }
     var el = content(html);
     bindNextClass(el);
+    var workshop = el.querySelector('[data-workshop]');
+    if (workshop) {
+      workshop.onclick = function() {
+        T.workshop.open(content(''), function() {
+          // Titles and texts may have changed: the results are asked again.
+          state.results = null;
+          tabMission();
+        });
+      };
+    }
     el.querySelectorAll('form[data-install]').forEach(function(f) {
       f.onsubmit = function(ev) {
         ev.preventDefault();
@@ -1031,6 +1041,20 @@
         });
       };
     });
+  }
+
+  /**
+   * The way into the workshop, where the teacher changes the texts and the questions of the mission of the course.
+   *
+   * @return {string}
+   */
+  function workshopCard() {
+    if (!can('manageregion')) {
+      return '';
+    }
+    return '<section class="card" style="margin-top:16px"><h2>' + esc(t('teach_ws_title')) + '</h2><p style="color:' +
+      'var(--text-soft)">' + esc(t('teach_ws_help')) + '</p><div class="actions" style="justify-content:flex-start">' +
+      '<button class="btn btn-main" data-workshop>' + esc(t('teach_ws_open')) + '</button></div></section>';
   }
 
   /**
