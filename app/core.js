@@ -189,6 +189,74 @@
     return null;
   };
 
+  /* ---------- The map of a mission ---------- */
+
+  /** @var {string[]} The zones of a map in layers, from the bottom up. */
+  var ZONES = ['meadow', 'forest', 'lake', 'mountain'];
+
+  /**
+   * The height of the map of a mission: 640, the painted map, or that of a long map in layers.
+   *
+   * @param {Object} m The mission (map, mapworld, mapheight, code, skin, chapters).
+   * @return {number}
+   */
+  T.mapHeight = function(m) {
+    return m.mapworld && m.mapheight > 640 ? m.mapheight : 640;
+  };
+
+  /**
+   * The ground of the map of a mission, in its SVG: the painted map; or, for a map in layers, the bands of its world
+   * stacked from the bottom up (meadow, forest, lake, mountain) with the drawing of the night under them until the
+   * art arrives.
+   *
+   * @param {Object} m
+   * @return {string}
+   */
+  T.mapGround = function(m) {
+    var height = T.mapHeight(m);
+    var night = '<rect width="400" height="' + height + '" fill="url(#mapglow)"/>';
+    if (m.mapworld && m.mapheight) {
+      var band = 533;
+      var count = Math.ceil(height / band);
+      var bands = '';
+      for (var i = 0; i < count; i++) {
+        var zone = ZONES[Math.min(ZONES.length - 1, Math.floor(i * ZONES.length / count))];
+        var art = T.artUrl(['band.' + m.mapworld + '.' + zone]);
+        bands += art ? '<image href="' + T.esc(art) + '" x="0" y="' + (height - (i + 1) * band) + '" width="400" height="' +
+          band + '" preserveAspectRatio="xMidYMid slice"/>' : '';
+      }
+      return night + bands;
+    }
+    var map = m.map || m.code;
+    var painted = T.artUrl(['map.' + map + '.' + m.skin, 'map.' + map]);
+    return painted ? '<image href="' + T.esc(painted) + '" x="0" y="0" width="400" height="640" ' +
+      'preserveAspectRatio="xMidYMid slice"/>' : night +
+      '<path d="M0 600 Q120 520 220 590 T400 560 V640 H0Z" fill="#183a2b"/>' +
+      '<path d="M0 230 Q90 190 170 230 T400 200 V260 Q300 300 200 270 T0 290Z" fill="#1d4a5e" opacity=".6"/>' +
+      '<path d="M20 120 L52 50 L84 120Z M330 380 L356 318 L382 380Z M40 470 L64 414 L88 470Z" fill="#163829"/>';
+  };
+
+  /**
+   * The landmarks of the places of a map in layers, behind their lanterns.
+   *
+   * @param {Object} m
+   * @return {string}
+   */
+  T.mapLandmarks = function(m) {
+    if (!m.mapworld) {
+      return '';
+    }
+    return m.chapters.map(function(ch) {
+      var art = ch.landmark ? T.artUrl(['landmark.' + m.mapworld + '.' + ch.landmark]) : null;
+      return art ? '<image class="landmark" href="' + T.esc(art) + '" x="' + (ch.x - 56) + '" y="' + (ch.y - 118) +
+        '" width="112" height="112"/>' : '';
+    }).join('');
+  };
+
+  /** The gradient of the night under the drawn map, for the defs of its SVG. */
+  T.MAPGLOW = '<radialGradient id="mapglow" cx="50%" cy="40%" r="70%"><stop offset="0" stop-color="#21465c"/>' +
+    '<stop offset="1" stop-color="#10283b"/></radialGradient>';
+
   /* ---------- The look of the characters ---------- */
 
   T.ROLES = ['protector', 'healer', 'sage', 'scout'];

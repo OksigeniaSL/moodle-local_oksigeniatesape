@@ -321,11 +321,10 @@
         '<circle cx="' + ch.x + '" cy="' + (ch.y - 7) + '" r="7" class="flame"/>' +
         '<text x="' + ch.x + '" y="' + (ch.y + 44) + '" text-anchor="middle">' + esc(ch.name) + '</text></g>';
     }).join('');
-    var art = T.artUrl(['map.' + m.code + '.' + m.skin, 'map.' + m.code]);
-    var ground = art ? '<image href="' + esc(art) + '" x="0" y="0" width="400" height="640" ' +
-      'preserveAspectRatio="xMidYMid slice"/>' : '<rect width="400" height="640" rx="18" fill="#16304a"/>';
-    return '<section class="board-map"><h2>' + esc(m.title) + '</h2><div class="map-wrap"><svg class="map" ' +
-      'viewBox="0 0 400 640" role="img" aria-label="' + esc(m.title) + '">' + ground +
+    var height = T.mapHeight(m);
+    return '<section class="board-map"><h2>' + esc(m.title) + '</h2><div class="map-wrap' + (height > 640 ? ' tall' : '') +
+      '"><svg class="map" viewBox="0 0 400 ' + height + '" role="img" aria-label="' + esc(m.title) + '"><defs>' + T.MAPGLOW +
+      '</defs>' + T.mapGround(m) + T.mapLandmarks(m) +
       '<polyline points="' + pts + '" class="road"/>' + (lit ? '<polyline points="' + walked + '" class="road walked"/>' : '') +
       places + '</svg></div>' + pastExpeditions() + '</section>';
   }

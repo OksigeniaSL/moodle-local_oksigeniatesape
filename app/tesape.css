@@ -3706,3 +3706,19 @@ body.in-battle {
   align-items: center;
   margin-bottom: 12px;
 }
+
+/* ---------- The map in layers: long, scrolled with the finger, from the bottom up ---------- */
+
+.map-wrap.tall {
+  max-height: 78vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.map-wrap.tall .map {
+  max-height: none;
+}
+
+.map .landmark {
+  pointer-events: none;
+}

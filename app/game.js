@@ -478,18 +478,11 @@
     var me = '<foreignObject x="' + (current.x - 74) + '" y="' + (current.y - 22) + '" width="44" height="44" class="me-marker">' +
       '<div xmlns="http://www.w3.org/1999/xhtml" class="face">' + T.avatar({role: c.role, nameform: c.nameform,
       lineage: c.lineage, look: c.appearance, stage: c.stage, portrait: true}) + '</div></foreignObject>';
-    // The painted map of the art pack, or a drawing of the valley.
-    var map = m.map || m.code;
-    var art = T.artUrl(['map.' + map + '.' + m.skin, 'map.' + map]);
-    var ground = art ? '<image href="' + esc(art) + '" x="0" y="0" width="400" height="640" ' +
-      'preserveAspectRatio="xMidYMid slice"/>' : '<rect width="400" height="640" rx="18" fill="url(#mapglow)"/>' +
-      '<path d="M0 600 Q120 520 220 590 T400 560 V640 H0Z" fill="#183a2b"/>' +
-      '<path d="M0 230 Q90 190 170 230 T400 200 V260 Q300 300 200 270 T0 290Z" fill="#1d4a5e" opacity=".6"/>' +
-      '<path d="M20 120 L52 50 L84 120Z M330 380 L356 318 L382 380Z M40 470 L64 414 L88 470Z" fill="#163829"/>';
-    return '<div class="map-wrap"><svg class="map" viewBox="0 0 400 640" role="group" aria-label="' + esc(m.title) + '">' +
-      '<defs><radialGradient id="mapglow" cx="50%" cy="40%" r="70%"><stop offset="0" stop-color="#21465c"/>' +
-      '<stop offset="1" stop-color="#10283b"/></radialGradient></defs>' + ground +
-      '<polyline points="' + pts + '" class="road"/>' +
+    // The painted map of the art pack, the bands of a long map in layers, or a drawing of the valley.
+    var height = T.mapHeight(m);
+    return '<div class="map-wrap' + (height > 640 ? ' tall' : '') + '"><svg class="map" viewBox="0 0 400 ' + height +
+      '" role="group" aria-label="' + esc(m.title) + '"><defs>' + T.MAPGLOW + '</defs>' + T.mapGround(m) +
+      T.mapLandmarks(m) + '<polyline points="' + pts + '" class="road"/>' +
       (walked ? '<polyline points="' + walked + '" class="road walked"/>' : '') + places + me + '</svg></div>';
   }
 
@@ -750,6 +743,12 @@
         }
         world();
       };
+    }
+    // A long map opens where the student is.
+    var tall = app.querySelector('.map-wrap.tall');
+    var here = tall && tall.querySelector('.place.here .ring');
+    if (here) {
+      tall.scrollTop += here.getBoundingClientRect().top - tall.getBoundingClientRect().top - tall.clientHeight / 2;
     }
     app.querySelectorAll('[data-chapter]').forEach(function(g) {
       var pickChapter = function() {

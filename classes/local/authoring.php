@@ -47,11 +47,17 @@ final class authoring {
     /** @var string The world of the missions of teachers, for now: its art and its speakers. */
     public const WORLD = 'valley';
 
-    /** @var int Fewest and most places: up to six, the map of the valley, until the map in layers. */
+    /** @var int Fewest places. */
     public const MIN_PLACES = 3;
 
-    /** @var int Most places. */
-    public const MAX_PLACES = 6;
+    /** @var int Most places: up to six, the painted map of the valley; more, a long map in layers. */
+    public const MAX_PLACES = 15;
+
+    /** @var int Most places of the painted map of the valley. */
+    public const PAINTED_PLACES = 6;
+
+    /** @var string[] Landmarks of the valley for the places of a map in layers, between the first and the last. */
+    private const LANDMARKS = ['library', 'pines', 'garden', 'jetty'];
 
     /** @var int Most objectives. */
     public const MAX_OBJECTIVES = 8;
@@ -317,7 +323,7 @@ final class authoring {
         $json = $DB->get_field(self::T . 'own', 'draft', ['courseid' => $courseid, 'code' => $code], MUST_EXIST);
         $draft = self::tidy(json_decode((string) $json, true) ?: []);
         $pilot = missions::packages()['livingthings'] ?? [];
-        $spots = array_values($pilot['chapters'] ?? []);
+        $layout = self::layout(count($draft['places']), array_values($pilot['chapters'] ?? []));
         $placecodes = array_column($draft['places'], 'code');
         foreach ($draft['scenes'] as $scene) {
             if ($scene['code'] !== $scenecode) {
@@ -329,7 +335,7 @@ final class authoring {
                 $speakers[$speaker] = missions::text($name, self::WORLD);
             }
             return ['id' => 0, 'definition' => json_encode(self::scene($scene, $code, $index === 0)),
-                'skin' => self::WORLD, 'place' => (string) ($spots[$index]['code'] ?? ''), 'variant' => 'gen',
+                'skin' => self::WORLD, 'place' => (string) ($layout[$index]['art'] ?? ''), 'variant' => 'gen',
                 'speakers' => json_encode($speakers), 'items' => '{}', 'flags' => '[]', 'role' => '', 'breath' => 99];
         }
         throw new \invalid_parameter_exception('Not a scene of the draft');
@@ -357,7 +363,7 @@ final class authoring {
                 'levels' => $objective['levels']];
         }
         $places = array_values($draft['places']);
-        $spots = array_values($pilot['chapters'] ?? []);
+        $layout = self::layout(count($places), array_values($pilot['chapters'] ?? []));
         $last = end($places)['code'];
         $chapters = [];
         foreach ($places as $i => $place) {
@@ -367,9 +373,8 @@ final class authoring {
                     fn($s) => ['do' => $s['do'], 'materials' => $s['materials'], 'minutes' => 50],
                     $place['sessions']
                 ),
-                // The place of the valley at the same spot of the map: its position and its landscape.
-                'x' => (int) ($spots[$i]['x'] ?? 200), 'y' => (int) ($spots[$i]['y'] ?? 320),
-                'art' => (string) ($spots[$i]['code'] ?? ''), 'activities' => []];
+                'x' => $layout[$i]['x'], 'y' => $layout[$i]['y'], 'art' => $layout[$i]['art'],
+                'landmark' => $layout[$i]['landmark'], 'activities' => []];
         }
         $scenes = [];
         $first = $places[0]['code'];
@@ -416,6 +421,9 @@ final class authoring {
             'chapters' => $chapters,
             'games' => [],
             'map' => 'livingthings',
+            // A long map in layers, when the painted map has no room: its world and its height.
+            'maplayers' => count($places) > self::PAINTED_PLACES ? ['world' => self::WORLD,
+                'height' => (int) end($layout)['height']] : null,
             'questions' => array_map(
                 fn($q, $i) => ['id' => 'Q' . ($i + 1), 'chapter' => $q['place'],
                 'objective' => $q['objective'], 'text' => $q['text'], 'options' => $q['options'], 'why' => $q['why']],
@@ -425,6 +433,37 @@ final class authoring {
             'scenes' => array_keys($scenes),
         ];
         return [$mission, $scenes];
+    }
+
+    /**
+     * Where the places go and how they look. Up to six, the spots and landscapes of the places of the valley on its
+     * painted map; more, a long map in layers: from the bottom up, in a zigzag, with a landmark each (the oak first, the
+     * tower last) and the landscapes of the valley in turn.
+     *
+     * @param int $count
+     * @param array $spots The chapters of the mission of the valley.
+     * @return array Each: x, y, art (landscape), landmark (empty on the painted map), height (of the map).
+     */
+    private static function layout(int $count, array $spots): array {
+        $layout = [];
+        if ($count <= self::PAINTED_PLACES) {
+            for ($i = 0; $i < $count; $i++) {
+                $layout[] = ['x' => (int) ($spots[$i]['x'] ?? 200), 'y' => (int) ($spots[$i]['y'] ?? 320),
+                    'art' => (string) ($spots[$i]['code'] ?? ''), 'landmark' => '', 'height' => 640];
+            }
+            return $layout;
+        }
+        $step = 115;
+        $height = 260 + $step * ($count - 1);
+        $landscapes = array_map(fn($s) => (string) ($s['code'] ?? ''), $spots);
+        for ($i = 0; $i < $count; $i++) {
+            $last = $i === $count - 1;
+            $landmark = $i === 0 ? 'oak' : ($last ? 'tower' : self::LANDMARKS[($i - 1) % count(self::LANDMARKS)]);
+            $art = $last ? (string) end($landscapes) : (string) ($landscapes[$i % max(1, count($landscapes) - 1)] ?? '');
+            $layout[] = ['x' => $i % 2 ? 285 : 115, 'y' => $height - 130 - $i * $step, 'art' => $art,
+                'landmark' => $landmark, 'height' => $height];
+        }
+        return $layout;
     }
 
     /**

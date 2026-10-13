@@ -237,6 +237,7 @@ final class view {
                 'intro' => missions::text($meta['intro'] ?? '', $skin, $mission->variant),
                 'x' => (int) ($meta['x'] ?? 0),
                 'y' => (int) ($meta['y'] ?? 0),
+                'landmark' => (string) ($meta['landmark'] ?? ''),
                 'lit' => (bool) $chapter->litat,
                 'mine' => !empty($found['lantern'][$chapter->code]),
                 'done' => !empty($found['chapter'][$chapter->code]),
@@ -263,8 +264,10 @@ final class view {
             'skin' => $skin,
             'variant' => $mission->variant,
             'pagecount' => count($data['pages'] ?? []),
-            // The painted map: that of the mission, or of the world a mission of a teacher lives in.
+            // The painted map: that of the mission, or of the world a mission of a teacher lives in; or a map in layers.
             'map' => (string) ($data['map'] ?? $mission->code),
+            'mapworld' => (string) ($data['maplayers']['world'] ?? ''),
+            'mapheight' => (int) ($data['maplayers']['height'] ?? 0),
             'chapters' => $list,
             'pages' => $pages,
         ];
@@ -330,6 +333,7 @@ final class view {
                     'name' => missions::text($meta['name'] ?? $chapter->code, $mission->skin),
                     'x' => (int) ($meta['x'] ?? 0),
                     'y' => (int) ($meta['y'] ?? 0),
+                    'landmark' => (string) ($meta['landmark'] ?? ''),
                     'lit' => (bool) $chapter->litat,
                     'scenes' => array_map(fn($sc) => ['id' => (int) $sc->id,
                         'title' => (string) (edits::scene($sc, $mission)['title'] ?? $sc->code)], $mine),
@@ -342,6 +346,9 @@ final class view {
                 'code' => $mission->code,
                 'title' => missions::text($mission->data['title'] ?? $mission->code, $mission->skin),
                 'skin' => $mission->skin,
+                'map' => (string) ($mission->data['map'] ?? $mission->code),
+                'mapworld' => (string) ($mission->data['maplayers']['world'] ?? ''),
+                'mapheight' => (int) ($mission->data['maplayers']['height'] ?? 0),
                 'chapters' => $chapters,
                 // The final battle, if the mission saves something for the end, and the text of its end.
                 'final' => !empty($mission->data['battle']['final']),

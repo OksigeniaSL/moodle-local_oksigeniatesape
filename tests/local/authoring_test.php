@@ -86,6 +86,33 @@ final class authoring_test extends \advanced_testcase {
         authoring::publish($course->id, $own->code);
     }
 
+    public function test_more_than_six_places_go_on_a_map_in_layers(): void {
+        $this->resetAfterTest();
+        $course = $this->getDataGenerator()->create_course();
+        $own = authoring::create($course->id, 'Un viaje largo');
+        $draft = $this->draft($course->id, $own->code);
+        for ($i = 4; $i <= 8; $i++) {
+            $draft['places'][] = ['name' => 'Lugar ' . $i];
+        }
+        $draft = authoring::save($course->id, $own->code, $draft);
+        foreach (array_slice($draft['places'], 3) as $place) {
+            $draft['scenes'][] = ['place' => $place['code'], 'title' => 'Una', 'text' => 'Texto.', 'moments' => [['type' => 'one',
+                'prompt' => '¿Sí?', 'options' => [['label' => 'Sí', 'correct' => true], ['label' => 'No', 'correct' => false]]]]];
+        }
+        [$mission] = authoring::build(authoring::save($course->id, $own->code, $draft), $own->code, 1);
+        $this->assertCount(8, $mission['chapters']);
+        $this->assertSame('valley', $mission['maplayers']['world']);
+        $this->assertGreaterThan(640, $mission['maplayers']['height']);
+        // From the bottom up, in a zigzag, with the oak first and the tower last.
+        $ys = array_column($mission['chapters'], 'y');
+        for ($i = 1; $i < 8; $i++) {
+            $this->assertLessThan($ys[$i - 1], $ys[$i]);
+        }
+        $this->assertSame('oak', $mission['chapters'][0]['landmark']);
+        $this->assertSame('tower', $mission['chapters'][7]['landmark']);
+        $this->assertNotSame($mission['chapters'][0]['x'], $mission['chapters'][1]['x']);
+    }
+
     public function test_a_mission_from_scratch_as_a_package_and_back(): void {
         $this->resetAfterTest();
         $this->setAdminUser();

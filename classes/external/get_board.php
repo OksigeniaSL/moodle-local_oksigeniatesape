@@ -70,12 +70,16 @@ final class get_board extends external_api {
                 'code' => new external_value(PARAM_ALPHANUMEXT, 'Mission'),
                 'title' => new external_value(PARAM_TEXT, 'Title'),
                 'skin' => new external_value(PARAM_ALPHANUMEXT, 'Story'),
+                'map' => new external_value(PARAM_ALPHANUMEXT, 'Code of the painted map', VALUE_DEFAULT, ''),
+                'mapworld' => new external_value(PARAM_ALPHANUMEXT, 'World of a map in layers', VALUE_DEFAULT, ''),
+                'mapheight' => new external_value(PARAM_INT, 'Height of a map in layers', VALUE_DEFAULT, 0),
                 'chapters' => new external_multiple_structure(new external_single_structure([
                     'id' => new external_value(PARAM_INT, 'Chapter'),
                     'code' => new external_value(PARAM_ALPHANUMEXT, 'Code'),
                     'name' => new external_value(PARAM_TEXT, 'Name'),
                     'x' => new external_value(PARAM_INT, 'Place on the map'),
                     'y' => new external_value(PARAM_INT, 'Place on the map'),
+                    'landmark' => new external_value(PARAM_ALPHANUMEXT, 'Landmark on a map in layers', VALUE_DEFAULT, ''),
                     'lit' => new external_value(PARAM_BOOL, 'Lantern of the class lit'),
                     'scenes' => new external_multiple_structure(new external_single_structure([
                         'id' => new external_value(PARAM_INT, 'Scene'),

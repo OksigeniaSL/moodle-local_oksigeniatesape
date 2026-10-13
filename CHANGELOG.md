@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.34.0 (2026-10-13)
+
+- **Maps of any size, in layers**: a mission made by a teacher can have from three to fifteen places. Up to six, the
+  painted map of the valley; more, a long map that is scrolled with the finger from the bottom up and opens where the
+  student is: the places in a zigzag, the road drawn by the game, a landmark of the valley for each place (the oak
+  first, the tower last) and the bands of the world as its ground (meadow, forest, lake, mountain), with a drawing of
+  the night until the art arrives. The same on the class screen.
+
 ## 0.33.0 (2026-10-13)
 
 - **A mission made in the workshop, as a package**: «Download as a package» gives a zip as those of the catalog, with

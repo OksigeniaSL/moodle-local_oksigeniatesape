@@ -96,6 +96,8 @@ final class structures {
             'variant' => new external_value(PARAM_ALPHANUMEXT, 'Local examples'),
             'pagecount' => new external_value(PARAM_INT, 'Pages of the book in the mission'),
             'map' => new external_value(PARAM_ALPHANUMEXT, 'Code of the painted map', VALUE_DEFAULT, ''),
+            'mapworld' => new external_value(PARAM_ALPHANUMEXT, 'World of a map in layers', VALUE_DEFAULT, ''),
+            'mapheight' => new external_value(PARAM_INT, 'Height of a map in layers', VALUE_DEFAULT, 0),
             'chapters' => new external_multiple_structure(new external_single_structure([
                 'id' => new external_value(PARAM_INT, 'Chapter'),
                 'code' => new external_value(PARAM_ALPHANUMEXT, 'Code'),
@@ -103,6 +105,7 @@ final class structures {
                 'intro' => new external_value(PARAM_TEXT, 'Introduction'),
                 'x' => new external_value(PARAM_INT, 'Place on the map'),
                 'y' => new external_value(PARAM_INT, 'Place on the map'),
+                'landmark' => new external_value(PARAM_ALPHANUMEXT, 'Landmark on a map in layers', VALUE_DEFAULT, ''),
                 'lit' => new external_value(PARAM_BOOL, 'Lantern of the class lit'),
                 'mine' => new external_value(PARAM_BOOL, 'Lantern of the student lit'),
                 'done' => new external_value(PARAM_BOOL, 'Scenes of the student done'),
