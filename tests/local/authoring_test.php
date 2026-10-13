@@ -86,6 +86,35 @@ final class authoring_test extends \advanced_testcase {
         authoring::publish($course->id, $own->code);
     }
 
+    public function test_a_mission_from_scratch_as_a_package_and_back(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $dg = $this->getDataGenerator();
+        $course = $dg->create_course();
+        $own = authoring::create($course->id, 'Las fracciones');
+        $this->draft($course->id, $own->code);
+        authoring::publish($course->id, $own->code);
+        // A package as those of the catalog, with a code of its own: the site takes it as any other mission.
+        $package = authoring::export($course->id, $own->code);
+        $mission = missions::upload($package['path']);
+        $this->assertFalse(authoring::is_own($mission['code']));
+        $this->assertSame('site', missions::package_origin($mission['code']));
+        $other = $dg->create_course();
+        regions::save($other->id, ['enabled' => 1]);
+        missions::install($other->id, $mission['code'], authoring::WORLD, 'gen');
+        $this->assertSame($mission['code'], missions::get($other->id)->code);
+        // And, loaded in another course, it is a draft to change.
+        $third = $dg->create_course();
+        $copy = authoring::import($third->id, $package['path']);
+        $this->assertSame([], authoring::check(authoring::drafts($third->id)[0]->data));
+        $this->assertSame('Las fracciones', authoring::drafts($third->id)[0]->data['title']);
+        // Duplicated in its course, another draft with the same scenes.
+        authoring::duplicate($third->id, $copy->code);
+        $drafts = authoring::drafts($third->id);
+        $this->assertCount(2, $drafts);
+        $this->assertCount(3, $drafts[1]->data['scenes']);
+    }
+
     public function test_a_mission_from_scratch_is_played_as_any_other(): void {
         global $DB;
         $this->resetAfterTest();

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.33.0 (2026-10-13)
+
+- **A mission made in the workshop, as a package**: «Download as a package» gives a zip as those of the catalog, with
+  a code of its own and the draft inside; any site takes it in «Missions of Tesapé» as one more mission.
+- **From a template**: «Load a mission from a file» takes such a package (made here or by another teacher) as a new
+  draft of the course, ready to change it and publish it; «Duplicate» copies a draft in the same course.
+
 ## 0.32.2 (2026-10-13)
 
 - **Try a scene before publishing** («Try this scene», in the scene of the workshop): the scene opens as a student

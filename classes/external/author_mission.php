@@ -33,7 +33,7 @@ use local_oksigeniatesape\local\missions;
  */
 final class author_mission extends external_api {
     /** @var string[] What can be done. */
-    private const ACTIONS = ['list', 'create', 'get', 'save', 'publish', 'delete', 'preview'];
+    private const ACTIONS = ['list', 'create', 'get', 'save', 'publish', 'delete', 'preview', 'duplicate'];
 
     /**
      * Parameters.
@@ -84,6 +84,10 @@ final class author_mission extends external_api {
         }
         if ($params['action'] === 'preview') {
             return ['json' => json_encode(authoring::preview($courseid, $code, clean_param($params['value'], PARAM_ALPHANUMEXT)))];
+        }
+        if ($params['action'] === 'duplicate') {
+            authoring::duplicate($courseid, $code);
+            return ['json' => json_encode(self::list($courseid))];
         }
         if ($params['action'] === 'save') {
             $draft = json_decode($params['value'], true);

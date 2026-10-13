@@ -226,6 +226,84 @@ final class authoring {
     }
 
     /**
+     * A copy of a draft in the same course, to make another mission from it.
+     *
+     * @param int $courseid
+     * @param string $code
+     * @return \stdClass The new record.
+     */
+    public static function duplicate(int $courseid, string $code): \stdClass {
+        global $DB;
+        $json = $DB->get_field(self::T . 'own', 'draft', ['courseid' => $courseid, 'code' => $code], MUST_EXIST);
+        $draft = json_decode((string) $json, true) ?: [];
+        $title = get_string('authoring_copy', 'local_oksigeniatesape', (string) ($draft['title'] ?? ''));
+        $copy = self::create($courseid, $title);
+        self::save($courseid, $copy->code, ['title' => $title] + $draft);
+        return $DB->get_record(self::T . 'own', ['id' => $copy->id], '*', MUST_EXIST);
+    }
+
+    /**
+     * A draft as a package of a mission, in a zip, as those of the catalog: to upload it to another site, or to share
+     * it. It has a code of its own, not the one of the course, and it carries the draft, so that it can be loaded as a
+     * draft somewhere else.
+     *
+     * @param int $courseid
+     * @param string $code
+     * @return array path (of the zip in a folder of the request) and name (for the download).
+     */
+    public static function export(int $courseid, string $code): array {
+        global $DB;
+        $record = $DB->get_record(self::T . 'own', ['courseid' => $courseid, 'code' => $code], '*', MUST_EXIST);
+        $draft = self::tidy(json_decode((string) $record->draft, true) ?: []);
+        if (self::check($draft)) {
+            throw new \moodle_exception('authoring_notready', 'local_oksigeniatesape');
+        }
+        $slug = preg_replace('/[^a-z0-9]/', '', strtolower(\core_text::specialtoascii($draft['title'])));
+        $package = substr($slug !== '' ? $slug : 'mision', 0, 24) . random_int(1000, 9999);
+        if (self::is_own($package)) {
+            $package = 'x' . $package;
+        }
+        $version = max(1, (int) $record->version);
+        [$mission, $scenes] = self::build($draft, $package, $version);
+        $mission['changes'] = [['version' => $version, 'kind' => 'edition', 'date' => date('Y-m-d'),
+            'text' => get_string('authoring_made', 'local_oksigeniatesape')]];
+        $mission['source'] = $draft;
+        $dir = make_request_directory();
+        $files = ['mission.json' => $dir . '/mission.json'];
+        file_put_contents($dir . '/mission.json', json_encode($mission, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+        foreach ($scenes as $id => $scene) {
+            file_put_contents($dir . '/' . $id . '.json', json_encode($scene, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+            $files['scenes/' . $id . '.json'] = $dir . '/' . $id . '.json';
+        }
+        $zip = $dir . '/' . $package . '.zip';
+        get_file_packer('application/zip')->archive_to_pathname($files, $zip);
+        return ['path' => $zip, 'name' => 'tesape-' . $package . '.zip'];
+    }
+
+    /**
+     * A package made in the workshop (here or on another site), loaded as a new draft of a course.
+     *
+     * @param int $courseid
+     * @param string $zippath
+     * @return \stdClass The new record.
+     */
+    public static function import(int $courseid, string $zippath): \stdClass {
+        $tmp = make_request_directory();
+        if (!get_file_packer('application/zip')->extract_to_pathname($zippath, $tmp)) {
+            throw new \moodle_exception('authoring_notours', 'local_oksigeniatesape');
+        }
+        $found = glob($tmp . '/mission.json') ?: glob($tmp . '/*/mission.json') ?: [];
+        $mission = $found ? json_decode((string) file_get_contents($found[0]), true) : null;
+        if (!is_array($mission) || !is_array($mission['source'] ?? null)) {
+            throw new \moodle_exception('authoring_notours', 'local_oksigeniatesape');
+        }
+        $draft = $mission['source'];
+        $record = self::create($courseid, (string) ($draft['title'] ?? ''));
+        self::save($courseid, $record->code, $draft);
+        return $record;
+    }
+
+    /**
      * A scene of a draft, made as the game plays it, for the teacher to try it before the mission is made: what
      * get_scene gives a student, without anything to keep.
      *

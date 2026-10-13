@@ -33,14 +33,17 @@ class mission_upload extends \moodleform {
      */
     protected function definition() {
         $form = $this->_form;
+        // The label and the button may change: the page of the site, or the workshop of a course.
+        $label = $this->_customdata['label'] ?? get_string('missions_upload', 'local_oksigeniatesape');
         $form->addElement(
             'filepicker',
             'package',
-            get_string('missions_upload', 'local_oksigeniatesape'),
+            $label,
             null,
             ['accepted_types' => ['.zip'], 'maxbytes' => 0]
         );
         $form->addRule('package', null, 'required');
-        $this->add_action_buttons(false, get_string('missions_upload_go', 'local_oksigeniatesape'));
+        $button = $this->_customdata['button'] ?? get_string('missions_upload_go', 'local_oksigeniatesape');
+        $this->add_action_buttons(false, $button);
     }
 }

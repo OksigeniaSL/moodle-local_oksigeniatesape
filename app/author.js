@@ -498,10 +498,14 @@
           return '<li class="item"><span class="grow"><b>' + esc(d.title || t('teach_au_untitled')) + '</b><small>' +
             esc(d.version ? t('teach_au_version', d.version) + (d.current ? ' · ' + t('teach_au_current') : '') :
               t('teach_au_draft')) + '</small></span>' + btn('open', t('teach_au_edit'), ' data-code="' + esc(d.code) + '"',
-            true) + (d.version ? '' : btn('delete', t('teach_au_delete'), ' data-code="' + esc(d.code) + '"')) + '</li>';
+            true) + btn('duplicate', t('teach_au_duplicate'), ' data-code="' + esc(d.code) + '"') +
+            (d.version ? '<a class="btn btn-soft" href="' + esc(cfg.wwwroot + '/local/oksigeniatesape/author_export.php?id=' +
+              cfg.courseid + '&code=' + d.code + '&sesskey=' + cfg.sesskey) + '">' + esc(t('teach_au_download')) + '</a>' :
+              btn('delete', t('teach_au_delete'), ' data-code="' + esc(d.code) + '"')) + '</li>';
         }).join('') + '</ul>' : '') + '<div class="actions" style="justify-content:flex-start"><input type="text" ' +
         'data-newtitle placeholder="' + esc(t('teach_au_new_placeholder')) + '"> ' + btn('new', t('teach_au_new'), '', true) +
-        '</div>';
+        '<a class="btn btn-soft" href="' + esc(cfg.wwwroot + '/local/oksigeniatesape/author_import.php?id=' + cfg.courseid) +
+        '">' + esc(t('teach_au_import')) + '</a></div>';
       box.querySelectorAll('[data-act="open"]').forEach(function(b) {
         b.onclick = function() {
           edit(b.dataset.code);
@@ -514,6 +518,13 @@
               T.toast(esc(e.message), true);
             });
           }
+        };
+      });
+      box.querySelectorAll('[data-act="duplicate"]').forEach(function(b) {
+        b.onclick = function() {
+          api('duplicate', {code: b.dataset.code}).then(draw).catch(function(e) {
+            T.toast(esc(e.message), true);
+          });
         };
       });
       box.querySelector('[data-act="new"]').onclick = function() {
