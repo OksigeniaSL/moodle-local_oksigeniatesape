@@ -105,7 +105,7 @@ final class authoring_test extends \advanced_testcase {
         $this->assertSame('livingthings', $mission->data['map']);
         $this->assertSame(['claro', 'biblioteca', 'bosque'], array_column($mission->data['chapters'], 'art'));
         // A scene of the draft can be tried before: as the game plays it, with the landscape of its place.
-        $scene = $mission->data['scenes'][1];
+        $scene = array_keys(authoring::scenes($course->id, $own->code))[1];
         $preview = authoring::preview($course->id, $own->code, $scene);
         $this->assertSame('biblioteca', $preview['place']);
         $this->assertArrayHasKey('fin', json_decode($preview['definition'], true)['nodes']);
