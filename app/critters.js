@@ -217,7 +217,8 @@
       }
       el.dataset.touched = '1';
       var w = words(c);
-      T.toast('<b>' + esc(w.name) + '</b>' + (w.fact ? ' ' + esc(w.fact) : ''));
+      // The name, and below it what is true about it.
+      T.toast('<b>' + esc(w.name) + '</b>' + (w.fact ? '<br>' + esc(w.fact) : ''));
       if (T.fx) {
         T.fx.sound('tap');
       }

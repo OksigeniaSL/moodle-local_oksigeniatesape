@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.40.1 (2026-10-14)
+
+- **A little living thing touched**: its name, and below it what is true about it, instead of both in one line.
+
 ## 0.40.0 (2026-10-14)
 
 - **The little living things of the valley**: fireflies blinking by the lanterns of the map, and now and then a
