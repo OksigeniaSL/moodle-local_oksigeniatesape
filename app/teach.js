@@ -421,9 +421,10 @@
     return '<section class="card" style="margin-top:16px"><div class="kicker">' + esc(t('teach_far')) + '</div><p ' +
       'class="help-soft">' + esc(t('teach_far_help')) + '</p><ul class="list">' + far.map(function(s) {
         var m = s.character.member;
-        return '<li class="item" data-student="' + s.userid + '" tabindex="0" role="button" style="cursor:pointer"><span ' +
-          'class="grow"><b>' + esc(s.fullname) + '</b><small>' + esc(lastSeen(m)) + '</small></span>' + (m.remote ?
-          '<span class="tag">' + esc(t('teach_remote_tag')) + '</span>' : '') + '</li>';
+        // A list of buttons: the item of the list, and the button in it (screen readers count the list).
+        return '<li><div class="item" data-student="' + s.userid + '" tabindex="0" role="button" style="cursor:pointer">' +
+          '<span class="grow"><b>' + esc(s.fullname) + '</b><small>' + esc(lastSeen(m)) + '</small></span>' + (m.remote ?
+          '<span class="tag">' + esc(t('teach_remote_tag')) + '</span>' : '') + '</div></li>';
       }).join('') + '</ul></section>';
   }
 
@@ -1482,10 +1483,10 @@
       var done = ch.validations.filter(function(v) {
         return v.status !== 'notyet';
       }).length;
-      return '<li class="item" data-open="' + ch.id + '" style="cursor:pointer" tabindex="0" role="button"><span class="grow">' +
-        '<b>' + esc(ch.name) +
+      return '<li><div class="item" data-open="' + ch.id + '" style="cursor:pointer" tabindex="0" role="button">' +
+        '<span class="grow"><b>' + esc(ch.name) +
         '</b><small>' + rewards(ch) + (ch.teamwork ? ' · ' + esc(t('teach_teamwork')) : '') + '</small></span>' +
-        '<span class="tag done">' + done + ' / ' + d.students.length + '</span></li>';
+        '<span class="tag done">' + done + ' / ' + d.students.length + '</span></div></li>';
     }).join('');
     var acts = d.activities.map(function(a) {
       return '<li class="item act"><span class="mini-icon"><img src="' + esc(a.icon) + '" alt="" ' +

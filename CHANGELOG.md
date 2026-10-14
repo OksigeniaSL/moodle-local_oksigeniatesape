@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.49.1 (2026-10-14)
+
+- **Screen readers**: in the teacher panel, the lists of students far from the expedition and of classroom challenges
+  are lists of buttons as screen readers expect them (the button inside each item). An automatic check of accessibility
+  (WCAG 2.1 A and AA) finds nothing in the game, a scene, the teacher panel or the class screen.
+
 ## 0.49.0 (2026-10-14)
 
 - **The pilot mission, version 15**: what is done and the material of each session, as in the teacher guide, so that
