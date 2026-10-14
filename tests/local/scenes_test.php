@@ -333,6 +333,41 @@ final class scenes_test extends \advanced_testcase {
         $this->assertEquals(2, engine::member(characters::get($w->users[2]->id), $w->course->id)->breath);
     }
 
+    public function test_a_scene_played_as_a_team_counts_for_the_teammates_who_were_there(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $w = $this->make_class(4);
+        $dg = $this->getDataGenerator();
+        $team = $dg->create_group(['courseid' => $w->course->id]);
+        $other = $dg->create_group(['courseid' => $w->course->id]);
+        foreach ([0, 1, 2] as $i) {
+            $dg->create_group_member(['groupid' => $team->id, 'userid' => $w->users[$i]->id]);
+        }
+        $dg->create_group_member(['groupid' => $other->id, 'userid' => $w->users[3]->id]);
+        $scene = $DB->get_record(self::T . 'scene', ['missionid' => $w->mission->id, 'code' => 'C1-2']);
+        [$carried, $roles, $flags, $role] = scenes::context(characters::get($w->users[0]->id), $w->course->id);
+        $events = autoplayer::play(json_decode($scene->definition, true), $carried, $roles, $flags, $role);
+        // Marked: a teammate who is there, and a student of another team, who does not count.
+        $marked = [$w->users[1]->id, $w->users[3]->id];
+        $result = scenes::play($w->course->id, $w->users[0]->id, $scene->id, $events, null, null, $marked);
+        $this->assertSame('success', $result['outcome']);
+        $this->assertSame([$w->users[1]->firstname], $result['teamwith']);
+        // The same game in the play of each one.
+        $game = (int) $DB->get_field(self::T . 'sceneattempt', 'teamplay', ['charid' => characters::get($w->users[0]->id)->id]);
+        $this->assertGreaterThan(0, $game);
+        foreach ([0 => 1, 1 => 1, 2 => 0, 3 => 0] as $i => $plays) {
+            $char = characters::get($w->users[$i]->id);
+            $where = ['charid' => $char->id, 'teamplay' => $game];
+            $this->assertEquals($plays, $DB->count_records(self::T . 'sceneattempt', $where));
+            $this->assertEquals($plays ? 20 : 0, $char->saber);
+        }
+        // Alone, as always.
+        $alone = $this->play($w, $w->users[2], 'C1-2');
+        $this->assertSame([], $alone['teamwith']);
+        $where = ['charid' => characters::get($w->users[2]->id)->id, 'teamplay' => 0];
+        $this->assertEquals(1, $DB->count_records(self::T . 'sceneattempt', $where));
+    }
+
     public function test_flags_are_kept_for_other_scenes(): void {
         global $DB;
         $this->resetAfterTest();

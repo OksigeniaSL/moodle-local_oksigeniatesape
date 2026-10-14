@@ -181,7 +181,42 @@ final class scenes {
     }
 
     /**
-     * Plays a scene: plays it again with the events of the student, keeps the play and gives what it gives.
+     * The teammates who play a scene with a student on the same device: only those of their team who play in the course,
+     * with their character, their place in the course and the name their classmates see.
+     *
+     * @param int $courseid
+     * @param int $userid The student who plays.
+     * @param int[] $userids The teammates the student marked as there.
+     * @param int $now
+     * @return array Of ['char', 'member', 'name'].
+     */
+    private static function mates(int $courseid, int $userid, array $userids, int $now): array {
+        global $DB;
+        $team = teams::of($courseid, $userid);
+        if (!$team) {
+            return [];
+        }
+        $region = regions::get($courseid);
+        $members = teams::members($courseid, (int) $team->id);
+        $mates = [];
+        foreach (array_unique(array_map('intval', $userids)) as $id) {
+            if ($id === $userid || !isset($members[$id])) {
+                continue;
+            }
+            $char = characters::get($id);
+            $user = $DB->get_record('user', ['id' => $id], '*', IGNORE_MISSING);
+            if ($char && $user) {
+                $mates[] = ['char' => $char, 'member' => engine::member($char, $courseid, $now),
+                    'name' => view::display_name($user, $char, $region)];
+            }
+        }
+        return $mates;
+    }
+
+    /**
+     * Plays a scene: plays it again with the events of the student, keeps the play and gives what it gives. Played as a
+     * team on one device, it counts for the teammates who were there too: the team has what any of them carries, and each
+     * one gets the play, its evidence and what it gives.
      *
      * @param int $courseid
      * @param int $userid
@@ -189,9 +224,18 @@ final class scenes {
      * @param array $events
      * @param string|null $from Where the play started (null: the start of the scene).
      * @param int|null $now
-     * @return array ending, outcome, points, objectives, rewards, attempt.
+     * @param int[] $mates The teammates who played it too (none: the student alone).
+     * @return array ending, outcome, points, objectives, rewards, attempt, teamwith (the names of the teammates).
      */
-    public static function play(int $courseid, int $userid, int $sceneid, array $events, ?string $from, ?int $now = null): array {
+    public static function play(
+        int $courseid,
+        int $userid,
+        int $sceneid,
+        array $events,
+        ?string $from,
+        ?int $now = null,
+        array $mates = []
+    ): array {
         global $DB;
         $now = $now ?? time();
         if (!regions::enabled($courseid)) {
@@ -207,31 +251,53 @@ final class scenes {
         }
         $scene = self::get($courseid, $sceneid);
         [$items, $roles, $flags] = self::context($char, $courseid);
+        // A scene only for one cannot be played as a team.
+        $team = $mates && ($scene->data['mode'] ?? 'both') !== 'solo' ? self::mates($courseid, (int) $userid, $mates, $now) : [];
+        foreach ($team as $mate) {
+            $items = array_merge($items, self::context($mate['char'], $courseid)[0]);
+        }
+        $items = array_values(array_unique($items));
         $result = (new scene_runner($scene->data, $items, $roles, $flags, $char->role))->run($events, $from);
 
         $transaction = $DB->start_delegated_transaction();
-        $attempt = (object) [
-            'sceneid' => $scene->id,
-            'charid' => $char->id,
-            'courseid' => $courseid,
-            'teamplay' => 0,
-            'path' => json_encode(['from' => $from, 'events' => $events, 'path' => $result['path']]),
-            'score' => $result['points'],
-            'objectives' => json_encode($result['objectives']),
-            'ending' => $result['ending'],
-            'attempt' => $DB->count_records(self::T . 'sceneattempt', ['sceneid' => $scene->id, 'charid' => $char->id]) + 1,
-            'timestarted' => $now,
-            'timefinished' => $now,
-        ];
-        $attempt->id = $DB->insert_record(self::T . 'sceneattempt', $attempt);
-        // The competencies of the objectives get the evidence of the play; the teacher rates.
-        competencies::evidence($courseid, (int) $userid, $scene, $result['objectives'], (int) $attempt->attempt);
         $rewards = [];
-        if (in_array($result['outcome'], ['success', 'partial'], true)) {
-            $rewards = self::reward($char, $member, $scene, $result, $now);
-            if ($rewards['saber'] > 0 && $char->role === 'healer') {
-                $rewards['cared'] = self::care($char, $member, (int) $scene->id, $now);
+        $attempt = null;
+        // A team game: the same number in the play of each one, the one of the play of who played it.
+        $game = 0;
+        foreach (array_merge([['char' => $char, 'member' => $member]], $team) as $i => $player) {
+            $one = (object) [
+                'sceneid' => $scene->id,
+                'charid' => $player['char']->id,
+                'courseid' => $courseid,
+                'teamplay' => $game,
+                'path' => json_encode(['from' => $from, 'events' => $events, 'path' => $result['path']]),
+                'score' => $result['points'],
+                'objectives' => json_encode($result['objectives']),
+                'ending' => $result['ending'],
+                'attempt' => $DB->count_records(self::T . 'sceneattempt', ['sceneid' => $scene->id,
+                    'charid' => $player['char']->id]) + 1,
+                'timestarted' => $now,
+                'timefinished' => $now,
+            ];
+            $one->id = $DB->insert_record(self::T . 'sceneattempt', $one);
+            if ($team && !$game) {
+                $game = (int) $one->id;
+                $DB->set_field(self::T . 'sceneattempt', 'teamplay', $game, ['id' => $one->id]);
             }
+            // The competencies of the objectives get the evidence of the play; the teacher rates.
+            competencies::evidence($courseid, (int) $player['char']->userid, $scene, $result['objectives'], (int) $one->attempt);
+            $got = [];
+            if (in_array($result['outcome'], ['success', 'partial'], true)) {
+                $got = self::reward($player['char'], $player['member'], $scene, $result, $now);
+            }
+            if (!$i) {
+                // What is said back is for the one who played: the teammates see theirs in their own world.
+                $attempt = $one;
+                $rewards = $got;
+            }
+        }
+        if (!empty($rewards['saber']) && $char->role === 'healer') {
+            $rewards['cared'] = self::care($char, $member, (int) $scene->id, $now);
         }
         $rewards['hints'] = self::pay_hints($char, $member, (int) $scene->id, (int) $result['hints'], $now);
         $rewards['shielded'] = (bool) $result['shielded'];
@@ -244,6 +310,7 @@ final class scenes {
             'objectives' => $result['objectives'],
             'rewards' => $rewards,
             'attempt' => (int) $attempt->attempt,
+            'teamwith' => array_column($team, 'name'),
         ];
     }
 

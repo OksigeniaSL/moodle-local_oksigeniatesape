@@ -220,6 +220,7 @@ final class view {
                 'done' => $done,
                 'better' => $done && !$best,
                 'attempts' => (int) ($attempts[$scene->id] ?? 0),
+                'mode' => in_array($def['mode'] ?? '', ['solo', 'team'], true) ? $def['mode'] : 'both',
             ];
         };
         $list = [];

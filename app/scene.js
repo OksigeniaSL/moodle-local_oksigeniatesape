@@ -173,7 +173,8 @@
     function show(html) {
       layer.innerHTML = '<div class="scene"><div class="scene-top"><span class="scene-title">' + esc(sc ? sc.title : '') +
         '</span><button class="btn btn-soft scene-close" type="button" aria-label="' + esc(t('app_close')) + '">✕</button>' +
-        '</div><div class="scene-body">' + html + '</div></div>';
+        '</div>' + (opts.team && opts.team.length ? '<p class="team-banner">' + esc(t('app_team_banner')) + '</p>' : '') +
+        '<div class="scene-body">' + html + '</div></div>';
       layer.querySelector('.scene-close').onclick = close;
       layer.scrollTop = 0;
       var focus = layer.querySelector('[data-focus]');
@@ -839,7 +840,8 @@
       }
       show('<div class="loading-inline"><div class="lamp"></div>' + esc(t('app_saving')) + '</div>');
       Promise.all([T.api('play_scene', {courseid: cfg.courseid, sceneid: data.id, events: JSON.stringify(run.events),
-        start: run.from}), drumroll()]).then(function(answers) {
+        start: run.from, team: opts.team && opts.team.length ? JSON.stringify(opts.team) : ''}), drumroll()])
+      .then(function(answers) {
         var result = answers[0];
         var before = world.character;
         world = result.world;
@@ -886,6 +888,10 @@
           esc(t('app_levelup', world.character.level)) + '</span></div>' : '';
         var done = !success ? '' : (result.attempt > 1 && !lines.length ? '<p class="help">' + esc(t('app_alreadydone')) +
           '</p>' : '');
+        // Played as a team, it counted for the teammates who were there too.
+        if (result.teamwith && result.teamwith.length) {
+          done += '<p class="help">' + esc(t('app_team_counted', result.teamwith.join(', '))) + '</p>';
+        }
         if (success) {
           // What this play left (memory between scenes) counts for the next one.
           data.flags = run.flags.slice();

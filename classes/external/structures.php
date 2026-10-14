@@ -76,6 +76,7 @@ final class structures {
             'done' => new external_value(PARAM_BOOL, 'Done'),
             'better' => new external_value(PARAM_BOOL, 'Done with a partial ending', VALUE_DEFAULT, false),
             'attempts' => new external_value(PARAM_INT, 'Plays'),
+            'mode' => new external_value(PARAM_ALPHA, 'solo, team or both: how it can be played', VALUE_DEFAULT, 'both'),
         ]);
     }
 

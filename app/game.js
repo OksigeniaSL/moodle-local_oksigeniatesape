@@ -584,18 +584,77 @@
       (T.critters ? T.critters.fireflies(m) : '') + places + me + '</svg></div>';
   }
 
+  /**
+   * Who of the team is here to play a scene together, on this device: it will count for each of them.
+   *
+   * @param {number} sceneid
+   */
+  function teamPicker(sceneid) {
+    var mates = state.world.team.members.filter(function(m) {
+      return !m.me;
+    });
+    var layer = document.createElement('div');
+    layer.className = 'badge-moment team-pick';
+    layer.setAttribute('role', 'dialog');
+    layer.setAttribute('aria-modal', 'true');
+    layer.setAttribute('aria-labelledby', 'tesape-team-title');
+    layer.innerHTML = '<form class="badge-card"><h2 id="tesape-team-title">' + esc(t('app_team_who')) + '</h2><p>' +
+      esc(t('app_team_who_help')) + '</p><div class="team-mates">' + mates.map(function(m) {
+        return '<label class="chip"><input type="checkbox" value="' + m.userid + '"> ' + esc(m.name) + '</label>';
+      }).join('') + '</div><div class="actions"><button class="btn btn-soft" type="button" data-cancel>' +
+      esc(t('app_cancel')) + '</button><button class="btn btn-main" type="submit" disabled>' + esc(t('app_team_start')) +
+      '</button></div></form>';
+    document.body.appendChild(layer);
+    var form = layer.querySelector('form');
+    var go = form.querySelector('[type="submit"]');
+    var picked = function() {
+      return Array.prototype.map.call(form.querySelectorAll('input:checked'), function(i) {
+        return Number(i.value);
+      });
+    };
+    form.onchange = function() {
+      go.disabled = !picked().length;
+    };
+    layer.querySelector('[data-cancel]').onclick = function() {
+      layer.remove();
+    };
+    form.onsubmit = function(ev) {
+      ev.preventDefault();
+      var team = picked();
+      layer.remove();
+      T.playScene({sceneid: sceneid, world: state.world, team: team, onclose: function(world) {
+        state.world = world;
+        remember();
+        route();
+      }});
+    };
+    var first = form.querySelector('input');
+    if (first) {
+      first.focus();
+    }
+  }
+
   function chapterPanel(m, ch, past) {
     var w = state.world;
     var challenge = w.challenges.filter(function(x) {
       return x.id === ch.challengeid;
     })[0];
     var lantern = ch.lit ? t('app_lantern_class') : ch.mine ? t('app_lantern_mine') : t('app_lantern_off');
+    // With teammates, a scene that can be played as a team: on one device, deciding together, for all who are there.
+    var mates = w.team ? w.team.members.filter(function(m) {
+      return !m.me;
+    }) : [];
+    var together = function(sc) {
+      return mates.length && sc.mode !== 'solo' ? '<button class="btn ' + (sc.mode === 'team' && !sc.done ? 'btn-main' :
+        'btn-soft') + '" data-teamscene="' + sc.id + '">' + esc(t('app_team_play')) + '</button>' : '';
+    };
     var scenes = ch.scenes.map(function(sc) {
       return '<li class="item"><span class="grow"><b>' + esc(sc.title) + '</b><small>' + (sc.minutes ?
-        esc(t('app_minutes', sc.minutes)) : '') + (sc.done ? ' · ' + esc(t(sc.better ? 'app_status_better' :
-        'app_status_done')) : '') + '</small></span>' + (past ? '' :
-        '<button class="btn ' + (sc.done ? 'btn-soft' : 'btn-main') + '" data-scene="' + sc.id + '">' +
-        esc(sc.done ? t('app_playagain') : t('app_play')) + '</button>') + '</li>';
+        esc(t('app_minutes', sc.minutes)) : '') + (sc.mode === 'team' ? ' · ' + esc(t('app_team_meant')) : '') +
+        (sc.done ? ' · ' + esc(t(sc.better ? 'app_status_better' : 'app_status_done')) : '') + '</small></span>' +
+        (past ? '' : '<span class="item-actions">' + together(sc) + '<button class="btn ' + (sc.done || sc.mode ===
+        'team' ? 'btn-soft' : 'btn-main') + '" data-scene="' + sc.id + '">' + esc(sc.done ? t('app_playagain') :
+        t('app_play')) + '</button></span>') + '</li>';
     }).join('');
     var acts = past ? [] : w.activities.filter(function(a) {
       return a.chapterid === ch.id;
@@ -872,6 +931,11 @@
           remember();
           route();
         }});
+      };
+    });
+    app.querySelectorAll('[data-teamscene]').forEach(function(b) {
+      b.onclick = function() {
+        teamPicker(Number(b.dataset.teamscene));
       };
     });
     app.querySelectorAll('[data-game]').forEach(function(b) {

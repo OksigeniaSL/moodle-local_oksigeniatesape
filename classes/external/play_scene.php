@@ -45,6 +45,7 @@ final class play_scene extends external_api {
             'sceneid' => new external_value(PARAM_INT, 'Scene'),
             'events' => new external_value(PARAM_RAW, 'What the student did, in order (JSON list)'),
             'start' => new external_value(PARAM_ALPHANUMEXT, 'Node where the play started (empty: the start)', VALUE_DEFAULT, ''),
+            'team' => new external_value(PARAM_RAW, 'Teammates who played it too (JSON list of user ids)', VALUE_DEFAULT, ''),
         ]);
     }
 
@@ -55,13 +56,15 @@ final class play_scene extends external_api {
      * @param int $sceneid
      * @param string $events
      * @param string $start
+     * @param string $team
      * @return array
      */
     public static function execute(
         int $courseid,
         int $sceneid,
         string $events,
-        string $start = ''
+        string $start = '',
+        string $team = ''
     ): array {
         global $USER;
         $params = self::validate_parameters(self::execute_parameters(), [
@@ -69,6 +72,7 @@ final class play_scene extends external_api {
             'sceneid' => $sceneid,
             'events' => $events,
             'start' => $start,
+            'team' => $team,
         ]);
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
@@ -77,12 +81,19 @@ final class play_scene extends external_api {
         if (!is_array($events) || !array_is_list($events) || count($events) > 500) {
             throw new \invalid_parameter_exception('Events must be a JSON list');
         }
+        // The teammates who played it on the same device: a short list of ids, or none.
+        $team = $params['team'] === '' ? [] : json_decode($params['team'], true);
+        if (!is_array($team) || !array_is_list($team) || count($team) > 12) {
+            throw new \invalid_parameter_exception('Team must be a JSON list of users');
+        }
         $result = scenes::play(
             $params['courseid'],
             (int) $USER->id,
             $params['sceneid'],
             $events,
-            $params['start'] === '' ? null : $params['start']
+            $params['start'] === '' ? null : $params['start'],
+            null,
+            array_map('intval', $team)
         );
         $mission = missions::get($params['courseid']);
         $r = $result['rewards'];
@@ -123,6 +134,7 @@ final class play_scene extends external_api {
                 'cared' => (string) ($r['cared'] ?? ''),
                 'shielded' => !empty($r['shielded']),
             ],
+            'teamwith' => $result['teamwith'],
             'world' => view::world($params['courseid'], (int) $USER->id),
         ];
     }
@@ -154,6 +166,12 @@ final class play_scene extends external_api {
                 'cared' => new external_value(PARAM_TEXT, 'Teammate the healer gave a breath to', VALUE_DEFAULT, ''),
                 'shielded' => new external_value(PARAM_BOOL, 'The protector\'s shield stopped a mistake', VALUE_DEFAULT, false),
             ]),
+            'teamwith' => new external_multiple_structure(
+                new external_value(PARAM_TEXT, 'Teammate'),
+                'The teammates it counted for too',
+                VALUE_DEFAULT,
+                []
+            ),
             'world' => get_world::execute_returns(),
         ]);
     }

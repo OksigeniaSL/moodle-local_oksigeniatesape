@@ -87,8 +87,16 @@ final class results {
         $objectives = [];
         $players = [];
         $counts = [];
+        $games = [];
         foreach ($attempts as $attempt) {
             $players[$attempt->charid] = true;
+            // A game played as a team is one game: what it shows of the class counts once.
+            if ($attempt->teamplay) {
+                if (isset($games[$attempt->teamplay])) {
+                    continue;
+                }
+                $games[$attempt->teamplay] = true;
+            }
             foreach (json_decode((string) $attempt->objectives, true) ?: [] as $code => $o) {
                 $objectives[$code] = $objectives[$code] ?? ['ok' => 0, 'total' => 0];
                 $objectives[$code]['ok'] += (int) $o['ok'];

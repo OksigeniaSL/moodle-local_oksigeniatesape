@@ -4309,3 +4309,48 @@ body.in-battle {
     opacity: .25;
   }
 }
+
+/* ---------- A scene played as a team ---------- */
+
+/* With two buttons, they go below the title when there is no room beside it. */
+.item:has(.item-actions) {
+  flex-wrap: wrap;
+}
+
+.item:has(.item-actions) .grow {
+  flex: 1 1 55%;
+  min-width: 170px;
+}
+
+.item-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.team-mates {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: 10px 0 16px;
+}
+
+.team-mates .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.team-banner {
+  margin: 0 0 10px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(var(--leaf-rgb), .16);
+  color: var(--leaf-text);
+  font-size: 15px;
+  font-weight: 600;
+  text-align: center;
+}

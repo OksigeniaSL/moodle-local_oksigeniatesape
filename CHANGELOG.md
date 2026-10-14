@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.41.0 (2026-10-14)
+
+- **Scenes played as a team, for real**: beside «Play», the scenes that can be played as a team have «As a team». The
+  student marks who of their team is there; they play on one device, talking about each decision («As a team: talk about
+  each decision before choosing»), and the team has what any of them carries. At the end it counts for each of them:
+  their play, the evidence of their competencies and what it gives, if they did not have it. Only teammates of the same
+  team can be marked. The scenes meant for the team («The night by the lake») say so, and «As a team» goes first.
+- **A team game is one game**: the plays of its members share the same number (`teamplay`), and in what the class
+  results show (what confuses the class most) it counts once.
+
 ## 0.40.1 (2026-10-14)
 
 - **A little living thing touched**: its name, and below it what is true about it, instead of both in one line.
