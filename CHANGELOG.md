@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.49.0 (2026-10-14)
+
+- **The pilot mission, version 15**: what is done and the material of each session, as in the teacher guide, so that
+  «Today in the valley» reminds the teacher of everything (the chain race and its kerchiefs in the lake, the plants and
+  the carnation with colour in the garden, a card for each student in the library, the photos for the field guide). The
+  field guide says that each one adds at least one entry, with their team. Courses with the mission are brought up to
+  date when they are opened, keeping what the students did.
+
 ## 0.48.1 (2026-10-14)
 
 - **Oksigenia Access inside the game**: if the site has it, its panel comes into the pages of the game and of the

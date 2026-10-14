@@ -1,11 +1,17 @@
 {
  "code": "livingthings",
- "version": 14,
+ "version": 15,
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 15,
+   "kind": "fix",
+   "date": "2026-10-14",
+   "text": "Lo que se hace y el material de cada sesión, como en la guía docente"
+  },
   {
    "version": 14,
    "kind": "improvement",
@@ -498,13 +504,14 @@
    ],
    "sessions": [
     {
-     "do": "Clasificar las tarjetas de seres vivos por equipos. Un hongo y una bacteria, para discutir.",
-     "materials": "Las tarjetas de seres vivos, impresas y recortadas",
+     "do": "Clasificar las tarjetas de seres vivos por equipos. Al final, las que engañan: la seta, el moho del pan, la levadura, las bacterias del yogur y la esponja de mar.",
+     "materials": "Las tarjetas de seres vivos, impresas y recortadas (un juego por equipo) y, aparte, las cinco que engañan",
      "minutes": 50
     },
     {
      "do": "Los estantes en la pizarra y, en el patio, al rincón de cada reino.",
      "scene": "C2-2",
+     "materials": "Una tarjeta de seres vivos por alumno y cuatro rincones del patio, uno por grupo",
      "minutes": 50
     }
    ],
@@ -529,8 +536,9 @@
    ],
    "sessions": [
     {
-     "do": "Las preguntas al búho en la pizarra. Después, cada equipo empieza su clave del patio.",
+     "do": "Las preguntas al búho en la pizarra. Después, cada equipo empieza su clave del patio. Desde hoy, la guía de campo de la clase está abierta: cada equipo elige sus especies.",
      "scene": "C3-2",
+     "materials": "Los cuadernos de campo",
      "minutes": 50
     },
     {
@@ -564,8 +572,9 @@
    ],
    "sessions": [
     {
-     "do": "El sótano de las linternas en la pizarra: la clase apuesta qué habrá pasado con las semillas a oscuras antes de mirarlas.",
+     "do": "El sótano de las linternas en la pizarra: la clase apuesta qué habrá pasado con las semillas a oscuras antes de mirarlas. Después, las partes de la planta, y el clavel o el apio en agua con colorante, para verlo en la sesión 2.",
      "scene": "C4-2",
+     "materials": "Plantas reales (raíz, tallo, hojas y flor), un clavel blanco o un tallo de apio, un vaso con agua y colorante alimentario",
      "minutes": 50
     },
     {
@@ -616,7 +625,8 @@
      "minutes": 50
     },
     {
-     "do": "Lectura con datos del lince ibérico o del tagua. ¿Y si desapareciera un eslabón?",
+     "do": "Lectura con datos del lince ibérico o del tagua. ¿Y si desapareciera un eslabón? Y, en el patio, la carrera de la cadena.",
+     "materials": "La ficha de lectura, cintas o pañuelos de tres colores y un silbato",
      "minutes": 50
     }
    ],
@@ -654,7 +664,8 @@
    ],
    "sessions": [
     {
-     "do": "La guía de campo de la clase. Cada equipo termina sus fichas y comprueba las de otro.",
+     "do": "La guía de campo de la clase: cada uno sube al menos una ficha, el equipo termina las suyas y comprueba las de otro.",
+     "materials": "Los borradores del cuaderno y fotos o dibujos de las especies (sin caras de compañeros)",
      "minutes": 50
     },
     {
@@ -671,7 +682,7 @@
      "code": "guia",
      "module": "data",
      "name": "La guía de campo de la clase",
-     "intro": "Cada equipo añade fichas de especies de su entorno: nombre, dibujo o foto, grupo, cómo es, dónde vive y qué lugar ocupa en una cadena alimentaria. Entre todos, la guía de campo de la clase.",
+     "intro": "Cada uno añade al menos una ficha de una especie de su entorno, con su equipo: nombre, dibujo o foto, grupo, cómo es, dónde vive y qué lugar ocupa en una cadena alimentaria. Entre todos, la guía de campo de la clase.",
      "saber": 30,
      "teamwork": true,
      "objectives": [
