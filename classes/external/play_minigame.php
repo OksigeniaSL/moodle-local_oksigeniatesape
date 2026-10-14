@@ -100,6 +100,7 @@ final class play_minigame extends external_api {
             'first' => new external_value(PARAM_BOOL, 'Won for the first time'),
             'items' => new external_multiple_structure(new external_value(PARAM_TEXT, 'Item got')),
             'coat' => new external_value(PARAM_BOOL, 'The creature can now be dressed'),
+            'gems' => new external_value(PARAM_INT, 'Gems given the first time', VALUE_DEFAULT, 0),
             'world' => get_world::execute_returns(),
         ]);
     }

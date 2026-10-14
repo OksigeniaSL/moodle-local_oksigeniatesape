@@ -814,7 +814,8 @@
     var games = (ch.games || []).map(function(g) {
       return '<li class="item"><span class="mini-icon">' + T.icon('game') + '</span><span class="grow"><b>' + esc(g.title) +
         '</b><small>' + esc(g.done ? t('app_game_done') : t('app_game_help')) + '</small></span>' + (past ? '' :
-        '<button class="btn ' + (g.done ? 'btn-soft' : 'btn-main') + '" data-game="' + esc(g.code) + '">' +
+        '<button class="btn ' + (g.done ? 'btn-soft' : 'btn-main') + '" data-game="' + esc(g.code) + '" data-gametype="' +
+        esc(g.type || 'nest') + '">' +
         esc(g.done ? t('app_playagain') : t('app_play')) + '</button>') + '</li>';
     }).join('');
     if (past) {
@@ -1134,7 +1135,9 @@
     });
     app.querySelectorAll('[data-game]').forEach(function(b) {
       b.onclick = function() {
-        T.playNest({code: b.dataset.game, world: state.world, onclose: function(world) {
+        // Defensa del nido, or a hunt for mistakes of the Embrollo.
+        var play = b.dataset.gametype === 'errors' && T.playErrors ? T.playErrors : T.playNest;
+        play({code: b.dataset.game, world: state.world, onclose: function(world) {
           state.world = world;
           remember();
           route();

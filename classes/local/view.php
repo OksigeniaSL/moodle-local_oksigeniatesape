@@ -249,7 +249,7 @@ final class view {
             foreach ($meta['games'] ?? [] as $game) {
                 if (isset($data['games'][$game])) {
                     $games[] = ['code' => $game, 'title' => missions::text($data['games'][$game]['title'] ?? $game, $skin),
-                        'done' => !empty($found['game'][$game])];
+                        'type' => (string) ($data['games'][$game]['type'] ?? 'nest'), 'done' => !empty($found['game'][$game])];
                 }
             }
             $list[] = [

@@ -4628,3 +4628,107 @@ body.adapt-colours .opt.wrong::before {
   white-space: normal;
 }
 
+/* The hunt for mistakes: a sheet of the field notebook where every word can be touched, and none looks different. */
+.errors-intro {
+  text-align: center;
+}
+
+.errors-intro .battle-mini {
+  display: inline-block;
+  width: 96px;
+  height: 96px;
+}
+
+.errors-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.errors-blots {
+  display: flex;
+  gap: 6px;
+}
+
+.errors-blots i {
+  width: 16px;
+  height: 20px;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  border: 2px solid var(--line);
+  background: transparent;
+}
+
+.errors-blots i.blot {
+  background: #7b5cc9;
+  border-color: #7b5cc9;
+}
+
+.errors-sheet h2 {
+  margin-top: 0;
+}
+
+.errors-text {
+  font-size: 1.25em;
+  line-height: 1.9;
+}
+
+.errors-text .word {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  padding: 0 2px;
+  margin: 0;
+  cursor: pointer;
+  line-height: inherit;
+}
+
+.errors-text .word:hover,
+.errors-text .word:focus-visible {
+  background: rgba(var(--lantern-rgb), .18);
+  outline: none;
+}
+
+.errors-text .word.ok {
+  cursor: default;
+  text-decoration: underline dotted;
+  text-underline-offset: 4px;
+  opacity: .8;
+}
+
+.errors-text .fixed del {
+  color: #e98a8a;
+}
+
+.errors-text .fixed ins {
+  text-decoration: none;
+  font-weight: 700;
+  color: #7fd88c;
+}
+
+body.adapt-colours .errors-text .fixed del {
+  color: #f0a050;
+}
+
+body.adapt-colours .errors-text .fixed ins {
+  color: #6fb4ff;
+}
+
+.errors-why {
+  margin: 12px 0 0;
+  padding-left: 20px;
+  font-size: 15px;
+  color: var(--text-soft);
+}
+
+
+[data-theme="day"] .errors-text .fixed del {
+  color: #b3261e;
+}
+
+[data-theme="day"] .errors-text .fixed ins {
+  color: #1e7b34;
+}

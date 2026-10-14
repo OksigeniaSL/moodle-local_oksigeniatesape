@@ -169,4 +169,56 @@ final class minigames_test extends \advanced_testcase {
         $this->expectException(\moodle_exception::class);
         minigames::set_coat($w->course->id, $w->user->id, 'glitter');
     }
+
+    public function test_a_sheet_of_the_hunt_for_mistakes_is_cut_into_text_and_mistakes(): void {
+        $parts = minigames::parts('El erizo es un [reptil|mamífero|tiene pelo y púas]. Come [piedras|insectos/caracoles].');
+        $marks = array_values(array_filter($parts, fn($p) => $p['mark'] >= 0));
+        $this->assertCount(2, $marks);
+        $this->assertSame('reptil', $marks[0]['wrong']);
+        $this->assertSame(['mamífero'], $marks[0]['right']);
+        $this->assertSame('tiene pelo y púas', $marks[0]['why']);
+        $this->assertSame(['insectos', 'caracoles'], $marks[1]['right']);
+        $this->assertSame('', $marks[1]['why']);
+        $this->assertSame('El erizo es un ', $parts[0]['text']);
+        $this->assertSame('.', end($parts)['text']);
+    }
+
+    public function test_the_hunt_for_mistakes_of_the_embrollo(): void {
+        $this->resetAfterTest();
+        $w = $this->make_class('gen');
+        $char = characters::get($w->user->id);
+        $member = engine::member($char, $w->course->id);
+        $game = minigames::config($w->mission, 'enredoclaro', (int) $member->step);
+        $this->assertSame('errors', $game['type']);
+        $this->assertNotEmpty($game['sheets']);
+        // Each mistake found once, and a word touched that was right: a blot.
+        $found = [];
+        foreach ($game['sheets'] as $sheet) {
+            foreach ($sheet['parts'] as $part) {
+                if ($part['mark'] >= 0) {
+                    $found[] = ['s' => $sheet['id'], 'm' => $part['mark']];
+                }
+            }
+        }
+        $this->assertCount($game['goal'], $found);
+        $blot = ['s' => $game['sheets'][0]['id'], 'x' => 1];
+        $result = minigames::play($w->course->id, $w->user->id, 'enredoclaro', array_merge([$blot], $found));
+        $this->assertTrue($result['success']);
+        $this->assertSame($game['goal'], $result['caught']);
+        $this->assertSame(1, $result['missed']);
+        $this->assertSame(5, $result['gems']);
+        // Won once: the gems, once.
+        $again = minigames::play($w->course->id, $w->user->id, 'enredoclaro', $found);
+        $this->assertSame(0, $again['gems']);
+        // Too many blots lose, and the mistakes not found are what the teacher sees.
+        $blots = array_fill(0, $game['misses'], $blot);
+        $lost = minigames::play($w->course->id, $w->user->id, 'enredoclaro', array_merge($blots, [$found[0]]));
+        $this->assertFalse($lost['success']);
+        $results = array_column(minigames::results($w->mission), null, 'code');
+        $this->assertNotEmpty($results['enredoclaro']['confusions']);
+        $this->assertStringContainsString('→', $results['enredoclaro']['confusions'][0]['text']);
+        // A mistake found twice, or one that does not exist, is not a play.
+        $this->expectException(\moodle_exception::class);
+        minigames::play($w->course->id, $w->user->id, 'enredoclaro', [$found[0], $found[0]]);
+    }
 }

@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.52.0 (2026-10-14)
+
+- **The hunt for mistakes of the Embrollo** («The tangled notebook»), a new kind of minigame, in every place of the
+  pilot mission (mission version 16): the Embrollo has changed facts in the sheets of the field notebook; the student
+  touches what is wrong and is shown what is right and why. A word touched that was right is a blot of ink, and too
+  many blots lose this time (five in first steps, four in the core, three further and expert). Each step plays two or
+  three sheets, with the mistakes the class confuses most in that chapter (24 sheets, 68 mistakes); the first win gives 5
+  gems. The teacher sees which mistakes slip by most. Without connection, the play waits on the device like the others.
+- Sheets are written as in the board of Classtools: `[what it says|right/also right|why]`. A minigame of a mission can
+  now give gems the first time it is won.
+
 ## 0.51.0 (2026-10-14)
 
 - **Reading aloud beyond the scenes**: for who has «Reading aloud», a 🔊 button in the panel of each place, the page of

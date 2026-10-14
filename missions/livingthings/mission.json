@@ -1,11 +1,17 @@
 {
  "code": "livingthings",
- "version": 15,
+ "version": 16,
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 16,
+   "kind": "improvement",
+   "date": "2026-10-14",
+   "text": "La caza de errores del Embrollo en cada lugar"
+  },
   {
    "version": 15,
    "kind": "fix",
@@ -461,6 +467,9 @@
    "reward": "magnifier",
    "x": 160,
    "y": 560,
+   "games": [
+    "enredoclaro"
+   ],
    "activities": [
     {
      "code": "estavivo",
@@ -516,7 +525,10 @@
     }
    ],
    "x": 300,
-   "y": 470
+   "y": 470,
+   "games": [
+    "enredobiblioteca"
+   ]
   },
   {
    "code": "bosque",
@@ -551,7 +563,8 @@
    "x": 120,
    "y": 360,
    "games": [
-    "nestdefence"
+    "nestdefence",
+    "enredobosque"
    ]
   },
   {
@@ -586,6 +599,9 @@
    "reward": "lantern",
    "x": 280,
    "y": 260,
+   "games": [
+    "enredojardin"
+   ],
    "activities": [
     {
      "code": "experimento",
@@ -632,6 +648,9 @@
    ],
    "x": 150,
    "y": 165,
+   "games": [
+    "enredolago"
+   ],
    "activities": [
     {
      "code": "eslabon",
@@ -677,6 +696,9 @@
    ],
    "x": 290,
    "y": 75,
+   "games": [
+    "enredotorre"
+   ],
    "activities": [
     {
      "code": "guia",
@@ -1083,6 +1105,342 @@
      "speed": 4
     }
    }
+  },
+  "enredoclaro": {
+   "type": "errors",
+   "title": "El cuaderno enredado: ¿qué es un ser vivo?",
+   "intro": "El Embrollo ha enredado las fichas del cuaderno de campo de este lugar: ha cambiado algunos datos sobre lo que está vivo y lo que no. Lee cada ficha y toca las palabras que están mal. Cuidado: si tocas una palabra que estaba bien, cae una mancha de tinta.",
+   "win": "El cuaderno vuelve a decir la verdad: lo vivo con lo vivo y lo inerte con lo inerte. Buen ojo de naturalista.",
+   "lose": "Esta vez han caído demasiadas manchas de tinta. Fíjate en el porqué de cada error y vuelve a intentarlo: antes de tocar, pregúntate si se nutre, se relaciona y se reproduce.",
+   "misses": {
+    "1": 5,
+    "2": 4,
+    "3": 3,
+    "4": 3
+   },
+   "reward": {
+    "gems": 5
+   },
+   "sheets": [
+    {
+     "id": "tres-cosas",
+     "title": "Lo que hace un ser vivo",
+     "steps": [
+      1
+     ],
+     "text": "Un ser vivo hace tres cosas: se nutre, se relaciona y se [mueve|reproduce|Moverse no basta: el humo se mueve y no está vivo.]. El caracol del muro hace las tres. La piedra de al lado no hace ninguna: es un ser [vivo|inerte|No se nutre, no se relaciona ni se reproduce: no está viva.]."
+    },
+    {
+     "id": "lo-que-engana",
+     "title": "Lo que engaña",
+     "steps": [
+      2,
+      3,
+      4
+     ],
+     "text": "La semilla seca de girasol no se mueve ni come, y es un ser [inerte|vivo|Está en reposo: con agua, despierta la planta que lleva dentro.]. Sobre la piedra crece musgo verde: el musgo está vivo, y la piedra, [también|no|Lo verde es el musgo; la piedra no se nutre ni se reproduce.]. La planta mustia de la maceta está [muerta|viva|Mustia no es muerta: si la riegas, se endereza.]: le falta agua."
+    },
+    {
+     "id": "notas-del-rastreo",
+     "title": "Las notas del rastreo",
+     "steps": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "text": "Fuego de la hoguera: crece, se mueve y gasta leña. ¿Vivo? [Sí|No|Crece y se mueve, pero no se nutre ni se reproduce.]. Cristal de sal: crece por capas. ¿Vivo? No. Seta del tronco: no se mueve. ¿Viva? [No|Sí|No se mueve, pero se nutre, se relaciona y se reproduce.]. Pluma de paloma: cayó en el patio. ¿Viva? [Sí|No|Viene de un ave, pero ya no se nutre ni se reproduce.]."
+    },
+    {
+     "id": "casos-dificiles",
+     "title": "Los casos difíciles",
+     "steps": [
+      3,
+      4
+     ],
+     "text": "La levadura del sobre parece polvo, pero está viva: con agua tibia y azúcar, suelta [agua|gas|Lo que hincha el globo es el gas que suelta la levadura al comer.] que hincha un globo. El fuego crece y gasta leña, pero no está vivo: no tiene [movimiento|células|Se mueve, sí, pero no está hecho de células, como todo ser vivo.]. El virus solo se copia [fuera|dentro|Fuera de una célula no hace nada; por eso se discute si está vivo.] de una célula ajena."
+    }
+   ]
+  },
+  "enredobiblioteca": {
+   "type": "errors",
+   "title": "El cuaderno enredado: los grupos de seres vivos",
+   "intro": "El Embrollo ha revuelto las fichas del cuaderno de campo y ha cambiado de grupo a algunos seres vivos. Lee cada ficha y toca las palabras que están mal. Cuidado: si tocas una palabra que estaba bien, cae una mancha de tinta.",
+   "win": "Cada ser vivo vuelve a su grupo, y esta vez por algo que se puede comprobar, no por su aspecto. El cuaderno queda en orden.",
+   "lose": "Esta vez han caído demasiadas manchas de tinta. Fíjate en el porqué de cada error y vuelve a intentarlo: la pregunta que más ayuda es si fabrica su alimento con la luz o lo toma de otros.",
+   "misses": {
+    "1": 5,
+    "2": 4,
+    "3": 3,
+    "4": 3
+   },
+   "reward": {
+    "gems": 5
+   },
+   "sheets": [
+    {
+     "id": "animal-o-planta",
+     "title": "¿Animal o planta?",
+     "steps": [
+      1
+     ],
+     "text": "Las plantas fabrican su alimento con la [tierra|luz|Con la luz del sol; de la tierra toman agua y sales minerales.]. La seta sale del suelo, pero no es una planta: es un [animal|hongo|No es animal ni planta: es un hongo, otro grupo de seres vivos.]. La lombriz y la mariposa son animales."
+    },
+    {
+     "id": "grupos-revueltos",
+     "title": "Grupos revueltos",
+     "steps": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "text": "El moho del pan y las setas son [plantas|hongos|No fabrican su alimento: lo toman de otros seres vivos o de sus restos.]. Las esponjas de mar viven pegadas a las rocas y son [plantas|animales|No fabrican su alimento con la luz: lo toman filtrando el agua.]. El cactus es una planta, y sus pinchos son [raíces|hojas|Sus pinchos son hojas; su tallo verde fabrica el alimento.]."
+    },
+    {
+     "id": "los-mas-pequenos",
+     "title": "Los más pequeños",
+     "steps": [
+      2,
+      3,
+      4
+     ],
+     "text": "Las bacterias del yogur no se ven a simple vista, y son seres [inertes|vivos|Se nutren y se reproducen: cada una es un ser vivo de una célula.]. La levadura del pan es un hongo de una sola célula que come [sal|azúcar|Come azúcar y suelta un gas que hace subir la masa del pan.]. Para agruparlos no cuenta el tamaño, sino cómo consiguen su alimento y si tienen una célula o [ninguna|muchas|Todos los seres vivos tienen células: una sola o muchas.]."
+    },
+    {
+     "id": "por-dentro",
+     "title": "Por dentro",
+     "steps": [
+      3,
+      4
+     ],
+     "text": "Las células de la mejilla son redondeadas y [con|sin|Las células animales no tienen pared; las de las plantas, sí.] pared. Las de la piel de cebolla tienen pared, pero no tienen verde: esa parte no recibe [agua|luz|Crece bajo tierra, a oscuras: sin luz, no se pone verde.]. Las bacterias tienen una sola célula, [con|sin|La célula de una bacteria no tiene núcleo.] núcleo. El coral parece una planta, pero es un [hongo|animal|Es un animal: atrapa con sus tentáculos seres diminutos del agua.]."
+    }
+   ]
+  },
+  "enredobosque": {
+   "type": "errors",
+   "title": "El cuaderno enredado: los animales",
+   "intro": "El Embrollo ha cambiado datos en las fichas de los animales del cuaderno de campo. Lee cada ficha y toca las palabras que están mal. Cuidado: si tocas una palabra que estaba bien, cae una mancha de tinta.",
+   "win": "Cada animal vuelve a su grupo, por lo que no cambia: lo que cubre su cuerpo, cómo respira y cuántas patas tiene. Las huellas del bosque ya se pueden seguir.",
+   "lose": "Esta vez han caído demasiadas manchas de tinta. Fíjate en el porqué de cada error y vuelve a intentarlo: mira lo que no cambia, no dónde vive el animal ni cómo se mueve.",
+   "misses": {
+    "1": 5,
+    "2": 4,
+    "3": 3,
+    "4": 3
+   },
+   "reward": {
+    "gems": 5
+   },
+   "sheets": [
+    {
+     "id": "abrigos",
+     "title": "Los abrigos",
+     "steps": [
+      1
+     ],
+     "text": "El perro tiene el cuerpo cubierto de pelo, y la gallina, de [pelo|plumas|Las aves tienen plumas; el pelo es de los mamíferos.]. La rana tiene la piel [seca|húmeda|Los anfibios, como la rana, tienen la piel húmeda.] y sin escamas. El caracol no tiene huesos: es un invertebrado."
+    },
+    {
+     "id": "los-que-enganan",
+     "title": "Los que engañan",
+     "steps": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "text": "El murciélago vuela y es un [ave|mamífero|Tiene pelo y sus crías toman leche: volar no lo hace ave.]. El pingüino no vuela y es un ave. El delfín vive en el mar y respira por [branquias|pulmones|Sale a respirar aire, como la ballena: es un mamífero.]. La salamandra parece una lagartija, pero es un [reptil|anfibio|Tiene la piel húmeda y sin escamas: es un anfibio.]."
+    },
+    {
+     "id": "invertebrados-del-patio",
+     "title": "Los invertebrados del patio",
+     "steps": [
+      2,
+      3,
+      4
+     ],
+     "text": "La hormiga es un insecto: tiene seis patas y el cuerpo en [dos|tres|El cuerpo de un insecto tiene tres partes: cabeza, tórax y abdomen.] partes. La araña tiene [seis|ocho|Cuenta sus patas: ocho. Los insectos tienen seis.] patas: no es un insecto, es un arácnido. El caracol es un molusco de cuerpo [duro|blando|Los moluscos tienen el cuerpo blando; la concha lo protege.], con concha."
+    },
+    {
+     "id": "claves-y-nombres",
+     "title": "Claves y nombres",
+     "steps": [
+      3,
+      4
+     ],
+     "text": "La tortuga marina vive en el mar y respira por [branquias|pulmones|Sale a respirar aire: los reptiles respiran por pulmones.]: es un reptil. El caballito de mar respira por [pulmones|branquias|Los peces respiran por branquias, también el caballito de mar.]: es un pez. En una clave, «¿Tiene pelo?» sirve; «¿Es marrón?», [también|no|El color cambia de un ejemplar a otro: no sirve en una clave.]. Los nombres científicos van en [inglés|latín|En latín, para que naturalistas de cualquier país sepan de qué animal hablan.]."
+    }
+   ]
+  },
+  "enredojardin": {
+   "type": "errors",
+   "title": "El cuaderno enredado: las plantas",
+   "intro": "El Embrollo ha enredado las fichas de las plantas del cuaderno de campo: hay datos cambiados sobre cómo viven. Lee cada ficha y toca las palabras que están mal. Cuidado: si tocas una palabra que estaba bien, cae una mancha de tinta.",
+   "win": "Las fichas de las plantas vuelven a estar bien: la raíz toma el agua, la hoja fabrica el alimento con la luz y de la flor salen las semillas.",
+   "lose": "Esta vez han caído demasiadas manchas de tinta. Fíjate en el porqué de cada error y vuelve a intentarlo: recuerda el viaje del agua y lo que necesita una hoja para fabricar el alimento.",
+   "misses": {
+    "1": 5,
+    "2": 4,
+    "3": 3,
+    "4": 3
+   },
+   "reward": {
+    "gems": 5
+   },
+   "sheets": [
+    {
+     "id": "partes-de-la-planta",
+     "title": "Las partes de la planta",
+     "steps": [
+      1
+     ],
+     "text": "El agua entra en la planta por la [hoja|raíz|El agua entra por la raíz, sube por el tallo y llega a las hojas.] y sube por el tallo. Las hojas fabrican el alimento con la luz. De la flor salen las [hojas|semillas|En la flor se forman las semillas, que darán plantas nuevas.]."
+    },
+    {
+     "id": "experimento-de-la-luz",
+     "title": "El experimento de la luz",
+     "steps": [
+      2,
+      3,
+      4
+     ],
+     "text": "La planta fabrica su alimento en las hojas con la luz, el agua y el [suelo|aire|Del aire toma un gas; del suelo, solo agua y sales minerales.]. Del suelo toma agua y sales minerales. En el experimento, lo único que cambiamos fue la [tierra|luz|Todo igual menos la luz: así sabes que el cambio viene de ella.]: a oscuras, las plantas crecieron altas, pálidas y [fuertes|débiles|Se estiran buscando la luz: más alta no quiere decir más sana.]."
+    },
+    {
+     "id": "viaje-del-agua",
+     "title": "El viaje del agua",
+     "steps": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "text": "El agua entra por la raíz, y el tallo la lleva hasta las [raíces|hojas|El tallo sube el agua desde la raíz hasta las hojas.]. Desde las hojas, una parte sale al aire como [humo|vapor|Sale como vapor de agua, que no se ve.]. Si una planta tiene sed, se riega junto a la [hoja|raíz|La planta bebe por la raíz, no por las hojas.]."
+    },
+    {
+     "id": "semillas-y-experimentos",
+     "title": "Semillas y experimentos",
+     "steps": [
+      3,
+      4
+     ],
+     "text": "La semilla del diente de león viaja con el [agua|viento|Lleva unos pelos finos, como un paracaídas, y la arrastra el viento.]; la del coco, [volando|flotando|El coco flota en el agua y puede viajar muy lejos.]; la del cadillo, enganchada al pelo de los animales. En mi experimento cambio solo el agua, pongo tres macetas por cada cantidad y escribo la predicción [después|antes|Si la escribes después, ya sabes el resultado: no es una predicción.] de sembrar."
+    }
+   ]
+  },
+  "enredolago": {
+   "type": "errors",
+   "title": "El cuaderno enredado: quién come a quién",
+   "intro": "El Embrollo ha enredado las fichas del cuaderno de campo de la orilla y ha soltado algunos eslabones de las cadenas. Lee cada ficha y toca las palabras que están mal. Cuidado: si tocas una palabra que estaba bien, cae una mancha de tinta.",
+   "win": "Las cadenas vuelven a estar bien atadas, del productor al último consumidor, sin olvidar a los descomponedores.",
+   "lose": "Esta vez han caído demasiadas manchas de tinta. Fíjate en el porqué de cada error y vuelve a intentarlo: sigue la cadena desde el productor, del que es comido al que come.",
+   "misses": {
+    "1": 5,
+    "2": 4,
+    "3": 3,
+    "4": 3
+   },
+   "reward": {
+    "gems": 5
+   },
+   "sheets": [
+    {
+     "id": "quien-come-a-quien",
+     "title": "¿Quién se come a quién?",
+     "steps": [
+      1
+     ],
+     "text": "En la orilla del lago, la hierba fabrica su alimento con la luz: es el [consumidor|productor|Fabrica su alimento con la luz: es el productor, el primero de la cadena.]. El conejo come hierba, y el águila come [hierba|conejos|El águila come otros animales, como el conejo: es carnívora.]. La flecha va de la hierba al conejo."
+    },
+    {
+     "id": "cadena-del-lago",
+     "title": "La cadena del lago",
+     "steps": [
+      2,
+      3,
+      4
+     ],
+     "text": "La cadena del lago empieza por las [garzas|algas|Empieza por un productor: las algas fabrican su alimento con la luz.], que fabrican su alimento con la luz. Los peces pequeños comen algas, y la garza come peces. Si faltan los peces pequeños, al principio las algas [disminuyen|aumentan|Sin peces que se las coman, al principio las algas crecen más.]. Los descomponedores del fondo se alimentan de [luz|restos|Se alimentan de restos y devuelven al agua lo que las plantas necesitan.]."
+    },
+    {
+     "id": "lago-y-personas",
+     "title": "El lago y las personas",
+     "steps": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "text": "El agua, la luz y las piedras no están vivas, y [no|también|Sin agua ni luz no hay lago: también son parte del ecosistema.] forman parte del ecosistema del lago. Cuando unos cazadores se llevaron a los zorros de la orilla, hubo [menos|más|Sin zorros que los cazaran, los conejos aumentaron.] conejos, y la orilla se quedó [verde|pelada/sin hierba|Más conejos comiendo hierba: la hierba se acabó antes.]."
+    },
+    {
+     "id": "red-del-lago",
+     "title": "La red del lago",
+     "steps": [
+      3,
+      4
+     ],
+     "text": "En la red del lago, el caracol de agua come algas: es herbívoro. La rana es [herbívora|carnívora|La rana adulta come insectos y otros animales pequeños: es carnívora.]. El ratón come semillas e insectos: es [carnívoro|omnívoro|Come plantas y animales: es omnívoro.]. Sin descomponedores, las hojas muertas se amontonan y las plantas nuevas crecen [mejor|peor|Faltan los que devuelven al suelo lo que las plantas necesitan.]."
+    }
+   ]
+  },
+  "enredotorre": {
+   "type": "errors",
+   "title": "El cuaderno enredado: la guía de campo",
+   "intro": "El Embrollo ha metido sus nudos en las fichas de la guía de campo: datos cambiados y alguno que nadie comprobó. Lee cada ficha y toca las palabras que están mal. Cuidado: si tocas una palabra que estaba bien, cae una mancha de tinta.",
+   "win": "La guía de campo queda limpia, con cada dato en su sitio. Al Embrollo le queda un nudo menos.",
+   "lose": "Esta vez han caído demasiadas manchas de tinta. Fíjate en el porqué de cada error y vuelve a intentarlo: a cada dato, pregúntale de dónde sale.",
+   "misses": {
+    "1": 5,
+    "2": 4,
+    "3": 3,
+    "4": 3
+   },
+   "reward": {
+    "gems": 5
+   },
+   "sheets": [
+    {
+     "id": "ficha-paloma",
+     "title": "La ficha de la paloma",
+     "steps": [
+      1
+     ],
+     "text": "Ficha: la paloma. Grupo: [mamífero|ave|Tiene plumas y pico, y nace de un huevo: es un ave.]. Cómo es: tiene plumas, pico y [cuatro|dos|Las aves tienen dos patas y dos alas.] patas. Dónde vive: en parques y plazas. Qué come: semillas."
+    },
+    {
+     "id": "ficha-murcielago",
+     "title": "La ficha del murciélago",
+     "steps": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "text": "Ficha: el murciélago. Grupo: [ave|mamífero|Tiene pelo y sus crías toman leche: es un mamífero.]. Cómo es: vuela con alas de piel y tiene el cuerpo cubierto de [plumas|pelo|Las plumas son de las aves; el murciélago tiene pelo.]. Qué come: insectos, que caza de noche. En la cadena alimentaria: [productor|carnívoro/consumidor|Come otros animales: es consumidor. El productor fabrica su alimento con la luz.]."
+    },
+    {
+     "id": "ficha-arana",
+     "title": "La ficha de la araña",
+     "steps": [
+      2,
+      3,
+      4
+     ],
+     "text": "Ficha: la araña del patio. Grupo: [insecto|invertebrado/arácnido|Tiene ocho patas: es un arácnido, un invertebrado, no un insecto.]. Cómo es: tiene [seis|ocho|Cuenta otra vez: las arañas tienen ocho patas; los insectos, seis.] patas y el cuerpo en dos partes. De dónde sale: contamos sus patas con la lupa. Un dato de un vídeo sin autor ni fecha, antes de apuntarlo, se [copia|comprueba|Sin autor ni fecha, no sabes de dónde sale: compruébalo antes.]."
+    },
+    {
+     "id": "de-quien-fiarse",
+     "title": "De quién fiarse",
+     "steps": [
+      3,
+      4
+     ],
+     "text": "En la ficha no van las [medidas|opiniones|Las medidas sí van; las opiniones hablan de ti, no del ser vivo.]: «es precioso» habla de nosotros, no del ser vivo. Un mensaje reenviado muchas veces ya está [comprobado|por comprobar/sin comprobar|Llegar muchas veces no lo hace cierto: compruébalo antes de apuntarlo.]. El naturalista antiguo que se equivocó no mentía: veía con los medios de [hoy|entonces|Veía con los ojos y los aparatos de entonces; hoy sabemos más.]."
+    }
+   ]
   }
  },
  "questions": [

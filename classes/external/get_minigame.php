@@ -91,6 +91,12 @@ final class get_minigame extends external_api {
     public static function execute_returns(): \core_external\external_description {
         return new external_single_structure([
             'code' => new external_value(PARAM_ALPHANUMEXT, 'Minigame'),
+            'type' => new external_value(
+                PARAM_ALPHA,
+                'nest (Defensa del nido) or errors (the hunt for mistakes)',
+                VALUE_DEFAULT,
+                'nest'
+            ),
             'title' => new external_value(PARAM_TEXT, 'Title'),
             'intro' => new external_value(PARAM_TEXT, 'What to do'),
             'win' => new external_value(PARAM_TEXT, 'Text when won'),
@@ -106,7 +112,19 @@ final class get_minigame extends external_api {
                 'net' => new external_value(PARAM_ALPHANUMEXT, 'Its net'),
                 'why' => new external_value(PARAM_TEXT, 'Why, when it is tricky'),
             ])),
-            'goal' => new external_value(PARAM_INT, 'Animals to catch'),
+            'sheets' => new external_multiple_structure(new external_single_structure([
+                'id' => new external_value(PARAM_ALPHANUMEXT, 'Sheet'),
+                'title' => new external_value(PARAM_TEXT, 'What it is about'),
+                'parts' => new external_multiple_structure(new external_single_structure([
+                    'text' => new external_value(PARAM_TEXT, 'Plain text (empty for a mistake)'),
+                    'mark' => new external_value(PARAM_INT, 'Number of the mistake (-1: plain text)'),
+                    'wrong' => new external_value(PARAM_TEXT, 'What the sheet says'),
+                    'right' => new external_multiple_structure(new external_value(PARAM_TEXT, 'Accepted')),
+                    'why' => new external_value(PARAM_TEXT, 'Why'),
+                ])),
+            ]), 'The sheets of a hunt for mistakes', VALUE_DEFAULT, []),
+            'misses' => new external_value(PARAM_INT, 'Blots of ink a hunt for mistakes allows', VALUE_DEFAULT, 0),
+            'goal' => new external_value(PARAM_INT, 'Animals to catch, or mistakes to find'),
             'shield' => new external_value(PARAM_INT, 'What the shield of the nest holds'),
             'speed' => new external_value(PARAM_INT, 'Speed, 1 to 4'),
         ]);

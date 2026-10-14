@@ -138,6 +138,7 @@ final class structures {
                 'games' => new external_multiple_structure(new external_single_structure([
                     'code' => new external_value(PARAM_ALPHANUMEXT, 'Minigame'),
                     'title' => new external_value(PARAM_TEXT, 'Title'),
+                    'type' => new external_value(PARAM_ALPHA, 'nest or errors', VALUE_DEFAULT, 'nest'),
                     'done' => new external_value(PARAM_BOOL, 'Won'),
                 ])),
                 'scenes' => new external_multiple_structure(self::scene_item()),

@@ -23,6 +23,10 @@ namespace local_oksigeniatesape\local;
  * Defensa del nido: animals come down towards the nest; the right net is the one of their group, or of the group that
  * contains it when that net is not in the step. A wrong net, or none, lets the animal pass and hurts the shield.
  *
+ * The hunt for mistakes (type errors): the Embrollo has changed facts in the sheets of the field notebook; the student
+ * touches what is wrong and is shown what is right and why. A word touched that was right is a blot of ink, and too many
+ * blots lose the game. The sheets are written as in the board of Classtools: [what it says|right/also right|why].
+ *
  * @package    local_oksigeniatesape
  * @copyright  2026 Oksigenia <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -50,6 +54,9 @@ final class minigames {
         $game = $mission->data['games'][$code] ?? null;
         if (!$game) {
             return null;
+        }
+        if (($game['type'] ?? '') === 'errors') {
+            return self::errors_config($mission, $code, $game, $step);
         }
         $level = self::level($game, $step);
         $nets = [];
@@ -83,6 +90,96 @@ final class minigames {
     }
 
     /**
+     * A hunt for mistakes as a student of a step plays it: the sheets of their step, each cut into text and mistakes.
+     *
+     * @param \stdClass $mission With data.
+     * @param string $code
+     * @param array $game
+     * @param int $step
+     * @return array
+     */
+    private static function errors_config(\stdClass $mission, string $code, array $game, int $step): array {
+        $sheets = [];
+        foreach (self::sheets_for($game, $step) as $sheet) {
+            $text = $sheet['text'] ?? '';
+            $text = is_array($text) ? (string) ($text[$mission->variant] ?? $text['gen'] ?? reset($text)) : (string) $text;
+            $sheets[] = ['id' => (string) $sheet['id'], 'title' => missions::text((string) ($sheet['title'] ?? ''), $mission->skin),
+                'parts' => self::parts($text)];
+        }
+        $goal = 0;
+        foreach ($sheets as $sheet) {
+            $goal += count(array_filter($sheet['parts'], fn($p) => $p['mark'] >= 0));
+        }
+        return [
+            'code' => $code,
+            'type' => 'errors',
+            'title' => missions::text($game['title'] ?? $code, $mission->skin),
+            'intro' => missions::text($game['intro'] ?? '', $mission->skin, $mission->variant),
+            'win' => missions::text($game['win'] ?? '', $mission->skin, $mission->variant),
+            'lose' => missions::text($game['lose'] ?? '', $mission->skin, $mission->variant),
+            'nets' => [],
+            'animals' => [],
+            'sheets' => $sheets,
+            'goal' => $goal,
+            'misses' => self::misses($game, $step),
+            'shield' => 0,
+            'speed' => 0,
+        ];
+    }
+
+    /**
+     * The sheets of a hunt for mistakes for a step: those that list it, or all of them if none does.
+     *
+     * @param array $game
+     * @param int $step
+     * @return array
+     */
+    private static function sheets_for(array $game, int $step): array {
+        $all = array_values(array_filter($game['sheets'] ?? [], fn($s) => !empty($s['id'])));
+        $mine = array_values(array_filter($all, fn($s) => in_array($step, array_map('intval', $s['steps'] ?? []), true)));
+        return $mine ?: $all;
+    }
+
+    /**
+     * The blots of ink a step can make in a hunt for mistakes: that of the step, or of the nearest below.
+     *
+     * @param array $game
+     * @param int $step
+     * @return int
+     */
+    private static function misses(array $game, int $step): int {
+        for ($s = $step; $s >= 1; $s--) {
+            if (isset($game['misses'][$s]) || isset($game['misses'][(string) $s])) {
+                return max(1, (int) ($game['misses'][$s] ?? $game['misses'][(string) $s]));
+            }
+        }
+        return 3;
+    }
+
+    /**
+     * A sheet cut into its text and its mistakes, from [what it says|right/also right|why].
+     *
+     * @param string $text
+     * @return array Of text, mark (its number, -1 for plain text), wrong, right (accepted) and why.
+     */
+    public static function parts(string $text): array {
+        $pieces = preg_split('/\[([^\]|]*)\|([^\]|]*)(?:\|([^\]]*))?\]/u', $text, -1, PREG_SPLIT_DELIM_CAPTURE);
+        $parts = [];
+        $mark = 0;
+        for ($i = 0; $i < count($pieces); $i += 4) {
+            if ($pieces[$i] !== '') {
+                $parts[] = ['text' => $pieces[$i], 'mark' => -1, 'wrong' => '', 'right' => [], 'why' => ''];
+            }
+            if (isset($pieces[$i + 1])) {
+                $parts[] = ['text' => '', 'mark' => $mark++, 'wrong' => trim($pieces[$i + 1]),
+                    'right' => array_values(array_filter(array_map('trim', explode('/', $pieces[$i + 2])))),
+                    'why' => trim((string) ($pieces[$i + 3] ?? ''))];
+            }
+        }
+        return $parts;
+    }
+
+    /**
      * Plays a minigame: counts what the student did, keeps it for the teacher and gives the reward the first time it
      * is won.
      *
@@ -112,6 +209,52 @@ final class minigames {
         if (!$game) {
             throw new \moodle_exception('nominigame', 'local_oksigeniatesape');
         }
+        if (($game['type'] ?? '') === 'errors') {
+            [$caught, $missed, $wrong, $success] = self::count_errors($game, $events);
+        } else {
+            [$caught, $missed, $wrong, $success] = self::count_nest($game, $events);
+        }
+        $transaction = $DB->start_delegated_transaction();
+        $tries = $DB->count_records(self::T . 'minigame', ['charid' => $char->id, 'courseid' => $courseid, 'game' => $code]) + 1;
+        $DB->insert_record(self::T . 'minigame', (object) [
+            'charid' => $char->id,
+            'courseid' => $courseid,
+            'cmid' => 0,
+            'game' => $code,
+            'success' => $success ? 1 : 0,
+            'tries' => $tries,
+            'detail' => json_encode(['step' => (int) $member->step, 'caught' => $caught, 'missed' => $missed,
+                'wrong' => $wrong]),
+            'timecreated' => $now,
+        ]);
+        $result = ['success' => $success, 'caught' => $caught, 'missed' => $missed, 'goal' => $game['goal'],
+            'tries' => $tries, 'first' => false, 'items' => [], 'coat' => false, 'gems' => 0];
+        $key = ['charid' => $char->id, 'missionid' => $mission->id, 'kind' => 'game', 'code' => $code];
+        if ($success && !$DB->record_exists(self::T . 'found', $key)) {
+            $DB->insert_record(self::T . 'found', (object) ($key + ['courseid' => $courseid, 'timecreated' => $now]));
+            $result['first'] = true;
+            $reward = $mission->data['games'][$code]['reward'] ?? [];
+            $itemid = empty($reward['item']) ? 0 : missions::item_id((string) $reward['item']);
+            if ($itemid && engine::item($member, $itemid, 'minigame', 0, 0, $now)) {
+                $result['items'][] = (string) $reward['item'];
+            }
+            $result['coat'] = !empty($reward['coat']);
+            if (!empty($reward['gems']) && engine::gems($member, (int) $reward['gems'], 'minigame', 0, 0, 0, $now)) {
+                $result['gems'] = (int) $reward['gems'];
+            }
+        }
+        $transaction->allow_commit();
+        return $result;
+    }
+
+    /**
+     * Counts a play of Defensa del nido: each animal once, with the net thrown at it (none if it reached the nest).
+     *
+     * @param array $game As the student plays it.
+     * @param array $events Each one: a (the animal) and net.
+     * @return array [caught, missed, wrong (animal => net thrown), success]
+     */
+    private static function count_nest(array $game, array $events): array {
         $right = array_column($game['animals'], 'net', 'id');
         $nets = array_column($game['nets'], 'id');
         $seen = [];
@@ -134,35 +277,46 @@ final class minigames {
                 }
             }
         }
-        $success = $caught >= $game['goal'] && $missed < $game['shield'];
-        $transaction = $DB->start_delegated_transaction();
-        $tries = $DB->count_records(self::T . 'minigame', ['charid' => $char->id, 'courseid' => $courseid, 'game' => $code]) + 1;
-        $DB->insert_record(self::T . 'minigame', (object) [
-            'charid' => $char->id,
-            'courseid' => $courseid,
-            'cmid' => 0,
-            'game' => $code,
-            'success' => $success ? 1 : 0,
-            'tries' => $tries,
-            'detail' => json_encode(['step' => (int) $member->step, 'caught' => $caught, 'missed' => $missed,
-                'wrong' => $wrong]),
-            'timecreated' => $now,
-        ]);
-        $result = ['success' => $success, 'caught' => $caught, 'missed' => $missed, 'goal' => $game['goal'],
-            'tries' => $tries, 'first' => false, 'items' => [], 'coat' => false];
-        $key = ['charid' => $char->id, 'missionid' => $mission->id, 'kind' => 'game', 'code' => $code];
-        if ($success && !$DB->record_exists(self::T . 'found', $key)) {
-            $DB->insert_record(self::T . 'found', (object) ($key + ['courseid' => $courseid, 'timecreated' => $now]));
-            $result['first'] = true;
-            $reward = $mission->data['games'][$code]['reward'] ?? [];
-            $itemid = empty($reward['item']) ? 0 : missions::item_id((string) $reward['item']);
-            if ($itemid && engine::item($member, $itemid, 'minigame', 0, 0, $now)) {
-                $result['items'][] = (string) $reward['item'];
+        return [$caught, $missed, $wrong, $caught >= $game['goal'] && $missed < $game['shield']];
+    }
+
+    /**
+     * Counts a play of a hunt for mistakes: each mistake found once (s, the sheet, and m, its number) and each blot of
+     * ink (s and x, a word touched that was right).
+     *
+     * @param array $game As the student plays it.
+     * @param array $events
+     * @return array [found, blots, missed (sheet:mark => 0, the mistakes not found), success]
+     */
+    private static function count_errors(array $game, array $events): array {
+        $marks = [];
+        foreach ($game['sheets'] as $sheet) {
+            foreach ($sheet['parts'] as $part) {
+                if ($part['mark'] >= 0) {
+                    $marks[$sheet['id'] . ':' . $part['mark']] = true;
+                }
             }
-            $result['coat'] = !empty($reward['coat']);
         }
-        $transaction->allow_commit();
-        return $result;
+        $found = [];
+        $blots = 0;
+        $sheets = array_column($game['sheets'], 'id');
+        foreach ($events as $event) {
+            $sheet = (string) ($event['s'] ?? '');
+            if (!in_array($sheet, $sheets, true)) {
+                throw new \moodle_exception('invalidgameplay', 'local_oksigeniatesape');
+            }
+            if (isset($event['m'])) {
+                $key = $sheet . ':' . (int) $event['m'];
+                if (!isset($marks[$key]) || isset($found[$key])) {
+                    throw new \moodle_exception('invalidgameplay', 'local_oksigeniatesape');
+                }
+                $found[$key] = true;
+            } else {
+                $blots++;
+            }
+        }
+        $missed = array_map(fn() => 0, array_diff_key($marks, $found));
+        return [count($found), $blots, $missed, count($found) >= $game['goal'] && $blots < $game['misses']];
     }
 
     /**
@@ -216,7 +370,7 @@ final class minigames {
 
     /**
      * How the class did in the minigames of the mission, for the teacher: who played, who won, tries and the most
-     * common mix-ups (an animal and the net thrown at it).
+     * common mix-ups (an animal and the net thrown at it; in a hunt for mistakes, the mistakes that slipped by most).
      *
      * @param \stdClass $mission With data.
      * @return array
@@ -235,13 +389,17 @@ final class minigames {
                     $won[$row->charid] = true;
                 }
                 foreach ((json_decode((string) $row->detail, true)['wrong'] ?? []) as $animal => $net) {
-                    $key = $animal . '|' . $net;
+                    $key = ($game['type'] ?? '') === 'errors' ? (string) $animal : $animal . '|' . $net;
                     $counts[$key] = ($counts[$key] ?? 0) + 1;
                 }
             }
             arsort($counts);
             $confusions = [];
             foreach (array_slice($counts, 0, self::CONFUSIONS, true) as $key => $count) {
+                if (($game['type'] ?? '') === 'errors') {
+                    $confusions[] = ['text' => self::mistake($mission, $game, (string) $key), 'count' => $count];
+                    continue;
+                }
                 [$animal, $net] = explode('|', $key);
                 $label = $game['animals'][$animal]['label'] ?? $animal;
                 $label = is_array($label) ? ($label[$mission->variant] ?? reset($label)) : $label;
@@ -258,6 +416,31 @@ final class minigames {
             ];
         }
         return $list;
+    }
+
+    /**
+     * A mistake of a hunt, for the teacher: what the sheet said and what is right.
+     *
+     * @param \stdClass $mission With data.
+     * @param array $game
+     * @param string $key sheet:mark
+     * @return string
+     */
+    private static function mistake(\stdClass $mission, array $game, string $key): string {
+        [$id, $mark] = array_pad(explode(':', $key, 2), 2, '');
+        foreach ($game['sheets'] ?? [] as $sheet) {
+            if ((string) ($sheet['id'] ?? '') !== $id) {
+                continue;
+            }
+            $text = $sheet['text'] ?? '';
+            $text = is_array($text) ? (string) ($text[$mission->variant] ?? $text['gen'] ?? reset($text)) : (string) $text;
+            foreach (self::parts($text) as $part) {
+                if ($part['mark'] === (int) $mark) {
+                    return '«' . $part['wrong'] . '» → ' . ($part['right'][0] ?? '');
+                }
+            }
+        }
+        return $key;
     }
 
     /**
