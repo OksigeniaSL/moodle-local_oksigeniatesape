@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.48.1 (2026-10-14)
+
+- **Oksigenia Access inside the game**: if the site has it, its panel comes into the pages of the game and of the
+  teacher panel too (they are documents of their own, without the footer of Moodle where it usually comes in), with its
+  button on the right edge, out of the way of the answers. Not on the class screen, which is projected.
+
 ## 0.48.0 (2026-10-14)
 
 Smoother on modest tablets.

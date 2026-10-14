@@ -83,6 +83,7 @@ final class page {
         foreach (self::SCRIPTS[$app] ?? [$app] as $js) {
             $scripts .= '<script src="' . $base . $js . '.js?v=' . $version . '"></script>' . "\n";
         }
+        $access = $app === 'board' ? '' : self::access();
         @header('Content-Type: text/html; charset=utf-8');
         @header('X-Frame-Options: SAMEORIGIN');
         echo '<!DOCTYPE html>
@@ -103,8 +104,31 @@ final class page {
 <div id="app" aria-live="polite"><noscript>' . $title . '</noscript></div>
 <script>window.TESAPE_CONFIG = ' . $json . ';</script>
 <script src="' . $base . 'core.js?v=' . $version . '"></script>
-' . $scripts . '
+' . $scripts . $access . '
 </body>
 </html>';
+    }
+
+    /**
+     * The panel of Oksigenia Access, if the site has it: the pages of the game are documents of their own, without the
+     * footer of Moodle where it usually comes in. Not on the class screen, which is projected.
+     *
+     * @return string
+     */
+    private static function access(): string {
+        $panel = '\\local_oksigeniaaccess\\local\\hook_callbacks';
+        if (!class_exists($panel) || !method_exists($panel, 'get_footer_html')) {
+            return '';
+        }
+        try {
+            $html = (string) $panel::get_footer_html();
+            // In the game the left edge carries the text of the answers: its button goes to the right edge, out of the way.
+            $html = preg_replace('/ position(-mobile)?="[^"]*"/', '', $html);
+            return str_replace('<oksigenia-access-panel', '<oksigenia-access-panel position="mid-right"', $html);
+        } catch (\Throwable $e) {
+            // Accessibility never stops the game.
+            debugging('Tesapé could not add the panel of Oksigenia Access: ' . $e->getMessage(), DEBUG_DEVELOPER);
+            return '';
+        }
     }
 }
