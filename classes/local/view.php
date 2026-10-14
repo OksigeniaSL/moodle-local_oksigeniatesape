@@ -153,6 +153,12 @@ final class view {
             self::OWN_LOG
         );
         $world['log'] = array_values(array_map(fn($e) => self::entry($e), $entries));
+        // Back after a long time, or arriving late: a welcome and a short way to catch up. And now it is noted.
+        $welcome = welcome::for_student($courseid, $char, $member, $world, time());
+        if ($welcome) {
+            $world['welcome'] = $welcome;
+        }
+        welcome::seen($member, time());
         return $world;
     }
 
@@ -648,6 +654,8 @@ final class view {
                 'status' => $member->status,
                 'statusreason' => $private ? (string) $member->statusreason : '',
                 'step' => (int) $member->step,
+                'lastseen' => $private ? (int) ($member->lastseen ?? 0) : 0,
+                'remote' => (bool) ($member->remote ?? false),
             ];
         }
         return $character;

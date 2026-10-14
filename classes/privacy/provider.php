@@ -59,7 +59,7 @@ class provider implements
             'char' => ['userid', 'role', 'nameform', 'lineage', 'nickname', 'nicknamepending', 'saber', 'level', 'gems',
                 'creature', 'appearance', 'creaturestage', 'cosmetics', 'rolechangedat', 'timecreated'],
             'member' => ['charid', 'courseid', 'renown', 'energy', 'breath', 'status', 'statusreason', 'statusby', 'step',
-                'timecreated'],
+                'lastseen', 'remote', 'timecreated'],
             'ledger' => ['charid', 'courseid', 'resource', 'amount', 'reason', 'cmid', 'actorid', 'capped', 'undoneby',
                 'timecreated'],
             'powerreq' => ['powerid', 'memberid', 'targetmemberid', 'status', 'decidedby', 'timecreated'],
@@ -285,6 +285,8 @@ class provider implements
                 'status' => $member->status,
                 'statusreason' => $member->statusreason,
                 'step' => $member->step,
+                'lastseen' => $member->lastseen ? transform::datetime($member->lastseen) : '',
+                'remote' => transform::yesno($member->remote),
                 'timecreated' => transform::datetime($member->timecreated),
             ]);
             $requests = $DB->get_records_sql(

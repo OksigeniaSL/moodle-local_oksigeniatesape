@@ -109,6 +109,17 @@ final class get_world extends external_api {
                 'heropending' => new external_value(PARAM_TEXT, 'Own hero name waiting for a teacher'),
                 'creaturepending' => new external_value(PARAM_TEXT, 'Own creature name waiting for a teacher'),
             ], 'Names the student can give', VALUE_OPTIONAL),
+            'welcome' => new external_single_structure([
+                'kind' => new external_value(PARAM_ALPHA, 'back (after a long time away) or new (arriving late)'),
+                'days' => new external_value(PARAM_INT, 'Days away'),
+                'lanterns' => new external_multiple_structure(new external_value(PARAM_TEXT, 'Place the class lit meanwhile')),
+                'path' => new external_multiple_structure(new external_single_structure([
+                    'id' => new external_value(PARAM_INT, 'Scene'),
+                    'title' => new external_value(PARAM_TEXT, 'Title'),
+                    'place' => new external_value(PARAM_TEXT, 'Place'),
+                ]), 'A short way to catch up'),
+                'team' => new external_multiple_structure(new external_value(PARAM_TEXT, 'Teammate')),
+            ], 'A welcome back, or to who arrives late', VALUE_OPTIONAL),
             'badge' => new external_single_structure([
                 'name' => new external_value(PARAM_TEXT, 'Name of the badge'),
                 'issued' => new external_value(PARAM_BOOL, 'The student has it'),

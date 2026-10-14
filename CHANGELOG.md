@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.44.0 (2026-10-14)
+
+- **The return of who has been away**: who comes back after a week or more (ill, travelling, in hospital) and who
+  arrives with the expedition on its way are welcomed with what the class did meanwhile (the lanterns it lit), who waits
+  for them in their team, and a short way to catch up: in each place the class lit and they have not done, the first
+  scene of their step, ready to play. Once: the visit is noted at the same time (`lastseen`).
+- **Following the expedition from far**: the teacher marks a student who follows it from home or hospital; they see
+  that the votes and battles of the class screen come to their device, and their team sees «from far» when playing
+  together.
+- **For the teacher**: «Far from the expedition», in the class tab: who has not come in for a week or more, and who
+  follows from far; and on the card of each student, when they last came in. The new data is in the privacy export.
+
 ## 0.43.0 (2026-10-14)
 
 - **A «What if…?» at the end of each scene** of the pilot mission (mission version 14): a question to think about for

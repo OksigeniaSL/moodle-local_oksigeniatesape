@@ -57,6 +57,8 @@ final class structures {
                 'status' => new external_value(PARAM_ALPHA, 'active, fallen or paused'),
                 'statusreason' => new external_value(PARAM_TEXT, 'Why, only for the student and the teachers'),
                 'step' => new external_value(PARAM_INT, 'Step of the mission, 1 to 4'),
+                'lastseen' => new external_value(PARAM_INT, 'Last time they opened the game (0: not known)', VALUE_DEFAULT, 0),
+                'remote' => new external_value(PARAM_BOOL, 'They follow the expedition from far', VALUE_DEFAULT, false),
             ], 'State in the course, if it plays there', VALUE_OPTIONAL),
         ], 'Character', $required);
     }

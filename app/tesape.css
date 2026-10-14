@@ -4391,3 +4391,20 @@ body.in-battle {
 .scene-layer.class-mode .whatif p {
   font-size: 26px;
 }
+
+/* The welcome of who comes back, or arrives late. */
+.welcome-moment .badge-card {
+  text-align: left;
+}
+
+.welcome-moment .badge-card h2 {
+  margin-bottom: 10px;
+}
+
+.welcome-path {
+  margin: 8px 0 14px;
+}
+
+.far-banner {
+  margin: 0 0 12px;
+}

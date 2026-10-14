@@ -109,6 +109,13 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:manageregion',
     ],
+    'local_oksigeniatesape_set_remote' => [
+        'classname' => 'local_oksigeniatesape\external\set_remote',
+        'description' => 'Marks that a student follows the expedition from far (home, hospital), or not.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:award',
+    ],
     'local_oksigeniatesape_get_log' => [
         'classname' => 'local_oksigeniatesape\external\get_log',
         'description' => 'The log of a course, newest first.',

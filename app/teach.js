@@ -379,6 +379,51 @@
       }).join('') + '</ul></section>';
   }
 
+  /**
+   * How long ago a student came into the game, in days (-1: not known yet).
+   *
+   * @param {Object} m The member of the student.
+   * @return {number}
+   */
+  function daysAway(m) {
+    return m && m.lastseen ? Math.floor((Date.now() / 1000 - m.lastseen) / 86400) : -1;
+  }
+
+  /**
+   * When a student last came into the game, said plainly.
+   *
+   * @param {Object} m
+   * @return {string}
+   */
+  function lastSeen(m) {
+    var days = daysAway(m);
+    return days < 0 ? t('teach_seen_unknown') : days === 0 ? t('teach_seen_today') : days === 1 ? t('teach_seen_yesterday') :
+      t('teach_seen_days', days);
+  }
+
+  /**
+   * Who is far from the expedition: who has not come in for a week or more, and who follows it from far (home,
+   * hospital). Each one opens their card.
+   *
+   * @return {string}
+   */
+  function farCard() {
+    var far = state.data.students.filter(function(s) {
+      var m = s.character && s.character.member;
+      return m && (m.remote || daysAway(m) >= 7);
+    });
+    if (!far.length) {
+      return '';
+    }
+    return '<section class="card" style="margin-top:16px"><div class="kicker">' + esc(t('teach_far')) + '</div><p ' +
+      'class="help-soft">' + esc(t('teach_far_help')) + '</p><ul class="list">' + far.map(function(s) {
+        var m = s.character.member;
+        return '<li class="item" data-student="' + s.userid + '" tabindex="0" role="button" style="cursor:pointer"><span ' +
+          'class="grow"><b>' + esc(s.fullname) + '</b><small>' + esc(lastSeen(m)) + '</small></span>' + (m.remote ?
+          '<span class="tag">' + esc(t('teach_remote_tag')) + '</span>' : '') + '</li>';
+      }).join('') + '</ul></section>';
+  }
+
   function tabClass() {
     var d = state.data;
     var teams = '<div class="pills" style="justify-content:flex-start;margin-bottom:12px"><button class="chip" ' +
@@ -388,7 +433,7 @@
           '</button>';
       }).join('') + '</div>';
     var shown = studentsShown();
-    var el = content(todayCard() + namesCard() + teamsCard() + '<section class="card"><div class="section-title"><h2>' +
+    var el = content(todayCard() + namesCard() + teamsCard() + farCard() + '<section class="card"><div class="section-title"><h2>' +
       esc(t('teach_tab_class')) +
       '</h2><button class="btn btn-soft" data-all>' + esc(t('teach_selectall')) + '</button></div>' + teams +
       (shown.length ? '<ul class="list">' + shown.map(studentCard).join('') + '</ul>' : '<p class="empty">' +
@@ -656,7 +701,13 @@
       'flex-start">' + [1, 2, 3, 4].map(function(st) {
         return '<button class="chip" data-step="' + st + '" aria-pressed="' + (m && m.step === st) + '"' +
           (can('manageregion') ? '' : ' disabled') + '>' + esc(t('teach_step_' + st)) + '</button>';
-      }).join('') + '</div><div class="actions" style="justify-content:flex-start;margin-top:16px">';
+      }).join('') + '</div>';
+    // Far from the expedition: when they came last, and whether they follow it from home or hospital.
+    html += '<h3 style="margin-top:16px">' + esc(t('teach_far')) + '</h3><p class="help-soft">' + esc(lastSeen(m)) + '</p>' +
+      '<label class="chip" style="display:inline-flex;gap:8px;align-items:center"><input type="checkbox" data-remote' +
+      (m && m.remote ? ' checked' : '') + (can('award') ? '' : ' disabled') + '> ' + esc(t('teach_remote')) + '</label>' +
+      '<p class="help-soft" style="margin-top:6px">' + esc(t('teach_remote_help')) + '</p>' +
+      '<div class="actions" style="justify-content:flex-start;margin-top:16px">';
     if (can('pause')) {
       if (m && m.status === 'paused') {
         html += '<button class="btn btn-soft" data-status="resume">' + esc(t('teach_resume')) + '</button>';
@@ -685,6 +736,19 @@
         });
       };
     });
+    var remote = el.querySelector('[data-remote]');
+    if (remote) {
+      remote.onchange = function() {
+        T.api('set_remote', {courseid: cfg.courseid, userid: userid, remote: remote.checked}).then(function() {
+          T.toast(esc(t('app_saved')));
+          return load(true);
+        }).then(function() {
+          openStudent(userid);
+        }).catch(function(e) {
+          T.toast(esc(e.message), true);
+        });
+      };
+    }
     el.querySelectorAll('[data-status]').forEach(function(b) {
       b.onclick = function() {
         var action = b.dataset.status;

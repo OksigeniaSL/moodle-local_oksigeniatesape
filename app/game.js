@@ -350,6 +350,15 @@
       }
     }
     remember();
+    // One moment after the other: first the welcome, then the badge.
+    var moments = [];
+    if (state.world.welcome) {
+      var w = state.world.welcome;
+      state.world.welcome = null;
+      moments.push(function(then) {
+        welcomeMoment(w, then);
+      });
+    }
     // The badge of the mission, celebrated once on each device.
     var b = state.world.badge;
     if (b && b.issued) {
@@ -362,19 +371,86 @@
         had = b.name;
       }
       if (had !== b.name) {
-        setTimeout(function() {
-          badgeMoment(b);
-        }, 700);
+        moments.push(function(then) {
+          badgeMoment(b, then);
+        });
       }
     }
+    var next = function() {
+      var moment = moments.shift();
+      if (moment) {
+        moment(next);
+      }
+    };
+    if (moments.length) {
+      setTimeout(next, 500);
+    }
+  }
+
+  /**
+   * Whether the student follows the expedition from far (home, hospital), as the teacher marked.
+   *
+   * @return {boolean}
+   */
+  function farFrom() {
+    var m = state.world.character && state.world.character.member;
+    return !!(m && m.remote);
+  }
+
+  /**
+   * The welcome of who comes back after a long time, or arrives with the expedition on its way: what the class did
+   * meanwhile, who waits for them, and a short way to catch up, each scene ready to play.
+   *
+   * @param {Object} w The welcome.
+   * @param {Function} then When it is closed.
+   */
+  function welcomeMoment(w, then) {
+    var layer = document.createElement('div');
+    layer.className = 'badge-moment welcome-moment';
+    layer.setAttribute('role', 'dialog');
+    layer.setAttribute('aria-modal', 'true');
+    layer.setAttribute('aria-labelledby', 'tesape-welcome-title');
+    var back = w.kind === 'back';
+    layer.innerHTML = '<div class="badge-card"><div class="kicker">' + esc(t(back ? 'app_welcome_back_kicker' :
+      'app_welcome_new_kicker')) + '</div><h2 id="tesape-welcome-title">' + esc(t(back ? 'app_welcome_back' :
+      'app_welcome_new')) + '</h2>' + (back && w.days ? '<p>' + esc(t('app_welcome_days', w.days)) + '</p>' : '') +
+      (w.lanterns.length ? '<p>' + esc(t(back ? 'app_welcome_lanterns' : 'app_welcome_lanterns_new',
+      w.lanterns.join(', '))) + '</p>' : '') + (w.team.length ? '<p>' + esc(t('app_welcome_team', w.team.join(', '))) +
+      '</p>' : '') + (w.path.length ? '<h3>' + esc(t('app_welcome_path')) + '</h3><ul class="list welcome-path">' +
+      w.path.map(function(p) {
+        return '<li class="item"><span class="grow"><b>' + esc(p.title) + '</b><small>' + esc(p.place) + '</small></span>' +
+          '<button class="btn btn-main" type="button" data-welcomescene="' + p.id + '">' + esc(t('app_play')) + '</button></li>';
+      }).join('') + '</ul>' : '') + '<div class="actions"><button class="btn btn-soft" type="button" data-close>' +
+      esc(t('app_welcome_later')) + '</button></div></div>';
+    document.body.appendChild(layer);
+    layer.querySelector('[data-close]').onclick = function() {
+      layer.remove();
+      then();
+    };
+    layer.querySelectorAll('[data-welcomescene]').forEach(function(b) {
+      b.onclick = function() {
+        layer.remove();
+        T.playScene({sceneid: Number(b.dataset.welcomescene), world: state.world, onclose: function(world) {
+          state.world = world;
+          remember();
+          route();
+        }});
+      };
+    });
+    if (T.fx) {
+      T.fx.sound('lantern');
+      T.fx.sparkles();
+    }
+    layer.querySelector('button').focus();
   }
 
   /**
    * The moment of the badge: the medal comes with a drum roll, and then the applause.
    *
    * @param {Object} b The badge.
+   * @param {Function} [then] When it is closed.
    */
-  function badgeMoment(b) {
+  function badgeMoment(b, then) {
     var layer = document.createElement('div');
     layer.className = 'badge-moment';
     layer.setAttribute('role', 'dialog');
@@ -388,6 +464,9 @@
     var close = function() {
       document.removeEventListener('keydown', onkey);
       layer.remove();
+      if (then) {
+        then();
+      }
     };
     var onkey = function(ev) {
       if (ev.key === 'Escape') {
@@ -625,7 +704,9 @@
     layer.setAttribute('aria-labelledby', 'tesape-team-title');
     layer.innerHTML = '<form class="badge-card"><h2 id="tesape-team-title">' + esc(t('app_team_who')) + '</h2><p>' +
       esc(t('app_team_who_help')) + '</p><div class="team-mates">' + mates.map(function(m) {
-        return '<label class="chip"><input type="checkbox" value="' + m.userid + '"> ' + esc(m.name) + '</label>';
+        var far = m.character && m.character.member && m.character.member.remote;
+        return '<label class="chip"><input type="checkbox" value="' + m.userid + '"> ' + esc(m.name) + (far ? ' · ' +
+          esc(t('app_team_far')) : '') + '</label>';
       }).join('') + '</div><div class="actions"><button class="btn btn-soft" type="button" data-cancel>' +
       esc(t('app_cancel')) + '</button><button class="btn btn-main" type="submit" disabled>' + esc(t('app_team_start')) +
       '</button></div></form>';
@@ -820,6 +901,7 @@
     return '<div class="mission"><div class="mission-head"><div><div class="kicker">' + esc(m.subtitle) + '</div><h2>' +
       esc(m.title) + '</h2></div><div class="tally"><span>' + T.icon('lantern') + ' ' + lit + '/' + m.chapters.length +
       '</span><span>' + T.icon('log') + ' ' + m.pages.length + '/' + m.pagecount + '</span></div></div>' +
+      (!past && farFrom() ? '<p class="team-banner far-banner">' + esc(t('app_far_banner')) + '</p>' : '') +
       (past ? '' : pageCard()) + '<div class="mission-grid">' + missionMap(m) + chapterPanel(m, chapter, past) + '</div></div>';
   }
 
