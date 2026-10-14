@@ -47,7 +47,7 @@
         <FIELD NAME="hideacts" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The activities of the mission only inside the valley, not on the course page"/>
         <FIELD NAME="gradebook" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The ratings of the competencies go to the gradebook"/>
         <FIELD NAME="quiet" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="No sound on the devices of the students"/>
-        <FIELD NAME="look" TYPE="char" LENGTH="10" NOTNULL="true" DEFAULT="" SEQUENCE="false" COMMENT="Theme of the class: night, day, or empty for the one of the world"/>
+        <FIELD NAME="look" TYPE="char" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Theme of the class: night, day, or none for the one of the world"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>
