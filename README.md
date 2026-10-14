@@ -122,3 +122,7 @@ with `moodle-plugin-ci` in GitHub Actions on Moodle 4.5, 5.2 and 5.3, and on `ma
 
 GNU GPL v3 or later. © 2026 Oksigenia. The fonts Lexend and Cherry Swash, in `app/fonts`, are under the SIL Open Font
 License 1.1 (listed in `thirdpartylibs.xml`).
+
+The sample mission, in `missions/livingthings`, is under two licences, to choose from: CC BY-SA 4.0 or GNU GPL v3 or
+later ([its licence](missions/livingthings/LICENSE.md)). The art of the valley comes in its own package, with its own
+licence: free to use with Tesapé.

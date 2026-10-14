@@ -107,3 +107,7 @@ que viene. Ver [CONTRIBUTING.md](CONTRIBUTING.md).
 
 GNU GPL v3 o posterior. © 2026 Oksigenia. Las fuentes Lexend y Cherry Swash, en `app/fonts`, tienen licencia SIL Open
 Font License 1.1 (en `thirdpartylibs.xml`).
+
+La misión de muestra, en `missions/livingthings`, tiene dos licencias, a elegir: CC BY-SA 4.0 o GNU GPL v3 o
+posterior ([su licencia](missions/livingthings/LICENSE.md)). El arte del valle viene en su propio paquete, con su
+propia licencia: libre para usarlo con Tesapé.

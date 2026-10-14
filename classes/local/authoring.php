@@ -481,6 +481,8 @@ final class authoring {
             'edition' => 1,
             'licence' => 'free',
             'publisher' => '',
+            // The mission is of its author, who chooses a licence when sharing it.
+            'rights' => '',
             'changes' => [],
             'lang' => current_language(),
             'ages' => $draft['ages'],
