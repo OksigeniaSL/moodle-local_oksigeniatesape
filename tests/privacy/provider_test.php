@@ -217,6 +217,21 @@ final class provider_test extends provider_testcase {
         $this->assertEquals('A map of our school', writer::with_context($w->ctx1)->get_data($path('ideas'))->ideas[0]['message']);
     }
 
+    public function test_export_what_a_teacher_did(): void {
+        $this->resetAfterTest();
+        $w = $this->make_world();
+        // The teacher has no character, and still gets what they did in the course, without the students.
+        $this->export_context_data_for_user($w->teacher->id, $w->ctx1, 'local_oksigeniatesape');
+        $base = [get_string('pluginname', 'local_oksigeniatesape')];
+        $path = array_merge($base, [get_string('privacy:path:teacher', 'local_oksigeniatesape')]);
+        $done = writer::with_context($w->ctx1)->get_data($path);
+        $this->assertCount(1, $done->given);
+        $this->assertSame('paused', $done->statuses[0]['status']);
+        $this->assertSame('approved', $done->powers[0]['status']);
+        $this->assertCount(1, $done->challenges);
+        $this->assertSame(['status', 'time'], array_keys($done->statuses[0]));
+    }
+
     public function test_delete_data_for_user_in_a_course(): void {
         global $DB;
         $this->resetAfterTest();

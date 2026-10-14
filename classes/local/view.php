@@ -192,17 +192,18 @@ final class view {
         foreach ($DB->get_records(self::T . 'found', ['charid' => $char->id, 'missionid' => $mission->id]) as $f) {
             $found[$f->kind][$f->code] = true;
         }
-        $attempts = $DB->get_records_sql_menu(
-            'SELECT sceneid, COUNT(1) FROM {' . self::T . 'sceneattempt} WHERE charid = ? AND courseid = ? GROUP BY sceneid',
-            [$char->id, $courseid]
-        );
-        // The endings reached in each scene, to know which can still be made better.
+        // The plays of each scene and the endings reached in it (to know which can still be made better), in one query.
+        $attempts = [];
         $reached = [];
         $rows = $DB->get_recordset_sql(
-            'SELECT DISTINCT sceneid, ending FROM {' . self::T . 'sceneattempt} WHERE charid = ? AND courseid = ?',
+            'SELECT sceneid, ending, COUNT(1) AS plays
+               FROM {' . self::T . 'sceneattempt}
+              WHERE charid = ? AND courseid = ?
+           GROUP BY sceneid, ending',
             [$char->id, $courseid]
         );
         foreach ($rows as $row) {
+            $attempts[$row->sceneid] = ($attempts[$row->sceneid] ?? 0) + (int) $row->plays;
             $reached[$row->sceneid][] = $row->ending;
         }
         $rows->close();

@@ -33,6 +33,13 @@ $definitions = [
         'staticacceleration' => true,
         'staticaccelerationsize' => 8,
     ],
+    // The packages of missions the site has (in the plugin and uploaded): read from the disk only when one changes.
+    'packages' => [
+        'mode' => cache_store::MODE_APPLICATION,
+        'simplekeys' => true,
+        'staticacceleration' => true,
+        'staticaccelerationsize' => 2,
+    ],
     // What confuses the class most, for the class screen: it reads every play, so it is kept for ten minutes.
     'mixups' => [
         'mode' => cache_store::MODE_APPLICATION,

@@ -498,13 +498,14 @@ final class powers {
         }
         $requests = [];
         $records = $DB->get_records(self::T . 'powerreq', ['memberid' => $member->id], 'timecreated DESC, id DESC', '*', 0, 8);
+        $targets = self::target_names($records, (int) $member->courseid);
         foreach ($records as $request) {
             $power = $catalog[$request->powerid] ?? null;
             $requests[] = [
                 'id' => (int) $request->id,
                 'name' => $power ? self::name($power) : '',
                 'status' => $request->status,
-                'target' => self::target_name($request, $member->courseid),
+                'target' => $targets[$request->targetmemberid] ?? '',
                 'time' => (int) $request->timecreated,
             ];
         }
@@ -535,7 +536,8 @@ final class powers {
             0,
             $limit
         );
-        $out = function ($request) use ($catalog, $courseid) {
+        $targets = self::target_names(array_merge($pending, $decided), $courseid);
+        $out = function ($request) use ($catalog, $targets) {
             $power = $catalog[$request->powerid] ?? null;
             return [
                 'id' => (int) $request->id,
@@ -544,7 +546,7 @@ final class powers {
                 'power' => $power ? self::name($power) : '',
                 'code' => $power ? $power->code : '',
                 'cost' => $power ? (int) $power->cost : 0,
-                'target' => self::target_name($request, $courseid),
+                'target' => $targets[$request->targetmemberid] ?? '',
                 'status' => $request->status,
                 'time' => (int) $request->timecreated,
             ];
@@ -614,29 +616,29 @@ final class powers {
     }
 
     /**
-     * The first name of the teammate a request was for.
+     * The names of the teammates some requests were for, as classmates see them, in one query.
      *
-     * @param \stdClass $request
+     * @param \stdClass[] $requests
      * @param int $courseid
-     * @return string
+     * @return string[] targetmemberid => name.
      */
-    private static function target_name(\stdClass $request, int $courseid): string {
+    private static function target_names(array $requests, int $courseid): array {
         global $DB;
-        if (!$request->targetmemberid) {
-            return '';
+        $ids = array_values(array_unique(array_filter(array_map(fn($r) => (int) $r->targetmemberid, $requests))));
+        if (!$ids) {
+            return [];
         }
-        $user = $DB->get_record_sql(
-            'SELECT u.id, u.firstname, c.nickname
-               FROM {' . self::T . 'member} m
-               JOIN {' . self::T . 'char} c ON c.id = m.charid
+        [$insql, $params] = $DB->get_in_or_equal($ids);
+        $users = $DB->get_records_sql(
+            "SELECT m.id, u.firstname, c.nickname
+               FROM {" . self::T . "member} m
+               JOIN {" . self::T . "char} c ON c.id = m.charid
                JOIN {user} u ON u.id = c.userid
-              WHERE m.id = ?',
-            [$request->targetmemberid]
+              WHERE m.id $insql",
+            $params
         );
-        if (!$user) {
-            return '';
-        }
         $region = regions::get($courseid);
-        return $region && $region->nicknames && $user->nickname ? $user->nickname : $user->firstname;
+        $nicknames = $region && $region->nicknames;
+        return array_map(fn($u) => $nicknames && $u->nickname ? $u->nickname : $u->firstname, $users);
     }
 }

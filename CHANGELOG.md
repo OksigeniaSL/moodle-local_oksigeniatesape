@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.50.0 (2026-10-14)
+
+- **Faster as courses and missions grow**: indexes for the scenes of a chapter, the entries of a request and the plays
+  of a student in a course; the map of a student asks for its plays and endings in one query; the names of the
+  teammates of the power requests, in one query; and the packages of missions are read from the disk only when one
+  changes (kept in a cache of the site).
+- **Privacy**: a teacher who asks for their data gets what they did in each course (the rewards they gave, the pauses,
+  their decisions on powers, commitments and challenges), without the students it was about, also without a character
+  of their own.
+
 ## 0.49.1 (2026-10-14)
 
 - **Screen readers**: in the teacher panel, the lists of students far from the expedition and of classroom challenges

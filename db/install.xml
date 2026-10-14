@@ -150,6 +150,7 @@
       <INDEXES>
         <INDEX NAME="charid-courseid-timecreated" UNIQUE="false" FIELDS="charid, courseid, timecreated"/>
         <INDEX NAME="courseid-timecreated" UNIQUE="false" FIELDS="courseid, timecreated"/>
+        <INDEX NAME="refid-reason" UNIQUE="false" FIELDS="refid, reason"/>
       </INDEXES>
     </TABLE>
     <TABLE NAME="local_oksigeniatesape_power" COMMENT="The powers of a course: real classroom privileges, editable by the teacher">
@@ -301,6 +302,7 @@
       </KEYS>
       <INDEXES>
         <INDEX NAME="missionid-code" UNIQUE="true" FIELDS="missionid, code"/>
+        <INDEX NAME="chapterid" UNIQUE="false" FIELDS="chapterid"/>
       </INDEXES>
     </TABLE>
     <TABLE NAME="local_oksigeniatesape_sceneattempt" COMMENT="Each time a character plays a scene">
@@ -327,6 +329,7 @@
       </KEYS>
       <INDEXES>
         <INDEX NAME="charid-playid" UNIQUE="false" FIELDS="charid, playid"/>
+        <INDEX NAME="charid-courseid" UNIQUE="false" FIELDS="charid, courseid"/>
       </INDEXES>
     </TABLE>
     <TABLE NAME="local_oksigeniatesape_found" COMMENT="What a character has found in a mission: lanterns, pages of the book, steps of the creature">

@@ -201,25 +201,38 @@ final class missions {
         if ($index !== false) {
             return $index;
         }
-        $index = [];
         $folders = ['plugin' => $CFG->dirroot . '/local/oksigeniatesape/missions', 'site' => $CFG->dataroot . '/' .
             self::SITE_FOLDER];
+        // Read from the disk only when a package changed: the files and their times make the key.
+        $files = [];
         foreach ($folders as $origin => $folder) {
             foreach (glob($folder . '/*/mission.json') ?: [] as $file) {
-                $mission = json_decode((string) file_get_contents($file), true);
-                if (!is_array($mission) || empty($mission['code'])) {
-                    continue;
-                }
-                $code = (string) $mission['code'];
-                // A package uploaded to the site counts only if it is newer than the one of the plugin.
-                if (isset($index[$code]) && (int) ($index[$code]['mission']['version'] ?? 1) >= (int) ($mission['version'] ?? 1)) {
-                    continue;
-                }
-                $index[$code] = ['folder' => dirname($file), 'origin' => $origin, 'mission' => $mission];
+                $files[] = [$origin, $file, (int) @filemtime($file)];
             }
+        }
+        $kept = \cache::make('local_oksigeniatesape', 'packages');
+        $key = md5(json_encode([get_config('local_oksigeniatesape', 'version'), $files]));
+        $index = $kept->get($key);
+        if ($index !== false) {
+            $cache->set('index', $index);
+            return $index;
+        }
+        $index = [];
+        foreach ($files as [$origin, $file]) {
+            $mission = json_decode((string) file_get_contents($file), true);
+            if (!is_array($mission) || empty($mission['code'])) {
+                continue;
+            }
+            $code = (string) $mission['code'];
+            // A package uploaded to the site counts only if it is newer than the one of the plugin.
+            if (isset($index[$code]) && (int) ($index[$code]['mission']['version'] ?? 1) >= (int) ($mission['version'] ?? 1)) {
+                continue;
+            }
+            $index[$code] = ['folder' => dirname($file), 'origin' => $origin, 'mission' => $mission];
         }
         ksort($index);
         $cache->set('index', $index);
+        $kept->set($key, $index);
         return $index;
     }
 

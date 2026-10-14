@@ -223,6 +223,12 @@ class provider implements
         global $DB;
         $userid = $contextlist->get_user()->id;
         $char = $DB->get_record(self::T . 'char', ['userid' => $userid]);
+        foreach ($contextlist->get_contexts() as $context) {
+            if ($context->contextlevel == CONTEXT_COURSE) {
+                // What they did as a teacher, with or without a character of their own.
+                self::export_teacher($context, (int) $userid);
+            }
+        }
         if (!$char) {
             return;
         }
@@ -250,6 +256,68 @@ class provider implements
                 self::export_course($context, $char->id);
             }
         }
+    }
+
+    /**
+     * What a user did as a teacher in a course: the rewards they gave, the pauses, the decisions on powers, commitments
+     * and challenges. Without the students it was about: that is their data.
+     *
+     * @param \context $context
+     * @param int $userid
+     */
+    private static function export_teacher(\context $context, int $userid): void {
+        global $DB;
+        $courseid = (int) $context->instanceid;
+        $given = $DB->get_records(
+            self::T . 'ledger',
+            ['courseid' => $courseid, 'actorid' => $userid],
+            'timecreated',
+            'id, resource, amount, reason, timecreated'
+        );
+        $paused = $DB->get_records(
+            self::T . 'member',
+            ['courseid' => $courseid, 'statusby' => $userid],
+            'timemodified',
+            'id, status, timemodified'
+        );
+        $powers = $DB->get_records_sql(
+            'SELECT r.id, r.status, r.timedecided
+               FROM {' . self::T . 'powerreq} r
+               JOIN {' . self::T . 'member} m ON m.id = r.memberid
+              WHERE m.courseid = ? AND r.decidedby = ?
+           ORDER BY r.timedecided',
+            [$courseid, $userid]
+        );
+        $pacts = $DB->get_records(
+            self::T . 'pact',
+            ['courseid' => $courseid, 'decidedby' => $userid],
+            'timedecided',
+            'id, status, timedecided'
+        );
+        $validations = $DB->get_records(
+            self::T . 'validation',
+            ['courseid' => $courseid, 'validatedby' => $userid],
+            'timemodified',
+            'id, status, timemodified'
+        );
+        if (!$given && !$paused && !$powers && !$pacts && !$validations) {
+            return;
+        }
+        $when = fn($time) => $time ? transform::datetime($time) : null;
+        writer::with_context($context)->export_data(self::path('teacher'), (object) [
+            'given' => array_values(array_map(fn($e) => ['resource' => $e->resource, 'amount' => $e->amount,
+                'reason' => $e->reason, 'time' => $when($e->timecreated)], $given)),
+            'statuses' => array_values(array_map(fn($m) => ['status' => $m->status, 'time' => $when($m->timemodified)], $paused)),
+            'powers' => array_values(array_map(fn($r) => ['status' => $r->status, 'time' => $when($r->timedecided)], $powers)),
+            'commitments' => array_values(array_map(
+                fn($p) => ['status' => $p->status, 'time' => $when($p->timedecided)],
+                $pacts
+            )),
+            'challenges' => array_values(array_map(
+                fn($v) => ['status' => $v->status, 'time' => $when($v->timemodified)],
+                $validations
+            )),
+        ]);
     }
 
     /**

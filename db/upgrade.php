@@ -566,5 +566,23 @@ function xmldb_local_oksigeniatesape_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026101493, 'local', 'oksigeniatesape');
     }
 
+    if ($oldversion < 2026101498) {
+        // Indexes for what is asked again and again: the scenes of a chapter, the entries of a request and the plays
+        // of a student in a course.
+        foreach (
+            [
+                'scene' => new xmldb_index('chapterid', XMLDB_INDEX_NOTUNIQUE, ['chapterid']),
+                'ledger' => new xmldb_index('refid-reason', XMLDB_INDEX_NOTUNIQUE, ['refid', 'reason']),
+                'sceneattempt' => new xmldb_index('charid-courseid', XMLDB_INDEX_NOTUNIQUE, ['charid', 'courseid']),
+            ] as $name => $index
+        ) {
+            $table = new xmldb_table('local_oksigeniatesape_' . $name);
+            if (!$dbman->index_exists($table, $index)) {
+                $dbman->add_index($table, $index);
+            }
+        }
+        upgrade_plugin_savepoint(true, 2026101498, 'local', 'oksigeniatesape');
+    }
+
     return true;
 }
