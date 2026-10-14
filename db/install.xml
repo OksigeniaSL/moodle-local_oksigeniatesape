@@ -71,6 +71,7 @@
         <FIELD NAME="lastregen" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Last daily refill of energy and breath"/>
         <FIELD NAME="lastseen" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Last time the student opened the game in the course"/>
         <FIELD NAME="remote" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The student follows the expedition from far (home, hospital), marked by a teacher"/>
+        <FIELD NAME="adapt" TYPE="char" LENGTH="200" NOTNULL="false" SEQUENCE="false" COMMENT="Adaptations the teacher marked for the student (never a diagnosis), separated by commas"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>

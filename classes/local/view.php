@@ -656,6 +656,7 @@ final class view {
                 'step' => (int) $member->step,
                 'lastseen' => $private ? (int) ($member->lastseen ?? 0) : 0,
                 'remote' => (bool) ($member->remote ?? false),
+                'adapt' => $private ? adapt::of($member) : [],
             ];
         }
         return $character;

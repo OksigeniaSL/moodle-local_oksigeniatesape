@@ -59,6 +59,12 @@ final class structures {
                 'step' => new external_value(PARAM_INT, 'Step of the mission, 1 to 4'),
                 'lastseen' => new external_value(PARAM_INT, 'Last time they opened the game (0: not known)', VALUE_DEFAULT, 0),
                 'remote' => new external_value(PARAM_BOOL, 'They follow the expedition from far', VALUE_DEFAULT, false),
+                'adapt' => new external_multiple_structure(
+                    new external_value(PARAM_ALPHA, 'Adaptation'),
+                    'What the game adapts for them (only for them and their teachers)',
+                    VALUE_DEFAULT,
+                    []
+                ),
             ], 'State in the course, if it plays there', VALUE_OPTIONAL),
         ], 'Character', $required);
     }

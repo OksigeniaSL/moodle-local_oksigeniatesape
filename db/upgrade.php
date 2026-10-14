@@ -526,5 +526,15 @@ function xmldb_local_oksigeniatesape_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026101490, 'local', 'oksigeniatesape');
     }
 
+    if ($oldversion < 2026101491) {
+        // What a student needs to play as everybody else: the adaptations the teacher marks, never a diagnosis.
+        $table = new xmldb_table('local_oksigeniatesape_member');
+        $field = new xmldb_field('adapt', XMLDB_TYPE_CHAR, '200', null, null, null, null, 'remote');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        upgrade_plugin_savepoint(true, 2026101491, 'local', 'oksigeniatesape');
+    }
+
     return true;
 }

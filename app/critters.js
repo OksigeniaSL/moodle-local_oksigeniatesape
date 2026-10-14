@@ -582,7 +582,7 @@
   }
 
   function next() {
-    if (!timer && !still && pace) {
+    if (!timer && !still && !T.adapted.still && pace) {
       timer = setTimeout(visit, (pace[0] + Math.random() * (pace[1] - pace[0])) * 1000);
     }
   }
@@ -598,7 +598,7 @@
       if (every) {
         pace = every;
       }
-      if (!timer && !busy) {
+      if (!timer && !busy && !T.adapted.still) {
         timer = setTimeout(visit, (8 + Math.random() * 8) * 1000);
       }
     },
@@ -611,7 +611,7 @@
       var kinds = all().filter(function(c) {
         return MOVES[c.move] && (!code || c.code === code);
       });
-      if (kinds.length && !busy) {
+      if (kinds.length && !busy && !T.adapted.still) {
         clearTimeout(timer);
         timer = 0;
         busy = true;

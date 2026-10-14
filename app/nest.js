@@ -258,7 +258,8 @@
       }
       var dt = Math.min(0.1, (now - run.last) / 1000);
       run.last = now;
-      var fall = FALL[Math.max(0, Math.min(3, game.speed - 1))];
+      // With «no hurry», the animals come down more slowly.
+      var fall = FALL[Math.max(0, Math.min(3, game.speed - 1))] * (T.adapted.notime ? 1.6 : 1);
       run.spawnIn -= dt;
       if (run.spawnIn <= 0 && run.live.length < AT_ONCE && run.queue.length) {
         spawn();

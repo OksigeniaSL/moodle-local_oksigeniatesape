@@ -95,6 +95,50 @@
    *     name, creature, items, roles, vote ({open(prompt, labels), state(), close()}, or null without phones), finish(events,
    *     from).
    */
+  /* ---------- Reading aloud, for who needs it ---------- */
+
+  /**
+   * Reads aloud what is on the screen of a scene (the narration, the question, the options), with a voice of the
+   * device itself, so that the text goes nowhere else; touched again, it stops. Without a voice of its own in the
+   * language of the page, the device says so.
+   *
+   * @param {HTMLElement} body
+   */
+  function readAloud(body) {
+    var speech = window.speechSynthesis;
+    if (!speech || !body) {
+      return;
+    }
+    if (speech.speaking) {
+      speech.cancel();
+      return;
+    }
+    var lang = (cfg.lang || 'es').slice(0, 2);
+    var voice = speech.getVoices().filter(function(v) {
+      return v.localService && v.lang.slice(0, 2) === lang;
+    })[0];
+    if (!voice) {
+      T.toast(esc(t('app_read_novoice')), true);
+      return;
+    }
+    var copy = body.cloneNode(true);
+    copy.querySelectorAll('.actions, script, style').forEach(function(el) {
+      el.remove();
+    });
+    var text = Array.prototype.map.call(copy.querySelectorAll('p, h2, h3, li, button, label, .what, .speaker'), function(el) {
+      return el.children.length && el.querySelector('p, li, button') ? '' : el.textContent.trim();
+    }).filter(Boolean).join('. ');
+    var say = new window.SpeechSynthesisUtterance(text || copy.textContent);
+    say.voice = voice;
+    say.lang = voice.lang;
+    say.rate = 0.95;
+    speech.speak(say);
+  }
+  // Some browsers find their voices a moment later.
+  if (window.speechSynthesis) {
+    window.speechSynthesis.getVoices();
+  }
+
   /* ---------- Without connection: the scenes kept on the device, and the plays waiting to be sent ---------- */
 
   var PLAYS = 'tesape-plays-' + cfg.courseid + '-' + cfg.userid;
@@ -194,6 +238,9 @@
     var run = null;
 
     function close() {
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
       layer.remove();
       document.body.classList.remove('in-scene');
       opts.onclose(world);
@@ -255,11 +302,23 @@
     }
 
     function show(html) {
+      var reads = T.adapted.readaloud && window.speechSynthesis;
+      if (reads) {
+        window.speechSynthesis.cancel();
+      }
       layer.innerHTML = '<div class="scene"><div class="scene-top"><span class="scene-title">' + esc(sc ? sc.title : '') +
-        '</span><button class="btn btn-soft scene-close" type="button" aria-label="' + esc(t('app_close')) + '">✕</button>' +
+        '</span>' + (reads ? '<button class="btn btn-soft scene-read" type="button" data-read aria-label="' +
+        esc(t('app_read_aloud')) + '" title="' + esc(t('app_read_aloud')) + '">🔊</button>' : '') +
+        '<button class="btn btn-soft scene-close" type="button" aria-label="' + esc(t('app_close')) + '">✕</button>' +
         '</div>' + (opts.team && opts.team.length ? '<p class="team-banner">' + esc(t('app_team_banner')) + '</p>' : '') +
         '<div class="scene-body">' + html + '</div></div>';
       layer.querySelector('.scene-close').onclick = close;
+      var read = layer.querySelector('[data-read]');
+      if (read) {
+        read.onclick = function() {
+          readAloud(layer.querySelector('.scene-body'));
+        };
+      }
       layer.scrollTop = 0;
       var focus = layer.querySelector('[data-focus]');
       if (focus) {

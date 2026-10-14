@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.45.0 (2026-10-14)
+
+- **Accessibility for each student**: on the card of a student, the teacher marks what the game adapts for them (never a
+  diagnosis; only the student and their teachers see it), and the game adapts itself when they play: big text (the
+  whole game, bigger), reading aloud (a 🔊 button reads each scene with a voice of the device itself, so that the text
+  goes nowhere else), no hurry (a slower minigame, no countdown in the battles), no movement (no animations, confetti or
+  little living things), high contrast, colours for colour blindness (blue and orange instead of green and red, always
+  with ✓ and ✗), no sounds, and more help (hints that cost no breath). Saved as soon as it is marked; in the privacy
+  export.
+
 ## 0.44.0 (2026-10-14)
 
 - **The return of who has been away**: who comes back after a week or more (ill, travelling, in hospital) and who

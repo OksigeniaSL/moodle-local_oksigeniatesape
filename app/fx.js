@@ -589,6 +589,10 @@
         torre: 'mountain'}[place] || 'meadow';
     },
     muted: muted,
+    /** No movement on this page: no confetti, hearts, sparkles or drum roll to see. */
+    still: function() {
+      still = true;
+    },
     /**
      * The soft music of the class screen: whether it is on, remembered on the device.
      *

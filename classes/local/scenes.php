@@ -142,7 +142,8 @@ final class scenes {
      * @return int Breath paid.
      */
     private static function pay_hints(\stdClass $char, \stdClass $member, int $sceneid, int $hints, int $now): int {
-        $cost = $char->role === 'sage' ? (int) ceil(max(0, $hints - 1) / 2) : $hints;
+        // With «more help», the hints are free.
+        $cost = adapt::has($member, 'hints') ? 0 : ($char->role === 'sage' ? (int) ceil(max(0, $hints - 1) / 2) : $hints);
         $fresh = engine::member($char, (int) $member->courseid, $now);
         $cost = min($cost, (int) $fresh->breath);
         if ($cost > 0) {

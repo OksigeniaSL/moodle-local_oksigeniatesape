@@ -501,8 +501,10 @@
 
   function world() {
     var w = state.world;
+    var member = w.character && w.character.member;
+    T.adapt(member ? member.adapt : []);
     if (T.fx) {
-      T.fx.quiet(w.quiet);
+      T.fx.quiet(w.quiet || !!T.adapted.quiet);
     }
     if (T.critters) {
       T.critters.start([25, 55]);
@@ -519,7 +521,7 @@
       '<header class="hud"><button class="me" data-tab="me" aria-label="' + esc(t('app_tab_me')) + '"><span class="face">' +
       avatarOf(c, '', true) + '</span><span class="who"><b>' + esc(myName()) + '</b><small>' + esc(title(c)) + '</small></span>' +
       '</button><div class="ring" style="--p:' + pct + '" title="' + esc(t('app_level')) + ' ' + c.level + '"><b>' +
-      c.level + '</b></div>' + (T.fx && !w.quiet ? '<button type="button" class="sound" data-sound aria-pressed="' + !T.fx.muted() +
+      c.level + '</b></div>' + (T.fx && !w.quiet && !T.adapted.quiet ? '<button type="button" class="sound" data-sound aria-pressed="' + !T.fx.muted() +
       '" aria-label="' + esc(t('app_sound')) + '" title="' + esc(t('app_sound')) + '">' + (T.fx.muted() ? '🔇' : '🔊') +
       '</button>' : '') + '<details class="exit"><summary aria-label="' + esc(t('app_leave')) + '" title="' +
       esc(t('app_leave')) + '">⎋</summary><div class="exit-menu">' +

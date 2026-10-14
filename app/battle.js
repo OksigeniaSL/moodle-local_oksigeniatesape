@@ -149,7 +149,7 @@
       note = '<p class="battle-note">' + esc(t('app_battle_answered')) + '</p>';
     } else if (!live.open) {
       note = '<p class="battle-note">' + esc(t('app_battle_closed')) + '</p>';
-    } else if (live.left >= 0) {
+    } else if (live.left >= 0 && !T.adapted.notime) {
       note = '<p class="battle-left" data-left="' + live.left + '">' + esc(t('app_battle_left', live.left)) + '</p>';
     }
     var trail = live.trail && !live.revealed ? '<p class="battle-trail">' + esc(t('app_token_trail_shown', live.trail)) +

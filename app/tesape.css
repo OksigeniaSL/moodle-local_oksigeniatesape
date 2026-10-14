@@ -4408,3 +4408,105 @@ body.in-battle {
 .far-banner {
   margin: 0 0 12px;
 }
+
+/* ---------- What the game adapts for a student ---------- */
+
+.adapt-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.adapt-options .chip {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  border-radius: 12px;
+}
+
+.adapt-options .chip input {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin: 2px 0 0;
+}
+
+.adapt-options .chip small {
+  display: block;
+  color: var(--text-soft);
+  font-weight: 400;
+}
+
+.scene-read {
+  min-width: 48px;
+  margin-left: auto;
+  padding: 0;
+}
+
+/* Big text: the whole game, bigger. */
+body.adapt-bigtext #app,
+body.adapt-bigtext .scene-layer,
+body.adapt-bigtext .badge-moment {
+  zoom: 1.2;
+}
+
+/* No movement, whatever the device says. */
+body.adapt-still *,
+body.adapt-still *::before,
+body.adapt-still *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* High contrast: plain backgrounds, white or black text, clear lines. */
+body.adapt-contrast {
+  --text: #fff;
+  --text-soft: #e6edf2;
+  --line: rgba(255, 255, 255, .55);
+  --card-a: #0a1620;
+  --card-b: #0a1620;
+  --accent: #ffd36b;
+}
+
+[data-theme="day"] body.adapt-contrast {
+  --text: #000;
+  --text-soft: #1b2a36;
+  --line: rgba(0, 0, 0, .6);
+  --card-a: #fff;
+  --card-b: #fff;
+  --accent: #6b3e00;
+}
+
+body.adapt-contrast .card,
+body.adapt-contrast .choice,
+body.adapt-contrast .opt,
+body.adapt-contrast .item {
+  border-width: 2px;
+  backdrop-filter: none;
+}
+
+/* Colours that do not depend on red and green: blue for right, orange for wrong, always with their mark. */
+body.adapt-colours {
+  --leaf: #3b8fd9;
+  --leaf-rgb: 59, 143, 217;
+  --leaf-text: #9fd0ff;
+  --ember: #e69f00;
+  --ember-rgb: 230, 159, 0;
+  --ember-text: #ffd27a;
+}
+
+[data-theme="day"] body.adapt-colours {
+  --leaf-text: #0b4f8a;
+  --ember-text: #7a4a00;
+}
+
+body.adapt-colours .conseq.good .what::before,
+body.adapt-colours .opt.right::before {
+  content: "✓ ";
+}
+
+body.adapt-colours .conseq.bad .what::before,
+body.adapt-colours .opt.wrong::before {
+  content: "✗ ";
+}

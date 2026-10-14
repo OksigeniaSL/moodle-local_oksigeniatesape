@@ -135,6 +135,29 @@
     return {from: from, delay: 0};
   };
 
+  /**
+   * What the game adapts for this student, as their teacher marked: each one a class on the page (big text, high
+   * contrast, colours…) and a flag for the scripts (no hurry, no movement, reading aloud…).
+   *
+   * @param {string[]} list
+   */
+  T.adapted = {};
+  T.adapt = function(list) {
+    T.adapted = {};
+    (list || []).forEach(function(code) {
+      T.adapted[code] = true;
+    });
+    var body = document.body;
+    body.className = body.className.split(' ').filter(function(c) {
+      return c.indexOf('adapt-') !== 0;
+    }).concat((list || []).map(function(code) {
+      return 'adapt-' + code;
+    })).join(' ');
+    if (T.fx && T.adapted.still) {
+      T.fx.still();
+    }
+  };
+
   /*
    * The light of a screen of the teacher (the panel and the class screen): each classroom and each projector is
    * different, so it changes on this device only and the device remembers it; back to the theme of the class, it

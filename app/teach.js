@@ -124,6 +124,9 @@
 
   var TABS = ['class', 'powers', 'mission', 'competencies', 'challenges', 'log'];
 
+  /** What the game can adapt for a student (as adapt::ALL on the server). */
+  var ADAPT = ['bigtext', 'readaloud', 'notime', 'still', 'contrast', 'colours', 'quiet', 'hints'];
+
   // The light this device remembers for the screens of the teacher.
   T.light.restore();
 
@@ -702,6 +705,14 @@
         return '<button class="chip" data-step="' + st + '" aria-pressed="' + (m && m.step === st) + '"' +
           (can('manageregion') ? '' : ' disabled') + '>' + esc(t('teach_step_' + st)) + '</button>';
       }).join('') + '</div>';
+    // What the game adapts for them: what they need, never a diagnosis; saved as soon as it is marked.
+    var adapted = (m && m.adapt) || [];
+    html += '<h3 style="margin-top:16px">' + esc(t('teach_adapt')) + '</h3><p class="help-soft">' + esc(t('teach_adapt_help')) +
+      '</p><div class="adapt-options">' + ADAPT.map(function(code) {
+        return '<label class="chip"><input type="checkbox" data-adapt="' + code + '"' + (adapted.indexOf(code) >= 0 ?
+          ' checked' : '') + (can('award') ? '' : ' disabled') + '> <span><b>' + esc(t('teach_adapt_' + code)) + '</b><small>' +
+          esc(t('teach_adapt_' + code + '_help')) + '</small></span></label>';
+      }).join('') + '</div>';
     // Far from the expedition: when they came last, and whether they follow it from home or hospital.
     html += '<h3 style="margin-top:16px">' + esc(t('teach_far')) + '</h3><p class="help-soft">' + esc(lastSeen(m)) + '</p>' +
       '<label class="chip" style="display:inline-flex;gap:8px;align-items:center"><input type="checkbox" data-remote' +
@@ -731,6 +742,19 @@
           load(true).then(function() {
             openStudent(userid);
           });
+        }).catch(function(e) {
+          T.toast(esc(e.message), true);
+        });
+      };
+    });
+    el.querySelectorAll('[data-adapt]').forEach(function(box) {
+      box.onchange = function() {
+        var list = Array.prototype.map.call(el.querySelectorAll('[data-adapt]:checked'), function(b) {
+          return b.dataset.adapt;
+        });
+        T.api('set_adapt', {courseid: cfg.courseid, userid: userid, adapt: list}).then(function() {
+          T.toast(esc(t('app_saved')));
+          return load(true);
         }).catch(function(e) {
           T.toast(esc(e.message), true);
         });

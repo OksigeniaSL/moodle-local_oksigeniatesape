@@ -116,6 +116,13 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:award',
     ],
+    'local_oksigeniatesape_set_adapt' => [
+        'classname' => 'local_oksigeniatesape\external\set_adapt',
+        'description' => 'Keeps what the game adapts for a student: the adaptations the teacher marks, never a diagnosis.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:award',
+    ],
     'local_oksigeniatesape_get_log' => [
         'classname' => 'local_oksigeniatesape\external\get_log',
         'description' => 'The log of a course, newest first.',
