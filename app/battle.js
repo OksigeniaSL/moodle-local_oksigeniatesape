@@ -1,8 +1,9 @@
 /**
  * Tesapé: the battle against the Embrollo on the phone of a student. A call appears by itself when the class screen
  * opens a battle with phones; inside, the question of the round with big buttons, what happened when the answer is
- * shown, and the prize if the class wins. It lives in its own layer, over the game, and asks the server every second and
- * a half while playing (every few seconds otherwise, and never while the page is hidden).
+ * shown, and the prize if the class wins. It lives in its own layer, over the game, and asks the server every two seconds
+ * and a half while playing (or just when the question closes); otherwise, less and less often while there is no battle,
+ * and never while the page is hidden.
  *
  * @copyright  2026 Oksigenia <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -14,13 +15,14 @@
   var cfg = T.cfg;
   var t = T.t;
   var esc = T.esc;
-  var FAST = 1500;
+  var FAST = 2500;
   var SLOW = 8000;
+  var SLOWEST = 30000;
   var LETTERS = 'ABCDEF';
   var layer = document.createElement('div');
   layer.className = 'battle-layer';
   document.body.appendChild(layer);
-  var state = {live: null, inside: false, dismissed: 0, timer: 0, sig: '', sending: false, tick: 0};
+  var state = {live: null, inside: false, dismissed: 0, timer: 0, sig: '', sending: false, tick: 0, idle: 0};
   // The result of a battle shows for a few minutes after it ends: once closed, not again on the next page.
   var SEEN = 'tesape-battle-' + cfg.courseid + '-' + cfg.userid;
   try {
@@ -39,12 +41,32 @@
       return;
     }
     api('state').then(function(r) {
+      state.idle = r.live ? 0 : state.idle + 1;
       show(r.live || null);
     }).catch(function() {
       // No character yet, or no connection: try again later.
+      state.idle++;
     }).then(function() {
-      state.timer = setTimeout(poll, state.inside ? FAST : SLOW);
+      state.timer = setTimeout(poll, wait());
     });
+  }
+
+  /**
+   * How long until the next poll.
+   *
+   * @return {number} Milliseconds.
+   */
+  function wait() {
+    var live = state.live;
+    if (state.inside) {
+      // The phone comes back just as the question closes, which is what matters.
+      return live && live.open && live.left > 0 ? Math.min(FAST, (live.left + 0.3) * 1000) : FAST;
+    }
+    if (live) {
+      return SLOW;
+    }
+    // No battle: a little longer each time, up to half a minute.
+    return Math.min(SLOWEST, SLOW * Math.pow(2, Math.max(0, state.idle - 1)));
   }
 
   /**

@@ -229,6 +229,7 @@ final class missions {
         bool $activities = false
     ): \stdClass {
         global $DB;
+        self::forget();
         // A mission of the site, or one the teacher of the course made.
         $own = authoring::is_own($code);
         $package = $own ? authoring::package($courseid, $code) : (self::packages()[$code] ?? null);
@@ -335,6 +336,7 @@ final class missions {
             // The course keeps the activities of the mission inside the valley: the new ones too.
             portal::keep_inside($courseid, true);
         }
+        self::forget();
         return $DB->get_record(self::T . 'mission', ['id' => $record->id], '*', MUST_EXIST);
     }
 
@@ -346,9 +348,15 @@ final class missions {
      */
     public static function get(int $courseid): ?\stdClass {
         global $DB;
+        // Read once in each request: many parts of the world of a student ask for it.
+        $kept = self::cache()->get($courseid);
+        if ($kept !== false) {
+            return $kept ? clone $kept : null;
+        }
         $missions = $DB->get_records(self::T . 'mission', ['courseid' => $courseid], 'id DESC', '*', 0, 1);
         $mission = reset($missions);
         if (!$mission) {
+            self::cache()->set($courseid, 0);
             return null;
         }
         // A newer package came with the plugin: bring the mission up to date, keeping what the students did. Once:
@@ -375,7 +383,24 @@ final class missions {
             $courseid,
             (string) $mission->code
         );
-        return $mission;
+        self::cache()->set($courseid, $mission);
+        return clone $mission;
+    }
+
+    /**
+     * The missions read in this request.
+     *
+     * @return \cache
+     */
+    private static function cache(): \cache {
+        return \cache::make_from_params(\cache_store::MODE_REQUEST, 'local_oksigeniatesape', 'missions');
+    }
+
+    /**
+     * Forgets the missions read in this request: one was installed or changed.
+     */
+    public static function forget(): void {
+        self::cache()->purge();
     }
 
     /**

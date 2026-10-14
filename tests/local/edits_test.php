@@ -166,6 +166,7 @@ final class edits_test extends \advanced_testcase {
         edits::save($course->id, 'C1-2', 'title', 'Un título propio');
         // An older version installed: the newer package brings it up to date when the mission is read.
         $DB->set_field(self::T . 'mission', 'version', 1, ['courseid' => $course->id]);
+        missions::forget();
         $this->assertGreaterThan(1, (int) missions::get($course->id)->version);
         $this->assertSame('Un título propio', $this->scene($course->id, 'C1-2')->data['title']);
         // And a deleted course takes its changes with it.

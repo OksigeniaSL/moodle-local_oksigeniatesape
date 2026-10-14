@@ -125,12 +125,18 @@
 
   /*
    * An art pack may bring its own sounds (sound.<name>), the sound of each kind of place (sound.ambient.<kind>) and its
-   * music (sound.music): recorded or made for the world. They are loaded after the first touch and used when they are
-   * there; until then, and without them, the sounds made here.
+   * music (sound.music): recorded or made for the world. The short ones are loaded after the first touch, and the sound
+   * of a place when the student is there; they are used when they are there and, until then, the sounds made here.
    */
   var samples = {};
 
-  function loadSample(key) {
+  /**
+   * Loads a sound of the art pack, once.
+   *
+   * @param {string} key
+   * @param {Function} [done] Called when it is ready.
+   */
+  function loadSample(key, done) {
     if (samples[key] || !ctx || !T.artUrl) {
       return;
     }
@@ -148,17 +154,23 @@
       });
     }).then(function(buffer) {
       samples[key] = buffer;
+      if (done) {
+        done();
+      }
     }).catch(function() {
       samples[key] = 'none';
     });
   }
 
-  /** Loads every sound of the art pack, once the page may sound. */
+  /**
+   * Loads the short sounds of the art pack, once the page may sound. The sounds of the places are long: each one when
+   * the student is there; and the music only where it plays, the class screen.
+   */
   function loadSamples() {
     var files = (T.cfg && T.cfg.art && T.cfg.art.files) || {};
     Object.keys(files).forEach(function(key) {
-      // The music only where it plays: the class screen.
-      if (key.indexOf('sound.') === 0 && (key !== 'sound.music' || musicPage)) {
+      if ((key.indexOf('sound.') === 0 && key.indexOf('sound.ambient.') !== 0 && key !== 'sound.music') ||
+          (key === 'sound.music' && musicPage)) {
         loadSample(key);
       }
     });
@@ -288,6 +300,9 @@
       try {
         ambient.gain.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.4);
         ambient.source.stop(ctx.currentTime + 2);
+        if (ambient.lfo) {
+          ambient.lfo.stop(ctx.currentTime + 2);
+        }
       } catch (e) {
         // Already stopped.
       }
@@ -302,15 +317,23 @@
       return;
     }
     stopAmbient();
-    var recorded = samples['sound.ambient.' + kind];
+    var key = 'sound.ambient.' + kind;
+    var recorded = samples[key];
     if (recorded && typeof recorded !== 'string') {
       var level = c.createGain();
       level.gain.value = 0.0001;
       level.gain.setTargetAtTime(0.7, c.currentTime, 1.5);
       level.connect(sampleOut);
-      ambient = {kind: kind, source: playSample('sound.ambient.' + kind, level, true), gain: level, timer: 0};
+      ambient = {kind: kind, source: playSample(key, level, true), gain: level, timer: 0};
       return;
     }
+    // The sound of the place comes now: meanwhile, the one made here; when it is ready, if the student is still there,
+    // one gives way to the other.
+    loadSample(key, function() {
+      if (wanted === kind && ambient && ambient.kind === kind && ambient.lfo) {
+        startAmbient(kind);
+      }
+    });
     var source = noiseSource(c);
     source.loop = true;
     var filter = c.createBiquadFilter();
@@ -335,7 +358,7 @@
         tone(f * 1.1, 0.12, 0.07, 'sine', 0.02);
       }
     }, 1400) : 0;
-    ambient = {kind: kind, source: source, gain: gain, timer: timer};
+    ambient = {kind: kind, source: source, gain: gain, timer: timer, lfo: lfo};
   }
 
   /* ---------- Soft music, for the class screen ---------- */

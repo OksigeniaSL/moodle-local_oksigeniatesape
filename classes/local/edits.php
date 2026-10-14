@@ -323,6 +323,7 @@ final class edits {
         }
         $DB->delete_records(self::T . 'edit', $conditions);
         self::cache()->purge();
+        missions::forget();
     }
 
     /**
@@ -340,6 +341,7 @@ final class edits {
         $key = ['courseid' => $courseid, 'mission' => $mission, 'scene' => $scene, 'path' => $path];
         $record = $DB->get_record(self::T . 'edit', $key);
         self::cache()->purge();
+        missions::forget();
         if ($value === '') {
             if ($record) {
                 $DB->delete_records(self::T . 'edit', ['id' => $record->id]);

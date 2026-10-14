@@ -20,8 +20,6 @@ use core_external\external_api;
 use core_external\external_function_parameters;
 use core_external\external_single_structure;
 use core_external\external_value;
-use local_oksigeniatesape\local\characters;
-use local_oksigeniatesape\local\engine;
 use local_oksigeniatesape\local\live;
 use local_oksigeniatesape\local\regions;
 
@@ -70,14 +68,14 @@ final class live_play extends external_api {
         $now = time();
         $live = $params['action'] === 'state' ? live::recent($params['courseid'], $now) :
             live::current($params['courseid'], $now);
-        $char = characters::get((int) $USER->id);
-        if (!$live || !$char || !regions::enabled($params['courseid'])) {
+        // The phones ask every few seconds: whether there is a battle first, and the player only then.
+        $member = $live && regions::enabled($params['courseid']) ? live::player((int) $USER->id, $params['courseid'], $now) : null;
+        if (!$member) {
             if ($params['action'] !== 'state') {
                 throw new \moodle_exception('nobattle', 'local_oksigeniatesape');
             }
             return [];
         }
-        $member = engine::member($char, $params['courseid'], $now);
         switch ($params['action']) {
             case 'state':
                 break;

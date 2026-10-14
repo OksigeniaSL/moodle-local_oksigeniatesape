@@ -33,7 +33,8 @@ final class today {
      * Today in the valley, for a course.
      *
      * @param int $courseid
-     * @param bool $mixup With the mix-up that came up most (it reads all the plays: for the class screen, not polled).
+     * @param bool $mixup With the mix-up that came up most (it reads all the plays: for the class screen, and kept for ten
+     *     minutes).
      * @return array|null chapter, code, intro, offscreen, sessions, letter (optional), mixup (optional); null without a
      *     mission.
      */
@@ -50,9 +51,9 @@ final class today {
         }
         $meta = $info[$chapter->code] ?? [];
         $scenes = [];
-        foreach ($DB->get_records(self::T . 'scene', ['missionid' => $mission->id], '', 'id, code, definition') as $scene) {
-            $scenes[$scene->code] = ['id' => (int) $scene->id,
-                'title' => (string) (edits::scene($scene, $mission)['title'] ?? $scene->code)];
+        $summaries = scenes::summaries($mission);
+        foreach ($DB->get_records_menu(self::T . 'scene', ['missionid' => $mission->id], '', 'code, id') as $code => $id) {
+            $scenes[$code] = ['id' => (int) $id, 'title' => (string) ($summaries[$id]['title'] ?? $code)];
         }
         $sessions = [];
         foreach ($meta['sessions'] ?? [] as $i => $session) {
@@ -86,10 +87,17 @@ final class today {
                 'text' => $letter];
         }
         if ($mixup) {
-            $context = nextclass::context($courseid);
-            if ($context && $context['mixups']) {
-                $today['mixup'] = ['question' => rtrim(trim((string) $context['mixups'][0]['question']), '.'),
-                    'answer' => (string) $context['mixups'][0]['answer']];
+            $cache = \cache::make('local_oksigeniatesape', 'mixups');
+            $found = $cache->get($courseid);
+            if ($found === false) {
+                $context = nextclass::context($courseid);
+                $first = $context['mixups'][0] ?? null;
+                $found = $first ? ['question' => rtrim(trim((string) $first['question']), '.'),
+                    'answer' => (string) $first['answer']] : 0;
+                $cache->set($courseid, $found);
+            }
+            if ($found) {
+                $today['mixup'] = $found;
             }
         }
         return $today;

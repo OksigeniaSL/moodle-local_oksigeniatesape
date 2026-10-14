@@ -114,11 +114,13 @@ final class view {
         if ($album) {
             $world['album'] = $album;
         }
+        $fields = 'challengeid, status, note';
+        $validations = $DB->get_records(self::T . 'validation', ['charid' => $char->id, 'courseid' => $courseid], '', $fields);
         foreach (classroom::list($courseid) as $challenge) {
             if (!in_array((string) $member->step, explode(',', $challenge->steps), true)) {
                 continue;
             }
-            $validation = $DB->get_record(self::T . 'validation', ['challengeid' => $challenge->id, 'charid' => $char->id]);
+            $validation = $validations[$challenge->id] ?? null;
             $world['challenges'][] = [
                 'id' => (int) $challenge->id,
                 'name' => format_string($challenge->name),
@@ -199,7 +201,10 @@ final class view {
         }
         $rows->close();
         $chapters = $DB->get_records(self::T . 'chapter', ['missionid' => $mission->id], 'sortorder');
-        $scenes = $DB->get_records(self::T . 'scene', ['missionid' => $mission->id], 'code');
+        // Without their definitions: what the map shows of them is kept apart.
+        $fields = 'id, missionid, chapterid, code, step, quest';
+        $scenes = $DB->get_records(self::T . 'scene', ['missionid' => $mission->id], 'code', $fields);
+        $summaries = scenes::summaries($mission);
         $challenges = $DB->get_records_select_menu(
             self::T . 'challenge',
             'courseid = ? AND cmid = 0 AND chapterid > 0',
@@ -211,22 +216,21 @@ final class view {
         foreach ($data['chapters'] ?? [] as $chapter) {
             $info[$chapter['code']] = $chapter;
         }
-        $sceneview = function ($scene) use ($found, $attempts, $reached, $mission) {
-            $def = edits::scene($scene, $mission);
+        $sceneview = function ($scene) use ($found, $attempts, $reached, $summaries) {
+            $sum = $summaries[(int) $scene->id] ?? ['title' => $scene->code, 'minutes' => 0, 'mode' => 'both', 'best' => []];
             $done = !empty($found['scene'][$scene->code]);
             // Done with a partial ending only: playing it again can make it better.
-            $best = array_filter($reached[$scene->id] ?? [], fn($e) => ($def['nodes'][$e]['type'] ?? '') === 'ending'
-                && ($def['nodes'][$e]['outcome'] ?? 'success') === 'success');
+            $best = array_intersect($reached[$scene->id] ?? [], $sum['best']);
             return [
                 'id' => (int) $scene->id,
                 'code' => $scene->code,
-                'title' => (string) ($def['title'] ?? $scene->code),
-                'minutes' => (int) ($def['minutes'] ?? 0),
+                'title' => $sum['title'],
+                'minutes' => $sum['minutes'],
                 'step' => (int) $scene->step,
                 'done' => $done,
                 'better' => $done && !$best,
                 'attempts' => (int) ($attempts[$scene->id] ?? 0),
-                'mode' => in_array($def['mode'] ?? '', ['solo', 'team'], true) ? $def['mode'] : 'both',
+                'mode' => $sum['mode'],
             ];
         };
         $list = [];
@@ -335,7 +339,9 @@ final class view {
                 $info[$chapter['code']] = $chapter;
             }
             $chapters = [];
-            $scenes = $DB->get_records(self::T . 'scene', ['missionid' => $mission->id], 'code');
+            $summaries = scenes::summaries($mission);
+            $fields = 'id, missionid, chapterid, code, step, quest';
+            $scenes = $DB->get_records(self::T . 'scene', ['missionid' => $mission->id], 'code', $fields);
             foreach ($DB->get_records(self::T . 'chapter', ['missionid' => $mission->id], 'sortorder') as $chapter) {
                 $meta = $info[$chapter->code] ?? [];
                 // The scenes the class can play together: those of the core step.
@@ -349,7 +355,7 @@ final class view {
                     'landmark' => (string) ($meta['landmark'] ?? ''),
                     'lit' => (bool) $chapter->litat,
                     'scenes' => array_map(fn($sc) => ['id' => (int) $sc->id,
-                        'title' => (string) (edits::scene($sc, $mission)['title'] ?? $sc->code)], $mine),
+                        'title' => (string) ($summaries[$sc->id]['title'] ?? $sc->code)], $mine),
                 ];
             }
             [$items, $roles] = scenes::class_context($courseid);
@@ -679,17 +685,31 @@ final class view {
         }
         $group = reset($groups);
         $students = self::students($courseid);
+        // The characters of the team and their members in the course, in two queries.
+        $users = array_intersect_key(groups_get_members($group->id, 'u.id'), $students);
+        $chars = [];
+        $members = [];
+        if ($users) {
+            [$insql, $params] = $DB->get_in_or_equal(array_keys($users));
+            foreach ($DB->get_records_select(self::T . 'char', "userid $insql", $params) as $char) {
+                $chars[(int) $char->userid] = $char;
+            }
+        }
+        if ($chars) {
+            [$insql, $params] = $DB->get_in_or_equal(array_map(fn($c) => (int) $c->id, $chars));
+            $where = "courseid = ? AND charid $insql";
+            foreach ($DB->get_records_select(self::T . 'member', $where, array_merge([$courseid], $params)) as $member) {
+                $members[(int) $member->charid] = $member;
+            }
+        }
         // Who is low on energy, only for the healer and the protector, who can help; the rest see the team's total.
-        $mine = characters::get($userid);
+        $mine = $chars[$userid] ?? null;
         $carers = $mine && in_array($mine->role, self::CARERS, true);
         $energy = 0;
         $mates = [];
-        foreach (groups_get_members($group->id, 'u.id') as $mate) {
-            if (!isset($students[$mate->id])) {
-                continue;
-            }
-            $char = characters::get((int) $mate->id);
-            $member = $char ? $DB->get_record(self::T . 'member', ['charid' => $char->id, 'courseid' => $courseid]) : null;
+        foreach ($users as $mate) {
+            $char = $chars[(int) $mate->id] ?? null;
+            $member = $char ? ($members[(int) $char->id] ?? null) : null;
             $entry = [
                 'userid' => (int) $mate->id,
                 'name' => self::display_name($students[$mate->id], $char, $region),

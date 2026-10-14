@@ -173,6 +173,37 @@ final class live {
     }
 
     /**
+     * The member of a student in a course with the role of their character, in one query: the phones ask for it on
+     * every poll of a battle. Null if they have no character.
+     *
+     * @param int $userid
+     * @param int $courseid
+     * @param int $now
+     * @return \stdClass|null
+     */
+    public static function player(int $userid, int $courseid, int $now): ?\stdClass {
+        global $DB;
+        $member = $DB->get_record_sql(
+            'SELECT m.*, c.role
+               FROM {' . self::T . 'member} m
+               JOIN {' . self::T . 'char} c ON c.id = m.charid
+              WHERE c.userid = ? AND m.courseid = ?',
+            [$userid, $courseid]
+        );
+        if ($member) {
+            return $member;
+        }
+        // The first time in the course.
+        $char = characters::get($userid);
+        if (!$char) {
+            return null;
+        }
+        $member = engine::member($char, $courseid, $now);
+        $member->role = $char->role;
+        return $member;
+    }
+
+    /**
      * The session open in a course, if any: not ended, and with the class screen alive.
      *
      * @param int $courseid
@@ -331,11 +362,13 @@ final class live {
             // The mission changed in the middle of the battle and the question is gone.
             throw new \moodle_exception('noquestions', 'local_oksigeniatesape');
         }
-        // The question stays in the state, so that the phones do not read the mission on every poll.
+        // The question stays in the state, so that the phones do not read the mission on every poll; and the name of
+        // its chapter, for the trail of the scout.
+        $chapter = (string) ($question['chapter'] ?? '');
         $state['rounds'][$round] = ['q' => $question['id'], 'options' => count($question['options']),
             'correct' => $question['correct'], 'question' => array_diff_key($question, ['chapter' => 1, 'objective' => 1]),
-            'chapter' => (string) ($question['chapter'] ?? ''), 'revealed' => false, 'answered' => 0, 'right' => 0,
-            'teams' => [], 'counter' => 0, 'shielded' => 0];
+            'chapter' => $chapter, 'trail' => self::chapter_name((int) $live->courseid, $chapter), 'revealed' => false,
+            'answered' => 0, 'right' => 0, 'teams' => [], 'counter' => 0, 'shielded' => 0];
         $state['open'] = true;
         // Down to half its life, the Embrollo tangles itself more: less time for each question.
         $secs = $state['secs'] && self::phase($state) > 1 ? max(10, $state['secs'] - self::PHASE_SECS) : $state['secs'];
@@ -485,11 +518,11 @@ final class live {
         $state = self::state($live);
         $round = (int) $live->round;
         $conditions = ['liveid' => $live->id, 'charid' => $member->charid];
-        $mine = $DB->get_records_menu(self::T . 'livein', $conditions, '', 'round, answer');
+        $mine = $DB->get_records(self::T . 'livein', $conditions, '', 'round, answer, team');
         $view = self::common($live, $state, $now) + ['joined' => array_key_exists(0, $mine), 'mine' => -1];
         if ($round > 0) {
             $info = $state['rounds'][$round];
-            $view['mine'] = (int) ($mine[$round] ?? -1);
+            $view['mine'] = (int) ($mine[$round]->answer ?? -1);
             $view['question'] = self::question($info);
             if ($info['revealed'] && $live->kind === 'vote') {
                 $view['tally'] = $info['tally'];
@@ -499,7 +532,7 @@ final class live {
             $view['prize'] = $state['rewarded'][$member->charid] ?? null;
         }
         if ($live->kind === 'battle' && $state['mode'] === 'phones' && array_key_exists(0, $mine)) {
-            $view += self::tokens_for($live, $state, $member);
+            $view += self::tokens_for($live, $state, $member, (int) $mine[0]->team);
         }
         return array_filter($view, fn($value) => $value !== null);
     }
@@ -520,7 +553,7 @@ final class live {
         $now = $now ?? time();
         $state = self::state($live);
         $round = (int) $live->round;
-        $kind = self::TOKENS[(string) $DB->get_field(self::T . 'char', 'role', ['id' => $member->charid])] ?? '';
+        $kind = self::TOKENS[self::role($member)] ?? '';
         $joined = $DB->get_record(self::T . 'livein', ['liveid' => $live->id, 'round' => 0, 'charid' => $member->charid]);
         $playing = $live->kind === 'battle' && $state['mode'] === 'phones' && $state['outcome'] === '';
         if (!$kind || !$joined || !$playing || $round < 1 || !self::is_open($state, $now)) {
@@ -541,23 +574,28 @@ final class live {
      * @param \stdClass $live
      * @param array $state
      * @param \stdClass $member
+     * @param int $team The team they came in with (0: none).
      * @return array token, tokenused and, in the round, struck (an option that is not it) and trail (the chapter).
      */
-    private static function tokens_for(\stdClass $live, array $state, \stdClass $member): array {
+    private static function tokens_for(\stdClass $live, array $state, \stdClass $member, int $team): array {
         global $DB;
         $round = (int) $live->round;
-        $role = (string) $DB->get_field(self::T . 'char', 'role', ['id' => $member->charid]);
-        $used = $DB->record_exists(self::T . 'livetoken', ['liveid' => $live->id, 'charid' => $member->charid]);
-        $view = ['token' => self::TOKENS[$role] ?? '', 'tokenused' => $used];
+        // Their own tokens and those of their team in the round, in one query.
+        $where = 'liveid = ? AND (charid = ? OR (round = ? AND team = ?))';
+        $params = [$live->id, $member->charid, $round, $team ?: -1];
+        $tokens = $DB->get_records_select(self::T . 'livetoken', $where, $params, '', 'id, charid, round, kind');
+        $used = (bool) array_filter($tokens, fn($t) => (int) $t->charid === (int) $member->charid);
+        $view = ['token' => self::TOKENS[self::role($member)] ?? '', 'tokenused' => $used];
         if ($round < 1 || !empty($state['rounds'][$round]['revealed'])) {
             return $view;
         }
-        $joined = ['liveid' => $live->id, 'round' => 0, 'charid' => $member->charid];
-        $team = (int) $DB->get_field(self::T . 'livein', 'team', $joined);
         // Without a team, only one's own token.
-        $where = $team ? ['liveid' => $live->id, 'round' => $round, 'team' => $team] :
-            ['liveid' => $live->id, 'round' => $round, 'charid' => $member->charid];
-        $kinds = array_map(fn($t) => $t->kind, $DB->get_records(self::T . 'livetoken', $where, '', 'id, kind'));
+        $kinds = [];
+        foreach ($tokens as $token) {
+            if ((int) $token->round === $round && ($team || (int) $token->charid === (int) $member->charid)) {
+                $kinds[] = $token->kind;
+            }
+        }
         $info = $state['rounds'][$round];
         if (in_array('glance', $kinds, true) && $info['options'] > 1) {
             // Always the same wrong option for the round, so that the phones of the team agree.
@@ -565,14 +603,38 @@ final class live {
             $view['struck'] = $wrong[self::seed($live, $round) % count($wrong)];
         }
         if (in_array('trail', $kinds, true) && $info['chapter'] !== '') {
-            $mission = missions::get((int) $live->courseid);
-            foreach ($mission->data['chapters'] ?? [] as $chapter) {
-                if ($chapter['code'] === $info['chapter']) {
-                    $view['trail'] = missions::text($chapter['name'] ?? $chapter['code'], $mission->skin, $mission->variant);
-                }
-            }
+            // Battles opened before the name was kept with the round look it up.
+            $view['trail'] = $info['trail'] ?? self::chapter_name((int) $live->courseid, $info['chapter']);
         }
         return $view;
+    }
+
+    /**
+     * The role of the character of a member: it comes with the player, or it is looked up.
+     *
+     * @param \stdClass $member
+     * @return string
+     */
+    private static function role(\stdClass $member): string {
+        global $DB;
+        return (string) ($member->role ?? $DB->get_field(self::T . 'char', 'role', ['id' => $member->charid]));
+    }
+
+    /**
+     * The name of a chapter of the mission of a course, as the students see it.
+     *
+     * @param int $courseid
+     * @param string $code
+     * @return string|null
+     */
+    private static function chapter_name(int $courseid, string $code): ?string {
+        $mission = $code !== '' ? missions::get($courseid) : null;
+        foreach ($mission->data['chapters'] ?? [] as $chapter) {
+            if ($chapter['code'] === $code) {
+                return missions::text($chapter['name'] ?? $chapter['code'], $mission->skin, $mission->variant);
+            }
+        }
+        return null;
     }
 
     /**

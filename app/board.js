@@ -1,8 +1,9 @@
 /**
  * Tesapé: the class screen, for the projector or the whiteboard. The map of the mission with the lanterns of the class,
  * the event of the day and the teams with their portraits; quick touches of saber and gems on students or whole teams.
- * It refreshes itself every few seconds, so what the teacher does from the phone shows up here too. Only good news on
- * this screen: nothing that takes something away from a student in front of the class.
+ * It refreshes itself (the battles every few seconds, the rest every minute), so what the teacher does from the phone
+ * shows up here too. Only good news on this screen: nothing that takes something away from a student in front of the
+ * class.
  *
  * @copyright  2026 Oksigenia <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -16,7 +17,7 @@
   var esc = T.esc;
   var app = document.getElementById('app');
   var REFRESH = 5000;
-  var FULL = 30000;
+  var FULL = 60000;
   var LIVE = 1500;
   var LETTERS = 'ABCD';
   var CARD_ICON = {calm: 'energy', breeze: 'saber', footprint: 'world', exchange: 'breath'};

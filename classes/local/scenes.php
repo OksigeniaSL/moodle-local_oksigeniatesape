@@ -96,6 +96,39 @@ final class scenes {
     }
 
     /**
+     * What the map shows of each scene of a mission, with the changes of the teacher: its title, minutes, how it can be
+     * played and its good endings. Read from the definitions once and kept: the map asks for it in every request.
+     *
+     * @param \stdClass $mission
+     * @return array sceneid => [title, minutes, mode, best (the endings with a good outcome)].
+     */
+    public static function summaries(\stdClass $mission): array {
+        global $DB;
+        $edits = edits::of((int) $mission->courseid, (string) $mission->code);
+        $titles = array_map(fn($e) => $e['title'] ?? '', $edits);
+        $key = implode('_', [$mission->id, $mission->timemodified, $mission->version, $mission->skin, $mission->variant,
+            md5(json_encode($titles))]);
+        $cache = \cache::make('local_oksigeniatesape', 'scenes');
+        $list = $cache->get($key);
+        if ($list === false) {
+            $list = [];
+            foreach ($DB->get_records(self::T . 'scene', ['missionid' => $mission->id]) as $scene) {
+                $def = edits::scene($scene, $mission);
+                $best = array_keys(array_filter($def['nodes'] ?? [], fn($n) => ($n['type'] ?? '') === 'ending'
+                    && ($n['outcome'] ?? 'success') === 'success'));
+                $list[(int) $scene->id] = [
+                    'title' => (string) ($def['title'] ?? $scene->code),
+                    'minutes' => (int) ($def['minutes'] ?? 0),
+                    'mode' => in_array($def['mode'] ?? '', ['solo', 'team'], true) ? $def['mode'] : 'both',
+                    'best' => array_map('strval', $best),
+                ];
+            }
+            $cache->set($key, $list);
+        }
+        return $list;
+    }
+
+    /**
      * What a student brings to a scene: the items they carry in the course and the roles of their team.
      *
      * @param \stdClass $char

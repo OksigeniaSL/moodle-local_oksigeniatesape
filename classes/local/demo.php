@@ -119,6 +119,7 @@ final class demo {
             'timecreated' => $now,
             'timemodified' => $now,
         ]);
+        regions::forget();
 
         if ($mission !== '') {
             // With its Moodle activities, a section per chapter.

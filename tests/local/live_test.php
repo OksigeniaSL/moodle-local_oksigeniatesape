@@ -408,6 +408,7 @@ final class live_test extends \advanced_testcase {
         $data = $mission->data;
         $data['battle']['final'] = ['saber' => 30, 'item' => 'naturalistlens', 'lantern' => 'torre', 'creature' => 'grow'];
         $DB->set_field(self::T . 'mission', 'definition', json_encode($data), ['id' => $mission->id]);
+        missions::forget();
         $DB->set_field(self::T . 'char', 'creaturestage', 1, ['id' => $members[0]->charid]);
         $win = function (bool $final, int $at) use ($course, $members): \stdClass {
             $live = live::start($course->id, 'phones', 4, 0, $at, $final);

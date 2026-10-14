@@ -19,6 +19,7 @@ namespace local_oksigeniatesape;
 use local_oksigeniatesape\local\badges;
 use local_oksigeniatesape\local\characters;
 use local_oksigeniatesape\local\engine;
+use local_oksigeniatesape\local\missions;
 use local_oksigeniatesape\local\regions;
 
 /**
@@ -142,6 +143,8 @@ final class observer {
         foreach (self::SETUP_TABLES as $table) {
             $DB->delete_records(self::T . $table, ['courseid' => $courseid]);
         }
+        regions::forget();
+        missions::forget();
     }
 
     /**

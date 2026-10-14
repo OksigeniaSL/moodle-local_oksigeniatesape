@@ -44,7 +44,21 @@ final class regions {
      */
     public static function get(int $courseid): ?\stdClass {
         global $DB;
-        return $DB->get_record(self::TABLE, ['courseid' => $courseid]) ?: null;
+        // Read once in each request: many parts of the world of a student ask for it.
+        $cache = \cache::make_from_params(\cache_store::MODE_REQUEST, 'local_oksigeniatesape', 'regions');
+        $kept = $cache->get($courseid);
+        if ($kept === false) {
+            $kept = $DB->get_record(self::TABLE, ['courseid' => $courseid]) ?: 0;
+            $cache->set($courseid, $kept);
+        }
+        return $kept ? clone $kept : null;
+    }
+
+    /**
+     * Forgets the regions read in this request: one changed.
+     */
+    public static function forget(): void {
+        \cache::make_from_params(\cache_store::MODE_REQUEST, 'local_oksigeniatesape', 'regions')->purge();
     }
 
     /**
@@ -157,6 +171,7 @@ final class regions {
         } else {
             $DB->update_record(self::TABLE, $region);
         }
+        self::forget();
         if ($grades) {
             // Turned on: the ratings already given go to the gradebook too.
             gradebook::sync($courseid);
