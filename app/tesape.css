@@ -3803,3 +3803,54 @@ body.in-battle {
     animation: none;
   }
 }
+
+/* ---------- The way out of the game, always at hand ---------- */
+
+.hud .exit {
+  position: relative;
+}
+
+.hud .exit > summary {
+  list-style: none;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, .06);
+  color: var(--text);
+  border-radius: 999px;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.hud .exit > summary::-webkit-details-marker {
+  display: none;
+}
+
+.hud .exit-menu {
+  position: absolute;
+  right: 0;
+  top: 46px;
+  z-index: 50;
+  display: grid;
+  gap: 4px;
+  min-width: 200px;
+  padding: 8px;
+  border-radius: var(--r-s);
+  background: var(--mist);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+.hud .exit-menu a {
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.hud .exit-menu a:hover,
+.hud .exit-menu a:focus {
+  background: rgba(255, 255, 255, .08);
+}

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.36.2 (2026-10-14)
+
+- **A way out of the game, always at hand**: a button at the top of the game, beside the sound, goes back to the
+  course or to the dashboard of the student (only the dashboard when the course goes straight into the game). Before,
+  it was only at the end of the «Me» tab.
+
 ## 0.36.1 (2026-10-13)
 
 - **The teacher can take the sound away** from the devices of the whole class (settings of the panel: «No sound on the

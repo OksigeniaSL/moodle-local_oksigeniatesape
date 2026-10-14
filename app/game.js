@@ -382,7 +382,11 @@
       '</button><div class="ring" style="--p:' + pct + '" title="' + esc(t('app_level')) + ' ' + c.level + '"><b>' +
       c.level + '</b></div>' + (T.fx && !w.quiet ? '<button type="button" class="sound" data-sound aria-pressed="' + !T.fx.muted() +
       '" aria-label="' + esc(t('app_sound')) + '" title="' + esc(t('app_sound')) + '">' + (T.fx.muted() ? '🔇' : '🔊') +
-      '</button>' : '') + '<div class="res">' +
+      '</button>' : '') + '<details class="exit"><summary aria-label="' + esc(t('app_leave')) + '" title="' +
+      esc(t('app_leave')) + '">⎋</summary><div class="exit-menu">' +
+      // A course that goes straight into the game has no page of its own to go back to: only the dashboard.
+      (/\/my\/?$/.test(cfg.courseurl) ? '' : '<a href="' + esc(cfg.courseurl) + '">' + esc(t('app_exit')) + '</a>') +
+      '<a href="' + esc(cfg.wwwroot + '/my/') + '">' + esc(t('app_exit_my')) + '</a></div></details><div class="res">' +
       res('saber', c.saber, t('app_saber')) + res('gems', c.gems, t('app_gems')) +
       res('energy', m.energy + '/' + w.energymax, t('app_energy')) + res('breath', m.breath + '/' + w.breathmax,
         t('app_breath')) + '</div></header>' +
