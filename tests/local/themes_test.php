@@ -90,4 +90,23 @@ final class themes_test extends \advanced_testcase {
         $config = json_decode($m[1], true);
         $this->assertSame(['current' => 'day', 'world' => 'night'], $config['theme']);
     }
+
+    public function test_a_world_brings_its_little_living_things(): void {
+        $theme = themes::clean(['critters' => [
+            ['code' => 'note', 'move' => 'walk', 'art' => ['critter.note.1', 'critter.note.2', 'critter.note.3'],
+                'size' => 500, 'name' => ['es' => 'Corchea <b>', 'en' => 'Quaver'], 'fact' => ['es' => 'Dura medio pulso.']],
+            ['code' => 'bad', 'move' => 'teleport', 'art' => ['critter.bad']],
+            ['code' => 'noart', 'move' => 'fly', 'art' => ['../x.png']],
+            ['code' => 'comet', 'move' => 'fly', 'facing' => 'up', 'art' => ['critter.comet'], 'fly' => 'nope'],
+        ]]);
+        $this->assertCount(2, $theme['critters']);
+        $note = $theme['critters'][0];
+        $this->assertSame(['critter.note.1', 'critter.note.2'], $note['art']);
+        $this->assertSame(72, $note['size']);
+        $this->assertSame('right', $note['facing']);
+        $this->assertSame('Corchea', trim($note['name']['es']));
+        $this->assertSame('Dura medio pulso.', $note['fact']['es']);
+        $this->assertSame('up', $theme['critters'][1]['facing']);
+        $this->assertArrayNotHasKey('fly', $theme['critters'][1]);
+    }
 }

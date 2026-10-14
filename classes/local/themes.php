@@ -41,6 +41,12 @@ final class themes {
     private const RGB = ['night' => 'night-rgb', 'deep' => 'deep-rgb', 'lantern' => 'lantern-rgb', 'leaf' => 'leaf-rgb',
         'ember' => 'ember-rgb', 'lilac' => 'lilac-rgb', 'text' => 'hi'];
 
+    /** @var string[] How the little living things of a world move (critters.js). */
+    public const MOVES = ['fly', 'walk', 'line', 'drop', 'map'];
+
+    /** @var int The most little living things a world brings. */
+    private const MAX_CRITTERS = 16;
+
     /** @var string[] The music a world can choose for the class screen (fx.js plays them). */
     public const MUSIC = ['valley', 'sea', 'space'];
 
@@ -68,6 +74,50 @@ final class themes {
             if ($colours) {
                 $clean[$base] = $colours;
             }
+        }
+        $critters = self::critters($theme['critters'] ?? null);
+        if ($critters) {
+            $clean['critters'] = $critters;
+        }
+        return $clean;
+    }
+
+    /**
+     * The little living things of a world, with only what is valid: how each one moves, its pictures in the pack (two
+     * at most, one after the other), where it looks, its size and speed, and its name and a fact in each language.
+     *
+     * @param mixed $list
+     * @return array
+     */
+    private static function critters($list): array {
+        $clean = [];
+        foreach (array_slice(is_array($list) ? $list : [], 0, self::MAX_CRITTERS) as $c) {
+            if (
+                !is_array($c) || !preg_match('/^[a-z0-9-]{1,30}$/', (string) ($c['code'] ?? ''))
+                || !in_array($c['move'] ?? '', self::MOVES, true)
+            ) {
+                continue;
+            }
+            $art = array_values(array_filter(array_slice((array) ($c['art'] ?? []), 0, 2), fn($k) => is_string($k) &&
+                preg_match('/^critter\.[a-z0-9_.-]{1,60}$/', $k)));
+            if (!$art) {
+                continue;
+            }
+            $one = ['code' => $c['code'], 'move' => $c['move'], 'art' => $art,
+                'facing' => ($c['facing'] ?? '') === 'up' ? 'up' : 'right',
+                'size' => max(12, min(72, (int) ($c['size'] ?? 28))),
+                'speed' => max(4, min(300, (int) ($c['speed'] ?? 60)))];
+            if (is_string($c['fly'] ?? null) && preg_match('/^critter\.[a-z0-9_.-]{1,60}$/', $c['fly'])) {
+                $one['fly'] = $c['fly'];
+            }
+            foreach (['name' => 60, 'fact' => 240] as $field => $most) {
+                foreach ((array) ($c[$field] ?? []) as $lang => $text) {
+                    if (preg_match('/^[a-z]{2}(_[a-z]{2})?$/', (string) $lang) && is_string($text)) {
+                        $one[$field][$lang] = \core_text::substr(clean_param($text, PARAM_TEXT), 0, $most);
+                    }
+                }
+            }
+            $clean[] = $one;
         }
         return $clean;
     }

@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.40.0 (2026-10-14)
+
+- **The little living things of the valley**: fireflies blinking by the lanterns of the map, and now and then a
+  visitor: a butterfly, a dragonfly, a bee or a fairy of light that crosses the screen, a ladybird along the edge of a
+  card that flies away at the end, a snail with its trail, ants in a row, a spider that comes down on its thread and
+  goes up again. Touched, they say what they are and something true about them («It is not an insect: it has eight
+  legs»). Few and slow, never during a scene, none with «less motion»; on the class screen, less often.
+- **Each world brings its own** in its art pack (`theme.critters`): their pictures (two at most, one after the other),
+  how they move, their size and speed, and their name and fact in each language; only what is valid comes in. Without
+  them, those of the valley, drawn by the plugin until the painted ones come.
+
 ## 0.39.1 (2026-10-14)
 
 - **The sounds of a pack keep their own level**, the one they were made with, instead of going through the lower one of

@@ -307,6 +307,10 @@
   }
 
   T.light.restore();
+  // The little living things visit the class screen too, less often.
+  if (T.critters) {
+    T.critters.start([40, 80]);
+  }
   if (T.fx) {
     // The music of the world of the art pack.
     T.fx.musicHere(cfg.art && cfg.art.theme ? cfg.art.theme.music : 'valley');
@@ -382,7 +386,8 @@
       return ch.x + ',' + ch.y;
     }).join(' ');
     var places = m.chapters.map(function(ch) {
-      return '<g class="place' + (ch.lit ? ' mine lit' : '') + '" aria-label="' + esc(ch.name) + '">' +
+      return '<g class="place' + (ch.lit ? ' mine lit' : '') + '" data-art="' + esc(ch.art || ch.code) + '" aria-label="' +
+        esc(ch.name) + '">' +
         (ch.lit ? '<circle cx="' + ch.x + '" cy="' + ch.y + '" r="40" class="classglow"/>' : '') +
         '<circle cx="' + ch.x + '" cy="' + ch.y + '" r="25" class="ring"/>' +
         '<rect x="' + (ch.x - 2) + '" y="' + (ch.y - 4) + '" width="4" height="17" rx="1" fill="#2b2219"/>' +
@@ -397,7 +402,7 @@
       '"><svg class="map" viewBox="0 0 400 ' + height + '" role="img" aria-label="' + esc(m.title) + '"><defs>' + T.MAPGLOW +
       '</defs>' + T.mapGround(m) + T.mapLandmarks(m) + T.mapNight(m) +
       '<polyline points="' + pts + '" class="road"/>' + (lit ? '<polyline points="' + walked + '" class="road walked"/>' : '') +
-      drawn + places + '</svg></div>' + pastExpeditions() + '</section>';
+      drawn + (T.critters ? T.critters.fireflies(m) : '') + places + '</svg></div>' + pastExpeditions() + '</section>';
   }
 
   /**

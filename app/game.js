@@ -424,6 +424,9 @@
     if (T.fx) {
       T.fx.quiet(w.quiet);
     }
+    if (T.critters) {
+      T.critters.start([25, 55]);
+    }
     var c = w.character;
     var m = c.member || {energy: 0, breath: 0};
     var pct = c.levelneeded ? Math.round(100 * c.levelinto / c.levelneeded) : 100;
@@ -550,7 +553,8 @@
       var cls = 'place' + (ch.mine ? ' mine' : '') + (ch.lit ? ' lit' : '') + (ch.id === current.id ? ' here' : '') +
         (ch.id === state.chapter ? ' selected' : '');
       var label = ch.name.length > 22 ? ch.name.slice(0, 21) + '…' : ch.name;
-      return '<g class="' + cls + '" data-chapter="' + ch.id + '" tabindex="0" role="button" aria-label="' + esc(ch.name) + '">' +
+      return '<g class="' + cls + '" data-chapter="' + ch.id + '" data-art="' + esc(ch.art || ch.code) + '" tabindex="0" ' +
+        'role="button" aria-label="' + esc(ch.name) + '">' +
         '<rect class="hit" x="' + (ch.x - 80) + '" y="' + (ch.y - 32) + '" width="160" height="84" rx="16"/>' +
         (ch.lit ? '<circle cx="' + ch.x + '" cy="' + ch.y + '" r="40" class="classglow"/>' : '') +
         '<circle cx="' + ch.x + '" cy="' + ch.y + '" r="25" class="ring"/>' +
@@ -576,8 +580,8 @@
     return '<div class="map-wrap' + (height > 640 ? ' tall' : '') + '"><svg class="map" viewBox="0 0 400 ' + height +
       '" role="group" aria-label="' + esc(m.title) + '"><defs>' + T.MAPGLOW + '</defs>' + T.mapGround(m) +
       T.mapLandmarks(m) + T.mapNight(m) + '<polyline points="' + pts + '" class="road"/>' +
-      (walked ? '<polyline points="' + walked + '" class="road walked"/>' : '') + roadDrawing(fresh) + places + me +
-      '</svg></div>';
+      (walked ? '<polyline points="' + walked + '" class="road walked"/>' : '') + roadDrawing(fresh) +
+      (T.critters ? T.critters.fireflies(m) : '') + places + me + '</svg></div>';
   }
 
   function chapterPanel(m, ch, past) {
