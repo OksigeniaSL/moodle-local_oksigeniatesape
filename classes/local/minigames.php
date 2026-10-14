@@ -163,18 +163,20 @@ final class minigames {
      * @return array Of text, mark (its number, -1 for plain text), wrong, right (accepted) and why.
      */
     public static function parts(string $text): array {
-        $pieces = preg_split('/\[([^\]|]*)\|([^\]|]*)(?:\|([^\]]*))?\]/u', $text, -1, PREG_SPLIT_DELIM_CAPTURE);
+        preg_match_all('/\[([^\]|]*)\|([^\]|]*)(?:\|([^\]]*))?\]/u', $text, $found, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
         $parts = [];
-        $mark = 0;
-        for ($i = 0; $i < count($pieces); $i += 4) {
-            if ($pieces[$i] !== '') {
-                $parts[] = ['text' => $pieces[$i], 'mark' => -1, 'wrong' => '', 'right' => [], 'why' => ''];
+        $at = 0;
+        foreach ($found as $mark => $m) {
+            if ($m[0][1] > $at) {
+                $parts[] = ['text' => substr($text, $at, $m[0][1] - $at), 'mark' => -1, 'wrong' => '', 'right' => [], 'why' => ''];
             }
-            if (isset($pieces[$i + 1])) {
-                $parts[] = ['text' => '', 'mark' => $mark++, 'wrong' => trim($pieces[$i + 1]),
-                    'right' => array_values(array_filter(array_map('trim', explode('/', $pieces[$i + 2])))),
-                    'why' => trim((string) ($pieces[$i + 3] ?? ''))];
-            }
+            $parts[] = ['text' => '', 'mark' => $mark, 'wrong' => trim($m[1][0]),
+                'right' => array_values(array_filter(array_map('trim', explode('/', $m[2][0])))),
+                'why' => trim((string) ($m[3][0] ?? ''))];
+            $at = $m[0][1] + strlen($m[0][0]);
+        }
+        if ($at < strlen($text)) {
+            $parts[] = ['text' => substr($text, $at), 'mark' => -1, 'wrong' => '', 'right' => [], 'why' => ''];
         }
         return $parts;
     }
