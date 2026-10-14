@@ -10,6 +10,7 @@
   "SV-02"
  ],
  "minutes": 6,
+ "whatif": "¿Y si un ser vivo estuviera hecho de una sola célula, como algunos de los que viven en una gota de charco? ¿Qué podría hacer y qué no?",
  "start": "intro",
  "nodes": {
   "intro": {

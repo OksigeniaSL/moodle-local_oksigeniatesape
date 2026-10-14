@@ -11,6 +11,7 @@
   "SV-03"
  ],
  "minutes": 10,
+ "whatif": "¿Y si el árbol de los reinos fuera un árbol de familia? ¿Quién sería más pariente de una persona: una seta o una lechuga?",
  "start": "intro",
  "nodes": {
   "intro": {

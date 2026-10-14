@@ -11,6 +11,7 @@
   "SV-07"
  ],
  "minutes": 8,
+ "whatif": "¿Y si los virus solo pueden hacer copias de sí mismos dentro de una célula ajena? ¿Llevarían la etiqueta de «vivo», la de «no vivo»… o habría que inventar otra?",
  "start": "memoria",
  "nodes": {
   "memoria": {

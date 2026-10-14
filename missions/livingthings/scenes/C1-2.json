@@ -9,6 +9,7 @@
   "SV-01"
  ],
  "minutes": 8,
+ "whatif": "¿Y si en el nido hubiera una semilla seca, que parece una piedrecita? ¿Está viva? ¿Cómo se podría comprobar?",
  "locals": {
   "semilla": {
    "py": "una semilla seca de lapacho",

@@ -10,6 +10,7 @@
   "SV-08"
  ],
  "minutes": 6,
+ "whatif": "¿Y si desaparecieran todas las plantas de un prado? ¿Quién lo notaría primero, y quién después?",
  "locals": {
   "herbivoro": {
    "py": "El carpincho",

@@ -11,6 +11,7 @@
   "SV-07"
  ],
  "minutes": 10,
+ "whatif": "¿Y si dentro de cien años alguien leyera la guía de esta clase? ¿Qué habrá cambiado, y qué seguirá siendo verdad?",
  "start": "intro",
  "nodes": {
   "intro": {

@@ -12,6 +12,7 @@
   "SV-07"
  ],
  "minutes": 10,
+ "whatif": "¿Y si un enredo, como «la ballena es un pez», lo repite muchísima gente? ¿Por qué será tan fácil creérselo?",
  "classscreen": true,
  "start": "intro",
  "nodes": {

@@ -4362,3 +4362,32 @@ body.in-battle {
   font-style: normal;
   color: var(--lilac-text);
 }
+
+/* The «what if…?» at the end of a scene: a question to think about, alone, with the team or with the class. */
+.whatif {
+  margin: 14px 0;
+  padding: 12px 14px;
+  border: 1px dashed rgba(var(--lilac-rgb), .5);
+  border-radius: var(--r-s);
+  background: rgba(var(--lilac-rgb), .12);
+}
+
+.whatif .what {
+  display: block;
+  font-family: var(--f-title);
+  font-size: 19px;
+  color: var(--lilac-text);
+}
+
+.whatif p {
+  margin: 4px 0 6px;
+  font-size: 17px;
+}
+
+.whatif small {
+  color: var(--text-soft);
+}
+
+.scene-layer.class-mode .whatif p {
+  font-size: 26px;
+}

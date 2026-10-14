@@ -9,6 +9,7 @@
   "SV-06"
  ],
  "minutes": 5,
+ "whatif": "¿Y si el lago se quedara sin luz, como tapado por una manta enorme? ¿Qué seres vivos lo notarían primero?",
  "start": "memoria",
  "nodes": {
   "memoria": {

@@ -43,7 +43,7 @@ final class edits {
     public const MISSION = '#';
 
     /** @var string[] Fields with one text, in a scene, a node or an element of a list. */
-    private const TEXTS = ['title', 'text', 'prompt', 'label', 'feedback', 'intro', 'offscreen', 'do', 'materials'];
+    private const TEXTS = ['title', 'whatif', 'text', 'prompt', 'label', 'feedback', 'intro', 'offscreen', 'do', 'materials'];
 
     /** @var string[] Lists of elements with an id, in a node. */
     private const ELEMENTS = ['options', 'items', 'bins', 'steps'];
@@ -137,7 +137,7 @@ final class edits {
             }
             return $texts;
         }
-        self::field($texts, '', $definition, ['title']);
+        self::field($texts, '', $definition, ['title', 'whatif']);
         foreach ($definition['nodes'] ?? [] as $nodeid => $node) {
             $base = 'nodes/' . $nodeid;
             self::field($texts, $base, $node, ['text', 'prompt']);

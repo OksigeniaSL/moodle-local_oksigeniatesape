@@ -9,6 +9,7 @@
   "SV-04"
  ],
  "minutes": 8,
+ "whatif": "¿Y si a la barcaza subiera un pingüino, que no vuela pero nada de maravilla? ¿En qué compartimento viajaría, y por qué?",
  "start": "intro",
  "nodes": {
   "intro": {

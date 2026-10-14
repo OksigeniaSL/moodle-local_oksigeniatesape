@@ -9,6 +9,7 @@
   "SV-05"
  ],
  "minutes": 6,
+ "whatif": "¿Y si una planta no tuviera raíz? ¿Qué le pasaría con el primer viento o con el primer día de mucho sol?",
  "start": "intro",
  "nodes": {
   "intro": {

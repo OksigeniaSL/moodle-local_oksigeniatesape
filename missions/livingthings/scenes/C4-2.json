@@ -10,6 +10,7 @@
   "SV-07"
  ],
  "minutes": 8,
+ "whatif": "¿Y si una planta creciera bajo una lámpara en vez de al sol? ¿Crecería igual? ¿Cómo se podría averiguar?",
  "start": "intro",
  "nodes": {
   "intro": {

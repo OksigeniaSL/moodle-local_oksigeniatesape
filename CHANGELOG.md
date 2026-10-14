@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.43.0 (2026-10-14)
+
+- **A «What if…?» at the end of each scene** of the pilot mission (mission version 14): a question to think about for
+  a moment, or to talk about with the team or the whole class («What if in the lake there were no mosquitoes? They are a
+  nuisance, but… who would go hungry?»). It shows at a good ending or halfway, also on the class screen (bigger) and at
+  the end of a play kept without connection. A scene says it with its field `whatif`; the teacher can change it in the
+  workshop, like any other text.
+- **The question quoted on the class screen** keeps no full stop of its own inside the quotes.
+
 ## 0.42.0 (2026-10-14)
 
 - **Nothing is lost without connection**: a scene opened is kept on the device (the last thirty), so that it can be

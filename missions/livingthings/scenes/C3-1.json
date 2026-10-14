@@ -9,6 +9,7 @@
   "SV-04"
  ],
  "minutes": 6,
+ "whatif": "¿Y si un animal tuviera pelo y además pusiera huevos? ¿En qué grupo iría?",
  "locals": {
   "mamifero": {
    "py": "un carpincho",

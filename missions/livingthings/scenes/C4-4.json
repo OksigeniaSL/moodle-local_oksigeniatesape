@@ -10,6 +10,7 @@
   "SV-05"
  ],
  "minutes": 8,
+ "whatif": "¿Y si todas las semillas cayeran justo al pie de su planta madre? ¿Cómo sería el bosque al cabo de muchos años?",
  "locals": {
   "fruta": {
    "py": "una guayaba madura",

@@ -72,7 +72,7 @@ final class edits_test extends \advanced_testcase {
                 }
             }
         }
-        foreach (['title', 'text', 'prompt', 'hints', 'label', 'feedback', 'stuck'] as $kind) {
+        foreach (['title', 'whatif', 'text', 'prompt', 'hints', 'label', 'feedback', 'stuck'] as $kind) {
             $this->assertArrayHasKey($kind, $kinds);
         }
     }
@@ -82,6 +82,8 @@ final class edits_test extends \advanced_testcase {
         $course = $this->make_course();
         $original = $this->scene($course->id, 'C1-2')->data;
         $this->assertTrue(edits::save($course->id, 'C1-2', 'title', 'Un título propio'));
+        $this->assertTrue(edits::save($course->id, 'C1-2', 'whatif', '¿Y si el nido estuviera en el patio del cole?'));
+        $this->assertSame('¿Y si el nido estuviera en el patio del cole?', $this->scene($course->id, 'C1-2')->data['whatif']);
         edits::save($course->id, 'C1-2', 'nodes/intro/text', 'Una narración propia');
         edits::save($course->id, 'C1-2', 'nodes/elegir/options/seta/label', 'una seta del parque');
         $data = $this->scene($course->id, 'C1-2')->data;

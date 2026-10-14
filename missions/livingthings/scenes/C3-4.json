@@ -11,6 +11,7 @@
   "SV-07"
  ],
  "minutes": 8,
+ "whatif": "¿Y si la clave tuviera que funcionar en el patio de un colegio de otro país? ¿Qué preguntas servirían en cualquier sitio y cuáles no?",
  "locals": {
   "pajaro": {
    "py": "un benteveo",

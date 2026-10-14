@@ -10,6 +10,7 @@
   "SV-06"
  ],
  "minutes": 8,
+ "whatif": "¿Y si llegara al lago un animal nuevo que se come a las ranas y al que nadie se come? ¿Cómo cambiaría la red?",
  "locals": {
   "herbivoro": {
    "py": "el carpincho, que pasta en la orilla",

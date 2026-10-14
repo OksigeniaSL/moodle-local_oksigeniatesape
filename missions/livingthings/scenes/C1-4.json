@@ -11,6 +11,7 @@
   "SV-07"
  ],
  "minutes": 10,
+ "whatif": "¿Y si en otro planeta apareciera algo que crece, se mueve y tiene crías, pero no está hecho de células? ¿Habría que cambiar la regla del tribunal?",
  "start": "memoria",
  "nodes": {
   "memoria": {

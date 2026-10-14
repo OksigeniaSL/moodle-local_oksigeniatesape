@@ -88,7 +88,7 @@ final class today {
         if ($mixup) {
             $context = nextclass::context($courseid);
             if ($context && $context['mixups']) {
-                $today['mixup'] = ['question' => (string) $context['mixups'][0]['question'],
+                $today['mixup'] = ['question' => rtrim(trim((string) $context['mixups'][0]['question']), '.'),
                     'answer' => (string) $context['mixups'][0]['answer']];
             }
         }

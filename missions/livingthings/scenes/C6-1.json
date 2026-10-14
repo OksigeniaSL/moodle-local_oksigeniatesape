@@ -9,6 +9,7 @@
   "SV-07"
  ],
  "minutes": 5,
+ "whatif": "¿Y si hubiera que hacer la ficha de un ser vivo que solo ha visto una persona, una vez? ¿Qué apartados se podrían rellenar y cuáles no?",
  "start": "intro",
  "nodes": {
   "intro": {

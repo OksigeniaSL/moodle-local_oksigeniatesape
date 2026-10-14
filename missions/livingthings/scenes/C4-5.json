@@ -11,6 +11,7 @@
   "SV-07"
  ],
  "minutes": 10,
+ "whatif": "¿Y si otra clase repitiera el mismo experimento y le saliera al revés? ¿Qué haría un buen científico?",
  "start": "intro",
  "nodes": {
   "intro": {

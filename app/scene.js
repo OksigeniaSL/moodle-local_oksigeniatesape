@@ -852,6 +852,21 @@
       };
     }
 
+    /**
+     * A question to think about when a scene is over, «what if…?»: alone, with the team, or with the whole class.
+     *
+     * @param {boolean} ok The scene was done (a good ending or halfway).
+     * @return {string}
+     */
+    function whatif(ok) {
+      if (!ok || !sc || !sc.whatif) {
+        return '';
+      }
+      return '<div class="whatif"><span class="what">' + esc(t('app_whatif')) + '</span><p>' + esc(tx(sc.whatif)) +
+        '</p><small>' + esc(t(cm ? 'board_whatif_help' : opts.team && opts.team.length ? 'app_whatif_team' :
+        'app_whatif_help')) + '</small></div>';
+    }
+
     function classEnding(n) {
       show('<div class="loading-inline"><div class="lamp"></div>' + esc(t('app_saving')) + '</div>');
       Promise.all([cm.finish(run.events, run.from), drumroll()]).then(function(answers) {
@@ -860,7 +875,8 @@
         celebrate(result.outcome, null, false);
         var body = show(picture(n.image || sceneImage(), data) + '<p class="scene-text">' + esc(tx(n.text)) + '</p>' + (success ?
           '<div class="conseq good"><span class="what">' + esc(t('board_scene_rewarded', result.rewarded)) + '</span></div>' :
-          '') + better(result) + '<div class="actions">' + (success ? '<button class="btn btn-main" data-focus data-map>' +
+          '') + better(result) + whatif(success) + '<div class="actions">' + (success ? '<button class="btn btn-main" ' +
+          'data-focus data-map>' +
           esc(t('board_battle_back')) + '</button>' + replay(result) : '<button class="btn btn-main" data-focus data-retry>' +
           esc(t('app_tryagain')) + '</button>') + '</div>');
         onReplay(body);
@@ -915,7 +931,8 @@
         var outcome = t(n.outcome === 'success' ? 'app_preview_success' : n.outcome === 'partial' ? 'app_preview_partial' :
           'app_preview_retry');
         var end = show('<p class="scene-text">' + esc(tx(n.text || '')) + '</p><p class="help">' + esc(outcome) + '</p>' +
-          '<div class="actions"><button class="btn btn-soft" data-replay>' + esc(t('app_playagain')) + '</button>' +
+          whatif(n.outcome !== 'retry') + '<div class="actions"><button class="btn btn-soft" data-replay>' +
+          esc(t('app_playagain')) + '</button>' +
           '<button class="btn btn-main" data-focus data-previewclose>' + esc(t('app_close')) + '</button></div>');
         end.querySelector('[data-previewclose]').onclick = close;
         onReplay(end);
@@ -982,7 +999,8 @@
         }
         var body = show(picture(n.image || sceneImage(), data) + '<p class="scene-text">' + esc(tx(n.text)) + '</p>' + hatch + levelup +
           (lines.length ? '<div class="conseq good"><span class="what">' + esc(t('app_forcharacter')) + '</span>' +
-          lines.map(esc).join('<br>') + '</div>' : '') + done + better(result) + '<div class="actions">' + (success ?
+          lines.map(esc).join('<br>') + '</div>' : '') + done + better(result) + whatif(success) + '<div class="actions">' +
+          (success ?
           '<button class="btn btn-main" data-focus data-map>' + esc(t('app_backtomap')) + '</button>' + replay(result) :
           '<button class="btn btn-main" data-focus data-retry>' + esc(t('app_tryagain')) + '</button>') + '</div>');
         onReplay(body);
@@ -1002,7 +1020,8 @@
           // No connection: the play is kept on the device and goes by itself when the connection comes back.
           var kept = show('<p class="scene-text">' + esc(tx(n.text || '')) + '</p><div class="conseq good"><span ' +
             'class="what">' + esc(t('app_offline_kept')) + '</span>' + esc(t('app_offline_kept_help')) + '</div>' +
-            '<div class="actions"><button class="btn btn-main" data-focus data-map>' + esc(t('app_backtomap')) +
+            whatif(n.outcome !== 'retry') + '<div class="actions"><button class="btn btn-main" data-focus data-map>' +
+            esc(t('app_backtomap')) +
             '</button></div>');
           kept.querySelector('[data-map]').onclick = close;
           return;

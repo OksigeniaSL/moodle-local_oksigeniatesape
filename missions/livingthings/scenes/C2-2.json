@@ -9,6 +9,7 @@
   "SV-03"
  ],
  "minutes": 8,
+ "whatif": "¿Y si se descubriera un ser vivo que no cabe en ningún estante? ¿Qué haría la ciencia: meterlo a la fuerza o construir un estante nuevo?",
  "start": "intro",
  "nodes": {
   "intro": {

@@ -10,6 +10,7 @@
   "SV-07"
  ],
  "minutes": 7,
+ "whatif": "¿Y si dos libros dijeran cosas distintas sobre el mismo animal? ¿Cómo se decide a cuál creer?",
  "start": "intro",
  "nodes": {
   "intro": {

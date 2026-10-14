@@ -9,6 +9,7 @@
   "SV-01"
  ],
  "minutes": 6,
+ "whatif": "¿Y si una planta no puede moverse para buscar comida… cómo consigue lo que necesita para vivir?",
  "locals": {
   "semilla": {
    "py": "una semilla seca de lapacho",

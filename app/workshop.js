@@ -36,6 +36,8 @@
     switch (f.kind) {
       case 'title':
         return t('teach_ws_k_title');
+      case 'whatif':
+        return t('teach_ws_k_whatif');
       case 'text':
         return t(f.type === 'ending' ? 'teach_ws_k_ending' : 'teach_ws_k_story');
       case 'prompt':

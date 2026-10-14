@@ -9,6 +9,7 @@
   "SV-03"
  ],
  "minutes": 6,
+ "whatif": "¿Y si la seta no es planta ni animal… de qué se alimenta, si no tiene hojas verdes ni boca?",
  "locals": {
   "arbol": {
    "py": "un lapacho",

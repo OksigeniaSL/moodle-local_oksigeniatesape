@@ -9,6 +9,7 @@
   "SV-05"
  ],
  "minutes": 5,
+ "whatif": "¿Y si una gota de agua pudiera contar sus viajes? ¿Por cuántos seres vivos habría pasado antes de llegar a un vaso?",
  "locals": {
   "arbol": {
    "py": "un lapacho",

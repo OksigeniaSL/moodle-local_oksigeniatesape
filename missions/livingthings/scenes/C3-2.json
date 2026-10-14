@@ -10,6 +10,7 @@
   "SV-07"
  ],
  "minutes": 8,
+ "whatif": "¿Y si solo se pudieran hacer tres preguntas de sí o no para adivinar un animal? ¿Cuáles serían las mejores para empezar?",
  "start": "memoria",
  "nodes": {
   "memoria": {

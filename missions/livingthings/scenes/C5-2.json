@@ -10,6 +10,7 @@
   "SV-08"
  ],
  "minutes": 10,
+ "whatif": "¿Y si en el lago no hubiera mosquitos? Molestan mucho, pero… ¿a quién le faltaría comida?",
  "locals": {
   "hojas": {
    "py": "hojas grandes de palmera",

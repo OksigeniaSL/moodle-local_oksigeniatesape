@@ -10,6 +10,7 @@
   "SV-04"
  ],
  "minutes": 7,
+ "whatif": "¿Y si no existieran los nombres científicos y cada pueblo llamara a un animal a su manera? ¿Qué líos tendrían los naturalistas al escribirse cartas?",
  "start": "intro",
  "nodes": {
   "intro": {
