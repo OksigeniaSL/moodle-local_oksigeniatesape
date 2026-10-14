@@ -4354,3 +4354,11 @@ body.in-battle {
   font-weight: 600;
   text-align: center;
 }
+
+/* The postscript of the Embrollo: what confuses the class most, as a boast. */
+.letter .taunt {
+  display: block;
+  margin-top: 8px;
+  font-style: normal;
+  color: var(--lilac-text);
+}

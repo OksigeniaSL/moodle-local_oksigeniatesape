@@ -451,11 +451,14 @@
         (award && x.final ? '<div class="actions board-small"><button class="btn btn-soft" data-battle="final:1">' +
         esc(t('board_today_final')) + '</button></div>' : '') + '</li>';
     }).join('');
+    // What confuses the class most: in the letter, the Embrollo boasts of it (no names); without a letter, said plainly.
+    var taunt = d.letter && d.mixup ? '<span class="taunt">' + esc(t('board_today_taunt', d.mixup)) + '</span>' : '';
     return '<section class="card board-today"><div class="kicker">' + esc(t('board_today')) + '</div><h3>' +
       esc(d.chapter) + '</h3>' + (d.letter ? '<blockquote class="letter"><small>' + esc(t('board_today_letter',
-      d.letter.chapter)) + '</small>' + esc(d.letter.text) + '</blockquote>' : '') + (sessions ? '<ol class="today-sessions">' +
-      sessions + '</ol>' : '') + (d.offscreen ? '<p class="help-soft">' + esc(t('board_today_offscreen', d.offscreen)) +
-      '</p>' : '') + (d.mixup ? '<p class="help-soft">' + esc(t('board_today_mixup', d.mixup)) + '</p>' : '') + '</section>';
+      d.letter.chapter)) + '</small>' + esc(d.letter.text) + taunt + '</blockquote>' : '') + (sessions ?
+      '<ol class="today-sessions">' + sessions + '</ol>' : '') + (d.offscreen ? '<p class="help-soft">' +
+      esc(t('board_today_offscreen', d.offscreen)) + '</p>' : '') + (d.mixup && !taunt ? '<p class="help-soft">' +
+      esc(t('board_today_mixup', d.mixup)) + '</p>' : '') + '</section>';
   }
 
   function openerCard() {

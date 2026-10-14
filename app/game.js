@@ -53,6 +53,7 @@
     }
     celebrate();
     world();
+    sendWaiting();
   }
 
   /* ---------- The first time: a story that ends with the character ---------- */
@@ -497,6 +498,30 @@
   }
   // The battle layer refreshes the world when a battle gives something.
   T.refreshWorld = refresh;
+
+  /*
+   * The plays kept on the device while there was no connection go by themselves: when the game opens, when the
+   * connection comes back, and every minute and a half while some wait. Then the world is asked again.
+   */
+  var sending = false;
+
+  function sendWaiting() {
+    if (sending || !T.sendPlays || !T.waitingPlays().length) {
+      return;
+    }
+    sending = true;
+    T.sendPlays(function(title) {
+      T.toast(esc(t('app_offline_sent', title)));
+    }).then(function(count) {
+      sending = false;
+      if (count) {
+        refresh();
+      }
+    });
+  }
+
+  window.addEventListener('online', sendWaiting);
+  setInterval(sendWaiting, 90000);
 
   function res(kind, value, label) {
     return '<span class="r" title="' + esc(label) + '">' + T.icon(kind) + '<b>' + esc(value) + '</b><span class="sr-only"> ' +

@@ -95,6 +95,90 @@
    *     name, creature, items, roles, vote ({open(prompt, labels), state(), close()}, or null without phones), finish(events,
    *     from).
    */
+  /* ---------- Without connection: the scenes kept on the device, and the plays waiting to be sent ---------- */
+
+  var PLAYS = 'tesape-plays-' + cfg.courseid + '-' + cfg.userid;
+  var SCENES = 'tesape-scenes-' + cfg.courseid + '-' + cfg.userid;
+
+  function load(key, empty) {
+    try {
+      return JSON.parse(window.localStorage.getItem(key) || 'null') || empty;
+    } catch (e) {
+      return empty;
+    }
+  }
+
+  function save(key, value) {
+    try {
+      window.localStorage.setItem(key, JSON.stringify(value));
+      return true;
+    } catch (e) {
+      // Full or not allowed: nothing kept.
+      return false;
+    }
+  }
+
+  /**
+   * A scene as the server gave it, kept on the device so that it can be played without connection: the last ones
+   * opened, up to thirty.
+   *
+   * @param {Object} d
+   */
+  function keepScene(d) {
+    var kept = load(SCENES, {});
+    kept[d.id] = {at: Date.now(), d: d};
+    var ids = Object.keys(kept).sort(function(a, b) {
+      return kept[b].at - kept[a].at;
+    });
+    ids.slice(30).forEach(function(id) {
+      delete kept[id];
+    });
+    save(SCENES, kept);
+  }
+
+  /**
+   * The plays waiting for the connection, on this device and for this student.
+   *
+   * @return {Object[]}
+   */
+  T.waitingPlays = function() {
+    return load(PLAYS, []);
+  };
+
+  /**
+   * Sends the plays that wait, one after the other, while there is connection. A play the server does not take (the
+   * scene changed, the game was turned off) is left out: sending it again would not help.
+   *
+   * @param {Function} [sent] Called with the title of each play the server took.
+   * @return {Promise} With the number of plays sent.
+   */
+  T.sendPlays = function(sent) {
+    var count = 0;
+    var next = function() {
+      var list = T.waitingPlays();
+      if (!list.length) {
+        return Promise.resolve(count);
+      }
+      var p = list[0];
+      return T.api('play_scene', {courseid: cfg.courseid, sceneid: p.sceneid, events: p.events, start: p.start || '',
+        team: p.team || ''}).then(function() {
+        count++;
+        save(PLAYS, T.waitingPlays().slice(1));
+        if (sent) {
+          sent(p.title);
+        }
+        return next();
+      }).catch(function(e) {
+        if (e.network) {
+          return count;
+        }
+        save(PLAYS, T.waitingPlays().slice(1));
+        return next();
+      });
+    };
+    return next();
+  };
+
   T.playScene = function(opts) {
     var cm = opts.classmode || null;
     var LETTERS = 'ABCDEF';
@@ -912,6 +996,17 @@
           };
         }
       }).catch(function(e) {
+        if (e.network && save(PLAYS, T.waitingPlays().concat([{sceneid: data.id, title: sc.title || '',
+          events: JSON.stringify(run.events), start: run.from || '', team: opts.team && opts.team.length ?
+          JSON.stringify(opts.team) : '', at: Date.now()}]))) {
+          // No connection: the play is kept on the device and goes by itself when the connection comes back.
+          var kept = show('<p class="scene-text">' + esc(tx(n.text || '')) + '</p><div class="conseq good"><span ' +
+            'class="what">' + esc(t('app_offline_kept')) + '</span>' + esc(t('app_offline_kept_help')) + '</div>' +
+            '<div class="actions"><button class="btn btn-main" data-focus data-map>' + esc(t('app_backtomap')) +
+            '</button></div>');
+          kept.querySelector('[data-map]').onclick = close;
+          return;
+        }
         if (!e.network) {
           // The server did not take what was played: sending it again would not help, playing it again does.
           var tangled = show('<p class="scene-text">' + esc(t('app_scene_tangled')) + '</p><div class="actions">' +
@@ -930,7 +1025,18 @@
     }
 
     show('<div class="loading-inline"><div class="lamp"></div>' + esc(t('app_loading')) + '</div>');
-    (opts.preview ? Promise.resolve(opts.preview) : T.api('get_scene', {courseid: cfg.courseid, sceneid: opts.sceneid}))
+    (opts.preview ? Promise.resolve(opts.preview) : T.api('get_scene', {courseid: cfg.courseid, sceneid: opts.sceneid})
+      .then(function(d) {
+        keepScene(d);
+        return d;
+      }).catch(function(e) {
+        var kept = e.network && load(SCENES, {})[opts.sceneid];
+        if (kept) {
+          T.toast(esc(t('app_offline_scene')));
+          return kept.d;
+        }
+        throw e;
+      }))
       .then(function(d) {
         data = d;
         data.speakers = JSON.parse(d.speakers || '{}');

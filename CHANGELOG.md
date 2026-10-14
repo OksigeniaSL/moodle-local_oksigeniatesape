@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.42.0 (2026-10-14)
+
+- **Nothing is lost without connection**: a scene opened is kept on the device (the last thirty), so that it can be
+  opened again without connection. A play finished without connection is kept on the device («Saved on this device»)
+  and goes by itself when the connection comes back: when the game opens, when the connection returns and every minute
+  and a half; then what it gives comes («Your play of … has been sent»). On a shared device, each student's plays wait
+  under their own account.
+- **The Embrollo boasts of what confuses the class most**: on the class screen, its letter of the day ends with a
+  postscript with the mistake the class makes most, without names («P.S.: How I love it when, in …, you choose …! That
+  is how I grow»), to go over it together.
+
 ## 0.41.0 (2026-10-14)
 
 - **Scenes played as a team, for real**: beside «Play», the scenes that can be played as a team have «As a team». The
