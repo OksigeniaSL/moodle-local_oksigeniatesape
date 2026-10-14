@@ -116,6 +116,71 @@
     });
   }
 
+  /* ---------- Sounds of the world ---------- */
+
+  /*
+   * An art pack may bring its own sounds (sound.<name>), the sound of each kind of place (sound.ambient.<kind>) and its
+   * music (sound.music): recorded or made for the world. They are loaded after the first touch and used when they are
+   * there; until then, and without them, the sounds made here.
+   */
+  var samples = {};
+
+  function loadSample(key) {
+    if (samples[key] || !ctx || !T.artUrl) {
+      return;
+    }
+    var url = T.artUrl([key]);
+    if (!url) {
+      samples[key] = 'none';
+      return;
+    }
+    samples[key] = 'loading';
+    window.fetch(url, {credentials: 'same-origin'}).then(function(r) {
+      return r.arrayBuffer();
+    }).then(function(data) {
+      return new Promise(function(resolve, reject) {
+        ctx.decodeAudioData(data, resolve, reject);
+      });
+    }).then(function(buffer) {
+      samples[key] = buffer;
+    }).catch(function() {
+      samples[key] = 'none';
+    });
+  }
+
+  /** Loads every sound of the art pack, once the page may sound. */
+  function loadSamples() {
+    var files = (T.cfg && T.cfg.art && T.cfg.art.files) || {};
+    Object.keys(files).forEach(function(key) {
+      // The music only where it plays: the class screen.
+      if (key.indexOf('sound.') === 0 && (key !== 'sound.music' || musicPage)) {
+        loadSample(key);
+      }
+    });
+  }
+
+  /**
+   * Plays a sound of the art pack, if it is loaded.
+   *
+   * @param {string} key
+   * @param {AudioNode} out Where it goes.
+   * @param {boolean} loop
+   * @return {AudioBufferSourceNode|null}
+   */
+  function playSample(key, out, loop) {
+    var buffer = samples[key];
+    var c = audio();
+    if (!c || !buffer || typeof buffer === 'string') {
+      return null;
+    }
+    var source = c.createBufferSource();
+    source.buffer = buffer;
+    source.loop = !!loop;
+    source.connect(out || master);
+    source.start();
+    return source;
+  }
+
   /** The sounds, by name. */
   var SOUNDS = {
     tap: function() {
@@ -206,6 +271,15 @@
       return;
     }
     stopAmbient();
+    var recorded = samples['sound.ambient.' + kind];
+    if (recorded && typeof recorded !== 'string') {
+      var level = c.createGain();
+      level.gain.value = 0.0001;
+      level.gain.setTargetAtTime(0.5, c.currentTime, 1.5);
+      level.connect(master);
+      ambient = {kind: kind, source: playSample('sound.ambient.' + kind, level, true), gain: level, timer: 0};
+      return;
+    }
     var source = noiseSource(c);
     source.loop = true;
     var filter = c.createBiquadFilter();
@@ -301,17 +375,33 @@
     source.stop(at + length + 0.1);
   }
 
-  function startMusic() {
+  function startMusic(tries) {
     var c = audio();
     if (!c || music) {
       return;
     }
+    // The music of the pack may still be on its way: a moment, and then the one made here.
+    tries = tries || 0;
+    if (samples['sound.music'] === 'loading' && tries < 16) {
+      setTimeout(function() {
+        if (musicWanted()) {
+          startMusic(tries + 1);
+        }
+      }, 250);
+      return;
+    }
     var out = c.createGain();
+    out.gain.value = 0.0001;
+    out.gain.setTargetAtTime(1, c.currentTime, 1.5);
+    var recorded = playSample('sound.music', out, true);
+    if (recorded) {
+      out.connect(master);
+      music = {out: out, timer: 0, source: recorded};
+      return;
+    }
     var filter = c.createBiquadFilter();
     filter.type = 'lowpass';
     filter.frequency.value = 1800;
-    out.gain.value = 0.0001;
-    out.gain.setTargetAtTime(1, c.currentTime, 1.5);
     out.connect(filter).connect(master);
     var step = 0;
     var next = c.currentTime + 0.3;
@@ -340,6 +430,13 @@
   function stopMusic() {
     if (music) {
       clearInterval(music.timer);
+      if (music.source) {
+        try {
+          music.source.stop(ctx.currentTime + 3);
+        } catch (e) {
+          // Already stopped.
+        }
+      }
       try {
         music.out.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.6);
       } catch (e) {
@@ -410,7 +507,7 @@
      * @param {string} name
      */
     sound: function(name) {
-      if (SOUNDS[name]) {
+      if (!playSample('sound.' + name) && SOUNDS[name]) {
         SOUNDS[name]();
       }
     },
@@ -440,7 +537,9 @@
      * @param {HTMLElement} el
      */
     drumroll: function(el) {
-      SOUNDS.drumroll();
+      if (!playSample('sound.drumroll')) {
+        SOUNDS.drumroll();
+      }
       if (el && !still) {
         el.classList.add('fx-drumroll');
         setTimeout(function() {
@@ -481,7 +580,9 @@
       }
       if (on && audio() === null && ctx) {
         // The browser lets the page sound a moment after the touch.
-        ctx.resume().then(startMusic);
+        ctx.resume().then(function() {
+          startMusic();
+        });
       } else if (on) {
         startMusic();
       } else {
@@ -534,6 +635,9 @@
 
   // Browsers let a page sound only after the first touch: then the sound of the place starts.
   document.addEventListener('pointerdown', function() {
+    if (audio()) {
+      loadSamples();
+    }
     if (audio() && wanted && !ambient) {
       startAmbient(wanted);
     }
@@ -541,7 +645,9 @@
       audio();
       if (ctx) {
         // The browser lets the page sound a moment after the touch.
-        ctx.resume().then(startMusic);
+        ctx.resume().then(function() {
+          startMusic();
+        });
       }
     }
   }, {passive: true});

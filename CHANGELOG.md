@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.39.0 (2026-10-14)
+
+- **A world brings its sounds**: an art pack may carry recorded or made sounds (`sound.right`, `sound.drumroll`…),
+  the sound of each kind of place (`sound.ambient.meadow`…) and its music (`sound.music`), in MP3, Ogg or M4A. Only
+  under keys that start with «sound.», and only files that start as a sound does. The game loads them after the first
+  touch and uses them when they are there; without them, the sounds made by the browser, as until now. The music is
+  only loaded on the class screen.
+
 ## 0.38.2 (2026-10-14)
 
 - **The plan of the next class speaks to the class with «ustedes»**, as all the products of Oksigenia: the AI is told

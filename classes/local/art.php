@@ -39,6 +39,9 @@ final class art {
     /** @var string[] Images a pack can have (raster only: nothing that can run code). */
     public const EXTENSIONS = ['png', 'webp', 'jpg', 'jpeg'];
 
+    /** @var string[] Sounds a pack can have, under keys that start with «sound.»: the sounds, places and music of a world. */
+    public const SOUNDS = ['mp3', 'ogg', 'm4a'];
+
     /**
      * Installs a pack from a zip and makes it the pack of the site. A pack with the same code is replaced.
      *
@@ -61,9 +64,11 @@ final class art {
         foreach ($info['files'] as $key => $path) {
             $path = ltrim(clean_param((string) $path, PARAM_PATH), '/');
             $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+            $sound = strpos((string) $key, 'sound.') === 0;
             if (
-                !preg_match('/^[a-z0-9_.-]{1,80}$/', (string) $key) || $path === '' || !in_array($extension, self::EXTENSIONS, true)
-                || !is_file($tmp . '/' . $path)
+                !preg_match('/^[a-z0-9_.-]{1,80}$/', (string) $key) || $path === '' || !is_file($tmp . '/' . $path)
+                || !in_array($extension, $sound ? self::SOUNDS : self::EXTENSIONS, true)
+                || ($sound && !self::is_sound($tmp . '/' . $path))
             ) {
                 continue;
             }
@@ -161,10 +166,23 @@ final class art {
         $context = \context_system::instance();
         $file = get_file_storage()->get_file($context->id, self::COMPONENT, self::FILEAREA, 0, $filepath, $filename);
         $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-        if (!$file || $file->is_directory() || !in_array($extension, self::EXTENSIONS, true)) {
+        if (!$file || $file->is_directory() || !in_array($extension, array_merge(self::EXTENSIONS, self::SOUNDS), true)) {
             return false;
         }
         send_stored_file($file, YEARSECS, 0, false, $options);
         return true;
+    }
+
+    /**
+     * Whether a file starts as a sound does: MP3 (with its tag or a frame), Ogg or MP4 audio. Nothing else is kept as a
+     * sound, whatever its name.
+     *
+     * @param string $path
+     * @return bool
+     */
+    private static function is_sound(string $path): bool {
+        $head = (string) @file_get_contents($path, false, null, 0, 12);
+        return strpos($head, 'ID3') === 0 || strpos($head, 'OggS') === 0 || substr($head, 4, 4) === 'ftyp'
+            || (strlen($head) > 1 && ord($head[0]) === 0xFF && (ord($head[1]) & 0xE0) === 0xE0);
     }
 }

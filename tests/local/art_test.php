@@ -42,7 +42,12 @@ final class art_test extends \advanced_testcase {
         $list['pack.json'] = $dir . '/pack.json';
         foreach ($files as $i => $path) {
             $local = $dir . '/f' . $i;
-            file_put_contents($local, str_ends_with($path, '.svg') ? '<svg xmlns="http://www.w3.org/2000/svg"/>' : $png);
+            // A sound starts as an Ogg file; a «fake» one is only text.
+            $content = str_ends_with($path, '.svg') ? '<svg xmlns="http://www.w3.org/2000/svg"/>' : $png;
+            if (str_ends_with($path, '.ogg') || str_ends_with($path, '.mp3')) {
+                $content = str_contains($path, 'fake') ? 'not a sound' : 'OggS' . str_repeat("\0", 40);
+            }
+            file_put_contents($local, $content);
             $list[$path] = $local;
         }
         $zip = $dir . '/pack.zip';
@@ -124,5 +129,25 @@ final class art_test extends \advanced_testcase {
             'theme' => ['base' => 'day', 'day' => ['lantern' => '#33aacc', 'sky' => 'url(x)']],
         ], ['map.webp']));
         $this->assertSame(['base' => 'day', 'music' => 'valley', 'day' => ['lantern' => '#33aacc']], art::manifest()['theme']);
+    }
+
+    public function test_a_world_brings_its_sounds(): void {
+        $this->resetAfterTest();
+        $manifest = art::install($this->make_zip([
+            'code' => 'valley',
+            'name' => 'The valley',
+            'version' => 2,
+            'files' => [
+                'map.livingthings' => 'map.webp',
+                'sound.right' => 'sounds/right.ogg',
+                'sound.ambient.meadow' => 'sounds/meadow.ogg',
+                'sound.wrong' => 'sounds/fake.mp3',
+                'creature' => 'sounds/meadow.ogg',
+                'sound.map' => 'map.webp',
+            ],
+        ], ['map.webp', 'sounds/right.ogg', 'sounds/meadow.ogg', 'sounds/fake.mp3']));
+        // Sounds only under «sound.», only of their kinds, and only if they start as a sound does.
+        $this->assertSame(['map.livingthings', 'sound.right', 'sound.ambient.meadow'], array_keys($manifest['files']));
+        $this->assertStringEndsWith('/art/2/valley/sounds/right.ogg', art::manifest()['files']['sound.right']);
     }
 }
