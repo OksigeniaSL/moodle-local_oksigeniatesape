@@ -1421,6 +1421,35 @@ body.tesape {
   animation: pulse 2s ease-in-out infinite;
 }
 
+/* Where the class is today: a dashed ring that turns slowly, and «Today» over it. */
+.map .place .today-ring {
+  fill: none;
+  stroke: var(--lantern);
+  stroke-width: 3;
+  stroke-dasharray: 7 6;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: today-turn 12s linear infinite;
+}
+
+.map .place text.today-tag {
+  fill: var(--lantern);
+  font-family: var(--f-title);
+  font-size: 14px;
+  letter-spacing: .04em;
+}
+
+@keyframes today-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* A teammate who follows from far, in the list of who is here: shown, but not to be marked. */
+.team-pick .chip.off {
+  opacity: .6;
+}
+
 /* The names on the map are over its painting: light in every theme. */
 .map .place text {
   fill: #eef3f6;

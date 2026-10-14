@@ -48,6 +48,9 @@ final class live {
     /** @var int The class screen refreshes the sign of life at most this often (seconds). */
     private const HEARTBEAT = 10;
 
+    /** @var int Days a battle is kept, only with how the class did: for who follows the expedition from far. */
+    public const KEPT_DAYS = 8;
+
     /** @var int[] Questions a battle can have. */
     public const COUNTS = [4, 6, 8, 10];
 
@@ -660,21 +663,67 @@ final class live {
     }
 
     /**
-     * Deletes the sessions of more than a day ago and what was answered in them.
+     * A day after a session, what each one answered and got there goes; a week after, the session itself, which then
+     * only says how the class did.
      *
      * @param int|null $now
      * @return int Sessions deleted.
      */
     public static function cleanup(?int $now = null): int {
         global $DB;
-        $old = $DB->get_fieldset_select(self::T . 'live', 'id', 'timecreated < ?', [($now ?? time()) - DAYSECS]);
+        $now = $now ?? time();
+        $old = $DB->get_fieldset_select(self::T . 'live', 'id', 'timecreated < ?', [$now - DAYSECS]);
         foreach (array_chunk($old, 500) as $chunk) {
             [$insql, $params] = $DB->get_in_or_equal($chunk);
             $DB->delete_records_select(self::T . 'livein', "liveid $insql", $params);
             $DB->delete_records_select(self::T . 'livetoken', "liveid $insql", $params);
+            foreach ($DB->get_records_select(self::T . 'live', "id $insql", $params, '', 'id, state') as $live) {
+                $state = self::state($live);
+                if (!empty($state['rewarded'])) {
+                    $state['rewarded'] = [];
+                    $DB->set_field(self::T . 'live', 'state', json_encode($state), ['id' => $live->id]);
+                }
+            }
+        }
+        $gone = $DB->get_fieldset_select(self::T . 'live', 'id', 'timecreated < ?', [$now - self::KEPT_DAYS * DAYSECS]);
+        foreach (array_chunk($gone, 500) as $chunk) {
+            [$insql, $params] = $DB->get_in_or_equal($chunk);
             $DB->delete_records_select(self::T . 'live', "id $insql", $params);
         }
-        return count($old);
+        return count($gone);
+    }
+
+    /**
+     * The battles of the class that a student who follows the expedition from far missed since they last came in: how
+     * the class did, and the lantern the final one lit.
+     *
+     * @param int $courseid
+     * @param int $since When they last came in.
+     * @param int $charid
+     * @return array Newest first, the last three: outcome (won or lost), time, final, lantern (its name, if it lit one).
+     */
+    public static function missed(int $courseid, int $since, int $charid): array {
+        global $DB;
+        $where = "courseid = ? AND kind = 'battle' AND timeend > ?";
+        $fields = 'id, state, timeend';
+        $battles = $DB->get_records_select(self::T . 'live', $where, [$courseid, $since], 'timeend DESC', $fields, 0, 3);
+        $missed = [];
+        $mission = null;
+        foreach ($battles as $live) {
+            $state = self::state($live);
+            $joined = ['liveid' => $live->id, 'round' => 0, 'charid' => $charid];
+            if (!in_array($state['outcome'] ?? '', ['won', 'lost'], true) || $DB->record_exists(self::T . 'livein', $joined)) {
+                continue;
+            }
+            $lantern = '';
+            if ($state['outcome'] === 'won' && !empty($state['final'])) {
+                $mission = $mission ?? missions::get($courseid);
+                $lantern = (string) self::chapter_name($courseid, (string) ($mission->data['battle']['final']['lantern'] ?? ''));
+            }
+            $missed[] = ['outcome' => $state['outcome'], 'time' => (int) $live->timeend, 'final' => !empty($state['final']),
+                'lantern' => $lantern];
+        }
+        return $missed;
     }
 
     /**

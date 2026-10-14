@@ -160,6 +160,11 @@ final class view {
         if ($welcome) {
             $world['welcome'] = $welcome;
         }
+        // Who follows from far: the battles of the class since they last came in.
+        $missed = !empty($member->remote) ? live::missed($courseid, (int) ($member->lastseen ?? 0), (int) $char->id) : [];
+        if ($missed) {
+            $world['battles'] = $missed;
+        }
         welcome::seen($member, time());
         return $world;
     }
@@ -176,6 +181,7 @@ final class view {
      */
     public static function mission(int $courseid, \stdClass $char, \stdClass $member, ?\stdClass $mission = null): ?array {
         global $DB;
+        $current = $mission === null;
         $mission = $mission ?? missions::get($courseid);
         if (!$mission) {
             return null;
@@ -287,6 +293,8 @@ final class view {
             'mapheight' => (int) ($data['maplayers']['height'] ?? 0),
             'chapters' => $list,
             'pages' => $pages,
+            // Where the class is today, the place of «Today in the valley» (none on a past expedition).
+            'today' => $current ? (string) (pacts::chapter($mission)->code ?? '') : '',
         ];
     }
 
@@ -425,6 +433,8 @@ final class view {
                 $teamof[$memberid] = $teamof[$memberid] ?? (int) $group->id;
             }
         }
+        // The team plays a classmate made for each one, which the teacher can take back.
+        $teamplays = $board ? [] : teamplay::for_teacher($courseid);
         $list = [];
         foreach ($students as $user) {
             $char = $chars[$user->id] ?? null;
@@ -435,6 +445,8 @@ final class view {
                 'firstname' => $user->firstname,
                 'picture' => $board ? '' : self::picture($user),
                 'teamid' => $teamof[$user->id] ?? 0,
+                'teamplays' => array_map(fn($p) => ['id' => $p['id'], 'scene' => $p['scene'], 'time' => $p['time'],
+                    'by' => isset($students[$p['by']]) ? fullname($students[$p['by']]) : ''], $teamplays[$user->id] ?? []),
             ];
             if ($char) {
                 $student['character'] = self::character($char, $member, !$board);
@@ -658,18 +670,23 @@ final class view {
             'aura' => (string) ($worn['aura'] ?? ''),
         ];
         if ($member) {
+            $remote = (int) ($member->remote ?? 0);
             $character['member'] = [
                 'renown' => (int) $member->renown,
                 'energy' => (int) $member->energy,
                 'breath' => (int) $member->breath,
-                'status' => $member->status,
-                // What the teacher decides about a student (why they rest, their step, that they follow from far, what they
-                // need) is for them and their teachers only.
+                // What the teacher decides about a student (that they rest and why, their step, what they need) is for
+                // them and their teachers only: their classmates see that they are not playing, not why. That they follow
+                // from far, the teacher decides whether their team sees it.
+                'status' => !$private && $member->status === 'paused' ? 'away' : $member->status,
                 'statusreason' => $private ? (string) $member->statusreason : '',
                 'step' => $private ? (int) $member->step : 0,
                 'lastseen' => $private ? (int) ($member->lastseen ?? 0) : 0,
-                'remote' => $private && !empty($member->remote),
+                'remote' => ($private && $remote > 0) || $remote === 2,
+                'remoteshown' => $private && $remote === 2,
                 'adapt' => $private ? adapt::of($member) : [],
+                'adaptteacher' => $private ? adapt::teacher($member) : [],
+                'adaptown' => $private ? adapt::own($member) : [],
             ];
         }
         return $character;

@@ -42,6 +42,14 @@ if ($hassiteconfig) {
             \local_oksigeniatesape\local\engine::SITE_WEEKLY_CAP,
             PARAM_INT
         ));
+        // What a student did in a course they left is kept this long, in case they come back, and then it goes.
+        $settings->add(new admin_setting_configtext(
+            'local_oksigeniatesape/keepleft',
+            get_string('settings_keepleft', 'local_oksigeniatesape'),
+            get_string('settings_keepleft_desc', 'local_oksigeniatesape'),
+            \local_oksigeniatesape\local\leaving::KEEP_DAYS,
+            PARAM_INT
+        ));
         // What the game needs from the site, asked when the plugin is installed.
         $settings->add(new admin_setting_heading(
             'local_oksigeniatesape/requirements',

@@ -27,6 +27,9 @@ namespace local_oksigeniatesape\local;
  */
 #[\PHPUnit\Framework\Attributes\CoversClass(adapt::class)]
 final class adapt_test extends \advanced_testcase {
+    /** @var string Prefix of the plugin tables. */
+    private const T = 'local_oksigeniatesape_';
+
     public function test_the_adaptations_of_a_student_are_theirs(): void {
         $this->resetAfterTest();
         $dg = $this->getDataGenerator();
@@ -61,5 +64,50 @@ final class adapt_test extends \advanced_testcase {
         // None: nothing kept.
         $this->assertSame([], adapt::save($member, []));
         $this->assertSame([], adapt::of(engine::member(characters::get($users[0]->id), $course->id)));
+    }
+
+    public function test_the_student_turns_on_those_of_comfort_and_the_team_sees_only_what_it_may(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $dg = $this->getDataGenerator();
+        $course = $dg->create_course();
+        regions::save($course->id, ['enabled' => 1]);
+        missions::install($course->id, 'livingthings', 'valley', 'es');
+        $team = $dg->create_group(['courseid' => $course->id]);
+        $users = [];
+        foreach (['sage', 'scout'] as $role) {
+            $user = $dg->create_and_enrol($course, 'student');
+            characters::create($user->id, $role, 'f');
+            engine::member(characters::get($user->id), $course->id);
+            $dg->create_group_member(['groupid' => $team->id, 'userid' => $user->id]);
+            $users[] = $user;
+        }
+        $member = engine::member(characters::get($users[0]->id), $course->id);
+        adapt::save($member, ['notime']);
+        // Only those of comfort: no hurry and more help are for the teacher to decide.
+        $this->assertSame(['bigtext'], adapt::save_own($member, ['hints', 'bigtext', 'notime']));
+        $member = engine::member(characters::get($users[0]->id), $course->id);
+        $this->assertSame(['bigtext', 'notime'], adapt::of($member));
+        $mine = view::world($course->id, $users[0]->id)['character']['member'];
+        $this->assertSame(['notime'], $mine['adaptteacher']);
+        $this->assertSame(['bigtext'], $mine['adaptown']);
+        // Paused and from far: their teammate sees that they are not playing, not why, and not that they are far.
+        $DB->update_record(self::T . 'member', (object) ['id' => $member->id, 'status' => 'paused', 'remote' => 1,
+            'statusreason' => 'En el hospital']);
+        $seen = function () use ($course, $users): array {
+            foreach (view::world($course->id, $users[1]->id)['team']['members'] as $mate) {
+                if (!$mate['me']) {
+                    return $mate['character']['member'];
+                }
+            }
+            return [];
+        };
+        $this->assertSame('away', $seen()['status']);
+        $this->assertSame('', $seen()['statusreason']);
+        $this->assertFalse($seen()['remote']);
+        // The teacher lets the team see that they follow from far.
+        $DB->set_field(self::T . 'member', 'remote', 2, ['id' => $member->id]);
+        $this->assertTrue($seen()['remote']);
+        $this->assertFalse($seen()['remoteshown']);
     }
 }

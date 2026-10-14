@@ -248,8 +248,28 @@ final class live_test extends \advanced_testcase {
         // The class screen, back after a while away, finds it still; the next morning, not.
         $this->assertEquals($second->id, live::current($course->id, self::NOW + live::IDLE + 1, true)->id);
         $this->assertNull(live::current($course->id, self::NOW + live::HOST_IDLE + 1, true));
-        $this->assertEquals(2, live::cleanup(self::NOW + DAYSECS + 1));
+        // A day after, what each one answered goes; a week after, the battles, which only say how the class did.
+        $this->assertEquals(0, live::cleanup(self::NOW + DAYSECS + 1));
         $this->assertEquals(0, $DB->count_records(self::T . 'livein'));
+        $this->assertEquals(2, $DB->count_records(self::T . 'live'));
+        $this->assertEquals(2, live::cleanup(self::NOW + live::KEPT_DAYS * DAYSECS + 1));
+    }
+
+    public function test_who_follows_from_far_hears_how_the_battles_went(): void {
+        $this->resetAfterTest();
+        [$course, $members] = $this->make_class();
+        $live = live::start($course->id, 'phones', 4, 0, self::NOW);
+        live::join($live, $members[0], $members[0]->userid, self::NOW);
+        $live = live::next($live, self::NOW);
+        live::finish($live, 0, self::NOW + 60);
+        // Who was not in the battle hears how it went; who was in it, not.
+        $missed = live::missed($course->id, self::NOW - 10, (int) $members[3]->charid);
+        $this->assertCount(1, $missed);
+        $this->assertSame('lost', $missed[0]['outcome']);
+        $this->assertSame(self::NOW + 60, $missed[0]['time']);
+        $this->assertSame([], live::missed($course->id, self::NOW - 10, (int) $members[0]->charid));
+        // Nor a battle before they last came in.
+        $this->assertSame([], live::missed($course->id, self::NOW + 61, (int) $members[3]->charid));
     }
 
     public function test_a_battle_nobody_played_can_be_called_off(): void {

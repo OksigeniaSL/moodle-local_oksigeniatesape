@@ -42,27 +42,31 @@ final class set_remote extends external_api {
             'courseid' => new external_value(PARAM_INT, 'Course'),
             'userid' => new external_value(PARAM_INT, 'Student'),
             'remote' => new external_value(PARAM_BOOL, 'From far'),
+            'shown' => new external_value(PARAM_BOOL, 'Their team sees it', VALUE_DEFAULT, false),
         ]);
     }
 
     /**
-     * Marks that a student follows the expedition from far (home, hospital), or not.
+     * Marks that a student follows the expedition from far (home, hospital), or not, and whether their team sees it.
      *
      * @param int $courseid
      * @param int $userid
      * @param bool $remote
+     * @param bool $shown
      * @return array
      */
     public static function execute(
         int $courseid,
         int $userid,
-        bool $remote
+        bool $remote,
+        bool $shown = false
     ): array {
         global $DB;
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
             'userid' => $userid,
             'remote' => $remote,
+            'shown' => $shown,
         ]);
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
@@ -73,9 +77,11 @@ final class set_remote extends external_api {
             throw new \moodle_exception('nocharacter', 'local_oksigeniatesape');
         }
         $member = engine::member($char, $params['courseid']);
-        $DB->update_record('local_oksigeniatesape_member', (object) ['id' => $member->id,
-            'remote' => (int) $params['remote'], 'timemodified' => time()]);
-        return ['remote' => $params['remote']];
+        // 1: only they and their teachers see it; 2: their team too.
+        $value = $params['remote'] ? ($params['shown'] ? 2 : 1) : 0;
+        $DB->update_record('local_oksigeniatesape_member', (object) ['id' => $member->id, 'remote' => $value,
+            'timemodified' => time()]);
+        return ['remote' => $value > 0, 'shown' => $value === 2];
     }
 
     /**
@@ -84,6 +90,9 @@ final class set_remote extends external_api {
      * @return \core_external\external_description
      */
     public static function execute_returns(): \core_external\external_description {
-        return new external_single_structure(['remote' => new external_value(PARAM_BOOL, 'From far')]);
+        return new external_single_structure([
+            'remote' => new external_value(PARAM_BOOL, 'From far'),
+            'shown' => new external_value(PARAM_BOOL, 'Their team sees it'),
+        ]);
     }
 }

@@ -228,6 +228,41 @@ final class competencies {
     }
 
     /**
+     * Takes away the evidence that a team play left for a student, when the teacher takes the play back.
+     *
+     * @param int $courseid
+     * @param int $userid
+     * @param int $attempt The number of the play of the student.
+     * @param int $time When it was played.
+     */
+    public static function forget_team_evidence(int $courseid, int $userid, int $attempt, int $time): void {
+        global $DB;
+        if (!self::enabled()) {
+            return;
+        }
+        try {
+            $rows = $DB->get_records_sql(
+                'SELECT e.id, e.desca
+                   FROM {competency_evidence} e
+                   JOIN {competency_usercomp} uc ON uc.id = e.usercompetencyid
+                  WHERE uc.userid = ? AND e.contextid = ? AND e.desccomponent = ? AND e.descidentifier = ?
+                    AND e.timecreated BETWEEN ? AND ?',
+                [$userid, \context_course::instance($courseid)->id, 'local_oksigeniatesape', 'evidence_scene_team',
+                    $time - MINSECS, $time + HOURSECS]
+            );
+            foreach ($rows as $row) {
+                $a = json_decode((string) $row->desca, true);
+                if ((int) ($a['attempt'] ?? 0) === $attempt) {
+                    // Left by the game, taken back by the game: the teacher already decided.
+                    (new evidence((int) $row->id))->delete();
+                }
+            }
+        } catch (\Throwable $e) {
+            debugging('Tesapé could not take back evidence in the competencies: ' . $e->getMessage(), DEBUG_DEVELOPER);
+        }
+    }
+
+    /**
      * Leaves the evidence of a play.
      *
      * @param int $courseid

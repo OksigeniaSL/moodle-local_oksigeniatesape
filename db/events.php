@@ -42,6 +42,14 @@ $observers = [
         'callback' => '\local_oksigeniatesape\observer::course_reset_ended',
     ],
     [
+        'eventname' => '\core\event\user_enrolment_deleted',
+        'callback' => '\local_oksigeniatesape\observer::user_enrolment_deleted',
+    ],
+    [
+        'eventname' => '\core\event\user_enrolment_created',
+        'callback' => '\local_oksigeniatesape\observer::user_enrolment_created',
+    ],
+    [
         'eventname' => '\core\event\user_deleted',
         'callback' => '\local_oksigeniatesape\observer::user_deleted',
     ],

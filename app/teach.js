@@ -700,24 +700,39 @@
       html += '<div class="banner rest" style="margin-top:12px"><div><b>' + esc(t('app_resting')) + '</b>' +
         (m.statusreason ? '<div class="note">' + esc(m.statusreason) + '</div>' : '') + '</div></div>';
     }
+    if (can('manageregion')) {
+      // The role, when the student asks to change it: they keep their level and everything they have.
+      html += '<h3 style="margin-top:16px">' + esc(t('teach_role')) + '</h3><p class="help-soft">' + esc(t('teach_role_help')) +
+        '</p><div class="pills" style="justify-content:flex-start">' + T.ROLES.map(function(r) {
+          return '<button class="chip" data-role="' + r + '" aria-pressed="' + (c.role === r) + '">' +
+            esc(T.roleName(fam, r, c.nameform)) + '</button>';
+        }).join('') + '</div>';
+    }
     html += '<h3 style="margin-top:16px">' + esc(t('teach_step')) + '</h3><div class="pills" style="justify-content:' +
       'flex-start">' + [1, 2, 3, 4].map(function(st) {
         return '<button class="chip" data-step="' + st + '" aria-pressed="' + (m && m.step === st) + '"' +
           (can('manageregion') ? '' : ' disabled') + '>' + esc(t('teach_step_' + st)) + '</button>';
       }).join('') + '</div>';
     // What the game adapts for them: what they need, never a diagnosis; saved as soon as it is marked.
-    var adapted = (m && m.adapt) || [];
+    var adapted = (m && (m.adaptteacher || m.adapt)) || [];
+    var own = (m && m.adaptown) || [];
     html += '<h3 style="margin-top:16px">' + esc(t('teach_adapt')) + '</h3><p class="help-soft">' + esc(t('teach_adapt_help')) +
       '</p><div class="adapt-options">' + ADAPT.map(function(code) {
         return '<label class="chip"><input type="checkbox" data-adapt="' + code + '"' + (adapted.indexOf(code) >= 0 ?
           ' checked' : '') + (can('award') ? '' : ' disabled') + '> <span><b>' + esc(t('teach_adapt_' + code)) + '</b><small>' +
           esc(t('teach_adapt_' + code + '_help')) + '</small></span></label>';
-      }).join('') + '</div>';
+      }).join('') + '</div>' + (own.length ? '<p class="help-soft">' + esc(t('teach_adapt_own', own.map(function(code) {
+        return t('teach_adapt_' + code);
+      }).join(', '))) + '</p>' : '');
     // Far from the expedition: when they came last, and whether they follow it from home or hospital.
     html += '<h3 style="margin-top:16px">' + esc(t('teach_far')) + '</h3><p class="help-soft">' + esc(lastSeen(m)) + '</p>' +
       '<label class="chip" style="display:inline-flex;gap:8px;align-items:center"><input type="checkbox" data-remote' +
       (m && m.remote ? ' checked' : '') + (can('award') ? '' : ' disabled') + '> ' + esc(t('teach_remote')) + '</label>' +
+      (m && m.remote ? ' <label class="chip" style="display:inline-flex;gap:8px;align-items:center"><input type="checkbox" ' +
+      'data-remoteshown' + (m.remoteshown ? ' checked' : '') + (can('award') ? '' : ' disabled') + '> ' +
+      esc(t('teach_remote_shown')) + '</label>' : '') +
       '<p class="help-soft" style="margin-top:6px">' + esc(t('teach_remote_help')) + '</p>' +
+      (m && m.remote ? '<p class="help-soft">' + esc(t('teach_remote_shown_help')) + '</p>' : '') + teamplaysList(s) +
       '<div class="actions" style="justify-content:flex-start;margin-top:16px">';
     if (can('pause')) {
       if (m && m.status === 'paused') {
@@ -763,6 +778,48 @@
         });
       };
     });
+    el.querySelectorAll('[data-role]').forEach(function(b) {
+      b.onclick = function() {
+        if (b.getAttribute('aria-pressed') === 'true') {
+          return;
+        }
+        T.api('set_role', {courseid: cfg.courseid, userid: userid, role: b.dataset.role}).then(function() {
+          T.toast(esc(t('app_saved')));
+          return load(true);
+        }).then(function() {
+          openStudent(userid);
+        }).catch(function(e) {
+          T.toast(esc(e.message), true);
+        });
+      };
+    });
+    el.querySelectorAll('[data-undoteamplay]').forEach(function(b) {
+      b.onclick = function() {
+        b.disabled = true;
+        T.api('undo_teamplay', {courseid: cfg.courseid, attemptid: Number(b.dataset.undoteamplay)}).then(function() {
+          T.toast(esc(t('teach_teamplay_undone')));
+          return load(true);
+        }).then(function() {
+          openStudent(userid);
+        }).catch(function(e) {
+          b.disabled = false;
+          T.toast(esc(e.message), true);
+        });
+      };
+    });
+    var shown = el.querySelector('[data-remoteshown]');
+    if (shown) {
+      shown.onchange = function() {
+        T.api('set_remote', {courseid: cfg.courseid, userid: userid, remote: true, shown: shown.checked}).then(function() {
+          T.toast(esc(t('app_saved')));
+          if (m) {
+            m.remoteshown = shown.checked;
+          }
+        }).catch(function(e) {
+          T.toast(esc(e.message), true);
+        });
+      };
+    }
     var remote = el.querySelector('[data-remote]');
     if (remote) {
       remote.onchange = function() {
@@ -804,6 +861,26 @@
         render();
       };
     }
+  }
+
+  /**
+   * The team plays a classmate made for a student on their device, which the teacher can take back if they were not
+   * there.
+   *
+   * @param {Object} s The student.
+   * @return {string}
+   */
+  function teamplaysList(s) {
+    var list = s.teamplays || [];
+    if (!list.length) {
+      return '';
+    }
+    return '<h3 style="margin-top:16px">' + esc(t('teach_teamplays')) + '</h3><p class="help-soft">' +
+      esc(t('teach_teamplays_help')) + '</p><ul class="list">' + list.map(function(p) {
+        return '<li class="item"><span class="grow"><b>' + esc(p.scene) + '</b><small>' + esc(t('teach_teamplay_by',
+          {by: p.by || '—', time: when(p.time)})) + '</small></span>' + (can('undo') ? '<button class="btn btn-soft" ' +
+          'data-undoteamplay="' + p.id + '">' + esc(t('teach_teamplay_undo')) + '</button>' : '') + '</li>';
+      }).join('') + '</ul>';
   }
 
   function stat(key, value) {

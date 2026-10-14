@@ -115,7 +115,7 @@ final class welcome {
             'SELECT c.userid, m.lastseen, m.remote
                FROM {' . self::T . 'member} m
                JOIN {' . self::T . 'char} c ON c.id = m.charid
-              WHERE m.courseid = ? AND (m.remote = 1 OR (m.lastseen > 0 AND m.lastseen < ?))',
+              WHERE m.courseid = ? AND (m.remote > 0 OR (m.lastseen > 0 AND m.lastseen < ?))',
             [$courseid, $now - self::AWAY_DAYS * DAYSECS]
         );
         $away = [];

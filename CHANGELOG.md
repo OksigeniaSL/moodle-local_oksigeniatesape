@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.47.0 (2026-10-14)
+
+What Enrique decided for the first test in a classroom.
+
+- **The teacher takes back a team play**: on the card of a student, «Team plays in their name» lists the plays a
+  classmate made for them on their device; «Take back» removes the play, its evidence in the competencies, the saber
+  and gems it gave and the scene done (if they have not played it themselves). What else it gave stays.
+- **Who is paused**, for their classmates, has no mark: they cannot be chosen for powers or to play together, and
+  nobody sees why. **Who follows from far**: the teacher decides, for each student, whether their team sees it («Their
+  team sees it»); they cannot be marked as there in a team scene, and in the list of who is here they show, without a
+  box to tick.
+- **The role, changed by the teacher** on the card of the student, when they ask; the first screen says so.
+- **The student turns on the adaptations of comfort** (big text, reading aloud, no movement, high contrast, colours, no
+  sounds) in «Me», «How you see and hear it better»; no hurry and more help, only the teacher. The teacher sees on the
+  card which ones the student turned on.
+- **Today's place on the map** of each student: the one of «Today in the valley», ringed and with «Today» over it.
+- **Who follows from far hears about the battles** they missed when they come in: whether the class won and the
+  lantern it lit. The battles are kept a week, with only how the class did; what each one answered still goes after a
+  day.
+- **Who leaves a course**: what they did there is marked when they leave, stops showing, and is deleted after 180
+  days (a setting of the site); if they come back before, it is all theirs again. Their character stays.
+
 ## 0.46.0 (2026-10-14)
 
 A review of performance, robustness and privacy, for a whole class at once on a school wifi.

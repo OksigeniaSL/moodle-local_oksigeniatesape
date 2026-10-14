@@ -79,6 +79,12 @@ final class get_class extends external_api {
                 'firstname' => new external_value(PARAM_TEXT, 'First name'),
                 'picture' => new external_value(PARAM_URL, 'Picture (empty: none)'),
                 'teamid' => new external_value(PARAM_INT, 'Group of the team (0: none)'),
+                'teamplays' => new external_multiple_structure(new external_single_structure([
+                    'id' => new external_value(PARAM_INT, 'Their play'),
+                    'scene' => new external_value(PARAM_TEXT, 'Title of the scene'),
+                    'by' => new external_value(PARAM_TEXT, 'Who played it, on their device'),
+                    'time' => new external_value(PARAM_INT, 'When'),
+                ]), 'Team plays a classmate made for them, newest first', VALUE_DEFAULT, []),
                 'character' => structures::character(VALUE_OPTIONAL),
             ])),
             'teams' => new external_multiple_structure(new external_single_structure([

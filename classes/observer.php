@@ -125,6 +125,24 @@ final class observer {
     }
 
     /**
+     * A student leaves a course (or one of their ways into it): what they did there is marked, and goes some time after.
+     *
+     * @param \core\event\user_enrolment_deleted $event
+     */
+    public static function user_enrolment_deleted(\core\event\user_enrolment_deleted $event): void {
+        \local_oksigeniatesape\local\leaving::left((int) $event->courseid, (int) $event->relateduserid);
+    }
+
+    /**
+     * A student comes into a course: if they had left it, what they did there is theirs again.
+     *
+     * @param \core\event\user_enrolment_created $event
+     */
+    public static function user_enrolment_created(\core\event\user_enrolment_created $event): void {
+        \local_oksigeniatesape\local\leaving::back((int) $event->courseid, (int) $event->relateduserid);
+    }
+
+    /**
      * A course deleted: the region goes with it, and everything played there. The characters stay, with what they
      * earned: they belong to the students, not to the course.
      *

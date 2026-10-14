@@ -54,14 +54,27 @@ final class structures {
                 'renown' => new external_value(PARAM_INT, 'Knowledge earned in the course'),
                 'energy' => new external_value(PARAM_INT, 'Energy in the course (-1: not shown to this classmate)'),
                 'breath' => new external_value(PARAM_INT, 'Breath in the course'),
-                'status' => new external_value(PARAM_ALPHA, 'active, fallen or paused'),
+                'status' => new external_value(PARAM_ALPHA, 'active, fallen or paused (away, for classmates)'),
                 'statusreason' => new external_value(PARAM_TEXT, 'Why, only for the student and the teachers'),
                 'step' => new external_value(PARAM_INT, 'Step of the mission, 1 to 4'),
                 'lastseen' => new external_value(PARAM_INT, 'Last time they opened the game (0: not known)', VALUE_DEFAULT, 0),
                 'remote' => new external_value(PARAM_BOOL, 'They follow the expedition from far', VALUE_DEFAULT, false),
+                'remoteshown' => new external_value(PARAM_BOOL, 'Their team sees it (for the teachers)', VALUE_DEFAULT, false),
                 'adapt' => new external_multiple_structure(
                     new external_value(PARAM_ALPHA, 'Adaptation'),
                     'What the game adapts for them (only for them and their teachers)',
+                    VALUE_DEFAULT,
+                    []
+                ),
+                'adaptteacher' => new external_multiple_structure(
+                    new external_value(PARAM_ALPHA, 'Adaptation'),
+                    'Of those, the ones their teacher marked',
+                    VALUE_DEFAULT,
+                    []
+                ),
+                'adaptown' => new external_multiple_structure(
+                    new external_value(PARAM_ALPHA, 'Adaptation'),
+                    'Of those, the ones of comfort they turned on themselves',
                     VALUE_DEFAULT,
                     []
                 ),
@@ -107,6 +120,7 @@ final class structures {
             'map' => new external_value(PARAM_ALPHANUMEXT, 'Code of the painted map', VALUE_DEFAULT, ''),
             'mapworld' => new external_value(PARAM_ALPHANUMEXT, 'World of a map in layers', VALUE_DEFAULT, ''),
             'mapheight' => new external_value(PARAM_INT, 'Height of a map in layers', VALUE_DEFAULT, 0),
+            'today' => new external_value(PARAM_ALPHANUMEXT, 'Place where the class is today', VALUE_DEFAULT, ''),
             'chapters' => new external_multiple_structure(new external_single_structure([
                 'id' => new external_value(PARAM_INT, 'Chapter'),
                 'code' => new external_value(PARAM_ALPHANUMEXT, 'Code'),

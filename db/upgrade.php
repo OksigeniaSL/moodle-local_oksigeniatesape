@@ -550,5 +550,21 @@ function xmldb_local_oksigeniatesape_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026101492, 'local', 'oksigeniatesape');
     }
 
+    if ($oldversion < 2026101493) {
+        // The adaptations of comfort a student turns on for themselves, and when a student left the course.
+        $table = new xmldb_table('local_oksigeniatesape_member');
+        foreach (
+            [
+                new xmldb_field('adaptself', XMLDB_TYPE_CHAR, '200', null, null, null, null, 'adapt'),
+                new xmldb_field('leftat', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'adaptself'),
+            ] as $field
+        ) {
+            if (!$dbman->field_exists($table, $field)) {
+                $dbman->add_field($table, $field);
+            }
+        }
+        upgrade_plugin_savepoint(true, 2026101493, 'local', 'oksigeniatesape');
+    }
+
     return true;
 }

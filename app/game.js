@@ -657,13 +657,17 @@
       return ch.x + ',' + ch.y;
     }).join(' ');
     var places = m.chapters.map(function(ch) {
+      var today = m.today && ch.code === m.today;
       var cls = 'place' + (ch.mine ? ' mine' : '') + (ch.lit ? ' lit' : '') + (ch.id === current.id ? ' here' : '') +
-        (ch.id === state.chapter ? ' selected' : '');
+        (ch.id === state.chapter ? ' selected' : '') + (today ? ' today' : '');
       var label = ch.name.length > 22 ? ch.name.slice(0, 21) + '…' : ch.name;
       return '<g class="' + cls + '" data-chapter="' + ch.id + '" data-art="' + esc(ch.art || ch.code) + '" tabindex="0" ' +
         'role="button" aria-label="' + esc(ch.name) + '">' +
         '<rect class="hit" x="' + (ch.x - 80) + '" y="' + (ch.y - 32) + '" width="160" height="84" rx="16"/>' +
         (ch.lit ? '<circle cx="' + ch.x + '" cy="' + ch.y + '" r="40" class="classglow"/>' : '') +
+        // Where the class is today: what the teacher has on «Today in the valley».
+        (today ? '<circle cx="' + ch.x + '" cy="' + ch.y + '" r="33" class="today-ring"/><text x="' + ch.x + '" y="' +
+        (ch.y - 38) + '" text-anchor="middle" class="today-tag">' + esc(t('app_today_here')) + '</text>' : '') +
         '<circle cx="' + ch.x + '" cy="' + ch.y + '" r="25" class="ring"/>' +
         '<rect x="' + (ch.x - 2) + '" y="' + (ch.y - 4) + '" width="4" height="17" rx="1" fill="#2b2219"/>' +
         '<circle cx="' + ch.x + '" cy="' + (ch.y - 7) + '" r="7" class="flame"/>' +
@@ -697,8 +701,10 @@
    * @param {number} sceneid
    */
   function teamPicker(sceneid) {
+    // Who is not playing today does not show; who follows from far cannot be at this device.
     var mates = state.world.team.members.filter(function(m) {
-      return !m.me;
+      var mm = m.character && m.character.member;
+      return !m.me && !(mm && mm.status === 'away');
     });
     var layer = document.createElement('div');
     layer.className = 'badge-moment team-pick';
@@ -708,8 +714,8 @@
     layer.innerHTML = '<form class="badge-card"><h2 id="tesape-team-title">' + esc(t('app_team_who')) + '</h2><p>' +
       esc(t('app_team_who_help')) + '</p><div class="team-mates">' + mates.map(function(m) {
         var far = m.character && m.character.member && m.character.member.remote;
-        return '<label class="chip"><input type="checkbox" value="' + m.userid + '"> ' + esc(m.name) + (far ? ' · ' +
-          esc(t('app_team_far')) : '') + '</label>';
+        return '<label class="chip' + (far ? ' off' : '') + '"><input type="checkbox" value="' + m.userid + '"' +
+          (far ? ' disabled' : '') + '> ' + esc(m.name) + (far ? ' · ' + esc(t('app_team_far')) : '') + '</label>';
       }).join('') + '</div><div class="actions"><button class="btn btn-soft" type="button" data-cancel>' +
       esc(t('app_cancel')) + '</button><button class="btn btn-main" type="submit" disabled>' + esc(t('app_team_start')) +
       '</button></div></form>';
@@ -737,7 +743,7 @@
         route();
       }});
     };
-    var first = form.querySelector('input');
+    var first = form.querySelector('input:not([disabled])');
     if (first) {
       first.focus();
     }
@@ -964,6 +970,13 @@
   }
 
   function bindWorld() {
+    var seen = app.querySelector('[data-battlesseen]');
+    if (seen) {
+      seen.onclick = function() {
+        state.world.battles = null;
+        world();
+      };
+    }
     app.querySelectorAll('[data-visit]').forEach(function(b) {
       b.onclick = function() {
         b.disabled = true;
@@ -1073,7 +1086,7 @@
         missionView(state.visit, true);
     }
     if (w.mission) {
-      return missionView(w.mission) + expeditionsCard();
+      return battlesCard() + missionView(w.mission) + expeditionsCard();
     }
     var next = w.challenges.filter(function(ch) {
       return !ch.status || ch.status === 'notyet';
@@ -1084,6 +1097,33 @@
       '</h3>' + (next.length ? '<ul class="list">' + next.map(challengeItem).join('') + '</ul>' : '<p class="empty">' +
       esc(t('app_nochallenges')) + '</p>') + '</section><section class="card"><h3>' + esc(t('app_tab_log')) + '</h3>' +
       logList(w.log.slice(0, 4)) + '</section></div>';
+  }
+
+  /**
+   * For who follows the expedition from far: the battles of the class since they last came in, once.
+   *
+   * @return {string}
+   */
+  function battlesCard() {
+    var list = state.world.battles || [];
+    if (!list.length) {
+      return '';
+    }
+    var day = function(time) {
+      try {
+        return new Intl.DateTimeFormat(cfg.lang, {weekday: 'long', day: 'numeric', month: 'long'}).format(new Date(time * 1000));
+      } catch (e) {
+        return new Date(time * 1000).toLocaleDateString();
+      }
+    };
+    return '<section class="card battles-missed" style="margin-bottom:12px"><div class="kicker">' +
+      esc(t('app_far_battles')) + '</div><ul class="list">' + list.map(function(b) {
+        var face = T.embrollo(b.outcome === 'won' ? 0.2 : 1);
+        return '<li class="item"><span class="battle-mini">' + face + '</span><span class="grow"><b>' +
+          esc(t(b.outcome === 'won' ? 'app_far_battle_won' : 'app_far_battle_lost')) + '</b><small>' + esc(day(b.time)) +
+          (b.lantern ? ' · ' + esc(t('app_far_battle_lantern', b.lantern)) : '') + '</small></span></li>';
+      }).join('') + '</ul><div class="actions" style="justify-content:flex-start"><button class="btn btn-soft" ' +
+      'data-battlesseen>' + esc(t('app_far_battles_ok')) + '</button></div></section>';
   }
 
   function tabTeam() {
@@ -1108,7 +1148,8 @@
           var c = mate.character;
           var m = c && c.member;
           var tag = m && m.status === 'paused' ? '<span class="tag todo">' + esc(t('app_resting')) + '</span>' :
-            m && m.status === 'fallen' ? '<span class="tag notyet">' + esc(t('app_wornout')) + '</span>' : '';
+            m && m.status === 'fallen' ? '<span class="tag notyet">' + esc(t('app_wornout')) + '</span>' :
+            m && m.remote && !mate.me ? '<span class="tag">' + esc(t('app_team_far')) + '</span>' : '';
           return '<li class="item"><span class="face">' + (c ? avatarOf(c, '', true) : '') + '</span><span class="grow"><b>' +
             esc(mate.name) + (mate.me ? ' (' + esc(t('app_you')) + ')' : '') + '</b><small>' +
             (c ? esc(T.roleName(fam, c.role, c.nameform)) + ' · ' + esc(t('app_level')) + ' ' + c.level :
@@ -1183,7 +1224,7 @@
     var blocked = m.status === 'paused' ? t('app_power_paused') : m.status === 'fallen' ? t('app_power_wornout') : '';
     var mates = (w.team ? w.team.members : []).filter(function(mate) {
       var mm = mate.character && mate.character.member;
-      return !mate.me && mm && mm.status !== 'paused';
+      return !mate.me && mm && mm.status !== 'paused' && mm.status !== 'away';
     });
     var fallen = mates.filter(function(mate) {
       return mate.character.member.status === 'fallen';
@@ -1226,7 +1267,7 @@
     if (p.target === 'mate' || p.target === 'fallen') {
       mates = (w.team ? w.team.members : []).filter(function(mate) {
         var m = mate.character && mate.character.member;
-        if (mate.me || !m || m.status === 'paused') {
+        if (mate.me || !m || m.status === 'paused' || m.status === 'away') {
           return false;
         }
         return p.target === 'fallen' ? m.status === 'fallen' : true;
@@ -1400,7 +1441,32 @@
       '</button><a class="btn btn-soft" href="' + esc(cfg.courseurl) + '">' + esc(t('app_exit')) + '</a></div></div>' +
       '</section>' + (w.hascoat && c.creature ? '<section class="card no-print" style="margin-top:16px"><h2>' +
       esc(t('app_coat_title', creatureName(c))) + '</h2><p class="help-soft">' + esc(t('app_coat_help')) + '</p>' +
-      T.coatPicker(w, function() {}).html + '</section>' : '') + marketCard() + albumCard() + namesCard() + ideasCard();
+      T.coatPicker(w, function() {}).html + '</section>' : '') + comfortCard() + marketCard() + albumCard() + namesCard() +
+      ideasCard();
+  }
+
+  /** The adaptations a student can turn on for themselves: they do not change the game. */
+  var COMFORT = ['bigtext', 'readaloud', 'still', 'contrast', 'colours', 'quiet'];
+
+  /**
+   * How the student sees and hears the game better: what they turn on, and what their teacher marked, already on.
+   *
+   * @return {string}
+   */
+  function comfortCard() {
+    var m = state.world.character.member;
+    if (!m) {
+      return '';
+    }
+    var teacher = m.adaptteacher || [];
+    var own = m.adaptown || [];
+    return '<section class="card no-print comfort-card" style="margin-top:16px"><h2>' + esc(t('app_comfort')) + '</h2>' +
+      '<p class="help-soft">' + esc(t('app_comfort_help')) + '</p><div class="adapt-options">' + COMFORT.map(function(code) {
+        var byteacher = teacher.indexOf(code) >= 0;
+        return '<label class="chip"><input type="checkbox" data-comfort="' + code + '"' + (byteacher || own.indexOf(code) >= 0 ?
+          ' checked' : '') + (byteacher ? ' disabled' : '') + '> <span><b>' + esc(t('teach_adapt_' + code)) + '</b><small>' +
+          esc(byteacher ? t('app_comfort_teacher') : t('app_comfort_' + code)) + '</small></span></label>';
+      }).join('') + '</div></section>';
   }
 
   /**
@@ -1536,6 +1602,23 @@
 
   function bindMe() {
     var c = state.world.character;
+    app.querySelectorAll('[data-comfort]').forEach(function(box) {
+      box.onchange = function() {
+        var list = Array.prototype.map.call(app.querySelectorAll('[data-comfort]:checked:not([disabled])'), function(b) {
+          return b.dataset.comfort;
+        });
+        app.querySelectorAll('[data-comfort]').forEach(function(b) {
+          b.disabled = true;
+        });
+        T.api('set_comfort', {courseid: cfg.courseid, adapt: list}).then(function(w) {
+          state.world = w;
+          world();
+        }).catch(function(e) {
+          T.toast(esc(e.message), true);
+          world();
+        });
+      };
+    });
     var shop = function(fn, args, done) {
       app.querySelectorAll('[data-buy], [data-wear], [data-takeoff], [data-give]').forEach(function(o) {
         o.disabled = true;

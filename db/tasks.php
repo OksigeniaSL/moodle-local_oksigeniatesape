@@ -45,4 +45,14 @@ $tasks = [
         'month' => '*',
         'dayofweek' => '*',
     ],
+    [
+        // Once a day: what the students who left a course long ago did there.
+        'classname' => '\local_oksigeniatesape\task\forget_left',
+        'blocking' => 0,
+        'minute' => 'R',
+        'hour' => '4',
+        'day' => '*',
+        'month' => '*',
+        'dayofweek' => '*',
+    ],
 ];

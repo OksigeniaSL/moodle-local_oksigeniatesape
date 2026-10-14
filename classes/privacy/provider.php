@@ -59,7 +59,7 @@ class provider implements
             'char' => ['userid', 'role', 'nameform', 'lineage', 'nickname', 'nicknamepending', 'saber', 'level', 'gems',
                 'creature', 'appearance', 'creaturestage', 'cosmetics', 'rolechangedat', 'timecreated'],
             'member' => ['charid', 'courseid', 'renown', 'energy', 'breath', 'status', 'statusreason', 'statusby', 'step',
-                'lastseen', 'remote', 'adapt', 'timecreated'],
+                'lastseen', 'remote', 'adapt', 'adaptself', 'leftat', 'timecreated'],
             'ledger' => ['charid', 'courseid', 'resource', 'amount', 'reason', 'cmid', 'actorid', 'capped', 'undoneby',
                 'timecreated'],
             'powerreq' => ['powerid', 'memberid', 'targetmemberid', 'status', 'decidedby', 'timecreated'],
@@ -286,8 +286,11 @@ class provider implements
                 'statusreason' => $member->statusreason,
                 'step' => $member->step,
                 'lastseen' => $member->lastseen ? transform::datetime($member->lastseen) : '',
-                'remote' => transform::yesno($member->remote),
+                'remote' => transform::yesno((int) $member->remote > 0),
+                'remoteshown' => transform::yesno((int) $member->remote === 2),
                 'adapt' => (string) $member->adapt,
+                'adaptself' => (string) ($member->adaptself ?? ''),
+                'leftat' => !empty($member->leftat) ? transform::datetime($member->leftat) : '',
                 'timecreated' => transform::datetime($member->timecreated),
             ]);
             $requests = $DB->get_records_sql(
@@ -603,6 +606,16 @@ class provider implements
         foreach (self::COURSE_TABLES as $table) {
             $DB->delete_records_select(self::T . $table, $where, $params);
         }
+    }
+
+    /**
+     * Deletes what a student who left a course long ago did there.
+     *
+     * @param int $courseid
+     * @param int $charid
+     */
+    public static function delete_left(int $courseid, int $charid): void {
+        self::delete_in_course($courseid, [$charid]);
     }
 
     /**

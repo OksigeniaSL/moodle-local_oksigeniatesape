@@ -18,7 +18,8 @@ namespace local_oksigeniatesape\local;
 
 /**
  * What a student needs to play as everybody else: the teacher marks the adaptations, never a diagnosis, and the game
- * adapts itself when they play. Only the student and their teachers see them.
+ * adapts itself when they play. The student can turn on those of comfort for themselves; those that change the game (no
+ * hurry, more help) only the teacher. Only the student and their teachers see them.
  *
  * @package    local_oksigeniatesape
  * @copyright  2026 Oksigenia <dev@oksigenia.cc>
@@ -34,6 +35,9 @@ final class adapt {
      */
     public const ALL = ['bigtext', 'readaloud', 'notime', 'still', 'contrast', 'colours', 'quiet', 'hints'];
 
+    /** @var string[] Those of comfort, which the student can turn on: they do not change the game. */
+    public const COMFORT = ['bigtext', 'readaloud', 'still', 'contrast', 'colours', 'quiet'];
+
     /**
      * Only the adaptations that exist, in their order, once each.
      *
@@ -45,13 +49,33 @@ final class adapt {
     }
 
     /**
-     * The adaptations of a student in a course.
+     * The adaptations of a student in a course when they play: those of their teacher and those they turned on.
      *
      * @param \stdClass $member
      * @return string[]
      */
     public static function of(\stdClass $member): array {
+        return self::clean(array_merge(self::teacher($member), self::own($member)));
+    }
+
+    /**
+     * The adaptations the teacher marked.
+     *
+     * @param \stdClass $member
+     * @return string[]
+     */
+    public static function teacher(\stdClass $member): array {
         return self::clean(explode(',', (string) ($member->adapt ?? '')));
+    }
+
+    /**
+     * The adaptations of comfort the student turned on for themselves.
+     *
+     * @param \stdClass $member
+     * @return string[]
+     */
+    public static function own(\stdClass $member): array {
+        return array_values(array_intersect(self::COMFORT, self::clean(explode(',', (string) ($member->adaptself ?? '')))));
     }
 
     /**
@@ -66,7 +90,22 @@ final class adapt {
     }
 
     /**
-     * Keeps the adaptations of a student in a course.
+     * Keeps the adaptations of comfort a student turns on for themselves; any other is left out.
+     *
+     * @param \stdClass $member
+     * @param array $list
+     * @return string[] What was kept.
+     */
+    public static function save_own(\stdClass $member, array $list): array {
+        global $DB;
+        $clean = array_values(array_intersect(self::COMFORT, self::clean($list)));
+        $DB->update_record(self::T . 'member', (object) ['id' => $member->id, 'adaptself' => $clean ? implode(',', $clean) : null,
+            'timemodified' => time()]);
+        return $clean;
+    }
+
+    /**
+     * Keeps the adaptations the teacher marks for a student in a course.
      *
      * @param \stdClass $member
      * @param array $list

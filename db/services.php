@@ -377,6 +377,27 @@ $functions = [
         'readonlysession' => true,
         'capabilities' => 'local/oksigeniatesape:play',
     ],
+    'local_oksigeniatesape_undo_teamplay' => [
+        'classname' => 'local_oksigeniatesape\\external\\undo_teamplay',
+        'description' => 'The teacher takes back a team play a classmate made for a student who was not there.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:undo',
+    ],
+    'local_oksigeniatesape_set_role' => [
+        'classname' => 'local_oksigeniatesape\\external\\set_role',
+        'description' => 'The teacher changes the role of a student who asks for it.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:manageregion',
+    ],
+    'local_oksigeniatesape_set_comfort' => [
+        'classname' => 'local_oksigeniatesape\\external\\set_comfort',
+        'description' => 'A student turns on for themselves the adaptations of comfort.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:play',
+    ],
     'local_oksigeniatesape_class_scene' => [
         'classname' => 'local_oksigeniatesape\\external\\class_scene',
         'description' => 'A scene played by the whole class on the class screen: its decisions and what each player gets.',

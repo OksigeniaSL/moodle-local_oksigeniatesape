@@ -120,6 +120,12 @@ final class get_world extends external_api {
                 ]), 'A short way to catch up'),
                 'team' => new external_multiple_structure(new external_value(PARAM_TEXT, 'Teammate')),
             ], 'A welcome back, or to who arrives late', VALUE_OPTIONAL),
+            'battles' => new external_multiple_structure(new external_single_structure([
+                'outcome' => new external_value(PARAM_ALPHA, 'won or lost'),
+                'time' => new external_value(PARAM_INT, 'When it ended'),
+                'final' => new external_value(PARAM_BOOL, 'The final battle of the mission'),
+                'lantern' => new external_value(PARAM_TEXT, 'The lantern it lit (empty: none)'),
+            ]), 'The battles of the class missed by who follows from far', VALUE_OPTIONAL),
             'badge' => new external_single_structure([
                 'name' => new external_value(PARAM_TEXT, 'Name of the badge'),
                 'issued' => new external_value(PARAM_BOOL, 'The student has it'),
