@@ -123,6 +123,6 @@ final class art_test extends \advanced_testcase {
             'files' => ['map.livingthings' => 'map.webp'],
             'theme' => ['base' => 'day', 'day' => ['lantern' => '#33aacc', 'sky' => 'url(x)']],
         ], ['map.webp']));
-        $this->assertSame(['base' => 'day', 'day' => ['lantern' => '#33aacc']], art::manifest()['theme']);
+        $this->assertSame(['base' => 'day', 'music' => 'valley', 'day' => ['lantern' => '#33aacc']], art::manifest()['theme']);
     }
 }

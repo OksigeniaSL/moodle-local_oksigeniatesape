@@ -241,16 +241,26 @@
    * a choir of different songs.
    */
   var MUSIC = 'tesape-music';
-  var CHORDS = [[220, 261.63, 329.63], [174.61, 220, 261.63], [261.63, 329.63, 392], [196, 246.94, 293.66]];
-  var BELLS = [440, 523.25, 587.33, 659.25, 783.99, 880];
-  var BAR = 4.8;
+  /** The music of each world: its chords, the bells over them, how long each chord lasts and how often a bell rings. */
+  var MOODS = {
+    // The valley at night: A minor, F, C and G, with warm pads.
+    valley: {chords: [[220, 261.63, 329.63], [174.61, 220, 261.63], [261.63, 329.63, 392], [196, 246.94, 293.66]],
+      bells: [440, 523.25, 587.33, 659.25, 783.99, 880], bar: 4.8, wave: 'triangle', bell: 0.55, sea: false},
+    // The sea: D, G, E minor and A, slower, with the swell of the waves.
+    sea: {chords: [[146.83, 220, 369.99], [196, 293.66, 369.99], [164.81, 246.94, 329.63], [220, 277.18, 329.63]],
+      bells: [587.33, 659.25, 739.99, 880, 987.77, 1174.66], bar: 5.6, wave: 'sine', bell: 0.45, sea: true},
+    // Space: open chords that float, and a few far bells.
+    space: {chords: [[130.81, 196, 293.66], [116.54, 174.61, 261.63], [103.83, 155.56, 233.08], [116.54, 174.61, 261.63]],
+      bells: [523.25, 622.25, 698.46, 783.99, 932.33, 1046.5], bar: 6.4, wave: 'sine', bell: 0.35, sea: false}
+  };
+  var mood = MOODS.valley;
   var music = null;
 
   function pad(c, out, freq, at, length) {
     [0, 3].forEach(function(cents) {
       var osc = c.createOscillator();
       var gain = c.createGain();
-      osc.type = 'triangle';
+      osc.type = mood.wave;
       osc.frequency.value = freq;
       osc.detune.value = cents;
       gain.gain.setValueAtTime(0.0001, at);
@@ -276,6 +286,21 @@
     osc.stop(at + 2.3);
   }
 
+  /** A wave that comes and goes, once in each chord. */
+  function swell(c, out, at, length) {
+    var source = noiseSource(c);
+    var filter = c.createBiquadFilter();
+    var gain = c.createGain();
+    filter.type = 'lowpass';
+    filter.frequency.value = 500;
+    gain.gain.setValueAtTime(0.0001, at);
+    gain.gain.exponentialRampToValueAtTime(0.05, at + length * 0.45);
+    gain.gain.exponentialRampToValueAtTime(0.0001, at + length);
+    source.connect(filter).connect(gain).connect(out);
+    source.start(at, Math.random());
+    source.stop(at + length + 0.1);
+  }
+
   function startMusic() {
     var c = audio();
     if (!c || music) {
@@ -292,15 +317,19 @@
     var next = c.currentTime + 0.3;
     var plan = function() {
       while (next < c.currentTime + 2) {
-        CHORDS[step % CHORDS.length].forEach(function(freq) {
-          pad(c, out, freq, next, BAR);
+        mood.chords[step % mood.chords.length].forEach(function(freq) {
+          pad(c, out, freq, next, mood.bar);
         });
         for (var i = 0; i < 4; i++) {
-          if (Math.random() < 0.55) {
-            bell(c, out, BELLS[Math.floor(Math.random() * BELLS.length)], next + i * BAR / 4 + Math.random() * 0.3);
+          if (Math.random() < mood.bell) {
+            bell(c, out, mood.bells[Math.floor(Math.random() * mood.bells.length)],
+              next + i * mood.bar / 4 + Math.random() * 0.3);
           }
         }
-        next += BAR;
+        if (mood.sea) {
+          swell(c, out, next, mood.bar);
+        }
+        next += mood.bar;
         step++;
       }
     };
@@ -460,9 +489,14 @@
       }
       return on;
     },
-    /** This page plays the music the device remembers, if it was on, as soon as browsers let it sound. */
-    musicHere: function() {
+    /**
+     * This page plays the music the device remembers, if it was on, as soon as browsers let it sound.
+     *
+     * @param {string} [world] The music of the world: valley, sea or space.
+     */
+    musicHere: function(world) {
       musicPage = true;
+      mood = MOODS[world] || MOODS.valley;
       if (musicWanted()) {
         startMusic();
       }

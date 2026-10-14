@@ -41,18 +41,23 @@ final class themes {
     private const RGB = ['night' => 'night-rgb', 'deep' => 'deep-rgb', 'lantern' => 'lantern-rgb', 'leaf' => 'leaf-rgb',
         'ember' => 'ember-rgb', 'lilac' => 'lilac-rgb', 'text' => 'hi'];
 
+    /** @var string[] The music a world can choose for the class screen (fx.js plays them). */
+    public const MUSIC = ['valley', 'sea', 'space'];
+
     /** @var array The colour of the bar of the browser, for each theme of the plugin. */
     private const BAR = ['night' => '#0f2131', 'day' => '#eef4f8'];
 
     /**
-     * The theme of a world, as its art pack brings it, with only what is valid: its own base and its colours.
+     * The theme of a world, as its art pack brings it, with only what is valid: its own base, its music and its colours.
      *
-     * @param mixed $theme The theme in pack.json: {"base": "night", "night": {"lantern": "#ffc857"}, "day": {...}}.
-     * @return array base, and the colours for each base that has them.
+     * @param mixed $theme The theme in pack.json: {"base": "night", "music": "valley", "night": {"lantern": "#ffc857"},
+     *     "day": {...}}.
+     * @return array base, music, and the colours for each base that has them.
      */
     public static function clean($theme): array {
         $theme = is_array($theme) ? $theme : [];
-        $clean = ['base' => in_array($theme['base'] ?? '', self::BASES, true) ? $theme['base'] : 'night'];
+        $clean = ['base' => in_array($theme['base'] ?? '', self::BASES, true) ? $theme['base'] : 'night',
+            'music' => in_array($theme['music'] ?? '', self::MUSIC, true) ? $theme['music'] : 'valley'];
         foreach (self::BASES as $base) {
             $colours = [];
             foreach ((array) ($theme[$base] ?? []) as $name => $value) {

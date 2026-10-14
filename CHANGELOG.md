@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.38.1 (2026-10-14)
+
+- **A music for each world** on the class screen: the valley (as in 0.38.0), the sea (slower, with the swell of the
+  waves) and space (open chords that float, far bells). The art pack chooses it in its theme (`"music"`); the valley
+  by default.
+- **Each moment of a scene comes in like a turned page.**
+
 ## 0.38.0 (2026-10-14)
 
 - **The road draws itself**: when a student comes back to the map after reaching a new place, the stretch walked since

@@ -308,7 +308,8 @@
 
   T.light.restore();
   if (T.fx) {
-    T.fx.musicHere();
+    // The music of the world of the art pack.
+    T.fx.musicHere(cfg.art && cfg.art.theme ? cfg.art.theme.music : 'valley');
   }
 
   /**

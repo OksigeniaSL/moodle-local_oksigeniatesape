@@ -30,6 +30,7 @@ final class themes_test extends \advanced_testcase {
     public function test_only_colours_come_in(): void {
         $theme = themes::clean([
             'base' => 'day',
+            'music' => 'sea',
             'day' => [
                 'lantern' => '#F5B83D',
                 'card-a' => '#ffffffee',
@@ -41,10 +42,11 @@ final class themes_test extends \advanced_testcase {
             'night' => 'not a list',
         ]);
         $this->assertSame('day', $theme['base']);
+        $this->assertSame('sea', $theme['music']);
         $this->assertSame(['lantern' => '#f5b83d', 'card-a' => '#ffffffee', 'text' => '#123'], $theme['day']);
         $this->assertArrayNotHasKey('night', $theme);
-        $this->assertSame(['base' => 'night'], themes::clean(['base' => 'sea']));
-        $this->assertSame(['base' => 'night'], themes::clean(null));
+        $this->assertSame(['base' => 'night', 'music' => 'valley'], themes::clean(['base' => 'sea', 'music' => 'rock']));
+        $this->assertSame(['base' => 'night', 'music' => 'valley'], themes::clean(null));
     }
 
     public function test_the_colours_of_a_world_become_css(): void {
