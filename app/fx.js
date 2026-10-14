@@ -14,6 +14,7 @@
   var KEY = 'tesape-sound';
   var ctx = null;
   var master = null;
+  var sampleOut = null;
   var ambient = null;
   var wanted = null;
   var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -47,6 +48,10 @@
       master = ctx.createGain();
       master.gain.value = 0.45;
       master.connect(ctx.destination);
+      // The sounds of the pack come with their level made: they do not go through the one of the sounds made here.
+      sampleOut = ctx.createGain();
+      sampleOut.gain.value = 1;
+      sampleOut.connect(ctx.destination);
     }
     if (ctx.state === 'suspended') {
       ctx.resume();
@@ -176,9 +181,35 @@
     var source = c.createBufferSource();
     source.buffer = buffer;
     source.loop = !!loop;
-    source.connect(out || master);
-    source.start();
+    if (loop) {
+      // A loop without a gap: whatever silence the decoding left at the ends stays out of it.
+      var ends = silentEnds(buffer);
+      source.loopStart = ends[0];
+      source.loopEnd = ends[1];
+    }
+    source.connect(out || sampleOut);
+    source.start(0, loop ? source.loopStart : 0);
     return source;
+  }
+
+  /**
+   * Where a sound really starts and ends, in seconds, without the silence at its ends (up to a tenth of a second).
+   *
+   * @param {AudioBuffer} buffer
+   * @return {number[]}
+   */
+  function silentEnds(buffer) {
+    var data = buffer.getChannelData(0);
+    var most = Math.min(data.length >> 1, Math.round(buffer.sampleRate / 10));
+    var start = 0;
+    var end = data.length;
+    while (start < most && Math.abs(data[start]) < 0.0001) {
+      start++;
+    }
+    while (data.length - end < most && Math.abs(data[end - 1]) < 0.0001) {
+      end--;
+    }
+    return [start / buffer.sampleRate, end / buffer.sampleRate];
   }
 
   /** The sounds, by name. */
@@ -275,8 +306,8 @@
     if (recorded && typeof recorded !== 'string') {
       var level = c.createGain();
       level.gain.value = 0.0001;
-      level.gain.setTargetAtTime(0.5, c.currentTime, 1.5);
-      level.connect(master);
+      level.gain.setTargetAtTime(0.7, c.currentTime, 1.5);
+      level.connect(sampleOut);
       ambient = {kind: kind, source: playSample('sound.ambient.' + kind, level, true), gain: level, timer: 0};
       return;
     }
@@ -395,7 +426,7 @@
     out.gain.setTargetAtTime(1, c.currentTime, 1.5);
     var recorded = playSample('sound.music', out, true);
     if (recorded) {
-      out.connect(master);
+      out.connect(sampleOut);
       music = {out: out, timer: 0, source: recorded};
       return;
     }

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.39.1 (2026-10-14)
+
+- **The sounds of a pack keep their own level**, the one they were made with, instead of going through the lower one of
+  the sounds made by the browser; the sound of the places, a little lower still.
+- **Loops without a gap**: whatever silence the decoding of a sound leaves at its ends stays out of its loop.
+
 ## 0.39.0 (2026-10-14)
 
 - **A world brings its sounds**: an art pack may carry recorded or made sounds (`sound.right`, `sound.drumroll`…),
