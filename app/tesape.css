@@ -2877,6 +2877,13 @@ a.chip {
   margin-left: 12px;
 }
 
+/* The buttons of the class screen in a battle, side by side with some air between them. */
+.battle-main .actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
 .battle-teams {
   display: flex;
   flex-wrap: wrap;

@@ -64,7 +64,7 @@ class provider implements
                 'timecreated'],
             'powerreq' => ['powerid', 'memberid', 'targetmemberid', 'status', 'decidedby', 'timecreated'],
             'inventory' => ['charid', 'itemid', 'courseid', 'source', 'timecreated'],
-            'sceneattempt' => ['sceneid', 'charid', 'courseid', 'path', 'score', 'objectives', 'ending', 'attempt',
+            'sceneattempt' => ['sceneid', 'charid', 'courseid', 'teamplay', 'path', 'score', 'objectives', 'ending', 'attempt',
                 'timestarted', 'timefinished'],
             'minigame' => ['charid', 'courseid', 'cmid', 'game', 'success', 'tries', 'detail', 'timecreated'],
             'validation' => ['challengeid', 'charid', 'courseid', 'status', 'note', 'validatedby', 'timemodified'],
@@ -329,7 +329,7 @@ class provider implements
             ]);
         }
         $attempts = $DB->get_records_sql(
-            'SELECT a.id, s.code, a.path, a.score, a.objectives, a.ending, a.attempt, a.timestarted, a.timefinished
+            'SELECT a.id, s.code, a.teamplay, a.path, a.score, a.objectives, a.ending, a.attempt, a.timestarted, a.timefinished
                FROM {' . self::T . 'sceneattempt} a
                JOIN {' . self::T . 'scene} s ON s.id = a.sceneid
               WHERE a.charid = ? AND a.courseid = ?
@@ -340,6 +340,9 @@ class provider implements
             $writer->export_data(self::path('scenes'), (object) [
                 'attempts' => array_values(array_map(fn($a) => [
                     'scene' => $a->code,
+                    // Played as a team; and, if so, whether a teammate played it on their device.
+                    'team' => transform::yesno((int) $a->teamplay > 0),
+                    'byteammate' => transform::yesno((int) $a->teamplay > 0 && (int) $a->teamplay !== (int) $a->id),
                     'path' => json_decode((string) $a->path),
                     'score' => $a->score,
                     'objectives' => json_decode((string) $a->objectives),

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="local/oksigeniatesape/db" VERSION="20261013" COMMENT="XMLDB file for local_oksigeniatesape"
+<XMLDB PATH="local/oksigeniatesape/db" VERSION="20261014" COMMENT="XMLDB file for local_oksigeniatesape"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -308,6 +308,7 @@
         <FIELD NAME="charid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="teamplay" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Same value for every member of a team game (0: alone)"/>
+        <FIELD NAME="playid" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="Made by the device for each play, so that a play sent again counts once"/>
         <FIELD NAME="path" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Nodes and choices (JSON)"/>
         <FIELD NAME="score" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="objectives" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Result per objective (JSON), for the teacher"/>
@@ -322,6 +323,9 @@
         <KEY NAME="charid" TYPE="foreign" FIELDS="charid" REFTABLE="local_oksigeniatesape_char" REFFIELDS="id"/>
         <KEY NAME="courseid" TYPE="foreign" FIELDS="courseid" REFTABLE="course" REFFIELDS="id"/>
       </KEYS>
+      <INDEXES>
+        <INDEX NAME="charid-playid" UNIQUE="false" FIELDS="charid, playid"/>
+      </INDEXES>
     </TABLE>
     <TABLE NAME="local_oksigeniatesape_found" COMMENT="What a character has found in a mission: lanterns, pages of the book, steps of the creature">
       <FIELDS>

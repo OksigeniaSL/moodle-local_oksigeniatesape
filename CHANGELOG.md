@@ -1,5 +1,39 @@
 # Changelog
 
+## 0.46.0 (2026-10-14)
+
+A review of performance, robustness and privacy, for a whole class at once on a school wifi.
+
+- **Lighter on the server**: the mission and the settings of the course are read once in each request, and what the map
+  shows of each scene is kept in a cache instead of reading the 27 scenes whole each time; the team and the classroom
+  challenges in one query each. The phones in a battle ask every two seconds and a half (or just when the question
+  closes) with half the queries, and, while there is no battle, less and less often, up to every half minute. The class
+  screen reloads everything every minute, and what confuses the class most is worked out once every ten minutes.
+- **Sounds on demand**: each tablet loads the short sounds at the first touch, and the sound of a place only when the
+  student is there (before: all of them, some two megabytes, at once). The sound of a place no longer leaves a sound
+  running behind it when the student moves on, and comes back after a call or the tablet locked (iPad).
+- **Nothing played is lost**: a call that hangs is given up after twenty seconds, and the play waits on the device. A
+  play whose answer was lost on the way is sent again with the same mark and counts once (no second try, no hints paid
+  twice). When the session ends or another student comes in on the device, the plays wait instead of being dropped. A
+  minigame finished without connection waits too, and goes by itself. On a tablet shared by many students, a play
+  makes room for itself (the scenes kept to play without connection, up to twelve per device, go first). If the server
+  turns a play down for good, the student is told to play it again; while the server fails, it is tried ten times.
+- **Two teammates who finish a team scene at the same moment**, each on their device, both count.
+- **The class screen finds its battle or vote again** after a while away (the tab hidden, the computer asleep), and a
+  battle nobody has played yet can be called off from its lobby.
+- **The welcome for who arrives with the expedition on its way** shows right after creating the character; the little
+  living things visit the game of the students too (before, only the class screen); the frog sits by the lake.
+- **The card of a student** stays open while the teacher marks their adaptations. **Reading aloud** waits a moment for
+  the voices of the device before saying there is none.
+- **Privacy**: what the teacher decides about a student (their step, that they follow from far, a commitment not kept)
+  is no longer sent to their team; a student who follows from far cannot be marked as there in a team scene. A team play
+  a teammate made on their device does not count as the first try of the others, and its evidence in the competencies
+  says «as a team». The class screen gets only what it shows (no pictures, notes or adaptations) and does not mark who
+  is paused. The pictures of the students never come from Gravatar. What a device keeps of a student goes when another
+  one comes in (their plays still waiting stay for a fortnight). Giving rewards (`award`) carries the personal data
+  risk. A badge made while the mission is brought up to date in the request of a student is made by the site. The zips
+  of missions are measured before unpacking them. Whether a play was a team one is in the privacy export.
+
 ## 0.45.0 (2026-10-14)
 
 - **Accessibility for each student**: on the card of a student, the teacher marks what the game adapts for them (never a

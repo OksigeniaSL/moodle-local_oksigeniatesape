@@ -245,8 +245,26 @@ final class live_test extends \advanced_testcase {
         $second = live::start($course->id, 'phones', 6, 0, self::NOW);
         $this->assertEquals($second->id, live::current($course->id, self::NOW)->id);
         $this->assertNull(live::current($course->id, self::NOW + live::IDLE + 1));
+        // The class screen, back after a while away, finds it still; the next morning, not.
+        $this->assertEquals($second->id, live::current($course->id, self::NOW + live::IDLE + 1, true)->id);
+        $this->assertNull(live::current($course->id, self::NOW + live::HOST_IDLE + 1, true));
         $this->assertEquals(2, live::cleanup(self::NOW + DAYSECS + 1));
         $this->assertEquals(0, $DB->count_records(self::T . 'livein'));
+    }
+
+    public function test_a_battle_nobody_played_can_be_called_off(): void {
+        $this->resetAfterTest();
+        [$course, $members] = $this->make_class();
+        $live = live::start($course->id, 'phones', 4, 0, self::NOW);
+        live::join($live, $members[0], $members[0]->userid, self::NOW);
+        live::cancel($live, self::NOW);
+        // Gone for the class screen and for the phones, without an outcome to show.
+        $this->assertNull(live::recent($course->id, self::NOW + 1, true));
+        $this->assertNull(live::recent($course->id, self::NOW + 1));
+        // Once played, it is finished, not called off.
+        $live = live::next(live::start($course->id, 'phones', 4, 0, self::NOW), self::NOW);
+        $this->expectException(\moodle_exception::class);
+        live::cancel($live, self::NOW);
     }
 
     public function test_a_vote_of_the_class_counts_each_option(): void {

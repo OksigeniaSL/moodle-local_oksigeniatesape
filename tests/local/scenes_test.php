@@ -317,6 +317,34 @@ final class scenes_test extends \advanced_testcase {
         $this->assertSame(3, $scout['rewards']['hints']);
     }
 
+    public function test_a_play_sent_again_counts_once(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $w = $this->make_class(1);
+        $user = $w->users[0];
+        $DB->set_field(self::T . 'char', 'role', 'scout', ['userid' => $user->id]);
+        $scene = $DB->get_record(self::T . 'scene', ['missionid' => $w->mission->id, 'code' => 'C2-2']);
+        $def = json_decode($scene->definition, true);
+        $def['nodes']['colocar']['hints'] = ['Una', 'Dos'];
+        $DB->set_field(self::T . 'scene', 'definition', json_encode($def), ['id' => $scene->id]);
+        [$items, $roles, $flags, $role] = scenes::context(characters::get($user->id), $w->course->id);
+        $hints = [['n' => 'colocar', 'hint' => 0], ['n' => 'colocar', 'hint' => 1]];
+        $events = array_merge($hints, autoplayer::play($def, $items, $roles, $flags, $role));
+        $first = scenes::play($w->course->id, $user->id, $scene->id, $events, null, null, [], 'abc123');
+        $this->assertSame(2, $first['rewards']['hints']);
+        // The answer was lost on the way and the device sends it again: the same ending, nothing paid or given again.
+        $again = scenes::play($w->course->id, $user->id, $scene->id, $events, null, null, [], 'abc123');
+        $this->assertSame($first['ending'], $again['ending']);
+        $this->assertSame($first['outcome'], $again['outcome']);
+        $this->assertSame(1, $again['attempt']);
+        $this->assertSame([], $again['rewards']);
+        $this->assertEquals(engine::BREATH_MAX - 2, engine::member(characters::get($user->id), $w->course->id)->breath);
+        $this->assertEquals(1, $DB->count_records(self::T . 'sceneattempt', ['sceneid' => $scene->id]));
+        // Played again on purpose, it is another play.
+        $other = scenes::play($w->course->id, $user->id, $scene->id, $events, null, null, [], 'def456');
+        $this->assertSame(2, $other['attempt']);
+    }
+
     public function test_the_healer_looks_after_the_teammate_with_least_breath(): void {
         global $DB;
         $this->resetAfterTest();

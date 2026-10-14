@@ -59,8 +59,9 @@ $capabilities = [
             'manager' => CAP_ALLOW,
         ],
     ],
-    // Give saber, gems or items by hand.
+    // Give saber, gems or items by hand. It also opens the class: names, adaptations, ideas of the students.
     'local/oksigeniatesape:award' => [
+        'riskbitmask' => RISK_PERSONAL,
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => $teachers,

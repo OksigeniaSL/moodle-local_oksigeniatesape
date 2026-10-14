@@ -46,6 +46,7 @@ final class play_scene extends external_api {
             'events' => new external_value(PARAM_RAW, 'What the student did, in order (JSON list)'),
             'start' => new external_value(PARAM_ALPHANUMEXT, 'Node where the play started (empty: the start)', VALUE_DEFAULT, ''),
             'team' => new external_value(PARAM_RAW, 'Teammates who played it too (JSON list of user ids)', VALUE_DEFAULT, ''),
+            'playid' => new external_value(PARAM_ALPHANUM, 'Mark of the play, made by the device', VALUE_DEFAULT, ''),
         ]);
     }
 
@@ -57,6 +58,7 @@ final class play_scene extends external_api {
      * @param string $events
      * @param string $start
      * @param string $team
+     * @param string $playid
      * @return array
      */
     public static function execute(
@@ -64,7 +66,8 @@ final class play_scene extends external_api {
         int $sceneid,
         string $events,
         string $start = '',
-        string $team = ''
+        string $team = '',
+        string $playid = ''
     ): array {
         global $USER;
         $params = self::validate_parameters(self::execute_parameters(), [
@@ -73,6 +76,7 @@ final class play_scene extends external_api {
             'events' => $events,
             'start' => $start,
             'team' => $team,
+            'playid' => $playid,
         ]);
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
@@ -86,6 +90,9 @@ final class play_scene extends external_api {
         if (!is_array($team) || !array_is_list($team) || count($team) > 12) {
             throw new \invalid_parameter_exception('Team must be a JSON list of users');
         }
+        if (strlen($params['playid']) > 20) {
+            throw new \invalid_parameter_exception('The mark of a play is too long');
+        }
         $result = scenes::play(
             $params['courseid'],
             (int) $USER->id,
@@ -93,7 +100,8 @@ final class play_scene extends external_api {
             $events,
             $params['start'] === '' ? null : $params['start'],
             null,
-            array_map('intval', $team)
+            array_map('intval', $team),
+            $params['playid']
         );
         $mission = missions::get($params['courseid']);
         $r = $result['rewards'];

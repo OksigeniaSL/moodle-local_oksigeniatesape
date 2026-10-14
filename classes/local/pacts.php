@@ -245,8 +245,10 @@ final class pacts {
                 $view['mine'] = $index === false ? -1 : (int) $index;
                 $view['status'] = $pact->status;
             }
-            $view['list'][] = ['name' => $names[$pact->userid], 'text' => $pact->text, 'status' => $pact->status,
-                'me' => (int) $pact->userid === $userid];
+            // A commitment the teacher marked as not kept is for its student only: the team sees it without a mark.
+            $me = (int) $pact->userid === $userid;
+            $view['list'][] = ['name' => $names[$pact->userid], 'text' => $pact->text,
+                'status' => $me || $pact->status !== 'broken' ? $pact->status : '', 'me' => $me];
         }
         $charid = (int) $DB->get_field(self::T . 'char', 'id', ['userid' => $userid]);
         $given = ['charid' => $charid, 'missionid' => $mission->id, 'kind' => 'pacts', 'code' => $chapter->code];

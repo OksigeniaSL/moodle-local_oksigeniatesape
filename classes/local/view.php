@@ -391,12 +391,14 @@ final class view {
     }
 
     /**
-     * The class of a course, for its teachers.
+     * The class of a course, for its teachers. For the class screen, only what is shown to the class: no pictures, no
+     * notes, no challenges, and the characters as classmates see them.
      *
      * @param int $courseid
+     * @param bool $board
      * @return array
      */
-    public static function teacher(int $courseid): array {
+    public static function teacher(int $courseid, bool $board = false): array {
         global $DB;
         $region = regions::get($courseid);
         $groupingid = (int) ($region->groupingid ?? 0);
@@ -431,16 +433,16 @@ final class view {
                 'userid' => (int) $user->id,
                 'fullname' => fullname($user),
                 'firstname' => $user->firstname,
-                'picture' => self::picture($user),
+                'picture' => $board ? '' : self::picture($user),
                 'teamid' => $teamof[$user->id] ?? 0,
             ];
             if ($char) {
-                $student['character'] = self::character($char, $member, true);
+                $student['character'] = self::character($char, $member, !$board);
             }
             $list[] = $student;
         }
         $challenges = [];
-        foreach (classroom::list($courseid) as $challenge) {
+        foreach ($board ? [] : classroom::list($courseid) as $challenge) {
             $validations = [];
             foreach (classroom::validations((int) $challenge->id) as $validation) {
                 $userid = array_search($validation->charid, array_map(fn($c) => $c->id, $chars));
@@ -473,12 +475,15 @@ final class view {
             'energymax' => engine::ENERGY_MAX,
             'breathmax' => engine::BREATH_MAX,
             'standings' => teams::standings($courseid),
-            'activities' => activities::for_teacher($courseid, array_keys($students)),
+            'activities' => $board ? [] : activities::for_teacher($courseid, array_keys($students)),
             'powerspending' => powers::pending_count($courseid),
             'ideasunread' => ideas::unread($courseid),
             'pactspending' => pacts::pending($courseid),
             'namespending' => names::pending($courseid),
         ];
+        if ($board) {
+            return $view;
+        }
         $pacts = pacts::for_teacher($courseid);
         if ($pacts) {
             $view['pacts'] = $pacts;
@@ -658,10 +663,12 @@ final class view {
                 'energy' => (int) $member->energy,
                 'breath' => (int) $member->breath,
                 'status' => $member->status,
+                // What the teacher decides about a student (why they rest, their step, that they follow from far, what they
+                // need) is for them and their teachers only.
                 'statusreason' => $private ? (string) $member->statusreason : '',
-                'step' => (int) $member->step,
+                'step' => $private ? (int) $member->step : 0,
                 'lastseen' => $private ? (int) ($member->lastseen ?? 0) : 0,
-                'remote' => (bool) ($member->remote ?? false),
+                'remote' => $private && !empty($member->remote),
                 'adapt' => $private ? adapt::of($member) : [],
             ];
         }
@@ -756,8 +763,9 @@ final class view {
      * @return string
      */
     private static function picture(\stdClass $user): string {
-        global $CFG, $PAGE;
-        if (empty($user->picture) && empty($CFG->enablegravatar)) {
+        global $PAGE;
+        // Only a picture of the site: never one asked to a third party (Gravatar) with the email of a student.
+        if (empty($user->picture)) {
             return '';
         }
         $picture = new \user_picture($user);

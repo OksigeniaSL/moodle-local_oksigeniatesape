@@ -388,7 +388,7 @@ final class authoring {
      */
     public static function import(int $courseid, string $zippath): \stdClass {
         $tmp = make_request_directory();
-        if (!get_file_packer('application/zip')->extract_to_pathname($zippath, $tmp)) {
+        if (!missions::zip_fits($zippath) || !get_file_packer('application/zip')->extract_to_pathname($zippath, $tmp)) {
             throw new \moodle_exception('authoring_notours', 'local_oksigeniatesape');
         }
         $found = glob($tmp . '/mission.json') ?: glob($tmp . '/*/mission.json') ?: [];

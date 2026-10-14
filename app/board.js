@@ -42,7 +42,7 @@
     }
     return Promise.all([
       T.api('get_board', {courseid: cfg.courseid}),
-      T.api('get_class', {courseid: cfg.courseid}),
+      T.api('get_class', {courseid: cfg.courseid, board: true}),
       T.api('live_host', {courseid: cfg.courseid, action: 'state'})
     ]).then(function(r) {
       state.loaded = Date.now();
@@ -218,7 +218,8 @@
         'board_battle_aloudhelp')) + '</p>' + (l.mode === 'phones' ? '<p class="battle-count">' +
         esc(t('board_battle_joined', l.joined)) + '</p>' : '') + '</div>';
       buttons = '<button class="btn btn-main" data-battlenext' + (l.mode === 'phones' && !l.joined ? ' disabled' : '') + '>' +
-        esc(t('board_battle_first')) + '</button>';
+        esc(t('board_battle_first')) + '</button>' + (l.kind === 'battle' ? '<button class="btn btn-soft" data-battlefinish>' +
+        esc(t('board_battle_cancel')) + '</button>' : '');
     } else {
       var q = l.question;
       main = '<p class="battle-qround">' + esc(t('board_battle_round', l)) + '</p><p class="battle-q">' + esc(q.text) +
@@ -546,7 +547,8 @@
       return '';
     }
     var m = c.member || {};
-    var cls = 'board-student' + (state.sel[s.userid] ? ' on' : '') + (m.status && m.status !== 'active' ? ' resting' : '');
+    // Worn out shows, as part of the game; who the teacher paused, not in front of the class.
+    var cls = 'board-student' + (state.sel[s.userid] ? ' on' : '') + (m.status === 'fallen' ? ' resting' : '');
     return '<button type="button" class="' + cls + '" data-student="' + s.userid + '" aria-pressed="' + !!state.sel[s.userid] +
       '"><span class="face' + (c.aura ? ' aura ' + esc(c.aura) : '') + '">' + T.avatar({role: c.role, nameform: c.nameform,
       lineage: c.lineage, look: c.appearance, stage: c.stage, portrait: true}) + '</span><span class="name">' +

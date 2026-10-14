@@ -752,9 +752,12 @@
         var list = Array.prototype.map.call(el.querySelectorAll('[data-adapt]:checked'), function(b) {
           return b.dataset.adapt;
         });
-        T.api('set_adapt', {courseid: cfg.courseid, userid: userid, adapt: list}).then(function() {
+        T.api('set_adapt', {courseid: cfg.courseid, userid: userid, adapt: list}).then(function(r) {
           T.toast(esc(t('app_saved')));
-          return load(true);
+          // The sheet stays open, to mark the next one.
+          if (m) {
+            m.adapt = r && r.adapt ? r.adapt : list;
+          }
         }).catch(function(e) {
           T.toast(esc(e.message), true);
         });

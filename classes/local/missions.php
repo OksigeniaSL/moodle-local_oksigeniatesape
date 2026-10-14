@@ -108,6 +108,22 @@ final class missions {
     }
 
     /**
+     * Whether a zip can be opened: not too many files, and not too big once unpacked (a small zip can hide gigabytes).
+     * Looked at before unpacking anything.
+     *
+     * @param string $zippath
+     * @return bool
+     */
+    public static function zip_fits(string $zippath): bool {
+        $files = get_file_packer('application/zip')->list_files($zippath);
+        if (!is_array($files) || count($files) > 1000) {
+            return false;
+        }
+        $size = array_sum(array_map(fn($f) => (int) $f->size, $files));
+        return $size <= 2 * self::MAX_PACKAGE;
+    }
+
+    /**
      * Keeps on the site the package of a mission, from a zip with its mission.json and its scenes (scenes/*.json),
      * at the top of the zip or in one folder. It replaces an older version of the same mission; courses with it are
      * brought up to date when they are opened, keeping what the students did and the changes of the teacher.
@@ -118,7 +134,7 @@ final class missions {
     public static function upload(string $zippath): array {
         global $CFG;
         $tmp = make_request_directory();
-        if (!get_file_packer('application/zip')->extract_to_pathname($zippath, $tmp)) {
+        if (!self::zip_fits($zippath) || !get_file_packer('application/zip')->extract_to_pathname($zippath, $tmp)) {
             throw new \moodle_exception('missionbad', 'local_oksigeniatesape', '', 'zip');
         }
         $found = glob($tmp . '/mission.json') ?: glob($tmp . '/*/mission.json') ?: [];

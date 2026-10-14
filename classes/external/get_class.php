@@ -43,6 +43,7 @@ final class get_class extends external_api {
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
             'courseid' => new external_value(PARAM_INT, 'Course'),
+            'board' => new external_value(PARAM_BOOL, 'For the class screen: only what it shows', VALUE_DEFAULT, false),
         ]);
     }
 
@@ -50,16 +51,18 @@ final class get_class extends external_api {
      * The class of a course for its teachers: settings, students and their characters, teams and challenges.
      *
      * @param int $courseid
+     * @param bool $board
      * @return array
      */
-    public static function execute(int $courseid): array {
+    public static function execute(int $courseid, bool $board = false): array {
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
+            'board' => $board,
         ]);
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
         require_capability('local/oksigeniatesape:award', $context);
-        return view::teacher($params['courseid']);
+        return view::teacher($params['courseid'], $params['board']);
     }
 
     /**

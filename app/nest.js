@@ -416,8 +416,24 @@
           world = result.world;
           ending(result);
         }).catch(function(e) {
-          show('<p>' + esc(e.message) + '</p><div class="actions"><button class="btn btn-main" data-back>' +
-            esc(t('app_backtomap')) + '</button></div>').querySelector('[data-back]').onclick = close;
+          var events = JSON.stringify(run.events);
+          if ((e.network || e.retry) && T.keepPlay && T.keepPlay({kind: 'minigame', game: game.code, title: game.title || '',
+            events: events, at: Date.now()})) {
+            // No connection: what was played is kept on the device and goes by itself when the connection comes back.
+            show('<div class="conseq good"><span class="what">' + esc(t('app_offline_kept')) + '</span>' +
+              esc(t('app_offline_kept_help')) + '</div><div class="actions"><button class="btn btn-main" data-back>' +
+              esc(t('app_backtomap')) + '</button></div>').querySelector('[data-back]').onclick = close;
+            return;
+          }
+          // It could not be kept either: it can be sent again from here, without playing it again.
+          var body = show('<p>' + esc(e.message) + '</p><div class="actions"><button class="btn btn-main" data-again>' +
+            esc(t('app_retry')) + '</button><button class="btn btn-soft" data-back>' + esc(t('app_backtomap')) +
+            '</button></div>');
+          body.querySelector('[data-back]').onclick = close;
+          body.querySelector('[data-again]').onclick = function() {
+            run.over = false;
+            finish();
+          };
         });
     }
 

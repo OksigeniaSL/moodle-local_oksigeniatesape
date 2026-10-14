@@ -29,6 +29,9 @@ final class scenes {
     /** @var string Prefix of the plugin tables. */
     private const T = 'local_oksigeniatesape_';
 
+    /** @var bool A play is being kept again, after it ran into the one of a teammate. */
+    private static $again = false;
+
     /** @var float Share of the class that lights the lantern of a chapter for everybody. */
     public const CLASS_LANTERN_SHARE = 0.5;
 
@@ -126,6 +129,28 @@ final class scenes {
             $cache->set($key, $list);
         }
         return $list;
+    }
+
+    /**
+     * The first try of a student at each scene they played: what they knew before the scene told them. A team play that
+     * a teammate made on their device does not count as theirs.
+     *
+     * @param int $courseid
+     * @param int $charid
+     * @return \stdClass[] Attempts, with id, sceneid and objectives.
+     */
+    public static function first_tries(int $courseid, int $charid): array {
+        global $DB;
+        $own = '(%1$s.teamplay = 0 OR %1$s.teamplay = %1$s.id)';
+        return $DB->get_records_sql(
+            'SELECT a.id, a.sceneid, a.objectives
+               FROM {' . self::T . 'sceneattempt} a
+              WHERE a.charid = ? AND a.courseid = ? AND ' . sprintf($own, 'a') . '
+                AND a.attempt = (SELECT MIN(b.attempt)
+                                   FROM {' . self::T . 'sceneattempt} b
+                                  WHERE b.charid = a.charid AND b.sceneid = a.sceneid AND ' . sprintf($own, 'b') . ')',
+            [$charid, $courseid]
+        );
     }
 
     /**
@@ -239,9 +264,10 @@ final class scenes {
             }
             $char = characters::get($id);
             $user = $DB->get_record('user', ['id' => $id], '*', IGNORE_MISSING);
-            if ($char && $user) {
-                $mates[] = ['char' => $char, 'member' => engine::member($char, $courseid, $now),
-                    'name' => view::display_name($user, $char, $region)];
+            $member = $char && $user ? engine::member($char, $courseid, $now) : null;
+            // Who follows the expedition from far is not at this device; who rests does not play.
+            if ($member && empty($member->remote) && $member->status !== 'paused') {
+                $mates[] = ['char' => $char, 'member' => $member, 'name' => view::display_name($user, $char, $region)];
             }
         }
         return $mates;
@@ -259,6 +285,7 @@ final class scenes {
      * @param string|null $from Where the play started (null: the start of the scene).
      * @param int|null $now
      * @param int[] $mates The teammates who played it too (none: the student alone).
+     * @param string $playid The mark the device made for this play (empty: none): sent again, it counts once.
      * @return array ending, outcome, points, objectives, rewards, attempt, teamwith (the names of the teammates).
      */
     public static function play(
@@ -268,7 +295,8 @@ final class scenes {
         array $events,
         ?string $from,
         ?int $now = null,
-        array $mates = []
+        array $mates = [],
+        string $playid = ''
     ): array {
         global $DB;
         $now = $now ?? time();
@@ -284,6 +312,18 @@ final class scenes {
             throw new \moodle_exception('pausedgame', 'local_oksigeniatesape');
         }
         $scene = self::get($courseid, $sceneid);
+        if ($playid !== '') {
+            $done = $DB->get_record(self::T . 'sceneattempt', ['charid' => $char->id, 'sceneid' => $scene->id,
+                'playid' => $playid]);
+            if ($done) {
+                // The same play, sent again because the answer was lost on the way: it was counted already.
+                $node = $scene->data['nodes'][$done->ending] ?? [];
+                return ['ending' => (string) $done->ending, 'outcome' => $node['outcome'] ?? 'success',
+                    'retry' => (string) ($node['retry'] ?? ''), 'points' => (int) $done->score,
+                    'objectives' => json_decode((string) $done->objectives, true) ?: [], 'rewards' => [],
+                    'attempt' => (int) $done->attempt, 'teamwith' => []];
+            }
+        }
         [$items, $roles, $flags] = self::context($char, $courseid);
         // A scene only for one cannot be played as a team.
         $team = $mates && ($scene->data['mode'] ?? 'both') !== 'solo' ? self::mates($courseid, (int) $userid, $mates, $now) : [];
@@ -294,6 +334,66 @@ final class scenes {
         $result = (new scene_runner($scene->data, $items, $roles, $flags, $char->role))->run($events, $from);
 
         $transaction = $DB->start_delegated_transaction();
+        try {
+            [$attempt, $rewards] = self::keep($courseid, $char, $member, $team, $scene, $result, $events, $from, $playid, $now);
+            $transaction->allow_commit();
+        } catch (\dml_write_exception $e) {
+            // Two teammates who played it together, each on their device, finishing at the same moment: what one wrote for
+            // the other was already there. Once more, now that it is.
+            try {
+                $transaction->rollback($e);
+            } catch (\dml_write_exception $e) {
+                if (self::$again) {
+                    throw $e;
+                }
+            }
+            self::$again = true;
+            try {
+                return self::play($courseid, $userid, $sceneid, $events, $from, $now, $mates, $playid);
+            } finally {
+                self::$again = false;
+            }
+        }
+        return [
+            'ending' => $result['ending'],
+            'outcome' => $result['outcome'],
+            'retry' => (string) $result['retry'],
+            'points' => $result['points'],
+            'objectives' => $result['objectives'],
+            'rewards' => $rewards,
+            'attempt' => (int) $attempt->attempt,
+            'teamwith' => array_column($team, 'name'),
+        ];
+    }
+
+    /**
+     * Keeps a play, for the student and the teammates who played it too, and gives what it gives.
+     *
+     * @param int $courseid
+     * @param \stdClass $char
+     * @param \stdClass $member
+     * @param array $team The teammates, with char and member.
+     * @param \stdClass $scene
+     * @param array $result What the runner said.
+     * @param array $events
+     * @param string|null $from
+     * @param string $playid
+     * @param int $now
+     * @return array [the attempt of the student, what they got]
+     */
+    private static function keep(
+        int $courseid,
+        \stdClass $char,
+        \stdClass $member,
+        array $team,
+        \stdClass $scene,
+        array $result,
+        array $events,
+        ?string $from,
+        string $playid,
+        int $now
+    ): array {
+        global $DB;
         $rewards = [];
         $attempt = null;
         // A team game: the same number in the play of each one, the one of the play of who played it.
@@ -304,6 +404,7 @@ final class scenes {
                 'charid' => $player['char']->id,
                 'courseid' => $courseid,
                 'teamplay' => $game,
+                'playid' => !$i && $playid !== '' ? $playid : null,
                 'path' => json_encode(['from' => $from, 'events' => $events, 'path' => $result['path']]),
                 'score' => $result['points'],
                 'objectives' => json_encode($result['objectives']),
@@ -318,8 +419,10 @@ final class scenes {
                 $game = (int) $one->id;
                 $DB->set_field(self::T . 'sceneattempt', 'teamplay', $game, ['id' => $one->id]);
             }
-            // The competencies of the objectives get the evidence of the play; the teacher rates.
-            competencies::evidence($courseid, (int) $player['char']->userid, $scene, $result['objectives'], (int) $one->attempt);
+            // The competencies of the objectives get the evidence of the play, marked if it was a team one; the teacher
+            // rates.
+            $userid = (int) $player['char']->userid;
+            competencies::evidence($courseid, $userid, $scene, $result['objectives'], (int) $one->attempt, (bool) $team);
             $got = [];
             if (in_array($result['outcome'], ['success', 'partial'], true)) {
                 $got = self::reward($player['char'], $player['member'], $scene, $result, $now);
@@ -335,17 +438,7 @@ final class scenes {
         }
         $rewards['hints'] = self::pay_hints($char, $member, (int) $scene->id, (int) $result['hints'], $now);
         $rewards['shielded'] = (bool) $result['shielded'];
-        $transaction->allow_commit();
-        return [
-            'ending' => $result['ending'],
-            'outcome' => $result['outcome'],
-            'retry' => (string) $result['retry'],
-            'points' => $result['points'],
-            'objectives' => $result['objectives'],
-            'rewards' => $rewards,
-            'attempt' => (int) $attempt->attempt,
-            'teamwith' => array_column($team, 'name'),
-        ];
+        return [$attempt, $rewards];
     }
 
     /**

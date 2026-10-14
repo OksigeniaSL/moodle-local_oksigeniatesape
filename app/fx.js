@@ -53,7 +53,8 @@
       sampleOut.gain.value = 1;
       sampleOut.connect(ctx.destination);
     }
-    if (ctx.state === 'suspended') {
+    // Suspended, or interrupted (a call, the tablet locked, on iPad): it comes back at the next touch.
+    if (ctx.state !== 'running' && ctx.state !== 'closed') {
       ctx.resume();
     }
     return ctx.state === 'running' ? ctx : null;

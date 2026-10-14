@@ -103,14 +103,26 @@
    * language of the page, the device says so.
    *
    * @param {HTMLElement} body
+   * @param {boolean} [waited] The voices were waited for already.
    */
-  function readAloud(body) {
+  function readAloud(body, waited) {
     var speech = window.speechSynthesis;
     if (!speech || !body) {
       return;
     }
     if (speech.speaking) {
       speech.cancel();
+      return;
+    }
+    if (!waited && !speech.getVoices().length) {
+      // Some devices find their voices a moment after they are asked for: up to a second.
+      var go = function() {
+        speech.removeEventListener('voiceschanged', go);
+        clearTimeout(late);
+        readAloud(body, true);
+      };
+      var late = setTimeout(go, 1000);
+      speech.addEventListener('voiceschanged', go);
       return;
     }
     var lang = (cfg.lang || 'es').slice(0, 2);
@@ -143,6 +155,10 @@
 
   var PLAYS = 'tesape-plays-' + cfg.courseid + '-' + cfg.userid;
   var SCENES = 'tesape-scenes-' + cfg.courseid + '-' + cfg.userid;
+  /** The scenes kept on a device, of all its students: a tablet may be shared by a whole school. */
+  var KEPT = 12;
+  /** Times a play is sent while the server fails (not the connection) before it is given up. */
+  var TRIES = 10;
 
   function load(key, empty) {
     try {
@@ -152,32 +168,90 @@
     }
   }
 
-  function save(key, value) {
+  /**
+   * The keys of the scenes kept on this device, of every student and course.
+   *
+   * @return {string[]}
+   */
+  function sceneKeys() {
+    var keys = [];
     try {
+      for (var i = 0; i < window.localStorage.length; i++) {
+        var key = window.localStorage.key(i);
+        if (key && key.indexOf('tesape-scenes-') === 0) {
+          keys.push(key);
+        }
+      }
+    } catch (e) {
+      // Not allowed: none.
+    }
+    return keys;
+  }
+
+  function save(key, value) {
+    var write = function() {
       window.localStorage.setItem(key, JSON.stringify(value));
+    };
+    try {
+      write();
       return true;
     } catch (e) {
-      // Full or not allowed: nothing kept.
+      if (key.indexOf('tesape-scenes-') === 0) {
+        return false;
+      }
+    }
+    // Full: a play matters more than the scenes kept to play without connection, which the server gives again.
+    try {
+      sceneKeys().forEach(function(k) {
+        window.localStorage.removeItem(k);
+      });
+      write();
+      return true;
+    } catch (e) {
       return false;
     }
   }
 
   /**
    * A scene as the server gave it, kept on the device so that it can be played without connection: the last ones
-   * opened, up to thirty.
+   * opened on the device, by whoever.
    *
    * @param {Object} d
    */
   function keepScene(d) {
-    var kept = load(SCENES, {});
-    kept[d.id] = {at: Date.now(), d: d};
-    var ids = Object.keys(kept).sort(function(a, b) {
-      return kept[b].at - kept[a].at;
+    var all = [];
+    var lists = {};
+    sceneKeys().concat([SCENES]).forEach(function(key) {
+      if (lists[key]) {
+        return;
+      }
+      lists[key] = load(key, {});
+      Object.keys(lists[key]).forEach(function(id) {
+        all.push({key: key, id: id, at: lists[key][id].at || 0});
+      });
     });
-    ids.slice(30).forEach(function(id) {
-      delete kept[id];
+    lists[SCENES][d.id] = {at: Date.now(), d: d};
+    all = all.filter(function(e) {
+      return !(e.key === SCENES && String(e.id) === String(d.id));
+    }).sort(function(a, b) {
+      return b.at - a.at;
     });
-    save(SCENES, kept);
+    var changed = {};
+    changed[SCENES] = true;
+    all.slice(KEPT - 1).forEach(function(e) {
+      delete lists[e.key][e.id];
+      changed[e.key] = true;
+    });
+    Object.keys(changed).forEach(function(key) {
+      try {
+        window.localStorage.removeItem(key);
+      } catch (e) {
+        // Nothing to do.
+      }
+      if (Object.keys(lists[key]).length) {
+        save(key, lists[key]);
+      }
+    });
   }
 
   /**
@@ -190,8 +264,19 @@
   };
 
   /**
+   * Keeps a play on the device until the connection comes back: a scene, or a minigame (kind minigame).
+   *
+   * @param {Object} play
+   * @return {boolean} Whether it could be kept.
+   */
+  T.keepPlay = function(play) {
+    return save(PLAYS, T.waitingPlays().concat([play]));
+  };
+
+  /**
    * Sends the plays that wait, one after the other, while there is connection. A play the server does not take (the
-   * scene changed, the game was turned off) is left out: sending it again would not help.
+   * scene changed, the game was turned off) is left out, and the student is told: sending it again would not help,
+   * playing it again does. While the server fails, it is tried a few times more.
    *
    * @param {Function} [sent] Called with the title of each play the server took.
    * @return {Promise} With the number of plays sent.
@@ -204,8 +289,10 @@
         return Promise.resolve(count);
       }
       var p = list[0];
-      return T.api('play_scene', {courseid: cfg.courseid, sceneid: p.sceneid, events: p.events, start: p.start || '',
-        team: p.team || ''}).then(function() {
+      var call = p.kind === 'minigame' ? T.api('play_minigame', {courseid: cfg.courseid, game: p.game, events: p.events}) :
+        T.api('play_scene', {courseid: cfg.courseid, sceneid: p.sceneid, events: p.events, start: p.start || '',
+        team: p.team || '', playid: p.playid || ''});
+      return call.then(function() {
         count++;
         save(PLAYS, T.waitingPlays().slice(1));
         if (sent) {
@@ -213,14 +300,30 @@
         }
         return next();
       }).catch(function(e) {
-        if (e.network) {
+        var failing = e.network && e.status >= 500;
+        if ((e.network && !failing) || e.retry) {
+          return count;
+        }
+        p.tries = (p.tries || 0) + 1;
+        if (failing && p.tries < TRIES) {
+          save(PLAYS, [p].concat(T.waitingPlays().slice(1)));
           return count;
         }
         save(PLAYS, T.waitingPlays().slice(1));
+        T.toast(esc(t('app_play_lost', p.title || '')), true);
         return next();
       });
     };
     return next();
+  };
+
+  /**
+   * A mark for a play, made on the device: sent twice, it counts once.
+   *
+   * @return {string}
+   */
+  T.playId = function() {
+    return (Date.now().toString(36) + Math.random().toString(36).slice(2, 10)).slice(0, 20);
   };
 
   T.playScene = function(opts) {
@@ -236,6 +339,8 @@
     var data = null;
     var sc = null;
     var run = null;
+    // While a play is being saved there is no way out: closed then, the map would show it as not played.
+    var saving = false;
 
     function close() {
       if (window.speechSynthesis) {
@@ -309,10 +414,13 @@
       layer.innerHTML = '<div class="scene"><div class="scene-top"><span class="scene-title">' + esc(sc ? sc.title : '') +
         '</span>' + (reads ? '<button class="btn btn-soft scene-read" type="button" data-read aria-label="' +
         esc(t('app_read_aloud')) + '" title="' + esc(t('app_read_aloud')) + '">🔊</button>' : '') +
-        '<button class="btn btn-soft scene-close" type="button" aria-label="' + esc(t('app_close')) + '">✕</button>' +
-        '</div>' + (opts.team && opts.team.length ? '<p class="team-banner">' + esc(t('app_team_banner')) + '</p>' : '') +
-        '<div class="scene-body">' + html + '</div></div>';
-      layer.querySelector('.scene-close').onclick = close;
+        (saving ? '' : '<button class="btn btn-soft scene-close" type="button" aria-label="' + esc(t('app_close')) +
+        '">✕</button>') + '</div>' + (opts.team && opts.team.length ? '<p class="team-banner">' + esc(t('app_team_banner')) +
+        '</p>' : '') + '<div class="scene-body">' + html + '</div></div>';
+      var cross = layer.querySelector('.scene-close');
+      if (cross) {
+        cross.onclick = close;
+      }
       var read = layer.querySelector('[data-read]');
       if (read) {
         read.onclick = function() {
@@ -998,10 +1106,15 @@
         celebrate(n.outcome, null, false);
         return;
       }
+      // The same mark if it is sent again from here: it counts once.
+      run.playid = run.playid || T.playId();
+      saving = true;
       show('<div class="loading-inline"><div class="lamp"></div>' + esc(t('app_saving')) + '</div>');
       Promise.all([T.api('play_scene', {courseid: cfg.courseid, sceneid: data.id, events: JSON.stringify(run.events),
-        start: run.from, team: opts.team && opts.team.length ? JSON.stringify(opts.team) : ''}), drumroll()])
+        start: run.from, team: opts.team && opts.team.length ? JSON.stringify(opts.team) : '', playid: run.playid}),
+        drumroll()])
       .then(function(answers) {
+        saving = false;
         var result = answers[0];
         var before = world.character;
         world = result.world;
@@ -1073,9 +1186,10 @@
           };
         }
       }).catch(function(e) {
-        if (e.network && save(PLAYS, T.waitingPlays().concat([{sceneid: data.id, title: sc.title || '',
-          events: JSON.stringify(run.events), start: run.from || '', team: opts.team && opts.team.length ?
-          JSON.stringify(opts.team) : '', at: Date.now()}]))) {
+        saving = false;
+        if ((e.network || e.retry) && T.keepPlay({sceneid: data.id, title: sc.title || '', events: JSON.stringify(run.events),
+          start: run.from || '', team: opts.team && opts.team.length ? JSON.stringify(opts.team) : '', at: Date.now(),
+          playid: run.playid})) {
           // No connection: the play is kept on the device and goes by itself when the connection comes back.
           var kept = show('<p class="scene-text">' + esc(tx(n.text || '')) + '</p><div class="conseq good"><span ' +
             'class="what">' + esc(t('app_offline_kept')) + '</span>' + esc(t('app_offline_kept_help')) + '</div>' +
@@ -1085,7 +1199,7 @@
           kept.querySelector('[data-map]').onclick = close;
           return;
         }
-        if (!e.network) {
+        if (!e.network && !e.retry) {
           // The server did not take what was played: sending it again would not help, playing it again does.
           var tangled = show('<p class="scene-text">' + esc(t('app_scene_tangled')) + '</p><div class="actions">' +
             '<button class="btn btn-main" data-focus data-restart>' + esc(t('app_scene_restart')) + '</button></div>');

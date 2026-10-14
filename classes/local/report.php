@@ -142,9 +142,8 @@ final class report {
             $row['level'] = (int) $char->level;
             $row['renown'] = (int) $member->renown;
             // The first try of each scene: what the student knew before the scene told them.
-            $firsts = $DB->get_records(self::T . 'sceneattempt', ['charid' => $char->id, 'courseid' => $courseid, 'attempt' => 1]);
             $objectives = [];
-            foreach ($firsts as $attempt) {
+            foreach (scenes::first_tries($courseid, (int) $char->id) as $attempt) {
                 foreach (json_decode((string) $attempt->objectives, true) ?: [] as $code => $o) {
                     $objectives[$code]['ok'] = ($objectives[$code]['ok'] ?? 0) + (int) $o['ok'];
                     $objectives[$code]['total'] = ($objectives[$code]['total'] ?? 0) + (int) $o['total'];

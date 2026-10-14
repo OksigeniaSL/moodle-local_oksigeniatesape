@@ -206,13 +206,21 @@ final class competencies {
      * @param \stdClass $scene
      * @param array $objectives Of the play: code => ok, total.
      * @param int $attempt
+     * @param bool $team Played as a team.
      */
-    public static function evidence(int $courseid, int $userid, \stdClass $scene, array $objectives, int $attempt): void {
+    public static function evidence(
+        int $courseid,
+        int $userid,
+        \stdClass $scene,
+        array $objectives,
+        int $attempt,
+        bool $team = false
+    ): void {
         if (!$objectives || !self::enabled()) {
             return;
         }
         try {
-            self::add_evidence($courseid, $userid, $scene, $objectives, $attempt);
+            self::add_evidence($courseid, $userid, $scene, $objectives, $attempt, $team);
         } catch (\Throwable $e) {
             // The competencies never stop the game: the play counts, and the trouble is told to the developers.
             debugging('Tesapé could not leave evidence in the competencies: ' . $e->getMessage(), DEBUG_DEVELOPER);
@@ -227,8 +235,16 @@ final class competencies {
      * @param \stdClass $scene
      * @param array $objectives
      * @param int $attempt
+     * @param bool $team
      */
-    private static function add_evidence(int $courseid, int $userid, \stdClass $scene, array $objectives, int $attempt): void {
+    private static function add_evidence(
+        int $courseid,
+        int $userid,
+        \stdClass $scene,
+        array $objectives,
+        int $attempt,
+        bool $team
+    ): void {
         $links = self::links($courseid);
         $context = \context_course::instance($courseid);
         $title = (string) ($scene->data['title'] ?? $scene->code);
@@ -243,7 +259,7 @@ final class competencies {
                 $links[$code],
                 $context,
                 evidence::ACTION_LOG,
-                'evidence_scene',
+                $team ? 'evidence_scene_team' : 'evidence_scene',
                 'local_oksigeniatesape',
                 $a,
                 false,
@@ -312,9 +328,7 @@ final class competencies {
             $char = characters::get((int) $user->id);
             $tries = [];
             if ($char) {
-                $first = $DB->get_records(self::T . 'sceneattempt', ['charid' => $char->id, 'courseid' => $courseid,
-                    'attempt' => 1], '', 'id, objectives');
-                foreach ($first as $attempt) {
+                foreach (scenes::first_tries($courseid, (int) $char->id) as $attempt) {
                     foreach (json_decode((string) $attempt->objectives, true) ?: [] as $code => $o) {
                         $tries[$code]['ok'] = ($tries[$code]['ok'] ?? 0) + (int) $o['ok'];
                         $tries[$code]['total'] = ($tries[$code]['total'] ?? 0) + (int) $o['total'];

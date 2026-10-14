@@ -75,7 +75,7 @@ final class class_scene extends external_api {
         $charids = [];
         $live = null;
         if ($params['phones']) {
-            $live = live::current($params['courseid']);
+            $live = live::current($params['courseid'], null, true);
             if (!$live || $live->kind !== 'vote') {
                 throw new \moodle_exception('nobattle', 'local_oksigeniatesape');
             }

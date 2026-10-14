@@ -36,8 +36,11 @@ final class live {
     /** @var string Prefix of the tables. */
     private const T = 'local_oksigeniatesape_';
 
-    /** @var int Seconds without a sign of life of the class screen before the session is over. */
+    /** @var int Seconds without a sign of life of the class screen before the phones stop seeing the session. */
     public const IDLE = 900;
+
+    /** @var int Seconds the class screen can be away from its session and still find it (a school morning). */
+    public const HOST_IDLE = 4 * HOURSECS;
 
     /** @var int Seconds that the outcome of a battle is still shown after it ends. */
     public const SHOWN = 300;
@@ -204,17 +207,21 @@ final class live {
     }
 
     /**
-     * The session open in a course, if any: not ended, and with the class screen alive.
+     * The session open in a course, if any: not ended, and with the class screen alive. For the class screen itself, also
+     * one it left a while ago (the tab hidden, the computer of the projector asleep): it finds it again when it comes
+     * back, and can go on with it or end it.
      *
      * @param int $courseid
      * @param int|null $now
+     * @param bool $host For the class screen.
      * @return \stdClass|null
      */
-    public static function current(int $courseid, ?int $now = null): ?\stdClass {
+    public static function current(int $courseid, ?int $now = null, bool $host = false): ?\stdClass {
         global $DB;
         $now = $now ?? time();
         $where = 'courseid = ? AND timeend = 0 AND timemodified > ?';
-        $records = $DB->get_records_select(self::T . 'live', $where, [$courseid, $now - self::IDLE], 'id DESC', '*', 0, 1);
+        $params = [$courseid, $now - ($host ? self::HOST_IDLE : self::IDLE)];
+        $records = $DB->get_records_select(self::T . 'live', $where, $params, 'id DESC', '*', 0, 1);
         return reset($records) ?: null;
     }
 
@@ -224,12 +231,13 @@ final class live {
      *
      * @param int $courseid
      * @param int|null $now
+     * @param bool $host For the class screen.
      * @return \stdClass|null
      */
-    public static function recent(int $courseid, ?int $now = null): ?\stdClass {
+    public static function recent(int $courseid, ?int $now = null, bool $host = false): ?\stdClass {
         global $DB;
         $now = $now ?? time();
-        $live = self::current($courseid, $now);
+        $live = self::current($courseid, $now, $host);
         if ($live) {
             return $live;
         }
@@ -459,6 +467,20 @@ final class live {
         $transaction->allow_commit();
         $live->timeend = $now;
         return $live;
+    }
+
+    /**
+     * Calls off a battle nobody has played yet: it ends without an outcome, and the class screen and the phones forget it.
+     *
+     * @param \stdClass $live
+     * @param int|null $now
+     */
+    public static function cancel(\stdClass $live, ?int $now = null): void {
+        global $DB;
+        if ((int) $live->round > 0 || self::state($live)['outcome'] !== '') {
+            throw new \moodle_exception('battleover', 'local_oksigeniatesape');
+        }
+        $DB->set_field(self::T . 'live', 'timeend', $now ?? time(), ['id' => $live->id]);
     }
 
     /**

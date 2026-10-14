@@ -293,7 +293,8 @@
     remember();
     app.querySelector('[data-enter]').onclick = function() {
       state.tab = 'world';
-      world();
+      // Through the welcome, for who arrives with the expedition on its way.
+      route();
     };
   }
 
@@ -1147,10 +1148,11 @@
     }
     var tags = {open: ['todo', 'app_pact_open'], kept: ['done', 'app_pact_kept'], broken: ['notyet', 'app_pact_broken']};
     var list = p.list.length ? '<ul class="list">' + p.list.map(function(x) {
-      var tag = tags[x.status] || tags.open;
+      // Without a mark: one of a teammate that is not for the team to see.
+      var tag = x.status ? tags[x.status] || tags.open : null;
       return '<li class="item' + (x.me ? ' mine' : '') + '"><span class="grow"><b>' + esc(x.name) + (x.me ? ' (' +
-        esc(t('app_you')) + ')' : '') + '</b><small>' + esc(x.text) + '</small></span><span class="tag ' + tag[0] + '">' +
-        esc(t(tag[1])) + '</span></li>';
+        esc(t('app_you')) + ')' : '') + '</b><small>' + esc(x.text) + '</small></span>' + (tag ? '<span class="tag ' +
+        tag[0] + '">' + esc(t(tag[1])) + '</span>' : '') + '</li>';
     }).join('') + '</ul>' : '<p class="empty">' + esc(t('app_pacts_none')) + '</p>';
     var choose = '';
     if (!p.status || p.status === 'open') {

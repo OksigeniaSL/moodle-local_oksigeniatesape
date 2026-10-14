@@ -88,7 +88,11 @@ final class badges {
             return $id;
         }
         $now = time();
-        $author = !empty($USER->id) ? (int) $USER->id : (int) get_admin()->id;
+        // Made by who sets up the game in the course; when the mission is brought up to date in the request of a student,
+        // by the site.
+        $context = \context_course::instance($courseid);
+        $setup = !empty($USER->id) && has_capability('local/oksigeniatesape:manageregion', $context);
+        $author = $setup ? (int) $USER->id : (int) get_admin()->id;
         $text = $mission->data['badge']['description'] ?? $name;
         $description = missions::text($text, (string) $mission->skin, (string) $mission->variant);
         $id = (int) $DB->insert_record('badge', (object) [

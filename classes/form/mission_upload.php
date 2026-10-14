@@ -40,7 +40,7 @@ class mission_upload extends \moodleform {
             'package',
             $label,
             null,
-            ['accepted_types' => ['.zip'], 'maxbytes' => 0]
+            ['accepted_types' => ['.zip'], 'maxbytes' => \local_oksigeniatesape\local\missions::MAX_PACKAGE]
         );
         $form->addRule('package', null, 'required');
         $button = $this->_customdata['button'] ?? get_string('missions_upload_go', 'local_oksigeniatesape');

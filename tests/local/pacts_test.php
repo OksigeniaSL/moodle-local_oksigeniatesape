@@ -117,6 +117,10 @@ final class pacts_test extends \advanced_testcase {
         $pact = pacts::choose($w->course->id, $w->users[0]->id, 0, self::NOW);
         pacts::decide((int) $pact->id, 'broken', $w->teacher->id, self::NOW);
         $this->assertEquals(engine::ENERGY_MAX - pacts::LOSS, $this->member($w, $w->users[0])->energy);
+        // The student sees it marked; the team, without a mark.
+        $names = [$w->users[0]->id => 'Ana', $w->users[1]->id => 'Leo', $w->users[2]->id => 'Eva'];
+        $this->assertSame('broken', pacts::for_team($w->course->id, $w->group, $w->users[0]->id, $names)['list'][0]['status']);
+        $this->assertSame('', pacts::for_team($w->course->id, $w->group, $w->users[1]->id, $names)['list'][0]['status']);
         $where = ['reason' => 'commitment', 'refid' => $pact->id, 'resource' => 'energy'];
         $this->assertEquals(1, $DB->count_records(self::T . 'ledger', $where));
         // It was kept after all: the energy comes back.

@@ -11,6 +11,41 @@
   var cfg = window.TESAPE_CONFIG || {};
   var T = window.Tesape = {cfg: cfg};
 
+  /*
+   * A device may be shared (a tablet of the class, the computer of the teacher): what the game keeps on it of somebody
+   * else goes when another one comes in. Only what still waits to be sent stays, so that nothing played is lost: the
+   * plays of a student for a fortnight, and the marks of a teacher.
+   */
+  (function() {
+    if (!cfg.userid) {
+      return;
+    }
+    var old = Date.now() - 14 * 86400000;
+    try {
+      var store = window.localStorage;
+      var keys = [];
+      for (var i = 0; i < store.length; i++) {
+        keys.push(store.key(i));
+      }
+      keys.forEach(function(key) {
+        var who = /^tesape-(plays|scenes|seen|badge|mission|queue)-.*-(\d+)$/.exec(key || '');
+        if (!who || who[2] === String(cfg.userid) || who[1] === 'queue') {
+          return;
+        }
+        var fresh = who[1] === 'plays' ? (JSON.parse(store.getItem(key) || '[]') || []).filter(function(p) {
+          return (p.at || 0) > old;
+        }) : [];
+        if (fresh.length) {
+          store.setItem(key, JSON.stringify(fresh));
+        } else {
+          store.removeItem(key);
+        }
+      });
+    } catch (e) {
+      // Without storage, nothing kept.
+    }
+  })();
+
   /**
    * A text of the language pack, with {$a} (or {$a->name}, when a is an object) replaced.
    *
@@ -208,8 +243,12 @@
     }
   };
 
+  /** The calls that may take long on the server (a mission installed or drafted, the next class drafted): no limit. */
+  var SLOW_CALLS = ['install_mission', 'author_mission', 'next_class', 'make_teams'];
+
   /**
-   * Calls a web service of the plugin.
+   * Calls a web service of the plugin. With a weak wifi a call can hang for minutes: after twenty seconds it is given
+   * up as without connection, so that what waits for it (a play, a minigame) is kept on the device and goes later.
    *
    * @param {string} name Without the component prefix.
    * @param {Object} args
@@ -219,34 +258,47 @@
     var url = cfg.wwwroot + '/lib/ajax/service.php?sesskey=' + encodeURIComponent(cfg.sesskey) +
       '&info=local_oksigeniatesape_' + name;
     // Errors say whether the server answered (errorcode) or did not (network), so that queues know what to retry.
-    var offline = function() {
+    var offline = function(status) {
       var err = new Error(T.t('app_error'));
       err.network = true;
+      err.status = status || 0;
       return err;
     };
+    var abort = window.AbortController && SLOW_CALLS.indexOf(name) < 0 ? new window.AbortController() : null;
+    var timer = abort ? setTimeout(function() {
+      abort.abort();
+    }, 20000) : 0;
     return fetch(url, {
       method: 'POST',
       credentials: 'same-origin',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify([{index: 0, methodname: 'local_oksigeniatesape_' + name, args: args || {}}])
+      body: JSON.stringify([{index: 0, methodname: 'local_oksigeniatesape_' + name, args: args || {}}]),
+      signal: abort ? abort.signal : undefined
     }).catch(function() {
       throw offline();
     }).then(function(response) {
+      clearTimeout(timer);
       if (!response.ok) {
-        throw offline();
+        throw offline(response.status);
       }
       return response.json().catch(function() {
         throw offline();
       });
+    }, function(e) {
+      clearTimeout(timer);
+      throw e;
     }).then(function(data) {
       var result = Array.isArray(data) ? data[0] : data;
       if (!result || result.error) {
         var e = (result && (result.exception || result)) || {};
-        if (e.errorcode === 'servicerequireslogin' || e.errorcode === 'invalidsesskey') {
-          window.location.reload();
-        }
         var err = new Error(e.message || T.t('app_error'));
         err.errorcode = e.errorcode || 'error';
+        if (e.errorcode === 'servicerequireslogin' || e.errorcode === 'invalidsesskey') {
+          // The session ended, or another student came in on this device: what was being sent waits, and the page
+          // starts again.
+          err.retry = true;
+          window.location.reload();
+        }
         throw err;
       }
       return result.data;

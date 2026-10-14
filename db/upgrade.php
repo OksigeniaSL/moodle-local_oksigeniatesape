@@ -536,5 +536,19 @@ function xmldb_local_oksigeniatesape_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026101491, 'local', 'oksigeniatesape');
     }
 
+    if ($oldversion < 2026101492) {
+        // Each play comes with a mark made by the device: sent again because the answer was lost, it counts once.
+        $table = new xmldb_table('local_oksigeniatesape_sceneattempt');
+        $field = new xmldb_field('playid', XMLDB_TYPE_CHAR, '20', null, null, null, null, 'teamplay');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        $index = new xmldb_index('charid-playid', XMLDB_INDEX_NOTUNIQUE, ['charid', 'playid']);
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+        upgrade_plugin_savepoint(true, 2026101492, 'local', 'oksigeniatesape');
+    }
+
     return true;
 }

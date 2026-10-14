@@ -106,7 +106,7 @@ final class live_host extends external_api {
         $courseid = $params['courseid'];
         $now = time();
         if ($params['action'] === 'state') {
-            $live = live::recent($courseid, $now);
+            $live = live::recent($courseid, $now, true);
             if (!$live) {
                 return [];
             }
@@ -142,10 +142,12 @@ final class live_host extends external_api {
             $live = live::start_vote($courseid, $params['sceneid'], $now);
             return ['live' => live::board_view($live, $now)];
         }
-        $live = live::current($courseid, $now);
+        $live = live::current($courseid, $now, true);
         if (!$live) {
             throw new \moodle_exception('nobattle', 'local_oksigeniatesape');
         }
+        // Back on the session: the phones see it again.
+        live::heartbeat($live, $now);
         switch ($params['action']) {
             case 'next':
                 $live = live::next($live, $now, $from);
@@ -159,6 +161,11 @@ final class live_host extends external_api {
                 break;
             case 'finish':
                 require_capability('local/oksigeniatesape:award', $context);
+                if ($live->kind === 'battle' && !(int) $live->round) {
+                    // Nobody has played yet: called off, without an outcome.
+                    live::cancel($live, $now);
+                    return [];
+                }
                 $live = live::finish($live, $userid, $now);
                 break;
             case 'vote':

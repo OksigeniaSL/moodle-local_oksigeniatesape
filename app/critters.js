@@ -511,9 +511,9 @@
     })[0];
     // Only in the part of the map in sight, from the top of the map.
     var shown = wrap.getBoundingClientRect();
-    var view = sight();
-    var from = Math.max(box.top, shown.top, view[0]) - box.top;
-    var to = Math.min(box.bottom, shown.bottom, view[1]) - box.top;
+    var seen = sight();
+    var from = Math.max(box.top, shown.top, seen[0]) - box.top;
+    var to = Math.min(box.bottom, shown.bottom, seen[1]) - box.top;
     if (to - from < c.size * 2) {
       busy = false;
       next();
@@ -568,7 +568,7 @@
   function visit() {
     timer = 0;
     var away = document.hidden || document.body.classList.contains('in-scene') ||
-      document.querySelector('.badge-moment, .battle-layer, [role="dialog"]');
+      document.querySelector('.badge-moment, .battle-layer:not(:empty), [role="dialog"]');
     var kinds = all().filter(function(c) {
       return MOVES[c.move];
     });
