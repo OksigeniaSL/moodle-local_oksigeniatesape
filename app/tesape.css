@@ -4487,6 +4487,21 @@ body.in-battle {
   padding: 0;
 }
 
+/* Reading aloud in the cards of the game: at the top right of the card, or by the mark of an item. */
+.card > .read-card,
+.badge-card > .read-card {
+  float: right;
+  min-width: 44px;
+  margin: -6px -6px 6px 10px;
+  padding: 0 10px;
+}
+
+.item > .read-card {
+  min-width: 44px;
+  padding: 0 10px;
+  flex: none;
+}
+
 /* Big text: the whole game, bigger. */
 body.adapt-bigtext #app,
 body.adapt-bigtext .scene-layer,
@@ -4572,3 +4587,44 @@ body.adapt-colours .opt.wrong::before {
     filter: drop-shadow(0 0 8px rgba(var(--lantern-rgb), .8));
   }
 }
+
+/* What else a place has, folded under its scenes. */
+.more-place {
+  margin-top: 16px;
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+}
+
+.more-place > summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: 8px 0;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+.more-place > summary::-webkit-details-marker {
+  display: none;
+}
+
+.more-place > summary::before {
+  content: "▸";
+  margin-right: 8px;
+  color: var(--lantern);
+  transition: transform .2s ease;
+}
+
+.more-place[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+/* In the menu to leave: what was finished is saved. */
+.exit-saved {
+  margin: 8px 0 0;
+  max-width: 240px;
+  font-size: 14px;
+  color: var(--text-soft);
+  white-space: normal;
+}
+

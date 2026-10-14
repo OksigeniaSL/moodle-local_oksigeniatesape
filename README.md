@@ -18,7 +18,9 @@ privacy come from Moodle, and the game is a full-screen application of its own.
 
 ## Status
 
-**Alpha, under development: not for use with students yet.** What there is today:
+**Alpha, under development.** Complete for its pilot mission, and tested with made-up classes: in the tests, a whole
+class plays the mission from start to end; in the browser, made-up students play every scene of their map. What there
+is today:
 
 - **A mission to play**: the pilot mission, *Living things* (ages 9 to 11, in Spanish, with a story for Spain and
   for Paraguay), comes with the plugin. Its map has six places with their lanterns; each place has its decision
@@ -63,11 +65,31 @@ privacy come from Moodle, and the game is a full-screen application of its own.
 - **The game engine**: knowledge with a weekly cap for each character in the whole site (what the mission gives goes
   under no cap), gems, energy and falling worn out, breath that comes back a little each day, items, undo, and
   completed Moodle activities turned into progress. Privacy provider from the first day.
+- **Moodle competencies, badge and gradebook**: the mission brings its own framework of competencies (optional and
+  replaceable by any of the site); the scenes leave evidence and the teacher rates; a badge of the course when the
+  class lights every lantern; the rating can go to the gradebook, if the teacher wants. A report of the class for the
+  teacher (Excel, ODS, CSV or PDF), with what each student did and, by objective, the share right at the first try.
+- **The workshop**: the teacher changes the texts and questions of a mission (kept apart, as a layer), or makes a new
+  one from scratch in six steps with guided scenes, a checker and «Try this scene»; a mission is exported as a package
+  and loaded in another course or site. The AI of the site can draft a scene, if the site allows it.
+- **A game that sounds and moves**: night and day themes (each world can bring its colours), sounds, the sound of each
+  kind of place and the music of the class screen from the art pack, a road that draws itself, little living things
+  that visit the screens and say what they are when touched.
+- **Scenes as a team** on one device, with the teammates who are there (the teacher can take one back if someone was
+  not); **without connection**, a scene opened stays on the device and a play finished without connection goes by
+  itself later, once; and **a «What if…?»** at the end of every scene, to think about.
+- **No one is left behind**: who comes back after many days or arrives late is welcomed with a short way to catch up;
+  who follows the expedition from home or hospital gets the votes and battles on their device and, when they come in,
+  how the battles they missed went (their team sees it only if the teacher allows it).
+- **Adaptations for each student**, marked by the teacher (never a diagnosis): big text, reading aloud with a voice of
+  the device, no hurry, no movement, high contrast, colours for colour blindness, no sounds and more help. The student
+  can turn on those of comfort. Oksigenia Access, if the site has it, also comes into the game.
 - **A plan for the next class with the AI of the site** (Moodle's AI subsystem, any provider): what confuses the
   class turned into what to review, a new example, a question to open the class and the classroom challenge that fits.
   Counts only, never a name.
 
-The game is ready for **art packs** (`cli/art.php`), and its first pack is nearly done.
+The art comes in **art packs** (`cli/art.php`): the first one, *The Valley of Tesapé*, with its heroes, creature,
+maps, scenes, sounds and music, is distributed apart from the plugin.
 
 ## Requirements
 
@@ -115,7 +137,8 @@ php local/oksigeniatesape/cli/art.php --install=/path/to/pack.zip
 ```
 
 Code, comments and commit messages in English; texts in the language packs (`lang/en`, `lang/es`). The tests run
-with `moodle-plugin-ci` in GitHub Actions on Moodle 4.5, 5.2 and 5.3, and on `main` to see what is coming. See
+with `moodle-plugin-ci` in GitHub Actions on Moodle 4.5, 5.2 and 5.3 (PostgreSQL), on 5.3 with MariaDB 11.4 too, and on
+`main` to see what is coming. See
 [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License

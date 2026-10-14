@@ -19,7 +19,9 @@ pantalla completa.
 
 ## Estado
 
-**Alfa, en desarrollo: todavía no es para usarlo con alumnos.** Lo que hay hoy:
+**Alfa, en desarrollo.** Completa para su misión piloto y probada con clases inventadas: en las pruebas, una clase
+entera juega la misión de principio a fin; en el navegador, alumnos inventados juegan todas las escenas de su mapa. Lo
+que hay hoy:
 
 - **Una misión para jugar**: la misión piloto, *Los seres vivos* (9 a 11 años, en español), viene con el plugin. Su
   mapa tiene seis lugares con sus linternas; cada lugar tiene sus escenas de decisión y un reto del aula. Las escenas
@@ -56,6 +58,37 @@ pantalla completa.
   móviles o con tarjetas A, B, C, D, y material imprimible para jugar sin dispositivos.
 
 El juego está preparado para **paquetes de arte** (`cli/art.php`), y el primero está casi terminado.
+- **El mercado del valle y el álbum**: las gemas compran pinturas para la criatura y auras para el héroe, que ven los
+  compañeros, y el equipo compra entre todos el farol de su estandarte; cada ficha de la guía de campo del alumno o de
+  su equipo es un cromo del álbum. **Expediciones**: la misión que el curso hizo antes queda encendida y se puede
+  visitar su mapa.
+- **Competencias, insignia y calificador de Moodle**: la misión trae su propio marco de competencias (opcional y
+  sustituible por cualquiera del sitio); las escenas dejan evidencias y el docente valora; una insignia del curso
+  cuando la clase enciende todas las linternas; la valoración puede ir al calificador, si el docente quiere. Un informe
+  de la clase para el docente (Excel, ODS, CSV o PDF), con lo hecho por cada alumno y, por objetivo, el porcentaje de
+  aciertos a la primera.
+- **El taller**: el docente cambia los textos y las preguntas de una misión (guardados aparte, como una capa) o crea una
+  desde cero en seis pasos con escenas guiadas, un comprobador y «Probar esta escena»; una misión se exporta como
+  paquete y se carga en otro curso o sitio. La IA del sitio puede hacer el borrador de una escena, si el sitio lo
+  permite.
+- **Un juego que suena y se mueve**: temas de noche y de día (cada mundo puede traer sus colores), sonidos, el ambiente
+  de cada clase de lugar y la música de la pantalla de clase desde el paquete de arte, un camino que se dibuja solo y
+  bichitos que visitan las pantallas y dicen qué son al tocarlos.
+- **Escenas en equipo** en un dispositivo, con los compañeros que están (el docente puede anular una si alguien no
+  estaba); **sin conexión**, la escena abierta se queda en el dispositivo y la partida terminada sin conexión se envía
+  sola después, una vez; y **un «¿Y si…?»** al final de cada escena, para pensar.
+- **Nadie se queda atrás**: quien vuelve tras muchos días o llega tarde recibe una bienvenida con un camino corto para
+  ponerse al día; quien sigue la expedición desde casa o el hospital recibe en su dispositivo las votaciones y las
+  batallas y, al entrar, cómo fueron las que se perdió (su equipo lo ve solo si el docente lo permite).
+- **Adaptaciones para cada alumno**, que marca el docente (nunca un diagnóstico): letra grande, lectura en voz alta con
+  una voz del dispositivo, sin prisa, sin movimiento, alto contraste, colores para daltonismo, sin sonidos y más
+  ayudas. El alumno puede activarse las de comodidad. Oksigenia Access, si el sitio lo tiene, entra también en el juego.
+- **Un plan para la próxima clase con la IA del sitio** (el subsistema de IA de Moodle, con cualquier proveedor): lo
+  que confunde a la clase convertido en qué repasar, un ejemplo nuevo, una pregunta para abrir la clase y el reto del
+  aula que encaja. Solo recuentos, nunca un nombre.
+
+El arte llega en **paquetes de arte** (`cli/art.php`): el primero, *El Valle de Tesapé*, con sus héroes, la criatura,
+los mapas, las escenas, los sonidos y la música, se distribuye aparte del plugin.
 
 ## Requisitos
 
@@ -100,8 +133,8 @@ php local/oksigeniatesape/cli/art.php --install=/ruta/al/paquete.zip
 ```
 
 Código, comentarios y mensajes de commit en inglés; los textos, en los paquetes de idioma (`lang/en`, `lang/es`).
-Las pruebas pasan con `moodle-plugin-ci` en GitHub Actions sobre Moodle 4.5, 5.2 y 5.3, y sobre `main` para ver lo
-que viene. Ver [CONTRIBUTING.md](CONTRIBUTING.md).
+Las pruebas pasan con `moodle-plugin-ci` en GitHub Actions sobre Moodle 4.5, 5.2 y 5.3 (PostgreSQL), sobre 5.3 también
+con MariaDB 11.4, y sobre `main` para ver lo que viene. Ver [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Licencia
 

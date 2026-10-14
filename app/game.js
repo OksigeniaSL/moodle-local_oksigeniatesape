@@ -412,7 +412,7 @@
     layer.setAttribute('aria-modal', 'true');
     layer.setAttribute('aria-labelledby', 'tesape-welcome-title');
     var back = w.kind === 'back';
-    layer.innerHTML = '<div class="badge-card"><div class="kicker">' + esc(t(back ? 'app_welcome_back_kicker' :
+    layer.innerHTML = '<div class="badge-card">' + listen() + '<div class="kicker">' + esc(t(back ? 'app_welcome_back_kicker' :
       'app_welcome_new_kicker')) + '</div><h2 id="tesape-welcome-title">' + esc(t(back ? 'app_welcome_back' :
       'app_welcome_new')) + '</h2>' + (back && w.days ? '<p>' + esc(t('app_welcome_days', w.days)) + '</p>' : '') +
       (w.lanterns.length ? '<p>' + esc(t(back ? 'app_welcome_lanterns' : 'app_welcome_lanterns_new',
@@ -424,7 +424,11 @@
       }).join('') + '</ul>' : '') + '<div class="actions"><button class="btn btn-soft" type="button" data-close>' +
       esc(t('app_welcome_later')) + '</button></div></div>';
     document.body.appendChild(layer);
+    bindListen(layer);
     layer.querySelector('[data-close]').onclick = function() {
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
       layer.remove();
       then();
     };
@@ -528,7 +532,8 @@
       esc(t('app_leave')) + '">⎋</summary><div class="exit-menu">' +
       // A course that goes straight into the game has no page of its own to go back to: only the dashboard.
       (/\/my\/?$/.test(cfg.courseurl) ? '' : '<a href="' + esc(cfg.courseurl) + '">' + esc(t('app_exit')) + '</a>') +
-      '<a href="' + esc(cfg.wwwroot + '/my/') + '">' + esc(t('app_exit_my')) + '</a></div></details><div class="res">' +
+      '<a href="' + esc(cfg.wwwroot + '/my/') + '">' + esc(t('app_exit_my')) + '</a>' + savedNote() +
+      '</div></details><div class="res">' +
       res('saber', c.saber, t('app_saber')) + res('gems', c.gems, t('app_gems')) +
       res('energy', m.energy + '/' + w.energymax, t('app_energy')) + res('breath', m.breath + '/' + w.breathmax,
         t('app_breath')) + '</div></header>' +
@@ -609,6 +614,17 @@
 
   window.addEventListener('online', sendWaiting);
   setInterval(sendWaiting, 90000);
+
+  /**
+   * What the menu to leave says: what was finished is saved; and the plays that wait on this device, if any.
+   *
+   * @return {string}
+   */
+  function savedNote() {
+    var waiting = T.waitingPlays ? T.waitingPlays().length : 0;
+    return '<p class="exit-saved">' + esc(t('app_exit_saved')) + (waiting ? ' ' + esc(t('app_exit_waiting', waiting)) : '') +
+      '</p>';
+  }
 
   /**
    * A resource of the character at the top: touched, it says what it is for (a tablet has no mouse to hover).
@@ -804,16 +820,36 @@
     if (past) {
       challenge = null;
     }
-    return '<section class="card chapter"><div class="kicker">' + esc(lantern) + '</div><h2>' + esc(ch.name) + '</h2>' +
+    return '<section class="card chapter">' + listen() + '<div class="kicker">' + esc(lantern) + '</div><h2>' +
+      esc(ch.name) + '</h2>' +
       '<p>' + esc(ch.intro) + '</p>' + (ch.letter ? '<blockquote class="letter"><small>' + esc(t('app_letter')) +
       '</small>' + esc(ch.letter) + '</blockquote>' : '') + (scenes ? '<ul class="list">' + scenes + '</ul>' : '') +
+      more(games, quests, acts, challenge) + '</section>';
+  }
+
+  /**
+   * What else a place has, folded: the scenes of the place come first, the rest only for who looks for it (minigames,
+   * quests, activities of Moodle, the challenge of the class).
+   *
+   * @param {string} games
+   * @param {string} quests
+   * @param {Object[]} acts
+   * @param {Object|null} challenge
+   * @return {string}
+   */
+  function more(games, quests, acts, challenge) {
+    var count = (games.match(/<li/g) || []).length + (quests.match(/<li/g) || []).length + acts.length + (challenge ? 1 : 0);
+    if (!count) {
+      return '';
+    }
+    return '<details class="more-place"><summary>' + esc(t('app_more_place', count)) + '</summary>' +
       (games ? '<h3 style="margin-top:16px">' + esc(t('app_minigames')) + '</h3><ul class="list">' + games + '</ul>' : '') +
       (quests ? '<h3 style="margin-top:16px">' + esc(t('app_quests')) + '</h3><p class="help-soft">' +
       esc(t('app_quests_help')) + '</p><ul class="list">' + quests + '</ul>' : '') +
       (acts.length ? '<h3 style="margin-top:16px">' + esc(t('app_inmoodle')) + '</h3><ul class="list">' +
       acts.map(activityItem).join('') + '</ul>' : '') +
       (challenge ? '<h3 style="margin-top:16px">' + esc(t('app_inclass')) + '</h3><ul class="list">' + challengeItem(challenge) +
-      '</ul>' : '') + '</section>';
+      '</ul>' : '') + '</details>';
   }
 
   /**
@@ -975,7 +1011,7 @@
       after = (p.why ? '<p class="help">' + esc(p.why) + '</p>' : '') + '<p class="conseq ' + (p.right ? 'good' : '') + '">' +
         '<span class="what">' + esc(p.right ? t('app_page_breath', p.breath) : t('app_page_tomorrow')) + '</span></p>';
     }
-    return '<section class="card page-card' + (glow ? ' glow' : '') + '"><div class="page-head">' +
+    return '<section class="card page-card' + (glow ? ' glow' : '') + '">' + listen() + '<div class="page-head">' +
       T.creature(c.creature, c.creaturestage) + '<div><b>' + esc(title) + '</b>' + (note ? '<small>' + esc(note) +
       '</small>' : '') + (!p.answered ? '<small>' + esc(t('app_page_help', {name: name, breath: p.breath})) + '</small>' :
       '') + '</div></div><p class="page-q">' + esc(p.question.text) + '</p><div class="opts">' + options + '</div>' + after +
@@ -988,6 +1024,7 @@
    * @param {boolean} [stay] Only the panel of a place changed: the map stays where it is.
    */
   function bindWorld(stay) {
+    bindListen(app);
     var seen = app.querySelector('[data-battlesseen]');
     if (seen) {
       seen.onclick = function() {
@@ -1134,6 +1171,30 @@
   }
 
   /**
+   * A button that reads a card aloud, for who has «Reading aloud»: the scenes have theirs; the rest of the game, this.
+   *
+   * @return {string}
+   */
+  function listen() {
+    return T.adapted.readaloud && T.readAloud && window.speechSynthesis ? '<button type="button" class="btn btn-soft ' +
+      'read-card" data-readcard aria-label="' + esc(t('app_read_aloud')) + '" title="' + esc(t('app_read_aloud')) +
+      '">🔊</button>' : '';
+  }
+
+  /**
+   * The read-aloud buttons in a part of the page: each reads its item, card or moment.
+   *
+   * @param {HTMLElement} root
+   */
+  function bindListen(root) {
+    root.querySelectorAll('[data-readcard]').forEach(function(b) {
+      b.onclick = function() {
+        T.readAloud(b.closest('.item, .card, .badge-card'));
+      };
+    });
+  }
+
+  /**
    * For who follows the expedition from far: the battles of the class since they last came in, once.
    *
    * @return {string}
@@ -1150,7 +1211,7 @@
         return new Date(time * 1000).toLocaleDateString();
       }
     };
-    return '<section class="card battles-missed" style="margin-bottom:12px"><div class="kicker">' +
+    return '<section class="card battles-missed" style="margin-bottom:12px">' + listen() + '<div class="kicker">' +
       esc(t('app_far_battles')) + '</div><ul class="list">' + list.map(function(b) {
         var face = T.embrollo(b.outcome === 'won' ? 0.2 : 1);
         return '<li class="item"><span class="battle-mini">' + face + '</span><span class="grow"><b>' +
@@ -1387,7 +1448,7 @@
       esc(rewards.join(' · ')) + (ch.teamwork ? ' · ' + esc(t('app_teamwork')) : '') + '</small>' +
       (ch.description ? '<div style="margin-top:6px;font-size:15px">' + ch.description + '</div>' : '') +
       (ch.note ? '<div class="note"><b>' + esc(t('app_teachersays')) + ':</b> ' + esc(ch.note) + '</div>' : '') +
-      '</span><span class="tag ' + status + '">' + esc(t(label)) + '</span></li>';
+      '</span>' + listen() + '<span class="tag ' + status + '">' + esc(t(label)) + '</span></li>';
   }
 
   function tabChallenges() {

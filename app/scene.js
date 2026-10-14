@@ -98,9 +98,9 @@
   /* ---------- Reading aloud, for who needs it ---------- */
 
   /**
-   * Reads aloud what is on the screen of a scene (the narration, the question, the options), with a voice of the
-   * device itself, so that the text goes nowhere else; touched again, it stops. Without a voice of its own in the
-   * language of the page, the device says so.
+   * Reads aloud what is on the screen (a scene: the narration, the question, the options; or a card of the game), with
+   * a voice of the device itself, so that the text goes nowhere else; touched again, it stops. Without a voice of its
+   * own in the language of the page, the device says so.
    *
    * @param {HTMLElement} body
    * @param {boolean} [waited] The voices were waited for already.
@@ -133,19 +133,28 @@
       T.toast(esc(t('app_read_novoice')), true);
       return;
     }
+    // All its text, in order, with a pause after each block; not the buttons of the game (play, close, listen).
     var copy = body.cloneNode(true);
-    copy.querySelectorAll('.actions, script, style').forEach(function(el) {
+    copy.querySelectorAll('.actions, script, style, svg, img, button.btn').forEach(function(el) {
       el.remove();
     });
-    var text = Array.prototype.map.call(copy.querySelectorAll('p, h2, h3, li, button, label, .what, .speaker'), function(el) {
-      return el.children.length && el.querySelector('p, li, button') ? '' : el.textContent.trim();
-    }).filter(Boolean).join('. ');
+    // What is folded and closed is not on the screen: only its title.
+    copy.querySelectorAll('details:not([open]) > :not(summary)').forEach(function(el) {
+      el.remove();
+    });
+    copy.querySelectorAll('p, h2, h3, li, div, blockquote, small, b, label, button, .what, .speaker, .kicker, .tag')
+      .forEach(function(el) {
+        el.appendChild(document.createTextNode('. '));
+      });
+    var text = copy.textContent.replace(/\s+/g, ' ').replace(/([.:;!?…»])\s*(\.\s*)+/g, '$1 ')
+      .replace(/(\.\s*){2,}/g, '. ').trim();
     var say = new window.SpeechSynthesisUtterance(text || copy.textContent);
     say.voice = voice;
     say.lang = voice.lang;
     say.rate = 0.95;
     speech.speak(say);
   }
+  T.readAloud = readAloud;
   // Some browsers find their voices a moment later.
   if (window.speechSynthesis) {
     window.speechSynthesis.getVoices();

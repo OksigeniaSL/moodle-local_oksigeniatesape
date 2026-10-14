@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.51.0 (2026-10-14)
+
+- **Reading aloud beyond the scenes**: for who has «Reading aloud», a 🔊 button in the panel of each place, the page of
+  the day, each classroom challenge, the welcome and the battles missed from far. It reads all the text that shows (not
+  what is folded, nor the buttons of the game), with a voice of the device itself.
+- **The panel of a place, simpler**: its scenes and the letter of the Embrollo at sight; minigames, quests, Moodle
+  activities and the classroom challenge folded under «More in this place».
+- **The menu to leave** says that everything finished is saved, and how many plays wait on the device for the
+  connection, if any.
+- The README, up to date with what the plugin brings.
+
 ## 0.50.0 (2026-10-14)
 
 - **Faster as courses and missions grow**: indexes for the scenes of a chapter, the entries of a request and the plays
