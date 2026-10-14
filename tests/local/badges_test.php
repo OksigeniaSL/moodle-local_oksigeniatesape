@@ -127,6 +127,26 @@ final class badges_test extends \advanced_testcase {
         $this->assertFalse((new \core_badges\badge($id))->is_issued($other->id));
     }
 
+    public function test_the_game_knows_when_the_student_has_the_badge(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $w = $this->make_class();
+        $id = badges::find($w->course->id, $w->mission);
+        // Turned off: the game says nothing of it.
+        $this->assertNull(badges::for_student($w->course->id, $w->student->id));
+        $this->assertArrayNotHasKey('badge', view::world($w->course->id, $w->student->id));
+        (new \core_badges\badge($id))->set_status(BADGE_STATUS_ACTIVE);
+        $badge = badges::for_student($w->course->id, $w->student->id);
+        $this->assertSame(badges::name($w->mission), $badge['name']);
+        $this->assertFalse($badge['issued']);
+        $this->assertStringContainsString('/badges/badgeimage/' . $id . '/f3', $badge['image']);
+        // With every lantern, the student has it, and the game celebrates it.
+        $this->light($w, $DB->get_fieldset_select(self::T . 'chapter', 'code', 'missionid = ?', [$w->mission->id]));
+        badges::check($w->course->id, $w->student->id);
+        $this->assertTrue(view::world($w->course->id, $w->student->id)['badge']['issued']);
+    }
+
     public function test_without_badges_in_courses_there_is_none(): void {
         global $DB;
         $this->resetAfterTest();

@@ -105,6 +105,10 @@ final class view {
         if ($page) {
             $world['page'] = $page;
         }
+        $badge = badges::for_student($courseid, $userid);
+        if ($badge) {
+            $world['badge'] = $badge;
+        }
         $world['market'] = market::for_student($char, $courseid, $userid);
         $album = album::for_student($courseid, $userid);
         if ($album) {

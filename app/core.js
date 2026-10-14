@@ -61,6 +61,80 @@
     return root.dataset.theme || 'night';
   };
 
+  /* The stretches of road being drawn now, so that drawing the map again does not start them over. */
+  var drawing = {};
+
+  /**
+   * The road walked since this device last saw a map: drawn as it is seen, once, from the place where it was left.
+   * The first time a map is seen, nothing is drawn.
+   *
+   * @param {string} key The map and who looks at it.
+   * @param {Object[]} chapters The places, in order, with x and y.
+   * @param {number} upto The last place reached.
+   * @return {{road: string, from: (Object|null), delay: number}} The stretch to draw, where it starts, and how far its
+   *     drawing already went (a negative delay, in seconds).
+   */
+  T.mapNewRoad = function(key, chapters, upto) {
+    var store = 'tesape-road-' + key;
+    var now = Date.now();
+    var d = drawing[store];
+    if (d && now < d.until) {
+      return {road: d.road, from: d.from, delay: (d.start - now) / 1000};
+    }
+    var seen = NaN;
+    try {
+      seen = parseInt(window.localStorage.getItem(store), 10);
+      window.localStorage.setItem(store, String(upto));
+    } catch (e) {
+      // Without storage, nothing is drawn.
+    }
+    if (isNaN(seen) || upto <= seen || !chapters[seen]) {
+      return {road: '', from: null, delay: 0};
+    }
+    var pts = chapters.slice(seen, upto + 1).map(function(ch) {
+      return ch.x + ',' + ch.y;
+    }).join(' ');
+    d = {road: '<polyline points="' + pts + '" class="road drawing" pathLength="1"/>', from: chapters[seen], start: now,
+      until: now + 3200};
+    drawing[store] = d;
+    if (T.fx) {
+      T.fx.sound('path');
+    }
+    return {road: d.road, from: d.from, delay: 0};
+  };
+
+  /**
+   * Where the character was the last time this device saw the map, if it was another place: the character walks from
+   * there. Nothing the first time.
+   *
+   * @param {string} key The map and who looks at it.
+   * @param {Object[]} chapters The places, with id, x and y.
+   * @param {Object} here The place where the character is now.
+   * @return {{from: (Object|null), delay: number}} The place it comes from, and how far its walk already went.
+   */
+  T.mapWalk = function(key, chapters, here) {
+    var store = 'tesape-here-' + key;
+    var now = Date.now();
+    var d = drawing[store];
+    if (d && now < d.until && d.to === here.id) {
+      return {from: d.from, delay: (d.start - now) / 1000};
+    }
+    var before = null;
+    try {
+      before = window.localStorage.getItem(store);
+      window.localStorage.setItem(store, String(here.id));
+    } catch (e) {
+      // Without storage, the character just stands there.
+    }
+    var from = chapters.filter(function(ch) {
+      return before !== null && String(ch.id) === before && ch.id !== here.id;
+    })[0] || null;
+    if (from) {
+      drawing[store] = {from: from, to: here.id, start: now, until: now + 2400};
+    }
+    return {from: from, delay: 0};
+  };
+
   /*
    * The light of a screen of the teacher (the panel and the class screen): each classroom and each projector is
    * different, so it changes on this device only and the device remembers it; back to the theme of the class, it

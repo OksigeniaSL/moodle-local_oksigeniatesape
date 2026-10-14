@@ -254,7 +254,7 @@
     }).join('');
     app.innerHTML = '<div class="board battle-board"><header class="board-top">' + T.emblem() + '<div><b>' + esc(cfg.coursename) + '</b><small>' +
       esc(t(l.final ? 'board_battle_final' : 'board_battle')) + (l.phase > 1 && !l.outcome ? ' · ' +
-      esc(t('board_battle_phase')) : '') + '</small></div><div class="board-tools">' + lightButton() +
+      esc(t('board_battle_phase')) : '') + '</small></div><div class="board-tools">' + musicButton() + lightButton() +
       '<button class="btn btn-soft" data-full>' + esc(t('board_fullscreen')) + '</button></div></header>' +
       '<div class="battle-stage"><div class="battle-boss' +
       (l.revealed && (l.right || 0) > 0 ? ' hit' : '') + '">' + T.embrollo(life) + '<span class="meter boss"><i style="width:' +
@@ -276,6 +276,7 @@
     };
     on('[data-full]', fullscreen);
     on('[data-light]', switchLight);
+    on('[data-music]', switchMusic);
     on('[data-battlenext]', function() {
       host('next', {round: l.round});
     });
@@ -306,6 +307,27 @@
   }
 
   T.light.restore();
+  if (T.fx) {
+    T.fx.musicHere();
+  }
+
+  /**
+   * The soft music of the class, on or off on this device.
+   *
+   * @return {string}
+   */
+  function musicButton() {
+    if (!T.fx) {
+      return '';
+    }
+    return '<button class="btn btn-soft" type="button" data-music aria-pressed="' + T.fx.musicOn() + '" title="' +
+      esc(t('board_music_help')) + '">♪ ' + esc(t('board_music')) + '</button>';
+  }
+
+  function switchMusic() {
+    T.fx.music();
+    render();
+  }
 
   function lightButton() {
     var day = T.theme() === 'day';
@@ -367,11 +389,14 @@
         '<text x="' + ch.x + '" y="' + (ch.y + 44) + '" text-anchor="middle">' + esc(ch.name) + '</text></g>';
     }).join('');
     var height = T.mapHeight(m);
+    var fresh = T.mapNewRoad('board-' + cfg.courseid + '-' + m.code, m.chapters, Math.min(lit, m.chapters.length - 1));
+    var drawn = fresh.road ? fresh.road.replace('/>', ' style="animation-delay:' + (0.3 + fresh.delay) + 's,' +
+      (2.4 + fresh.delay) + 's"/>') : '';
     return '<section class="board-map"><h2>' + esc(m.title) + '</h2><div class="map-wrap' + (height > 640 ? ' tall' : '') +
       '"><svg class="map" viewBox="0 0 400 ' + height + '" role="img" aria-label="' + esc(m.title) + '"><defs>' + T.MAPGLOW +
       '</defs>' + T.mapGround(m) + T.mapLandmarks(m) + T.mapNight(m) +
       '<polyline points="' + pts + '" class="road"/>' + (lit ? '<polyline points="' + walked + '" class="road walked"/>' : '') +
-      places + '</svg></div>' + pastExpeditions() + '</section>';
+      drawn + places + '</svg></div>' + pastExpeditions() + '</section>';
   }
 
   /**
@@ -751,7 +776,8 @@
       '<div class="board-tools">' + (pending && can('approvepowers') ? '<a class="btn btn-soft" href="' +
       esc(cfg.wwwroot + '/local/oksigeniatesape/teach.php?id=' + cfg.courseid) + '">' + esc(t('board_powers', pending)) +
       '</a>' : '') + '<a class="btn btn-soft" href="' + esc(cfg.wwwroot + '/local/oksigeniatesape/teach.php?id=' +
-      cfg.courseid) + '">' + esc(t('board_panel')) + '</a>' + lightButton() + '<button class="btn btn-soft" data-full>' +
+      cfg.courseid) + '">' + esc(t('board_panel')) + '</a>' + musicButton() + lightButton() +
+      '<button class="btn btn-soft" data-full>' +
       esc(t('board_fullscreen')) + '</button></div></header>' +
       '<div class="board-grid">' + map() + '<div class="board-side">' + todayCard() + openerCard() + eventCard() + battleCard() +
       sceneCard() + teams() + printCard() + '</div></div>' + bar() + '</div>';
@@ -768,6 +794,7 @@
     };
     on('[data-full]', fullscreen);
     on('[data-light]', switchLight);
+    on('[data-music]', switchMusic);
     on('[data-openerhide]', function() {
       state.openerhidden = true;
       render();

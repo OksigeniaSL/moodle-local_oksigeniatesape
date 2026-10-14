@@ -349,6 +349,62 @@
       }
     }
     remember();
+    // The badge of the mission, celebrated once on each device.
+    var b = state.world.badge;
+    if (b && b.issued) {
+      var bkey = 'tesape-badge-' + cfg.courseid + '-' + cfg.userid;
+      var had = null;
+      try {
+        had = window.localStorage.getItem(bkey);
+        window.localStorage.setItem(bkey, b.name);
+      } catch (e) {
+        had = b.name;
+      }
+      if (had !== b.name) {
+        setTimeout(function() {
+          badgeMoment(b);
+        }, 700);
+      }
+    }
+  }
+
+  /**
+   * The moment of the badge: the medal comes with a drum roll, and then the applause.
+   *
+   * @param {Object} b The badge.
+   */
+  function badgeMoment(b) {
+    var layer = document.createElement('div');
+    layer.className = 'badge-moment';
+    layer.setAttribute('role', 'dialog');
+    layer.setAttribute('aria-modal', 'true');
+    layer.setAttribute('aria-labelledby', 'tesape-badge-title');
+    layer.innerHTML = '<div class="badge-card"><div class="kicker">' + esc(t('app_badge_won')) + '</div><img class="badge-medal" ' +
+      'src="' + esc(b.image) + '" alt=""><h2 id="tesape-badge-title">' + esc(b.name) + '</h2><p>' + esc(t('app_badge_why')) +
+      '</p><div class="actions"><a class="btn btn-soft" href="' + esc(b.url) + '">' + esc(t('app_badge_see')) + '</a>' +
+      '<button class="btn btn-main" type="button" data-close>' + esc(t('app_badge_go')) + '</button></div></div>';
+    document.body.appendChild(layer);
+    var close = function() {
+      document.removeEventListener('keydown', onkey);
+      layer.remove();
+    };
+    var onkey = function(ev) {
+      if (ev.key === 'Escape') {
+        close();
+      }
+    };
+    document.addEventListener('keydown', onkey);
+    layer.querySelector('[data-close]').onclick = close;
+    layer.querySelector('[data-close]').focus();
+    if (T.fx) {
+      T.fx.drumroll(layer.querySelector('.badge-card'));
+      setTimeout(function() {
+        T.fx.sound('win');
+        T.fx.sound('applause');
+        T.fx.confetti();
+        T.fx.sparkles();
+      }, 1250);
+    }
   }
 
   function remember() {
@@ -465,6 +521,17 @@
     return open.length ? open[0] : m.chapters[m.chapters.length - 1];
   }
 
+  /**
+   * The stretch of road walked since the last look, drawing itself.
+   *
+   * @param {Object} fresh What T.mapNewRoad gave.
+   * @return {string}
+   */
+  function roadDrawing(fresh) {
+    return fresh.road ? fresh.road.replace('/>', ' style="animation-delay:' + (0.3 + fresh.delay) + 's,' +
+      (2.4 + fresh.delay) + 's"/>') : '';
+  }
+
   function missionMap(m) {
     var current = nextChapter(m);
     var pts = m.chapters.map(function(ch) {
@@ -492,7 +559,13 @@
         '<text x="' + ch.x + '" y="' + (ch.y + 44) + '" text-anchor="middle">' + esc(label) + '</text></g>';
     }).join('');
     var c = state.world.character;
-    var me = '<foreignObject x="' + (current.x - 74) + '" y="' + (current.y - 22) + '" width="44" height="44" class="me-marker">' +
+    var reached = Math.min(lastDone + 1, m.chapters.length - 1);
+    var fresh = T.mapNewRoad(cfg.courseid + '-' + cfg.userid + '-' + m.code, m.chapters, reached);
+    var step = T.mapWalk(cfg.courseid + '-' + cfg.userid + '-' + m.code, m.chapters, current);
+    var walk = step.from ? ' walking" style="--walk-x:' + (step.from.x - current.x) + 'px;--walk-y:' +
+      (step.from.y - current.y) + 'px;animation-delay:' + (0.3 + step.delay) + 's' : '';
+    var me = '<foreignObject x="' + (current.x - 74) + '" y="' + (current.y - 22) + '" width="44" height="44" class="me-marker' +
+      walk + '">' +
       '<div xmlns="http://www.w3.org/1999/xhtml" class="face">' + T.avatar({role: c.role, nameform: c.nameform,
       lineage: c.lineage, look: c.appearance, stage: c.stage, portrait: true}) + '</div></foreignObject>';
     // The painted map of the art pack, the bands of a long map in layers, or a drawing of the valley.
@@ -503,7 +576,8 @@
     return '<div class="map-wrap' + (height > 640 ? ' tall' : '') + '"><svg class="map" viewBox="0 0 400 ' + height +
       '" role="group" aria-label="' + esc(m.title) + '"><defs>' + T.MAPGLOW + '</defs>' + T.mapGround(m) +
       T.mapLandmarks(m) + T.mapNight(m) + '<polyline points="' + pts + '" class="road"/>' +
-      (walked ? '<polyline points="' + walked + '" class="road walked"/>' : '') + places + me + '</svg></div>';
+      (walked ? '<polyline points="' + walked + '" class="road walked"/>' : '') + roadDrawing(fresh) + places + me +
+      '</svg></div>';
   }
 
   function chapterPanel(m, ch, past) {

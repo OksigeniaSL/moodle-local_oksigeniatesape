@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.38.0 (2026-10-14)
+
+- **The road draws itself**: when a student comes back to the map after reaching a new place, the stretch walked since
+  the last look lights up and draws itself, with steps and a chime, and the character walks it to the new place. On the
+  class screen, the same with each place the class lights. Once on each device; with «less motion», nothing moves.
+- **The creature breathes**, and the hero too, a little, in the «Me» tab and over the page of the day.
+- **The moment of the badge**: when a student has the badge of the mission, the game celebrates it once on each device,
+  with the medal after a drum roll, applause, confetti and a link to their badges in Moodle.
+- **Soft music on the class screen**: a slow round of chords with bells over it, made by the browser as it plays (no
+  files), never on the devices of the students. A «♪ Music» button turns it on or off on that screen, remembered.
+
 ## 0.37.1 (2026-10-14)
 
 - **Light or dark at a touch in the panel**: a sun (to go to day) or a moon (back to night) at the top of the panel

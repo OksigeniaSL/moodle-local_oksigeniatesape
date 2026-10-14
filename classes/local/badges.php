@@ -192,4 +192,42 @@ final class badges {
             debugging('Tesapé could not give the badge of the mission: ' . $e->getMessage(), DEBUG_DEVELOPER);
         }
     }
+
+    /**
+     * The badge of the mission of a course for a student, when the teacher turned it on: whether they have it, to
+     * celebrate it in the game. Null without a badge on.
+     *
+     * @param int $courseid
+     * @param int $userid
+     * @return array|null name, issued, image and url.
+     */
+    public static function for_student(int $courseid, int $userid): ?array {
+        global $CFG;
+        if (!self::enabled()) {
+            return null;
+        }
+        try {
+            require_once($CFG->libdir . '/badgeslib.php');
+            $mission = missions::get($courseid);
+            $id = $mission ? self::find($courseid, $mission) : 0;
+            if (!$id) {
+                return null;
+            }
+            $badge = new \core_badges\badge($id);
+            if (!$badge->is_active()) {
+                return null;
+            }
+            $context = $badge->get_context()->id;
+            $image = \moodle_url::make_pluginfile_url($context, 'badges', 'badgeimage', $badge->id, '/', 'f3', false);
+            return [
+                'name' => self::name($mission),
+                'issued' => $badge->is_issued($userid),
+                'image' => $image->out(false),
+                'url' => (new \moodle_url('/badges/mybadges.php'))->out(false),
+            ];
+        } catch (\Throwable $e) {
+            debugging('Tesapé could not read the badge of the mission: ' . $e->getMessage(), DEBUG_DEVELOPER);
+            return null;
+        }
+    }
 }

@@ -19,6 +19,8 @@
   var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   // The teacher took the sound away from the devices of the class.
   var quiet = false;
+  // Only the class screen plays music.
+  var musicPage = false;
 
   function muted() {
     if (quiet) {
@@ -156,6 +158,15 @@
         noise(Math.random() * 1.6, 0.05, 0.05 + Math.random() * 0.05, 1800 + Math.random() * 1500, 1.5);
       }
     },
+    path: function() {
+      // Steps on the road, and the place lighting up at the end of it.
+      for (var i = 0; i < 5; i++) {
+        noise(0.3 + i * 0.3, 0.06, 0.08, 900, 2);
+      }
+      [523, 659, 784, 1047].forEach(function(freq, i) {
+        tone(freq, 1.8 + i * 0.12, 0.3, 'sine', 0.12);
+      });
+    },
     drumroll: function() {
       for (var t = 0; t < 1.1; t += 0.045) {
         noise(t, 0.05, 0.05 + t * 0.12, 220, 1);
@@ -222,6 +233,105 @@
     ambient = {kind: kind, source: source, gain: gain, timer: timer};
   }
 
+  /* ---------- Soft music, for the class screen ---------- */
+
+  /*
+   * A slow round of four chords, held softly, with a few bell notes of the same scale over them, never the same twice.
+   * It is made as it plays, a little ahead, and only on the class screen: on the devices of the students it would be
+   * a choir of different songs.
+   */
+  var MUSIC = 'tesape-music';
+  var CHORDS = [[220, 261.63, 329.63], [174.61, 220, 261.63], [261.63, 329.63, 392], [196, 246.94, 293.66]];
+  var BELLS = [440, 523.25, 587.33, 659.25, 783.99, 880];
+  var BAR = 4.8;
+  var music = null;
+
+  function pad(c, out, freq, at, length) {
+    [0, 3].forEach(function(cents) {
+      var osc = c.createOscillator();
+      var gain = c.createGain();
+      osc.type = 'triangle';
+      osc.frequency.value = freq;
+      osc.detune.value = cents;
+      gain.gain.setValueAtTime(0.0001, at);
+      gain.gain.exponentialRampToValueAtTime(0.03, at + 1.4);
+      gain.gain.setValueAtTime(0.03, at + length - 1.2);
+      gain.gain.exponentialRampToValueAtTime(0.0001, at + length + 0.6);
+      osc.connect(gain).connect(out);
+      osc.start(at);
+      osc.stop(at + length + 0.7);
+    });
+  }
+
+  function bell(c, out, freq, at) {
+    var osc = c.createOscillator();
+    var gain = c.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.0001, at);
+    gain.gain.exponentialRampToValueAtTime(0.035, at + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, at + 2.2);
+    osc.connect(gain).connect(out);
+    osc.start(at);
+    osc.stop(at + 2.3);
+  }
+
+  function startMusic() {
+    var c = audio();
+    if (!c || music) {
+      return;
+    }
+    var out = c.createGain();
+    var filter = c.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 1800;
+    out.gain.value = 0.0001;
+    out.gain.setTargetAtTime(1, c.currentTime, 1.5);
+    out.connect(filter).connect(master);
+    var step = 0;
+    var next = c.currentTime + 0.3;
+    var plan = function() {
+      while (next < c.currentTime + 2) {
+        CHORDS[step % CHORDS.length].forEach(function(freq) {
+          pad(c, out, freq, next, BAR);
+        });
+        for (var i = 0; i < 4; i++) {
+          if (Math.random() < 0.55) {
+            bell(c, out, BELLS[Math.floor(Math.random() * BELLS.length)], next + i * BAR / 4 + Math.random() * 0.3);
+          }
+        }
+        next += BAR;
+        step++;
+      }
+    };
+    plan();
+    music = {out: out, timer: setInterval(plan, 600)};
+  }
+
+  function stopMusic() {
+    if (music) {
+      clearInterval(music.timer);
+      try {
+        music.out.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.6);
+      } catch (e) {
+        // Already silent.
+      }
+      var out = music.out;
+      setTimeout(function() {
+        out.disconnect();
+      }, 3000);
+      music = null;
+    }
+  }
+
+  function musicWanted() {
+    try {
+      return window.localStorage.getItem(MUSIC) === 'on';
+    } catch (e) {
+      return false;
+    }
+  }
+
   /* ---------- What is seen ---------- */
 
   function layer() {
@@ -266,7 +376,7 @@
 
   T.fx = {
     /**
-     * A sound, by name: tap, choose, right, wrong, heart, lantern, levelup, hatch, hit, win, applause, drumroll.
+     * A sound, by name: tap, choose, right, wrong, heart, lantern, levelup, hatch, hit, win, applause, drumroll, path.
      *
      * @param {string} name
      */
@@ -321,6 +431,43 @@
     },
     muted: muted,
     /**
+     * The soft music of the class screen: whether it is on, remembered on the device.
+     *
+     * @return {boolean}
+     */
+    musicOn: function() {
+      return musicWanted() && !muted();
+    },
+    /**
+     * Music on or off on this device. It starts at once if the page may sound, or at the first touch.
+     *
+     * @return {boolean} Whether it is on now.
+     */
+    music: function() {
+      var on = !musicWanted();
+      try {
+        window.localStorage.setItem(MUSIC, on ? 'on' : 'off');
+      } catch (e) {
+        // Only for this page.
+      }
+      if (on && audio() === null && ctx) {
+        // The browser lets the page sound a moment after the touch.
+        ctx.resume().then(startMusic);
+      } else if (on) {
+        startMusic();
+      } else {
+        stopMusic();
+      }
+      return on;
+    },
+    /** This page plays the music the device remembers, if it was on, as soon as browsers let it sound. */
+    musicHere: function() {
+      musicPage = true;
+      if (musicWanted()) {
+        startMusic();
+      }
+    },
+    /**
      * No sound at all on this device, because the teacher said so for the class.
      *
      * @param {boolean} on
@@ -340,6 +487,7 @@
       }
       if (muted()) {
         stopAmbient();
+        stopMusic();
         if (ctx) {
           ctx.suspend();
         }
@@ -354,6 +502,13 @@
   document.addEventListener('pointerdown', function() {
     if (audio() && wanted && !ambient) {
       startAmbient(wanted);
+    }
+    if (musicPage && !music && musicWanted() && !muted()) {
+      audio();
+      if (ctx) {
+        // The browser lets the page sound a moment after the touch.
+        ctx.resume().then(startMusic);
+      }
     }
   }, {passive: true});
 })();
