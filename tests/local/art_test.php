@@ -113,4 +113,16 @@ final class art_test extends \advanced_testcase {
         }
         $this->assertNull(art::manifest());
     }
+
+    public function test_a_world_brings_its_theme(): void {
+        $this->resetAfterTest();
+        art::install($this->make_zip([
+            'code' => 'sea',
+            'name' => 'The sea',
+            'version' => 1,
+            'files' => ['map.livingthings' => 'map.webp'],
+            'theme' => ['base' => 'day', 'day' => ['lantern' => '#33aacc', 'sky' => 'url(x)']],
+        ], ['map.webp']));
+        $this->assertSame(['base' => 'day', 'day' => ['lantern' => '#33aacc']], art::manifest()['theme']);
+    }
 }

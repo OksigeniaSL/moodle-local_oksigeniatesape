@@ -1689,6 +1689,19 @@
       (!r.allowstealth && can('siteconfig') ? ' <a href="' + esc(cfg.wwwroot +
       '/admin/settings.php?section=local_oksigeniatesape') + '">' + esc(t('teach_set_stealth_admin')) + '</a>' : '') +
       '</small>';
+    // The theme of the class: the one of the world, or the other one of the plugin (night or day).
+    var looks = [''].concat(['night', 'day'].filter(function(l) {
+      return l !== r.worldlook;
+    })).concat(r.look && r.look === r.worldlook ? [r.look] : []);
+    var lookCard = '<h3>' + esc(t('teach_look')) + '</h3><p style="color:var(--text-soft)">' + esc(t('teach_look_help')) +
+      '</p><div class="cover-options">' + looks.map(function(look) {
+        var shown = look || r.worldlook;
+        return '<label class="cover-option"><input type="radio" name="look" value="' + look + '"' +
+          (r.look === look ? ' checked' : '') + (editable ? '' : ' disabled') + '><span class="look-sketch look-' + shown +
+          '" aria-hidden="true"><i></i><b></b><b></b></span><span class="cover-text"><b>' + esc(look ? t('teach_look_' + look) :
+          t('teach_look_world_' + shown)) + '</b><small>' + esc(t('teach_look_' + shown + '_help')) +
+          '</small></span></label>';
+      }).join('') + '</div>';
     var coverCard = '<h3>' + esc(t('teach_cover')) + '</h3><p style="color:var(--text-soft)">' + esc(t('teach_cover_help')) +
       '</p><div class="cover-options">' + covers + '</div>' + inside + '<p><a href="' +
       esc(cfg.wwwroot + '/course/view.php?id=' + cfg.courseid) + '">' + esc(t('teach_cover_see')) + '</a></p>';
@@ -1715,7 +1728,7 @@
       'type="checkbox" name="leaderboard"' + (r.leaderboard ? ' checked' : '') + (editable ? '' : ' disabled') + '> ' +
       esc(t('teach_set_leaderboard')) + '</label><label class="chip" style="display:inline-flex;gap:8px;align-items:center;' +
       'margin:4px 0 14px"><input type="checkbox" name="quiet"' + (r.quiet ? ' checked' : '') + (editable ? '' : ' disabled') +
-      '> ' + esc(t('teach_set_quiet')) + '</label><h3>' + esc(t('teach_set_nicknames')) + '</h3>' + nick + coverCard +
+      '> ' + esc(t('teach_set_quiet')) + '</label><h3>' + esc(t('teach_set_nicknames')) + '</h3>' + nick + lookCard + coverCard +
       badgeCard + gradesCard +
       (editable ? '<div class="actions" style="justify-content:flex-start;margin-top:14px"><button class="btn btn-main" ' +
       'type="submit">' + esc(t('app_save')) + '</button></div>' : '') + '</form></section>');
@@ -1729,6 +1742,7 @@
       ev.preventDefault();
       var picked = f.querySelector('[name="nicknames"]:checked');
       var cover = f.querySelector('[name="portal"]:checked');
+      var look = f.querySelector('[name="look"]:checked');
       T.api('save_region', {
         courseid: cfg.courseid,
         enabled: f.enabled.checked,
@@ -1744,8 +1758,10 @@
         timezone: f.timezone.value,
         portal: cover ? cover.value : 'door',
         hideacts: f.hideacts.checked,
-        gradebook: f.gradebook.checked
-      }).then(function() {
+        gradebook: f.gradebook.checked,
+        look: look ? look.value : ''
+      }).then(function(region) {
+        T.theme(region.look || region.worldlook);
         T.toast(esc(t('app_saved')));
         state.tab = 'class';
         load(true);

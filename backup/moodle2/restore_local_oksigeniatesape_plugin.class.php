@@ -84,6 +84,7 @@ class restore_local_oksigeniatesape_plugin extends restore_local_plugin {
             'hideacts' => (int) ($data->hideacts ?? 0),
             'gradebook' => (int) ($data->gradebook ?? 0),
             'quiet' => (int) ($data->quiet ?? 0),
+            'look' => in_array($data->look ?? '', \local_oksigeniatesape\local\themes::LOOKS, true) ? $data->look : '',
             'timemodified' => $now,
         ];
         $existing = $DB->get_field(self::T . 'region', 'id', ['courseid' => $courseid]);

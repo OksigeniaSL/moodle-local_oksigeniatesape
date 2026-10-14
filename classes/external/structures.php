@@ -422,6 +422,8 @@ final class structures {
             'badgeon' => new external_value(PARAM_BOOL, 'The teacher turned the badge on', VALUE_DEFAULT, false),
             'gradebook' => new external_value(PARAM_BOOL, 'The ratings go to the gradebook', VALUE_DEFAULT, false),
             'quiet' => new external_value(PARAM_BOOL, 'No sound on the devices of the students', VALUE_DEFAULT, false),
+            'look' => new external_value(PARAM_ALPHA, 'Theme of the class (empty: the one of the world)', VALUE_DEFAULT, ''),
+            'worldlook' => new external_value(PARAM_ALPHA, 'Theme of the world', VALUE_DEFAULT, 'night'),
         ]);
     }
 

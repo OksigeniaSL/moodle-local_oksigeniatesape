@@ -69,6 +69,7 @@ final class save_region extends external_api {
             'hideacts' => new external_value(PARAM_BOOL, 'Activities only inside the valley', VALUE_DEFAULT, null, NULL_ALLOWED),
             'gradebook' => new external_value(PARAM_BOOL, 'Ratings to the gradebook', VALUE_DEFAULT, null, NULL_ALLOWED),
             'quiet' => new external_value(PARAM_BOOL, 'No sound on the devices of the students', VALUE_DEFAULT, null, NULL_ALLOWED),
+            'look' => new external_value(PARAM_ALPHA, 'Theme of the class (empty: the world)', VALUE_DEFAULT, null, NULL_ALLOWED),
         ]);
     }
 
@@ -90,6 +91,7 @@ final class save_region extends external_api {
      * @param bool|null $hideacts
      * @param bool|null $gradebook
      * @param bool|null $quiet
+     * @param string|null $look
      * @return array
      */
     public static function execute(
@@ -107,7 +109,8 @@ final class save_region extends external_api {
         ?string $portal = null,
         ?bool $hideacts = null,
         ?bool $gradebook = null,
-        ?bool $quiet = null
+        ?bool $quiet = null,
+        ?string $look = null
     ): array {
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
@@ -125,6 +128,7 @@ final class save_region extends external_api {
             'hideacts' => $hideacts,
             'gradebook' => $gradebook,
             'quiet' => $quiet,
+            'look' => $look,
         ]);
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);

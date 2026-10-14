@@ -44,6 +44,24 @@
   };
 
   /**
+   * The theme of the page, night or day, or changes it. The page comes with the one of the class.
+   *
+   * @param {string} [name]
+   * @return {string}
+   */
+  T.theme = function(name) {
+    var root = document.documentElement;
+    if (name === 'night' || name === 'day') {
+      root.dataset.theme = name;
+      var bar = document.querySelector('meta[name="theme-color"]');
+      if (bar) {
+        bar.content = getComputedStyle(root).getPropertyValue('--night').trim() || bar.content;
+      }
+    }
+    return root.dataset.theme || 'night';
+  };
+
+  /**
    * Calls a web service of the plugin.
    *
    * @param {string} name Without the component prefix.

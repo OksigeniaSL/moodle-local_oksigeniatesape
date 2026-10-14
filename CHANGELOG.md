@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.37.0 (2026-10-14)
+
+- **Themes**: the night of the valley, as until now, and the **day**, light, easier to read on a projector and in
+  bright classrooms. The teacher chooses it for the whole class in the settings of the panel («Theme of the class»):
+  the game, the panel and the class screen. On the class screen a button switches it for that screen only, remembered
+  on the device. It goes in the backups of the course.
+- **A world brings its colours**: an art pack may say which theme is its own (night or day) and bring its colours over
+  either of them, only colours, checked one by one. The valley stays at night.
+- **The draft by the AI has its own permission** (`local/oksigeniatesape:aidraft`, editing teachers and managers), apart
+  from the plan of the next class: a site can keep one and not the other. The button shows only to who has it.
+
+## 0.36.3 (2026-10-14)
+
+- **The licences of a mission, with a link to read them**, in the mission tab of the panel and on the page of the
+  missions of the site. The sample mission is under CC BY-SA 4.0 or GNU GPL v3, to choose from
+  (`missions/livingthings/LICENSE.md`); the missions of a teacher are of their author.
+
 ## 0.36.2 (2026-10-14)
 
 - **A way out of the game, always at hand**: a button at the top of the game, beside the sound, goes back to the

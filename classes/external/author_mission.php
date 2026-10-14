@@ -86,6 +86,7 @@ final class author_mission extends external_api {
             return ['json' => json_encode(authoring::preview($courseid, $code, clean_param($params['value'], PARAM_ALPHANUMEXT)))];
         }
         if ($params['action'] === 'propose') {
+            require_capability('local/oksigeniatesape:aidraft', $context);
             // The value: the code of the scene, a line break and what the teacher wants to happen in it.
             [$scene, $ask] = array_pad(explode("\n", $params['value'], 2), 2, '');
             $proposal = authoring::propose($courseid, $code, clean_param($scene, PARAM_ALPHANUMEXT), $ask, (int) $USER->id);
@@ -149,8 +150,12 @@ final class author_mission extends external_api {
                 $speakers[] = ['code' => $speaker, 'name' => missions::text($name, authoring::WORLD)];
             }
             $current = missions::get($courseid);
+            // The draft by the AI has its own permission: the button shows only to who has it.
+            $ai = \local_oksigeniatesape\local\nextclass::status($courseid, (int) $USER->id);
+            $context = \context_course::instance($courseid);
+            $ai['canuse'] = !empty($ai['canuse']) && has_capability('local/oksigeniatesape:aidraft', $context);
             return ['code' => $code, 'version' => (int) $record->version, 'draft' => $record->data,
-                'ai' => \local_oksigeniatesape\local\nextclass::status($courseid, (int) $USER->id),
+                'ai' => $ai,
                 'problems' => $problems, 'speakers' => $speakers, 'current' => $current && $current->code === $code,
                 'limits' => ['minplaces' => authoring::MIN_PLACES, 'maxplaces' => authoring::MAX_PLACES,
                     'maxobjectives' => authoring::MAX_OBJECTIVES, 'maxmoments' => authoring::MAX_MOMENTS,

@@ -96,6 +96,24 @@ final class authoring_test extends \advanced_testcase {
         authoring::propose($course->id, $own->code, $draft['scenes'][0]['code'], 'Una escena', (int) $teacher->id);
     }
 
+    public function test_the_draft_by_the_ai_has_its_own_permission(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $course = $this->getDataGenerator()->create_course();
+        $teacher = $this->getDataGenerator()->create_and_enrol($course, 'editingteacher');
+        $context = \context_course::instance($course->id);
+        // A site that keeps the plan of the next class and not the drafts takes this permission away.
+        $role = $DB->get_field('role', 'id', ['shortname' => 'editingteacher']);
+        assign_capability('local/oksigeniatesape:aidraft', CAP_PROHIBIT, $role, $context->id);
+        $this->setUser($teacher);
+        $own = authoring::create($course->id, 'Las fracciones');
+        $info = \local_oksigeniatesape\external\author_mission::execute($course->id, 'get', $own->code);
+        $info = json_decode($info['json'], true);
+        $this->assertFalse($info['ai']['canuse']);
+        $this->expectException(\required_capability_exception::class);
+        \local_oksigeniatesape\external\author_mission::execute($course->id, 'propose', $own->code, "scene\nUna escena");
+    }
+
     public function test_more_than_six_places_go_on_a_map_in_layers(): void {
         $this->resetAfterTest();
         $course = $this->getDataGenerator()->create_course();

@@ -69,6 +69,12 @@ final class page {
             'strings' => $strings,
             'art' => art::manifest(),
         ];
+        // The theme of the class, chosen by the teacher or else the one of the world; the board may switch it.
+        $region = regions::get((int) $course->id);
+        $look = (string) ($region->look ?? '');
+        $theme = themes::current($look, $config['art']);
+        $config['theme'] = ['current' => $theme, 'world' => themes::current('', $config['art'])];
+        $worldcolours = themes::style($config['art']);
         $json = json_encode($config, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE);
         $version = (int) get_config('local_oksigeniatesape', 'version');
         $base = $CFG->wwwroot . '/local/oksigeniatesape/app/';
@@ -80,11 +86,11 @@ final class page {
         @header('Content-Type: text/html; charset=utf-8');
         @header('X-Frame-Options: SAMEORIGIN');
         echo '<!DOCTYPE html>
-<html lang="' . s($config['lang']) . '">
+<html lang="' . s($config['lang']) . '" data-theme="' . $theme . '">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0f2131">
+<meta name="theme-color" content="' . themes::bar($theme, $config['art']) . '">
 <meta name="robots" content="noindex">
 <title>' . s($config['coursename']) . ' · Tesapé</title>
 <link rel="icon" href="' . $base . 'favicon.ico" sizes="16x16 32x32 48x48">
@@ -92,7 +98,7 @@ final class page {
 <link rel="apple-touch-icon" href="' . $base . 'apple-touch-icon.png">
 <link rel="preload" href="' . $base . 'fonts/lexend-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="' . $base . 'tesape.css?v=' . $version . '">
-</head>
+' . ($worldcolours ? '<style>' . $worldcolours . '</style>' . "\n" : '') . '</head>
 <body class="tesape">
 <div id="app" aria-live="polite"><noscript>' . $title . '</noscript></div>
 <script>window.TESAPE_CONFIG = ' . $json . ';</script>

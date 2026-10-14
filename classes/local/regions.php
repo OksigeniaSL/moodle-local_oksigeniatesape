@@ -77,7 +77,8 @@ final class regions {
      * @param int $courseid
      * @param array $settings Any of enabled, family, groupingid, weeklycap, dailymanualcap, dailyenergylosscap,
      *     leaderboard, nicknames, timezone (99: the one of the site), rules (an array), portal (the cover of the course
-     *     page) and hideacts (the activities of the mission only inside the valley).
+     *     page), hideacts (the activities of the mission only inside the valley), quiet (no sound on the devices of the
+     *     students) and look (the theme of the class: night, day, or empty for the one of the world).
      * @param int|null $now
      * @return \stdClass
      */
@@ -116,6 +117,12 @@ final class regions {
         }
         if (array_key_exists('nicknames', $settings)) {
             $region->nicknames = max(0, min(2, (int) $settings['nicknames']));
+        }
+        if (array_key_exists('look', $settings)) {
+            if (!in_array($settings['look'], themes::LOOKS, true)) {
+                throw new \invalid_parameter_exception('Unknown theme: ' . $settings['look']);
+            }
+            $region->look = $settings['look'];
         }
         if (array_key_exists('portal', $settings)) {
             if (!in_array($settings['portal'], portal::MODES, true)) {

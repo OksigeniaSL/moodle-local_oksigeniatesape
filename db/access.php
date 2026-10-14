@@ -49,6 +49,16 @@ $capabilities = [
             'manager' => CAP_ALLOW,
         ],
     ],
+    // Ask the AI of the site for a draft of a scene of a mission of the teacher. Apart from the plan of the next class,
+    // so that a site can keep one and not the other.
+    'local/oksigeniatesape:aidraft' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => [
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
+        ],
+    ],
     // Give saber, gems or items by hand.
     'local/oksigeniatesape:award' => [
         'captype' => 'write',

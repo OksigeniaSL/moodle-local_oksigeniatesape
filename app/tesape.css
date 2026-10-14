@@ -40,29 +40,97 @@
 }
 
 :root {
+  --r: 16px;
+  --r-s: 10px;
+  --f-title: "Cherry Swash", Georgia, serif;
+  --f-text: "Lexend", Verdana, system-ui, sans-serif;
+  --tap: 48px;
+}
+
+/*
+ * The colours. The night of the valley is the theme by default; data-theme on the page changes it (day: light, for the
+ * board and for bright classrooms), and a world may bring its own colours over either of them. Each colour used with
+ * transparency has its red, green and blue apart (--hi is the tint of what is lighter than the background).
+ */
+:root,
+[data-theme="night"] {
   --night: #0f2131;
   --night-2: #16304a;
+  --night-mid: #10283b;
+  --deep: #0c1c29;
   --mist: #1d3b52;
   --mist-2: #26506b;
+  --card-a: rgba(38, 80, 107, .55);
+  --card-b: rgba(29, 59, 82, .55);
   --parchment: #f3ead4;
   --parchment-2: #e6d8b6;
   --ink: #2a2219;
   --ink-soft: #5d4f3c;
   --lantern: #ffc857;
   --lantern-deep: #e9a92b;
+  --lantern-light: #ffd77a;
+  --on-lantern: #2b1d05;
+  --accent: #ffc857;
   --leaf: #7cc67f;
   --ember: #ef7d5c;
   --lilac: #b9a6ff;
   --sky: #8fd3ff;
   --text: #eef3f6;
   --text-soft: #a9bdcb;
+  --leaf-text: #b9f0bb;
+  --lantern-text: #ffe2a0;
+  --ember-text: #ffc4b2;
+  --lilac-text: #e1d8ff;
+  --danger-text: #ff9a8b;
   --line: rgba(255, 255, 255, .12);
   --shadow: 0 10px 30px rgba(0, 0, 0, .35);
-  --r: 16px;
-  --r-s: 10px;
-  --f-title: "Cherry Swash", Georgia, serif;
-  --f-text: "Lexend", Verdana, system-ui, sans-serif;
-  --tap: 48px;
+  --hi: 255, 255, 255;
+  --night-rgb: 15, 33, 49;
+  --deep-rgb: 10, 24, 36;
+  --lantern-rgb: 255, 200, 87;
+  --leaf-rgb: 124, 198, 127;
+  --ember-rgb: 239, 125, 92;
+  --lilac-rgb: 185, 166, 255;
+}
+
+[data-theme="day"] {
+  --night: #eef4f8;
+  --night-2: #ffffff;
+  --night-mid: #e7eff5;
+  --deep: #dbe6ee;
+  --mist: #ffffff;
+  --mist-2: #d6e4ee;
+  --card-a: rgba(255, 255, 255, .94);
+  --card-b: rgba(247, 250, 252, .94);
+  --lantern: #f5b83d;
+  --lantern-deep: #dc961c;
+  --lantern-light: #ffd77a;
+  --on-lantern: #2b1d05;
+  --accent: #8a5200;
+  --leaf: #3f9e4a;
+  --ember: #e0613f;
+  --lilac: #8a72e8;
+  --sky: #2f8fcf;
+  --text: #13283a;
+  --text-soft: #4a5e6e;
+  --leaf-text: #1d6928;
+  --lantern-text: #774900;
+  --ember-text: #a6381d;
+  --lilac-text: #4d389f;
+  --danger-text: #b3261e;
+  --line: rgba(19, 40, 58, .16);
+  --shadow: 0 8px 22px rgba(19, 40, 58, .12);
+  --hi: 19, 40, 58;
+  --night-rgb: 248, 251, 253;
+  --deep-rgb: 232, 240, 245;
+  --lantern-rgb: 245, 184, 61;
+  --leaf-rgb: 63, 158, 74;
+  --ember-rgb: 224, 97, 63;
+  --lilac-rgb: 138, 114, 232;
+}
+
+[data-theme="day"] .sky {
+  display: none;
 }
 
 *,
@@ -78,7 +146,7 @@ body {
 }
 
 html {
-  background: #0c1c29;
+  background: var(--deep);
 }
 
 body.tesape {
@@ -87,9 +155,9 @@ body.tesape {
   line-height: 1.45;
   color: var(--text);
   background:
-    radial-gradient(1200px 700px at 80% -10%, rgba(255, 200, 87, .14), transparent 60%),
-    radial-gradient(900px 600px at -10% 110%, rgba(124, 198, 127, .10), transparent 60%),
-    linear-gradient(180deg, var(--night) 0%, #10283b 55%, #0c1c29 100%);
+    radial-gradient(1200px 700px at 80% -10%, rgba(var(--lantern-rgb), .14), transparent 60%),
+    radial-gradient(900px 600px at -10% 110%, rgba(var(--leaf-rgb), .10), transparent 60%),
+    linear-gradient(180deg, var(--night) 0%, var(--night-mid) 55%, var(--deep) 100%);
   background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
@@ -122,7 +190,7 @@ body.tesape {
 }
 
 .tesape a {
-  color: var(--lantern);
+  color: var(--accent);
 }
 
 /* Without weight, so that the colours of the buttons win. */
@@ -132,7 +200,7 @@ body.tesape {
 }
 
 .tesape :focus-visible {
-  outline: 3px solid var(--lantern);
+  outline: 3px solid var(--accent);
   outline-offset: 3px;
 }
 
@@ -190,22 +258,22 @@ body.tesape {
 }
 
 .btn-main {
-  background: linear-gradient(180deg, #ffd77a, var(--lantern) 55%, var(--lantern-deep));
-  color: #2b1d05;
-  box-shadow: 0 6px 18px rgba(255, 200, 87, .35), inset 0 -2px 0 rgba(0, 0, 0, .15);
+  background: linear-gradient(180deg, var(--lantern-light), var(--lantern) 55%, var(--lantern-deep));
+  color: var(--on-lantern);
+  box-shadow: 0 6px 18px rgba(var(--lantern-rgb), .35), inset 0 -2px 0 rgba(0, 0, 0, .15);
 }
 
 .btn-main:hover {
-  box-shadow: 0 8px 26px rgba(255, 200, 87, .5), inset 0 -2px 0 rgba(0, 0, 0, .15);
+  box-shadow: 0 8px 26px rgba(var(--lantern-rgb), .5), inset 0 -2px 0 rgba(0, 0, 0, .15);
 }
 
 .btn-soft {
-  background: rgba(255, 255, 255, .08);
+  background: rgba(var(--hi), .08);
   border: 1px solid var(--line);
 }
 
 .btn-soft:hover {
-  background: rgba(255, 255, 255, .14);
+  background: rgba(var(--hi), .14);
 }
 
 .btn[disabled] {
@@ -215,7 +283,7 @@ body.tesape {
 
 /* Cards. */
 .card {
-  background: linear-gradient(180deg, rgba(38, 80, 107, .55), rgba(29, 59, 82, .55));
+  background: linear-gradient(180deg, var(--card-a), var(--card-b));
   border: 1px solid var(--line);
   border-radius: var(--r);
   box-shadow: var(--shadow);
@@ -292,7 +360,7 @@ body.tesape {
   width: 28px;
   height: 6px;
   border-radius: 3px;
-  background: rgba(255, 255, 255, .18);
+  background: rgba(var(--hi), .18);
 }
 
 .steps span.on {
@@ -316,20 +384,20 @@ body.tesape {
   padding: 14px 12px 16px;
   border-radius: var(--r);
   border: 2px solid var(--line);
-  background: rgba(255, 255, 255, .05);
+  background: rgba(var(--hi), .05);
   cursor: pointer;
   transition: transform .15s ease, border-color .15s ease, background .15s ease;
 }
 
 .choice:hover {
   transform: translateY(-3px);
-  background: rgba(255, 255, 255, .09);
+  background: rgba(var(--hi), .09);
 }
 
 .choice[aria-pressed="true"] {
-  border-color: var(--lantern);
-  background: rgba(255, 200, 87, .12);
-  box-shadow: 0 0 0 4px rgba(255, 200, 87, .15);
+  border-color: var(--accent);
+  background: rgba(var(--lantern-rgb), .12);
+  box-shadow: 0 0 0 4px rgba(var(--lantern-rgb), .15);
 }
 
 .choice .avatar {
@@ -359,13 +427,13 @@ body.tesape {
   padding: .5em 1.1em;
   border-radius: 999px;
   border: 2px solid var(--line);
-  background: rgba(255, 255, 255, .05);
+  background: rgba(var(--hi), .05);
   cursor: pointer;
 }
 
 .pill[aria-pressed="true"] {
-  border-color: var(--lantern);
-  background: rgba(255, 200, 87, .14);
+  border-color: var(--accent);
+  background: rgba(var(--lantern-rgb), .14);
 }
 
 /* The look builder. */
@@ -420,7 +488,7 @@ body.tesape {
 }
 
 .swatch[aria-pressed="true"] {
-  border-color: var(--lantern);
+  border-color: var(--accent);
   transform: scale(1.08);
 }
 
@@ -429,14 +497,14 @@ body.tesape {
   padding: .3em .9em;
   border-radius: 999px;
   border: 2px solid var(--line);
-  background: rgba(255, 255, 255, .05);
+  background: rgba(var(--hi), .05);
   cursor: pointer;
   font-size: 15px;
 }
 
 .chip[aria-pressed="true"] {
-  border-color: var(--lantern);
-  background: rgba(255, 200, 87, .14);
+  border-color: var(--accent);
+  background: rgba(var(--lantern-rgb), .14);
 }
 
 @media (max-width: 640px) {
@@ -474,7 +542,7 @@ body.tesape {
   position: absolute;
   inset: -40px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 200, 87, .45), transparent 65%);
+  background: radial-gradient(circle, rgba(var(--lantern-rgb), .45), transparent 65%);
   animation: glow 2.4s ease-in-out infinite;
 }
 
@@ -499,7 +567,7 @@ body.tesape {
   align-items: center;
   gap: 12px;
   padding: 10px 14px;
-  background: linear-gradient(180deg, rgba(15, 33, 49, .96), rgba(15, 33, 49, .82));
+  background: linear-gradient(180deg, rgba(var(--night-rgb), .96), rgba(var(--night-rgb), .82));
   border-bottom: 1px solid var(--line);
   backdrop-filter: blur(8px);
 }
@@ -523,7 +591,7 @@ body.tesape {
   border-radius: 50%;
   overflow: hidden;
   background: radial-gradient(circle at 50% 35%, var(--mist-2), var(--night-2));
-  border: 2px solid var(--lantern);
+  border: 2px solid var(--accent);
   flex: none;
 }
 
@@ -573,7 +641,7 @@ body.tesape {
   width: 46px;
   height: 46px;
   border-radius: 50%;
-  background: conic-gradient(var(--lantern) calc(var(--p) * 1%), rgba(255, 255, 255, .12) 0);
+  background: conic-gradient(var(--lantern) calc(var(--p) * 1%), rgba(var(--hi), .12) 0);
   display: grid;
   place-items: center;
   flex: none;
@@ -605,7 +673,7 @@ body.tesape {
   gap: 5px;
   padding: 4px 10px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, .07);
+  background: rgba(var(--hi), .07);
   border: 1px solid var(--line);
   font-weight: 600;
   font-size: 15px;
@@ -632,7 +700,7 @@ body.tesape {
   display: flex;
   justify-content: space-around;
   padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
-  background: linear-gradient(0deg, rgba(10, 24, 36, .98), rgba(15, 33, 49, .92));
+  background: linear-gradient(0deg, rgba(var(--deep-rgb), .98), rgba(var(--night-rgb), .92));
   border-top: 1px solid var(--line);
   backdrop-filter: blur(8px);
 }
@@ -660,8 +728,8 @@ body.tesape {
 }
 
 .tabs button[aria-current="page"] {
-  color: var(--lantern);
-  background: rgba(255, 200, 87, .08);
+  color: var(--accent);
+  background: rgba(var(--lantern-rgb), .08);
 }
 
 @media (min-width: 900px) {
@@ -724,13 +792,13 @@ body.tesape {
 }
 
 .banner.rest {
-  background: rgba(185, 166, 255, .14);
-  border-color: rgba(185, 166, 255, .4);
+  background: rgba(var(--lilac-rgb), .14);
+  border-color: rgba(var(--lilac-rgb), .4);
 }
 
 .banner.fallen {
-  background: rgba(239, 125, 92, .14);
-  border-color: rgba(239, 125, 92, .45);
+  background: rgba(var(--ember-rgb), .14);
+  border-color: rgba(var(--ember-rgb), .45);
 }
 
 .banner b {
@@ -762,7 +830,7 @@ body.tesape {
 }
 
 .region .kicker {
-  color: var(--lantern);
+  color: var(--accent);
   font-size: 13px;
   text-transform: uppercase;
   letter-spacing: .08em;
@@ -795,7 +863,7 @@ body.tesape {
   align-items: center;
   padding: 12px 14px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, .05);
+  background: rgba(var(--hi), .05);
   border: 1px solid var(--line);
 }
 
@@ -879,30 +947,30 @@ body.tesape {
 }
 
 .tag.done {
-  background: rgba(124, 198, 127, .2);
-  color: #b9f0bb;
+  background: rgba(var(--leaf-rgb), .2);
+  color: var(--leaf-text);
 }
 
 .tag.merit {
-  background: rgba(255, 200, 87, .22);
-  color: #ffe2a0;
+  background: rgba(var(--lantern-rgb), .22);
+  color: var(--lantern-text);
 }
 
 .tag.notyet {
-  background: rgba(239, 125, 92, .2);
-  color: #ffc4b2;
+  background: rgba(var(--ember-rgb), .2);
+  color: var(--ember-text);
 }
 
 .tag.todo {
-  background: rgba(255, 255, 255, .1);
+  background: rgba(var(--hi), .1);
   color: var(--text-soft);
 }
 
 .note {
   margin-top: 8px;
   padding: 8px 12px;
-  border-left: 3px solid var(--lantern);
-  background: rgba(255, 200, 87, .08);
+  border-left: 3px solid var(--accent);
+  background: rgba(var(--lantern-rgb), .08);
   border-radius: 0 8px 8px 0;
   font-size: 15px;
 }
@@ -916,7 +984,7 @@ body.tesape {
 .meter {
   height: 8px;
   border-radius: 4px;
-  background: rgba(255, 255, 255, .12);
+  background: rgba(var(--hi), .12);
   overflow: hidden;
 }
 
@@ -944,11 +1012,11 @@ body.tesape {
 }
 
 .amount.up {
-  color: #b9f0bb;
+  color: var(--leaf-text);
 }
 
 .amount.down {
-  color: #ffc4b2;
+  color: var(--ember-text);
 }
 
 .amount.off {
@@ -1042,8 +1110,8 @@ body.tesape {
 .toast {
   padding: 12px 16px;
   border-radius: 12px;
-  background: rgba(15, 33, 49, .96);
-  border: 1px solid var(--lantern);
+  background: rgba(var(--night-rgb), .96);
+  border: 1px solid var(--accent);
   box-shadow: var(--shadow);
   animation: rise .3s ease both;
 }
@@ -1064,7 +1132,7 @@ body.tesape {
   height: 64px;
   margin: 0 auto 12px;
   border-radius: 50%;
-  background: radial-gradient(circle, var(--lantern), rgba(255, 200, 87, 0) 70%);
+  background: radial-gradient(circle, var(--lantern), rgba(var(--lantern-rgb), 0) 70%);
   animation: glow 1.6s ease-in-out infinite;
 }
 
@@ -1154,7 +1222,7 @@ body.tesape {
   padding: 8px 12px;
   border-radius: var(--r-s);
   border: 1px solid var(--line);
-  background: rgba(10, 24, 36, .7);
+  background: rgba(var(--deep-rgb), .7);
   color: var(--text);
   font: inherit;
 }
@@ -1166,7 +1234,7 @@ body.tesape {
 
 .tesape input[type="checkbox"],
 .tesape input[type="radio"] {
-  accent-color: var(--lantern);
+  accent-color: var(--accent);
   width: 20px;
   height: 20px;
 }
@@ -1184,12 +1252,12 @@ body.tesape {
 }
 
 .tesape .rights a {
-  color: var(--lantern);
+  color: var(--accent);
 }
 
 /* The mission: header, map and the panel of a place. */
 .kicker {
-  color: var(--lantern);
+  color: var(--accent);
   font-size: 13px;
   text-transform: uppercase;
   letter-spacing: .08em;
@@ -1218,7 +1286,7 @@ body.tesape {
   gap: 4px;
   padding: 4px 10px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, .07);
+  background: rgba(var(--hi), .07);
   border: 1px solid var(--line);
   font-weight: 600;
   white-space: nowrap;
@@ -1270,7 +1338,7 @@ body.tesape {
 }
 
 .map .road.walked {
-  stroke: rgba(255, 200, 87, .7);
+  stroke: rgba(var(--lantern-rgb), .7);
 }
 
 .map .place {
@@ -1290,7 +1358,7 @@ body.tesape {
 
 .map .place.mine .flame {
   fill: var(--lantern);
-  filter: drop-shadow(0 0 6px rgba(255, 200, 87, .9));
+  filter: drop-shadow(0 0 6px rgba(var(--lantern-rgb), .9));
 }
 
 .map .place.mine .ring {
@@ -1298,7 +1366,7 @@ body.tesape {
 }
 
 .map .place .classglow {
-  fill: rgba(255, 200, 87, .18);
+  fill: rgba(var(--lantern-rgb), .18);
 }
 
 .map .place.selected .ring {
@@ -1310,8 +1378,9 @@ body.tesape {
   animation: pulse 2s ease-in-out infinite;
 }
 
+/* The names on the map are over its painting: light in every theme. */
 .map .place text {
-  fill: var(--text);
+  fill: #eef3f6;
   font-family: var(--f-text);
   font-size: 15px;
   font-weight: 600;
@@ -1330,7 +1399,7 @@ body.tesape {
   height: 44px;
   border-radius: 50%;
   overflow: hidden;
-  border: 2px solid var(--lantern);
+  border: 2px solid var(--accent);
   background: radial-gradient(circle at 50% 35%, var(--mist-2), var(--night-2));
 }
 
@@ -1396,8 +1465,8 @@ body.in-scene {
   z-index: 30;
   overflow-y: auto;
   background:
-    radial-gradient(900px 500px at 50% -10%, rgba(255, 200, 87, .12), transparent 60%),
-    linear-gradient(180deg, #0f2131, #0c1c29);
+    radial-gradient(900px 500px at 50% -10%, rgba(var(--lantern-rgb), .12), transparent 60%),
+    linear-gradient(180deg, var(--night), var(--deep));
   animation: rise .25s ease both;
 }
 
@@ -1416,13 +1485,13 @@ body.in-scene {
   justify-content: space-between;
   gap: 10px;
   padding: 8px 0 10px;
-  background: linear-gradient(180deg, #0f2131 70%, rgba(15, 33, 49, 0));
+  background: linear-gradient(180deg, var(--night) 70%, rgba(var(--night-rgb), 0));
 }
 
 .scene-title {
   font-family: var(--f-title);
   font-size: 20px;
-  color: var(--lantern);
+  color: var(--accent);
 }
 
 .scene-close {
@@ -1463,8 +1532,8 @@ body.in-scene {
   margin: -44px 0 0 10px;
   border-radius: 50%;
   object-fit: cover;
-  background: #16304a;
-  border: 3px solid var(--lantern);
+  background: var(--night-2);
+  border: 3px solid var(--accent);
   box-shadow: var(--shadow);
 }
 
@@ -1479,8 +1548,8 @@ body.in-scene {
   margin-bottom: 6px;
   padding: 2px 12px;
   border-radius: 999px;
-  background: rgba(185, 166, 255, .18);
-  color: #e1d8ff;
+  background: rgba(var(--lilac-rgb), .18);
+  color: var(--lilac-text);
   font-weight: 600;
   font-size: 15px;
 }
@@ -1508,7 +1577,7 @@ body.in-scene {
   padding: 12px 14px;
   border-radius: 14px;
   border: 2px solid var(--line);
-  background: rgba(255, 255, 255, .06);
+  background: rgba(var(--hi), .06);
   text-align: left;
   cursor: pointer;
   font-size: 17px;
@@ -1517,12 +1586,12 @@ body.in-scene {
 
 .opt:hover:not([disabled]),
 .bin:hover:not([disabled]) {
-  background: rgba(255, 255, 255, .11);
+  background: rgba(var(--hi), .11);
 }
 
 .opt.sel {
-  border-color: var(--lantern);
-  background: rgba(255, 200, 87, .14);
+  border-color: var(--accent);
+  background: rgba(var(--lantern-rgb), .14);
 }
 
 .opt.locked {
@@ -1551,7 +1620,7 @@ body.in-scene {
   padding: 12px 14px;
   border-radius: 14px;
   border-left: 5px solid;
-  background: rgba(255, 255, 255, .06);
+  background: rgba(var(--hi), .06);
   animation: rise .25s ease both;
 }
 
@@ -1583,7 +1652,7 @@ body.in-scene {
   flex: 1;
   height: 6px;
   border-radius: 3px;
-  background: rgba(255, 255, 255, .15);
+  background: rgba(var(--hi), .15);
 }
 
 .progress i.ok {
@@ -1621,7 +1690,7 @@ body.in-scene {
   margin-bottom: 6px;
   padding: 8px 12px;
   border-radius: 10px;
-  background: rgba(124, 198, 127, .14);
+  background: rgba(var(--leaf-rgb), .14);
 }
 
 .shake {
@@ -1713,8 +1782,8 @@ body.in-scene {
   display: grid;
   place-items: center;
   border-radius: 10px;
-  background: rgba(255, 255, 255, .06);
-  color: var(--lantern);
+  background: rgba(var(--hi), .06);
+  color: var(--accent);
 }
 
 .mini-icon svg,
@@ -1734,7 +1803,7 @@ body.in-scene {
 }
 
 .item.mine {
-  border-color: var(--lantern);
+  border-color: var(--accent);
 }
 
 .item.fresh {
@@ -1783,8 +1852,8 @@ body.in-scene {
   margin-top: 8px;
   padding: 10px 12px;
   border-radius: var(--r-s);
-  background: rgba(185, 166, 255, .1);
-  border: 1px solid rgba(185, 166, 255, .35);
+  background: rgba(var(--lilac-rgb), .1);
+  border: 1px solid rgba(var(--lilac-rgb), .35);
 }
 
 .power-ask p {
@@ -1859,8 +1928,8 @@ body.in-scene {
 }
 
 .icon-btn[aria-current="page"] {
-  border-color: var(--lantern);
-  color: var(--lantern);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .badge {
@@ -1952,13 +2021,13 @@ body.in-scene {
 .nest-legend li {
   padding: 8px 12px;
   border-radius: var(--r-s);
-  background: rgba(255, 255, 255, .05);
+  background: rgba(var(--hi), .05);
   border: 1px solid var(--line);
 }
 
 .nest-legend b {
   display: block;
-  color: var(--lantern);
+  color: var(--accent);
 }
 
 .nest-legend span {
@@ -2048,8 +2117,8 @@ body.in-scene {
 }
 
 .critter.aimed {
-  border-color: var(--lantern);
-  box-shadow: 0 0 0 4px rgba(255, 200, 87, .35);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(var(--lantern-rgb), .35);
 }
 
 .critter.caught {
@@ -2109,12 +2178,12 @@ body.in-scene {
 }
 
 .nest-say.good {
-  background: rgba(124, 198, 127, .92);
+  background: rgba(var(--leaf-rgb), .92);
   color: #10251a;
 }
 
 .nest-say.bad {
-  background: rgba(239, 125, 92, .94);
+  background: rgba(var(--ember-rgb), .94);
   color: #2a1209;
 }
 
@@ -2414,18 +2483,18 @@ a.chip {
   padding: 12px 16px;
   border-radius: var(--r-s);
   border: 2px solid var(--line);
-  background: rgba(255, 255, 255, .05);
+  background: rgba(var(--hi), .05);
   font-size: 1.15em;
 }
 
 .board-event .options b {
   font-family: var(--f-title);
-  color: var(--lantern);
+  color: var(--accent);
 }
 
 .board-event .options li.right {
   border-color: var(--leaf);
-  background: rgba(124, 198, 127, .18);
+  background: rgba(var(--leaf-rgb), .18);
 }
 
 .board-event .why {
@@ -2499,8 +2568,8 @@ a.chip {
 }
 
 .board-student.on {
-  border-color: var(--lantern);
-  background: rgba(255, 200, 87, .12);
+  border-color: var(--accent);
+  background: rgba(var(--lantern-rgb), .12);
 }
 
 .board-student.resting {
@@ -2518,7 +2587,7 @@ a.chip {
   align-items: center;
   justify-content: center;
   padding: 14px 20px;
-  background: rgba(15, 33, 49, .96);
+  background: rgba(var(--night-rgb), .96);
   border-top: 1px solid var(--line);
   box-shadow: var(--shadow);
 }
@@ -2615,7 +2684,7 @@ a.chip {
 }
 
 .battle-qround {
-  color: var(--lantern);
+  color: var(--accent);
   font-weight: 600;
   margin: 0;
 }
@@ -2642,19 +2711,19 @@ a.chip {
   padding: 18px 20px;
   border-radius: var(--r);
   border: 2px solid var(--line);
-  background: rgba(255, 255, 255, .06);
+  background: rgba(var(--hi), .06);
   font-size: 1.35em;
 }
 
 .battle-board-options b {
   font-family: var(--f-title);
-  color: var(--lantern);
+  color: var(--accent);
   font-size: 1.2em;
 }
 
 .battle-board-options li.right {
   border-color: var(--leaf);
-  background: rgba(124, 198, 127, .2);
+  background: rgba(var(--leaf-rgb), .2);
 }
 
 .battle-board .why {
@@ -2670,7 +2739,7 @@ a.chip {
 
 .battle-left {
   font-family: var(--f-title);
-  color: var(--lantern);
+  color: var(--accent);
   margin-left: 12px;
 }
 
@@ -2688,7 +2757,7 @@ a.chip {
   padding: 10px 14px;
   border-radius: var(--r-s);
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, .05);
+  background: rgba(var(--hi), .05);
 }
 
 .battle-team small {
@@ -2703,7 +2772,7 @@ a.chip {
 }
 
 .battle-end.won h2 {
-  color: var(--lantern);
+  color: var(--accent);
 }
 
 /* The battle on the phone of a student. */
@@ -2719,7 +2788,7 @@ a.chip {
   padding: 12px 14px;
   border-radius: var(--r);
   border: 2px solid var(--lilac);
-  background: rgba(15, 33, 49, .97);
+  background: rgba(var(--night-rgb), .97);
   box-shadow: var(--shadow);
 }
 
@@ -2791,7 +2860,7 @@ body.in-battle {
   padding: 12px 16px;
   border-radius: var(--r);
   border: 2px solid var(--line);
-  background: rgba(255, 255, 255, .07);
+  background: rgba(var(--hi), .07);
   color: var(--text);
   font-size: 18px;
   text-align: left;
@@ -2801,7 +2870,7 @@ body.in-battle {
 .battle-option b {
   font-family: var(--f-title);
   font-size: 24px;
-  color: var(--lantern);
+  color: var(--accent);
 }
 
 .battle-option:disabled {
@@ -2810,14 +2879,14 @@ body.in-battle {
 }
 
 .battle-option.mine {
-  border-color: var(--lantern);
-  background: rgba(255, 200, 87, .14);
+  border-color: var(--accent);
+  background: rgba(var(--lantern-rgb), .14);
   opacity: 1;
 }
 
 .battle-option.right {
   border-color: var(--leaf);
-  background: rgba(124, 198, 127, .22);
+  background: rgba(var(--leaf-rgb), .22);
   opacity: 1;
 }
 
@@ -3105,8 +3174,8 @@ body.in-battle {
 }
 
 .opt.voted {
-  border-color: var(--lantern);
-  box-shadow: 0 0 0 3px rgba(255, 200, 87, .25);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(var(--lantern-rgb), .25);
 }
 
 .class-vote {
@@ -3148,7 +3217,7 @@ body.in-battle {
   padding: 8px 12px;
   border-radius: var(--r-s);
   border: 2px dashed var(--lilac);
-  background: rgba(185, 166, 255, .1);
+  background: rgba(var(--lilac-rgb), .1);
 }
 
 .battle-token {
@@ -3175,7 +3244,7 @@ body.in-battle {
   overflow: auto;
   padding: 10px 12px;
   border-radius: var(--r-s);
-  background: rgba(255, 255, 255, .05);
+  background: rgba(var(--hi), .05);
   font-size: .92em;
 }
 
@@ -3202,8 +3271,8 @@ body.in-battle {
   margin: 0;
   padding: 10px 12px;
   border-radius: var(--r-s);
-  background: rgba(255, 200, 87, .1);
-  border: 1px dashed var(--lantern);
+  background: rgba(var(--lantern-rgb), .1);
+  border: 1px dashed var(--accent);
 }
 
 .scene-hints .hint svg {
@@ -3225,12 +3294,12 @@ body.in-battle {
 
 .battle-counter {
   margin: 8px 0 0;
-  color: #ff9a8b;
+  color: var(--danger-text);
   font-weight: 600;
 }
 
 .battle-counter.shield {
-  color: var(--lantern);
+  color: var(--accent);
 }
 
 .battle-ending {
@@ -3256,8 +3325,8 @@ body.in-battle {
 }
 
 .pact-opt[aria-pressed="true"] {
-  border-color: var(--lantern);
-  background: rgba(255, 200, 87, .14);
+  border-color: var(--accent);
+  background: rgba(var(--lantern-rgb), .14);
 }
 
 .pact-team {
@@ -3317,18 +3386,18 @@ body.in-battle {
 @keyframes tesape-glow {
   0%,
   100% {
-    filter: drop-shadow(0 0 4px rgba(255, 200, 87, .45));
+    filter: drop-shadow(0 0 4px rgba(var(--lantern-rgb), .45));
   }
 
   50% {
-    filter: drop-shadow(0 0 14px rgba(255, 200, 87, .95));
+    filter: drop-shadow(0 0 14px rgba(var(--lantern-rgb), .95));
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .glow .creature {
     animation: none;
-    filter: drop-shadow(0 0 10px rgba(255, 200, 87, .8));
+    filter: drop-shadow(0 0 10px rgba(var(--lantern-rgb), .8));
   }
 }
 
@@ -3443,7 +3512,7 @@ body.in-battle {
 .banner-lantern svg {
   width: 20px;
   height: 20px;
-  color: var(--lantern);
+  color: var(--accent);
   vertical-align: -3px;
 }
 
@@ -3460,7 +3529,7 @@ body.in-battle {
   padding: 12px;
   border-radius: 12px;
   border: 2px solid var(--line);
-  background: rgba(255, 255, 255, .05);
+  background: rgba(var(--hi), .05);
 }
 
 .album-card img {
@@ -3473,12 +3542,12 @@ body.in-battle {
 }
 
 .album-card.golden img {
-  box-shadow: 0 0 0 2px var(--lantern), 0 0 14px rgba(255, 200, 87, .45);
+  box-shadow: 0 0 0 2px var(--lantern), 0 0 14px rgba(var(--lantern-rgb), .45);
 }
 
 .album-card.golden {
-  border-color: var(--lantern);
-  background: linear-gradient(135deg, rgba(255, 200, 87, .25), rgba(255, 200, 87, .05));
+  border-color: var(--accent);
+  background: linear-gradient(135deg, rgba(var(--lantern-rgb), .25), rgba(var(--lantern-rgb), .05));
 }
 
 .album-card small {
@@ -3487,7 +3556,7 @@ body.in-battle {
 }
 
 .album-card small.mine {
-  color: var(--lantern);
+  color: var(--accent);
 }
 
 /* ---------- The cover of the course page, in the settings ---------- */
@@ -3509,8 +3578,8 @@ body.in-battle {
 }
 
 .cover-option:has(input:checked) {
-  border-color: var(--lantern);
-  background: rgba(255, 200, 87, .1);
+  border-color: var(--accent);
+  background: rgba(var(--lantern-rgb), .1);
 }
 
 .cover-option input {
@@ -3521,6 +3590,59 @@ body.in-battle {
 .cover-option small {
   display: block;
   color: var(--text-soft);
+}
+
+/* A small drawing of each theme of the class: a card with its title (i) and two lines of text (b). */
+.look-sketch {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  height: 84px;
+  padding: 10px 14px;
+  border-radius: 8px;
+}
+
+.look-sketch i {
+  display: block;
+  width: 45%;
+  height: 12px;
+  border-radius: 4px;
+}
+
+.look-sketch b {
+  display: block;
+  height: 7px;
+  border-radius: 3px;
+}
+
+.look-sketch b + b {
+  width: 70%;
+}
+
+.look-night {
+  background: radial-gradient(1.5px 1.5px at 80% 20%, #fff, transparent), linear-gradient(180deg, #0f2131, #10283b);
+}
+
+.look-night i {
+  background: #ffc857;
+}
+
+.look-night b {
+  background: #a9bdcb;
+}
+
+.look-day {
+  background: linear-gradient(180deg, #ffffff, #e7eff5);
+  box-shadow: inset 0 0 0 1px rgba(19, 40, 58, .16);
+}
+
+.look-day i {
+  background: #8a5200;
+}
+
+.look-day b {
+  background: #4a5e6e;
 }
 
 /* A small drawing of the course page: the cover (i) and the rows of the course (b). */
@@ -3598,7 +3720,7 @@ body.in-battle {
 }
 
 .comp-grid td.rated select {
-  border-color: var(--lantern);
+  border-color: var(--accent);
 }
 
 /* ---------- The workshop: the teacher changes the mission ---------- */
@@ -3627,7 +3749,7 @@ body.in-battle {
   border: 1px solid var(--line);
   border-radius: var(--r-s);
   padding: 10px 14px;
-  background: rgba(255, 255, 255, .03);
+  background: rgba(var(--hi), .03);
 }
 
 .tesape .ws-scene > summary b {
@@ -3683,7 +3805,7 @@ body.in-battle {
 .tesape .ws-link {
   border: 0;
   background: none;
-  color: var(--lantern);
+  color: var(--accent);
   padding: 0;
   margin-left: 6px;
   font: inherit;
@@ -3772,7 +3894,7 @@ body.in-battle {
 
 .fx-sparkle {
   font-size: 22px;
-  color: var(--lantern);
+  color: var(--accent);
 }
 
 @keyframes fx-rise {
@@ -3794,7 +3916,7 @@ body.in-battle {
 
 .hud .sound {
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, .06);
+  background: rgba(var(--hi), .06);
   color: var(--text);
   border-radius: 999px;
   width: 40px;
@@ -3823,7 +3945,7 @@ body.in-battle {
 .hud .exit > summary {
   list-style: none;
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, .06);
+  background: rgba(var(--hi), .06);
   color: var(--text);
   border-radius: 999px;
   width: 40px;
@@ -3862,5 +3984,5 @@ body.in-battle {
 
 .hud .exit-menu a:hover,
 .hud .exit-menu a:focus {
-  background: rgba(255, 255, 255, .08);
+  background: rgba(var(--hi), .08);
 }

@@ -92,6 +92,7 @@ final class art {
             'name' => clean_param((string) ($info['name'] ?? $code), PARAM_TEXT),
             'version' => max(1, (int) ($info['version'] ?? 1)),
             'files' => $files,
+            'theme' => themes::clean($info['theme'] ?? null),
         ];
         $fs->create_file_from_string([
             'contextid' => $context->id,
@@ -139,7 +140,8 @@ final class art {
                 basename($path)
             )->out(false);
         }
-        return ['code' => $code, 'name' => $info['name'], 'version' => (int) $info['version'], 'files' => $files];
+        return ['code' => $code, 'name' => $info['name'], 'version' => (int) $info['version'], 'files' => $files,
+            'theme' => themes::clean($info['theme'] ?? null)];
     }
 
     /**

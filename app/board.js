@@ -254,8 +254,9 @@
     }).join('');
     app.innerHTML = '<div class="board battle-board"><header class="board-top">' + T.emblem() + '<div><b>' + esc(cfg.coursename) + '</b><small>' +
       esc(t(l.final ? 'board_battle_final' : 'board_battle')) + (l.phase > 1 && !l.outcome ? ' · ' +
-      esc(t('board_battle_phase')) : '') + '</small></div><div class="board-tools"><button class="btn btn-soft" data-full>' +
-      esc(t('board_fullscreen')) + '</button></div></header><div class="battle-stage"><div class="battle-boss' +
+      esc(t('board_battle_phase')) : '') + '</small></div><div class="board-tools">' + lightButton() +
+      '<button class="btn btn-soft" data-full>' + esc(t('board_fullscreen')) + '</button></div></header>' +
+      '<div class="battle-stage"><div class="battle-boss' +
       (l.revealed && (l.right || 0) > 0 ? ' hit' : '') + '">' + T.embrollo(life) + '<span class="meter boss"><i style="width:' +
       Math.round(100 * life) + '%"></i></span><small>' + esc(t('board_battle_life')) + (l.maxhp ? ': ' + l.hp + ' / ' +
       l.maxhp : '') + '</small></div><div class="battle-main">' + main + '<div class="actions">' + buttons + '</div></div></div>' +
@@ -274,6 +275,7 @@
       });
     };
     on('[data-full]', fullscreen);
+    on('[data-light]', switchLight);
     on('[data-battlenext]', function() {
       host('next', {round: l.round});
     });
@@ -301,6 +303,39 @@
         host('reveal', {round: l.round});
       }, 900);
     }
+  }
+
+  /* The light of this screen: each classroom and each projector is different, so it changes here only and the
+   * device remembers it; back to the theme of the class, it forgets it. */
+  var LIGHT = 'tesape-board-theme';
+  try {
+    var stored = window.localStorage.getItem(LIGHT);
+    if (stored) {
+      T.theme(stored);
+    }
+  } catch (e) {
+    // Without storage, the theme of the class.
+  }
+
+  function lightButton() {
+    var day = T.theme() === 'day';
+    return '<button class="btn btn-soft" type="button" data-light title="' + esc(t('board_light_help')) + '">' +
+      (day ? '☾ ' : '☀ ') + esc(t(day ? 'board_dark' : 'board_light')) + '</button>';
+  }
+
+  function switchLight() {
+    var next = T.theme() === 'day' ? 'night' : 'day';
+    T.theme(next);
+    try {
+      if (cfg.theme && next === cfg.theme.current) {
+        window.localStorage.removeItem(LIGHT);
+      } else {
+        window.localStorage.setItem(LIGHT, next);
+      }
+    } catch (e) {
+      // Only for this page.
+    }
+    render();
   }
 
   function fullscreen() {
@@ -736,7 +771,7 @@
       '<div class="board-tools">' + (pending && can('approvepowers') ? '<a class="btn btn-soft" href="' +
       esc(cfg.wwwroot + '/local/oksigeniatesape/teach.php?id=' + cfg.courseid) + '">' + esc(t('board_powers', pending)) +
       '</a>' : '') + '<a class="btn btn-soft" href="' + esc(cfg.wwwroot + '/local/oksigeniatesape/teach.php?id=' +
-      cfg.courseid) + '">' + esc(t('board_panel')) + '</a><button class="btn btn-soft" data-full>' +
+      cfg.courseid) + '">' + esc(t('board_panel')) + '</a>' + lightButton() + '<button class="btn btn-soft" data-full>' +
       esc(t('board_fullscreen')) + '</button></div></header>' +
       '<div class="board-grid">' + map() + '<div class="board-side">' + todayCard() + openerCard() + eventCard() + battleCard() +
       sceneCard() + teams() + printCard() + '</div></div>' + bar() + '</div>';
@@ -752,6 +787,7 @@
       });
     };
     on('[data-full]', fullscreen);
+    on('[data-light]', switchLight);
     on('[data-openerhide]', function() {
       state.openerhidden = true;
       render();
