@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.38.2 (2026-10-14)
+
+- **The plan of the next class speaks to the class with «ustedes»**, as all the products of Oksigenia: the AI is told
+  so for what is said to the whole class, like the question to open it.
+
 ## 0.38.1 (2026-10-14)
 
 - **A music for each world** on the class screen: the valley (as in 0.38.0), the sea (slower, with the swell of the

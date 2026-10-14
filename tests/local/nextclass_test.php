@@ -75,6 +75,8 @@ final class nextclass_test extends \advanced_testcase {
         // The editorial line goes to the AI too.
         $this->assertStringContainsString('never climate change', $prompt);
         $this->assertStringContainsString('never framed by their sex', $prompt);
+        // And the brand: the whole class, with «ustedes».
+        $this->assertStringContainsString('«ustedes» and never «vosotros»', $prompt);
     }
 
     public function test_nothing_to_go_on_before_anybody_plays(): void {

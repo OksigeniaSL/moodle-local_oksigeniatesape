@@ -284,8 +284,10 @@ final class nextclass {
             'or institutional agendas (no 2030 Agenda, no sustainable development goals); the environment as concrete ' .
             'ecosystems and what people do in them, never climate change or global warming; people appear for what they ' .
             'did, never framed by their sex (no «girls in science», no international days); standard ' .
-            "{$language} with the generic masculine; speak to the teacher informally (in Spanish, «tú»); never the " .
-            'Spanish verb «coger» in any form; no names of students; short sentences.';
+            "{$language} with the generic masculine; speak to the teacher informally (in Spanish, «tú»); what is said " .
+            'to the whole class, like the question to open it, in Spanish with «ustedes» and never «vosotros» (no ' .
+            '«encontráis» or «sabríais»: «encuentran», «sabrían»); never the Spanish verb «coger» in any form; no ' .
+            'names of students; short sentences.';
         $lines[] = '';
         $lines[] = 'Answer only with JSON, without Markdown, with exactly this shape:';
         $lines[] = '{"summary": "one sentence: what confuses the class most", "review": [{"point": "...", "how": "..."}], ' .
