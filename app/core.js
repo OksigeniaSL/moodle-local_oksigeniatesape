@@ -61,6 +61,56 @@
     return root.dataset.theme || 'night';
   };
 
+  /*
+   * The light of a screen of the teacher (the panel and the class screen): each classroom and each projector is
+   * different, so it changes on this device only and the device remembers it; back to the theme of the class, it
+   * forgets it. The students follow the theme of the class.
+   */
+  var LIGHT = 'tesape-screen-theme';
+  T.light = {
+    /** The theme this device remembers, over the one of the class. */
+    restore: function() {
+      try {
+        var stored = window.localStorage.getItem(LIGHT);
+        if (stored) {
+          T.theme(stored);
+        }
+      } catch (e) {
+        // Without storage, the theme of the class.
+      }
+    },
+    /** From night to day or back, on this device. */
+    toggle: function() {
+      var next = T.theme() === 'day' ? 'night' : 'day';
+      T.theme(next);
+      try {
+        if (T.cfg.theme && next === T.cfg.theme.current) {
+          window.localStorage.removeItem(LIGHT);
+        } else {
+          window.localStorage.setItem(LIGHT, next);
+        }
+      } catch (e) {
+        // Only for this page.
+      }
+    },
+    /**
+     * The class has a new theme: the device follows it again.
+     *
+     * @param {string} theme
+     */
+    follow: function(theme) {
+      if (T.cfg.theme) {
+        T.cfg.theme.current = theme;
+      }
+      try {
+        window.localStorage.removeItem(LIGHT);
+      } catch (e) {
+        // Nothing remembered.
+      }
+      T.theme(theme);
+    }
+  };
+
   /**
    * Calls a web service of the plugin.
    *
@@ -654,9 +704,16 @@
         '<circle cx="18" cy="13.5" r="1.2" fill="#0f2131"/>',
       activity: '<rect x="4" y="3" width="16" height="18" rx="2" fill="currentColor"/><path d="M8 8h8M8 12h8M8 16h5" ' +
         'stroke="#0f2131" stroke-width="1.6"/>',
-      settings: '<circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 ' +
-        '19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1" stroke="currentColor" ' +
-        'stroke-width="2" stroke-linecap="round"/>'
+      settings: '<path d="M19.3 9.8L21.9 10.3V13.7L19.3 14.2L18.7 15.5L20.2 17.8L17.8 20.2L15.5 18.7L14.2 19.3L13.7 ' +
+        '21.9H10.3L9.8 19.3L8.5 18.7L6.2 20.2L3.8 17.8L5.3 15.5L4.7 14.2L2.1 13.7V10.3L4.7 9.8L5.3 8.5L3.8 6.2L6.2 3.8L8.5 ' +
+        '5.3L9.8 4.7L10.3 2.1H13.7L14.2 4.7L15.5 5.3L17.8 3.8L20.2 6.2L18.7 8.5Z" fill="none" stroke="currentColor" ' +
+        'stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" ' +
+        'stroke-width="1.8"/>',
+      sun: '<circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v2.5M12 ' +
+        '19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" ' +
+        'stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+      moon: '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z" fill="none" stroke="currentColor" ' +
+        'stroke-width="2" stroke-linejoin="round"/>'
     }[name] || '';
     return '<svg viewBox="0 0 24 24" aria-hidden="true">' + p + '</svg>';
   };

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.37.1 (2026-10-14)
+
+- **Light or dark at a touch in the panel**: a sun (to go to day) or a moon (back to night) at the top of the panel
+  changes this device only, like the button of the class screen; both remember it on the device. The settings button
+  is now a gear: its old drawing looked like a sun.
+- **The theme of the class is saved as soon as it is chosen** in the settings, and seen at once, without the button
+  at the end of the form; the device then follows the class again.
+
 ## 0.37.0 (2026-10-14)
 
 - **Themes**: the night of the valley, as until now, and the **day**, light, easier to read on a projector and in

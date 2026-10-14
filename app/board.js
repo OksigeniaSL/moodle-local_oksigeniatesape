@@ -305,17 +305,7 @@
     }
   }
 
-  /* The light of this screen: each classroom and each projector is different, so it changes here only and the
-   * device remembers it; back to the theme of the class, it forgets it. */
-  var LIGHT = 'tesape-board-theme';
-  try {
-    var stored = window.localStorage.getItem(LIGHT);
-    if (stored) {
-      T.theme(stored);
-    }
-  } catch (e) {
-    // Without storage, the theme of the class.
-  }
+  T.light.restore();
 
   function lightButton() {
     var day = T.theme() === 'day';
@@ -324,17 +314,7 @@
   }
 
   function switchLight() {
-    var next = T.theme() === 'day' ? 'night' : 'day';
-    T.theme(next);
-    try {
-      if (cfg.theme && next === cfg.theme.current) {
-        window.localStorage.removeItem(LIGHT);
-      } else {
-        window.localStorage.setItem(LIGHT, next);
-      }
-    } catch (e) {
-      // Only for this page.
-    }
+    T.light.toggle();
     render();
   }
 

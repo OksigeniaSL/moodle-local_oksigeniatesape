@@ -124,6 +124,32 @@
 
   var TABS = ['class', 'powers', 'mission', 'competencies', 'challenges', 'log'];
 
+  // The light this device remembers for the screens of the teacher.
+  T.light.restore();
+
+  /**
+   * The switch of light of the panel: the sun to go to day, the moon to go back to night, on this device only.
+   *
+   * @return {string}
+   */
+  function lightButton() {
+    var day = T.theme() === 'day';
+    return '<button class="btn btn-soft icon-btn" type="button" data-light aria-label="' + esc(t(day ? 'teach_dark' :
+      'teach_light')) + '" title="' + esc(t(day ? 'teach_dark' : 'teach_light')) + '">' + T.icon(day ? 'moon' : 'sun') +
+      '</button>';
+  }
+
+  function bindLight() {
+    var b = app.querySelector('[data-light]');
+    if (b) {
+      b.onclick = function() {
+        T.light.toggle();
+        b.outerHTML = lightButton();
+        bindLight();
+      };
+    }
+  }
+
   function render() {
     var d = state.data;
     if (!d.region.enabled && state.tab !== 'settings') {
@@ -140,7 +166,8 @@
       (can('runclassscreen') ? '<a class="btn btn-soft icon-btn" href="' +
       esc(cfg.wwwroot + '/local/oksigeniatesape/board.php?id=' + cfg.courseid) + '" aria-label="' + esc(t('teach_board')) +
       '" title="' + esc(t('teach_board')) + '">' + T.icon('world') + '</a>' : '') +
-      '<button class="btn btn-soft icon-btn" type="button" data-tab="settings" aria-label="' + esc(t('teach_tab_settings')) +
+      lightButton() + '<button class="btn btn-soft icon-btn" type="button" data-tab="settings" aria-label="' +
+      esc(t('teach_tab_settings')) + '" title="' + esc(t('teach_tab_settings')) +
       '"' + (state.tab === 'settings' ? ' aria-current="page"' : '') + '>' + T.icon('settings') + '</button><a class="btn ' +
       'btn-soft exit" href="' + esc(cfg.courseurl) + '" aria-label="' + esc(t('app_exit')) + '">' + T.icon('exit') +
       '<span>' + esc(t('app_exit')) + '</span></a></div></header><nav class="tabs" ' +
@@ -152,6 +179,7 @@
             log: 'log'}[tab]) + badge +
           '<span>' + esc(t('teach_tab_' + tab)) + '</span></button>';
       }).join('') + '</nav><main class="content" id="content"></main></div>';
+    bindLight();
     app.querySelectorAll('[data-tab]').forEach(function(b) {
       b.onclick = function() {
         state.tab = b.dataset.tab;
@@ -1737,6 +1765,23 @@
       family = f;
     });
     bindMakeTeams(el);
+    // The theme of the class is saved and seen as soon as it is chosen.
+    el.querySelectorAll('[name="look"]').forEach(function(input) {
+      input.onchange = function() {
+        T.api('save_region', {courseid: cfg.courseid, look: input.value}).then(function(region) {
+          r.look = region.look;
+          T.light.follow(region.look || region.worldlook);
+          var b = app.querySelector('[data-light]');
+          if (b) {
+            b.outerHTML = lightButton();
+            bindLight();
+          }
+          T.toast(esc(t('app_saved')));
+        }).catch(function(e) {
+          T.toast(esc(e.message), true);
+        });
+      };
+    });
     var f = el.querySelector('form');
     f.onsubmit = function(ev) {
       ev.preventDefault();
@@ -1761,7 +1806,7 @@
         gradebook: f.gradebook.checked,
         look: look ? look.value : ''
       }).then(function(region) {
-        T.theme(region.look || region.worldlook);
+        T.light.follow(region.look || region.worldlook);
         T.toast(esc(t('app_saved')));
         state.tab = 'class';
         load(true);
