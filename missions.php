@@ -58,7 +58,13 @@ foreach (missions::packages() as $code => $mission) {
         s(missions::text($mission['title'] ?? $code, $skin)),
         s($code),
         (int) ($mission['version'] ?? 1),
-        get_string('missions_licence_' . $licence, 'local_oksigeniatesape'),
+        implode(' · ', array_filter([
+            get_string('missions_licence_' . $licence, 'local_oksigeniatesape'),
+            implode(' ' . get_string('teach_mission_or', 'local_oksigeniatesape') . ' ', array_map(
+                fn($r) => $r['url'] ? html_writer::link($r['url'], s($r['name'])) : s($r['name']),
+                missions::rights($mission)
+            )),
+        ])),
         get_string('missions_origin_' . missions::package_origin($code), 'local_oksigeniatesape'),
         $change ? s(get_string(
             'missions_kind_' . clean_param($change['kind'] ?? 'improvement', PARAM_ALPHA),

@@ -1006,7 +1006,8 @@
       });
       html = '<section class="card"><div class="kicker">' + esc(t('teach_mission_installed')) + '</div><h2>' +
         esc(m.installed.title) + '</h2>' + (pkg ? '<p style="color:var(--text-soft)">' + esc(pkg.subtitle) + ' · ' +
-        esc(t('teach_mission_ages', pkg.ages)) + '</p>' + (can('manageregion') ? packageForm(pkg, m.installed) : '') : '') +
+        esc(t('teach_mission_ages', pkg.ages)) + '</p>' + rights(pkg) + (can('manageregion') ? packageForm(pkg, m.installed) :
+        '') : '') +
         '</section>' + workshopCard(m.installed) + authorCard() + reportCard() + nextClass() + games() + results() +
         expeditionsCard(m.expeditions) +
         (others.length && can('manageregion') ? '<section class="card" style="margin-top:16px"><h2>' +
@@ -1138,7 +1139,24 @@
     return '<section class="card" style="margin-top:16px"><div class="kicker">' + esc(t('teach_mission_ages', p.ages)) +
       '</div><h2>' + esc(p.title) + '</h2><p>' + esc(p.subtitle) + '</p><p style="color:var(--text-soft)">' +
       esc(t('teach_mission_size', p.chapters + ' · ' + p.scenes)) + (p.lang !== cfg.lang.slice(0, 2) ? ' · ' +
-      esc(t('teach_mission_lang', p.lang)) : '') + '</p>' + (can('manageregion') ? packageForm(p, null) : '') + '</section>';
+      esc(t('teach_mission_lang', p.lang)) : '') + '</p>' + rights(p) + (can('manageregion') ? packageForm(p, null) : '') +
+      '</section>';
+  }
+
+  /**
+   * The licences of a mission, to choose from, with a link to read each one.
+   *
+   * @param {Object} p A package.
+   * @return {string}
+   */
+  function rights(p) {
+    if (!p.rights || !p.rights.length) {
+      return '';
+    }
+    var list = p.rights.map(function(r) {
+      return r.url ? '<a href="' + esc(r.url) + '" target="_blank" rel="noopener">' + esc(r.name) + '</a>' : esc(r.name);
+    }).join(' ' + esc(t('teach_mission_or')) + ' ');
+    return '<p class="rights">' + esc(t('teach_mission_rights')).split('{$a}').join(list) + '</p>';
   }
 
   /**

@@ -1177,6 +1177,16 @@ body.tesape {
   cursor: default;
 }
 
+/* The licences of a mission, in the panel of the teacher. */
+.tesape .rights {
+  color: var(--text-soft);
+  font-size: 14px;
+}
+
+.tesape .rights a {
+  color: var(--lantern);
+}
+
 /* The mission: header, map and the panel of a place. */
 .kicker {
   color: var(--lantern);

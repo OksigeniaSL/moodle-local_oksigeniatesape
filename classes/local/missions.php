@@ -60,6 +60,32 @@ final class missions {
         return (string) (self::index()[$code]['origin'] ?? '');
     }
 
+    /** @var array The licences a mission can have, by their SPDX code: how they are named and where they are read. */
+    private const RIGHTS = [
+        'CC-BY-4.0' => ['CC BY 4.0', 'https://creativecommons.org/licenses/by/4.0/'],
+        'CC-BY-SA-4.0' => ['CC BY-SA 4.0', 'https://creativecommons.org/licenses/by-sa/4.0/'],
+        'CC-BY-NC-SA-4.0' => ['CC BY-NC-SA 4.0', 'https://creativecommons.org/licenses/by-nc-sa/4.0/'],
+        'GPL-3.0-or-later' => ['GNU GPL v3', 'https://www.gnu.org/licenses/gpl-3.0.html'],
+    ];
+
+    /**
+     * The licences of a mission, to choose from (its field rights, in SPDX: «CC-BY-SA-4.0 OR GPL-3.0-or-later»).
+     *
+     * @param array $mission The mission.json.
+     * @return array Of ['name' => ..., 'url' => ...]; the url is empty for a licence it does not know.
+     */
+    public static function rights(array $mission): array {
+        $list = [];
+        foreach (preg_split('/\s+OR\s+/', trim((string) ($mission['rights'] ?? ''))) as $code) {
+            $code = clean_param(trim($code, " ()"), PARAM_TEXT);
+            if ($code !== '') {
+                [$name, $url] = self::RIGHTS[$code] ?? [$code, ''];
+                $list[] = ['name' => $name, 'url' => $url];
+            }
+        }
+        return $list;
+    }
+
     /**
      * The scenes of a package.
      *

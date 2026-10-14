@@ -91,6 +91,10 @@ final class get_missions extends external_api {
                     'code' => new external_value(PARAM_ALPHANUMEXT, 'Code'),
                     'name' => new external_value(PARAM_TEXT, 'Name'),
                 ])),
+                'rights' => new external_multiple_structure(new external_single_structure([
+                    'name' => new external_value(PARAM_TEXT, 'Name of the licence'),
+                    'url' => new external_value(PARAM_URL, 'Where the licence is read, if known'),
+                ]), 'The licences of the mission, to choose from', VALUE_DEFAULT, []),
             ])),
             'expeditions' => structures::expeditions(),
         ]);
@@ -124,6 +128,7 @@ final class get_missions extends external_api {
                     array_keys($package['variants'] ?? []),
                     $package['variants'] ?? []
                 ),
+                'rights' => missions::rights($package),
             ];
         }
         $mission = missions::get($courseid);
