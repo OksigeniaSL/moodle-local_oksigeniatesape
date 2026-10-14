@@ -120,7 +120,8 @@ final class externals_test extends \advanced_testcase {
         $this->call('set_status', $w->teacher, [$w->course->id, $w->leo->id, 'pause', 'Needs a break']);
         $world = $this->call('get_world', $w->ana, [$w->course->id]);
         $leo = array_values(array_filter($world['team']['members'], fn($m) => $m['userid'] == $w->leo->id))[0];
-        $this->assertEquals('paused', $leo['character']['member']['status']);
+        // Not that he rests either: only that he is not playing.
+        $this->assertEquals('away', $leo['character']['member']['status']);
         $this->assertEquals('', $leo['character']['member']['statusreason']);
         $this->assertEquals('Leo', $leo['name']);
         // Leo sees his own reason.
