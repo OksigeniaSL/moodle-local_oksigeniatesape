@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.48.0 (2026-10-14)
+
+Smoother on modest tablets.
+
+- **A place touched on the map** changes only its panel: the map stays as it is, without a flash, and the fireflies do
+  not jump (they are always drawn in the same places). On small screens, eight fireflies instead of sixteen.
+- **No blur behind the cards, the header and the tabs** on tablets and phones (it was painted again on every frame over
+  a moving map), and the glow of the creature without an animated shadow.
+- **The resources at the top explain themselves when touched** (a tablet has no mouse to hover): what saber, gems,
+  energy and breath are for.
+- With the art pack v18, the sounds of the places are loops of ten seconds in mono (80 KB each, from 386 KB): with what
+  0.46.0 already did, each tablet loads some 300 KB of sounds instead of the two megabytes of 0.45.0, and uses much less
+  memory.
+
 ## 0.47.0 (2026-10-14)
 
 What Enrique decided for the first test in a classroom.

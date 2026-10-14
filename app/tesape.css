@@ -685,6 +685,13 @@ body.tesape {
   height: 18px;
 }
 
+/* They are buttons: touched, they say what they are for. */
+.res button.r {
+  color: inherit;
+  font-family: inherit;
+  cursor: help;
+}
+
 .content {
   width: min(980px, 100%);
   margin: 0 auto;
@@ -4545,4 +4552,23 @@ body.adapt-colours .opt.right::before {
 body.adapt-colours .conseq.bad .what::before,
 body.adapt-colours .opt.wrong::before {
   content: "✗ ";
+}
+
+/* Tablets and phones: no blur behind the cards, the header and the tabs (it is painted again on every frame, over a map
+   that moves), and the glow of the creature without an animated shadow. */
+@media (hover: none), (max-width: 900px) {
+  .card {
+    background: linear-gradient(180deg, var(--card-a), var(--card-b)), rgba(var(--night-rgb), .6);
+    backdrop-filter: none;
+  }
+
+  .hud,
+  .tabs {
+    backdrop-filter: none;
+  }
+
+  .glow .creature {
+    animation: tesape-breathe 3.6s ease-in-out infinite;
+    filter: drop-shadow(0 0 8px rgba(var(--lantern-rgb), .8));
+  }
 }

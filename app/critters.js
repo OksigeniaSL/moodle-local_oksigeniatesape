@@ -160,6 +160,11 @@
       return '';
     }
     var height = T.mapHeight(m);
+    // The same each time the map is drawn again, so that the fireflies do not jump.
+    var seed = function(n) {
+      var x = Math.sin((m.id || 1) * 97 + n * 13.7) * 10000;
+      return x - Math.floor(x);
+    };
     var spots = [];
     m.chapters.forEach(function(ch) {
       if (ch.lit) {
@@ -167,13 +172,15 @@
       }
     });
     for (var i = 0; i < 4; i++) {
-      spots.push([40 + Math.random() * 320, 40 + Math.random() * (height - 80)]);
+      spots.push([40 + seed(i) * 320, 40 + seed(i + 50) * (height - 80)]);
     }
+    // Fewer on small screens: every one is painted on every frame.
+    var most = window.matchMedia && window.matchMedia('(max-width: 900px)').matches ? 8 : 16;
     var art = T.artUrl(kind.art || []);
-    return '<g class="fireflies" aria-hidden="true">' + spots.slice(0, 16).map(function(p) {
-      var style = 'style="--dx:' + Math.round(Math.random() * 30 - 15) + 'px;--dy:' + Math.round(Math.random() * 24 - 12) +
-        'px;animation-duration:' + (5 + Math.random() * 4).toFixed(1) + 's;animation-delay:-' +
-        (Math.random() * 6).toFixed(1) + 's"';
+    return '<g class="fireflies" aria-hidden="true">' + spots.slice(0, most).map(function(p, j) {
+      var style = 'style="--dx:' + Math.round(seed(j + 100) * 30 - 15) + 'px;--dy:' + Math.round(seed(j + 200) * 24 - 12) +
+        'px;animation-duration:' + (5 + seed(j + 300) * 4).toFixed(1) + 's;animation-delay:-' +
+        (seed(j + 400) * 6).toFixed(1) + 's"';
       return '<g class="firefly" ' + style + '><circle cx="' + p[0] + '" cy="' + p[1] + '" r="6" class="halo"/>' +
         (art ? '<image href="' + esc(art) + '" x="' + (p[0] - 6) + '" y="' + (p[1] - 6) + '" width="12" height="12"/>' :
         '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="1.9" class="core"/>') + '</g>';

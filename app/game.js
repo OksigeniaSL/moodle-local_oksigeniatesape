@@ -537,6 +537,11 @@
         return '<button type="button" data-tab="' + tab + '"' + (state.tab === tab ? ' aria-current="page"' : '') + '>' +
           T.icon(tab) + '<span>' + esc(t('app_tab_' + tab)) + badge + '</span></button>';
       }).join('') + '</nav><main class="content" id="content"></main></div>';
+    app.querySelectorAll('[data-res]').forEach(function(b) {
+      b.onclick = function() {
+        T.toast('<b>' + esc(b.title) + '</b>: ' + esc(t('app_res_' + b.dataset.res + '_help')));
+      };
+    });
     var sound = app.querySelector('[data-sound]');
     if (sound) {
       sound.onclick = function() {
@@ -605,9 +610,17 @@
   window.addEventListener('online', sendWaiting);
   setInterval(sendWaiting, 90000);
 
+  /**
+   * A resource of the character at the top: touched, it says what it is for (a tablet has no mouse to hover).
+   *
+   * @param {string} kind
+   * @param {string|number} value
+   * @param {string} label
+   * @return {string}
+   */
   function res(kind, value, label) {
-    return '<span class="r" title="' + esc(label) + '">' + T.icon(kind) + '<b>' + esc(value) + '</b><span class="sr-only"> ' +
-      esc(label) + '</span></span>';
+    return '<button type="button" class="r" data-res="' + kind + '" title="' + esc(label) + '">' + T.icon(kind) + '<b>' +
+      esc(value) + '</b><span class="sr-only"> ' + esc(label) + '</span></button>';
   }
 
   function status(m) {
@@ -969,7 +982,12 @@
       '</section>';
   }
 
-  function bindWorld() {
+  /**
+   * The buttons of the world tab.
+   *
+   * @param {boolean} [stay] Only the panel of a place changed: the map stays where it is.
+   */
+  function bindWorld(stay) {
     var seen = app.querySelector('[data-battlesseen]');
     if (seen) {
       seen.onclick = function() {
@@ -1025,7 +1043,7 @@
       };
     }
     // A long map opens where the student is.
-    var tall = app.querySelector('.map-wrap.tall');
+    var tall = stay ? null : app.querySelector('.map-wrap.tall');
     var here = tall && tall.querySelector('.place.here .ring');
     if (here) {
       tall.scrollTop += here.getBoundingClientRect().top - tall.getBoundingClientRect().top - tall.clientHeight / 2;
@@ -1033,7 +1051,23 @@
     app.querySelectorAll('[data-chapter]').forEach(function(g) {
       var pickChapter = function() {
         state.chapter = Number(g.dataset.chapter);
-        world();
+        var m = state.visit || state.world.mission;
+        var ch = m && m.chapters.filter(function(c) {
+          return c.id === state.chapter;
+        })[0];
+        var old = app.querySelector('.mission-grid .chapter');
+        if (ch && old) {
+          // Only the panel of the place changes: the map stays as it is, without a flash, its fireflies where they were.
+          app.querySelectorAll('[data-chapter]').forEach(function(o) {
+            o.classList.toggle('selected', o === g);
+          });
+          var box = document.createElement('div');
+          box.innerHTML = chapterPanel(m, ch, !!state.visit);
+          old.replaceWith(box.firstElementChild);
+          bindWorld(true);
+        } else {
+          world();
+        }
         var panel = app.querySelector('.chapter');
         if (panel && window.innerWidth < 900) {
           panel.scrollIntoView({behavior: 'smooth', block: 'start'});
