@@ -374,6 +374,17 @@
     return state.world.nicknames && c && c.nickname ? c.nickname : cfg.firstname;
   }
 
+  /**
+   * The figure of the student, for other parts of the game (the battle on the tablet): empty without a character.
+   *
+   * @param {boolean} [portrait]
+   * @return {string}
+   */
+  T.myHero = function(portrait) {
+    var c = state.world && state.world.character;
+    return c && c.role ? avatarOf(c, '', portrait) : '';
+  };
+
   function avatarOf(c, label, portrait) {
     var avatar = T.avatar({role: c.role, nameform: c.nameform, lineage: c.lineage, look: c.appearance, stage: c.stage,
       label: label, portrait: portrait});

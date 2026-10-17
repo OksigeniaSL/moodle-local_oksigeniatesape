@@ -277,7 +277,11 @@
     if (live.stage !== 'resolve' || live.done === undefined) {
       return '';
     }
-    return '<p class="turn-outcome' + (live.done ? ' undone' : ' fell') + '">' + esc(t(live.done ? 'app_turn_lane_done' :
+    // Their own figure: it jumps if the team undid its lane; if not, it staggers and stays on its feet.
+    var hero = T.myHero ? T.myHero(false) : '';
+    return (hero ? '<span class="turn-hero ' + (live.done ? 'jump' : 'sway') + (T.moves && !T.moves() ? ' still' : '') +
+      '" aria-hidden="true">' + hero + '</span>' : '') + '<p class="turn-outcome' + (live.done ? ' undone' : ' fell') + '">' +
+      esc(t(live.done ? 'app_turn_lane_done' :
       'app_turn_lane_failed')) + '</p>' + (live.knot.broken ? '<p class="turn-outcome undone">' +
       esc(t('board_turn_broken')) + '</p>' : '') + (live.counter && !live.recovered ? '<p class="turn-outcome fell">' +
       esc(t(live.intent === 'all' ? 'board_turn_candle_all' : 'board_turn_candle', live.target)) + '</p>' : '') +
@@ -297,13 +301,15 @@
     // By turns, the scout who followed the trail sees what comes next.
     var ahead = live.nextknot ? '<p class="battle-trail">' + esc(t('app_token_next', {knot: live.nextknot,
       team: live.nexttarget || ''})) + '</p>' : '';
+    // By turns, the verb is ready from the moment the knot is announced, in big while the roles get ready.
+    var ready = live.open || live.stage === 'intent' || live.stage === 'prep';
+    var big = live.stage === 'intent' || live.stage === 'prep';
+    // The verbs of a missing role, while the roles get ready: during the lane, the lane is what matters.
+    ahead += big ? covers(live) : '';
     if (live.tokenused) {
       return ahead + '<p class="help-soft battle-token-used">' + esc(live.tokenrest ? t('app_token_rest', live.tokenrest) :
         t('app_token_used')) + '</p>';
     }
-    // By turns, the verb is ready from the moment the knot is announced, in big while the roles get ready.
-    var ready = live.open || live.stage === 'intent' || live.stage === 'prep';
-    var big = live.stage === 'intent' || live.stage === 'prep';
     if (!ready) {
       return ahead;
     }
@@ -322,6 +328,37 @@
     }
     return ahead + '<div class="battle-token"><button type="button" class="btn ' + (big ? 'btn-main btn-big' : 'btn-soft') +
       '" data-token>' + esc(t('app_token_' + live.token + (live.maxcandles ? '_turns' : ''))) + '</button></div>';
+  }
+
+  /**
+   * By turns, the verbs of the roles nobody in the team has today: anyone can use one, once in the battle. Without
+   * saying why the role is missing.
+   *
+   * @param {Object} live
+   * @return {string}
+   */
+  function covers(live) {
+    if (!live.covers || !live.covers.length) {
+      return '';
+    }
+    var teams = (live.targets || []).filter(function(x) {
+      return x.id === live.myteam;
+    }).concat((live.targets || []).filter(function(x) {
+      return x.id !== live.myteam;
+    }));
+    return '<div class="battle-token cover"><p class="help-soft">' + esc(t('app_token_cover')) + '</p>' +
+      live.covers.map(function(kind) {
+        var on = kind === 'shield' || kind === 'cheer' ? teams : [];
+        if (!on.length) {
+          return '<button type="button" class="btn btn-soft" data-token data-cover="' + kind + '">' +
+            esc(t('app_token_' + kind + '_turns')) + '</button>';
+        }
+        return on.map(function(x) {
+          return '<button type="button" class="btn btn-soft" data-token data-cover="' + kind + '" data-target="' + x.id + '">' +
+            esc(t('app_token_cover_on', {verb: t('app_verb_' + kind), team: x.id === live.myteam ? t('app_token_ownteam') :
+            x.name})) + '</button>';
+        }).join('');
+      }).join('') + '</div>';
   }
 
   function voteBody(live) {
@@ -397,7 +434,7 @@
         layer.querySelectorAll('[data-token]').forEach(function(b) {
           b.disabled = true;
         });
-        api('token', {target: Number(use.dataset.target || 0)}).then(function(r) {
+        api('token', {target: Number(use.dataset.target || 0), cover: use.dataset.cover || ''}).then(function(r) {
           state.sig = '';
           show(r.live || null);
         }).catch(function(e) {

@@ -721,14 +721,21 @@ final class live {
      * @param \stdClass $member
      * @param int|null $now
      * @param int $target By turns: the team the shield or the cheer goes to (0 or not a team that plays: their own).
+     * @param string $cover By turns: the verb of a role nobody in the team has, used instead of their own (see covers()).
      * @return string The token used.
      */
-    public static function token(\stdClass $live, \stdClass $member, ?int $now = null, int $target = 0): string {
+    public static function token(
+        \stdClass $live,
+        \stdClass $member,
+        ?int $now = null,
+        int $target = 0,
+        string $cover = ''
+    ): string {
         global $DB;
         $now = $now ?? time();
         $state = self::state($live);
         $round = (int) $live->round;
-        $kind = self::TOKENS[self::role($member)] ?? '';
+        $kind = $cover !== '' ? $cover : (self::TOKENS[self::role($member)] ?? '');
         if ($member->status === 'paused') {
             throw new \moodle_exception('pausedgame', 'local_oksigeniatesape');
         }
@@ -738,6 +745,10 @@ final class live {
             throw new \moodle_exception('roundclosed', 'local_oksigeniatesape');
         }
         $turns = !empty($state['knots']);
+        if ($cover !== '' && (!$turns || !in_array($cover, self::covers($live, (int) $joined->team), true))) {
+            // The verb of a role nobody in the team has today, once a battle for the team, by turns.
+            throw new \moodle_exception('tokenused', 'local_oksigeniatesape');
+        }
         if ($turns) {
             // By turns: the verb rests two turns after it is used, also when another of the same role in the team used it.
             if (self::rest($live, (int) $joined->team, $kind, $member, $round) > 0) {
@@ -760,6 +771,39 @@ final class live {
             throw new \moodle_exception('tokenused', 'local_oksigeniatesape');
         }
         return $kind;
+    }
+
+    /**
+     * By turns, the verbs of the roles nobody in a team who came into the battle has: anyone in the team can use one of
+     * them, once a battle for the team, without saying why the role is missing. None once the team has used one.
+     *
+     * @param \stdClass $live
+     * @param int $team
+     * @return string[]
+     */
+    public static function covers(\stdClass $live, int $team): array {
+        global $DB;
+        if (!$team) {
+            return [];
+        }
+        $roles = $DB->get_fieldset_sql(
+            'SELECT c.role
+               FROM {' . self::T . 'livein} l
+               JOIN {' . self::T . 'char} c ON c.id = l.charid
+              WHERE l.liveid = ? AND l.round = 0 AND l.team = ?',
+            [$live->id, $team]
+        );
+        $missing = array_values(array_diff_key(self::TOKENS, array_flip($roles)));
+        if (!$missing || count($missing) === count(self::TOKENS)) {
+            return [];
+        }
+        [$in, $params] = $DB->get_in_or_equal($missing);
+        $covered = $DB->record_exists_select(
+            self::T . 'livetoken',
+            'liveid = ? AND team = ? AND kind ' . $in,
+            array_merge([$live->id, $team], $params)
+        );
+        return $covered ? [] : $missing;
     }
 
     /**
@@ -805,7 +849,9 @@ final class live {
             $rest = $round > 0 ? self::rest($live, $team, $kind, $member, $round) : 0;
             $view['tokenused'] = $rest > 0;
             $view['tokenrest'] = $rest;
-            if (in_array($kind, ['shield', 'cheer'], true)) {
+            // And the verb of a role missing in the team, which anyone in it can use once.
+            $view['covers'] = $round > 0 && empty($state['rounds'][$round]['revealed']) ? self::covers($live, $team) : [];
+            if (in_array($kind, ['shield', 'cheer'], true) || array_intersect($view['covers'], ['shield', 'cheer'])) {
                 $names = self::teams((int) $live->courseid);
                 $view['targets'] = array_map(fn($id) => ['id' => $id, 'name' => isset($names[$id]) ?
                     format_string($names[$id]->name) : ''], self::playing($live, $state));
@@ -983,6 +1029,9 @@ final class live {
             'rematch' => (int) round(100 * (float) ($state['rematch'] ?? 0)),
             'counter' => $round > 0 ? (int) ($state['rounds'][$round]['counter'] ?? 0) : 0,
             'shielded' => $round > 0 && !empty($state['rounds'][$round]['shielded']),
+            // By turns, the candles of the tower from the lobby to the end: the screens know it is a battle by turns.
+            'candles' => (int) ($state['candles'] ?? 0),
+            'maxcandles' => (int) ($state['maxcandles'] ?? 0),
         ] + self::turn($live, $state, $now);
     }
 
@@ -1011,7 +1060,6 @@ final class live {
             'why' => $resolved && !empty($info['broken']) ? $knot['why'] : '', 'broken' => $resolved && !empty($info['broken'])],
             'targetid' => $target, 'target' => isset($teams[$target]) ? format_string($teams[$target]->name) : '',
             'damage' => (int) ($info['damage'] ?? 0), 'intent' => (string) ($info['intent'] ?? 'team'),
-            'candles' => (int) ($state['candles'] ?? 0), 'maxcandles' => (int) ($state['maxcandles'] ?? 0),
             'tangled' => array_map('intval', array_keys($state['tangled'] ?? [])), 'broken' => count($state['broken'] ?? []),
             'recovered' => $resolved && !empty($info['recovered'])];
     }
@@ -1591,8 +1639,9 @@ final class live {
             if ($engine !== 'choice') {
                 // Another engine: what it shows goes to the tablets; what solves it stays here until the turn is resolved.
                 $lanes[$team] = self::lane_of($lane, $mission) + ['options' => 2, 'correct' => 1];
-                if ($engine === 'classify') {
-                    // Sorting is done by the team: one of its players, by turns, sorts; the others help aloud.
+                if ($engine === 'classify' || $engine === 'order') {
+                    // Sorting and putting in order are done by the team: one of its players, by turns, does it; the
+                    // others help aloud.
                     $where = 'liveid = ? AND round = 0 AND team = ?';
                     $in = $DB->get_fieldset_select(self::T . 'livein', 'charid', $where, [$live->id, $team]);
                     sort($in);
@@ -1615,7 +1664,8 @@ final class live {
      * A lane of another engine than choosing, ready for the turn: what the tablets show (shown) and what solves it
      * (solution), with its prompt as the question the class screen shows.
      *
-     * @param array $lane From the knot: classify (prompt, bins, items) or errors (text).
+     * @param array $lane From the knot: classify (prompt, bins, items), order (prompt, steps in their order) or errors
+     *     (text).
      * @param \stdClass $mission
      * @return array engine, question, shown, solution.
      */
@@ -1627,6 +1677,22 @@ final class live {
                 'options' => []], 'shown' => ['prompt' => $text($lane['prompt'] ?? ''), 'items' => $items,
                 'bins' => array_map(fn($b) => ['id' => (string) $b['id'], 'label' => $text($b['label'])], $lane['bins'] ?? [])],
                 'solution' => array_column($lane['items'] ?? [], 'bin', 'id')];
+        }
+        if ($lane['engine'] === 'order') {
+            // The steps, each with a letter for an id, shown in an order that is not theirs.
+            $steps = [];
+            foreach (array_values($lane['steps'] ?? []) as $i => $step) {
+                $steps[] = ['id' => chr(ord('a') + $i), 'label' => $text(is_array($step) ? ($step['label'] ?? '') : $step)];
+            }
+            $shown = $steps;
+            if (count($shown) > 1) {
+                do {
+                    shuffle($shown);
+                } while (array_column($shown, 'id') === array_column($steps, 'id'));
+            }
+            return ['engine' => 'order', 'question' => ['id' => 'order', 'text' => $text($lane['prompt'] ?? ''),
+                'options' => []], 'shown' => ['prompt' => $text($lane['prompt'] ?? ''), 'items' => $shown],
+                'solution' => array_column($steps, 'id')];
         }
         // The mistakes of the Embrollo in a sheet: plain text and marked words, each a mistake.
         $parts = minigames::parts($text($lane['text'] ?? ''));
@@ -1640,13 +1706,31 @@ final class live {
 
     /**
      * Whether what a player did in a lane of another engine undoes it: sorting, each thing in its group (one slip is
-     * forgiven from five things on); the mistakes, each one touched and at most one word that was right.
+     * forgiven from five things on); putting in order, every step in its place (from five steps on, two next to each
+     * other swapped are forgiven); the mistakes, each one touched and at most one word that was right.
      *
      * @param array $lane As lane_of() makes it.
-     * @param array $payload classify: placed (item id => bin id); errors: marks (numbers), misses (words right touched).
+     * @param array $payload classify: placed (item id => bin id); order: order (step ids); errors: marks (numbers), misses
+     *     (words right touched).
      * @return bool
      */
     public static function lane_right(array $lane, array $payload): bool {
+        if ($lane['engine'] === 'order') {
+            $order = array_values(array_map('strval', (array) ($payload['order'] ?? [])));
+            $solution = $lane['solution'];
+            if (count($order) !== count($solution) || array_diff($solution, $order)) {
+                return false;
+            }
+            // How many pairs are the wrong way round: one swap of two next to each other is one.
+            $at = array_flip($order);
+            $swapped = 0;
+            for ($i = 0; $i < count($solution); $i++) {
+                for ($j = $i + 1; $j < count($solution); $j++) {
+                    $swapped += $at[$solution[$i]] > $at[$solution[$j]] ? 1 : 0;
+                }
+            }
+            return $swapped <= intdiv(count($solution), 5);
+        }
         if ($lane['engine'] === 'classify') {
             $placed = (array) ($payload['placed'] ?? []);
             $wrong = 0;

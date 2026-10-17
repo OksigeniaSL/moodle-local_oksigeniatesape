@@ -1,8 +1,9 @@
 /**
  * Tesapé: the lanes of a battle by turns that are not to choose, the same way on every tablet. Given a lane, it draws it
  * and gives back what the student did (the server says whether it undoes it): sorting, touch a thing and then its
- * group; the mistakes of the Embrollo, touch the words that are wrong in the sheet. Once the turn is resolved, it shows
- * the solution: each thing in its group, each mistake with the right word and why.
+ * group; putting in order, touch the steps one after the other; the mistakes of the Embrollo, touch the words that are
+ * wrong in the sheet. Once the turn is resolved, it shows the solution: each thing in its group, the steps in their
+ * order, each mistake with the right word and why.
  *
  * @copyright  2026 Oksigenia <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -47,6 +48,39 @@
           '</button><span>' + here.map(function(i) {
             return chip(i, b.id);
           }).join('') + '</span></div>';
+      }).join('') + '</div>';
+  }
+
+  /**
+   * Putting in order: the steps to place and the order made so far; a step touched goes to the end of the order, and a
+   * step in the order touched goes back.
+   *
+   * @param {Object} lane prompt, items (the steps, not in their order), mine, speaker, solution (step ids) once resolved.
+   * @param {Object} state ordered (step ids).
+   * @param {boolean} sent
+   * @return {string}
+   */
+  function orderHtml(lane, state, sent) {
+    var solution = lane.solution || null;
+    var ordered = solution || state.ordered || [];
+    var label = {};
+    lane.items.forEach(function(i) {
+      label[i.id] = i.label;
+    });
+    var free = solution ? [] : lane.items.filter(function(i) {
+      return ordered.indexOf(i.id) < 0;
+    });
+    var off = sent || solution || !lane.mine ? ' disabled' : '';
+    return '<p class="battle-q">' + esc(lane.prompt) + '</p>' + (!lane.mine && lane.speaker ? '<p class="help-soft">' +
+      esc(t('app_lane_speaker', lane.speaker)) + '</p>' : '') + '<ol class="lane-order">' + ordered.map(function(id, n) {
+        // Once resolved, the steps in their order; on the tablet that ordered, those it had put elsewhere are marked.
+        var right = solution && (state.ordered || []).length ? state.ordered[n] === id : null;
+        return '<li><button type="button" class="chip lane-step' + (right === true ? ' right' : right === false ? ' wrong' :
+          '') + '" data-unstep="' +
+          esc(id) + '"' + off + '><b>' + (n + 1) + '</b> ' + esc(label[id] || '') + '</button></li>';
+      }).join('') + '</ol><div class="lane-items">' + free.map(function(i) {
+        return '<button type="button" class="chip lane-item" data-step="' + esc(i.id) + '"' + off + '>' + esc(i.label) +
+          '</button>';
       }).join('') + '</div>';
   }
 
@@ -98,12 +132,13 @@
    * @param {Object} opts sent (already sent), open (the lane takes answers), onsend(payload).
    */
   T.lane = function(el, lane, opts) {
-    var state = T.lane.kept[opts.key] = T.lane.kept[opts.key] || {placed: {}, marks: [], slips: [], picked: ''};
+    var state = T.lane.kept[opts.key] = T.lane.kept[opts.key] || {placed: {}, marks: [], slips: [], picked: '', ordered: []};
     var draw = function() {
-      var body = lane.engine === 'classify' ? classifyHtml(lane, state, opts.sent) : errorsHtml(lane, state, opts.sent);
+      var body = lane.engine === 'classify' ? classifyHtml(lane, state, opts.sent) : lane.engine === 'order' ?
+        orderHtml(lane, state, opts.sent) : errorsHtml(lane, state, opts.sent);
       var ready = lane.engine === 'classify' ? lane.items.every(function(i) {
         return state.placed[i.id];
-      }) : state.marks.length > 0;
+      }) : lane.engine === 'order' ? state.ordered.length === lane.items.length : state.marks.length > 0;
       el.innerHTML = body + (lane.mine && !opts.sent && !lane.solution && opts.open ? '<div class="actions">' +
         '<button type="button" class="btn btn-main" data-lanedone' + (ready ? '' : ' disabled') + '>' + esc(t('app_lane_done')) +
         '</button></div>' : '');
@@ -128,6 +163,19 @@
             state.picked = '';
             draw();
           }
+        };
+      });
+      el.querySelectorAll('[data-step]').forEach(function(b) {
+        b.onclick = function() {
+          state.ordered.push(b.dataset.step);
+          draw();
+        };
+      });
+      el.querySelectorAll('[data-unstep]').forEach(function(b) {
+        b.onclick = function() {
+          // Back to the steps to place, with those after it: the order is made again from there.
+          state.ordered = state.ordered.slice(0, state.ordered.indexOf(b.dataset.unstep));
+          draw();
         };
       });
       el.querySelectorAll('[data-mark]').forEach(function(b) {
@@ -158,7 +206,8 @@
       if (done) {
         done.onclick = function() {
           done.disabled = true;
-          opts.onsend(lane.engine === 'classify' ? {placed: state.placed} : {marks: state.marks, misses: state.slips.length});
+          opts.onsend(lane.engine === 'classify' ? {placed: state.placed} : lane.engine === 'order' ? {order: state.ordered} :
+            {marks: state.marks, misses: state.slips.length});
         };
       }
     };

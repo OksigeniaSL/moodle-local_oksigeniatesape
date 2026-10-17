@@ -628,6 +628,11 @@ final class structures {
             'struck' => new external_value(PARAM_INT, 'A wrong option struck out by the glance of their team', VALUE_OPTIONAL),
             'trail' => new external_value(PARAM_TEXT, 'Chapter of the answer, by the trail of their team', VALUE_OPTIONAL),
             'tokenrest' => new external_value(PARAM_INT, 'By turns: turns their verb still rests (0: ready)', VALUE_OPTIONAL),
+            'covers' => new external_multiple_structure(
+                new external_value(PARAM_ALPHA, 'Verb'),
+                'By turns: verbs of roles missing in the team, which they can use once',
+                VALUE_OPTIONAL
+            ),
             'targets' => new external_multiple_structure(new external_single_structure([
                 'id' => new external_value(PARAM_INT, 'Group'),
                 'name' => new external_value(PARAM_TEXT, 'Team'),

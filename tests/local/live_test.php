@@ -454,6 +454,64 @@ final class live_test extends \advanced_testcase {
         $this->assertSame((int) $groups[1]->id, $view['targetid']);
     }
 
+    public function test_anyone_in_a_team_covers_the_verb_of_a_missing_role_once_a_battle(): void {
+        $this->resetAfterTest();
+        [$course, $members, $groups] = $this->make_class();
+        // Both teams are of sages: the scout, the protector and the healer are missing in each.
+        $live = live::start($course->id, 'phones', 4, 30, self::NOW, false, true);
+        foreach ($members as $member) {
+            live::join($live, $member, $member->userid, self::NOW);
+        }
+        $live = live::next($live, self::NOW);
+        $team = (int) $groups[0]->id;
+        $this->assertEqualsCanonicalizing(['trail', 'shield', 'cheer'], live::covers($live, $team));
+        $view = live::device_view($live, $members[0], self::NOW + 2);
+        $this->assertEqualsCanonicalizing(['trail', 'shield', 'cheer'], $view['covers']);
+        $this->assertCount(2, $view['targets']);
+        // The verb of a role there is cannot be covered.
+        try {
+            live::token($live, $members[0], self::NOW + 2, 0, 'glance');
+            $this->fail('A sage covered the glance');
+        } catch (\moodle_exception $e) {
+            $this->assertSame('tokenused', $e->errorcode);
+        }
+        // One of the team puts the shield of the missing protector on the other team: then, no more covers for the team.
+        $this->assertSame('shield', live::token($live, $members[0], self::NOW + 2, (int) $groups[1]->id, 'shield'));
+        $this->assertSame([], live::covers($live, $team));
+        $this->assertSame([], live::device_view($live, $members[1], self::NOW + 3)['covers']);
+        try {
+            live::token($live, $members[1], self::NOW + 3, 0, 'trail');
+            $this->fail('The team covered twice');
+        } catch (\moodle_exception $e) {
+            $this->assertSame('tokenused', $e->errorcode);
+        }
+        // The other team still has its own, and its own verbs are there.
+        $this->assertNotSame([], live::covers($live, (int) $groups[1]->id));
+        $this->assertSame('glance', live::token($live, $members[1], self::NOW + 3));
+    }
+
+    public function test_a_lane_to_put_in_order_is_undone_with_its_steps_in_their_place(): void {
+        $this->resetAfterTest();
+        [$course] = $this->make_class();
+        $mission = missions::get($course->id);
+        $knot = array_column(knots::usable($mission, null), null, 'code')['garza'];
+        $this->assertContains('order', array_column($knot['lanes'], 'engine'));
+        $make = new \ReflectionMethod(live::class, 'lane_of');
+        $order = $make->invoke(null, array_values(array_filter($knot['lanes'], fn($l) => $l['engine'] === 'order'))[0], $mission);
+        // The tablets see the steps, but not in their order.
+        $this->assertSame(['a', 'b', 'c', 'd'], $order['solution']);
+        $this->assertNotSame($order['solution'], array_column($order['shown']['items'], 'id'));
+        $this->assertTrue(live::lane_right($order, ['order' => ['a', 'b', 'c', 'd']]));
+        // With four steps, each one in its place; a step missing or twice is not an order.
+        $this->assertFalse(live::lane_right($order, ['order' => ['a', 'c', 'b', 'd']]));
+        $this->assertFalse(live::lane_right($order, ['order' => ['a', 'b', 'c']]));
+        $this->assertFalse(live::lane_right($order, ['order' => ['a', 'b', 'c', 'c']]));
+        // From five steps on, two next to each other swapped are forgiven; two swaps are not.
+        $five = ['engine' => 'order', 'solution' => ['a', 'b', 'c', 'd', 'e']];
+        $this->assertTrue(live::lane_right($five, ['order' => ['a', 'b', 'd', 'c', 'e']]));
+        $this->assertFalse(live::lane_right($five, ['order' => ['b', 'a', 'd', 'c', 'e']]));
+    }
+
     public function test_a_class_of_twenty_five_plays_a_whole_final_battle_by_turns_and_wins_it(): void {
         global $DB;
         $this->resetAfterTest();
@@ -479,7 +537,10 @@ final class live_test extends \advanced_testcase {
         foreach ($members as $member) {
             live::join($live, $member, $member->userid, $now);
         }
-        $this->assertSame(25, live::board_view($live, $now)['joined']);
+        $lobby = live::board_view($live, $now);
+        $this->assertSame(25, $lobby['joined']);
+        // From the lobby, the screens know it is a battle by turns: its candles are there.
+        $this->assertSame(5, $lobby['maxcandles']);
         $live = live::next($live, $now);
         $engines = [];
         for ($turn = 0; $turn < 10 && json_decode($live->state, true)['outcome'] === ''; $turn++) {
@@ -491,9 +552,10 @@ final class live_test extends \advanced_testcase {
                 $lane = $lanes[$member->team];
                 $engine = $lane['engine'] ?? 'choice';
                 $engines[$engine] = true;
-                if ($engine === 'classify') {
+                if ($engine === 'classify' || $engine === 'order') {
                     if ((int) $lane['speaker'] === (int) $member->charid) {
-                        live::strike($live, $member, $round, ['placed' => $lane['solution']], $now);
+                        $payload = $engine === 'order' ? ['order' => $lane['solution']] : ['placed' => $lane['solution']];
+                        live::strike($live, $member, $round, $payload, $now);
                     }
                 } else if ($engine === 'errors') {
                     live::strike($live, $member, $round, ['marks' => array_column($lane['solution'], 'mark')], $now);
@@ -517,6 +579,8 @@ final class live_test extends \advanced_testcase {
         $this->assertSame('won', $state['outcome']);
         $this->assertSame(5, $state['candles']);
         $this->assertSame([], $state['hanging']);
+        // And at the end too, for the jar and its sounds.
+        $this->assertSame(5, live::board_view($live, $now)['maxcandles']);
         // On the way, the class chose, sorted and found the mistakes of the Embrollo.
         $this->assertEqualsCanonicalizing(['choice', 'classify', 'errors'], array_keys($engines));
         // Everybody who played gets the prize of the battle.

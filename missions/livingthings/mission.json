@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 31,
+ "version": 32,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 32,
+   "kind": "improvement",
+   "date": "2026-10-17",
+   "text": "Más formas de deshacer los nudos de la batalla: ordenar el camino del agua, la cadena de la garza y los pasos del naturalista; clasificar quién fabrica su alimento; los errores de una ficha de la planta"
+  },
   {
    "version": 31,
    "kind": "improvement",
@@ -552,6 +558,30 @@
      "Q4-2",
      "Q4-3"
     ],
+    "lanes": [
+     {
+      "engine": "choice",
+      "question": "Q4-1"
+     },
+     {
+      "engine": "choice",
+      "question": "Q4-2"
+     },
+     {
+      "engine": "order",
+      "prompt": "El camino del agua por la planta, desde el suelo hasta el alimento.",
+      "steps": [
+       "La raíz toma el agua del suelo",
+       "El agua sube por el tallo",
+       "El agua llega a las hojas",
+       "La hoja fabrica el alimento con la luz"
+      ]
+     },
+     {
+      "engine": "errors",
+      "text": "La planta toma el agua por [la flor|la raíz|El agua entra por la raíz, que la absorbe del suelo.] y fabrica su alimento en [la raíz|la hoja|La hoja fabrica el alimento con la luz del sol.]."
+     }
+    ],
     "chapter": 4,
     "objective": "SV-05",
     "weakness": "Las partes de la planta",
@@ -567,6 +597,67 @@
      "Q5-2",
      "Q5-3"
     ],
+    "lanes": [
+     {
+      "engine": "choice",
+      "question": "Q5-1"
+     },
+     {
+      "engine": "choice",
+      "question": "Q5-2"
+     },
+     {
+      "engine": "order",
+      "prompt": "La cadena, de principio a fin: ¿quién da de comer a quién?",
+      "steps": [
+       "La luz del sol",
+       "Las algas",
+       "Los peces pequeños",
+       "La garza"
+      ]
+     },
+     {
+      "engine": "classify",
+      "prompt": "¿Quién fabrica su alimento y quién se alimenta de otros? Cada uno a su sitio.",
+      "bins": [
+       {
+        "id": "productor",
+        "label": "Fabrica su alimento"
+       },
+       {
+        "id": "consumidor",
+        "label": "Se alimenta de otros"
+       }
+      ],
+      "items": [
+       {
+        "id": "alga",
+        "label": "Alga",
+        "bin": "productor"
+       },
+       {
+        "id": "junco",
+        "label": "Junco",
+        "bin": "productor"
+       },
+       {
+        "id": "pez",
+        "label": "Pez pequeño",
+        "bin": "consumidor"
+       },
+       {
+        "id": "garza",
+        "label": "Garza",
+        "bin": "consumidor"
+       },
+       {
+        "id": "rana",
+        "label": "Rana",
+        "bin": "consumidor"
+       }
+      ]
+     }
+    ],
     "chapter": 5,
     "objective": "SV-06",
     "weakness": "La cadena alimentaria",
@@ -581,6 +672,26 @@
      "Q6-1",
      "Q6-2",
      "Q6-3"
+    ],
+    "lanes": [
+     {
+      "engine": "choice",
+      "question": "Q6-1"
+     },
+     {
+      "engine": "choice",
+      "question": "Q6-2"
+     },
+     {
+      "engine": "order",
+      "prompt": "Los pasos de un naturalista que no se deja enredar, en orden.",
+      "steps": [
+       "Hacerse una pregunta",
+       "Observar con cuidado",
+       "Anotarlo en el cuaderno de campo",
+       "Comprobarlo antes de darlo por cierto"
+      ]
+     }
     ],
     "chapter": 6,
     "objective": "SV-07",

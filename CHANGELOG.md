@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.77.0 (2026-10-17)
+
+The rest of block 2.3 of the plan: more ways to undo a knot, and the hero in the battle.
+
+- **Lanes to put in order**: the steps, shown in an order that is not theirs, are touched one after the other (one
+  player of the team does it, who changes from turn to turn, and the others help aloud); a step touched in the order
+  goes back with those after it. The server says whether it undoes the lane (every step in its place; from five steps
+  on, two next to each other swapped are forgiven). Once resolved, the tablets show the steps in their order.
+- **The pilot mission, version 32**: lanes to put in order in the knots of the root (the way of the water through the
+  plant), of the heron (the chain, from the light of the sun to the heron) and of the bubble (the steps of a
+  naturalist); to sort who makes their food and who feeds on others, in the knot of the heron; and the mistakes of a
+  sheet, in the knot of the root.
+- **The figure of the student** at the resolution of a turn, on their tablet: it jumps if their team undid its lane,
+  and staggers and stays on its feet if not (still, without movement).
+- **Fixed**: the screens knew a battle was by turns only while a turn was played, so the lobby said «First question»
+  and the end was told as in a battle of questions: no jar, no escape and none of their sounds (0.75.0 and 0.76.0),
+  and, since 0.71.0, the escape with the page of the Great Book and the thread of the class at the end told as the
+  team that helped most. The candles of the tower now go from the lobby to the end.
+- **Covering a missing role** (from block 2.2): when nobody in a team who came into the battle has a role, anyone in
+  the team can use its verb (the shield and the cheer, on a team), once a battle for the team, without saying why the
+  role is missing.
+
 ## 0.76.0 (2026-10-17)
 
 Block 2.6 of the plan: the weight of the art.

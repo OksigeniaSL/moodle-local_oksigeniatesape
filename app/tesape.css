@@ -7104,10 +7104,12 @@ body.adapt-still .mission-grid .chapter.as-sheet {
   outline: 3px solid var(--lantern);
 }
 
+.lane-step.right,
 .lane-item.right {
   border-color: var(--lantern);
 }
 
+.lane-step.wrong,
 .lane-item.wrong {
   border-style: dashed;
 }
@@ -7352,4 +7354,89 @@ body.adapt-still .mission-grid .chapter.as-sheet {
 .battle-paused svg {
   width: 26px;
   height: 26px;
+}
+
+/* The figure of the student at the resolution of a turn: it jumps, or staggers and stays on its feet. */
+.turn-hero {
+  display: block;
+  width: 96px;
+  margin: 4px auto 0;
+}
+
+.turn-hero .avatar,
+.turn-hero svg,
+.turn-hero img {
+  width: 100%;
+  height: auto;
+}
+
+.turn-hero.jump {
+  animation: hero-jump 1s ease-out 2;
+}
+
+.turn-hero.sway {
+  animation: hero-sway 1.2s ease-in-out 1;
+}
+
+.turn-hero.still {
+  animation: none;
+}
+
+@keyframes hero-jump {
+  0%, 100% {
+    transform: translateY(0);
+  }
+
+  35% {
+    transform: translateY(-22px) scale(1.04, .97);
+  }
+
+  60% {
+    transform: translateY(0) scale(1.03, .96);
+  }
+}
+
+@keyframes hero-sway {
+  0%, 100% {
+    transform: rotate(0);
+  }
+
+  30% {
+    transform: rotate(-6deg) translateX(-4px);
+  }
+
+  65% {
+    transform: rotate(4deg) translateX(2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .turn-hero.jump,
+  .turn-hero.sway {
+    animation: none;
+  }
+}
+
+.lane-order {
+  display: grid;
+  gap: 8px;
+  margin: 10px 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: none;
+}
+
+.lane-order .lane-step {
+  width: 100%;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.lane-order .lane-step b {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.6em;
+  height: 1.6em;
+  border-radius: 50%;
+  background: rgba(var(--hi), .14);
 }
