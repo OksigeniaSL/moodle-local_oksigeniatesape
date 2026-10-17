@@ -147,6 +147,43 @@
    * @param {Object} here The place where the character is now.
    * @return {{from: (Object|null), delay: number}} The place it comes from, and how far its walk already went.
    */
+  /**
+   * The name of a place under its lantern on a map: in two lines when it is long, and never out of the map.
+   *
+   * @param {number} x
+   * @param {number} y Where the text starts.
+   * @param {string} name
+   * @return {string} SVG.
+   */
+  T.mapLabel = function(x, y, name) {
+    var lines = [name];
+    if (name.length > 18) {
+      var middle = Math.floor(name.length / 2);
+      var cut = -1;
+      for (var d = 0; d < middle; d++) {
+        if (name.charAt(middle - d) === ' ') {
+          cut = middle - d;
+          break;
+        }
+        if (name.charAt(middle + d) === ' ') {
+          cut = middle + d;
+          break;
+        }
+      }
+      if (cut > 0) {
+        lines = [name.slice(0, cut), name.slice(cut + 1)];
+      }
+    }
+    // About eight pixels a letter, at the size of the names: kept inside the 400 of the map.
+    var half = Math.max.apply(null, lines.map(function(l) {
+      return l.length;
+    })) * 4.2;
+    var at = Math.round(Math.max(half + 4, Math.min(396 - half, x)));
+    return '<text x="' + at + '" y="' + y + '" text-anchor="middle">' + lines.map(function(l, i) {
+      return '<tspan x="' + at + '" dy="' + (i ? '1.1em' : '0') + '">' + T.esc(l) + '</tspan>';
+    }).join('') + '</text>';
+  };
+
   T.mapWalk = function(key, chapters, here) {
     var store = 'tesape-here-' + key;
     var now = Date.now();

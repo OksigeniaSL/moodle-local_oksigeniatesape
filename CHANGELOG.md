@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.53.0 (2026-10-17)
+
+- **Who is alive?**, the minigame of the clearing (mission version 17): living things and things that are not come out
+  of the holes of the clearing for a moment, and the student touches only what is alive. A thing touched that is not
+  alive is a slip, with its why; too many slips lose this time. Each step has its own things, from the snail and the
+  stone to the mould of the bread, the coral and the salt crystal (27 in all), and its own speed. Without hurry, one thing
+  at a time with two answers, for keyboard and screen reader too. At the end, what was mixed up, with its why. The first
+  win gives 5 gems, and the teacher sees what the class takes for alive, or lets go, most.
+- **The names of the places on the map**, in two lines when they are long and never out of the map (the student's map
+  and the class screen): «Biblioteca de los Reinos» was cut. And the crystal that “grows” of the nest of the clearing
+  no longer puts quotation marks inside quotation marks in the letters of the Embrollo.
+
 ## 0.52.0 (2026-10-14)
 
 - **The hunt for mistakes of the Embrollo** («The tangled notebook»), a new kind of minigame, in every place of the

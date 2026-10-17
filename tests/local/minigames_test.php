@@ -221,4 +221,40 @@ final class minigames_test extends \advanced_testcase {
         $this->expectException(\moodle_exception::class);
         minigames::play($w->course->id, $w->user->id, 'enredoclaro', [$found[0], $found[0]]);
     }
+
+    public function test_who_is_alive(): void {
+        $this->resetAfterTest();
+        $w = $this->make_class('py');
+        // The things of each step, with the local examples of the variant.
+        $first = minigames::config($w->mission, 'quienestavivo', 1);
+        $this->assertSame('whack', $first['type']);
+        $this->assertContains('lapacho', array_column($first['things'], 'label'));
+        $this->assertNotEquals($first['things'], minigames::config($w->mission, 'quienestavivo', 4)['things']);
+        $member = engine::member(characters::get($w->user->id), $w->course->id);
+        $game = minigames::config($w->mission, 'quienestavivo', (int) $member->step);
+        $living = array_values(array_filter($game['things'], fn($x) => $x['alive']));
+        $inert = array_values(array_filter($game['things'], fn($x) => !$x['alive']));
+        $this->assertGreaterThanOrEqual($game['goal'], count($living));
+        $this->assertGreaterThanOrEqual($game['misses'], count($inert));
+        // Every living thing touched, and one thing that is not: won, with a slip.
+        $touch = array_map(fn($x) => ['i' => $x['id']], $living);
+        $events = array_merge($touch, [['i' => $inert[0]['id']]]);
+        $result = minigames::play($w->course->id, $w->user->id, 'quienestavivo', $events);
+        $this->assertTrue($result['success']);
+        $this->assertSame(count($living), $result['caught']);
+        $this->assertSame(1, $result['missed']);
+        $this->assertSame(5, $result['gems']);
+        // Too many slips lose; a living thing let go is not caught.
+        $slips = array_map(fn($x) => ['i' => $x['id']], array_slice($inert, 0, $game['misses']));
+        $lost = minigames::play($w->course->id, $w->user->id, 'quienestavivo', array_merge(array_slice($touch, 1), $slips));
+        $this->assertFalse($lost['success']);
+        $this->assertSame(count($living) - 1, $lost['caught']);
+        // The teacher sees what was taken for alive most.
+        $results = array_column(minigames::results($w->mission), null, 'code');
+        $taken = get_string('minigame_thoughtalive', 'local_oksigeniatesape', $inert[0]['label']);
+        $this->assertSame($taken, $results['quienestavivo']['confusions'][0]['text']);
+        // A thing touched twice, or one that is not in the game, is not a play.
+        $this->expectException(\moodle_exception::class);
+        minigames::play($w->course->id, $w->user->id, 'quienestavivo', [$touch[0], $touch[0]]);
+    }
 }

@@ -49,8 +49,9 @@ is today:
   act in the game (shield, wall, breather, revive, cheer).
 - **Moodle activities in the game**: any activity can be a challenge from its settings; the pilot mission brings its
   forums, assignments and field guide, which open inside the game.
-- **Defensa del nido**, the first minigame, by steps and with a mode without hurry; and **the box of ideas** from
-  students to their teachers.
+- **Minigames** by steps, each with a mode without hurry: **Who is alive?** in the clearing, **Defensa del nido** in
+  the forest and, in every place, **the hunt for mistakes of the Embrollo**; and **the box of ideas** from students to
+  their teachers.
 - **The class screen**, for the projector: «Today in the valley», the map of the mission with the lanterns of the
   class and the last letter of the Embrollo, the teams with their portraits and quick touches of knowledge and gems,
   and **the event of the day** (calm, fair breeze, mysterious footprint with a question for the whole class, exchange

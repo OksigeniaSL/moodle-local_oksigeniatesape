@@ -54,7 +54,7 @@
     },
     {
      "id": "cristal",
-     "label": "un cristal que «crece» en una roca húmeda",
+     "label": "un cristal que “crece” en una roca húmeda",
      "correct": false,
      "objective": "SV-01",
      "feedback": "El nido parpadea y se apaga. «Crece, sí, pero no come, no siente y no tiene hijos.»"

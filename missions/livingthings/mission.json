@@ -1,11 +1,17 @@
 {
  "code": "livingthings",
- "version": 16,
+ "version": 17,
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 17,
+   "kind": "improvement",
+   "date": "2026-10-17",
+   "text": "«¿Quién está vivo?», el minijuego del claro"
+  },
   {
    "version": 16,
    "kind": "improvement",
@@ -468,6 +474,7 @@
    "x": 160,
    "y": 560,
    "games": [
+    "quienestavivo",
     "enredoclaro"
    ],
    "activities": [
@@ -1102,6 +1109,243 @@
      ],
      "goal": 13,
      "shield": 4,
+     "speed": 4
+    }
+   }
+  },
+  "quienestavivo": {
+   "type": "whack",
+   "title": "¿Quién está vivo?",
+   "intro": "El Embrollo ha revuelto el claro con cosas traídas de todas partes: unas están vivas y otras no. Asoman un momento por los huecos y se vuelven a esconder. Toca solo los seres vivos, para apuntarlos en el cuaderno de campo, y deja pasar lo demás. Antes de tocar, pregúntate si se nutre, se relaciona y se reproduce.",
+   "win": "Tienes apuntados los seres vivos del claro. Ya sabes mirar: lo que se nutre, se relaciona y se reproduce es un ser vivo, aunque no se mueva ni haga ruido.",
+   "lose": "Esta vez el Embrollo te ha despistado. Abajo tienes lo que más te ha liado, con su porqué: léelo y vuelve a intentarlo.",
+   "reward": {
+    "gems": 5
+   },
+   "things": {
+    "caracol": {
+     "label": "caracol",
+     "alive": true
+    },
+    "hormiga": {
+     "label": "hormiga",
+     "alive": true
+    },
+    "pajaro": {
+     "label": {
+      "es": "gorrión",
+      "py": "benteveo",
+      "gen": "paloma"
+     },
+     "alive": true
+    },
+    "rana": {
+     "label": "rana",
+     "alive": true
+    },
+    "lombriz": {
+     "label": "lombriz",
+     "alive": true
+    },
+    "arbol": {
+     "label": {
+      "es": "encina",
+      "py": "lapacho",
+      "gen": "árbol"
+     },
+     "alive": true,
+     "why": "No se mueve de sitio, pero se nutre, crece y se reproduce."
+    },
+    "lechuga": {
+     "label": "lechuga de la huerta",
+     "alive": true,
+     "why": "Es una planta: se nutre, crece y da semillas."
+    },
+    "seta": {
+     "label": "seta",
+     "alive": true,
+     "why": "No se mueve ni tiene hojas, pero se nutre, se relaciona y se reproduce. Es un hongo."
+    },
+    "semilla": {
+     "label": "semilla",
+     "alive": true,
+     "why": "Parece dormida, pero lleva dentro una planta viva que espera el agua para crecer."
+    },
+    "musgo": {
+     "label": "musgo",
+     "alive": true,
+     "why": "Es una planta muy pequeña, sin flores. Está vivo, aunque crezca sobre una piedra."
+    },
+    "cactus": {
+     "label": "cactus",
+     "alive": true,
+     "why": "Tiene espinas en vez de hojas, pero es una planta: se nutre, crece y se reproduce."
+    },
+    "alga": {
+     "label": "alga",
+     "alive": true,
+     "why": "Vive en el agua y fabrica su alimento con la luz, como las plantas."
+    },
+    "coral": {
+     "label": "coral",
+     "alive": true,
+     "why": "Parece una piedra, pero es un animal que vive pegado al fondo del mar."
+    },
+    "moho": {
+     "label": "moho del pan",
+     "alive": true,
+     "why": "Es un hongo diminuto: se alimenta del pan, crece y se reproduce."
+    },
+    "levadura": {
+     "label": "levadura",
+     "alive": true,
+     "why": "Son hongos tan pequeños que no se ven. Hinchan la masa del pan porque se alimentan y crecen."
+    },
+    "bacteria": {
+     "label": "bacteria",
+     "alive": true,
+     "why": "No se ve sin microscopio, pero es un ser vivo de una sola célula."
+    },
+    "piedra": {
+     "label": "piedra",
+     "alive": false
+    },
+    "agua": {
+     "label": "gota de agua",
+     "alive": false,
+     "why": "Todos los seres vivos la necesitan, pero el agua no está viva."
+    },
+    "sol": {
+     "label": "sol",
+     "alive": false,
+     "why": "Da luz y calor a los seres vivos, pero no se nutre ni se reproduce."
+    },
+    "nube": {
+     "label": "nube",
+     "alive": false,
+     "why": "Se mueve y cambia de forma, pero no se nutre ni se reproduce."
+    },
+    "robot": {
+     "label": "robot de juguete",
+     "alive": false,
+     "why": "Se mueve y hace ruido, pero no se nutre, ni crece, ni se reproduce."
+    },
+    "fuego": {
+     "label": "fuego",
+     "alive": false,
+     "why": "Crece, se mueve y gasta leña, pero no se reproduce ni está hecho de células."
+    },
+    "rio": {
+     "label": "río",
+     "alive": false,
+     "why": "Se mueve y suena, pero es agua: no se nutre ni se reproduce."
+    },
+    "hojaseca": {
+     "label": "hoja seca",
+     "alive": false,
+     "why": "Fue parte de un árbol vivo, pero ya no se nutre ni crece."
+    },
+    "concha": {
+     "label": "concha vacía",
+     "alive": false,
+     "why": "Fue la casa de un animal, pero está vacía: el animal ya no está."
+    },
+    "cristal": {
+     "label": "cristal de sal",
+     "alive": false,
+     "why": "Crece en el agua salada, pero no se nutre ni se reproduce."
+    },
+    "mesa": {
+     "label": "mesa de madera",
+     "alive": false,
+     "why": "La madera salió de un árbol, pero la mesa ya no se nutre ni crece."
+    }
+   },
+   "levels": {
+    "1": {
+     "things": [
+      "caracol",
+      "hormiga",
+      "pajaro",
+      "rana",
+      "arbol",
+      "lechuga",
+      "seta",
+      "piedra",
+      "agua",
+      "sol",
+      "nube",
+      "robot"
+     ],
+     "goal": 5,
+     "misses": 4,
+     "speed": 1
+    },
+    "2": {
+     "things": [
+      "caracol",
+      "lombriz",
+      "pajaro",
+      "arbol",
+      "seta",
+      "semilla",
+      "musgo",
+      "cactus",
+      "piedra",
+      "nube",
+      "robot",
+      "fuego",
+      "rio",
+      "hojaseca"
+     ],
+     "goal": 6,
+     "misses": 3,
+     "speed": 2
+    },
+    "3": {
+     "things": [
+      "lombriz",
+      "arbol",
+      "seta",
+      "semilla",
+      "musgo",
+      "cactus",
+      "alga",
+      "coral",
+      "moho",
+      "nube",
+      "robot",
+      "fuego",
+      "rio",
+      "hojaseca",
+      "concha",
+      "cristal"
+     ],
+     "goal": 7,
+     "misses": 3,
+     "speed": 3
+    },
+    "4": {
+     "things": [
+      "seta",
+      "semilla",
+      "musgo",
+      "cactus",
+      "alga",
+      "coral",
+      "moho",
+      "levadura",
+      "bacteria",
+      "robot",
+      "fuego",
+      "rio",
+      "hojaseca",
+      "concha",
+      "cristal",
+      "mesa"
+     ],
+     "goal": 7,
+     "misses": 3,
      "speed": 4
     }
    }

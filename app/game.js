@@ -689,7 +689,6 @@
       var today = m.today && ch.code === m.today;
       var cls = 'place' + (ch.mine ? ' mine' : '') + (ch.lit ? ' lit' : '') + (ch.id === current.id ? ' here' : '') +
         (ch.id === state.chapter ? ' selected' : '') + (today ? ' today' : '');
-      var label = ch.name.length > 22 ? ch.name.slice(0, 21) + '…' : ch.name;
       return '<g class="' + cls + '" data-chapter="' + ch.id + '" data-art="' + esc(ch.art || ch.code) + '" tabindex="0" ' +
         'role="button" aria-label="' + esc(ch.name) + '">' +
         '<rect class="hit" x="' + (ch.x - 80) + '" y="' + (ch.y - 32) + '" width="160" height="84" rx="16"/>' +
@@ -700,7 +699,7 @@
         '<circle cx="' + ch.x + '" cy="' + ch.y + '" r="25" class="ring"/>' +
         '<rect x="' + (ch.x - 2) + '" y="' + (ch.y - 4) + '" width="4" height="17" rx="1" fill="#2b2219"/>' +
         '<circle cx="' + ch.x + '" cy="' + (ch.y - 7) + '" r="7" class="flame"/>' +
-        '<text x="' + ch.x + '" y="' + (ch.y + 44) + '" text-anchor="middle">' + esc(label) + '</text></g>';
+        T.mapLabel(ch.x, ch.y + 44, ch.name) + '</g>';
     }).join('');
     var c = state.world.character;
     var reached = Math.min(lastDone + 1, m.chapters.length - 1);
@@ -1135,8 +1134,8 @@
     });
     app.querySelectorAll('[data-game]').forEach(function(b) {
       b.onclick = function() {
-        // Defensa del nido, or a hunt for mistakes of the Embrollo.
-        var play = b.dataset.gametype === 'errors' && T.playErrors ? T.playErrors : T.playNest;
+        // Defensa del nido, a hunt for mistakes of the Embrollo or Who is alive?
+        var play = {errors: T.playErrors, whack: T.playWhack}[b.dataset.gametype] || T.playNest;
         play({code: b.dataset.game, world: state.world, onclose: function(world) {
           state.world = world;
           remember();

@@ -27,6 +27,10 @@ namespace local_oksigeniatesape\local;
  * touches what is wrong and is shown what is right and why. A word touched that was right is a blot of ink, and too many
  * blots lose the game. The sheets are written as in the board of Classtools: [what it says|right/also right|why].
  *
+ * Who is alive? (type whack): living things and things that are not come out of the holes of the clearing for a moment;
+ * the student touches only what is alive. A thing touched that is not alive is a slip, with its why; a living thing let
+ * go is not caught.
+ *
  * @package    local_oksigeniatesape
  * @copyright  2026 Oksigenia <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -57,6 +61,9 @@ final class minigames {
         }
         if (($game['type'] ?? '') === 'errors') {
             return self::errors_config($mission, $code, $game, $step);
+        }
+        if (($game['type'] ?? '') === 'whack') {
+            return self::whack_config($mission, $code, $game, $step);
         }
         $level = self::level($game, $step);
         $nets = [];
@@ -124,6 +131,47 @@ final class minigames {
             'misses' => self::misses($game, $step),
             'shield' => 0,
             'speed' => 0,
+        ];
+    }
+
+    /**
+     * Who is alive? as a student of a step plays it: the things of their level, each one alive or not, with its why.
+     *
+     * @param \stdClass $mission With data.
+     * @param string $code
+     * @param array $game
+     * @param int $step
+     * @return array
+     */
+    private static function whack_config(\stdClass $mission, string $code, array $game, int $step): array {
+        $level = self::level($game, $step);
+        $things = [];
+        foreach ($level['things'] ?? [] as $id) {
+            $thing = $game['things'][$id] ?? null;
+            if (!$thing) {
+                continue;
+            }
+            $label = $thing['label'];
+            $why = $thing['why'] ?? '';
+            $things[] = ['id' => (string) $id,
+                'label' => is_array($label) ? (string) ($label[$mission->variant] ?? $label['gen'] ?? reset($label)) : (string) $label,
+                'alive' => !empty($thing['alive']),
+                'why' => is_array($why) ? (string) ($why[$mission->variant] ?? $why['gen'] ?? reset($why)) : (string) $why];
+        }
+        return [
+            'code' => $code,
+            'type' => 'whack',
+            'title' => missions::text($game['title'] ?? $code, $mission->skin),
+            'intro' => missions::text($game['intro'] ?? '', $mission->skin, $mission->variant),
+            'win' => missions::text($game['win'] ?? '', $mission->skin, $mission->variant),
+            'lose' => missions::text($game['lose'] ?? '', $mission->skin, $mission->variant),
+            'nets' => [],
+            'animals' => [],
+            'things' => $things,
+            'goal' => (int) ($level['goal'] ?? 0),
+            'misses' => max(1, (int) ($level['misses'] ?? 3)),
+            'shield' => 0,
+            'speed' => (int) ($level['speed'] ?? 1),
         ];
     }
 
@@ -213,6 +261,8 @@ final class minigames {
         }
         if (($game['type'] ?? '') === 'errors') {
             [$caught, $missed, $wrong, $success] = self::count_errors($game, $events);
+        } else if (($game['type'] ?? '') === 'whack') {
+            [$caught, $missed, $wrong, $success] = self::count_whack($game, $events);
         } else {
             [$caught, $missed, $wrong, $success] = self::count_nest($game, $events);
         }
@@ -280,6 +330,40 @@ final class minigames {
             }
         }
         return [$caught, $missed, $wrong, $caught >= $game['goal'] && $missed < $game['shield']];
+    }
+
+    /**
+     * Counts a play of Who is alive?: each thing touched once (i, its id). A living thing touched is caught; a thing
+     * touched that is not alive is a slip; a living thing not touched got away.
+     *
+     * @param array $game As the student plays it.
+     * @param array $events
+     * @return array [caught, slips, wrong (id => touched or away), success]
+     */
+    private static function count_whack(array $game, array $events): array {
+        $alive = array_column($game['things'], 'alive', 'id');
+        $touched = [];
+        foreach ($events as $event) {
+            $id = (string) ($event['i'] ?? '');
+            if (!isset($alive[$id]) || isset($touched[$id])) {
+                throw new \moodle_exception('invalidgameplay', 'local_oksigeniatesape');
+            }
+            $touched[$id] = true;
+        }
+        $caught = 0;
+        $slips = 0;
+        $wrong = [];
+        foreach ($alive as $id => $living) {
+            if ($living && isset($touched[$id])) {
+                $caught++;
+            } else if ($living) {
+                $wrong[$id] = 'away';
+            } else if (isset($touched[$id])) {
+                $slips++;
+                $wrong[$id] = 'touched';
+            }
+        }
+        return [$caught, $slips, $wrong, $caught >= $game['goal'] && $slips < $game['misses']];
     }
 
     /**
@@ -400,6 +484,14 @@ final class minigames {
             foreach (array_slice($counts, 0, self::CONFUSIONS, true) as $key => $count) {
                 if (($game['type'] ?? '') === 'errors') {
                     $confusions[] = ['text' => self::mistake($mission, $game, (string) $key), 'count' => $count];
+                    continue;
+                }
+                if (($game['type'] ?? '') === 'whack') {
+                    [$id, $how] = explode('|', $key);
+                    $label = $game['things'][$id]['label'] ?? $id;
+                    $label = is_array($label) ? ($label[$mission->variant] ?? $label['gen'] ?? reset($label)) : $label;
+                    $string = $how === 'away' ? 'minigame_letgo' : 'minigame_thoughtalive';
+                    $confusions[] = ['text' => get_string($string, 'local_oksigeniatesape', $label), 'count' => $count];
                     continue;
                 }
                 [$animal, $net] = explode('|', $key);

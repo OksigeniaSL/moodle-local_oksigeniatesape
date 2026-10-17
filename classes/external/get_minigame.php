@@ -93,7 +93,7 @@ final class get_minigame extends external_api {
             'code' => new external_value(PARAM_ALPHANUMEXT, 'Minigame'),
             'type' => new external_value(
                 PARAM_ALPHA,
-                'nest (Defensa del nido) or errors (the hunt for mistakes)',
+                'nest (Defensa del nido), errors (the hunt for mistakes) or whack (Who is alive?)',
                 VALUE_DEFAULT,
                 'nest'
             ),
@@ -123,7 +123,13 @@ final class get_minigame extends external_api {
                     'why' => new external_value(PARAM_TEXT, 'Why'),
                 ])),
             ]), 'The sheets of a hunt for mistakes', VALUE_DEFAULT, []),
-            'misses' => new external_value(PARAM_INT, 'Blots of ink a hunt for mistakes allows', VALUE_DEFAULT, 0),
+            'things' => new external_multiple_structure(new external_single_structure([
+                'id' => new external_value(PARAM_ALPHANUMEXT, 'Thing'),
+                'label' => new external_value(PARAM_TEXT, 'Name'),
+                'alive' => new external_value(PARAM_BOOL, 'Whether it is alive'),
+                'why' => new external_value(PARAM_TEXT, 'Why, when it is tricky'),
+            ]), 'What comes out of the holes in Who is alive?', VALUE_DEFAULT, []),
+            'misses' => new external_value(PARAM_INT, 'Slips a hunt for mistakes or Who is alive? allows', VALUE_DEFAULT, 0),
             'goal' => new external_value(PARAM_INT, 'Animals to catch, or mistakes to find'),
             'shield' => new external_value(PARAM_INT, 'What the shield of the nest holds'),
             'speed' => new external_value(PARAM_INT, 'Speed, 1 to 4'),

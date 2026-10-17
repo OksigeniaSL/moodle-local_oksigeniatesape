@@ -394,7 +394,7 @@
         '<circle cx="' + ch.x + '" cy="' + ch.y + '" r="25" class="ring"/>' +
         '<rect x="' + (ch.x - 2) + '" y="' + (ch.y - 4) + '" width="4" height="17" rx="1" fill="#2b2219"/>' +
         '<circle cx="' + ch.x + '" cy="' + (ch.y - 7) + '" r="7" class="flame"/>' +
-        '<text x="' + ch.x + '" y="' + (ch.y + 44) + '" text-anchor="middle">' + esc(ch.name) + '</text></g>';
+        T.mapLabel(ch.x, ch.y + 44, ch.name) + '</g>';
     }).join('');
     var height = T.mapHeight(m);
     var fresh = T.mapNewRoad('board-' + cfg.courseid + '-' + m.code, m.chapters, Math.min(lit, m.chapters.length - 1));
