@@ -932,6 +932,27 @@
      */
     function reveal(body, list, done) {
       var out = body.querySelector('[data-out]');
+      if (list.length > 1) {
+        // Several chosen at once: the world answers for all of them in one view.
+        out.innerHTML = '<div class="conseq wait" aria-hidden="true"><span></span><span></span><span></span></div>';
+        setTimeout(function() {
+          if (T.fx) {
+            T.fx.sound('choose');
+          }
+          list.forEach(function(o) {
+            answer(body, o);
+          });
+          out.innerHTML = '<div class="conseq said"><ul class="cls-said">' + list.map(function(o) {
+            return '<li><b>' + esc(tx(o.label)) + '</b> ' + esc(tx(o.say || o.feedback || '')) + '</li>';
+          }).join('') + '</ul></div><div class="actions"><button class="btn btn-main" data-more>' +
+            esc(t('app_continue')) + '</button></div>';
+          var more = out.querySelector('[data-more]');
+          more.focus();
+          more.onclick = done;
+          out.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+        }, T.adapted.still ? 0 : 300);
+        return;
+      }
       var i = 0;
       function step() {
         if (i >= list.length) {

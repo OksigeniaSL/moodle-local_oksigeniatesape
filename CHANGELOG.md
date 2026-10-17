@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.58.1 (2026-10-17)
+
+- When several options are chosen at once, the world answers for all of them in one view, not one after another.
+
 ## 0.58.0 (2026-10-17)
 
 Block 1.3 of the plan: the scenes stop looking like a test.
