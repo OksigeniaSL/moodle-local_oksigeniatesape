@@ -93,7 +93,7 @@ final class get_minigame extends external_api {
             'code' => new external_value(PARAM_ALPHANUMEXT, 'Minigame'),
             'type' => new external_value(
                 PARAM_ALPHA,
-                'nest (Defensa del nido), errors (the hunt for mistakes) or whack (Who is alive?)',
+                'nest (Defensa del nido), errors (the hunt for mistakes), whack (Who is alive?) or venn (the two circles)',
                 VALUE_DEFAULT,
                 'nest'
             ),
@@ -121,8 +121,19 @@ final class get_minigame extends external_api {
                     'wrong' => new external_value(PARAM_TEXT, 'What the sheet says'),
                     'right' => new external_multiple_structure(new external_value(PARAM_TEXT, 'Accepted')),
                     'why' => new external_value(PARAM_TEXT, 'Why'),
-                ])),
-            ]), 'The sheets of a hunt for mistakes', VALUE_DEFAULT, []),
+                ]), 'Of a hunt for mistakes', VALUE_DEFAULT, []),
+                'groups' => new external_multiple_structure(
+                    new external_value(PARAM_TEXT, 'Name of a circle'),
+                    'The two circles',
+                    VALUE_DEFAULT,
+                    []
+                ),
+                'items' => new external_multiple_structure(new external_single_structure([
+                    'label' => new external_value(PARAM_TEXT, 'Thing'),
+                    'zone' => new external_value(PARAM_ALPHA, 'a, b or ab (both)'),
+                    'why' => new external_value(PARAM_TEXT, 'Why, when it is tricky'),
+                ]), 'Of the two circles', VALUE_DEFAULT, []),
+            ]), 'The sheets of a hunt for mistakes or of the two circles', VALUE_DEFAULT, []),
             'things' => new external_multiple_structure(new external_single_structure([
                 'id' => new external_value(PARAM_ALPHANUMEXT, 'Thing'),
                 'label' => new external_value(PARAM_TEXT, 'Name'),

@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.54.0 (2026-10-17)
+
+- **The two circles**, a new kind of minigame, in the library, the forest and the lake (mission version 18): the
+  Embrollo has let loose the cards of two circles of light, and the student takes each one to its circle, or to the
+  middle, where they meet, if it belongs to both (the platypus lays eggs and has fur; the boar eats plants and
+  animals). A card in the wrong place shows where it goes and why; too many, and the circles get tangled this time.
+  Each step plays its pages, with the examples of the place (irupé, yaguareté, ñandú…). Touch the circles or use the
+  three buttons (or the keys 1, 2 and 3). The first win gives 5 gems, and the teacher sees which cards go to the wrong
+  place most. Pages are written as in Classtools: `Circle: thing, thing`, and `? thing: why`.
+- **No page turn at every touch**: in the hunt for mistakes and in the two circles, the page turns only when it is a new
+  one; a mistake found or a card put changes it in place, and the keyboard stays where it was.
+
 ## 0.53.2 (2026-10-17)
 
 - **Defensa del nido on a phone**: the nets go three to a row from about 360 px wide, with the number in a corner and

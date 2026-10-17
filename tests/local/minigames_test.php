@@ -222,6 +222,51 @@ final class minigames_test extends \advanced_testcase {
         minigames::play($w->course->id, $w->user->id, 'enredoclaro', [$found[0], $found[0]]);
     }
 
+    public function test_a_page_of_the_two_circles_from_its_plain_text(): void {
+        $venn = minigames::venn("# Animales\nPone huevos: gallina, ornitorrinco\nTiene pelo; con comas: conejo; ornitorrinco\n" .
+            "? Ornitorrinco: pone huevos y tiene pelo\nTercer círculo: nada");
+        $this->assertSame(['Pone huevos', 'Tiene pelo; con comas'], $venn['groups']);
+        $zones = array_column($venn['items'], 'zone', 'label');
+        $this->assertSame(['gallina' => 'a', 'ornitorrinco' => 'ab', 'conejo' => 'b'], $zones);
+        $this->assertSame('pone huevos y tiene pelo', $venn['items'][1]['why']);
+    }
+
+    public function test_the_two_circles(): void {
+        $this->resetAfterTest();
+        $w = $this->make_class('py');
+        $member = engine::member(characters::get($w->user->id), $w->course->id);
+        $game = minigames::config($w->mission, 'circuloslago', (int) $member->step);
+        $this->assertSame('venn', $game['type']);
+        $this->assertCount(2, $game['sheets'][0]['groups']);
+        // The local examples of the variant.
+        $labels = array_column($game['sheets'][0]['items'], 'label');
+        $this->assertContains('yaguareté', $labels);
+        $this->assertSame(array_sum(array_map(fn($s) => count($s['items']), $game['sheets'])), $game['goal']);
+        // Every card in its place, but one: won, with a slip.
+        $events = [];
+        foreach ($game['sheets'] as $sheet) {
+            foreach ($sheet['items'] as $i => $item) {
+                $events[] = ['s' => $sheet['id'], 'i' => $i, 'z' => $item['zone']];
+            }
+        }
+        $wrong = $events;
+        $wrong[0]['z'] = $wrong[0]['z'] === 'ab' ? 'a' : 'ab';
+        $result = minigames::play($w->course->id, $w->user->id, 'circuloslago', $wrong);
+        $this->assertTrue($result['success']);
+        $this->assertSame($game['goal'] - 1, $result['caught']);
+        $this->assertSame(1, $result['missed']);
+        $this->assertSame(5, $result['gems']);
+        // Cards left without a place do not win.
+        $half = minigames::play($w->course->id, $w->user->id, 'circuloslago', array_slice($events, 0, 3));
+        $this->assertFalse($half['success']);
+        // The teacher sees which card went where.
+        $results = array_column(minigames::results($w->mission), null, 'code');
+        $this->assertStringContainsString('→', $results['circuloslago']['confusions'][0]['text']);
+        // A card placed twice, or in a place that does not exist, is not a play.
+        $this->expectException(\moodle_exception::class);
+        minigames::play($w->course->id, $w->user->id, 'circuloslago', [$events[0], $events[0]]);
+    }
+
     public function test_who_is_alive(): void {
         $this->resetAfterTest();
         $w = $this->make_class('py');

@@ -27,6 +27,10 @@ namespace local_oksigeniatesape\local;
  * touches what is wrong and is shown what is right and why. A word touched that was right is a blot of ink, and too many
  * blots lose the game. The sheets are written as in the board of Classtools: [what it says|right/also right|why].
  *
+ * The two circles (type venn): each thing of a sheet goes in one circle, in the other or in the middle, where they meet.
+ * Sheets are written as in Classtools: «Group: thing, thing» for each circle (with «;» if a thing has commas), a thing
+ * in both groups goes in the middle, and «? thing: why». A thing in the wrong place is a slip.
+ *
  * Who is alive? (type whack): living things and things that are not come out of the holes of the clearing for a moment;
  * the student touches only what is alive. A thing touched that is not alive is a slip, with its why; a living thing let
  * go is not caught.
@@ -64,6 +68,9 @@ final class minigames {
         }
         if (($game['type'] ?? '') === 'whack') {
             return self::whack_config($mission, $code, $game, $step);
+        }
+        if (($game['type'] ?? '') === 'venn') {
+            return self::venn_config($mission, $code, $game, $step);
         }
         $level = self::level($game, $step);
         $nets = [];
@@ -176,6 +183,96 @@ final class minigames {
     }
 
     /**
+     * The two circles as a student of a step plays them: the sheets of their step, each with its two groups and its
+     * things.
+     *
+     * @param \stdClass $mission With data.
+     * @param string $code
+     * @param array $game
+     * @param int $step
+     * @return array
+     */
+    private static function venn_config(\stdClass $mission, string $code, array $game, int $step): array {
+        $sheets = [];
+        $goal = 0;
+        foreach (self::sheets_for($game, $step) as $sheet) {
+            $venn = self::venn(self::sheet_text($mission, $sheet));
+            $goal += count($venn['items']);
+            $title = missions::text((string) ($sheet['title'] ?? ''), $mission->skin);
+            $sheets[] = ['id' => (string) $sheet['id'], 'title' => $title, 'parts' => []] + $venn;
+        }
+        return [
+            'code' => $code,
+            'type' => 'venn',
+            'title' => missions::text($game['title'] ?? $code, $mission->skin),
+            'intro' => missions::text($game['intro'] ?? '', $mission->skin, $mission->variant),
+            'win' => missions::text($game['win'] ?? '', $mission->skin, $mission->variant),
+            'lose' => missions::text($game['lose'] ?? '', $mission->skin, $mission->variant),
+            'nets' => [],
+            'animals' => [],
+            'sheets' => $sheets,
+            'goal' => $goal,
+            'misses' => self::misses($game, $step),
+            'shield' => 0,
+            'speed' => 0,
+        ];
+    }
+
+    /**
+     * The text of a sheet with the examples of the place of the mission.
+     *
+     * @param \stdClass $mission
+     * @param array $sheet
+     * @return string
+     */
+    private static function sheet_text(\stdClass $mission, array $sheet): string {
+        $text = $sheet['text'] ?? '';
+        return is_array($text) ? (string) ($text[$mission->variant] ?? $text['gen'] ?? reset($text)) : (string) $text;
+    }
+
+    /**
+     * A sheet of the two circles from its plain text: the first two groups, and each thing once, in a (only the first
+     * group), b (only the second) or ab (both), with its why.
+     *
+     * @param string $text
+     * @return array groups (two names) and items (label, zone, why).
+     */
+    public static function venn(string $text): array {
+        $groups = [];
+        $in = [];
+        $why = [];
+        foreach (preg_split('/\R/u', $text) as $line) {
+            $line = trim($line);
+            if ($line === '' || $line[0] === '#') {
+                continue;
+            }
+            if ($line[0] === '?') {
+                [$thing, $because] = array_pad(explode(':', substr($line, 1), 2), 2, '');
+                $why[\core_text::strtolower(trim($thing))] = trim($because);
+                continue;
+            }
+            [$name, $list] = array_pad(explode(':', $line, 2), 2, '');
+            if (count($groups) === 2) {
+                continue;
+            }
+            $groups[] = trim($name);
+            foreach (explode(str_contains($list, ';') ? ';' : ',', $list) as $thing) {
+                $thing = trim($thing);
+                if ($thing !== '') {
+                    $in['_' . $thing][count($groups) - 1] = true;
+                }
+            }
+        }
+        $items = [];
+        foreach ($in as $key => $where) {
+            $label = substr($key, 1);
+            $zone = count($where) > 1 ? 'ab' : (isset($where[0]) ? 'a' : 'b');
+            $items[] = ['label' => $label, 'zone' => $zone, 'why' => $why[\core_text::strtolower($label)] ?? ''];
+        }
+        return ['groups' => $groups, 'items' => $items];
+    }
+
+    /**
      * The sheets of a hunt for mistakes for a step: those that list it, or all of them if none does.
      *
      * @param array $game
@@ -263,6 +360,8 @@ final class minigames {
             [$caught, $missed, $wrong, $success] = self::count_errors($game, $events);
         } else if (($game['type'] ?? '') === 'whack') {
             [$caught, $missed, $wrong, $success] = self::count_whack($game, $events);
+        } else if (($game['type'] ?? '') === 'venn') {
+            [$caught, $missed, $wrong, $success] = self::count_venn($game, $events);
         } else {
             [$caught, $missed, $wrong, $success] = self::count_nest($game, $events);
         }
@@ -364,6 +463,41 @@ final class minigames {
             }
         }
         return [$caught, $slips, $wrong, $caught >= $game['goal'] && $slips < $game['misses']];
+    }
+
+    /**
+     * Counts a play of the two circles: each thing of each sheet once (s, the sheet; i, the thing; z, where it went).
+     * Won when everything is in its place with fewer slips than allowed.
+     *
+     * @param array $game As the student plays it.
+     * @param array $events
+     * @return array [right, slips, wrong (sheet:thing => where it went), success]
+     */
+    private static function count_venn(array $game, array $events): array {
+        $zones = [];
+        foreach ($game['sheets'] as $sheet) {
+            foreach ($sheet['items'] as $i => $item) {
+                $zones[$sheet['id'] . ':' . $i] = $item['zone'];
+            }
+        }
+        $seen = [];
+        $right = 0;
+        $wrong = [];
+        foreach ($events as $event) {
+            $key = ($event['s'] ?? '') . ':' . ($event['i'] ?? '');
+            $zone = (string) ($event['z'] ?? '');
+            if (!isset($zones[$key]) || isset($seen[$key]) || !in_array($zone, ['a', 'b', 'ab'], true)) {
+                throw new \moodle_exception('invalidgameplay', 'local_oksigeniatesape');
+            }
+            $seen[$key] = true;
+            if ($zone === $zones[$key]) {
+                $right++;
+            } else {
+                $wrong[$key] = $zone;
+            }
+        }
+        $done = count($seen) === count($zones);
+        return [$right, count($wrong), $wrong, $done && count($wrong) < $game['misses']];
     }
 
     /**
@@ -486,6 +620,10 @@ final class minigames {
                     $confusions[] = ['text' => self::mistake($mission, $game, (string) $key), 'count' => $count];
                     continue;
                 }
+                if (($game['type'] ?? '') === 'venn') {
+                    $confusions[] = ['text' => self::misplaced($mission, $game, (string) $key), 'count' => $count];
+                    continue;
+                }
                 if (($game['type'] ?? '') === 'whack') {
                     [$id, $how] = explode('|', $key);
                     $label = $game['things'][$id]['label'] ?? $id;
@@ -535,6 +673,32 @@ final class minigames {
             }
         }
         return $key;
+    }
+
+    /**
+     * A thing of the two circles put in the wrong place, for the teacher: the thing and where it went.
+     *
+     * @param \stdClass $mission With data.
+     * @param array $game
+     * @param string $key sheet:thing|zone
+     * @return string
+     */
+    private static function misplaced(\stdClass $mission, array $game, string $key): string {
+        [$where, $zone] = array_pad(explode('|', $key, 2), 2, '');
+        [$id, $i] = array_pad(explode(':', $where, 2), 2, '');
+        foreach ($game['sheets'] ?? [] as $sheet) {
+            if ((string) ($sheet['id'] ?? '') !== $id) {
+                continue;
+            }
+            $venn = self::venn(self::sheet_text($mission, $sheet));
+            $item = $venn['items'][(int) $i] ?? null;
+            if ($item) {
+                $place = $zone === 'ab' ? get_string('minigame_venn_both', 'local_oksigeniatesape') :
+                    ($venn['groups'][$zone === 'a' ? 0 : 1] ?? $zone);
+                return '«' . $item['label'] . '» → ' . $place;
+            }
+        }
+        return $where;
     }
 
     /**

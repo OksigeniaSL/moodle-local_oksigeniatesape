@@ -4945,3 +4945,191 @@ body.adapt-colours .errors-text .fixed ins {
     transition: none;
   }
 }
+
+/* The two circles: two circles of light that meet in the middle, and the card to take to its place. */
+.venn-intro {
+  text-align: center;
+}
+
+.venn-intro .battle-mini {
+  display: inline-block;
+  width: 96px;
+  height: 96px;
+}
+
+.venn-title {
+  margin: 4px 0 8px;
+  font-size: 20px;
+}
+
+.venn-names {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  max-width: 460px;
+  margin: 0 auto;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.venn-names .a {
+  color: var(--sky);
+}
+
+.venn-names .b {
+  color: var(--accent);
+  text-align: right;
+}
+
+.venn-board {
+  position: relative;
+  max-width: 460px;
+  aspect-ratio: 100 / 64;
+  margin: 6px auto 10px;
+}
+
+.venn-board .circle {
+  position: absolute;
+  top: 0;
+  width: 64%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 3px solid;
+  pointer-events: none;
+}
+
+.venn-board .circle.a {
+  left: 0;
+  border-color: var(--sky);
+  background: rgba(143, 211, 255, .1);
+}
+
+.venn-board .circle.b {
+  right: 0;
+  border-color: var(--accent);
+  background: rgba(var(--lantern-rgb), .1);
+}
+
+.venn-zone {
+  position: absolute;
+  top: 10%;
+  bottom: 10%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border: 0;
+  border-radius: 40%;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.venn-zone:hover {
+  background: rgba(var(--lantern-rgb), .1);
+}
+
+.venn-zone:disabled {
+  cursor: default;
+}
+
+.venn-zone.z-a {
+  left: 3%;
+  width: 31%;
+}
+
+.venn-zone.z-ab {
+  left: 37%;
+  width: 26%;
+}
+
+.venn-zone.z-b {
+  right: 3%;
+  width: 31%;
+}
+
+.venn-zone .chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 3px;
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.venn-zone .chips i {
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(243, 234, 212, .92);
+  color: var(--ink);
+  font-style: normal;
+}
+
+.venn-zone .chips i.fixed {
+  outline: 2px dashed #7b5cc9;
+}
+
+.venn-say {
+  min-height: 2.8em;
+  padding: 8px 12px;
+  border-radius: var(--r-s);
+  font-size: 15px;
+}
+
+.venn-say.good {
+  background: rgba(var(--leaf-rgb), .92);
+  color: #10251a;
+}
+
+.venn-say.bad {
+  background: rgba(var(--ember-rgb), .94);
+  color: #2a1209;
+}
+
+.venn-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin: 12px 0;
+  text-align: center;
+}
+
+.venn-card b {
+  padding: 12px 22px;
+  border-radius: 14px;
+  background: rgba(243, 234, 212, .97);
+  color: var(--ink);
+  font-size: 22px;
+}
+
+.venn-card small {
+  color: var(--text-soft);
+}
+
+.venn-answers {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.venn-answers .btn {
+  position: relative;
+  min-width: 0;
+  min-height: 56px;
+  padding: .45em .5em;
+  font-size: 15px;
+  line-height: 1.15;
+  text-align: center;
+  hyphens: auto;
+  overflow-wrap: break-word;
+}
+
+.venn-answers .btn small {
+  position: absolute;
+  top: 3px;
+  left: 8px;
+  font-size: 11px;
+  font-weight: 400;
+  opacity: .6;
+}

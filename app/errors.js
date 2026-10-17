@@ -97,7 +97,13 @@
       }).join('');
     }
 
-    function sheet() {
+    /**
+     * Draws the sheet: turned, when it is a new one; in place, when a mistake has just been found.
+     *
+     * @param {boolean} inplace
+     * @param {number} at For the keyboard: the place of the word just touched, to keep the focus there.
+     */
+    function sheet(inplace, at) {
       var s = game.sheets[run.sheet];
       var marks = s.parts.filter(function(p) {
         return p.mark >= 0;
@@ -121,14 +127,24 @@
       }).join('');
       var last = run.sheet === game.sheets.length - 1;
       var reads = T.adapted.readaloud && T.readAloud && window.speechSynthesis;
-      var body = show('<div class="errors-head"><span class="kicker">' + esc(t('app_errors_sheet', {n: run.sheet + 1,
+      var html = '<div class="errors-head"><span class="kicker">' + esc(t('app_errors_sheet', {n: run.sheet + 1,
         total: game.sheets.length})) + '</span>' + blots() + '</div><section class="card errors-sheet">' +
         (reads ? '<button type="button" class="btn btn-soft read-card" data-readcard aria-label="' +
         esc(t('app_read_aloud')) + '">🔊</button>' : '') + '<h2>' + esc(s.title) + '</h2><p class="errors-text">' + text +
         '</p></section>' + (why ? '<ul class="errors-why">' + why + '</ul>' : '') + '<p class="help" aria-live="polite">' +
         esc(left ? t('app_errors_left', left) : t('app_errors_clean')) + '</p>' + (left ? '' :
         '<div class="actions"><button class="btn btn-main" data-focus data-next>' + esc(last ? t('app_errors_finish') :
-        t('app_errors_next')) + '</button></div>'));
+        t('app_errors_next')) + '</button></div>');
+      var body = layer.querySelector('.scene-body');
+      if (inplace && body) {
+        body.innerHTML = html;
+        var buttons = body.querySelectorAll('.errors-text button');
+        if (buttons.length && at >= 0) {
+          buttons[Math.min(at, buttons.length - 1)].focus();
+        }
+      } else {
+        body = show(html);
+      }
       body.querySelectorAll('[data-w]').forEach(function(b) {
         b.onclick = function() {
           blot(s, b);
@@ -139,7 +155,8 @@
           run.found[s.id + ':' + b.dataset.m] = true;
           run.events.push({s: s.id, m: Number(b.dataset.m)});
           sound('right');
-          sheet();
+          sheet(true, b === document.activeElement ?
+            Array.prototype.indexOf.call(body.querySelectorAll('.errors-text button'), b) : -1);
         };
       });
       var read = body.querySelector('[data-readcard]');
