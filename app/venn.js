@@ -300,7 +300,7 @@
       }
     }
 
-    show('<p class="help">' + esc(t('app_loading')) + '</p>');
+    show('<div class="loading-inline"><div class="lamp"></div>' + esc(t('app_loading')) + '</div>');
     T.api('get_minigame', {courseid: cfg.courseid, game: opts.code}).then(function(g) {
       game = g;
       intro();

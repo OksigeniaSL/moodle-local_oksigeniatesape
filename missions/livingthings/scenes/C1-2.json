@@ -172,8 +172,12 @@
    "type": "ending",
    "outcome": "success",
    "text": {
-    "valley": "Las semillas se abren. De la tuya sale {{creature}}, pequeña y distinta de todas, y se sube a tu hombro. Estornuda: es lo primero que hace en su vida. La linterna del claro se enciende y en el Gran Libro aparece la primera página: «Ser vivo: el que se nutre, se relaciona y se reproduce». Las manchas de tinta del barro siguen ahí. Nadie sabe todavía de quién son.",
-    "azara": "Las semillas germinan en el cajón. De la tuya sale {{creature}}, que ya no se separa de ti, y estornuda. El cuaderno recupera su primera página: «Ser vivo: el que se nutre, se relaciona y se reproduce». Las manchas de tinta del margen siguen sin explicación."
+    "valley": "Las semillas tiemblan y se calientan; la tuya, también. La linterna del claro se enciende y en el Gran Libro aparece la primera página: «Ser vivo: el que se nutre, se relaciona y se reproduce». Las manchas de tinta del barro siguen ahí. Nadie sabe todavía de quién son.",
+    "azara": "Las semillas germinan en el cajón; la tuya tiembla. El cuaderno recupera su primera página: «Ser vivo: el que se nutre, se relaciona y se reproduce». Las manchas de tinta del margen siguen sin explicación."
+   },
+   "born": {
+    "valley": "De tu semilla sale {{creature}}, pequeña y distinta de todas, y se sube a tu hombro. Estornuda: es lo primero que hace en su vida.",
+    "azara": "De tu semilla sale {{creature}}, que ya no se separa de ti, y estornuda."
    },
    "effects": [
     {
@@ -197,8 +201,12 @@
    "type": "ending",
    "outcome": "partial",
    "text": {
-    "valley": "Las semillas se abren, pero de la tuya sale {{creature}} con los ojos cerrados: nace dormida. Hay algo en el nido que no está vivo y le roba calor. La druida mayor la arropa: «Despertará mañana. O hoy mismo, si el nido vuelve a tener solo compañía de verdad». El Gran Libro recupera su primera página, un poco arrugada.",
-    "azara": "Las semillas germinan, pero de la tuya sale {{creature}} con los ojos cerrados: nace dormida. Algo del cajón no estaba vivo y le robó calor. «Despertará mañana», anota el naturalista, «o hoy mismo, si revisamos el cajón». El cuaderno recupera su primera página, un poco arrugada."
+    "valley": "Las semillas tiemblan, pero la tuya apenas se calienta: hay algo en el nido que no está vivo y le roba calor. La druida mayor la arropa: «Despertará mañana. O hoy mismo, si el nido vuelve a tener solo compañía de verdad». El Gran Libro recupera su primera página, un poco arrugada.",
+    "azara": "Las semillas germinan, pero la tuya apenas se calienta: algo del cajón no estaba vivo y le robó calor. «Despertará mañana», anota el naturalista, «o hoy mismo, si revisamos el cajón». El cuaderno recupera su primera página, un poco arrugada."
+   },
+   "born": {
+    "valley": "Sale {{creature}} con los ojos cerrados: nace dormida.",
+    "azara": "Sale {{creature}} con los ojos cerrados: nace dormida."
    },
    "effects": [
     {

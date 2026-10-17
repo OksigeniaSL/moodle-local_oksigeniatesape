@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.60.0 (2026-10-17)
+
+Block 1.5 of the plan: what is won is felt.
+
+- **What is won flies to its counter**: back on the map, the saber and the gems won leave the middle of the screen and
+  fly to their counters in the header, which beat and count up (also after a minigame, a battle or what the teacher
+  gave while the student was away). No more toasts of «+20 Saber».
+- **Ceremonies on the tablet of the student**: a new level has its moment, as the badge has (the ring of before, a
+  flash of light, the new one; and with a new stage, the hero of before and the one of now), and so has the creature
+  when it grows. The creature is born from its seed, touched three times; what it does when it comes out (`born`) is
+  read then. Mission v22 tells the birth in two moments.
+- **The rule of the chest**, written in the design: what a reward holds is known before, nothing depends on chance,
+  and the animation celebrates what was won instead of hiding it.
+- **Juice**: a scene or a minigame opens as the light of a lantern from where it was touched; options, groups and
+  things sink a little and ripple when touched; a place touched on the map answers and its panel comes in; the
+  lanterns lit since the map was last seen light in front of the student; what waits in «Challenges» glows instead of
+  a number in brackets. All of it stays still with «no movement» or when the system asks for less motion.
+- The layers of the minigames are opaque from the first frame (the map no longer shows through) and show the lamp
+  while they load. A retry ending no longer buzzes as a referee would.
+
 ## 0.59.0 (2026-10-17)
 
 Block 1.4 of the plan: the role and the team in the scenes.

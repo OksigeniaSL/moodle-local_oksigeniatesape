@@ -330,7 +330,8 @@
   }
 
   /**
-   * Toasts for what was won since the student last looked, and a level up.
+   * What was won since the student last looked, on this device: the saber and the gems fly to their counters, and a
+   * new level, a new stage or a creature that grew have their moment, on the tablet of the student.
    */
   function celebrate() {
     var c = state.world.character;
@@ -341,23 +342,39 @@
     } catch (e) {
       seen = null;
     }
-    if (seen) {
-      if (c.saber > seen.saber) {
-        T.toast(T.icon('saber').replace('<svg', '<svg width="18" height="18"') + ' <b>+' + (c.saber - seen.saber) + '</b> ' +
-          esc(t('app_saber')));
-      }
-      if (c.level > seen.level) {
-        T.toast('<b>' + esc(t('app_levelup', c.level)) + '</b>');
-      }
-    }
+    var gained = seen ? [['saber', seen.saber, c.saber], ['gems', seen.gems, c.gems]].filter(function(r) {
+      return typeof r[1] === 'number' && r[2] > r[1];
+    }) : [];
+    // The header shows what there was, and then each one flies to its counter.
+    state.loot = {};
+    gained.forEach(function(r, i) {
+      state.loot[r[0]] = r[1];
+      setTimeout(function() {
+        delete state.loot[r[0]];
+        var counter = app.querySelector('[data-res="' + r[0] + '"]');
+        if (counter) {
+          T.loot(counter, r[0], r[1], r[2]);
+        }
+      }, 400 + i * 450);
+    });
     remember();
-    // One moment after the other: first the welcome, then the badge.
+    // One moment after the other: the welcome, the new level and the creature, then the badge.
     var moments = [];
     if (state.world.welcome) {
       var w = state.world.welcome;
       state.world.welcome = null;
       moments.push(function(then) {
         welcomeMoment(w, then);
+      });
+    }
+    if (seen && typeof seen.level === 'number' && c.level > seen.level) {
+      moments.push(function(then) {
+        levelMoment(seen, c, then);
+      });
+    }
+    if (seen && seen.creaturestage && c.creaturestage > seen.creaturestage) {
+      moments.push(function(then) {
+        creatureMoment(seen.creaturestage, c, then);
       });
     }
     // The badge of the mission, celebrated once on each device.
@@ -389,7 +406,90 @@
       }
     };
     if (moments.length) {
-      setTimeout(next, 500);
+      // After what flies has reached its counter.
+      setTimeout(next, gained.length ? 600 + gained.length * 450 + 900 : 500);
+    }
+  }
+
+  /**
+   * A moment over the game, as the one of the badge: dark, what there was, light, what there is now.
+   *
+   * @param {string} html The card.
+   * @param {string} label Id of its title.
+   * @param {Function} [then] When it is closed.
+   * @return {Element} The layer.
+   */
+  function moment(html, label, then) {
+    var layer = document.createElement('div');
+    layer.className = 'badge-moment rise-moment' + (T.moves() ? '' : ' still');
+    layer.setAttribute('role', 'dialog');
+    layer.setAttribute('aria-modal', 'true');
+    layer.setAttribute('aria-labelledby', label);
+    layer.innerHTML = '<div class="badge-card">' + html + '<div class="actions"><button class="btn btn-main" type="button" ' +
+      'data-close>' + esc(t('app_continue')) + '</button></div></div>';
+    document.body.appendChild(layer);
+    var close = function() {
+      document.removeEventListener('keydown', onkey);
+      layer.remove();
+      if (then) {
+        then();
+      }
+    };
+    var onkey = function(ev) {
+      if (ev.key === 'Escape') {
+        close();
+      }
+    };
+    document.addEventListener('keydown', onkey);
+    layer.querySelector('[data-close]').onclick = close;
+    layer.querySelector('[data-close]').focus();
+    return layer;
+  }
+
+  /**
+   * A new level: the ring with the level of before, then the new one; and with a new stage, the hero of before and the
+   * one of now.
+   *
+   * @param {Object} before What was seen: level and stage.
+   * @param {Object} c The character now.
+   * @param {Function} [then]
+   */
+  function levelMoment(before, c, then) {
+    var staged = typeof before.stage === 'number' && c.stage > before.stage;
+    var was = Object.assign({}, c, {stage: before.stage});
+    var layer = moment('<div class="kicker">' + esc(t('app_levelup_kicker')) + '</div><div class="rise">' +
+      (staged ? '<div class="rise-from">' + avatarOf(was) + '</div><div class="rise-to">' + avatarOf(c) + '</div>' :
+      '<div class="rise-from ring big"><b>' + before.level + '</b></div><div class="rise-to ring big"><b>' + c.level +
+      '</b></div>') + '</div><h2 id="tesape-rise-title">' + esc(t('app_levelup', c.level)) + '</h2><p>' + esc(title(c)) +
+      (staged ? ' · ' + esc(t('app_stage', c.stage)) : '') + '</p>' + (staged ? '<p class="help">' +
+      esc(t('app_stageup_help')) + '</p>' : ''), 'tesape-rise-title', then);
+    if (T.fx) {
+      T.fx.sound('drumroll');
+      setTimeout(function() {
+        T.fx.sound('levelup');
+        T.fx.sparkles();
+      }, T.moves() ? 1100 : 0);
+    }
+    return layer;
+  }
+
+  /**
+   * The creature grew: the one of before, and the one of now.
+   *
+   * @param {number} from Its stage before.
+   * @param {Object} c The character now.
+   * @param {Function} [then]
+   */
+  function creatureMoment(from, c, then) {
+    moment('<div class="kicker">' + esc(t('app_creature_kicker')) + '</div><div class="rise"><div class="rise-from">' +
+      T.creature(c.creature, from, true) + '</div><div class="rise-to">' + T.creature(c.creature, c.creaturestage, true) +
+      '</div></div><h2 id="tesape-creature-title">' + esc(t('app_creaturegrew', creatureName(c))) + '</h2><p class="help">' +
+      esc(t('app_creature_grew_help')) + '</p>', 'tesape-creature-title', then);
+    if (T.fx) {
+      setTimeout(function() {
+        T.fx.sound('hatch');
+        T.fx.sparkles();
+      }, T.moves() ? 1100 : 0);
     }
   }
 
@@ -442,7 +542,6 @@
         layer.remove();
         T.playScene({sceneid: Number(b.dataset.welcomescene), world: state.world, onclose: function(world) {
           state.world = world;
-          remember();
           route();
           // The moments that were waiting after the welcome come now.
           then();
@@ -503,7 +602,7 @@
     var c = state.world.character;
     try {
       window.localStorage.setItem('tesape-seen-' + cfg.courseid + '-' + cfg.userid,
-        JSON.stringify({saber: c.saber, level: c.level}));
+        JSON.stringify({saber: c.saber, gems: c.gems, level: c.level, stage: c.stage, creaturestage: c.creaturestage}));
     } catch (e) {
       // Without storage there is just no toast next time.
     }
@@ -546,7 +645,9 @@
       res('energy', m.energy + '/' + w.energymax, t('app_energy')) + res('breath', m.breath + '/' + w.breathmax,
         t('app_breath')) + '</div></header>' +
       '<nav class="tabs" aria-label="Tesapé">' + TABS.map(function(tab) {
-        var badge = tab === 'challenges' && pending ? ' (' + pending + ')' : '';
+        // What is waiting glows; how many, only for who listens.
+        var badge = tab === 'challenges' && pending ? '<span class="new-glow" aria-hidden="true"></span><span class="sr-only"> (' +
+          pending + ')</span>' : '';
         return '<button type="button" data-tab="' + tab + '"' + (state.tab === tab ? ' aria-current="page"' : '') + '>' +
           T.icon(tab) + '<span>' + esc(t('app_tab_' + tab)) + badge + '</span></button>';
       }).join('') + '</nav><main class="content" id="content"></main></div>';
@@ -643,8 +744,10 @@
    * @return {string}
    */
   function res(kind, value, label) {
+    // What is on its way to the counter is not there yet.
+    var shown = state.loot && state.loot[kind] !== undefined ? state.loot[kind] : value;
     return '<button type="button" class="r" data-res="' + kind + '" title="' + esc(label) + '">' + T.icon(kind) + '<b>' +
-      esc(value) + '</b><span class="sr-only"> ' + esc(label) + '</span></button>';
+      esc(shown) + '</b><span class="sr-only"> ' + esc(label) + '</span></button>';
   }
 
   function status(m) {
@@ -693,9 +796,12 @@
     var walked = m.chapters.slice(0, lastDone + 2).map(function(ch) {
       return ch.x + ',' + ch.y;
     }).join(' ');
+    // The lanterns lit since this device last saw the map light in front of the student.
+    var lighting = T.mapNewLanterns(cfg.courseid + '-' + cfg.userid + '-' + m.code, m.chapters);
     var places = m.chapters.map(function(ch) {
       var today = m.today && ch.code === m.today;
-      var cls = 'place' + (ch.mine ? ' mine' : '') + (ch.lit ? ' lit' : '') + (ch.id === current.id ? ' here' : '') +
+      var cls = 'place' + (ch.mine ? ' mine' : '') + (lighting[String(ch.id)] ? ' lighting' : '') + (ch.lit ? ' lit' : '') +
+        (ch.id === current.id ? ' here' : '') +
         (ch.id === state.chapter ? ' selected' : '') + (today ? ' today' : '');
       return '<g class="' + cls + '" data-chapter="' + ch.id + '" data-art="' + esc(ch.art || ch.code) + '" tabindex="0" ' +
         'role="button" aria-label="' + esc((today ? t('app_today_here') + ' ' : '') + ch.name) + '">' +
@@ -775,7 +881,6 @@
       layer.remove();
       T.playScene({sceneid: sceneid, world: state.world, team: team, onclose: function(world) {
         state.world = world;
-        remember();
         route();
       }});
     };
@@ -1105,7 +1210,11 @@
           // Only the panel of the place changes: the map stays as it is, without a flash, its fireflies where they were.
           app.querySelectorAll('[data-chapter]').forEach(function(o) {
             o.classList.toggle('selected', o === g);
+            o.classList.remove('picked');
           });
+          // The place answers the touch, and its panel comes in.
+          void g.getBoundingClientRect();
+          g.classList.add('picked');
           var box = document.createElement('div');
           box.innerHTML = chapterPanel(m, ch, !!state.visit);
           old.replaceWith(box.firstElementChild);
@@ -1130,7 +1239,6 @@
       b.onclick = function() {
         T.playScene({sceneid: Number(b.dataset.scene), world: state.world, onclose: function(world) {
           state.world = world;
-          remember();
           route();
         }});
       };
@@ -1147,7 +1255,6 @@
           T.playNest;
         play({code: b.dataset.game, world: state.world, onclose: function(world) {
           state.world = world;
-          remember();
           route();
         }});
       };

@@ -230,6 +230,11 @@
     tap: function() {
       tone(660, 0, 0.06, 'sine', 0.12);
     },
+    // What was won reaching its counter: two bright notes.
+    coin: function() {
+      tone(988, 0, 0.07, 'triangle', 0.12);
+      tone(1319, 0.07, 0.12, 'triangle', 0.12);
+    },
     choose: function() {
       tone(520, 0, 0.09, 'triangle', 0.16, 720);
     },

@@ -349,6 +349,14 @@
     var data = null;
     var sc = null;
     var run = null;
+    // The seed of the creature, warm and alive, with the cracks that open as it is touched.
+    var SEED = T.artUrl && T.artUrl(['creature.seed']) ? '<img src="' + esc(T.artUrl(['creature.seed'])) + '" alt="">' :
+      '<svg viewBox="0 0 100 120" aria-hidden="true"><defs><radialGradient id="tesape-seed" cx="40%" cy="35%" r="70%">' +
+      '<stop offset="0" stop-color="#fff2c4"/><stop offset=".55" stop-color="#e9b85a"/><stop offset="1" stop-color="#9a6a2a"/>' +
+      '</radialGradient></defs><ellipse cx="50" cy="66" rx="34" ry="44" fill="url(#tesape-seed)"/><path class="c1" ' +
+      'd="M50 26 L44 44 L54 52" stroke="#5b3a12" stroke-width="3" fill="none"/><path class="c2" d="M54 52 L46 66 L58 76" ' +
+      'stroke="#5b3a12" stroke-width="3" fill="none"/><path class="c3" d="M58 76 L50 92 L60 104" stroke="#5b3a12" ' +
+      'stroke-width="3" fill="none"/><path d="M50 24 Q60 10 70 14 Q60 22 50 24Z" fill="#7cc67f"/></svg>';
     // While a play is being saved there is no way out: closed then, the map would show it as not played.
     var saving = false;
 
@@ -395,13 +403,12 @@
 
     /**
      * What is heard and seen at an ending: confetti and applause for a good one, hearts halfway, and the lanterns lit
-     * and the creature born after it.
+     * after it.
      *
      * @param {string} outcome
      * @param {Object} r What it gave, if anything.
-     * @param {boolean} levelup
      */
-    function celebrate(outcome, r, levelup) {
+    function celebrate(outcome, r) {
       if (!T.fx) {
         return;
       }
@@ -415,7 +422,8 @@
         T.fx.sound('heart');
         T.fx.hearts();
       } else {
-        T.fx.sound('wrong');
+        // Not this time: no buzz of a referee, only the world that waits.
+        T.fx.sound('choose');
       }
       if (r && r.lanterns && r.lanterns.length) {
         setTimeout(function() {
@@ -423,18 +431,45 @@
           T.fx.sparkles();
         }, 1100);
       }
-      if (r && r.hatched) {
-        setTimeout(function() {
+      // The creature is born when the seed is touched (hatching), and a new level has its moment on the map.
+    }
+
+    /**
+     * The creature is born from its seed: touched three times, it cracks and opens. Without movement or reading aloud,
+     * it is there at once.
+     *
+     * @param {Element} body
+     * @param {Object} n The ending, with what the creature does when it comes out (born), if it says.
+     */
+    function hatching(body, n) {
+      var box = body.querySelector('[data-hatch]');
+      if (!box) {
+        return;
+      }
+      var born = function() {
+        box.innerHTML = T.creature(world.character.creature, 1, true) + (n.born ? '<p class="scene-text">' + esc(tx(n.born)) +
+          '</p>' : '') + '<p>' + esc(t('app_hatched', creatureName())) + '</p>';
+        if (T.fx) {
           T.fx.sound('hatch');
           T.fx.hearts();
-        }, 1700);
+        }
+      };
+      if (!T.moves() || T.adapted.readaloud) {
+        born();
+        return;
       }
-      if (levelup) {
-        setTimeout(function() {
-          T.fx.sound('levelup');
-          T.fx.confetti();
-        }, 2300);
-      }
+      var touches = 0;
+      var seed = box.querySelector('[data-seed]');
+      seed.onclick = function() {
+        touches++;
+        if (T.fx) {
+          T.fx.sound('tap');
+        }
+        seed.className = 'seed crack' + touches;
+        if (touches >= 3) {
+          setTimeout(born, 350);
+        }
+      };
     }
 
     /** The drum roll before a result, and a promise that waits for it. */
@@ -1631,7 +1666,7 @@
       Promise.all([cm.finish(run.events, run.from), drumroll()]).then(function(answers) {
         var result = answers[0];
         var success = result.outcome !== 'retry';
-        celebrate(result.outcome, null, false);
+        celebrate(result.outcome, null);
         var body = show(picture(n.image || sceneImage(), data) + '<p class="scene-text">' + esc(tx(n.text)) + '</p>' + (success ?
           '<div class="conseq good"><span class="what">' + esc(t('board_scene_rewarded', result.rewarded)) + '</span></div>' :
           '') + better(result) + whatif(success) + '<div class="actions">' + (success ? '<button class="btn btn-main" ' +
@@ -1695,7 +1730,7 @@
           '<button class="btn btn-main" data-focus data-previewclose>' + esc(t('app_close')) + '</button></div>');
         end.querySelector('[data-previewclose]').onclick = close;
         onReplay(end);
-        celebrate(n.outcome, null, false);
+        celebrate(n.outcome, null);
         return;
       }
       // The same mark if it is sent again from here: it counts once.
@@ -1747,8 +1782,8 @@
           data.breath = world.character.member.breath;
         }
         var success = result.outcome !== 'retry';
-        var hatch = r.hatched ? '<div class="hatch">' + T.creature(world.character.creature, 1, true) + '<p>' +
-          esc(t('app_hatched', creatureName())) + '</p></div>' : '';
+        var hatch = r.hatched ? '<div class="hatch" data-hatch><button type="button" class="seed" data-seed aria-label="' +
+          esc(t('app_seed_touch')) + '">' + SEED + '</button><p>' + esc(t('app_seed_touch')) + '</p></div>' : '';
         var levelup = world.character.level > before.level ? '<div class="conseq good"><span class="what">' +
           esc(t('app_levelup', world.character.level)) + '</span></div>' : '';
         var done = !success ? '' : (result.attempt > 1 && !lines.length ? '<p class="help">' + esc(t('app_alreadydone')) +
@@ -1768,7 +1803,8 @@
           '<button class="btn btn-main" data-focus data-map>' + esc(t('app_backtomap')) + '</button>' + replay(result) :
           '<button class="btn btn-main" data-focus data-retry>' + esc(t('app_tryagain')) + '</button>') + '</div>');
         onReplay(body);
-        celebrate(result.outcome, r, !!levelup);
+        celebrate(result.outcome, r);
+        hatching(body, n);
         var map = body.querySelector('[data-map]');
         if (map) {
           map.onclick = close;

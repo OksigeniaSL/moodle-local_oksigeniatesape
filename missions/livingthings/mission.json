@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 21,
+ "version": 22,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 22,
+   "kind": "improvement",
+   "date": "2026-10-17",
+   "text": "La criatura nace al tocar su semilla: los finales del claro lo cuentan en dos tiempos"
+  },
   {
    "version": 21,
    "kind": "improvement",

@@ -139,6 +139,53 @@
   };
 
   /**
+   * The lanterns of the student lit since this device last saw a map: they light in front of them, once. The first time
+   * a map is seen, nothing lights.
+   *
+   * @param {string} key The map and who looks at it.
+   * @param {Object[]} chapters The places, with id and mine (the lantern of the student is lit there).
+   * @return {Object} Id of each place whose lantern lights now => true.
+   */
+  T.mapNewLanterns = function(key, chapters) {
+    var store = 'tesape-lanterns-' + key;
+    var now = Date.now();
+    var d = drawing[store];
+    if (d && now < d.until) {
+      return d.ids;
+    }
+    var lit = chapters.filter(function(ch) {
+      return ch.mine;
+    }).map(function(ch) {
+      return String(ch.id);
+    });
+    var seen = null;
+    try {
+      seen = JSON.parse(window.localStorage.getItem(store) || 'null');
+      window.localStorage.setItem(store, JSON.stringify(lit));
+    } catch (e) {
+      // Without storage, nothing lights in front of them.
+    }
+    var ids = {};
+    if (Array.isArray(seen)) {
+      lit.forEach(function(id) {
+        if (seen.indexOf(id) < 0) {
+          ids[id] = true;
+        }
+      });
+    }
+    if (Object.keys(ids).length) {
+      drawing[store] = {ids: ids, until: now + 3000};
+      if (T.fx) {
+        setTimeout(function() {
+          T.fx.sound('lantern');
+          T.fx.sparkles();
+        }, 1000);
+      }
+    }
+    return ids;
+  };
+
+  /**
    * Where the character was the last time this device saw the map, if it was another place: the character walks from
    * there. Nothing the first time.
    *
@@ -393,6 +440,72 @@
    * @param {string} html
    * @param {boolean} bad
    */
+  /**
+   * Whether things move: not with «no movement», nor when the system asks for less motion.
+   *
+   * @return {boolean}
+   */
+  T.moves = function() {
+    return !T.adapted.still && !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  };
+
+  /**
+   * What was won flies from the middle of the screen to its counter in the header, which beats and counts up. Nothing
+   * flies without movement: the counter just shows what there is now.
+   *
+   * @param {Element} counter The button of the counter, with its number in a <b>.
+   * @param {string} icon
+   * @param {number} from
+   * @param {number} to
+   */
+  T.loot = function(counter, icon, from, to) {
+    var num = counter.querySelector('b');
+    var count = function() {
+      counter.classList.remove('beat');
+      void counter.offsetWidth;
+      counter.classList.add('beat');
+      if (T.fx) {
+        T.fx.sound('coin');
+      }
+      if (!T.moves()) {
+        num.textContent = to;
+        return;
+      }
+      var start = null;
+      var step = function(time) {
+        start = start || time;
+        var k = Math.min(1, (time - start) / 600);
+        num.textContent = Math.round(from + (to - from) * k);
+        if (k < 1) {
+          window.requestAnimationFrame(step);
+        }
+      };
+      window.requestAnimationFrame(step);
+    };
+    if (!T.moves() || !counter.animate) {
+      count();
+      return;
+    }
+    num.textContent = from;
+    var chip = document.createElement('div');
+    chip.className = 'loot-fly';
+    chip.setAttribute('aria-hidden', 'true');
+    chip.innerHTML = T.icon(icon) + '<b>+' + (to - from) + '</b>';
+    document.body.appendChild(chip);
+    var r = counter.getBoundingClientRect();
+    var c = chip.getBoundingClientRect();
+    var dx = Math.round(r.left + r.width / 2 - (c.left + c.width / 2));
+    var dy = Math.round(r.top + r.height / 2 - (c.top + c.height / 2));
+    chip.animate([
+      {transform: 'translate(-50%, -50%) scale(.6)', opacity: 0},
+      {transform: 'translate(-50%, -50%) scale(1.2)', opacity: 1, offset: 0.3},
+      {transform: 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + dy + 'px)) scale(.45)', opacity: 0.9}
+    ], {duration: 950, easing: 'cubic-bezier(.5, 0, .3, 1)'}).onfinish = function() {
+      chip.remove();
+      count();
+    };
+  };
+
   T.toast = function(html, bad) {
     var box = document.querySelector('.toasts');
     if (!box) {
@@ -1029,11 +1142,55 @@
   };
   document.addEventListener('focusin', remember, true);
   document.addEventListener('pointerdown', remember, true);
+  // A ripple from where an option, a group or a thing is touched.
+  document.addEventListener('pointerdown', function(ev) {
+    var el = ev.target && ev.target.closest ? ev.target.closest('.opt, .bin, .cls-thing, .role-verb, .look-tool') : null;
+    if (!el || el.disabled || !T.moves()) {
+      return;
+    }
+    var r = el.getBoundingClientRect();
+    var size = Math.ceil(Math.max(r.width, r.height) * 2);
+    var dot = document.createElement('span');
+    dot.className = 'ripple';
+    dot.setAttribute('aria-hidden', 'true');
+    dot.style.width = size + 'px';
+    dot.style.height = size + 'px';
+    dot.style.left = Math.round(ev.clientX - r.left - size / 2) + 'px';
+    dot.style.top = Math.round(ev.clientY - r.top - size / 2) + 'px';
+    el.appendChild(dot);
+    setTimeout(function() {
+      dot.remove();
+    }, 600);
+  }, true);
+  // Where the last touch was: a scene opens from there as the light of a lantern.
+  var touched = null;
+  document.addEventListener('pointerdown', function(ev) {
+    touched = {x: ev.clientX, y: ev.clientY, at: Date.now()};
+  }, true);
+  var iris = function(layer, from) {
+    if (!T.moves() || !layer.animate) {
+      return;
+    }
+    var x = window.innerWidth / 2;
+    var y = window.innerHeight / 2;
+    if (touched && Date.now() - touched.at < 2000) {
+      x = touched.x;
+      y = touched.y;
+    } else if (from && from.getBoundingClientRect) {
+      var r = from.getBoundingClientRect();
+      x = r.left + r.width / 2;
+      y = r.top + r.height / 2;
+    }
+    var far = Math.ceil(Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y)));
+    layer.animate([{clipPath: 'circle(20px at ' + x + 'px ' + y + 'px)'}, {clipPath: 'circle(' + far + 'px at ' + x + 'px ' +
+      y + 'px)'}], {duration: 480, easing: 'cubic-bezier(.3, 0, .2, 1)'});
+  };
   new MutationObserver(function(changes) {
     changes.forEach(function(change) {
       Array.prototype.forEach.call(change.addedNodes, function(node) {
         if (node.classList && node.classList.contains('scene-layer') && !opener) {
           var from = lastOutside;
+          iris(node, from);
           var keys = from && from.attributes ? Array.prototype.filter.call(from.attributes, function(a) {
             return /^data-(scene|game|playscene|teamscene|visit|welcomescene)$/.test(a.name);
           }) : [];
