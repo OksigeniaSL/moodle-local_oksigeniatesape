@@ -475,6 +475,10 @@
    * commitments, quests, pages) is told when it shows.
    */
   function howItWorks() {
+    // Once at a time: it may open by itself while the teacher opens it with the «?».
+    if (document.querySelector('.how-moment')) {
+      return;
+    }
     var ideas = [['me', 'teach_how_1'], ['team', 'teach_how_2'], ['saber', 'teach_how_3'], ['lantern', 'teach_how_4'],
       ['game', 'teach_how_5'], ['challenges', 'teach_how_6']];
     var layer = document.createElement('div');

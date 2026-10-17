@@ -75,7 +75,7 @@ class behat_local_oksigeniatesape extends behat_base {
      * @When /^I close how Tesapé works if it shows$/
      */
     public function i_close_how_tesape_works_if_it_shows(): void {
-        $this->getSession()->wait(2000, "document.querySelector('.how-moment') !== null");
+        $this->getSession()->wait(6000, "document.querySelector('.how-moment') !== null");
         $this->getSession()->executeScript("var b = document.querySelector('.how-moment [data-close]'); if (b) { b.click(); }");
     }
 
