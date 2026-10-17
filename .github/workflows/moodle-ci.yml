@@ -13,9 +13,9 @@ on:
     branches: [main]
     tags: ['v*']
     # What is not code does not run the suite: the minutes of Actions are counted.
-    paths-ignore: ['**.md', 'docs/**', 'LICENSE', '.gitignore']
+    paths-ignore: ['**.md', 'docs/**', 'LICENSE', '.gitignore', 'provenance/**']
   pull_request:
-    paths-ignore: ['**.md', 'docs/**', 'LICENSE', '.gitignore']
+    paths-ignore: ['**.md', 'docs/**', 'LICENSE', '.gitignore', 'provenance/**']
   workflow_dispatch:
 
 # A new push cancels the run of the one before it on the same branch, which nobody needs any more.
