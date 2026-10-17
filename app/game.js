@@ -676,6 +676,8 @@
     T.adapt(member ? member.adapt : []);
     if (T.fx) {
       T.fx.quiet(w.quiet || !!T.adapted.quiet);
+      T.fx.deviceMusic(w.devicemusic === undefined ? 1 : w.devicemusic, cfg.art && cfg.art.theme ? cfg.art.theme.music :
+        'valley');
     }
     if (T.critters) {
       T.critters.start([25, 55]);
@@ -698,7 +700,9 @@
       ' ' + c.level + '"><b>' + c.level + '</b><span class="sr-only"> · ' + esc(t('app_level')) + ' · ' + esc(t('app_tab_me')) +
       '</span></button>' + (T.fx && !w.quiet && !T.adapted.quiet ? '<button type="button" class="sound" data-sound aria-pressed="' + !T.fx.muted() +
       '" aria-label="' + esc(t('app_sound')) + '" title="' + esc(t('app_sound')) + '">' + T.icon(T.fx.muted() ? 'mute' : 'sound') +
-      '</button>' : '') + '<details class="exit"><summary aria-label="' + esc(t('app_leave')) + '" title="' +
+      '</button>' : '') + (T.fx && w.devicemusic === 2 && T.fx.musicAllowed() ? '<button type="button" class="sound" ' +
+      'data-music aria-pressed="' + T.fx.musicOn() + '" aria-label="' + esc(t('board_music')) + '" title="' +
+      esc(t('board_music')) + '">♪</button>' : '') + '<details class="exit"><summary aria-label="' + esc(t('app_leave')) + '" title="' +
       esc(t('app_leave')) + '">⎋</summary><div class="exit-menu">' +
       // A course that goes straight into the game has no page of its own to go back to: only the dashboard.
       (/\/my\/?$/.test(cfg.courseurl) ? '' : '<a href="' + esc(cfg.courseurl) + '">' + esc(t('app_exit')) + '</a>') +
@@ -722,6 +726,12 @@
         explain(b.dataset.res, true);
       };
     });
+    var tune = app.querySelector('[data-music]');
+    if (tune) {
+      tune.onclick = function() {
+        tune.setAttribute('aria-pressed', String(T.fx.music()));
+      };
+    }
     var sound = app.querySelector('[data-sound]');
     if (sound) {
       sound.onclick = function() {

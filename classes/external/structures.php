@@ -461,6 +461,12 @@ final class structures {
             'gradebook' => new external_value(PARAM_BOOL, 'The ratings go to the gradebook', VALUE_DEFAULT, false),
             'quiet' => new external_value(PARAM_BOOL, 'No sound on the devices of the students', VALUE_DEFAULT, false),
             'devices' => new external_value(PARAM_BOOL, 'The class plays with a tablet each', VALUE_DEFAULT, true),
+            'devicemusic' => new external_value(
+                PARAM_INT,
+                'Music on the devices: 0 never, 1 only in battles, 2 always',
+                VALUE_DEFAULT,
+                1,
+            ),
             'look' => new external_value(PARAM_ALPHA, 'Theme of the class (empty: the one of the world)', VALUE_DEFAULT, ''),
             'worldlook' => new external_value(PARAM_ALPHA, 'Theme of the world', VALUE_DEFAULT, 'night'),
         ]);
@@ -507,6 +513,7 @@ final class structures {
             'round' => new external_value(PARAM_INT, 'Question being played (0: players coming in)'),
             'total' => new external_value(PARAM_INT, 'Questions of the battle'),
             'open' => new external_value(PARAM_BOOL, 'The question takes answers'),
+            'paused' => new external_value(PARAM_BOOL, 'The teacher stopped the battle a moment', VALUE_DEFAULT, false),
             'left' => new external_value(PARAM_INT, 'Seconds left (-1: no limit)'),
             'revealed' => new external_value(PARAM_BOOL, 'The answer of the question is shown'),
             'hp' => new external_value(PARAM_INT, 'Life of the Embrollo'),

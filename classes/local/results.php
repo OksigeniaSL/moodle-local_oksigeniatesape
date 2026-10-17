@@ -31,6 +31,9 @@ final class results {
     /** @var int Mix-ups shown per scene. */
     public const CONFUSIONS = 3;
 
+    /** @var int The knots left hanging are those of the battles of this many last days: the review of the week. */
+    public const KNOT_DAYS = 7;
+
     /**
      * The results of the mission of a course.
      *
@@ -69,7 +72,51 @@ final class results {
             'players' => $DB->count_records(self::T . 'member', ['courseid' => $courseid, 'leftat' => 0]),
             'chapters' => $chapters,
             'games' => minigames::results($mission),
+            'knots' => self::knots($courseid, $mission),
         ];
+    }
+
+    /**
+     * The knots the class left hanging in the battles by turns of the last week, most first: what to go over again. With
+     * how many times each one was left hanging and how many it was broken, its idea and why it is wrong.
+     *
+     * @param int $courseid
+     * @param \stdClass $mission
+     * @param int|null $now
+     * @return array
+     */
+    public static function knots(int $courseid, \stdClass $mission, ?int $now = null): array {
+        global $DB;
+        $now = $now ?? time();
+        $counts = [];
+        $battles = $DB->get_records_select(
+            self::T . 'live',
+            "courseid = ? AND kind = 'battle' AND timeend > ?",
+            [$courseid, $now - self::KNOT_DAYS * DAYSECS],
+            'timeend',
+            'id, state'
+        );
+        foreach ($battles as $battle) {
+            $state = json_decode($battle->state, true) ?: [];
+            if (empty($state['knots'])) {
+                continue;
+            }
+            foreach (['hanging', 'broken'] as $how) {
+                foreach (array_unique((array) ($state[$how] ?? [])) as $code) {
+                    $counts[$code][$how] = ($counts[$code][$how] ?? 0) + 1;
+                }
+            }
+        }
+        $list = [];
+        foreach ($counts as $code => $count) {
+            $knot = knots::get($mission, (string) $code);
+            if ($knot && !empty($count['hanging'])) {
+                $list[] = ['code' => (string) $code, 'name' => $knot['name'], 'claim' => $knot['claim'], 'why' => $knot['why'],
+                    'hanging' => $count['hanging'], 'broken' => $count['broken'] ?? 0];
+            }
+        }
+        usort($list, fn($a, $b) => [$b['hanging'], $a['broken']] <=> [$a['hanging'], $b['broken']]);
+        return $list;
     }
 
     /**

@@ -7188,3 +7188,168 @@ body.adapt-still .mission-grid .chapter.as-sheet {
   padding-left: 20px;
   color: var(--text-soft);
 }
+
+/* The class screen as the stage of a battle by turns: the tower behind, what the Embrollo means over its head, the
+   teams in a row with their heroes, the shield over the team it saved, the threads pulled out, the jar or the escape. */
+.battle-board.turns {
+  background: linear-gradient(rgba(var(--night-rgb), .82), rgba(var(--night-rgb), .9)), var(--tower) center / cover no-repeat;
+}
+
+.intent-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 2px solid rgba(160, 120, 220, .8);
+  background: rgba(40, 24, 70, .85);
+  color: var(--text);
+  font-weight: 700;
+}
+
+.intent-chip svg {
+  width: 22px;
+  height: 22px;
+  color: var(--lilac, #b9a6ff);
+}
+
+.intent-chip.intent-dazed {
+  border-color: var(--lantern);
+}
+
+.team-heroes {
+  display: flex;
+}
+
+.team-hero {
+  width: 38px;
+  height: 38px;
+  margin-left: -8px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--night-2);
+  background: var(--night-2);
+}
+
+.team-hero:first-child {
+  margin-left: 0;
+  border-color: var(--lantern);
+}
+
+.team-hero .avatar {
+  width: 100%;
+  height: auto;
+}
+
+.battle-team {
+  position: relative;
+}
+
+.thread-off {
+  position: absolute;
+  top: -6px;
+  right: 8px;
+  color: var(--lantern);
+  font-weight: 800;
+  font-size: 22px;
+  animation: thread-off 1.6s ease both;
+}
+
+@keyframes thread-off {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  30% {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-40px);
+  }
+}
+
+.battle-team.shielded {
+  border-color: #e9c46a;
+  box-shadow: 0 0 0 3px rgba(233, 196, 106, .45), 0 0 24px rgba(233, 196, 106, .5);
+}
+
+.team-shield {
+  position: absolute;
+  top: -12px;
+  left: -10px;
+  color: #e9c46a;
+}
+
+.team-shield svg {
+  width: 28px;
+  height: 28px;
+}
+
+.battle-board.turns.won .embrollo.jar {
+  animation: into-jar 1.4s ease both;
+}
+
+@keyframes into-jar {
+  from {
+    opacity: 0;
+    transform: scale(1.6) rotate(-12deg);
+  }
+}
+
+.battle-board.turns.lost .embrollo {
+  animation: roll-away 2s ease-in both;
+}
+
+@keyframes roll-away {
+  to {
+    opacity: 0;
+    transform: translate(60px, -160px) rotate(540deg) scale(.4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thread-off,
+  .battle-board.turns.won .embrollo.jar,
+  .battle-board.turns.lost .embrollo {
+    animation: none;
+  }
+}
+
+.remote-card {
+  margin-bottom: 16px;
+}
+
+.remote-teams li,
+.remote-marks li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.battle-head .battle-music {
+  flex: none;
+  font-size: 20px;
+}
+
+.battle-paused {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 12px;
+  padding: 10px 16px;
+  border-radius: var(--r-s);
+  border: 2px solid var(--lantern);
+  background: rgba(var(--hi), .08);
+  font-weight: 700;
+  font-size: 1.2em;
+}
+
+.battle-paused svg {
+  width: 26px;
+  height: 26px;
+}

@@ -84,6 +84,8 @@ class restore_local_oksigeniatesape_plugin extends restore_local_plugin {
             'hideacts' => (int) ($data->hideacts ?? 0),
             'gradebook' => (int) ($data->gradebook ?? 0),
             'quiet' => (int) ($data->quiet ?? 0),
+            'devices' => (int) ($data->devices ?? 1),
+            'devicemusic' => max(0, min(2, (int) ($data->devicemusic ?? 1))),
             'look' => in_array($data->look ?? '', \local_oksigeniatesape\local\themes::LOOKS, true) ? $data->look : '',
             'timemodified' => $now,
         ];

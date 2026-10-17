@@ -71,6 +71,13 @@ final class save_region extends external_api {
             'quiet' => new external_value(PARAM_BOOL, 'No sound on the devices of the students', VALUE_DEFAULT, null, NULL_ALLOWED),
             'look' => new external_value(PARAM_ALPHA, 'Theme of the class (empty: the world)', VALUE_DEFAULT, null, NULL_ALLOWED),
             'devices' => new external_value(PARAM_BOOL, 'The class plays with a tablet each', VALUE_DEFAULT, null, NULL_ALLOWED),
+            'devicemusic' => new external_value(
+                PARAM_INT,
+                'Music on the devices: 0 never, 1 only in battles, 2 always',
+                VALUE_DEFAULT,
+                null,
+                NULL_ALLOWED,
+            ),
         ]);
     }
 
@@ -94,6 +101,7 @@ final class save_region extends external_api {
      * @param bool|null $quiet
      * @param string|null $look
      * @param bool|null $devices
+     * @param int|null $devicemusic
      * @return array
      */
     public static function execute(
@@ -113,7 +121,8 @@ final class save_region extends external_api {
         ?bool $gradebook = null,
         ?bool $quiet = null,
         ?string $look = null,
-        ?bool $devices = null
+        ?bool $devices = null,
+        ?int $devicemusic = null
     ): array {
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
@@ -133,6 +142,7 @@ final class save_region extends external_api {
             'quiet' => $quiet,
             'look' => $look,
             'devices' => $devices,
+            'devicemusic' => $devicemusic,
         ]);
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);

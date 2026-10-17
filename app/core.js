@@ -1053,6 +1053,7 @@
         'fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M10.5 5.5l9 7M9.5 10l9-5.5M12 15l6-11M15 2.5v13" ' +
         'stroke="currentColor" stroke-width="1" opacity=".7"/>',
       close: '<path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>',
+      pause: '<path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" fill="currentColor"/>',
       sound: '<path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" ' +
         'stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>',
       mute: '<path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16.5 9.5l5 5M21.5 9.5l-5 5" stroke="currentColor" ' +
@@ -1090,7 +1091,9 @@
    * @return {string} SVG, or the image of the art pack.
    */
   T.embrollo = function(life) {
-    var art = T.artUrl(['boss.embrollo']);
+    // Its state by the threads it has left, if the art pack paints them: whole, frayed, down to its last thread.
+    var phase = life > 0.6 ? 1 : life > 0.25 ? 2 : 3;
+    var art = T.artUrl(['boss.embrollo.' + phase, 'boss.embrollo']);
     var s = 0.45 + 0.55 * Math.max(0, Math.min(1, life));
     if (art) {
       return '<img class="embrollo art" src="' + T.esc(art) + '" alt="" style="transform:scale(' + s + ')">';

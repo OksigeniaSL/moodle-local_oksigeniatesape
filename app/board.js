@@ -208,11 +208,31 @@
     if (!T.fx) {
       return;
     }
+    if (l.maxcandles) {
+      turnFx(l);
+    }
     var key = l.id + ':' + (l.outcome || (l.revealed ? 'r' + l.round : ''));
     if (key === state.fxlast || key === l.id + ':') {
       return;
     }
     state.fxlast = key;
+    if (l.maxcandles && l.outcome) {
+      // By turns, the end has its own sounds: the jar or the escape, and its sting.
+      T.fx.sound(l.outcome === 'won' ? 'jar' : 'escape');
+      setTimeout(function() {
+        T.fx.sound(l.outcome === 'won' ? 'sting.win' : 'sting.lost');
+      }, 700);
+      if (l.outcome === 'won') {
+        T.fx.confetti();
+      }
+      return;
+    }
+    if (l.maxcandles && l.revealed) {
+      // The turn resolved: the shield that stops the blow, the candle that goes out, the knot that breaks.
+      T.fx.sound(l.shielded ? 'shield' : l.counter && !l.recovered ? 'counter' : l.knot && l.knot.broken ? 'hit' :
+        (l.right || 0) > 0 ? 'hit' : 'wrong');
+      return;
+    }
     if (l.outcome === 'won') {
       T.fx.sound('win');
       T.fx.confetti();
@@ -229,6 +249,39 @@
   }
 
   /**
+   * By turns, the music and the moments of the battle: its start, its music (the second piece once the Embrollo is
+   * frayed), the moment it frays; and back to the soft music when it ends.
+   *
+   * @param {Object} l
+   */
+  function turnFx(l) {
+    var frayed = l.maxhp && l.hp / l.maxhp <= 0.6;
+    T.fx.musicKind(l.outcome || !l.round ? '' : frayed ? 'battle2' : 'battle1');
+    if (l.round === 1 && l.stage === 'intent' && state.started !== l.id) {
+      state.started = l.id;
+      T.fx.sound('battle.start');
+    }
+    if (frayed && !l.outcome && state.frayed !== l.id) {
+      state.frayed = l.id;
+      T.fx.sound('phase2');
+    }
+  }
+
+  /**
+   * The heartbeat of the last five seconds of a lane, once a second, on every poll that brings a new second.
+   *
+   * @param {Object} l
+   */
+  function beat(l) {
+    if (!T.fx || !l || !l.maxcandles || l.paused || l.stage !== 'strike' || l.left < 1 || l.left > 5 || state.beatlast === l.id + ':' +
+      l.round + ':' + l.left) {
+      return;
+    }
+    state.beatlast = l.id + ':' + l.round + ':' + l.left;
+    T.fx.sound('tick');
+  }
+
+  /**
    * Draws the battle on the class screen. Every 1.5 s a poll brings it again: if nothing seen has changed, only the
    * countdown and the count of answers move, so that a tap on a button is never lost while it is drawn again.
    *
@@ -236,6 +289,7 @@
    */
   function drawBattle(force) {
     var l = state.live;
+    beat(l);
     var sig = JSON.stringify(Object.assign({}, l, {left: 0, answered: 0, stageleft: 0}));
     if (!force && sig === state.battlesig && app.querySelector('.battle-board')) {
       var left = app.querySelector('[data-left]');
@@ -286,7 +340,8 @@
         'board_battle_aloudhelp')) + '</p>' + (l.mode === 'phones' ? '<p class="battle-count">' +
         esc(t('board_battle_joined', l.joined)) + '</p>' : '') + '</div>';
       buttons = '<button class="btn btn-main" data-battlenext' + (l.mode === 'phones' && !l.joined ? ' disabled' : '') + '>' +
-        esc(t('board_battle_first')) + '</button>' + (l.kind === 'battle' ? '<button class="btn btn-soft" data-battlefinish>' +
+        esc(t(l.maxcandles ? 'board_turn_first' : 'board_battle_first')) + '</button>' + (l.kind === 'battle' ?
+        '<button class="btn btn-soft" data-battlefinish>' +
         esc(t('board_battle_cancel')) + '</button>' : '');
     } else if (l.stage === 'intent' || l.stage === 'prep') {
       // By turns: the Embrollo lets a knot go, says what it claims and which team it goes for; the roles get ready.
@@ -351,6 +406,13 @@
         buttons = '<button class="btn btn-main" data-battlereveal>' + esc(t('board_battle_reveal')) + '</button>';
       }
     }
+    if (l.paused && !l.outcome) {
+      // Stopped a moment: the time of the turn stands still, and the only way on is to go on.
+      main = '<p class="battle-paused">' + T.icon('pause') + esc(t('board_battle_paused')) + '</p>' + main;
+      buttons = '<button class="btn btn-main" data-battlepause="resume">' + esc(t('board_battle_resume')) + '</button>';
+    } else if (!l.outcome && l.round && l.kind === 'battle') {
+      buttons += '<button class="btn btn-soft" data-battlepause="pause">' + esc(t('board_battle_pause')) + '</button>';
+    }
     if (!l.outcome && l.round) {
       buttons += '<button class="btn btn-soft" data-battlefinish>' + esc(t('board_battle_finish')) + '</button>';
     }
@@ -359,19 +421,30 @@
         team.id + ':1" aria-pressed="' + (team.mark === 1) + '" aria-label="' + esc(t('board_battle_markright', team.name)) +
         '">✓</button><button class="chip" data-mark="' + team.id + ':0" aria-pressed="' + (team.mark === 0) +
         '" aria-label="' + esc(t('board_battle_markwrong', team.name)) + '">✗</button></span>' : '';
+      var lane = (l.lanes || []).filter(function(x) {
+        return x.teamid === team.id;
+      })[0];
+      var won = l.stage === 'resolve' && lane && lane.done;
+      var shielded = l.stage === 'resolve' && l.shielded && l.targetid === team.id;
       return '<div class="battle-team' + (l.targetid === team.id && !l.outcome ? ' target' : '') +
-        ((l.tangled || []).indexOf(team.id) >= 0 && !l.outcome ? ' tangled' : '') + '"><b>' + esc(team.name) +
+        ((l.tangled || []).indexOf(team.id) >= 0 && !l.outcome ? ' tangled' : '') + (shielded ? ' shielded' : '') + '">' +
+        (l.maxcandles ? heroes(team.id) : '') + (won ? '<span class="thread-off" aria-hidden="true">−1</span>' : '') +
+        (shielded ? '<span class="team-shield" aria-hidden="true">' + T.icon('shield') + '</span>' : '') + '<b>' + esc(team.name) +
         '</b><small>' + (l.mode === 'phones' ?
         esc(t('board_battle_joined', team.joined)) + ' · ' : '') + esc(t('board_battle_teamright', team.right)) + '</small>' +
         marks + '</div>';
     }).join('');
-    app.innerHTML = '<div class="board battle-board' + (hit ? ' shake' : '') + '"><header class="board-top">' + T.emblem() +
+    var tower = l.maxcandles ? T.artUrl(['scene.torre']) : null;
+    var end = l.maxcandles && l.outcome ? ' ' + l.outcome : '';
+    app.innerHTML = '<div class="board battle-board' + (hit ? ' shake' : '') + (l.maxcandles ? ' turns' + end : '') + '"' +
+      (tower ? ' style="--tower:url(\'' + esc(tower) + '\')"' : '') + '><header class="board-top">' + T.emblem() +
       '<div><b>' + esc(cfg.coursename) + '</b><small>' +
       esc(t(l.final ? 'board_battle_final' : 'board_battle')) + (l.phase > 1 && !l.outcome ? ' · ' +
       esc(t('board_battle_phase')) : '') + '</small></div><div class="board-tools">' + musicButton() + lightButton() +
       '<button class="btn btn-soft" data-full>' + esc(t('board_fullscreen')) + '</button></div></header>' +
       '<div class="battle-stage"><div class="battle-boss' +
-      (hit ? ' hit' : '') + (laugh ? ' laugh' : '') + '">' + embrolloSays(l) + T.embrollo(life) + '<span class="meter boss"><i style="width:' +
+      (hit ? ' hit' : '') + (laugh ? ' laugh' : '') + '">' + embrolloSays(l) + intentChip(l) + bossArt(l, life) +
+      '<span class="meter boss"><i style="width:' +
       Math.round(100 * life) + '%"></i></span><small>' + esc(t(l.maxcandles ? 'board_turn_threads' : 'board_battle_life')) +
       (l.maxhp ? ': ' + l.hp + ' / ' + l.maxhp : '') + '</small>' + candles(l) + '</div><div class="battle-main">' + main +
       '<div class="actions">' + buttons + '</div></div></div>' +
@@ -425,6 +498,56 @@
     }
     return '<p class="knot-target intent-' + l.intent + '">' + esc(l.intent === 'team' ? t('board_turn_goes', l.target) :
       t('board_turn_intent_' + l.intent)) + '</p>';
+  }
+
+  /**
+   * What the Embrollo means to do, over its head, while the turn is played: a team, everybody, pulling itself together
+   * or dazed.
+   *
+   * @param {Object} l
+   * @return {string}
+   */
+  function intentChip(l) {
+    if (!l.intent || l.outcome || !l.stage || l.stage === 'resolve') {
+      return '';
+    }
+    var icon = {team: 'team', all: 'class', recompose: 'power', dazed: 'sun'}[l.intent] || 'team';
+    return '<p class="intent-chip intent-' + l.intent + '">' + T.icon(icon) + '<span>' + esc(l.intent === 'team' ?
+      l.target : t('board_turn_chip_' + l.intent)) + '</span></p>';
+  }
+
+  /**
+   * The Embrollo, or at the end of a battle by turns, the jar it is kept in (won) or the Embrollo rolling away (lost).
+   *
+   * @param {Object} l
+   * @param {number} life
+   * @return {string}
+   */
+  function bossArt(l, life) {
+    var jar = l.maxcandles && l.outcome === 'won' ? T.artUrl(['boss.embrollo.jar']) : null;
+    if (jar) {
+      return '<img class="embrollo art jar" src="' + esc(jar) + '" alt="">';
+    }
+    return T.embrollo(life);
+  }
+
+  /**
+   * The heroes of a team, in a row, the protector in front: who plays the battle, without names.
+   *
+   * @param {number} teamid
+   * @return {string}
+   */
+  function heroes(teamid) {
+    var members = (state.cls ? state.cls.students : []).filter(function(st) {
+      return st.teamid === teamid && st.character;
+    }).sort(function(a, b) {
+      return (b.character.role === 'protector') - (a.character.role === 'protector');
+    }).slice(0, 5);
+    return members.length ? '<span class="team-heroes" aria-hidden="true">' + members.map(function(st) {
+      var c = st.character;
+      return '<span class="team-hero">' + T.avatar({role: c.role, nameform: c.nameform, lineage: c.lineage,
+        look: c.appearance, stage: c.stage, portrait: true}) + '</span>';
+    }).join('') + '</span>' : '';
   }
 
   /**
@@ -490,6 +613,9 @@
     });
     on('[data-battlefinish]', function() {
       host('finish');
+    });
+    on('[data-battlepause]', function(el) {
+      host(el.dataset.battlepause);
     });
     on('[data-mark]', function(el) {
       var p = el.dataset.mark.split(':');

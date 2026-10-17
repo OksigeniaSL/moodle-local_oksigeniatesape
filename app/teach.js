@@ -182,6 +182,7 @@
 
   function render() {
     var d = state.data;
+    clearInterval(state.remotetimer);
     if (!d.region.enabled && state.tab !== 'settings') {
       welcome();
       return;
@@ -506,6 +507,130 @@
     layer.querySelector('[data-close]').focus();
   }
 
+  /**
+   * The battle from here, the phone of the teacher, as from the class screen: launch it, go on, show the answer, end it;
+   * while it is played, the turn, the candles and the threads. The class screen follows what is done here.
+   *
+   * @return {string}
+   */
+  function remoteCard() {
+    return can('runclassscreen') ? '<section class="card remote-card"><div class="kicker">' + esc(t('teach_command')) +
+      '</div><div data-remote-body><p class="help-soft">' + esc(t('teach_command_loading')) + '</p></div></section>' : '';
+  }
+
+  function bindRemote(el) {
+    var box = el.querySelector('[data-remote-body]');
+    if (!box) {
+      return;
+    }
+    var host = function(action, extra) {
+      return T.api('live_host', Object.assign({courseid: cfg.courseid, action: action}, extra || {}));
+    };
+    var drawn = '';
+    var draw = function(l) {
+      // Drawn again only when something seen changes: a tap is never lost while the buttons are replaced.
+      var sig = JSON.stringify(l ? Object.assign({}, l, {left: 0, stageleft: 0, answered: 0}) : null);
+      if (sig === drawn) {
+        return;
+      }
+      drawn = sig;
+      var buttons = [];
+      var line = '';
+      if (!l || (l.outcome && l.kind === 'battle')) {
+        line = l && l.outcome ? t('board_battle_' + l.outcome) : t('teach_command_none');
+        buttons = [['start', 'teach_command_start'], ['startfinal', 'teach_command_final']];
+      } else if (l.kind !== 'battle') {
+        line = t('teach_command_vote');
+      } else if (!l.round) {
+        line = t('board_battle_joined', l.joined);
+        buttons = [['next', l.maxcandles ? 'board_turn_first' : 'board_battle_first'], ['finish', 'board_battle_cancel']];
+      } else {
+        // The same buttons as the class screen at each moment: while the Embrollo speaks and the roles get ready, only
+        // to end it; while it is played, to show the answer; once resolved, the next one.
+        line = t(l.stage ? 'board_turn_round' : 'board_battle_round', l) + (l.maxcandles ? ' · ' +
+          t('board_turn_candles', {lit: l.candles, all: l.maxcandles}) + ' · ' + t('board_turn_threads') + ': ' + l.hp +
+          ' / ' + l.maxhp : '');
+        var going = l.round < l.total && (!l.maxcandles || (l.candles > 0 && l.hp > 0));
+        buttons = (l.stage === 'intent' || l.stage === 'prep' ? [] : l.revealed ? (going ? [['next', l.stage ?
+          'board_turn_nextnow' : 'board_battle_next']] : []) : [['reveal', 'board_battle_reveal']]).concat([['pause',
+          'board_battle_pause'], ['finish', 'board_battle_finish']]);
+        if (l.paused) {
+          line = t('board_battle_paused') + ' · ' + line;
+          buttons = [['resume', 'board_battle_resume'], ['finish', 'board_battle_finish']];
+        }
+      }
+      // Aloud, the teacher is who says whether each team got it: from here too.
+      var marks = l && l.mode === 'aloud' && l.revealed && !l.outcome ? '<ul class="list remote-marks">' +
+        l.teams.map(function(team) {
+          return '<li><b>' + esc(team.name) + '</b><span class="pills"><button type="button" class="chip" data-remotemark="' +
+            team.id + ':1" aria-pressed="' + (team.mark === 1) + '" aria-label="' + esc(t('board_battle_markright', team.name)) +
+            '">✓</button><button type="button" class="chip" data-remotemark="' + team.id + ':0" aria-pressed="' +
+            (team.mark === 0) + '" aria-label="' + esc(t('board_battle_markwrong', team.name)) + '">✗</button></span></li>';
+        }).join('') + '</ul>' : '';
+      // By turns, how each team is, to referee: who it goes for, who is tangled, who undid their lane, the verbs used.
+      var how = l && l.maxcandles && l.round && !l.outcome ? '<ul class="list remote-teams">' + l.teams.map(function(team) {
+        var lane = (l.lanes || []).filter(function(x) {
+          return x.teamid === team.id;
+        })[0];
+        var verbs = (l.tokens || []).filter(function(k) {
+          return k.team === team.name;
+        }).length;
+        var tags = (l.targetid === team.id ? [t('teach_command_target')] : []).concat((l.tangled || []).indexOf(team.id) >= 0 ?
+          [t('teach_command_tangled')] : []).concat(l.revealed && lane && lane.done ? [t('teach_command_undone')] : []).concat(
+          verbs ? [t('teach_command_verbs', verbs)] : []);
+        return '<li><b>' + esc(team.name) + '</b><span>' + tags.map(function(x) {
+          return '<span class="tag">' + esc(x) + '</span>';
+        }).join(' ') + '</span></li>';
+      }).join('') + '</ul>' : '';
+      box.innerHTML = '<p>' + esc(line) + '</p>' + how + marks + '<div class="actions" style="justify-content:flex-start">' +
+        buttons.map(function(b, i) {
+          return '<button type="button" class="btn ' + (i ? 'btn-soft' : 'btn-main') + '" data-remote="' + b[0] + '">' +
+            esc(t(b[1])) + '</button>';
+        }).join('') + '</div>';
+      box.querySelectorAll('[data-remotemark]').forEach(function(b) {
+        b.onclick = function() {
+          var p = b.dataset.remotemark.split(':');
+          host('mark', {groupid: +p[0], right: p[1] === '1'}).then(function(r) {
+            draw(r.live || null);
+          }).catch(function(e) {
+            T.toast(esc(e.message), true);
+          });
+        };
+      });
+      box.querySelectorAll('[data-remote]').forEach(function(b) {
+        b.onclick = function() {
+          var what = b.dataset.remote;
+          if (what === 'finish' && !window.confirm(t('teach_command_finishsure'))) {
+            return;
+          }
+          b.disabled = true;
+          // Launched with the devices the course plays with, by turns, eight knots and thirty seconds for each lane.
+          var start = {mode: state.data.region.devices === false ? 'aloud' : 'phones', count: 8, secs: 30, turns: true};
+          var call = what === 'start' || what === 'startfinal' ? host('start', Object.assign(start, {final: what === 'startfinal'})) :
+            host(what, {round: l ? l.round : -1});
+          call.then(function(r) {
+            draw(r.live || null);
+          }).catch(function(e) {
+            b.disabled = false;
+            drawn = '';
+            T.toast(esc(e.message), true);
+          });
+        };
+      });
+    };
+    var poll = function() {
+      host('state').then(function(r) {
+        if (document.body.contains(box)) {
+          draw(r.live || null);
+        }
+      }).catch(function() {
+        // The next poll tries again.
+      });
+    };
+    poll();
+    state.remotetimer = setInterval(poll, 4000);
+  }
+
   function tabClass() {
     var d = state.data;
     var teams = '<div class="pills" style="justify-content:flex-start;margin-bottom:12px"><button class="chip" ' +
@@ -515,7 +640,7 @@
           '</button>';
       }).join('') + '</div>';
     var shown = studentsShown();
-    var el = content(todayCard() + namesCard() + teamsCard() + farCard() + '<section class="card"><div class="section-title"><h2>' +
+    var el = content(remoteCard() + todayCard() + namesCard() + teamsCard() + farCard() + '<section class="card"><div class="section-title"><h2>' +
       esc(t('teach_tab_class')) +
       '</h2><span class="section-tools"><label class="chip"><input type="checkbox" data-showres' + (state.showres ? ' checked' :
       '') + '> ' + esc(t('teach_showres')) + '</label><button class="btn btn-soft" data-all>' + esc(t('teach_selectall')) +
@@ -523,6 +648,7 @@
       (shown.length ? '<ul class="list">' + shown.map(studentCard).join('') + '</ul>' : '<p class="empty">' +
       esc(t('teach_nostudents')) + '</p>') + '</section><div id="actionbar"></div>');
     bindMakeTeams(el);
+    bindRemote(el);
     el.querySelector('[data-showres]').onchange = function() {
       state.showres = this.checked;
       try {
@@ -1594,7 +1720,22 @@
               '<small style="display:block;color:var(--text-soft)">' +
               esc(t('teach_results_none')) + '</small>') + '</div>';
           }).join('') + '</div>';
-      }).join('') + '</section>';
+      }).join('') + hanging(r.knots || []) + '</section>';
+  }
+
+  /**
+   * The knots the class left hanging in the battles of the week: what to go over again, with why each idea is wrong.
+   *
+   * @param {Array} knots
+   * @return {string}
+   */
+  function hanging(knots) {
+    return knots.length ? '<div class="result-chapter"><div class="section-title"><h3>' + esc(t('teach_knots_hanging')) +
+      '</h3></div><p class="help-soft">' + esc(t('teach_knots_hanging_help')) + '</p>' + knots.map(function(k) {
+        return '<div class="item" style="display:block"><b>' + esc(k.name) + '</b><small style="display:block;color:' +
+          'var(--text-soft)">' + esc(t('teach_knots_count', k)) + '</small><p class="note">«' + esc(k.claim) + '»' +
+          (k.why ? '<br><small>' + esc(k.why) + '</small>' : '') + '</p></div>';
+      }).join('') + '</div>' : '';
   }
 
   /* ---------- Classroom challenges ---------- */
@@ -2078,6 +2219,12 @@
       [['1', 'board_devices_tablets'], ['0', 'board_devices_none']].map(function(d) {
         return '<label class="chip"><input type="radio" name="devices" value="' + d[0] + '"' + ((r.devices !== false) ===
           (d[0] === '1') ? ' checked' : '') + (editable ? '' : ' disabled') + '> ' + esc(t(d[1])) + '</label>';
+      }).join('') + '</div><h3>' + esc(t('teach_set_devicemusic')) + '</h3><p class="help-soft">' +
+      esc(t('teach_set_devicemusic_help')) + '</p><div class="pills" role="radiogroup" aria-label="' +
+      esc(t('teach_set_devicemusic')) + '">' + [0, 1, 2].map(function(m) {
+        var now = r.devicemusic === undefined ? 1 : r.devicemusic;
+        return '<label class="chip"><input type="radio" name="devicemusic" value="' + m + '"' + (now === m ? ' checked' : '') +
+          (editable ? '' : ' disabled') + '> ' + esc(t('teach_set_devicemusic_' + m)) + '</label>';
       }).join('') + '</div><h3>' + esc(t('teach_set_nicknames')) + '</h3>' + nick + lookCard + coverCard +
       badgeCard + gradesCard +
       (editable ? '<div class="actions" style="justify-content:flex-start;margin-top:14px"><button class="btn btn-main" ' +
@@ -2122,6 +2269,7 @@
         leaderboard: f.leaderboard.checked,
         quiet: f.quiet.checked,
         devices: f.querySelector('[name="devices"]:checked').value === '1',
+        devicemusic: Number(f.querySelector('[name="devicemusic"]:checked').value),
         nicknames: picked ? Number(picked.value) : 0,
         timezone: f.timezone.value,
         portal: cover ? cover.value : 'door',

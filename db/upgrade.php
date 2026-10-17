@@ -636,5 +636,15 @@ function xmldb_local_oksigeniatesape_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026101724, 'local', 'oksigeniatesape');
     }
 
+    if ($oldversion < 2026101727) {
+        // The music on the devices of the students: never, only in battles (as until now, none) or always.
+        $table = new xmldb_table('local_oksigeniatesape_region');
+        $field = new xmldb_field('devicemusic', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'battlestate');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        upgrade_plugin_savepoint(true, 2026101727, 'local', 'oksigeniatesape');
+    }
+
     return true;
 }

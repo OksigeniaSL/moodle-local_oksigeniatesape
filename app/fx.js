@@ -22,6 +22,9 @@
   var quiet = false;
   // Only the class screen plays music.
   var musicPage = false;
+  /** The class screen: the sounds of the stage of the battle are only heard there, and only it fetches them. */
+  var stage = false;
+  var STAGE = ['battle.start', 'counter', 'escape', 'jar', 'phase2', 'shield', 'sting.win', 'sting.lost', 'tick'];
 
   function muted() {
     if (quiet) {
@@ -170,8 +173,10 @@
   function loadSamples() {
     var files = (T.cfg && T.cfg.art && T.cfg.art.files) || {};
     Object.keys(files).forEach(function(key) {
-      if ((key.indexOf('sound.') === 0 && key.indexOf('sound.ambient.') !== 0 && key !== 'sound.music') ||
-          (key === 'sound.music' && musicPage)) {
+      // The pieces of music (the soft one and those of the battle) ahead only on the class screen; on a tablet, the one
+      // that is going to play, when it plays.
+      if ((key.indexOf('sound.') === 0 && key.indexOf('sound.ambient.') !== 0 && key.indexOf('sound.music') !== 0 &&
+          (stage || STAGE.indexOf(key.slice(6)) < 0)) || (key.indexOf('sound.music') === 0 && stage)) {
         loadSample(key);
       }
     });
@@ -389,6 +394,10 @@
   };
   var mood = MOODS.valley;
   var music = null;
+  /** The piece of music that plays: the soft one, or that of a battle (sound.music.battle1, battle2). */
+  var musicKey = 'sound.music';
+  /** On the devices of the students, music as the teacher said: 0 never, 1 only in battles, 2 always; and the battle. */
+  var device = {mode: -1, battle: false};
 
   function pad(c, out, freq, at, length) {
     [0, 3].forEach(function(cents) {
@@ -442,7 +451,11 @@
     }
     // The music of the pack may still be on its way: a moment, and then the one made here.
     tries = tries || 0;
-    if (samples['sound.music'] === 'loading' && tries < 16) {
+    // On a tablet the piece is fetched only when it is going to play.
+    if (samples[musicKey] === undefined) {
+      loadSample(musicKey);
+    }
+    if (samples[musicKey] === 'loading' && tries < 16) {
       setTimeout(function() {
         if (musicWanted()) {
           startMusic(tries + 1);
@@ -453,10 +466,11 @@
     var out = c.createGain();
     out.gain.value = 0.0001;
     out.gain.setTargetAtTime(1, c.currentTime, 1.5);
-    var recorded = playSample('sound.music', out, true);
+    // The piece wanted, or the soft one if the pack does not bring that one.
+    var recorded = playSample(musicKey, out, true) || (musicKey !== 'sound.music' && playSample('sound.music', out, true));
     if (recorded) {
       out.connect(sampleOut);
-      music = {out: out, timer: 0, source: recorded};
+      music = {out: out, timer: 0, source: recorded, key: musicKey};
       return;
     }
     var filter = c.createBiquadFilter();
@@ -507,6 +521,25 @@
         out.disconnect();
       }, 3000);
       music = null;
+    }
+  }
+
+  /**
+   * On the device of a student, the music that may play now, and its piece: that of the battle in one, the soft one
+   * out of it if the teacher allows it always.
+   */
+  function deviceTune() {
+    var may = device.mode === 2 || (device.mode === 1 && device.battle);
+    musicPage = may;
+    var key = device.battle ? 'sound.music.battle1' : 'sound.music';
+    if (!may) {
+      stopMusic();
+    } else if (key !== musicKey || !music) {
+      musicKey = key;
+      stopMusic();
+      if (musicWanted() && !muted()) {
+        startMusic();
+      }
     }
   }
 
@@ -618,6 +651,23 @@
         torre: 'mountain'}[place] || 'meadow';
     },
     muted: muted,
+    /**
+     * The piece of music of the class screen: the soft one, or that of a battle. If the music is on and the piece
+     * changes, one fades out as the other fades in.
+     *
+     * @param {string} kind '' (the soft one), battle1 or battle2.
+     */
+    musicKind: function(kind) {
+      var key = kind ? 'sound.music.' + kind : 'sound.music';
+      if (key === musicKey) {
+        return;
+      }
+      musicKey = key;
+      if (music && musicWanted() && !muted()) {
+        stopMusic();
+        startMusic();
+      }
+    },
     /** No movement on this page: no confetti, hearts, sparkles or drum roll to see. */
     still: function() {
       still = true;
@@ -655,12 +705,46 @@
       return on;
     },
     /**
+     * On the device of a student, the music the teacher allows: never, only in battles or always.
+     *
+     * @param {number} mode 0, 1 or 2.
+     * @param {string} [world] The music of the world: valley, sea or space.
+     */
+    deviceMusic: function(mode, world) {
+      device.mode = mode;
+      mood = MOODS[world] || mood;
+      deviceTune();
+    },
+    /**
+     * On the device of a student, it is in a battle (its music, if the teacher allows it) or it is out.
+     *
+     * @param {boolean} on
+     */
+    battleMusic: function(on) {
+      if (device.battle !== !!on) {
+        device.battle = !!on;
+        deviceTune();
+      }
+    },
+    /**
+     * Whether this page offers to turn the music on: the class screen always, a tablet when the teacher allows it now.
+     *
+     * @return {boolean}
+     */
+    musicAllowed: function() {
+      return !quiet && (device.mode < 0 || device.mode === 2 || (device.mode === 1 && device.battle));
+    },
+    /**
      * This page plays the music the device remembers, if it was on, as soon as browsers let it sound.
      *
      * @param {string} [world] The music of the world: valley, sea or space.
      */
     musicHere: function(world) {
       musicPage = true;
+      stage = true;
+      if (ctx) {
+        loadSamples();
+      }
       mood = MOODS[world] || MOODS.valley;
       if (musicWanted()) {
         startMusic();

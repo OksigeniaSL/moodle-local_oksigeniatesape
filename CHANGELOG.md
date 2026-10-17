@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.75.0 (2026-10-17)
+
+Block 2.4 of the plan: the class screen as the stage of the battle by turns.
+
+- **The tower behind the battle**, and the Embrollo painted by the threads it has left (whole, frayed, down to its last
+  thread), with what it means to do over its head while the turn is played (a team, everybody, pulling itself
+  together, dazed).
+- **The teams in a row with their heroes**, without names, the protector in front; the golden shield over the team it
+  saved, and the threads that fly off the teams that undid their lane.
+- **The end**: won, the Embrollo in its jar; lost, it rolls away up the tower. Only teams and the class on the class
+  screen, never what one student did (the rule of the class screen, in the design).
+
+Block 2.5 of the plan: the remote of the teacher, the music and the results.
+
+- **The battle from the teacher's phone**: in the panel, «The battle, from here» launches it (by turns, with the
+  devices of the course), starts the first turn, shows the answer, marks each team aloud and ends it, with the same
+  buttons as the class screen at each moment, and how each team is to referee (who it goes for, tangled, undid their
+  lane, the verbs used); the class screen follows. «First turn» instead of «First question».
+- **A pause**, from the class screen or the phone: the time of the turn stands still and nobody answers or uses a verb
+  until it goes on, with the seconds it had left; going on by hand also ends it.
+- **The music of the battle** on the class screen: its two pieces (the second once the Embrollo is frayed) with a
+  crossfade, and its sounds (the start, the shield, the counter, the moment it frays, the heartbeat of the last five
+  seconds, the jar or the escape, and their sting).
+- **Music on the devices**, a setting of the teacher: never, only in battles (by default) or always; the students turn
+  it on with a button, and the piece is fetched only when it is going to play. The setting goes with the course
+  backups, and so does how the class plays (with devices or without). The tablets no longer fetch the sounds of the
+  stage of the battle (they are only heard on the class screen): about 250 KB less for each student.
+- **The knots left hanging this week**, in the results of the teacher: the ideas of the Embrollo the class did not undo
+  in the battles by turns of the last seven days, most first, with why each one is wrong, to go over them again.
+
 ## 0.74.0 (2026-10-17)
 
 Block 2.3 of the plan: the lanes of the battle on the tablet.

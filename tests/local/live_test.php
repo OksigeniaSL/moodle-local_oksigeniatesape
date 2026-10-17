@@ -454,6 +454,41 @@ final class live_test extends \advanced_testcase {
         $this->assertSame((int) $groups[1]->id, $view['targetid']);
     }
 
+    public function test_a_pause_stops_the_time_of_the_turn_and_nobody_answers_until_it_goes_on(): void {
+        $this->resetAfterTest();
+        [$course, $members, $groups] = $this->make_class();
+        $live = live::start($course->id, 'phones', 4, 30, self::NOW, false, true);
+        foreach ($members as $member) {
+            live::join($live, $member, $member->userid, self::NOW);
+        }
+        $live = live::next($live, self::NOW);
+        $strike = self::NOW + live::INTENT + live::PREP;
+        // Ten seconds into the lane, the teacher stops it.
+        $live = live::pause($live, $strike + 10);
+        $view = live::board_view($live, $strike + 100);
+        $this->assertTrue($view['paused']);
+        $this->assertFalse($view['open']);
+        $this->assertSame('strike', $view['stage']);
+        $this->assertSame(20, $view['left']);
+        // Nothing moves by itself, and nobody answers or uses a verb.
+        $this->assertFalse(live::board_view(live::tick($live, 2, true, $strike + 500), $strike + 500)['revealed']);
+        try {
+            live::answer($live, $members[0], 1, 0, $strike + 100);
+            $this->fail('An answer in the pause');
+        } catch (\moodle_exception $e) {
+            $this->assertSame('roundclosed', $e->errorcode);
+        }
+        // It goes on a minute later with the time it had left.
+        $live = live::resume($live, $strike + 70);
+        $view = live::board_view($live, $strike + 70);
+        $this->assertFalse($view['paused']);
+        $this->assertTrue($view['open']);
+        $this->assertSame(20, $view['left']);
+        live::answer($live, $members[0], 1, $this->lane_correct($live, (int) $groups[0]->id), $strike + 71);
+        $this->assertFalse(live::board_view(live::tick($live, 2, true, $strike + 85), $strike + 85)['revealed']);
+        $this->assertTrue(live::board_view(live::tick($live, 2, true, $strike + 91), $strike + 91)['revealed']);
+    }
+
     public function test_a_knot_breaks_when_every_lane_is_undone_and_the_embrollo_is_dazed(): void {
         $this->resetAfterTest();
         [$course, $members, $groups] = $this->make_class();

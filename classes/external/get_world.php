@@ -74,6 +74,12 @@ final class get_world extends external_api {
             'family' => new external_value(PARAM_ALPHA, 'Family of role names'),
             'nicknames' => new external_value(PARAM_INT, 'Hero names allowed'),
             'quiet' => new external_value(PARAM_BOOL, 'No sound on the devices of the students', VALUE_DEFAULT, false),
+            'devicemusic' => new external_value(
+                PARAM_INT,
+                'Music on the devices: 0 never, 1 only in battles, 2 always',
+                VALUE_DEFAULT,
+                1,
+            ),
             'energymax' => new external_value(PARAM_INT, 'Most energy'),
             'breathmax' => new external_value(PARAM_INT, 'Most breath'),
             'character' => structures::character(VALUE_OPTIONAL),

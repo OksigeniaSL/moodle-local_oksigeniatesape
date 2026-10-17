@@ -53,6 +53,7 @@ final class view {
             'family' => $region->family ?? 'storyheroes',
             'nicknames' => (int) ($region->nicknames ?? 0),
             'quiet' => (bool) ($region->quiet ?? false),
+            'devicemusic' => (int) ($region->devicemusic ?? 1),
             'energymax' => engine::ENERGY_MAX,
             'breathmax' => engine::BREATH_MAX,
             'challenges' => [],
@@ -672,6 +673,7 @@ final class view {
             'gradebook' => (bool) ($region->gradebook ?? false),
             'quiet' => (bool) ($region->quiet ?? false),
             'devices' => (bool) ($region->devices ?? true),
+            'devicemusic' => (int) ($region->devicemusic ?? 1),
             'look' => (string) ($region->look ?? ''),
             'worldlook' => themes::current('', art::manifest()),
         ];

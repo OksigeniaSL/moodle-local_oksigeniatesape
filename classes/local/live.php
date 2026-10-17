@@ -963,13 +963,16 @@ final class live {
      */
     private static function common(\stdClass $live, array $state, int $now): array {
         $round = (int) $live->round;
+        $open = self::is_open($state, $now);
+        $now = self::clock($state, $now);
         return [
             'id' => (int) $live->id,
             'kind' => $live->kind,
             'mode' => $state['mode'],
             'round' => $round,
             'total' => count($state['questions']),
-            'open' => self::is_open($state, $now),
+            'open' => $open,
+            'paused' => !empty($state['pausedat']),
             'left' => $state['closesat'] ? max(0, $state['closesat'] - 1 - $now) : -1,
             'revealed' => $round > 0 && !empty($state['rounds'][$round]['revealed']),
             'hp' => (int) $state['hp'],
@@ -1409,7 +1412,65 @@ final class live {
      * @return bool
      */
     private static function is_live(array $state, int $now): bool {
-        return $state['open'] && (!$state['closesat'] || $now < $state['closesat']);
+        return $state['open'] && empty($state['pausedat']) && (!$state['closesat'] || $now < $state['closesat']);
+    }
+
+    /**
+     * The teacher stops the battle a moment: the time of the turn stands still, and nobody answers or uses a verb until
+     * it goes on.
+     *
+     * @param \stdClass $live
+     * @param int|null $now
+     * @return \stdClass
+     */
+    public static function pause(\stdClass $live, ?int $now = null): \stdClass {
+        $now = $now ?? time();
+        $state = self::state($live);
+        if ($live->kind !== 'battle' || (int) $live->round < 1 || $state['outcome'] !== '' || !empty($state['pausedat'])) {
+            return $live;
+        }
+        $state['pausedat'] = $now;
+        return self::save($live, $state, (int) $live->round, $now);
+    }
+
+    /**
+     * The battle goes on where it stopped: every time of the turn moves on as long as the pause lasted.
+     *
+     * @param \stdClass $live
+     * @param int|null $now
+     * @return \stdClass
+     */
+    public static function resume(\stdClass $live, ?int $now = null): \stdClass {
+        $now = $now ?? time();
+        $state = self::state($live);
+        if (empty($state['pausedat'])) {
+            return $live;
+        }
+        $shift = max(0, $now - (int) $state['pausedat']);
+        unset($state['pausedat']);
+        $round = (int) $live->round;
+        foreach (['startat', 'revealedat'] as $at) {
+            if (!empty($state['rounds'][$round][$at])) {
+                $state['rounds'][$round][$at] += $shift;
+            }
+        }
+        foreach (['opensat', 'closesat'] as $at) {
+            if (!empty($state[$at])) {
+                $state[$at] += $shift;
+            }
+        }
+        return self::save($live, $state, $round, $now);
+    }
+
+    /**
+     * The moment the times of the battle are read at: while it is paused, the one it stopped at.
+     *
+     * @param array $state
+     * @param int $now
+     * @return int
+     */
+    private static function clock(array $state, int $now): int {
+        return (int) ($state['pausedat'] ?? 0) ?: $now;
     }
 
     /**
@@ -1621,6 +1682,7 @@ final class live {
      * @return array [stage, seconds left] ('' when it is not a turn being played).
      */
     private static function stage(\stdClass $live, array $state, int $now): array {
+        $now = self::clock($state, $now);
         $round = (int) $live->round;
         $info = $state['rounds'][$round] ?? null;
         if (!$info || empty($info['knot']) || $state['outcome'] !== '') {
@@ -1653,7 +1715,8 @@ final class live {
     public static function tick(\stdClass $live, int $actorid, bool $canfinish, ?int $now = null): \stdClass {
         $now = $now ?? time();
         $state = self::state($live);
-        if ($live->kind !== 'battle' || empty($state['knots']) || !$state['secs'] || $state['outcome'] !== '') {
+        $paused = !empty($state['pausedat']);
+        if ($live->kind !== 'battle' || empty($state['knots']) || !$state['secs'] || $state['outcome'] !== '' || $paused) {
             return $live;
         }
         [$stage, $left] = self::stage($live, $state, $now);

@@ -89,6 +89,10 @@
       return;
     }
     state.sig = sig;
+    // Inside a battle, its music, if the teacher allows it on the devices and the student turns it on.
+    if (T.fx) {
+      T.fx.battleMusic(!!(playing && live.joined && live.kind !== 'vote' && !live.outcome));
+    }
     if (!playing || (!live.joined && live.outcome)) {
       clearInterval(state.tick);
       layer.innerHTML = '';
@@ -176,12 +180,17 @@
       esc(t('app_battle_title')) + '</b>' + (live.round ? '<small>' + esc(t(live.stage ? 'board_turn_round' : 'app_battle_round', live)) + '</small>' : '') +
       '<span class="meter boss"><i style="width:' + Math.round(100 * life) + '%"></i></span>' + (live.maxcandles ?
       '<small class="candles-left">' + T.icon('lantern') + ' ' + esc(t('board_turn_candles', {lit: live.candles,
-      all: live.maxcandles})) + '</small>' : '') + '</div></div>';
+      all: live.maxcandles})) + '</small>' : '') + '</div>' + (T.fx && !live.outcome && T.fx.musicAllowed() ?
+      '<button type="button" class="btn btn-soft icon-btn battle-music" data-music aria-pressed="' + T.fx.musicOn() +
+      '" aria-label="' + esc(t('board_music')) + '" title="' + esc(t('board_music')) + '">♪</button>' : '') + '</div>';
   }
 
   function body(live) {
     if (live.kind === 'vote') {
       return voteBody(live);
+    }
+    if (live.paused && !live.outcome) {
+      return '<p class="battle-paused">' + T.icon('pause') + esc(t('board_battle_paused')) + '</p>';
     }
     if (live.outcome === 'won') {
       var p = live.prize;
@@ -336,6 +345,12 @@
   }
 
   function bind(live) {
+    var tune = layer.querySelector('[data-music]');
+    if (tune) {
+      tune.onclick = function() {
+        tune.setAttribute('aria-pressed', String(T.fx.music()));
+      };
+    }
     var laneEl = layer.querySelector('[data-lane]');
     if (laneEl && T.lane) {
       // A lane of another engine: what the student did goes to the server, which says whether it undoes it.

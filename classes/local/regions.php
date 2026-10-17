@@ -92,8 +92,9 @@ final class regions {
      * @param array $settings Any of enabled, family, groupingid, weeklycap, dailymanualcap, dailyenergylosscap,
      *     leaderboard, nicknames, timezone (99: the one of the site), rules (an array), portal (the cover of the course
      *     page), hideacts (the activities of the mission only inside the valley), quiet (no sound on the devices of the
-     *     students), devices (how the class plays: with a tablet each, or without devices) and look (the theme of the
-     *     class: night, day, or empty for the one of the world).
+     *     students), devices (how the class plays: with a tablet each, or without devices), devicemusic (music on
+     *     those devices: 0 never, 1 only in battles, 2 always) and look (the theme of the class: night, day, or empty
+     *     for the one of the world).
      * @param int|null $now
      * @return \stdClass
      */
@@ -110,6 +111,9 @@ final class regions {
             if (array_key_exists($flag, $settings)) {
                 $region->$flag = $settings[$flag] ? 1 : 0;
             }
+        }
+        if (array_key_exists('devicemusic', $settings)) {
+            $region->devicemusic = max(0, min(2, (int) $settings['devicemusic']));
         }
         if (array_key_exists('family', $settings)) {
             if (!in_array($settings['family'], self::FAMILIES, true)) {

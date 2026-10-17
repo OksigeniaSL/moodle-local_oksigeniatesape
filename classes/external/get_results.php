@@ -58,7 +58,8 @@ final class get_results extends external_api {
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
         require_capability('local/oksigeniatesape:viewlog', $context);
-        return results::mission($params['courseid']) ?? ['title' => '', 'players' => 0, 'chapters' => [], 'games' => []];
+        return results::mission($params['courseid']) ?? ['title' => '', 'players' => 0, 'chapters' => [], 'games' => [],
+            'knots' => []];
     }
 
     /**
@@ -114,6 +115,14 @@ final class get_results extends external_api {
                     'count' => new external_value(PARAM_INT, 'How many times'),
                 ])),
             ])),
+            'knots' => new external_multiple_structure(new external_single_structure([
+                'code' => new external_value(PARAM_ALPHANUMEXT, 'Knot'),
+                'name' => new external_value(PARAM_TEXT, 'Its name'),
+                'claim' => new external_value(PARAM_TEXT, 'What the Embrollo claims'),
+                'why' => new external_value(PARAM_TEXT, 'Why it is wrong'),
+                'hanging' => new external_value(PARAM_INT, 'Battles in which it was left hanging'),
+                'broken' => new external_value(PARAM_INT, 'Battles in which the class broke it'),
+            ]), 'The knots left hanging in the battles of the last week, most first', VALUE_DEFAULT, []),
         ]);
     }
 }

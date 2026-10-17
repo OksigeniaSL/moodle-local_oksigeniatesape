@@ -40,7 +40,10 @@ final class live_host extends external_api {
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
             'courseid' => new external_value(PARAM_INT, 'Course'),
-            'action' => new external_value(PARAM_ALPHA, 'state, start, next, reveal, mark, finish, startvote or vote'),
+            'action' => new external_value(
+                PARAM_ALPHA,
+                'state, start, next, reveal, mark, finish, startvote, vote, pause or resume'
+            ),
             'mode' => new external_value(PARAM_ALPHA, 'start: phones or aloud', VALUE_DEFAULT, 'phones'),
             'count' => new external_value(PARAM_INT, 'start: questions', VALUE_DEFAULT, 6),
             'secs' => new external_value(PARAM_INT, 'start: seconds per question (0: no limit)', VALUE_DEFAULT, 30),
@@ -164,7 +167,17 @@ final class live_host extends external_api {
         }
         // Back on the session: the phones see it again.
         live::heartbeat($live, $now);
+        if (in_array($params['action'], ['next', 'reveal'], true)) {
+            // To go on by hand is to go on: a pause ends first.
+            $live = live::resume($live, $now);
+        }
         switch ($params['action']) {
+            case 'pause':
+                $live = live::pause($live, $now);
+                break;
+            case 'resume':
+                $live = live::resume($live, $now);
+                break;
             case 'next':
                 $live = live::next($live, $now, $from);
                 break;
