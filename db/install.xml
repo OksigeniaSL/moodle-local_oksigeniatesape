@@ -49,6 +49,7 @@
         <FIELD NAME="quiet" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="No sound on the devices of the students"/>
         <FIELD NAME="devices" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="How the class plays: 1 with a tablet each, 0 without devices (cards and aloud)"/>
         <FIELD NAME="look" TYPE="char" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Theme of the class: night, day, or none for the one of the world"/>
+        <FIELD NAME="battlestate" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="By turns, how the Embrollo escaped from the last battle lost: the rematch goes on from there (JSON)"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>

@@ -142,14 +142,16 @@
     if (live.outcome === 'won') {
       var p = live.prize;
       var prize = p ? '<p class="lead">' + esc(t('app_battle_prize', p)) + (p.capped ? ' (' + esc(t('app_capped', p.capped)) +
-        ')' : '') + '</p>' + (p.best ? '<p>' + esc(p.item ? t('app_battle_bestitem', p.item) : t('app_battle_best')) +
+        ')' : '') + '</p>' + (p.best ? '<p>' + esc(live.maxcandles ? (p.item ? t('app_battle_classitem', p.item) : t('app_battle_class')) :
+        p.item ? t('app_battle_bestitem', p.item) : t('app_battle_best')) +
         '</p>' : '') + (p.final ? '<p>' + esc(t('app_battle_finalprize', p.final)) + '</p>' : '') + (p.grew ? '<p>' +
         esc(t('app_battle_grew')) + '</p>' : '') : '';
       return '<div class="battle-end won"><h2>' + esc(t('app_battle_won')) + '</h2>' + prize +
         '<button class="btn btn-main" data-back>' + esc(t('app_battle_back')) + '</button></div>';
     }
     if (live.outcome === 'lost') {
-      return '<div class="battle-end"><h2>' + esc(t('app_battle_escaped')) + '</h2><p>' + esc(t('app_battle_lost')) + '</p>' +
+      return '<div class="battle-end"><h2>' + esc(t('app_battle_escaped')) + '</h2><p>' + esc(t(live.maxcandles ?
+        'app_battle_lost_turns' : 'app_battle_lost')) + '</p>' +
         '<button class="btn btn-main" data-back>' + esc(t('app_battle_back')) + '</button></div>';
     }
     if (live.stage === 'intent' || live.stage === 'prep') {

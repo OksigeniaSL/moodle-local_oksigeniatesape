@@ -86,6 +86,12 @@ final class today {
             $today['letter'] = ['chapter' => missions::text($info[$last->code]['name'] ?? $last->code, $mission->skin),
                 'text' => $letter, 'teaser' => self::teaser($mission, $last->code)];
         }
+        // While a rematch is pending, the Embrollo boasts in its letter of the day.
+        $region = regions::get($courseid);
+        $gloat = $mission->data['battle']['lost']['letter'] ?? '';
+        if (!empty($region->battlestate) && $gloat) {
+            $today['gloat'] = missions::text($gloat, $mission->skin, $mission->variant);
+        }
         if ($mixup) {
             $cache = \cache::make('local_oksigeniatesape', 'mixups');
             $found = $cache->get($courseid);

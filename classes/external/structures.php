@@ -212,6 +212,7 @@ final class structures {
                 'text' => new external_value(PARAM_TEXT, 'The letter'),
                 'teaser' => new external_value(PARAM_TEXT, 'What waits in the next place', VALUE_DEFAULT, ''),
             ], 'The last letter of the Embrollo', VALUE_OPTIONAL),
+            'gloat' => new external_value(PARAM_TEXT, 'While a rematch is pending: the letter the Embrollo boasts in', VALUE_OPTIONAL),
             'mixup' => new external_single_structure([
                 'question' => new external_value(PARAM_TEXT, 'Question or game'),
                 'answer' => new external_value(PARAM_TEXT, 'The wrong answer most given'),
@@ -513,6 +514,7 @@ final class structures {
             'outcome' => new external_value(PARAM_ALPHA, 'won, lost, done (a vote) or empty while playing'),
             'phase' => new external_value(PARAM_INT, '1, or 2 once the Embrollo is down to half its life', VALUE_DEFAULT, 1),
             'final' => new external_value(PARAM_BOOL, 'The final battle of the mission', VALUE_DEFAULT, false),
+            'rematch' => new external_value(PARAM_INT, 'By turns: threads the Embrollo is back with (percent)', VALUE_DEFAULT, 0),
             'counter' => new external_value(PARAM_INT, 'Life the Embrollo got back after the round', VALUE_DEFAULT, 0),
             'shielded' => new external_value(PARAM_BOOL, 'A protector\'s shield stopped that', VALUE_DEFAULT, false),
             'stage' => new external_value(PARAM_ALPHA, 'By turns: intent, prep, strike or resolve', VALUE_DEFAULT, ''),

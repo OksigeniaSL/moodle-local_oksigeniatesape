@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 30,
+ "version": 31,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 31,
+   "kind": "improvement",
+   "date": "2026-10-17",
+   "text": "Si la clase pierde la batalla, el Embrollo se jacta en su carta del día siguiente"
+  },
   {
    "version": 30,
    "kind": "improvement",
@@ -403,6 +409,12 @@
   "phases": {
    "frayed": 60,
    "last": 25
+  },
+  "lost": {
+   "letter": {
+    "valley": "Me escapé torre arriba con mis mejores hilos y una página del Gran Libro bajo el brazo. La he escondido donde nadie mira: entre lo que se da por sabido. La próxima vez, más nudos. ¡Y más gordos!",
+    "azara": "Nota suelta, de letra enredada: «Una página del cuaderno se vino conmigo por la ventana. La escondí entre lo que se da por sabido. La próxima vez, más enredos, y más gordos»."
+   }
   },
   "knots": [
    {

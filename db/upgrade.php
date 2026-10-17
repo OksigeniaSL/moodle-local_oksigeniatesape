@@ -626,5 +626,15 @@ function xmldb_local_oksigeniatesape_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026101722, 'local', 'oksigeniatesape');
     }
 
+    if ($oldversion < 2026101724) {
+        // By turns, a battle lost leaves the Embrollo as it escaped: the rematch goes on from there.
+        $table = new xmldb_table('local_oksigeniatesape_region');
+        $field = new xmldb_field('battlestate', XMLDB_TYPE_TEXT, null, null, null, null, null, 'look');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        upgrade_plugin_savepoint(true, 2026101724, 'local', 'oksigeniatesape');
+    }
+
     return true;
 }

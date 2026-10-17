@@ -539,6 +539,58 @@ final class live_test extends \advanced_testcase {
         $this->assertNotSame('', $targets['shield']);
     }
 
+    public function test_a_broken_knot_does_not_come_back_and_the_last_thread_brings_the_hardest(): void {
+        global $DB;
+        $this->resetAfterTest();
+        [$course, $members, $groups] = $this->make_class();
+        $live = live::start($course->id, 'phones', 4, 30, self::NOW, false, true);
+        foreach ($members as $member) {
+            live::join($live, $member, $member->userid, self::NOW);
+        }
+        $live = live::next($live, self::NOW);
+        $live = $this->play_turn($live, $members, $groups, [false, false], self::NOW);
+        // The knot planned for the next turn was broken already, and another one is left hanging: that one comes.
+        $state = json_decode($live->state, true);
+        $state['knots'][1] = 'arena';
+        $state['broken'] = ['arena'];
+        $state['hanging'] = ['piedra', 'setuga', 'setuga', 'setuga'];
+        $DB->set_field(self::T . 'live', 'state', json_encode($state), ['id' => $live->id]);
+        $live = live::next($DB->get_record(self::T . 'live', ['id' => $live->id]), self::NOW + 100);
+        $this->assertSame('piedra', json_decode($live->state, true)['knots'][1]);
+        // In the last thread, the knot the class could least undo, once (the piedra, unanswered, hangs once more).
+        $state = json_decode($live->state, true);
+        $state['hp'] = 1;
+        $DB->set_field(self::T . 'live', 'state', json_encode($state), ['id' => $live->id]);
+        $live = live::next($DB->get_record(self::T . 'live', ['id' => $live->id]), self::NOW + 200);
+        $state = json_decode($live->state, true);
+        $this->assertSame('setuga', $state['knots'][2]);
+        $this->assertSame('setuga', $state['lastknot']);
+        $this->assertNotEmpty($state['rounds'][3]['lanes']);
+    }
+
+    public function test_by_turns_the_untangled_thread_is_for_the_class_if_it_broke_half_the_knots(): void {
+        global $DB;
+        $this->resetAfterTest();
+        [$course, $members, $groups] = $this->make_class();
+        $live = live::start($course->id, 'phones', 4, 30, self::NOW, false, true);
+        foreach ($members as $member) {
+            live::join($live, $member, $member->userid, self::NOW);
+        }
+        $live = live::next($live, self::NOW);
+        $live = $this->play_turn($live, $members, $groups, [true, true], self::NOW);
+        // One turn, one knot broken: half or more, so everybody who played gets the object of the battle.
+        $state = json_decode($live->state, true);
+        $state['hp'] = 0;
+        $DB->set_field(self::T . 'live', 'state', json_encode($state), ['id' => $live->id]);
+        $live = live::finish($DB->get_record(self::T . 'live', ['id' => $live->id]), 2, self::NOW + 100);
+        $state = json_decode($live->state, true);
+        $this->assertSame('won', $state['outcome']);
+        $this->assertCount(4, $state['joined']);
+        foreach ($members as $member) {
+            $this->assertTrue($state['rewarded'][$member->charid]['best']);
+        }
+    }
+
     public function test_the_tower_in_the_dark_loses_the_battle(): void {
         global $DB;
         $this->resetAfterTest();
@@ -558,6 +610,48 @@ final class live_test extends \advanced_testcase {
         $end = self::NOW + live::INTENT + live::PREP + 31 + live::RESOLVE;
         $live = live::tick($live, 2, true, $end);
         $this->assertSame('lost', json_decode($live->state, true)['outcome']);
+        // The Embrollo escaped as it was: the rematch goes on from there, and meanwhile it boasts in its letter.
+        $saved = json_decode((string) $DB->get_field(self::T . 'region', 'battlestate', ['courseid' => $course->id]), true);
+        $this->assertSame(1.0, (float) $saved['left']);
+        $this->assertSame(['piedra'], $saved['hanging']);
+        $this->assertNotSame('', today::get($course->id)['gloat']);
+        $rematch = live::start($course->id, 'phones', 4, 30, $end + 100, false, true);
+        foreach ($members as $member) {
+            live::join($rematch, $member, $member->userid, $end + 100);
+        }
+        $rematch = live::next($rematch, $end + 100);
+        $view = live::board_view($rematch, $end + 100);
+        $this->assertSame(100, $view['rematch']);
+        $this->assertSame($view['maxhp'], $view['hp']);
+        // Won, there is nothing left to go on with: the next battle starts afresh.
+        $state = json_decode($rematch->state, true);
+        $state['hp'] = 0;
+        $DB->set_field(self::T . 'live', 'state', json_encode($state), ['id' => $rematch->id]);
+        live::finish($DB->get_record(self::T . 'live', ['id' => $rematch->id]), 2, $end + 200);
+        $this->assertNull($DB->get_field(self::T . 'region', 'battlestate', ['courseid' => $course->id]));
+        $this->assertArrayNotHasKey('gloat', today::get($course->id));
+    }
+
+    public function test_a_rematch_leaves_out_the_knots_the_class_broke(): void {
+        global $DB;
+        $this->resetAfterTest();
+        [$course, $members] = $this->make_class();
+        $DB->set_field(self::T . 'region', 'battlestate', json_encode(['left' => 0.5, 'broken' => ['piedra'],
+            'hanging' => ['arena'], 'final' => false]), ['courseid' => $course->id]);
+        regions::forget();
+        $live = live::start($course->id, 'phones', 4, 30, self::NOW, false, true);
+        $knots = json_decode($live->state, true)['knots'];
+        $this->assertNotContains('piedra', $knots);
+        $this->assertSame('arena', $knots[0]);
+        foreach ($members as $member) {
+            live::join($live, $member, $member->userid, self::NOW);
+        }
+        $view = live::board_view(live::next($live, self::NOW), self::NOW);
+        $this->assertSame(50, $view['rematch']);
+        $this->assertSame((int) round($view['maxhp'] / 2), $view['hp']);
+        // The final battle does not go on from a normal one.
+        $final = json_decode(live::start($course->id, 'phones', 4, 30, self::NOW + 10, true, true)->state, true);
+        $this->assertArrayNotHasKey('rematch', $final);
     }
 
     public function test_the_tokens_help_the_team_of_who_uses_them_once_a_battle(): void {

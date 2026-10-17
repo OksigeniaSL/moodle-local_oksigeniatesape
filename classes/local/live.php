@@ -135,6 +135,14 @@ final class live {
         $state = ['mode' => $mode, 'secs' => $secs, 'questions' => $questions, 'rounds' => [], 'open' => false,
             'closesat' => 0, 'hp' => 0, 'maxhp' => 0, 'outcome' => '', 'rewarded' => [], 'final' => $final];
         if ($plan) {
+            // A rematch goes on where the last battle lost stopped: the knots broken do not come back, those left hanging
+            // come first, and the Embrollo has the threads it escaped with.
+            $saved = json_decode((string) (regions::get($courseid)->battlestate ?? ''), true);
+            if (is_array($saved) && (bool) ($saved['final'] ?? false) === $final) {
+                $plan = self::rematch($courseid, $count, $final, $saved) ?: $plan;
+                $state['questions'] = array_column($plan, 1);
+                $state['rematch'] = max(0.05, min(1, (float) ($saved['left'] ?? 1)));
+            }
             // By turns: the candles of the tower, the teams tangled, the knots broken and those left hanging.
             $state['knots'] = array_column($plan, 0);
             $rules = knots::rules(missions::get($courseid));
@@ -409,8 +417,14 @@ final class live {
                 $state['maxhp'] = max(1, (int) round(count($state['knots']) * ($lanes + self::BREAK_THREADS) * self::TO_WIN));
             }
             $state['hp'] = $state['maxhp'];
+            if (!empty($state['rematch'])) {
+                $state['hp'] = max(1, (int) round($state['maxhp'] * $state['rematch']));
+            }
         }
         $round++;
+        if (!empty($state['knots'])) {
+            $state = self::which_knot($live, $state, $round);
+        }
         $question = questions::get((int) $live->courseid, $state['questions'][$round - 1], self::seed($live, $round));
         if (!$question) {
             // The mission changed in the middle of the battle and the question is gone.
@@ -510,6 +524,9 @@ final class live {
             $state = self::count($live, $state, $now);
         }
         $state['open'] = false;
+        // Who came in stays with the battle: the answers are cleaned up after some days, the battles they missed are not.
+        $in = $DB->get_fieldset_select(self::T . 'livein', 'charid', 'liveid = ? AND round = 0', [$live->id]);
+        $state['joined'] = array_map('intval', $in);
         if ($live->kind === 'vote') {
             $state['outcome'] = 'done';
         } else {
@@ -519,6 +536,15 @@ final class live {
         $transaction = $DB->start_delegated_transaction();
         if ($state['outcome'] === 'won') {
             $state['rewarded'] = self::reward($live, $state, $actorid, $now);
+        }
+        if (!empty($state['knots']) && $round > 0) {
+            // By turns: lost, the Embrollo escapes as it is, for the rematch; won, there is nothing left to go on with.
+            $left = $state['maxhp'] ? $state['hp'] / $state['maxhp'] : 1;
+            $escaped = $state['outcome'] === 'lost' ? json_encode(['left' => $left,
+                'broken' => array_values(array_unique($state['broken'] ?? [])),
+                'hanging' => array_values(array_unique($state['hanging'] ?? [])), 'final' => !empty($state['final'])]) : null;
+            $DB->set_field(self::T . 'region', 'battlestate', $escaped, ['courseid' => $live->courseid]);
+            regions::forget();
         }
         $live = self::save($live, $state, $round, $now);
         $DB->set_field(self::T . 'live', 'timeend', $now, ['id' => $live->id]);
@@ -850,7 +876,9 @@ final class live {
         foreach ($battles as $live) {
             $state = self::state($live);
             $joined = ['liveid' => $live->id, 'round' => 0, 'charid' => $charid];
-            if (!in_array($state['outcome'] ?? '', ['won', 'lost'], true) || $DB->record_exists(self::T . 'livein', $joined)) {
+            $played = isset($state['joined']) ? in_array($charid, $state['joined'], true) :
+                $DB->record_exists(self::T . 'livein', $joined);
+            if (!in_array($state['outcome'] ?? '', ['won', 'lost'], true) || $played) {
                 continue;
             }
             $lantern = '';
@@ -888,6 +916,7 @@ final class live {
             'outcome' => $state['outcome'],
             'phase' => self::phase($state),
             'final' => !empty($state['final']),
+            'rematch' => (int) round(100 * (float) ($state['rematch'] ?? 0)),
             'counter' => $round > 0 ? (int) ($state['rounds'][$round]['counter'] ?? 0) : 0,
             'shielded' => $round > 0 && !empty($state['rounds'][$round]['shielded']),
         ] + self::turn($live, $state, $now);
@@ -1152,6 +1181,9 @@ final class live {
             }
         }
         $best = $byteam ? max($byteam) : 0;
+        // By turns there is no team that helped most: the untangled thread is for the class, if it broke half the knots.
+        $turns = !empty($state['knots']);
+        $classthread = $turns && 2 * count(array_unique($state['broken'] ?? [])) >= max(1, count($state['rounds']));
         // The object of the mission for the team that helped most; more gems if the mission has none, or for those
         // who already have it.
         $mission = missions::get($courseid);
@@ -1173,7 +1205,7 @@ final class live {
             if (!$member || $member->status === 'paused') {
                 continue;
             }
-            $isbest = $best > 0 && ($byteam[$team] ?? 0) == $best;
+            $isbest = $turns ? $classthread : $best > 0 && ($byteam[$team] ?? 0) == $best;
             $got = $isbest && $itemid ? engine::item($member, $itemid, 'battle', $actorid, 0, $now) : null;
             $gems = self::WIN_GEMS + ($isbest && !$got ? self::TEAM_GEMS : 0);
             $first = $final && self::once((int) $charid, $courseid, (int) $mission->id, 'final', 'battle', $now);
@@ -1315,6 +1347,65 @@ final class live {
         }
         sort($teams);
         return $teams;
+    }
+
+    /**
+     * The knots of a rematch: those planned, but not those the class broke, and first those left hanging.
+     *
+     * @param int $courseid
+     * @param int $count Turns.
+     * @param bool $final
+     * @param array $saved How the Embrollo escaped: broken, hanging.
+     * @return array List of [knot code, question id] (empty: nothing left to play, the battle starts again).
+     */
+    private static function rematch(int $courseid, int $count, bool $final, array $saved): array {
+        $broken = (array) ($saved['broken'] ?? []);
+        $knots = array_column(knots::usable(missions::get($courseid)), null, 'code');
+        $planned = array_column(knots::plan($courseid, $count + count($broken), $final), 0);
+        $candidates = array_unique(array_merge((array) ($saved['hanging'] ?? []), $planned));
+        $codes = array_values(array_filter($candidates, fn($c) => !in_array($c, $broken, true) && isset($knots[$c])));
+        if (!$codes) {
+            return [];
+        }
+        $plan = [];
+        for ($turn = 0; $turn < $count; $turn++) {
+            $code = $codes[intdiv($turn * count($codes), $count)];
+            $plan[] = [$code, $knots[$code]['questions'][$turn % count($knots[$code]['questions'])]];
+        }
+        return $plan;
+    }
+
+    /**
+     * The knot of a turn by turns: the one planned, unless the class broke it already (a broken knot does not come back:
+     * one left hanging does instead); and in the last thread, once, the knot the class could least undo in this battle.
+     *
+     * @param \stdClass $live
+     * @param array $state
+     * @param int $round The turn that starts.
+     * @return array The state, with the knot (and its first question) of the turn.
+     */
+    private static function which_knot(\stdClass $live, array $state, int $round): array {
+        $code = (string) $state['knots'][$round - 1];
+        $broken = $state['broken'] ?? [];
+        $hanging = array_values(array_filter($state['hanging'] ?? [], fn($k) => !in_array($k, $broken, true)));
+        $left = $state['maxhp'] ? 100 * $state['hp'] / $state['maxhp'] : 100;
+        $last = $left <= ($state['phases']['last'] ?? 25);
+        if ($last && $hanging && empty($state['lastknot'])) {
+            $counts = array_count_values($hanging);
+            arsort($counts);
+            $code = (string) array_key_first($counts);
+            $state['lastknot'] = $code;
+        } else if (in_array($code, $broken, true) && $hanging) {
+            $code = $hanging[0];
+        }
+        if ($code !== $state['knots'][$round - 1]) {
+            $knot = array_column(knots::usable(missions::get((int) $live->courseid)), null, 'code')[$code] ?? null;
+            if ($knot && $knot['questions']) {
+                $state['knots'][$round - 1] = $code;
+                $state['questions'][$round - 1] = $knot['questions'][0];
+            }
+        }
+        return $state;
     }
 
     /**

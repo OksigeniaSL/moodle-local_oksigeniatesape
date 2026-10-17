@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.73.0 (2026-10-17)
+
+Block 2.2 of the plan: losing has a rematch (mission v31).
+
+- **The rematch goes on where it stopped**: by turns, when the Embrollo escapes (the tower in the dark, or the turns
+  over with threads left), the course keeps how it was; the next battle (normal, or final after a final) starts with
+  the threads it escaped with, without the knots the class broke and with those left hanging first. Winning clears it.
+- **It boasts**: until the rematch, «Today in the valley» shows the letter the Embrollo writes after escaping, with a
+  page of the Great Book under its arm; the class screen announces the rematch, and the end of a battle lost says so.
+- Every turn says what happened, also when the Embrollo did not get what it meant to do.
+
+Tested locally, without CI (the minutes of GitHub Actions of the month are spent; Enrique's decision, 17 October):
+PHPUnit (323 tests), moodlecheck and phpcs clean; in the browser, accessibility of every screen, every scene of a
+student to an ending, the minigames and a battle by turns with class screen and two tablets; the server walkthrough of
+the mission with the final battle. This covers 0.70.0 to 0.73.0, which did not get to CI either.
+
+## 0.72.0 (2026-10-17)
+
+Block 2.2 of the plan, more of the battle by turns:
+
+- **A broken knot does not come back**: if the knot planned for a turn was broken already, one left hanging comes
+  instead; and in the last thread (a quarter of the threads or less), once, the knot the class could least undo in the
+  battle.
+- **The untangled thread is for the class**: by turns there is no team that helped most; if the class broke half the
+  knots or more, everybody who played takes the object of the battle (or extra gems, if they have it).
+- Who came in stays with the battle when it ends, so that the battles a student missed do not depend on answers that
+  are cleaned up after some days.
+
 ## 0.71.0 (2026-10-17)
 
 Block 2.2 of the plan: the verbs of the roles in the battle by turns.

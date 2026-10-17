@@ -12,8 +12,16 @@ on:
   push:
     branches: [main]
     tags: ['v*']
+    # What is not code does not run the suite: the minutes of Actions are counted.
+    paths-ignore: ['**.md', 'docs/**', 'LICENSE', '.gitignore']
   pull_request:
+    paths-ignore: ['**.md', 'docs/**', 'LICENSE', '.gitignore']
   workflow_dispatch:
+
+# A new push cancels the run of the one before it on the same branch, which nobody needs any more.
+concurrency:
+  group: moodle-ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   matrix:

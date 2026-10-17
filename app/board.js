@@ -276,11 +276,13 @@
       }).join('') + '</div>' : '') : '';
     if (l.outcome) {
       main = '<div class="battle-end ' + l.outcome + '"><h2>' + esc(t('board_battle_' + l.outcome)) + '</h2>' + ending +
-        '<p class="lead">' + esc(l.outcome === 'won' ? t('board_battle_wonhelp', l.rewarded) : t('board_battle_losthelp')) +
+        '<p class="lead">' + esc(l.outcome === 'won' ? t('board_battle_wonhelp', l.rewarded) : t(l.maxcandles ?
+        'board_battle_losthelp_turns' : 'board_battle_losthelp')) +
         '</p></div>';
       buttons = '<button class="btn btn-main" data-dismiss>' + esc(t('board_battle_back')) + '</button>';
     } else if (!l.round) {
-      main = '<div class="battle-lobby"><p class="lead">' + esc(t(l.mode === 'phones' ? 'board_battle_join' :
+      main = '<div class="battle-lobby">' + (l.rematch ? '<p class="turn-outcome fell">' + esc(t('board_battle_rematch',
+        l.rematch)) + '</p>' : '') + '<p class="lead">' + esc(t(l.mode === 'phones' ? 'board_battle_join' :
         'board_battle_aloudhelp')) + '</p>' + (l.mode === 'phones' ? '<p class="battle-count">' +
         esc(t('board_battle_joined', l.joined)) + '</p>' : '') + '</div>';
       buttons = '<button class="btn btn-main" data-battlenext' + (l.mode === 'phones' && !l.joined ? ' disabled' : '') + '>' +
@@ -390,7 +392,10 @@
       return '';
     }
     if (l.lanes && l.lanes.length) {
-      return (l.knot.broken ? '<p class="turn-outcome undone knot-broken">' + esc(t('board_turn_broken')) + '</p>' +
+      // What the Embrollo meant to do and did not get: told too, so that every turn says what happened.
+      var spared = !l.counter && !l.shielded && !l.recovered ? '<p class="turn-outcome undone">' + esc(l.intent === 'team' ?
+        t('board_turn_undone', l.target) : t('board_turn_spared_' + (l.intent || 'team'))) + '</p>' : '';
+      return spared + (l.knot.broken ? '<p class="turn-outcome undone knot-broken">' + esc(t('board_turn_broken')) + '</p>' +
         (l.knot.why ? '<p class="why">' + esc(l.knot.why) + '</p>' : '') : '') + (l.shielded ? '<p class="turn-outcome">' +
         esc(t('board_turn_shield', l.target)) + '</p>' : '') + (l.counter && !l.recovered ? '<p class="turn-outcome fell">' +
         esc(t(l.intent === 'all' ? 'board_turn_candle_all' : 'board_turn_candle', l.target)) + '</p>' : '') +
@@ -695,7 +700,8 @@
     // What confuses the class most: in the letter, the Embrollo boasts of it (no names); without a letter, said plainly.
     var taunt = d.letter && d.mixup ? '<span class="taunt">' + esc(t('board_today_taunt', d.mixup)) + '</span>' : '';
     return '<section class="card board-today"><div class="kicker">' + esc(t('board_today')) + '</div><h3>' +
-      esc(d.chapter) + '</h3>' + (d.letter ? '<blockquote class="letter"><small>' + esc(t('board_today_letter',
+      esc(d.chapter) + '</h3>' + (d.gloat ? '<blockquote class="letter gloat"><small>' + esc(t('board_today_gloat')) +
+      '</small>' + esc(d.gloat) + '</blockquote>' : '') + (d.letter ? '<blockquote class="letter"><small>' + esc(t('board_today_letter',
       d.letter.chapter)) + '</small>' + esc(d.letter.text) + taunt + '</blockquote>' + (d.letter.teaser ? '<p class="teaser">' +
       '<b>' + esc(t('app_teaser')) + '</b> ' + esc(d.letter.teaser) + '</p>' : '') : '') + (sessions ?
       '<ol class="today-sessions">' + sessions + '</ol>' : '') + (d.offscreen ? '<p class="help-soft">' +
