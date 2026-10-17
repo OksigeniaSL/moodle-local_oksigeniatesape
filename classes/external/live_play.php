@@ -42,6 +42,7 @@ final class live_play extends external_api {
             'action' => new external_value(PARAM_ALPHA, 'state, join, answer or token (the battle token of their role)'),
             'round' => new external_value(PARAM_INT, 'answer: the round', VALUE_DEFAULT, 0),
             'answer' => new external_value(PARAM_INT, 'answer: index of the option', VALUE_DEFAULT, -1),
+            'target' => new external_value(PARAM_INT, 'token, by turns: the team the shield or the cheer goes to', VALUE_DEFAULT, 0),
         ]);
     }
 
@@ -52,15 +53,17 @@ final class live_play extends external_api {
      * @param string $action
      * @param int $round
      * @param int $answer
+     * @param int $target
      * @return array
      */
-    public static function execute(int $courseid, string $action, int $round = 0, int $answer = -1): array {
+    public static function execute(int $courseid, string $action, int $round = 0, int $answer = -1, int $target = 0): array {
         global $USER;
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
             'action' => $action,
             'round' => $round,
             'answer' => $answer,
+            'target' => $target,
         ]);
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
@@ -83,7 +86,7 @@ final class live_play extends external_api {
                 live::join($live, $member, (int) $USER->id, $now);
                 break;
             case 'token':
-                live::token($live, $member, $now);
+                live::token($live, $member, $now, $params['target']);
                 break;
             case 'answer':
                 live::answer($live, $member, $params['round'], $params['answer'], $now);

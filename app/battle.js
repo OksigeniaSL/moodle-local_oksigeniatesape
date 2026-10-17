@@ -218,14 +218,34 @@
     if (!live.token || live.revealed) {
       return '';
     }
+    // By turns, the scout who followed the trail sees what comes next.
+    var ahead = live.nextknot ? '<p class="battle-trail">' + esc(t('app_token_next', {knot: live.nextknot,
+      team: live.nexttarget || ''})) + '</p>' : '';
     if (live.tokenused) {
-      return '<p class="help-soft battle-token-used">' + esc(t('app_token_used')) + '</p>';
+      return ahead + '<p class="help-soft battle-token-used">' + esc(live.tokenrest ? t('app_token_rest', live.tokenrest) :
+        t('app_token_used')) + '</p>';
     }
     // By turns, the verb is ready from the moment the knot is announced, in big while the roles get ready.
     var ready = live.open || live.stage === 'intent' || live.stage === 'prep';
     var big = live.stage === 'intent' || live.stage === 'prep';
-    return ready ? '<div class="battle-token"><button type="button" class="btn ' + (big ? 'btn-main btn-big' : 'btn-soft') +
-      '" data-token>' + esc(t('app_token_' + live.token)) + '</button></div>' : '';
+    if (!ready) {
+      return ahead;
+    }
+    if (live.targets && live.targets.length > 1) {
+      // The shield and the cheer go to a team: one big button for each, their own first.
+      var mine = live.targets.filter(function(x) {
+        return x.id === live.myteam;
+      }).concat(live.targets.filter(function(x) {
+        return x.id !== live.myteam;
+      }));
+      return ahead + '<div class="battle-token"><p class="help-soft">' + esc(t('app_token_' + live.token + (live.maxcandles ? '_turns' : ''))) + '</p>' +
+        mine.map(function(x) {
+          return '<button type="button" class="btn ' + (big ? 'btn-main' : 'btn-soft') + '" data-token data-target="' + x.id +
+            '">' + esc(t('app_token_on', x.id === live.myteam ? t('app_token_ownteam') : x.name)) + '</button>';
+        }).join('') + '</div>';
+    }
+    return ahead + '<div class="battle-token"><button type="button" class="btn ' + (big ? 'btn-main btn-big' : 'btn-soft') +
+      '" data-token>' + esc(t('app_token_' + live.token + (live.maxcandles ? '_turns' : ''))) + '</button></div>';
   }
 
   function voteBody(live) {
@@ -273,19 +293,22 @@
         });
       };
     });
-    var use = layer.querySelector('[data-token]');
-    if (use) {
+    layer.querySelectorAll('[data-token]').forEach(function(use) {
       use.onclick = function() {
-        use.disabled = true;
-        api('token', {}).then(function(r) {
+        layer.querySelectorAll('[data-token]').forEach(function(b) {
+          b.disabled = true;
+        });
+        api('token', {target: Number(use.dataset.target || 0)}).then(function(r) {
           state.sig = '';
           show(r.live || null);
         }).catch(function(e) {
-          use.disabled = false;
+          layer.querySelectorAll('[data-token]').forEach(function(b) {
+            b.disabled = false;
+          });
           T.toast(esc(e.message), true);
         });
       };
-    }
+    });
     var back = layer.querySelector('[data-back]');
     if (back) {
       back.onclick = function() {

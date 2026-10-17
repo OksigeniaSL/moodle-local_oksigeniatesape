@@ -481,6 +481,64 @@ final class live_test extends \advanced_testcase {
         $this->assertSame(0, $view['counter']);
     }
 
+    public function test_by_turns_the_verbs_go_to_a_team_and_rest_two_turns(): void {
+        global $DB;
+        $this->resetAfterTest();
+        [$course, $members, $groups] = $this->make_class();
+        // The protector is in the second team, the healer in the first.
+        $DB->set_field(self::T . 'char', 'role', 'protector', ['id' => $members[2]->charid]);
+        $DB->set_field(self::T . 'char', 'role', 'healer', ['id' => $members[0]->charid]);
+        $live = live::start($course->id, 'phones', 8, 30, self::NOW, false, true);
+        foreach ($members as $member) {
+            live::join($live, $member, $member->userid, self::NOW);
+        }
+        $live = live::next($live, self::NOW);
+        $first = (int) $groups[0]->id;
+        // The shield goes on the other team, the one the knot goes for: it fails its lane, and the shield stops the blow.
+        $this->assertSame('shield', live::token($live, $members[2], self::NOW + 2, $first));
+        $device = live::device_view($live, $members[2], self::NOW + 3);
+        $this->assertTrue($device['tokenused']);
+        $this->assertSame(3, $device['tokenrest']);
+        $this->assertCount(2, $device['targets']);
+        $live = $this->play_turn($live, $members, $groups, [false, true], self::NOW);
+        $view = live::board_view($live, self::NOW + 60);
+        $this->assertTrue($view['shielded']);
+        $this->assertSame(5, $view['candles']);
+        $this->assertSame([], $view['tangled']);
+        // The verb rests: not in the next two turns, again in the third.
+        $at = self::NOW;
+        foreach ([2, 3] as $round) {
+            $at += live::INTENT + live::PREP + 31 + live::RESOLVE;
+            $live = live::tick($live, 2, true, $at);
+            $this->assertSame($round, (int) $live->round);
+            try {
+                live::token($live, $members[2], $at + 1, $first);
+                $this->fail('A verb used again before its rest');
+            } catch (\moodle_exception $e) {
+                $this->assertSame('tokenused', $e->errorcode);
+            }
+            // The first team fails its lane, the second undoes it: in turn 3 the knot goes for the first team, which
+            // has no shield now, so a candle goes out and it is tangled.
+            $live = $this->play_turn($live, $members, $groups, [false, true], $at);
+        }
+        $view = live::board_view($live, $at + 60);
+        $this->assertSame(4, $view['candles']);
+        $this->assertSame([$first], $view['tangled']);
+        // In the fourth turn the healer cheers their team: untangled, and a candle lights again.
+        $at += live::INTENT + live::PREP + 31 + live::RESOLVE;
+        $live = live::tick($live, 2, true, $at);
+        $this->assertSame('cheer', live::token($live, $members[0], $at + 1, $first));
+        $this->assertSame('shield', live::token($live, $members[2], $at + 1, $first));
+        $live = $this->play_turn($live, $members, $groups, [true, true], $at);
+        $view = live::board_view($live, $at + 60);
+        $this->assertSame([], $view['tangled']);
+        $this->assertSame(5, $view['candles']);
+        // The class screen says where each verb went: the cheer on its own team, the shield on the other.
+        $targets = array_column($view['tokens'], 'target', 'kind');
+        $this->assertSame('', $targets['cheer']);
+        $this->assertNotSame('', $targets['shield']);
+    }
+
     public function test_the_tower_in_the_dark_loses_the_battle(): void {
         global $DB;
         $this->resetAfterTest();

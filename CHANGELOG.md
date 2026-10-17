@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.71.0 (2026-10-17)
+
+Block 2.2 of the plan: the verbs of the roles in the battle by turns.
+
+- **A verb rests two turns** after it is used and comes back (a pair of the same role in a team shares the rest); the
+  tablet says how many turns are left. Without turns, it is still once a battle.
+- **The shield and the cheer go to a team**: a big button for each team (their own first). The shield stops the blow if
+  the Embrollo goes for that team; the cheer untangles it and, once a battle, lights a candle again. The class screen
+  says where each one went («Lynx raises a Shield over Heron»).
+- **The trail of the scout sees what comes next**: the knot of the next turn and the team it will go for, besides
+  where the answer of its lane is. The glance strikes out a wrong option in the lane of the team.
+
 ## 0.70.0 (2026-10-17)
 
 Block 2.2 of the plan, its first part: the battle by turns as a turn machine.

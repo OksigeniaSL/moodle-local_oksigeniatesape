@@ -88,6 +88,9 @@ final class live {
     /** @var int Threads the Embrollo gets back when it pulls itself together and the class does not stop it. */
     public const RECOMPOSE = 2;
 
+    /** @var int By turns, turns a verb rests after it is used before it can be used again (by the role in the team). */
+    public const REST = 2;
+
     /** @var int Saber for each player when the class wins. */
     public const WIN_SABER = 10;
 
@@ -589,7 +592,8 @@ final class live {
         // The tokens used in the round, announced on the class screen.
         $names = array_map(fn($t) => $t['name'], $teams ? array_column($teams, null, 'id') : []);
         $used = $round > 0 ? $DB->get_records(self::T . 'livetoken', ['liveid' => $live->id, 'round' => $round], 'id') : [];
-        $view['tokens'] = array_values(array_map(fn($t) => ['kind' => $t->kind, 'team' => $names[$t->team] ?? ''], $used));
+        $view['tokens'] = array_values(array_map(fn($t) => ['kind' => $t->kind, 'team' => $names[$t->team] ?? '',
+            'target' => $t->target && $t->target != $t->team ? ($names[$t->target] ?? '') : ''], $used));
         return $view;
     }
 
@@ -635,17 +639,19 @@ final class live {
     }
 
     /**
-     * A player uses the battle token of their role in the open round, once a battle: the glance of the sage strikes out
-     * a wrong option for their team, the trail of the scout tells their team in which chapter the answer is, the shield
-     * of the protector stops the Embrollo pulling itself together, and the cheer of the healer makes each right answer
-     * of their team take double life.
+     * A player uses the verb of their role in the open round: the glance of the sage strikes out a wrong option for their
+     * team, the trail of the scout tells their team in which chapter the answer is (by turns, also the next knot), the
+     * shield of the protector stops a blow, and the cheer of the healer (without turns, each right answer of their team
+     * takes double life; by turns, it untangles a team and once a battle lights a candle again). Without turns, once a
+     * battle; by turns, again after two turns of rest, and the shield and the cheer go to a team.
      *
      * @param \stdClass $live
      * @param \stdClass $member
      * @param int|null $now
+     * @param int $target By turns: the team the shield or the cheer goes to (0 or not a team that plays: their own).
      * @return string The token used.
      */
-    public static function token(\stdClass $live, \stdClass $member, ?int $now = null): string {
+    public static function token(\stdClass $live, \stdClass $member, ?int $now = null, int $target = 0): string {
         global $DB;
         $now = $now ?? time();
         $state = self::state($live);
@@ -659,13 +665,48 @@ final class live {
         if (!$kind || !$joined || !$playing || $round < 1 || !self::is_live($state, $now)) {
             throw new \moodle_exception('roundclosed', 'local_oksigeniatesape');
         }
+        $turns = !empty($state['knots']);
+        if ($turns) {
+            // By turns: the verb rests two turns after it is used, also when another of the same role in the team used it.
+            if (self::rest($live, (int) $joined->team, $kind, $member, $round) > 0) {
+                throw new \moodle_exception('tokenused', 'local_oksigeniatesape');
+            }
+            // The shield and the cheer go to a team that plays; the rest, to their own team.
+            $teams = self::playing($live, $state);
+            if (!in_array($kind, ['shield', 'cheer'], true) || !in_array($target, $teams, true)) {
+                $target = (int) $joined->team;
+            }
+        } else if ($DB->record_exists(self::T . 'livetoken', ['liveid' => $live->id, 'charid' => $member->charid])) {
+            // Without turns, once a battle.
+            throw new \moodle_exception('tokenused', 'local_oksigeniatesape');
+        }
         try {
             $DB->insert_record(self::T . 'livetoken', (object) ['liveid' => $live->id, 'courseid' => $live->courseid,
-                'charid' => $member->charid, 'round' => $round, 'team' => $joined->team, 'kind' => $kind, 'timecreated' => $now]);
+                'charid' => $member->charid, 'round' => $round, 'team' => $joined->team, 'kind' => $kind,
+                'target' => $turns ? $target : 0, 'timecreated' => $now]);
         } catch (\dml_write_exception $e) {
             throw new \moodle_exception('tokenused', 'local_oksigeniatesape');
         }
         return $kind;
+    }
+
+    /**
+     * By turns, how many turns a verb still rests for a player: two after the turn it was used in, by them or by another
+     * of the same role in their team (a pair of the same role shares the rest).
+     *
+     * @param \stdClass $live
+     * @param int $team
+     * @param string $kind
+     * @param \stdClass $member
+     * @param int $round
+     * @return int 0: ready.
+     */
+    private static function rest(\stdClass $live, int $team, string $kind, \stdClass $member, int $round): int {
+        global $DB;
+        $where = 'liveid = ? AND kind = ? AND (charid = ? OR (team = ? AND team > 0))';
+        $last = (int) $DB->get_field_select(self::T . 'livetoken', 'MAX(round)', $where, [$live->id, $kind, $member->charid,
+            $team]);
+        return $last ? max(0, $last + self::REST + 1 - $round) : 0;
     }
 
     /**
@@ -685,7 +726,19 @@ final class live {
         $params = [$live->id, $member->charid, $round, $team ?: -1];
         $tokens = $DB->get_records_select(self::T . 'livetoken', $where, $params, '', 'id, charid, round, kind');
         $used = (bool) array_filter($tokens, fn($t) => (int) $t->charid === (int) $member->charid);
-        $view = ['token' => self::TOKENS[self::role($member)] ?? '', 'tokenused' => $used];
+        $kind = self::TOKENS[self::role($member)] ?? '';
+        $view = ['token' => $kind, 'tokenused' => $used];
+        if (!empty($state['knots']) && $kind !== '') {
+            // By turns: the verb comes back after its rest; the shield and the cheer choose the team they go to.
+            $rest = $round > 0 ? self::rest($live, $team, $kind, $member, $round) : 0;
+            $view['tokenused'] = $rest > 0;
+            $view['tokenrest'] = $rest;
+            if (in_array($kind, ['shield', 'cheer'], true)) {
+                $names = self::teams((int) $live->courseid);
+                $view['targets'] = array_map(fn($id) => ['id' => $id, 'name' => isset($names[$id]) ?
+                    format_string($names[$id]->name) : ''], self::playing($live, $state));
+            }
+        }
         if ($round < 1 || !empty($state['rounds'][$round]['revealed'])) {
             return $view;
         }
@@ -706,6 +759,15 @@ final class live {
         if (in_array('trail', $kinds, true) && $info['chapter'] !== '') {
             // Battles opened before the name was kept with the round look it up.
             $view['trail'] = $info['trail'] ?? self::chapter_name((int) $live->courseid, $info['chapter']);
+        }
+        if (in_array('trail', $kinds, true) && !empty($state['knots']) && $round < count($state['knots'])) {
+            // By turns, the trail of the scout also sees what comes next: the knot of the next turn and who it goes for.
+            $next = knots::get(missions::get((int) $live->courseid), (string) $state['knots'][$round]);
+            $teams = self::playing($live, $state);
+            $names = self::teams((int) $live->courseid);
+            $goes = $teams ? $teams[$round % count($teams)] : 0;
+            $view['nextknot'] = (string) ($next['name'] ?? '');
+            $view['nexttarget'] = isset($names[$goes]) ? format_string($names[$goes]->name) : '';
         }
         return $view;
     }
@@ -963,8 +1025,9 @@ final class live {
     }
 
     /**
-     * The resolution of a turn by turns: each lane its team undoes (most of its players in got it right) takes a thread
-     * from the Embrollo, two with the cheer of the healer; if every lane is undone, the knot breaks (three threads more,
+     * The resolution of a turn by turns: the cheer of a healer untangles the team it goes to (and once a battle lights a
+     * candle again); each lane its team undoes (most of its players in got it right) takes a thread from the Embrollo;
+     * if every lane is undone, the knot breaks (three threads more,
      * and the Embrollo is dazed the next turn: its guard is broken, what the class undoes counts double). Then what it
      * meant to do: going for a team, the lane of that team not undone puts out a candle and leaves the team tangled,
      * unless a shield is on it; going for everybody, a candle goes out if fewer than half the lanes were undone; pulling
@@ -980,9 +1043,21 @@ final class live {
     private static function resolve(\stdClass $live, array $state, array $info, array $answers): array {
         global $DB;
         $round = (int) $live->round;
-        $tokens = $DB->get_records(self::T . 'livetoken', ['liveid' => $live->id, 'round' => $round], '', 'id, team, kind');
-        $cheer = array_map(fn($t) => (int) $t->team, array_filter($tokens, fn($t) => $t->kind === 'cheer'));
-        $shields = array_map(fn($t) => (int) $t->team, array_filter($tokens, fn($t) => $t->kind === 'shield'));
+        $fields = 'id, team, kind, target';
+        $tokens = $DB->get_records(self::T . 'livetoken', ['liveid' => $live->id, 'round' => $round], '', $fields);
+        // The shield and the cheer go to the team they were put on (their own, if none).
+        $on = fn($kind) => array_map(fn($t) => (int) ($t->target ?: $t->team), array_filter($tokens, fn($t) => $t->kind === $kind));
+        $cheer = $on('cheer');
+        $shields = $on('shield');
+        // The cheer of the healer: the team it goes to is not tangled any more, and once a battle a candle lights again.
+        foreach ($cheer as $team) {
+            unset($state['tangled'][$team]);
+            if (empty($state['relit']) && $state['candles'] < $state['maxcandles']) {
+                $state['candles']++;
+                $state['relit'] = true;
+                $info['relit'] = true;
+            }
+        }
         $in = $DB->get_fieldset_select(self::T . 'livein', 'team', 'liveid = ? AND round = 0', [$live->id]);
         $present = array_count_values(array_map('intval', $in));
         $damage = 0;
@@ -996,7 +1071,7 @@ final class live {
             $info['right'] += $right;
             if ($undone) {
                 $done++;
-                $damage += in_array((int) $team, $cheer, true) ? 2 : 1;
+                $damage++;
                 unset($state['tangled'][$team]);
             }
         }

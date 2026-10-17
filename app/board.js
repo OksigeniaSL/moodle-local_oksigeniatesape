@@ -294,7 +294,8 @@
         (l.stage === 'prep' ? '<p class="battle-count" data-stageleft="board_turn_prep" aria-live="off">' +
         esc(t('board_turn_prep', l.stageleft)) + '</p>' : '');
       main += (l.tokens || []).map(function(k) {
-        return '<p class="battle-token-used">' + esc(t('board_token_' + k.kind, k.team || '')) + '</p>';
+        return '<p class="battle-token-used">' + esc(k.target ? t('board_token_' + k.kind + '_on', k) :
+          t('board_token_' + k.kind, k.team || '')) + '</p>';
       }).join('');
     } else if (l.lanes && l.lanes.length) {
       // By turns: each team has its lane in its tablets; here, which one, and once resolved, whether it was undone.
@@ -307,7 +308,8 @@
             esc(q.options[q.correct] || '') + '</small>' : '') + '</li>';
         }).join('') + '</ul>';
       main += (l.tokens || []).map(function(k) {
-        return '<p class="battle-token-used">' + esc(t('board_token_' + k.kind, k.team || '')) + '</p>';
+        return '<p class="battle-token-used">' + esc(k.target ? t('board_token_' + k.kind + '_on', k) :
+          t('board_token_' + k.kind, k.team || '')) + '</p>';
       }).join('');
       if (l.revealed) {
         main += turnOutcome(l);
@@ -327,7 +329,8 @@
           return '<li class="' + (l.revealed && q.correct === i ? 'right' : '') + '"><b>' + LETTERS[i] + '</b>' + esc(o) + '</li>';
         }).join('') + '</ol>';
       main += (l.tokens || []).map(function(k) {
-        return '<p class="battle-token-used">' + esc(t('board_token_' + k.kind, k.team || '')) + '</p>';
+        return '<p class="battle-token-used">' + esc(k.target ? t('board_token_' + k.kind + '_on', k) :
+          t('board_token_' + k.kind, k.team || '')) + '</p>';
       }).join('');
       if (l.revealed) {
         // By turns, what happened is told by the turn; without them, as it was.

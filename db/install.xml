@@ -451,7 +451,7 @@
         <INDEX NAME="liveid-round-charid" UNIQUE="true" FIELDS="liveid, round, charid"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="local_oksigeniatesape_livetoken" COMMENT="The battle tokens of the roles: one for each player and battle, used in a round.">
+    <TABLE NAME="local_oksigeniatesape_livetoken" COMMENT="The verbs of the roles in a battle: one for each player and round; by turns, again after two turns of rest.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="liveid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
@@ -460,6 +460,7 @@
         <FIELD NAME="round" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="team" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Group of the team"/>
         <FIELD NAME="kind" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="glance, trail, shield or cheer"/>
+        <FIELD NAME="target" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Group the shield or the cheer goes to (0: the own team)"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
@@ -469,7 +470,7 @@
         <KEY NAME="charid" TYPE="foreign" FIELDS="charid" REFTABLE="local_oksigeniatesape_char" REFFIELDS="id"/>
       </KEYS>
       <INDEXES>
-        <INDEX NAME="liveid-charid" UNIQUE="true" FIELDS="liveid, charid"/>
+        <INDEX NAME="liveid-charid-round" UNIQUE="true" FIELDS="liveid, charid, round"/>
       </INDEXES>
     </TABLE>
     <TABLE NAME="local_oksigeniatesape_pact" COMMENT="The commitments of the teams: one for each member and chapter, marked by the teacher.">

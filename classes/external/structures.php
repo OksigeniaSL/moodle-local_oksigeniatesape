@@ -574,6 +574,7 @@ final class structures {
             'tokens' => new external_multiple_structure(new external_single_structure([
                 'kind' => new external_value(PARAM_ALPHA, 'glance, trail, shield or cheer'),
                 'team' => new external_value(PARAM_TEXT, 'Team of who used it'),
+                'target' => new external_value(PARAM_TEXT, 'By turns: the team it went to', VALUE_DEFAULT, ''),
             ]), 'Battle tokens used in the round', VALUE_DEFAULT, []),
             'lanes' => new external_multiple_structure(new external_single_structure([
                 'teamid' => new external_value(PARAM_INT, 'Group'),
@@ -616,6 +617,13 @@ final class structures {
             'tokenused' => new external_value(PARAM_BOOL, 'They used it in this battle', VALUE_DEFAULT, false),
             'struck' => new external_value(PARAM_INT, 'A wrong option struck out by the glance of their team', VALUE_OPTIONAL),
             'trail' => new external_value(PARAM_TEXT, 'Chapter of the answer, by the trail of their team', VALUE_OPTIONAL),
+            'tokenrest' => new external_value(PARAM_INT, 'By turns: turns their verb still rests (0: ready)', VALUE_OPTIONAL),
+            'targets' => new external_multiple_structure(new external_single_structure([
+                'id' => new external_value(PARAM_INT, 'Group'),
+                'name' => new external_value(PARAM_TEXT, 'Team'),
+            ]), 'By turns: the teams their shield or cheer can go to', VALUE_OPTIONAL),
+            'nextknot' => new external_value(PARAM_TEXT, 'By turns, by the trail of their team: the next knot', VALUE_OPTIONAL),
+            'nexttarget' => new external_value(PARAM_TEXT, 'By turns, by the trail: the team it will go for', VALUE_OPTIONAL),
         ], 'Battle of the course', VALUE_OPTIONAL);
     }
 

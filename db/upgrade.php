@@ -608,5 +608,23 @@ function xmldb_local_oksigeniatesape_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026101713, 'local', 'oksigeniatesape');
     }
 
+    if ($oldversion < 2026101722) {
+        // By turns, the verbs of the roles go to a team and come back after two turns: a target, one use for each round.
+        $table = new xmldb_table('local_oksigeniatesape_livetoken');
+        $field = new xmldb_field('target', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'kind');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        $old = new xmldb_index('liveid-charid', XMLDB_INDEX_UNIQUE, ['liveid', 'charid']);
+        if ($dbman->index_exists($table, $old)) {
+            $dbman->drop_index($table, $old);
+        }
+        $new = new xmldb_index('liveid-charid-round', XMLDB_INDEX_UNIQUE, ['liveid', 'charid', 'round']);
+        if (!$dbman->index_exists($table, $new)) {
+            $dbman->add_index($table, $new);
+        }
+        upgrade_plugin_savepoint(true, 2026101722, 'local', 'oksigeniatesape');
+    }
+
     return true;
 }
