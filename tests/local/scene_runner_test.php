@@ -150,6 +150,29 @@ final class scene_runner_test extends \advanced_testcase {
         $this->assertSame($good['ending'], $result['ending']);
     }
 
+    public function test_classify_all_at_once_and_a_second_trip(): void {
+        $scene = autoplayer::scene('C2-2');
+        $events = autoplayer::play($scene);
+        $node = $events[0]['n'];
+        $mine = array_values(array_filter($events, fn($e) => ($e['n'] ?? '') === $node));
+        $rest = array_values(array_filter($events, fn($e) => ($e['n'] ?? '') !== $node));
+        $bins = array_column($scene['nodes'][$node]['bins'], 'id');
+        // Everything placed at once, the first two in a wrong group; then a second trip with those two.
+        $trip = $mine;
+        foreach ([0, 1] as $i) {
+            $trip[$i]['bin'] = array_values(array_diff($bins, [$mine[$i]['bin']]))[0];
+        }
+        $played = array_merge($trip, [$mine[0], $mine[1]], $rest);
+        $good = (new scene_runner($scene))->run($events);
+        $result = (new scene_runner($scene))->run($played);
+        $this->assertSame($good['ending'], $result['ending']);
+        $ok = fn($r) => array_sum(array_column($r['objectives'], 'ok'));
+        $this->assertSame($ok($good) - 2, $ok($result));
+        // An item that is not in the node is not a play.
+        $this->expectException(\moodle_exception::class);
+        (new scene_runner($scene))->run(array_merge([['n' => $node, 'item' => 'nada', 'bin' => $bins[0]]], $events));
+    }
+
     /**
      * A small scene: a question that may leave a flag, a branch on it, and a sorting with hints.
      *

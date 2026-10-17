@@ -349,7 +349,19 @@ final class scene_runner {
         $bins = array_map(fn($b) => $b['id'], $n['bins']);
         $once = ($n['retry'] ?? 'item') === 'none';
         $this->placed[$node] = [];
+        // All the placements of the node, each item with its own in order: one after the other, or all at once and
+        // then a second trip with those that were not in their place.
+        $byitem = [];
+        while ($this->events && ($this->events[0]['n'] ?? null) === $node) {
+            $event = $this->take($node);
+            if (!isset($event['item']) || !in_array($event['bin'] ?? null, $bins, true)) {
+                $this->fail('expected an item in a group of ' . $node);
+            }
+            $byitem[(string) $event['item']][] = $event;
+        }
+        $known = [];
         foreach ($n['items'] as $item) {
+            $known[(string) $item['id']] = true;
             if (!$this->has($item['requires'] ?? null)) {
                 // Locked: they could not try it, so it does not count against the objective.
                 continue;
@@ -357,10 +369,11 @@ final class scene_runner {
             $first = true;
             $saved = false;
             $wrong = [];
+            $mine = $byitem[(string) $item['id']] ?? [];
             // Tapping the same wrong group again does not count: each wrong group once, then the right one.
             for ($tries = 0; $tries <= 4 * count($bins); $tries++) {
-                $event = $this->take($node);
-                if (($event['item'] ?? null) !== $item['id'] || !in_array($event['bin'] ?? null, $bins, true)) {
+                $event = array_shift($mine);
+                if (!$event) {
                     $this->fail('expected ' . $item['id'] . ' in a group of ' . $node);
                 }
                 if ($event['bin'] !== $item['bin'] && !$once && in_array($event['bin'], $wrong, true)) {
@@ -388,6 +401,9 @@ final class scene_runner {
                 $first = false;
             }
             $this->fail('too many tries for ' . $item['id']);
+        }
+        if (array_diff_key($byitem, $known)) {
+            $this->fail('an item that is not in ' . $node);
         }
     }
 

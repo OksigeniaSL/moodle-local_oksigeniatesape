@@ -928,6 +928,9 @@
       power: '<path d="M13 2L5 13h6l-1 9 8-11h-6z" fill="#b9a6ff"/>',
       exit: '<path d="M10 4H5v16h5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/><path ' +
         'd="M14 8l4 4-4 4M18 12H9" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>',
+      lens: '<circle cx="10" cy="10" r="6" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M14.5 14.5 L21 21" ' +
+        'stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="10" cy="10" r="3.2" fill="currentColor" ' +
+        'opacity=".25"/>',
       idea: '<path d="M9 18h6M10 21h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 3a6 6 0 0 ' +
         '0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z" fill="currentColor"/>',
       game: '<path d="M6 8h12a4 4 0 0 1 4 4v1a4 4 0 0 1-7 2.6h-6A4 4 0 0 1 2 13v-1a4 4 0 0 1 4-4z" fill="currentColor"/>' +

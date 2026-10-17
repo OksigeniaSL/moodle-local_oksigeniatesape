@@ -2330,10 +2330,10 @@ body.in-scene {
 }
 
 .nest-home.hit {
-  animation: shake .4s ease;
+  animation: nest-shake .4s ease;
 }
 
-@keyframes shake {
+@keyframes nest-shake {
   25% {
     transform: translateX(calc(-50% - 6px));
   }
@@ -5238,4 +5238,293 @@ body.adapt-colours .errors-text .fixed ins {
 .whoami-options .btn.tried {
   text-decoration: line-through;
   opacity: .55;
+}
+
+/* A told moment as in a role-playing game: the place behind, who speaks in big over it, the hero and the creature of
+   the student in a corner, and the words in a parchment under it. */
+.dlg-stage {
+  position: relative;
+  margin-bottom: -26px;
+}
+
+.dlg-stage .scene-pic {
+  margin-bottom: 0;
+}
+
+.dlg-face {
+  position: absolute;
+  left: 10px;
+  bottom: 14px;
+  width: clamp(96px, 26vw, 150px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid var(--accent);
+  background: var(--night-2);
+  box-shadow: var(--shadow);
+  animation: rise .35s ease both;
+}
+
+.dlg-me {
+  position: absolute;
+  right: 8px;
+  bottom: 18px;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  pointer-events: none;
+}
+
+.dlg-me .avatar {
+  width: clamp(64px, 16vw, 96px);
+  height: auto;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, .45));
+}
+
+.dlg-me .dlg-creature .creature,
+.dlg-me .dlg-creature svg {
+  width: clamp(40px, 10vw, 60px);
+  height: auto;
+}
+
+.dlg-box {
+  position: relative;
+  padding: 18px 18px 12px;
+  border-radius: 16px;
+  background: var(--parchment);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+}
+
+.dlg-box .scene-text {
+  margin: 0 0 8px;
+  color: var(--ink);
+}
+
+.dlg-name {
+  position: absolute;
+  top: -15px;
+  left: 18px;
+  padding: 3px 14px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.dlg-dots {
+  display: inline-flex;
+  gap: 5px;
+}
+
+.dlg-dots i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, .18);
+}
+
+.dlg-dots i.seen {
+  background: rgba(0, 0, 0, .35);
+}
+
+.dlg-dots i.on {
+  background: var(--ink);
+}
+
+.dlg-box .actions {
+  justify-content: flex-end;
+}
+
+.scene-layer.class-mode .dlg-box .scene-text {
+  font-size: 24px;
+}
+
+/* What the world says when something is chosen: no colour of right or wrong, the voice of the place. */
+.conseq.said {
+  border-color: var(--accent);
+  background: rgba(var(--lantern-rgb), .08);
+}
+
+.conseq.wait {
+  display: flex;
+  gap: 6px;
+  border-color: transparent;
+  background: none;
+}
+
+.conseq.wait span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: wait 0.9s ease-in-out infinite;
+}
+
+.conseq.wait span:nth-child(2) {
+  animation-delay: .15s;
+}
+
+.conseq.wait span:nth-child(3) {
+  animation-delay: .3s;
+}
+
+@keyframes wait {
+  50% {
+    opacity: .2;
+    transform: translateY(-3px);
+  }
+}
+
+.why-more summary {
+  margin-top: 6px;
+  cursor: pointer;
+  color: var(--text-soft);
+  font-weight: 600;
+}
+
+/* The world changes when something is chosen: a new painting, light, dark, a shake, something that grows. */
+.scene-pic img {
+  transition: opacity .25s ease;
+}
+
+.scene-pic.fx-fade img {
+  opacity: 0;
+}
+
+.scene-pic.fx-light {
+  animation: fx-light 1.2s ease both;
+}
+
+.scene-pic.fx-dark {
+  animation: fx-dark 1.2s ease both;
+}
+
+.scene-pic.fx-shake {
+  animation: fx-shake .4s ease;
+}
+
+@keyframes fx-shake {
+  25% {
+    transform: translateX(-4px);
+  }
+
+  75% {
+    transform: translateX(4px);
+  }
+}
+
+.scene-pic.fx-grow {
+  animation: fx-grow .9s ease both;
+}
+
+@keyframes fx-light {
+  50% {
+    filter: brightness(1.6) saturate(1.2);
+  }
+}
+
+@keyframes fx-dark {
+  to {
+    filter: brightness(.55);
+  }
+}
+
+@keyframes fx-grow {
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* Sorting all at once: the things on the table, and the places with what was put in them. */
+.cls-table {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0 14px;
+  min-height: 52px;
+}
+
+.cls-thing {
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 2px solid rgba(0, 0, 0, .15);
+  background: var(--parchment);
+  color: var(--ink);
+  font: 600 17px var(--f-text);
+  cursor: pointer;
+}
+
+.cls-thing[aria-pressed="true"] {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(var(--lantern-rgb), .4);
+  transform: translateY(-2px);
+}
+
+.cls-thing.locked {
+  opacity: .6;
+  cursor: default;
+  border-style: dashed;
+}
+
+.cls-thing.locked small {
+  display: block;
+  font-weight: 400;
+  font-size: 13px;
+}
+
+.cls-bin {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 120px;
+  padding: 6px;
+  border-radius: 14px;
+  border: 2px dashed var(--line);
+}
+
+.cls-in {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cls-in .cls-thing {
+  padding: 6px 10px;
+  font-size: 15px;
+}
+
+.cls-in .cls-thing.kept {
+  cursor: default;
+  border-color: var(--accent);
+}
+
+.cls-said {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.cls-said li {
+  margin-bottom: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dlg-face,
+  .scene-pic.fx-light,
+  .scene-pic.fx-dark,
+  .scene-pic.fx-shake,
+  .scene-pic.fx-grow,
+  .conseq.wait span {
+    animation: none;
+  }
+}
+
+/* The lens of the hints, the size of a word. */
+.scene-hints .btn svg,
+.scene-hints .hint svg {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  vertical-align: -5px;
 }

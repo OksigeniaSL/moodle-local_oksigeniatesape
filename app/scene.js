@@ -564,12 +564,7 @@
     function next() {
       var n = sc.nodes[run.node];
       if (n.type === 'story') {
-        var body = show(picture(n.image || sceneImage(), data) + (n.speaker ? speaker(n.speaker, data) : '') +
-          '<p class="scene-text">' + esc(tx(n.text)) + '</p><div class="actions">' +
-          '<button class="btn btn-main" data-focus data-next>' + esc(t('app_continue')) + '</button></div>');
-        body.querySelector('[data-next]').onclick = function() {
-          go(n.next);
-        };
+        story(n);
       } else if (n.type === 'branch') {
         var target = n.else;
         (n.rules || []).some(function(rule) {
@@ -595,6 +590,121 @@
         order(n);
       } else if (n.type === 'ending') {
         ending(n);
+      }
+    }
+
+    /**
+     * A told moment as in a role-playing game: the place behind, who speaks in big, the hero of the student and their
+     * creature in it, and the words in a parchment that goes on with a touch, a piece at a time (all at once for who
+     * has «no movement» or reading aloud).
+     *
+     * @param {Object} n The node.
+     */
+    function story(n) {
+      var pieces = cut(tx(n.text));
+      var at = 0;
+      var body = show('<div class="dlg">' + stage(n.image, n.speaker) + '<div class="dlg-box">' + (n.speaker ?
+        '<span class="dlg-name">' + esc(data.speakers[n.speaker] || n.speaker) + '</span>' : '') +
+        '<p class="scene-text" data-piece></p><span class="dlg-dots" data-dots aria-hidden="true"></span>' +
+        '<div class="actions"><button class="btn btn-main" data-focus data-next></button></div></div></div>');
+      var button = body.querySelector('[data-next]');
+      function piece() {
+        var last = at >= pieces.length - 1;
+        body.querySelector('[data-piece]').textContent = pieces[at];
+        body.querySelector('[data-dots]').innerHTML = pieces.length > 1 ? pieces.map(function(p, i) {
+          return '<i class="' + (i === at ? 'on' : i < at ? 'seen' : '') + '"></i>';
+        }).join('') : '';
+        button.textContent = last ? t('app_continue') : t('app_next');
+      }
+      button.onclick = function() {
+        if (at >= pieces.length - 1) {
+          go(n.next);
+          return;
+        }
+        at++;
+        piece();
+        button.focus();
+      };
+      piece();
+    }
+
+    /**
+     * A text in pieces of about 45 words, cut where a sentence ends: a parchment a child of nine reads in one go.
+     *
+     * @param {string} text
+     * @return {string[]}
+     */
+    function cut(text) {
+      if (T.adapted.still || T.adapted.readaloud) {
+        return [text];
+      }
+      var sentences = text.match(/[^.!?…]+[.!?…]+[»"”)]*\s*|[^.!?…]+$/g) || [text];
+      var pieces = [];
+      var words = 0;
+      sentences.forEach(function(sentence) {
+        var count = sentence.trim().split(/\s+/).length;
+        if (pieces.length && words + count <= 45) {
+          pieces[pieces.length - 1] += sentence;
+          words += count;
+        } else {
+          pieces.push(sentence);
+          words = count;
+        }
+      });
+      return pieces.map(function(p) {
+        return p.trim();
+      }).filter(Boolean);
+    }
+
+    /**
+     * The stage of a moment: the painting of the place, who speaks in big, and the student's hero and creature.
+     *
+     * @param {string} image
+     * @param {string} who The speaker, if anybody speaks.
+     * @return {string}
+     */
+    function stage(image, who) {
+      var face = who ? T.artUrl(['speaker.' + who + '.' + data.skin, 'speaker.' + who, 'boss.' + who]) : '';
+      var me = '';
+      var c = !cm && world && world.character;
+      if (c && c.role) {
+        var traits = {};
+        try {
+          traits = JSON.parse(c.creature || '{}') || {};
+        } catch (e) {
+          traits = {};
+        }
+        me = '<span class="dlg-me" aria-hidden="true">' + T.avatar({role: c.role, nameform: c.nameform, lineage: c.lineage,
+          look: c.appearance, stage: c.stage, family: world.family}) + (c.creature ? '<span class="dlg-creature">' +
+          T.creature(traits, c.creaturestage) + '</span>' : '') + '</span>';
+      }
+      return '<div class="dlg-stage">' + picture(image || sceneImage(), data) + (face ? '<img class="dlg-face" src="' +
+        esc(face) + '" alt="">' : '') + me + '</div>';
+    }
+
+    /**
+     * The world answers what was chosen: its picture changes or moves, if the option says how.
+     *
+     * @param {Element} body
+     * @param {Object} o The option or the item.
+     */
+    function answer(body, o) {
+      var pic = body.querySelector('.scene-pic');
+      if (o.image && pic) {
+        var art = T.artUrl(pictureKeys(o.image, data));
+        var img = pic.querySelector('img');
+        if (art && img) {
+          pic.classList.add('fx-fade');
+          setTimeout(function() {
+            img.src = art;
+            pic.classList.remove('fx-fade');
+          }, 250);
+        }
+      }
+      if (o.fx && pic && /^(light|dark|shake|grow)$/.test(o.fx)) {
+        pic.classList.remove('fx-' + o.fx);
+        void pic.offsetWidth;
+        pic.classList.add('fx-' + o.fx);
       }
     }
 
@@ -641,13 +751,6 @@
       }).length;
     }
 
-    function kind(o) {
-      if (o.correct === true || (o.correct !== false && (o.points || 0) >= 2)) {
-        return 'good';
-      }
-      return o.correct === false ? 'bad' : 'meh';
-    }
-
     /**
      * A mistake: the protector's shield stops the points it costs, once a play.
      */
@@ -689,10 +792,11 @@
       var draw = function() {
         var opened = run.opened[run.node] || [];
         var cost = hintCost();
+        // Looking closer with the lens, not a clue bought: what is seen is a note of the field notebook.
         box.innerHTML = opened.map(function(i) {
-          return '<p class="hint">' + T.icon('idea') + ' ' + esc(tx(n.hints[i])) + '</p>';
+          return '<p class="hint">' + T.icon('lens') + ' ' + esc(tx(n.hints[i])) + '</p>';
         }).join('') + (opened.length < n.hints.length ? '<button class="btn btn-soft" type="button" data-hint>' +
-          esc(cost ? t('app_hint_cost', cost) : t('app_hint_free')) + '</button>' : '');
+          T.icon('lens') + ' ' + esc(cost ? t('app_hint_cost', cost) : t('app_hint_free')) + '</button>' : '');
         var b = box.querySelector('[data-hint]');
         if (b) {
           b.onclick = function() {
@@ -835,89 +939,188 @@
           return;
         }
         var o = list[i++];
-        if (T.fx) {
-          T.fx.sound(kind(o) === 'good' ? 'right' : kind(o) === 'bad' ? 'wrong' : 'choose');
-        }
-        out.innerHTML = '<div class="conseq ' + kind(o) + '"><span class="what">' + esc(tx(o.label)) + '</span>' +
-          esc(tx(o.feedback || '')) + '</div><div class="actions"><button class="btn btn-main" data-more>' +
-          esc(i < list.length ? t('app_next') : t('app_continue')) + '</button></div>';
-        var more = out.querySelector('[data-more]');
-        more.focus();
-        more.onclick = step;
-        out.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+        // A moment of waiting, and then the world answers: what happens, in the voice of the place, never a referee.
+        out.innerHTML = '<div class="conseq wait" aria-hidden="true"><span></span><span></span><span></span></div>';
+        setTimeout(function() {
+          if (T.fx) {
+            T.fx.sound(o.sound || 'choose');
+          }
+          answer(body, o);
+          var said = tx(o.say || o.feedback || '');
+          var why = o.say && o.feedback ? '<details class="why-more"><summary>' + esc(t('app_why')) + '</summary><p>' +
+            esc(tx(o.feedback)) + '</p></details>' : '';
+          out.innerHTML = '<div class="conseq said"><span class="what">' + esc(tx(o.label)) + '</span>' + esc(said) + why +
+            '</div><div class="actions"><button class="btn btn-main" data-more>' + esc(i < list.length ? t('app_next') :
+            t('app_continue')) + '</button></div>';
+          var more = out.querySelector('[data-more]');
+          more.focus();
+          more.onclick = step;
+          out.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+        }, T.adapted.still ? 0 : 300);
       }
       step();
     }
 
+    /**
+     * Sorting, decided all at once: everything on the table, each thing taken to its place, and then «Confirm»; the
+     * world answers for all of them together, and what was not in its place goes back to the table for a second trip.
+     * Tap a thing and then its place; a thing already placed goes back to the table with a tap.
+     *
+     * @param {Object} n The node.
+     */
     function classify(n) {
-      var items = n.items.slice();
-      var idx = 0;
       var once = n.retry === 'none';
-      function draw() {
-        if (idx >= items.length) {
-          go(n.next);
-          return;
+      var items = n.items.filter(function(it) {
+        return has(it.requires);
+      });
+      var locked = n.items.filter(function(it) {
+        return !has(it.requires);
+      });
+      var place = {};
+      var right = {};
+      var chosen = null;
+      var trip = 1;
+      var body = show((n.image ? stage(n.image, n.speaker) : '') + '<p class="scene-prompt">' + esc(tx(n.prompt)) +
+        '</p><div data-cls></div><div data-out></div>');
+      var box = body.querySelector('[data-cls]');
+      hintArea(n, body);
+      function table() {
+        return items.filter(function(it) {
+          return !right[it.id] && !place[it.id];
+        });
+      }
+      function draw(focus) {
+        var left = table();
+        if (chosen && left.map(function(it) {
+          return it.id;
+        }).indexOf(chosen) < 0) {
+          chosen = null;
         }
-        var it = items[idx];
-        var dots = items.map(function(x, j) {
-          return '<i class="' + (j < idx ? 'ok' : '') + '"></i>';
-        }).join('');
-        if (!has(it.requires)) {
-          var lockedbody = show('<p class="scene-prompt">' + esc(tx(n.prompt)) + '</p><div class="progress">' + dots + '</div>' +
-            '<div class="current">' + esc(tx(it.label)) + '</div><div class="conseq meh">' + esc(it.locked ? tx(it.locked) :
-            missing(it.requires)) + '</div><div class="actions"><button class="btn btn-soft" data-focus data-skip>' +
-            esc(t('app_later')) + '</button></div>');
-          lockedbody.querySelector('[data-skip]').onclick = function() {
-            idx++;
-            draw();
-          };
-          return;
+        if (!chosen && left.length) {
+          chosen = left[0].id;
         }
-        var bins = n.bins.map(function(b) {
-          return '<button class="bin" type="button" data-bin="' + esc(b.id) + '">' + esc(tx(b.label)) + '</button>';
-        }).join('');
-        var body = show('<p class="scene-prompt">' + esc(tx(n.prompt)) + '</p><div class="progress">' + dots + '</div>' +
-          '<div class="current" data-cur>' + esc(tx(it.label)) + '</div><div class="bins">' + bins + '</div><div data-out></div>');
-        hintArea(n, body);
-        body.querySelectorAll('.bin').forEach(function(b) {
+        var all = items.every(function(it) {
+          return right[it.id] || place[it.id];
+        });
+        box.innerHTML = '<p class="help">' + esc(trip > 1 ? t('app_classify_again') : t('app_classify_help')) + '</p>' +
+          '<div class="cls-table" role="group" aria-label="' + esc(t('app_classify_table')) + '">' + left.map(function(it) {
+            return '<button type="button" class="cls-thing" data-thing="' + esc(it.id) + '" aria-pressed="' +
+              (chosen === it.id) + '">' + esc(tx(it.label)) + '</button>';
+          }).join('') + locked.map(function(it) {
+            return '<button type="button" class="cls-thing locked" disabled>' + esc(tx(it.label)) + '<small>' +
+              esc(it.locked ? tx(it.locked) : missing(it.requires)) + '</small></button>';
+          }).join('') + '</div><div class="bins">' + n.bins.map(function(b) {
+            var inside = items.filter(function(it) {
+              return (right[it.id] || place[it.id]) === b.id;
+            });
+            return '<div class="cls-bin"><button type="button" class="bin" data-bin="' + esc(b.id) + '"' +
+              (chosen ? '' : ' disabled') + '>' + esc(tx(b.label)) + '</button><span class="cls-in">' +
+              inside.map(function(it) {
+                return right[it.id] ? '<span class="cls-thing kept">' + esc(tx(it.label)) + '</span>' :
+                  '<button type="button" class="cls-thing placed" data-take="' + esc(it.id) + '" aria-label="' +
+                  esc(t('app_classify_take', tx(it.label))) + '">' + esc(tx(it.label)) + '</button>';
+              }).join('') + '</span></div>';
+          }).join('') + '</div><div class="actions"><button class="btn btn-main" data-confirm' + (all ? '' : ' disabled') +
+          '>' + esc(n.commit ? tx(n.commit) : t('app_confirm')) + '</button></div>';
+        box.querySelectorAll('[data-thing]').forEach(function(b) {
           b.onclick = function() {
-            var bin = b.dataset.bin;
-            run.events.push({n: run.node, item: it.id, bin: bin});
-            var out = body.querySelector('[data-out]');
-            if (bin === it.bin || once) {
-              body.querySelectorAll('.bin').forEach(function(x) {
-                x.disabled = true;
-              });
-              var good = bin === it.bin;
-              if (T.fx) {
-                T.fx.sound(good ? 'right' : 'wrong');
-              }
-              out.innerHTML = '<div class="conseq ' + (good ? 'good' : 'bad') + '"><span class="what">' + esc(tx(it.label)) +
-                '</span>' + esc(good ? tx(it.ok || t('app_inplace')) : tx((it.feedback && it.feedback[bin]) ||
-                t('app_notthere'))) + '</div><div class="actions"><button class="btn btn-main" data-more>' +
-                esc(t('app_next')) + '</button></div>';
-              var more = out.querySelector('[data-more]');
-              more.focus();
-              more.onclick = function() {
-                idx++;
-                draw();
-              };
-            } else {
-              // That group is not it: it stays off until the next item.
-              b.disabled = true;
-              mistake();
-              if (T.fx) {
-                T.fx.sound('wrong');
-              }
-              out.innerHTML = '<div class="conseq bad">' + esc(tx((it.feedback && it.feedback[bin]) || t('app_notthere'))) +
-                '</div>';
-              var cur = body.querySelector('[data-cur]');
-              cur.classList.remove('shake');
-              void cur.offsetWidth;
-              cur.classList.add('shake');
-            }
+            chosen = b.dataset.thing;
+            draw('[data-thing="' + chosen + '"]');
           };
         });
+        box.querySelectorAll('[data-take]').forEach(function(b) {
+          b.onclick = function() {
+            delete place[b.dataset.take];
+            chosen = b.dataset.take;
+            draw('[data-thing="' + chosen + '"]');
+          };
+        });
+        box.querySelectorAll('[data-bin]').forEach(function(b) {
+          b.onclick = function() {
+            if (!chosen) {
+              return;
+            }
+            place[chosen] = b.dataset.bin;
+            chosen = null;
+            draw('[data-bin="' + b.dataset.bin + '"]');
+          };
+        });
+        box.querySelector('[data-confirm]').onclick = commit;
+        var again = focus && box.querySelector(focus);
+        if (again && !again.disabled) {
+          again.focus();
+        } else if (all) {
+          box.querySelector('[data-confirm]').focus();
+        }
+      }
+      function commit() {
+        var moved = items.filter(function(it) {
+          return !right[it.id];
+        });
+        var put = {};
+        moved.forEach(function(it) {
+          put[it.id] = place[it.id];
+          run.events.push({n: run.node, item: it.id, bin: place[it.id]});
+        });
+        if (moved.some(function(it) {
+          return put[it.id] !== it.bin;
+        })) {
+          mistake();
+        }
+        moved.forEach(function(it) {
+          if (put[it.id] === it.bin || once) {
+            right[it.id] = put[it.id];
+          }
+          delete place[it.id];
+        });
+        // The world answers for all of them at once, in the voice of the place.
+        if (T.fx) {
+          T.fx.sound('choose');
+        }
+        var out = body.querySelector('[data-out]');
+        // What is in its place, in one line (unless it has something of its own to say); what is not, with what the world
+        // says of it, or else the general clue once at the end.
+        var good = moved.filter(function(it) {
+          return put[it.id] === it.bin;
+        });
+        var plain = good.filter(function(it) {
+          return !it.ok;
+        });
+        var lines = (plain.length ? '<li><b>' + esc(t('app_classify_inplace')) + '</b> ' + esc(plain.map(function(it) {
+          return tx(it.label);
+        }).join(', ')) + '.</li>' : '') + good.filter(function(it) {
+          return it.ok;
+        }).map(function(it) {
+          return '<li><b>' + esc(tx(it.label)) + '</b> ' + esc(tx(it.ok)) + '</li>';
+        }).join('');
+        var general = false;
+        moved.forEach(function(it) {
+          if (put[it.id] !== it.bin) {
+            var own = it.feedback && it.feedback[put[it.id]];
+            general = general || !own;
+            lines += '<li><b>' + esc(tx(it.label)) + '</b> ' + esc(own ? tx(own) : t('app_classify_back')) + '</li>';
+          }
+        });
+        var finished = items.every(function(it) {
+          return right[it.id];
+        });
+        box.innerHTML = '';
+        out.innerHTML = '<div class="conseq said"><ul class="cls-said">' + lines + '</ul>' + (general ? '<p>' +
+          esc(n.clue ? tx(n.clue) : t('app_classify_clue')) + '</p>' : '') + '</div><div class="actions">' +
+          '<button class="btn btn-main" data-more>' + esc(finished ? t('app_continue') : t('app_classify_retry')) +
+          '</button></div>';
+        var more = out.querySelector('[data-more]');
+        more.focus();
+        more.onclick = function() {
+          out.innerHTML = '';
+          if (finished) {
+            go(n.next);
+            return;
+          }
+          trip++;
+          draw();
+        };
+        out.scrollIntoView({behavior: 'smooth', block: 'nearest'});
       }
       draw();
     }
@@ -953,9 +1156,9 @@
             } else {
               var stuck = n.stuck || {};
               var msg = stuck[s.id + '-antes-de-' + expected.id] || stuck.default || t('app_stuck');
-              body.querySelector('[data-out]').innerHTML = '<div class="conseq bad">' + esc(tx(msg)) + '</div>';
+              body.querySelector('[data-out]').innerHTML = '<div class="conseq said">' + esc(tx(msg)) + '</div>';
               if (T.fx) {
-                T.fx.sound('wrong');
+                T.fx.sound('choose');
               }
               // Not this step yet: it stays off until the right one is in place.
               b.disabled = true;

@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.58.0 (2026-10-17)
+
+Block 1.3 of the plan: the scenes stop looking like a test.
+
+- **A told moment is a dialogue**, as in a role-playing game: the painting of the place behind, who speaks in big over
+  it with their name, the hero and the creature of the student in a corner, and the words in a parchment that goes on
+  with a touch, about 45 words at a time (all at once for who has «no movement» or reading aloud).
+- **The world answers, not a referee**: no sound or colour of right and wrong after a choice; a moment of waiting, and
+  then what happens, in the voice of the place, with its own sound. Options and items can now bring `say` (what the
+  world says, with the explanation folded under «Why?»), `image` (the painting changes) and `fx` (light, dark, shake,
+  grow): the engine is ready, the texts come with the content of the mission.
+- **Sorting is decided all at once**: everything on the table, each thing taken to its place (touch a thing, then its
+  place; touched again, it goes back), and then «Confirm»; the world answers for all of them together, and what was not
+  in its place goes back to the table for a second trip. The server reads the placements item by item, in any order,
+  so plays sent before still count. The first try is what counts, as before.
+- **Hints become looking with the lens**: the same cost and the same advantage of the sage, with the lens as icon.
+- Two animations shared the name «shake» and the one of the nest moved the things of a scene half their width.
+
 ## 0.57.0 (2026-10-17)
 
 - **Suggestions to Oksigenia** (block C0.6 of the plan), off by default: when the administration turns them on
