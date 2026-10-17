@@ -42,7 +42,7 @@
    "options": [
     {
      "id": "agua",
-     "label": "junto al agua quieta de la orilla",
+     "label": "Acampar junto al agua quieta de la orilla",
      "points": 1,
      "objective": "SV-06",
      "effects": [
@@ -55,7 +55,7 @@
     },
     {
      "id": "arbol",
-     "label": "bajo un árbol hueco con un camino de hormigas",
+     "label": "Acampar bajo un árbol hueco con un camino de hormigas",
      "points": 1,
      "objective": "SV-06",
      "feedback": "El árbol protege del viento.",
@@ -63,7 +63,7 @@
     },
     {
      "id": "alto",
-     "label": "en un alto seco entre arbustos",
+     "label": "Acampar en un alto seco entre arbustos",
      "points": 2,
      "objective": "SV-06",
      "feedback": "Hay que subir un poco, pero el suelo está seco.",
@@ -71,13 +71,28 @@
     },
     {
      "id": "escarmentados",
-     "label": "en el alto seco, lejos del agua, escarmentados de los mosquitos",
+     "label": "Acampar en el alto seco, lejos del agua, escarmentados de los mosquitos",
      "requires": {
       "flag": "mosquitos"
      },
      "points": 2,
      "objective": "SV-06",
      "feedback": "Esta vez, ni un mosquito. Lo que se vive también enseña.",
+     "next": "noche-alto"
+    },
+    {
+     "id": "ronda",
+     "label": "Hacer la ronda de guardia por los tres sitios antes de que oscurezca",
+     "requires": {
+      "role": "protector"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "En la ronda se ve todo: sobre el agua quieta bailan nubecillas de mosquitos; al pie del árbol hueco pasa una fila de hormigas cargadas; en el alto, el suelo está seco. La expedición acampa arriba. Una gema por la ronda.",
      "next": "noche-alto"
     }
    ]
@@ -116,6 +131,20 @@
      "points": 1,
      "objective": "SV-06",
      "feedback": "Desde la orilla solo se ven puntitos que se mueven. Algo vive ahí, pero no se sabe qué."
+    },
+    {
+     "id": "picaduras",
+     "label": "Calmar las picaduras de todos con paños mojados en agua fresca",
+     "requires": {
+      "role": "healer"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "El picor se calma y vuelve el ánimo. Mientras tanto, agachados y muy quietos junto al agua, se ve de cerca lo que se mueve: larvas de mosquito que suben a respirar por un tubito. Así empezaron las de anoche. Una gema por cuidar a la expedición."
     }
    ],
    "next": "refugio"
@@ -213,7 +242,7 @@
    "options": [
     {
      "id": "ramas-caidas",
-     "label": "ramas caídas",
+     "label": "Recoger ramas caídas",
      "correct": true,
      "points": 2,
      "objective": "SV-08",
@@ -221,7 +250,7 @@
     },
     {
      "id": "hojas",
-     "label": "{{local:hojas}}",
+     "label": "Juntar {{local:hojas}}",
      "correct": true,
      "points": 2,
      "objective": "SV-08",
@@ -229,7 +258,7 @@
     },
     {
      "id": "ramas-verdes",
-     "label": "ramas verdes cortadas de un arbusto",
+     "label": "Cortar ramas verdes de un arbusto",
      "look": "Por el corte de una rama verde sale savia: el arbusto sigue vivo y la necesita para crecer.",
      "correct": false,
      "objective": "SV-08",
@@ -237,7 +266,7 @@
     },
     {
      "id": "piedras",
-     "label": "piedras",
+     "label": "Traer unas piedras",
      "correct": true,
      "points": 1,
      "objective": "SV-08",
@@ -245,7 +274,7 @@
     },
     {
      "id": "barro",
-     "label": "barro",
+     "label": "Amasar barro de la orilla",
      "look": "Con el rocío de la noche, el barro de la orilla se ablanda y se deshace entre los dedos.",
      "correct": false,
      "points": 1,
@@ -264,25 +293,40 @@
    "options": [
     {
      "id": "buena",
-     "label": "semillas y hierba → ratón → búho",
+     "label": "Apuntar «semillas y hierba → ratón → búho»",
      "correct": true,
      "points": 3,
      "objective": "SV-06",
-     "feedback": "Las plantas fabrican su alimento, el ratón se las come y el búho se come al ratón."
+     "feedback": "La tinta se seca limpia, flecha a flecha: las plantas fabrican su alimento, el ratón se las come y el búho se come al ratón."
     },
     {
      "id": "reves",
-     "label": "búho → ratón → semillas y hierba",
+     "label": "Apuntar «búho → ratón → semillas y hierba»",
      "correct": false,
      "objective": "SV-06",
      "feedback": "El ratón se ríe: «¿Yo comerme un búho?». Las flechas van del que es comido al que come."
     },
     {
      "id": "suelta",
-     "label": "mosquito → búho → hierba",
+     "label": "Apuntar «mosquito → búho → hierba»",
      "correct": false,
      "objective": "SV-06",
-     "feedback": "La hierba no se come al búho. Se empieza por quien fabrica su propio alimento."
+     "feedback": "La flecha que va del búho a la hierba se emborrona en la página: la hierba no se come al búho. Se empieza por quien fabrica su propio alimento."
+    },
+    {
+     "id": "recordar",
+     "label": "Recordar qué come cada uno antes de poner las flechas",
+     "requires": {
+      "role": "sage"
+     },
+     "correct": true,
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "El búho caza ratones; el ratón roe semillas y hierba; la hierba fabrica su alimento con la luz, y las semillas llevan dentro el que les guardó su planta. Con eso, las flechas se ponen solas, del que es comido al que come. Una gema por recordar lo aprendido."
     }
    ],
    "next": "apuntado"

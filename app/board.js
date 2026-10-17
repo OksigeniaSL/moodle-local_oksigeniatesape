@@ -309,8 +309,8 @@
           '</p>') + (l.counter && !told ? '<p class="battle-counter">' + esc(t('board_battle_counter', l.counter)) + '</p>' : '') +
           (l.shielded && !told ? '<p class="battle-counter shield">' + esc(t('board_battle_shielded')) + '</p>' : '') +
           turnOutcome(l);
-        buttons = l.round < l.total ? '<button class="btn btn-main" data-battlenext>' + esc(t('board_battle_next')) +
-          '</button>' : '';
+        buttons = l.round < l.total ? '<button class="btn btn-main" data-battlenext>' + esc(t(l.stage ? 'board_turn_nextnow' :
+          'board_battle_next')) + '</button>' : '';
       } else {
         main += '<p class="battle-count">' + (l.mode === 'phones' ? '<span data-answered>' + esc(t('board_battle_answered', l)) +
           '</span>' : '') +
@@ -337,7 +337,7 @@
       esc(t('board_battle_phase')) : '') + '</small></div><div class="board-tools">' + musicButton() + lightButton() +
       '<button class="btn btn-soft" data-full>' + esc(t('board_fullscreen')) + '</button></div></header>' +
       '<div class="battle-stage"><div class="battle-boss' +
-      (hit ? ' hit' : '') + (laugh ? ' laugh' : '') + '">' + T.embrollo(life) + '<span class="meter boss"><i style="width:' +
+      (hit ? ' hit' : '') + (laugh ? ' laugh' : '') + '">' + embrolloSays(l) + T.embrollo(life) + '<span class="meter boss"><i style="width:' +
       Math.round(100 * life) + '%"></i></span><small>' + esc(t('board_battle_life')) + (l.maxhp ? ': ' + l.hp + ' / ' +
       l.maxhp : '') + '</small></div><div class="battle-main">' + main + '<div class="actions">' + buttons + '</div></div></div>' +
       '<div class="battle-teams">' + teams + '</div></div>';
@@ -362,6 +362,31 @@
       '<p class="knot-laugh">«' + esc(l.knot.laugh.replace(/^«|»$/g, '')) + '»</p>' : '') + (l.damage ? '<p class="battle-count">' +
       esc(t('board_turn_damage', l.damage)) + '</p>' : '') + (l.stageleft > 0 && l.round < l.total ? '<p class="help-soft" ' +
       'data-stageleft="board_turn_next" aria-live="off">' + esc(t('board_turn_next', l.stageleft)) + '</p>' : '');
+  }
+
+  /**
+   * What the Embrollo says now, in its bubble next to the tangle: at the start, when it is hit or pulls itself together,
+   * when it is down to half its life, and at the end. One line of the mission for each moment, the same on every
+   * drawing of the moment.
+   *
+   * @param {Object} l
+   * @return {string}
+   */
+  function embrolloSays(l) {
+    var m = state.board.mission;
+    if (!m || !m.lines || l.kind !== 'battle') {
+      return '';
+    }
+    var kind = l.outcome === 'won' ? 'won' : l.outcome ? 'lost' : !l.round ? 'start' : !l.revealed ? (l.phase > 1 ? 'phase2' :
+      '') : l.counter ? 'recover' : (l.right || 0) > 0 ? 'hit' : '';
+    var set = m.lines.filter(function(x) {
+      return x.kind === kind;
+    })[0];
+    if (!set || !set.lines.length || (kind === 'recover' && l.knot && l.knot.laugh)) {
+      return '';
+    }
+    var line = set.lines[(l.id + l.round) % set.lines.length];
+    return '<p class="embrollo-says">«' + esc(line.replace(/^«|»$/g, '')) + '»</p>';
   }
 
   function bindBattle() {

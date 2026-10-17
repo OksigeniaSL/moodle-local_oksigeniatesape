@@ -37,23 +37,23 @@
    "steps": [
     {
      "id": "raiz",
-     "label": "Entra por la raíz, desde la tierra húmeda"
+     "label": "Hacerla entrar por la raíz, desde la tierra húmeda"
     },
     {
      "id": "tallo",
-     "label": "Sube por el tallo, por dentro, como por una tubería"
+     "label": "Subirla por dentro del tallo, como por una tubería"
     },
     {
      "id": "hoja",
-     "label": "Llega a la hoja"
+     "label": "Llevarla hasta la hoja"
     },
     {
      "id": "alimento",
-     "label": "En la hoja, con la luz del sol, ayuda a fabricar el alimento de la planta"
+     "label": "Dejarla en la hoja, al sol, para que ayude a fabricar el alimento de la planta"
     },
     {
      "id": "vapor",
-     "label": "Parte del agua sale al aire como vapor por unos poros diminutos de la hoja"
+     "label": "Dejar salir parte del agua al aire, como vapor, por unos poros diminutos de la hoja"
     }
    ],
    "stuck": {
@@ -71,7 +71,7 @@
    "options": [
     {
      "id": "raiz",
-     "label": "En la tierra, junto a la raíz",
+     "label": "Dejarla caer en la tierra, junto a la raíz",
      "correct": true,
      "points": 2,
      "objective": "SV-05",
@@ -79,7 +79,7 @@
     },
     {
      "id": "hoja",
-     "label": "Encima de las hojas, que es donde está la sed",
+     "label": "Dejarla caer encima de las hojas, que es donde está la sed",
      "correct": false,
      "objective": "SV-05",
      "feedback": "La gota resbala por la hoja y cae al suelo. «Por fuera de la hoja no entro: el agua entra por la raíz.»"
@@ -100,6 +100,62 @@
       }
      ],
      "feedback": "A la sombra pierde menos agua por las hojas, y la que entra por la raíz le llega entera. Se endereza antes que ninguna."
+    },
+    {
+     "id": "murito",
+     "label": "Hacer un murito de tierra alrededor de la planta para que el agua de la lluvia no se escape",
+     "requires": {
+      "role": "protector"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "El agua de la lluvia se queda dentro del murito y empapa la tierra. La gota baja con ella y entra por la raíz: «¡Este camino ya lo conozco!». Al rato, las hojas se levantan. Una gema por poner el agua a salvo."
+    },
+    {
+     "id": "atender",
+     "label": "Atender a la planta: mirar si está enferma o solo tiene sed",
+     "requires": {
+      "role": "healer"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "Las hojas no tienen manchas ni bichos; la tierra, en cambio, está seca y agrietada: es sed. La gota baja a esa tierra seca y entra por la raíz. «¡Por aquí se cura esta sed!» Una gema por mirar antes de curar."
+    },
+    {
+     "id": "regadera",
+     "label": "Recordar adónde apunta la regadera cuando se riega una maceta",
+     "requires": {
+      "role": "sage"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "A la tierra, no a las hojas: el agua que se queda en las hojas se evapora y la planta casi no la aprovecha. La gota se deja caer junto al tallo, empapa la tierra y entra por la raíz. «¡Este camino ya lo conozco!» Una gema por recordar lo que ya se sabía."
+    },
+    {
+     "id": "gotas",
+     "label": "Seguir a las otras gotas de la lluvia, a ver adónde van",
+     "requires": {
+      "role": "scout"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "Unas resbalan por las hojas, otras bajan por el tallo, y todas acaban en el mismo sitio: la tierra se oscurece alrededor de la planta. La gota las sigue y entra por la raíz. «¡Este camino ya lo conozco!» Una gema por mirar lo que nadie miraba."
     }
    ],
    "next": "fin"

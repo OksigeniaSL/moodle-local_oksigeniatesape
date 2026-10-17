@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.64.0 (2026-10-17)
+
+- **The core scenes stop sounding like a test** (mission v25): their options are what the group does or says aloud
+  («Uncover the window so that the sun comes in», «—It is a snail's»), and the world answers what happened without
+  judging, with the why whole.
+- **An option of its own for each role in every core scene**: the protector protects, the healer cares,
+  the sage remembers and the scout follows a trail; another way to get there, with a gem, never a shortcut. The nest
+  begins with one of these decisions, which counts for nothing («Before filling the nest, what do we do?»).
+- **Each role sees only its own option**: the options of other roles no longer show locked to everybody (at the class
+  screen, those of the roles there are in the class).
+- **The Embrollo talks in the battle**: thirty lines in the mission (at the start, when it loses a thread, when it
+  pulls itself together, when it is down to half, and at the end, winning or escaping), shown in a bubble over the
+  tangle on the class screen.
+
 ## 0.63.0 (2026-10-17)
 
 Block 1.9 of the plan: a vertical slice of the battle by turns, «the knots of the tower», over the battle there was.

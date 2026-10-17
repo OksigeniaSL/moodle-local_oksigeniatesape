@@ -666,6 +666,7 @@ $string['board_turn_damage'] = '−{$a} threads for the Embrollo';
 $string['board_turn_fell'] = 'The attack falls on {$a}: the Embrollo pulls itself together';
 $string['board_turn_goes'] = 'It goes for: {$a}';
 $string['board_turn_next'] = 'Next turn in {$a} s';
+$string['board_turn_nextnow'] = 'Next turn';
 $string['board_turn_prep'] = 'Get your verbs ready: the knot falls in {$a} s';
 $string['board_turn_round'] = 'Turn {$a->round} of {$a->total}';
 $string['board_turn_shield'] = 'The shield stops the blow on {$a}!';

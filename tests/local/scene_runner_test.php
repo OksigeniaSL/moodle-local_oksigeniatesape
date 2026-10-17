@@ -91,7 +91,7 @@ final class scene_runner_test extends \advanced_testcase {
     public function test_the_nest_sleeps_with_too_few_living_things(): void {
         $scene = autoplayer::scene('C1-2');
         $runner = new scene_runner($scene);
-        $events = [['n' => 'elegir', 'pick' => ['seta', 'lombriz', 'musgo', 'cristal', 'humo']]];
+        $events = [['n' => 'antes', 'pick' => ['buscar']], ['n' => 'elegir', 'pick' => ['seta', 'lombriz', 'musgo', 'cristal', 'humo']]];
         $result = $runner->run($events);
         $this->assertSame('duerme', $result['ending']);
         $this->assertSame('retry', $result['outcome']);
@@ -321,11 +321,14 @@ final class scene_runner_test extends \advanced_testcase {
     public static function bad_plays_provider(): array {
         return [
             'event of another node' => [[['n' => 'otro', 'pick' => ['seta']]], null],
-            'unknown option' => [[['n' => 'elegir', 'pick' => ['dragon', 'seta', 'lombriz', 'musgo', 'hormiga']]], null],
-            'too few options' => [[['n' => 'elegir', 'pick' => ['seta']]], null],
-            'the same option twice' => [[['n' => 'elegir', 'pick' => ['seta', 'seta', 'lombriz', 'musgo', 'hormiga']]], null],
+            // From the question of the nest, where its retry ending sends back.
+            'unknown option' => [[['n' => 'elegir', 'pick' => ['dragon', 'seta', 'lombriz', 'musgo', 'hormiga']]], 'elegir'],
+            'too few options' => [[['n' => 'elegir', 'pick' => ['seta']]], 'elegir'],
+            'the same option twice' => [[['n' => 'elegir', 'pick' => ['seta', 'seta', 'lombriz', 'musgo', 'hormiga']]], 'elegir'],
             'events after the end' => [[['n' => 'elegir', 'pick' => ['seta', 'lombriz', 'musgo', 'hormiga', 'semilla']],
-                ['n' => 'elegir', 'pick' => ['seta']]], null],
+                ['n' => 'elegir', 'pick' => ['seta']]], 'elegir'],
+            'the option of another role' => [[['n' => 'antes', 'pick' => ['guardia']], ['n' => 'elegir', 'pick' => ['seta',
+                'lombriz', 'musgo', 'hormiga', 'semilla']]], null],
             'not a starting node' => [[], 'resultado'],
             'nothing to play' => [[], null],
         ];

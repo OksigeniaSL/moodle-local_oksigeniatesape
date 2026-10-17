@@ -1,12 +1,24 @@
 {
  "code": "livingthings",
- "version": 23,
+ "version": 25,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 25,
+   "kind": "improvement",
+   "date": "2026-10-17",
+   "text": "Las opciones de las escenas de núcleo son lo que se hace o se dice, y el mundo responde sin juzgar; treinta frases del Embrollo para la batalla"
+  },
+  {
+   "version": 24,
+   "kind": "improvement",
+   "date": "2026-10-17",
+   "text": "Una opción propia de cada papel en cada escena de núcleo: el protector protege, el sanador cuida, el sabio recuerda y el explorador sigue rastros"
+  },
   {
    "version": 23,
    "kind": "improvement",
@@ -436,7 +448,51 @@
      "Q6-3"
     ]
    }
-  ]
+  ],
+  "lines": {
+   "start": [
+    "¡Por fin! Llevo toda la semana enredando el Gran Libro y nadie me había invitado a jugar.",
+    "Hoy traigo nudos nuevos. Bueno, nuevos... los he hecho con las dudas de esta clase.",
+    "¿Preparados? Yo sí: me he peinado los hilos.",
+    "La torre es mía, y los nudos también. A ver quién se atreve con ellos.",
+    "He traído amigos. Todos un poco mal escritos, como a mí me gusta."
+   ],
+   "hit": [
+    "¡Ay! Ese hilo me lo había atado con mucho cariño.",
+    "¡Eh, eh, que me despeinas!",
+    "Vale, ese lo sabía la clase entera. Qué poca gracia.",
+    "¡Uf! Me estoy quedando flaquito.",
+    "¿Quién le ha enseñado eso a esta clase? ¡Exijo saberlo!",
+    "Un hilo menos. No pasa nada: tengo muchos... creo."
+   ],
+   "recover": [
+    "¡Ja! Un nudo bien hecho no se deshace así como así.",
+    "Hilo que se escapa, hilo que vuelve. Y un poco más gordo.",
+    "Me estiro, me estiro... ¡y me vuelvo a enredar!",
+    "Mis hilos vuelven a casa. Qué bien se está enredado.",
+    "Un error a tiempo me sienta de maravilla."
+   ],
+   "phase2": [
+    "¡Que no! ¡Que las pompas no respiran... o sí! Me estoy liando.",
+    "Me quedan menos hilos, pero más enredados. ¡Cuidado!",
+    "Uy, ya no me acuerdo de cuál era la mentira y cuál la verdad.",
+    "Esto se pone serio: ahora me enredo más deprisa."
+   ],
+   "won": [
+    "Vale, vale... me rindo. Me quedo en el frasco un ratito.",
+    "Sin hilos no hay Embrollo. ¡Qué clase más peligrosa para un nudo!",
+    "Desenredado entero. Me voy a echar la siesta en mi frasco.",
+    "La próxima vez traeré nudos más difíciles. O no: estoy cansado.",
+    "¡Qué bien escrito queda todo! Me da un poco de rabia."
+   ],
+   "lost": [
+    "¡Me escapo torre arriba! Con estos nudos, nos vemos otro día.",
+    "Me llevo los hilos que quedan. Esta clase ya sabe dónde encontrarme.",
+    "Hoy gano yo, pero por poco. Muy poco.",
+    "¡Hasta la revancha! Prometo enredar con cariño.",
+    "Me voy, pero la próxima vez esta clase vendrá con más ganas. Y yo, con más hilos."
+   ]
+  }
  },
  "pages": {
   "ser-vivo": {

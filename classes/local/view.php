@@ -402,6 +402,11 @@ final class view {
                 // The final battle, if the mission saves something for the end, and the text of its end.
                 'final' => !empty($mission->data['battle']['final']),
                 'ending' => missions::text($mission->data['ending'] ?? '', $mission->skin, $mission->variant),
+                // What the Embrollo says in a battle, by moment: start, hit, recover, phase2, won, lost.
+                'lines' => array_map(fn($kind) => ['kind' => $kind, 'lines' => array_values(array_map(
+                    fn($line) => missions::text($line, $mission->skin, $mission->variant),
+                    (array) ($mission->data['battle']['lines'][$kind] ?? [])
+                ))], ['start', 'hit', 'recover', 'phase2', 'won', 'lost']),
             ];
         }
         $event = events::export(events::today($courseid, $now));

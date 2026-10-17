@@ -27,6 +27,80 @@
     "valley": "La druida mayor señala el nido de ramas en el centro del claro. «Las semillas solo despiertan rodeadas de vida de verdad. En el claro hay cosas que parecen vivas y no lo están, y alguna que parece muerta y no lo está. Caben cinco. A ver quién sabe mirar.» Alrededor del nido hay huellas que no son de ningún animal: manchas de tinta corrida, como las de una página escrita deprisa.",
     "azara": "El cuaderno dice: «Antes de describir a nadie, distingue lo que vive de lo que no». En el cajón de muestras caben cinco. Hay cosas que parecen vivas y no lo están, y alguna que parece muerta y no lo está. En el margen de la página, manchas de tinta corrida, como de alguien que escribió deprisa."
    },
+   "next": "antes"
+  },
+  "antes": {
+   "type": "choice",
+   "prompt": {
+    "valley": "Antes de llenar el nido, ¿qué hacemos?",
+    "azara": "Antes de llenar el cajón, ¿qué hacemos?"
+   },
+   "options": [
+    {
+     "id": "buscar",
+     "label": "Ponernos a buscar sin perder tiempo",
+     "feedback": "Alrededor hay de todo: cosas que se mueven, cosas que brillan, cosas que parecen dormidas. Hay que mirar bien antes de elegir."
+    },
+    {
+     "id": "guardia",
+     "label": "Montar guardia junto a las semillas mientras buscamos",
+     "requires": {
+      "role": "protector"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "Una racha de viento arrastra hojas secas hacia las semillas, pero no llegan a taparlas: hay alguien de guardia, y lo que está por nacer sigue a salvo. Una gema por montar guardia."
+    },
+    {
+     "id": "calor",
+     "label": "Dar calor a las semillas con las manos mientras buscamos",
+     "requires": {
+      "role": "healer"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "Bajo las manos, las semillas se templan un poco. El calor de alguien vivo es buena compañía, pero para despertar del todo les hace falta más vida alrededor. Una gema por cuidar de lo que está por nacer."
+    },
+    {
+     "id": "pagina",
+     "label": {
+      "valley": "Abrir el Gran Libro por la primera página, a ver qué queda escrito",
+      "azara": "Abrir el cuaderno por la primera página, a ver qué queda escrito"
+     },
+     "requires": {
+      "role": "sage"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "La primera página está casi en blanco: solo se lee el título, «Ser vivo», y debajo, una mancha de tinta corrida. Lo que falta habrá que recuperarlo mirando. Una gema por consultar antes de decidir."
+    },
+    {
+     "id": "tinta",
+     "label": "Seguir las manchas de tinta corrida, a ver adónde llevan",
+     "requires": {
+      "role": "scout"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "Las manchas van en zigzag, como la letra de alguien que escribe deprisa y sin mirar, y de pronto se acaban. Habrá que estar atentos por si vuelven a aparecer. Una gema por seguir un rastro que nadie seguía."
+    }
+   ],
    "next": "elegir"
   },
   "elegir": {
@@ -46,7 +120,7 @@
    "options": [
     {
      "id": "seta",
-     "label": "una seta junto a un tronco",
+     "label": "Recoger la seta que hay junto a un tronco",
      "correct": true,
      "points": 2,
      "objective": "SV-01",
@@ -54,14 +128,14 @@
     },
     {
      "id": "cristal",
-     "label": "un cristal que “crece” en una roca húmeda",
+     "label": "Sacar el cristal que “crece” en una roca húmeda",
      "correct": false,
      "objective": "SV-01",
      "feedback": "El nido parpadea y se apaga. «Crece, sí, pero no come, no siente y no tiene hijos.»"
     },
     {
      "id": "lombriz",
-     "label": "una lombriz bajo una piedra",
+     "label": "Sacar la lombriz que hay bajo una piedra",
      "correct": true,
      "points": 2,
      "objective": "SV-01",
@@ -69,14 +143,14 @@
     },
     {
      "id": "humo",
-     "label": "el humo de la hoguera",
+     "label": "Atrapar el humo de la hoguera",
      "correct": false,
      "objective": "SV-01",
      "feedback": "El humo sube y se deshace. «Se mueve y cambia, pero nadie lo ha engendrado ni se alimenta.»"
     },
     {
      "id": "pluma",
-     "label": "una pluma caída",
+     "label": "Recoger una pluma caída",
      "correct": false,
      "points": 1,
      "objective": "SV-01",
@@ -89,7 +163,7 @@
     },
     {
      "id": "musgo",
-     "label": "un musgo verde",
+     "label": "Llevar una mata de musgo verde",
      "correct": true,
      "points": 2,
      "objective": "SV-01",
@@ -97,7 +171,7 @@
     },
     {
      "id": "semilla",
-     "label": "{{local:semilla}}",
+     "label": "Recoger {{local:semilla}}",
      "correct": true,
      "points": 2,
      "objective": "SV-01",
@@ -105,14 +179,14 @@
     },
     {
      "id": "pompa",
-     "label": "una pompa de jabón",
+     "label": "Llevar una pompa de jabón",
      "correct": false,
      "objective": "SV-01",
      "feedback": "La pompa flota, brilla… y explota. «Moverse y brillar no es estar vivo.»"
     },
     {
      "id": "hormiga",
-     "label": "una hormiga que carga una hoja",
+     "label": "Atrapar una hormiga que carga una hoja",
      "correct": true,
      "points": 2,
      "objective": "SV-01",
@@ -120,14 +194,14 @@
     },
     {
      "id": "piedra",
-     "label": "una piedra que rueda por la ladera",
+     "label": "Recoger la piedra que rueda por la ladera",
      "correct": false,
      "objective": "SV-01",
      "feedback": "La piedra rueda y se para. «Moverse no basta para estar vivo.»"
     },
     {
      "id": "rana",
-     "label": "una rana quieta bajo una hoja",
+     "label": "Llevar la rana que está quieta bajo una hoja",
      "correct": true,
      "points": 2,
      "objective": "SV-01",
@@ -135,7 +209,7 @@
     },
     {
      "id": "gota",
-     "label": "una gota del charco, mirada con la lupa del sabio",
+     "label": "Mirar una gota del charco con la lupa del sabio y llevarla",
      "correct": true,
      "points": 2,
      "objective": "SV-01",

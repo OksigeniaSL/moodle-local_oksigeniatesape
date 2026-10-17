@@ -58,7 +58,7 @@
      "label": "¿Tiene huesos por dentro?",
      "points": 3,
      "objective": "SV-04",
-     "feedback": "«No.» Y añade: «Buena pregunta: así se separan los vertebrados de los invertebrados». Regala una pregunta más. Y se queda con la cara de quien la hizo.",
+     "feedback": "«No.» Y añade: «Con esa pregunta se separan de golpe los vertebrados de los invertebrados». Regala una pregunta más. Y se queda con la cara de quien la hizo.",
      "effects": [
       {
        "extraquestion": 1
@@ -73,14 +73,14 @@
      "label": "¿Pone huevos?",
      "points": 0,
      "objective": "SV-04",
-     "feedback": "«Sí.» Pero eso no ayuda mucho: ponen huevos las aves, los reptiles, los peces, muchos anfibios, los insectos… «Mejor una pregunta que separe más.»"
+     "feedback": "«Sí.» Pero con ese sí casi nadie queda fuera: ponen huevos las aves, los reptiles, los peces, muchos anfibios, los insectos… «Cuanto más separa una pregunta, más dice su respuesta.»"
     },
     {
      "id": "pelo",
      "label": "¿Tiene pelo?",
      "points": 1,
      "objective": "SV-04",
-     "feedback": "«No.» Al menos queda claro que no es un mamífero."
+     "feedback": "«No.» Queda claro que no es un mamífero."
     },
     {
      "id": "plumas",
@@ -125,7 +125,7 @@
      "label": "¿Respira en el agua?",
      "points": 1,
      "objective": "SV-04",
-     "feedback": "«No, este no.» Vive en tierra, en sitios húmedos."
+     "feedback": "«No.» Vive en tierra, en sitios húmedos."
     },
     {
      "id": "seguir",
@@ -137,6 +137,20 @@
      "points": 3,
      "objective": "SV-04",
      "feedback": "El rastro acaba bajo una hoja mojada, en lo más húmedo del bosque. «Eso no es preguntar», dice el búho, «pero también es saber mirar.» Vive donde hay humedad."
+    },
+    {
+     "id": "guardia",
+     "label": "Montar guardia junto al rastro para que nadie lo pise",
+     "requires": {
+      "role": "protector"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "Nadie lo pisa. Al rato, el rastro sigue entero y hasta es un poco más largo: quien lo dejó anda todavía cerca. «Una pista pisada ya no contesta a nadie.» Una gema por proteger el rastro."
     }
    ],
    "next": "p3"
@@ -171,6 +185,34 @@
      "feedback": "«No: se arrastra sobre un pie musculoso.»"
     },
     {
+     "id": "cuidar",
+     "label": "Preguntarle cómo está, en lugar de preguntarle por el rastro",
+     "requires": {
+      "role": "healer"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "Se toma un momento antes de contestar: «Nadie me pregunta nunca eso. Bien, gracias». Y añade algo que no es ni sí ni no: «El que dejó este rastro iba sin ninguna prisa». Una gema por acordarse de quien responde."
+    },
+    {
+     "id": "repasar",
+     "label": "Repasar en voz alta lo que ya sabemos, en lugar de preguntar",
+     "requires": {
+      "role": "sage"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "Dichas todas juntas, las respuestas sueltas empiezan a encajar. «Quien ordena lo que ya sabe gasta menos preguntas.» Una gema por ordenar lo que ya se sabe."
+    },
+    {
      "id": "marcas",
      "label": "En vez de preguntar, mirar las otras marcas, las que no se parecen a nada",
      "requires": {
@@ -198,7 +240,7 @@
    "options": [
     {
      "id": "caracol",
-     "label": "un caracol",
+     "label": "—Es de un caracol",
      "correct": true,
      "points": 5,
      "objective": "SV-04",
@@ -207,7 +249,7 @@
     },
     {
      "id": "escarabajo",
-     "label": "un escarabajo",
+     "label": "—Es de un escarabajo",
      "correct": false,
      "objective": "SV-04",
      "feedback": "El escarabajo sale del tronco: «Yo tengo seis patas y un caparazón duro, pero no en espiral».",
@@ -215,7 +257,7 @@
     },
     {
      "id": "tortuga",
-     "label": "una tortuga",
+     "label": "—Es de una tortuga",
      "correct": false,
      "objective": "SV-04",
      "feedback": "La tortuga se asoma: «Mi caparazón tiene huesos por dentro: soy un reptil, un vertebrado».",
@@ -223,7 +265,7 @@
     },
     {
      "id": "cangrejo",
-     "label": "un cangrejo",
+     "label": "—Es de un cangrejo",
      "correct": false,
      "objective": "SV-04",
      "feedback": "El cangrejo chasquea las pinzas: «Yo tengo patas, y muchas. Y vivo junto al agua».",

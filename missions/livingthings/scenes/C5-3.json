@@ -164,18 +164,18 @@
    "options": [
     {
      "id": "todos",
-     "label": "Todos: lo vivo depende de lo no vivo",
+     "label": "—Todos: lo vivo depende de lo no vivo.",
      "correct": true,
      "points": 2,
      "objective": "SV-06",
-     "feedback": "«Eso es. Con el agua caliente hay menos aire en ella, y los peces lo notan los primeros.»"
+     "feedback": "En un rincón tibio de la orilla, un pez sube a la superficie y abre y cierra la boca, como si le faltara el aire. «Con el agua caliente hay menos aire en ella», dice la garza, «y los peces lo notan los primeros»."
     },
     {
      "id": "nadie",
-     "label": "Nadie: el agua no está viva",
+     "label": "—Nadie: el agua no está viva.",
      "correct": false,
      "objective": "SV-06",
-     "feedback": "«El agua no está viva, pero todo lo vivo del lago la necesita como es. En un ecosistema todo está unido.»"
+     "feedback": "En un rincón tibio de la orilla, un pez sube a la superficie y abre y cierra la boca, como si le faltara el aire. La garza lo señala con el pico: «El agua no está viva, pero todo lo vivo del lago la necesita como es. En un ecosistema todo está unido»."
     },
     {
      "id": "explorador",
@@ -193,6 +193,62 @@
       }
      ],
      "feedback": "Donde el agua está más caliente y quieta, menos peces y más algas. Lo vivo y lo no vivo, unidos: eso es un ecosistema."
+    },
+    {
+     "id": "renacuajos",
+     "label": "Devolver al lago los renacuajos de un charco que se seca al sol",
+     "requires": {
+      "role": "protector"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "En el charco queda poca agua y está tibia: los renacuajos suben una y otra vez a tomar aire. Devueltos al lago, a la sombra de los juncos, se quedan abajo, tranquilos. Una gema por ponerlos a salvo."
+    },
+    {
+     "id": "sombra",
+     "label": "Llevar a la sombra a {{creature}}, que jadea al sol de la orilla",
+     "requires": {
+      "role": "healer"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "A la sombra de los juncos, {{creature}} bebe y se tumba en el barro fresco. Al rato vuelve a corretear. «Agua fresca y sombra», dice la garza, «lo que necesita cualquiera que viva aquí». Una gema por cuidar de {{creature}}."
+    },
+    {
+     "id": "repaso",
+     "label": "Repasar despacio todo lo que acabamos de apuntar",
+     "requires": {
+      "role": "sage"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "Al repasar, las flechas salen solas: del agua a los peces, a las ranas y a las algas; de la luz a las algas, que dan de comer a otros. No queda ni un ser vivo sin su flecha. Una gema por recordar lo aprendido."
+    },
+    {
+     "id": "burbujas",
+     "label": "Seguir las burbujitas que suben entre las algas",
+     "requires": {
+      "role": "scout"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "Al sol, las algas sueltan burbujitas: es oxígeno, que sale al fabricar su alimento con la luz. Alrededor, los peces van y vienen. La luz, el agua, las algas, los peces: todo atado. Una gema por mirar donde nadie mira."
     }
    ],
    "next": "fin"

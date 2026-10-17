@@ -79,7 +79,7 @@
    "options": [
     {
      "id": "ok",
-     "label": "No: tiene pelo y sus crías maman. Es un mamífero.",
+     "label": "—No: tiene pelo y sus crías maman. Es un mamífero.",
      "correct": true,
      "points": 3,
      "objective": "SV-04",
@@ -87,19 +87,34 @@
     },
     {
      "id": "medio",
-     "label": "No: sale de noche y las aves son de día. Es otra cosa.",
+     "label": "—No: sale de noche y las aves son de día. Es otra cosa.",
      "correct": false,
      "objective": "SV-04",
-     "feedback": "Hay aves nocturnas, como el búho. ¿Qué tiene el murciélago que no tienen las aves?",
+     "feedback": "El hilo se tensa: hay aves nocturnas, como el búho. ¿Qué tiene el murciélago que no tienen las aves?",
      "next": "e1"
     },
     {
      "id": "mal",
-     "label": "Sí: tiene alas y vuela de noche, como los búhos.",
+     "label": "—Sí: tiene alas y vuela de noche, como los búhos.",
      "correct": false,
      "objective": "SV-04",
      "feedback": "El hilo se aprieta. Las alas no bastan: ¿plumas o pelo?",
      "next": "e1"
+    },
+    {
+     "id": "ventana",
+     "label": "Abrir la ventana al murciélago que se ha colado y no encuentra la salida",
+     "requires": {
+      "role": "healer"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "Camino de la noche, pasa junto a la lámpara y se le ve bien: el cuerpo cubierto de pelo, las alas de piel tendida entre unos dedos larguísimos, ni una sola pluma. El enredo se deshace. Una gema por cuidarlo.",
+     "next": "e2"
     }
    ],
    "next": "e2"
@@ -113,26 +128,26 @@
    "options": [
     {
      "id": "ok",
-     "label": "No: respira aire con pulmones y sus crías maman.",
+     "label": "—No: respira aire con pulmones y sus crías maman.",
      "correct": true,
      "points": 3,
      "objective": "SV-04",
-     "feedback": "Otro enredo menos."
+     "feedback": "Otro hilo se suelta y cae, deshecho."
     },
     {
      "id": "mal",
-     "label": "Sí: vive en el mar y nada con aletas, como el atún.",
+     "label": "—Sí: vive en el mar y nada con aletas, como el atún.",
      "correct": false,
      "objective": "SV-04",
-     "feedback": "Vivir en el agua no hace a nadie pez. ¿Cómo respira la ballena?",
+     "feedback": "El hilo se aprieta: vivir en el agua no hace a nadie pez. ¿Cómo respira la ballena?",
      "next": "e2"
     },
     {
      "id": "medio",
-     "label": "No: es demasiado grande para ser un pez. Es otra cosa.",
+     "label": "—No: es demasiado grande para ser un pez. Es otra cosa.",
      "correct": false,
      "objective": "SV-04",
-     "feedback": "Hay peces enormes, como el tiburón ballena. ¿Cómo respira y cómo alimenta a sus crías?",
+     "feedback": "El hilo cede un poco y vuelve a apretarse: hay peces enormes, como el tiburón ballena. ¿Cómo respira y cómo alimenta a sus crías?",
      "next": "e2"
     }
    ],
@@ -147,7 +162,7 @@
    "options": [
     {
      "id": "ok",
-     "label": "No: no fabrica su alimento con la luz. Es un hongo.",
+     "label": "—No: no fabrica su alimento con la luz. Es un hongo.",
      "correct": true,
      "points": 3,
      "objective": "SV-03",
@@ -155,18 +170,18 @@
     },
     {
      "id": "mal",
-     "label": "Sí: no se mueve y sale de la tierra, como las plantas.",
+     "label": "—Sí: no se mueve y sale de la tierra, como las plantas.",
      "correct": false,
      "objective": "SV-03",
-     "feedback": "Las plantas no se mueven, pero los hongos tampoco. ¿Cómo consigue la seta su alimento?",
+     "feedback": "El hilo da otra vuelta: las plantas no se mueven, pero los hongos tampoco. ¿Cómo consigue la seta su alimento?",
      "next": "e3"
     },
     {
      "id": "medio",
-     "label": "No: es un animal muy lento que se come la madera.",
+     "label": "—No: es un animal muy lento que se come la madera.",
      "correct": false,
      "objective": "SV-03",
-     "feedback": "Lenta es, pero no come como un animal: absorbe los restos. ¿Qué grupo hace eso?",
+     "feedback": "El hilo se enreda un poco más. Lenta es, pero no come como un animal: absorbe los restos. ¿Qué grupo hace eso?",
      "next": "e3"
     }
    ],
@@ -181,7 +196,7 @@
    "options": [
     {
      "id": "ok",
-     "label": "Sí pasa: lo que come el león come plantas. Sin plantas, sin cadena.",
+     "label": "—Sí pasa: lo que come el león come plantas. Sin plantas, sin cadena.",
      "correct": true,
      "points": 3,
      "objective": "SV-06",
@@ -189,19 +204,34 @@
     },
     {
      "id": "mal",
-     "label": "Es verdad: el león come carne, y las plantas no le importan.",
+     "label": "—Es verdad: el león come carne, y las plantas no le importan.",
      "correct": false,
      "objective": "SV-06",
-     "feedback": "¿Y qué comen las cebras que se come el león? La cadena, hacia atrás.",
+     "feedback": "El hilo se aprieta. ¿Y qué comen las cebras que se come el león? La cadena, hacia atrás.",
      "next": "e4"
     },
     {
      "id": "medio",
-     "label": "Sí pasa: el león se quedaría sin sombra para dormir la siesta.",
+     "label": "—Sí pasa: el león se quedaría sin sombra para dormir la siesta.",
      "correct": false,
      "objective": "SV-06",
-     "feedback": "Sombra sí, pero lo grave es otra cosa: ¿qué comen los animales que come el león?",
+     "feedback": "El hilo se afloja… y se vuelve a tensar. Sombra sí, pero lo grave es otra cosa: ¿qué comen los animales que come el león?",
      "next": "e4"
+    },
+    {
+     "id": "paginas",
+     "label": "Repasar, una por una, las páginas que ya tenemos apuntadas",
+     "requires": {
+      "role": "sage"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "En las páginas de las cadenas, la primera flecha sale siempre de una planta: la hierba, la hoja, las semillas. Sin plantas, ninguna cadena tiene por dónde empezar, tampoco la del león. El enredo se deshace. Una gema por recordar lo aprendido.",
+     "next": "e5"
     }
    ],
    "next": "e5"
@@ -215,27 +245,42 @@
    "options": [
     {
      "id": "ok",
-     "label": "No: tiene ocho patas. Es un arácnido.",
+     "label": "—No: tiene ocho patas. Es un arácnido.",
      "correct": true,
      "points": 3,
      "objective": "SV-04",
-     "feedback": "¡El último enredo viejo!"
+     "feedback": "Se suelta el último hilo: no queda ni un enredo viejo."
     },
     {
      "id": "mal",
-     "label": "Sí: es un bicho pequeño con patas, como la hormiga.",
+     "label": "—Sí: es un bicho pequeño con patas, como la hormiga.",
      "correct": false,
      "objective": "SV-04",
-     "feedback": "«Bicho» no es un grupo de seres vivos. A contar patas.",
+     "feedback": "El hilo se retuerce: «bicho» no es un grupo de seres vivos. A contar patas.",
      "next": "e5"
     },
     {
      "id": "medio",
-     "label": "No: es demasiado grande para ser un insecto.",
+     "label": "—No: es demasiado grande para ser un insecto.",
      "correct": false,
      "objective": "SV-04",
-     "feedback": "Hay insectos grandes, como el escarabajo rinoceronte. A contar patas.",
+     "feedback": "El hilo se aprieta: hay insectos grandes, como el escarabajo rinoceronte. A contar patas.",
      "next": "e5"
+    },
+    {
+     "id": "rincon",
+     "label": "Buscar en los rincones una araña de verdad y mirarla de cerca",
+     "requires": {
+      "role": "scout"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "En un rincón, una araña arregla su tela. De cerca se le cuentan las patas: una, dos, tres… hasta ocho. Los insectos tienen seis: el último enredo viejo se deshace. Una gema por mirar donde nadie mira.",
+     "next": "confesion"
     }
    ],
    "next": "confesion"
@@ -252,18 +297,24 @@
    "options": [
     {
      "id": "comprobar",
-     "label": "Que no pasa nada, y que mañana comprobamos cada página juntos",
+     "label": "—No pasa nada. Mañana comprobamos cada página juntos.",
      "correct": true,
      "points": 2,
      "objective": "SV-07",
-     "feedback": "Doña Hebra respira. «Juntos. Y con la cosa delante, no de memoria.»"
+     "feedback": {
+      "valley": "Doña Hebra respira. «Juntos. Y con la cosa delante, no de memoria.»",
+      "azara": "La archivera respira. «Juntos. Y con la cosa delante, no de memoria.»"
+     }
     },
     {
      "id": "culpa",
-     "label": "Que la culpa del Embrollo es suya",
+     "label": "—La culpa del Embrollo es tuya.",
      "correct": false,
      "objective": "SV-07",
-     "feedback": "Doña Hebra se encoge. La druida la defiende: «El Embrollo no nace de una persona: nace de dar por cierto sin mirar. Eso lo hacemos todos»."
+     "feedback": {
+      "valley": "Doña Hebra se encoge. La druida la defiende: «El Embrollo no nace de una persona: nace de dar por cierto sin mirar. Eso lo hacemos todos».",
+      "azara": "La archivera se encoge. El naturalista la defiende: «La mezcla no nace de una persona: nace de dar por cierto sin mirar. Eso lo hacemos todos»."
+     }
     },
     {
      "id": "aliento",
@@ -275,7 +326,24 @@
      "correct": true,
      "points": 3,
      "objective": "SV-07",
-     "feedback": "Doña Hebra se seca los ojos y sonríe. «Mañana leeré cada página en voz alta, con la cosa delante.»"
+     "feedback": {
+      "valley": "Doña Hebra se seca los ojos y sonríe. «Mañana leeré cada página en voz alta, con la cosa delante.»",
+      "azara": "La archivera se seca los ojos y sonríe. «Mañana leeré cada nota en voz alta, con la cosa delante.»"
+     }
+    },
+    {
+     "id": "lado",
+     "label": "Ponerse a su lado antes de decir nada, para que nadie la señale",
+     "requires": {
+      "role": "protector"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "Con alguien a su lado, levanta la vista y sigue: «Mañana las repaso todas, una por una, con la cosa delante». Nadie la señala: dar algo por cierto sin mirarlo lo hacemos todos alguna vez. Una gema por estar a su lado."
     }
    ],
    "next": "fin"

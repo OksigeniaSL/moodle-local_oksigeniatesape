@@ -6325,3 +6325,26 @@ body.adapt-still .feed-face.eating .creature {
     animation: none;
   }
 }
+
+/* What the Embrollo says, in its bubble over the tangle. */
+.embrollo-says {
+  position: relative;
+  margin: 0 0 10px;
+  padding: 10px 14px;
+  border-radius: 16px;
+  background: rgba(var(--lilac-rgb), .22);
+  border: 2px solid rgba(var(--lilac-rgb), .6);
+  font: 700 16px var(--f-text);
+  text-align: center;
+}
+
+.embrollo-says::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -10px;
+  transform: translateX(-50%);
+  border: 9px solid transparent;
+  border-top-color: rgba(var(--lilac-rgb), .6);
+  border-bottom: 0;
+}

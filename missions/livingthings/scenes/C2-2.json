@@ -87,7 +87,7 @@
      "bin": "plantas",
      "objective": "SV-03",
      "feedback": {
-      "hongos": "«Tiene hojas verdes y fabrica su alimento con la luz: es una planta.»"
+      "hongos": "El helecho busca la luz entre los hongos y no la encuentra. «Tiene hojas verdes y fabrica su alimento con la luz: es una planta.»"
      }
     },
     {
@@ -96,7 +96,7 @@
      "bin": "animales",
      "objective": "SV-03",
      "feedback": {
-      "plantas": "«Flota y no tiene huesos, pero caza para comer: es un animal.»"
+      "plantas": "La medusa se escurre del estante de las plantas. «Flota y no tiene huesos, pero caza para comer: es un animal.»"
      }
     },
     {
@@ -107,7 +107,7 @@
      "hard": true,
      "objective": "SV-03",
      "feedback": {
-      "micro": "«Al principio no se ve, pero crece hasta formar una mancha que se ve a simple vista: es un hongo, como las setas.»"
+      "micro": "El moho asoma por el borde del estante, a la vista de todos. «Al principio no se ve, pero crece hasta formar una mancha que se ve a simple vista: es un hongo, como las setas.»"
      }
     },
     {
@@ -118,7 +118,7 @@
      "hard": true,
      "objective": "SV-03",
      "feedback": {
-      "plantas": "«Parece una planta pegada a la roca, pero no fabrica su alimento: filtra el agua para comer. Es un animal.»"
+      "plantas": "Entre las plantas, la esponja no se vuelve hacia la luz. «Parece una planta pegada a la roca, pero no fabrica su alimento: filtra el agua para comer. Es un animal.»"
      }
     },
     {
@@ -156,7 +156,7 @@
       }
      ],
      "feedback": {
-      "animales": "«Son seres vivos de una sola célula, tan pequeños que solo se ven con la lupa. Tienen su propio estante.»"
+      "animales": "En el estante de los animales no se ve nada: parece vacío. «Son seres vivos de una sola célula, tan pequeños que solo se ven con la lupa. Tienen su propio estante.»"
      }
     }
    ],
@@ -174,20 +174,77 @@
    "options": [
     {
      "id": "sitio",
-     "label": "Porque cada ser pesaba en un estante que no era el suyo",
+     "label": {
+      "valley": "—Porque cada ser pesaba en un estante que no era el suyo",
+      "azara": "—Porque cada etiqueta estaba pegada en un ser que no era el suyo"
+     },
      "correct": true,
      "points": 2,
-     "feedback": "«Eso es. Lo mal colocado pesa el doble.» La torre, ahora, está en silencio."
+     "feedback": {
+      "valley": "La torre, ahora, está en silencio. «Lo mal colocado pesa el doble.»",
+      "azara": "Las etiquetas, ahora, se quedan quietas. «Lo mal etiquetado se cae solo.»"
+     }
     },
     {
      "id": "vieja",
-     "label": "Porque la torre es muy vieja",
+     "label": {
+      "valley": "—Porque la torre es muy vieja",
+      "azara": "—Porque el pegamento es muy viejo"
+     },
      "correct": false,
-     "feedback": "«Vieja es. Pero crujía solo desde que el Embrollo pasó por aquí.»"
+     "feedback": {
+      "valley": "«Vieja es. Pero crujía solo desde que el Embrollo pasó por aquí.»",
+      "azara": "«Viejo es. Pero se caían solo desde que alguien las copió de memoria.»"
+     }
+    },
+    {
+     "id": "guardia",
+     "label": "Montar guardia para que nadie vuelva a cambiar nada de sitio",
+     "requires": {
+      "role": "protector"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "Nadie toca nada y, al rato, todo se queda quieto y en silencio: lo que daba problemas era lo que estaba fuera de su sitio. Una gema por guardar el orden."
+    },
+    {
+     "id": "descanso",
+     "label": "Ofrecerle asiento, que no ha parado de contar con los dedos",
+     "requires": {
+      "role": "healer"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "Se sienta, respira hondo y por fin deja de contar. «Ahora, con calma, lo veo claro: el problema era que cada ser estaba donde no le tocaba.» Una gema por darle un respiro."
+    },
+    {
+     "id": "etiquetas",
+     "label": "Leer despacio las etiquetas viejas, una por una",
+     "requires": {
+      "role": "sage"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "La letra es apresurada y la tinta está corrida, y lo que dicen no coincide con lo que hay al lado: cada etiqueta mandaba a un ser a un sitio que no era el suyo. Una gema por leer despacio lo que alguien escribió deprisa."
     },
     {
      "id": "rastro",
-     "label": "Por el rastro de tinta que va de los estantes al pasillo",
+     "label": {
+      "valley": "Por el rastro de tinta que va de los estantes al pasillo",
+      "azara": "Por el rastro de tinta que va de los cajones al pasillo"
+     },
      "requires": {
       "role": "scout"
      },
@@ -197,7 +254,10 @@
        "gems": 1
       }
      ],
-     "feedback": "Doña Hebra palidece y se mira los dedos manchados. «Esa tinta es mía.» Una gema por mirar donde nadie miraba."
+     "feedback": {
+      "valley": "Doña Hebra palidece y se mira los dedos manchados. «Esa tinta es mía.» Una gema por mirar donde nadie miraba.",
+      "azara": "La archivera palidece y se mira los dedos manchados. «Esa tinta es mía.» Una gema por mirar donde nadie miraba."
+     }
     }
    ],
    "next": "fin"

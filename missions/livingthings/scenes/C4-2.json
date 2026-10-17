@@ -37,7 +37,7 @@
    "options": [
     {
      "id": "luz",
-     "label": "luz del sol",
+     "label": "Destapar la ventana para que entre el sol",
      "correct": true,
      "points": 3,
      "objective": "SV-05",
@@ -45,7 +45,7 @@
     },
     {
      "id": "agua",
-     "label": "agua",
+     "label": "Regarlas con agua",
      "correct": true,
      "points": 3,
      "objective": "SV-05",
@@ -53,7 +53,7 @@
     },
     {
      "id": "aire",
-     "label": "aire fresco",
+     "label": "Dejar la puerta abierta para que corra aire fresco",
      "correct": true,
      "points": 2,
      "objective": "SV-05",
@@ -61,30 +61,30 @@
     },
     {
      "id": "azucar",
-     "label": "azúcar",
+     "label": "Echarles azúcar en la tierra",
      "correct": false,
      "objective": "SV-05",
      "feedback": "Al día siguiente la tierra tiene moho. «Las plantas no comen azúcar: lo fabrican ellas mismas con la luz.»"
     },
     {
      "id": "leche",
-     "label": "leche",
+     "label": "Regarlas con leche",
      "correct": false,
      "objective": "SV-05",
      "feedback": "La maceta huele mal y aparece moho. «Las plantas no comen como nosotros.»"
     },
     {
      "id": "tierra",
-     "label": "tierra con restos de hojas",
+     "label": "Echarles tierra con restos de hojas",
      "look": "En las macetas ya hay tierra con restos de hojas, y aun así las plantas siguen pálidas.",
      "correct": false,
      "points": 1,
      "objective": "SV-05",
-     "feedback": "Ayuda un poco: de la tierra toman agua y sales minerales. Pero sin luz no basta."
+     "feedback": "Las plantas se enderezan un poco, porque de la tierra toman agua y sales minerales. Pero siguen pálidas: sin luz, la tierra no basta."
     },
     {
      "id": "musica",
-     "label": "música",
+     "label": "Ponerles música",
      "correct": false,
      "points": 1,
      "objective": "SV-05",
@@ -92,7 +92,7 @@
     },
     {
      "id": "oscuridad",
-     "label": "oscuridad para que descanse",
+     "label": "Taparlas para que descansen a oscuras",
      "look": "Las plantas del sótano están pálidas y estiradas hacia la única rendija por la que entra luz.",
      "correct": false,
      "objective": "SV-05",
@@ -110,7 +110,7 @@
    "options": [
     {
      "id": "comprobar",
-     "label": "No: comprobamos cada planta antes de fiarnos de la etiqueta",
+     "label": "—Antes de fiarnos de la etiqueta, comprobamos cada planta.",
      "correct": true,
      "points": 2,
      "objective": "SV-07",
@@ -118,7 +118,7 @@
     },
     {
      "id": "creer",
-     "label": "Sí: quien las escribió sabría lo que hacía",
+     "label": "—Quien las escribió sabría lo que hacía. Nos fiamos.",
      "correct": false,
      "objective": "SV-07",
      "feedback": "La etiqueta dice «cactus» y la planta es una lechuga. De lo que se da por cierto sin comprobar se alimenta el Embrollo."
@@ -153,6 +153,20 @@
       }
      ],
      "feedback": "Es la misma letra apurada de las páginas copiadas la noche del enredo. Una página nueva para el Gran Libro."
+    },
+    {
+     "id": "recordar",
+     "label": "Recordar cómo es la planta que dice la etiqueta y compararla con la de la maceta",
+     "requires": {
+      "role": "sage"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "La etiqueta dice «cactus». Un cactus tiene el tallo grueso y con espinas; esta planta tiene hojas anchas y blandas: es una lechuga. «Lo que se sabe bien desenreda lo que se escribió deprisa», dice la jardinera. Una gema por recordar antes de creer."
     }
    ],
    "next": "apuesta"
@@ -166,7 +180,7 @@
    "options": [
     {
      "id": "palidas",
-     "label": "Habrán crecido largas, pálidas y débiles",
+     "label": "—Apostamos a que han crecido largas, pálidas y débiles.",
      "correct": true,
      "points": 2,
      "objective": "SV-07",
@@ -174,18 +188,46 @@
     },
     {
      "id": "igual",
-     "label": "Estarán igual que las de la luz",
+     "label": "—Apostamos a que están igual que las de la luz.",
      "correct": false,
      "objective": "SV-07",
      "feedback": "Apostado. Ahora, a mirar las macetas de la clase."
     },
     {
      "id": "nada",
-     "label": "No habrán germinado",
+     "label": "—Apostamos a que no han germinado.",
      "correct": false,
      "points": 1,
      "objective": "SV-07",
      "feedback": "Apostado. Ahora, a mirar las macetas: ¿germinar necesita luz, o solo crecer?"
+    },
+    {
+     "id": "guardia",
+     "label": "Montar guardia junto a las semillas que están a oscuras, para que nadie mire antes de apostar",
+     "requires": {
+      "role": "protector"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "Nadie se asoma antes de tiempo. «Apostar después de mirar no es apostar», dice la jardinera. Ahora, a mirar las macetas de la clase. Una gema por guardar el experimento."
+    },
+    {
+     "id": "animar",
+     "label": "Animar a todos a decir su apuesta en voz alta, aunque no estén seguros",
+     "requires": {
+      "role": "healer"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "«Una apuesta no se gana ni se pierde: se comprueba», dice la jardinera, y apunta todas las apuestas, también las más dudosas. Ahora, a mirar las macetas de la clase. Una gema por animar a pensar en voz alta."
     }
    ],
    "next": "resultado"

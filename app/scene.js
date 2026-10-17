@@ -1174,9 +1174,11 @@
         return has(o.requires) && tried.indexOf(o.id) < 0;
       });
       var opts = n.options.filter(function(o) {
-        // What other scenes left (flags) is memory, not something to get: without it, the option is not there. What was
-        // tried and led back here is not there either: the world changed, it is not the same question again.
-        return (!(o.requires && o.requires.flag) || has(o.requires)) && tried.indexOf(o.id) < 0;
+        // What other scenes left (flags) is memory, not something to get: without it, the option is not there; nor is
+        // the option of another role (each role sees only its own). What was tried and led back here is not there
+        // either: the world changed, it is not the same question again.
+        var hidden = o.requires && (o.requires.flag || o.requires.role) && !has(o.requires);
+        return !hidden && tried.indexOf(o.id) < 0;
       }).map(function(o) {
         if (!has(o.requires)) {
           return '<button class="opt locked" type="button" disabled><b>' + esc(tx(o.label)) + '</b><small>' +

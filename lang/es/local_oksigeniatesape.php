@@ -666,6 +666,7 @@ $string['board_turn_damage'] = '−{$a} hilos al Embrollo';
 $string['board_turn_fell'] = 'El ataque cae sobre {$a}: el Embrollo se recompone';
 $string['board_turn_goes'] = 'Va a por: {$a}';
 $string['board_turn_next'] = 'Siguiente turno en {$a} s';
+$string['board_turn_nextnow'] = 'Siguiente turno';
 $string['board_turn_prep'] = 'Preparad los verbos: el nudo cae en {$a} s';
 $string['board_turn_round'] = 'Turno {$a->round} de {$a->total}';
 $string['board_turn_shield'] = '¡El escudo para el golpe sobre {$a}!';

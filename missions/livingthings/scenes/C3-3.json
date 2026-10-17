@@ -170,6 +170,62 @@
       }
      ],
      "feedback": "Con la hoja húmeda, la salamandra vuelve a moverse antes de llegar a la otra orilla. «Un anfibio se cura con agua, no con sol.»"
+    },
+    {
+     "id": "guardia",
+     "label": "Montar guardia junto a la salamandra para que nadie la pise al subir a bordo",
+     "requires": {
+      "role": "protector"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "Nadie la pisa. Mientras vigila, el protector se fija en que la piel se le está quedando seca y sin brillo: la lleva a un rincón a la sombra y le echa agua del lago con las manos. «A salvo de los pies y a salvo del sol: así viaja un anfibio», dice el barquero. Una gema por guardar a quien no puede apartarse."
+    },
+    {
+     "id": "cuidar",
+     "label": "Atender primero la pata, con calma, antes de moverla",
+     "requires": {
+      "role": "healer"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "La pata solo tiene un rasguño, pero al sanador le preocupa otra cosa: la piel se le está quedando seca. Se moja las manos en el lago antes de tocarla y la deja en un rincón a la sombra, y al rato vuelve a moverse. «A un anfibio se le toca siempre con las manos mojadas», dice el barquero. Una gema por cuidar con calma."
+    },
+    {
+     "id": "recordar",
+     "label": "Recordar dónde vive una salamandra antes de decidir dónde ponerla",
+     "requires": {
+      "role": "sage"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "Bajo las piedras y la hojarasca, cerca de los arroyos: donde la tierra nunca se seca. El sabio le prepara a bordo algo parecido, un rincón en sombra con hojas bien mojadas, y al rato la salamandra mueve la pata. Una gema por recordar antes de actuar."
+    },
+    {
+     "id": "rastro",
+     "label": "Seguir el rastro que ha dejado la salamandra en las tablas",
+     "requires": {
+      "role": "scout"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "Son huellas mojadas que van de la orilla hacia el cubo del barquero, que gotea, y se cortan a medio camino: con la pata lastimada no ha podido llegar. El explorador la lleva hasta allí, a la sombra y junto al agua, y al rato mueve la pata. Una gema por leer lo que cuenta un rastro."
     }
    ],
    "next": "revision"
