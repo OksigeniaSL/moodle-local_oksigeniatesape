@@ -1001,4 +1001,42 @@
       '<path d="M0 118 Q90 90 180 110 T340 104 V130 H0Z" fill="#163829"/>' +
       '<path d="M40 112 L56 66 L72 112Z M266 108 L284 58 L302 108Z" fill="#12301f"/>' + lights + '</svg></div>';
   };
+
+  // A scene or a minigame open over the page is a dialog: Tab goes round inside it, never to the page under it, and
+  // Escape closes it as its ✕ does (there is no ✕ while a play is being saved, and then Escape does nothing).
+  document.addEventListener('keydown', function(ev) {
+    var layers = document.querySelectorAll('.scene-layer');
+    var layer = layers[layers.length - 1];
+    if (!layer || ev.defaultPrevented) {
+      return;
+    }
+    if (ev.key === 'Escape') {
+      var cross = layer.querySelector('.scene-close');
+      if (cross) {
+        ev.preventDefault();
+        cross.click();
+      }
+      return;
+    }
+    if (ev.key !== 'Tab') {
+      return;
+    }
+    var focusable = Array.prototype.filter.call(layer.querySelectorAll('button, [href], input, select, textarea, ' +
+      '[tabindex]:not([tabindex="-1"])'), function(el) {
+      return !el.disabled && el.offsetParent !== null;
+    });
+    if (!focusable.length) {
+      return;
+    }
+    var first = focusable[0];
+    var last = focusable[focusable.length - 1];
+    var inside = layer.contains(document.activeElement);
+    if (ev.shiftKey && (document.activeElement === first || !inside)) {
+      ev.preventDefault();
+      last.focus();
+    } else if (!ev.shiftKey && (document.activeElement === last || !inside)) {
+      ev.preventDefault();
+      first.focus();
+    }
+  });
 })();

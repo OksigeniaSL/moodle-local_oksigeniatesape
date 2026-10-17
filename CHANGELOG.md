@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.56.1 (2026-10-17)
+
+- **A scene or a minigame open is a dialog for the keyboard** (block 1.2 of the plan): Tab goes round inside it, never
+  to the page under it, and Escape closes it as its ✕ does (not while a play is being saved).
+
 ## 0.56.0 (2026-10-17)
 
 Fixes from a review of the code, the data and the texts (mission version 20):
