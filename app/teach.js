@@ -16,8 +16,14 @@
   var esc = T.esc;
   var app = document.getElementById('app');
   var state = {data: null, tab: 'class', team: 0, selected: {}, open: 0, log: null, logUser: 0, challenge: 0, powers: null,
-    ideas: null, newpower: false};
+    ideas: null, newpower: false, showres: false};
   var QUEUE = 'tesape-queue-' + cfg.courseid + '-' + cfg.userid;
+  // Energy and breath in the class list, only for who asked to see them.
+  try {
+    state.showres = !!window.localStorage.getItem('tesape-showres-' + cfg.userid);
+  } catch (e) {
+    state.showres = false;
+  }
 
   /**
    * A date and time, short.
@@ -192,7 +198,9 @@
       (can('runclassscreen') ? '<a class="btn btn-soft icon-btn" href="' +
       esc(cfg.wwwroot + '/local/oksigeniatesape/board.php?id=' + cfg.courseid) + '" aria-label="' + esc(t('teach_board')) +
       '" title="' + esc(t('teach_board')) + '">' + T.icon('world') + '</a>' : '') +
-      lightButton() + '<button class="btn btn-soft icon-btn" type="button" data-tab="settings" aria-label="' +
+      '<button class="btn btn-soft icon-btn" type="button" data-how aria-label="' + esc(t('teach_how')) + '" title="' +
+      esc(t('teach_how')) + '">?</button>' + lightButton() + '<button class="btn btn-soft icon-btn" type="button" ' +
+      'data-tab="settings" aria-label="' +
       esc(t('teach_tab_settings')) + '" title="' + esc(t('teach_tab_settings')) +
       '"' + (state.tab === 'settings' ? ' aria-current="page"' : '') + '>' + T.icon('settings') + '</button><a class="btn ' +
       'btn-soft exit" href="' + esc(cfg.courseurl) + '" aria-label="' + esc(t('app_exit')) + '">' + T.icon('exit') +
@@ -206,6 +214,17 @@
           '<span>' + esc(t('teach_tab_' + tab)) + '</span></button>';
       }).join('') + '</nav><main class="content" id="content"></main></div>';
     bindLight();
+    app.querySelector('[data-how]').onclick = howItWorks;
+    // The first time a teacher opens the panel of a course, how it works in two minutes.
+    try {
+      var hkey = 'tesape-how-' + cfg.courseid + '-' + cfg.userid;
+      if (!window.localStorage.getItem(hkey)) {
+        window.localStorage.setItem(hkey, '1');
+        setTimeout(howItWorks, 300);
+      }
+    } catch (e) {
+      // Without storage it does not show by itself; the «?» is there.
+    }
     app.querySelectorAll('[data-tab]').forEach(function(b) {
       b.onclick = function() {
         state.tab = b.dataset.tab;
@@ -340,7 +359,7 @@
       faces(s) + '<span class="grow"><b>' + esc(s.fullname) +
       '</b><small>' + (c ? esc(T.roleName(fam, c.role, c.nameform)) + ' · ' + esc(t('app_level')) + ' ' + c.level +
       (c.nickname ? ' · «' + esc(c.nickname) + '»' : '') : '') + '</small></span>' + badge(s) +
-      (m ? '<span class="bars" aria-hidden="true"><span class="meter energy"><i style="width:' +
+      (m && state.showres ? '<span class="bars" aria-hidden="true"><span class="meter energy"><i style="width:' +
       Math.round(100 * m.energy / state.data.energymax) + '%"></i></span><span class="meter breath"><i style="width:' +
       Math.round(100 * m.breath / state.data.breathmax) + '%"></i></span></span>' : '') + '</li>';
   }
@@ -451,6 +470,38 @@
       }).join('') + '</ul></section>';
   }
 
+  /**
+   * How Tesapé works, in two minutes: the six ideas of the first day. The rest (breath, energy, gems, powers,
+   * commitments, quests, pages) is told when it shows.
+   */
+  function howItWorks() {
+    var ideas = [['me', 'teach_how_1'], ['team', 'teach_how_2'], ['saber', 'teach_how_3'], ['lantern', 'teach_how_4'],
+      ['game', 'teach_how_5'], ['challenges', 'teach_how_6']];
+    var layer = document.createElement('div');
+    layer.className = 'badge-moment how-moment';
+    layer.setAttribute('role', 'dialog');
+    layer.setAttribute('aria-modal', 'true');
+    layer.setAttribute('aria-labelledby', 'tesape-how-title');
+    layer.innerHTML = '<div class="badge-card how-card"><h2 id="tesape-how-title">' + esc(t('teach_how')) + '</h2>' +
+      '<ol class="how-list">' + ideas.map(function(i) {
+        return '<li><span class="how-icon" aria-hidden="true">' + T.icon(i[0]) + '</span><span>' + esc(t(i[1])) + '</span></li>';
+      }).join('') + '</ol><p class="help-soft">' + esc(t('teach_how_rest')) + '</p><div class="actions"><button ' +
+      'class="btn btn-main" type="button" data-close>' + esc(t('teach_how_go')) + '</button></div></div>';
+    document.body.appendChild(layer);
+    var close = function() {
+      document.removeEventListener('keydown', onkey);
+      layer.remove();
+    };
+    var onkey = function(ev) {
+      if (ev.key === 'Escape') {
+        close();
+      }
+    };
+    document.addEventListener('keydown', onkey);
+    layer.querySelector('[data-close]').onclick = close;
+    layer.querySelector('[data-close]').focus();
+  }
+
   function tabClass() {
     var d = state.data;
     var teams = '<div class="pills" style="justify-content:flex-start;margin-bottom:12px"><button class="chip" ' +
@@ -462,10 +513,21 @@
     var shown = studentsShown();
     var el = content(todayCard() + namesCard() + teamsCard() + farCard() + '<section class="card"><div class="section-title"><h2>' +
       esc(t('teach_tab_class')) +
-      '</h2><button class="btn btn-soft" data-all>' + esc(t('teach_selectall')) + '</button></div>' + teams +
+      '</h2><span class="section-tools"><label class="chip"><input type="checkbox" data-showres' + (state.showres ? ' checked' :
+      '') + '> ' + esc(t('teach_showres')) + '</label><button class="btn btn-soft" data-all>' + esc(t('teach_selectall')) +
+      '</button></span></div>' + teams +
       (shown.length ? '<ul class="list">' + shown.map(studentCard).join('') + '</ul>' : '<p class="empty">' +
       esc(t('teach_nostudents')) + '</p>') + '</section><div id="actionbar"></div>');
     bindMakeTeams(el);
+    el.querySelector('[data-showres]').onchange = function() {
+      state.showres = this.checked;
+      try {
+        window.localStorage.setItem('tesape-showres-' + cfg.userid, state.showres ? '1' : '');
+      } catch (e) {
+        // Without storage it is asked again next time.
+      }
+      render();
+    };
     el.querySelectorAll('[data-goto]').forEach(function(b) {
       b.onclick = function() {
         state.tab = b.dataset.goto;
@@ -1574,6 +1636,20 @@
         challengeForm(null);
       };
     }
+    el.querySelectorAll('[data-pactsall]').forEach(function(b) {
+      b.onclick = function() {
+        el.querySelectorAll('[data-pactmark], [data-pactsall]').forEach(function(o) {
+          o.disabled = true;
+        });
+        T.api('decide_pact', {courseid: cfg.courseid, status: 'kept', pactids: b.dataset.pactsall.split(',').map(Number)})
+        .then(function() {
+          return load(true);
+        }).catch(function(e) {
+          T.toast(esc(e.message), true);
+          render();
+        });
+      };
+    });
     el.querySelectorAll('[data-pactmark]').forEach(function(b) {
       b.onclick = function() {
         var parts = b.dataset.pactmark.split(':');
@@ -1627,7 +1703,14 @@
         return '';
       }
       var marks = can('award');
-      return '<h3 class="pact-team">' + esc(g.name) + '</h3><ul class="list">' + mine.map(function(x) {
+      // All of the team kept them, in one touch; then who did not is unmarked.
+      var open = mine.filter(function(x) {
+        return x.status !== 'kept';
+      });
+      return '<h3 class="pact-team">' + esc(g.name) + (marks && open.length > 1 ? ' <button class="btn btn-soft" type="button" ' +
+        'data-pactsall="' + open.map(function(x) {
+          return x.id;
+        }).join(',') + '">' + esc(t('teach_pacts_allkept')) + '</button>' : '') + '</h3><ul class="list">' + mine.map(function(x) {
         return '<li class="item"><span class="grow"><b>' + esc(names[x.userid] || '') + '</b><small>' + esc(x.text) +
           (x.chapter ? ' · ' + esc(t('teach_pact_from', x.chapter)) : '') + '</small></span>' + (marks ?
           '<span class="row-actions"><button class="chip" type="button" data-pactmark="' + x.id + ':kept" aria-pressed="' +
@@ -1978,7 +2061,12 @@
       'type="checkbox" name="leaderboard"' + (r.leaderboard ? ' checked' : '') + (editable ? '' : ' disabled') + '> ' +
       esc(t('teach_set_leaderboard')) + '</label><label class="chip" style="display:inline-flex;gap:8px;align-items:center;' +
       'margin:4px 0 14px"><input type="checkbox" name="quiet"' + (r.quiet ? ' checked' : '') + (editable ? '' : ' disabled') +
-      '> ' + esc(t('teach_set_quiet')) + '</label><h3>' + esc(t('teach_set_nicknames')) + '</h3>' + nick + lookCard + coverCard +
+      '> ' + esc(t('teach_set_quiet')) + '</label><h3>' + esc(t('board_devices')) + '</h3><p class="help-soft">' +
+      esc(t('teach_set_devices_help')) + '</p><div class="pills" role="radiogroup" aria-label="' + esc(t('board_devices')) + '">' +
+      [['1', 'board_devices_tablets'], ['0', 'board_devices_none']].map(function(d) {
+        return '<label class="chip"><input type="radio" name="devices" value="' + d[0] + '"' + ((r.devices !== false) ===
+          (d[0] === '1') ? ' checked' : '') + (editable ? '' : ' disabled') + '> ' + esc(t(d[1])) + '</label>';
+      }).join('') + '</div><h3>' + esc(t('teach_set_nicknames')) + '</h3>' + nick + lookCard + coverCard +
       badgeCard + gradesCard +
       (editable ? '<div class="actions" style="justify-content:flex-start;margin-top:14px"><button class="btn btn-main" ' +
       'type="submit">' + esc(t('app_save')) + '</button></div>' : '') + '</form></section>');
@@ -2021,6 +2109,7 @@
         completionrule: Number(f.completionrule.value),
         leaderboard: f.leaderboard.checked,
         quiet: f.quiet.checked,
+        devices: f.querySelector('[name="devices"]:checked').value === '1',
         nicknames: picked ? Number(picked.value) : 0,
         timezone: f.timezone.value,
         portal: cover ? cover.value : 'door',

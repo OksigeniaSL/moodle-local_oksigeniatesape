@@ -647,6 +647,7 @@ final class view {
             'allowstealth' => !empty($GLOBALS['CFG']->allowstealth),
             'gradebook' => (bool) ($region->gradebook ?? false),
             'quiet' => (bool) ($region->quiet ?? false),
+            'devices' => (bool) ($region->devices ?? true),
             'look' => (string) ($region->look ?? ''),
             'worldlook' => themes::current('', art::manifest()),
         ];

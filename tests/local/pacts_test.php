@@ -201,4 +201,35 @@ final class pacts_test extends \advanced_testcase {
         $this->assertSame(0, $result['pactspending']);
         $this->assertSame('kept', $result['pacts']['list'][0]['status']);
     }
+
+    public function test_the_teacher_marks_a_whole_team_and_then_unmarks_who_did_not(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $w = $this->make_class();
+        $ids = [];
+        foreach ($w->users as $i => $user) {
+            $ids[] = (int) pacts::choose($w->course->id, $user->id, $i, self::NOW)->id;
+        }
+        $this->setUser($w->teacher);
+        $result = external_api::clean_returnvalue(
+            decide_pact::execute_returns(),
+            decide_pact::execute($w->course->id, 0, 'kept', $ids)
+        );
+        $this->assertSame(0, $result['pactspending']);
+        foreach ($ids as $id) {
+            $this->assertSame('kept', $DB->get_field(self::T . 'pact', 'status', ['id' => $id]));
+        }
+        // Who did not keep it is unmarked one by one, as before.
+        decide_pact::execute($w->course->id, $ids[2], 'broken');
+        $this->assertSame('broken', $DB->get_field(self::T . 'pact', 'status', ['id' => $ids[2]]));
+        // A commitment of another course is not marked, nor any of the list.
+        $other = $this->make_class();
+        $foreign = (int) pacts::choose($other->course->id, $other->users[0]->id, 0, self::NOW)->id;
+        try {
+            decide_pact::execute($w->course->id, 0, 'open', [$ids[0], $foreign]);
+            $this->fail('A commitment of another course was marked');
+        } catch (\invalid_parameter_exception $e) {
+            $this->assertSame('kept', $DB->get_field(self::T . 'pact', 'status', ['id' => $ids[0]]));
+        }
+    }
 }

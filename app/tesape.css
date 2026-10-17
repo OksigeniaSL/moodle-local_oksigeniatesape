@@ -6181,3 +6181,49 @@ body.adapt-still .feed-face.eating .creature {
 .choice small[data-roleline]:empty {
   display: none;
 }
+
+/* How Tesapé works, in two minutes. */
+.how-card {
+  text-align: left;
+}
+
+.how-card h2 {
+  text-align: center;
+}
+
+.how-list {
+  display: grid;
+  gap: 12px;
+  margin: 14px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.how-list li {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.how-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(var(--lantern-rgb), .16);
+  color: var(--lantern);
+}
+
+.how-icon svg {
+  width: 26px;
+  height: 26px;
+}
+
+.section-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}

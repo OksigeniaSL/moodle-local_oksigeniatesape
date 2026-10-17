@@ -23,7 +23,10 @@ Feature: A teacher runs the game from the panel and a student plays the mission
   Scenario: The teacher goes through the tabs of the panel
     Given I log in as "teacher1"
     When I open the Tesapé teacher panel of course "C1"
-    Then I should see "Teacher panel"
+    # The first time, how Tesapé works in two minutes shows by itself.
+    Then I should see "How Tesapé works, in two minutes"
+    And I click on "Got it" "button"
+    And I should see "Teacher panel"
     And I should see "Student One"
     When I click on "nav.tabs [data-tab='mission']" "css_element"
     Then I should see "Los seres vivos"

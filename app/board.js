@@ -49,6 +49,7 @@
       state.board = r[0];
       state.cls = r[1];
       state.live = r[2].live || null;
+      modes();
       T.family = r[1].region.family;
       schedule();
       var sig = JSON.stringify(r);
@@ -65,6 +66,25 @@
         };
       }
     });
+  }
+
+  /**
+   * How the class plays, once for the course: with a tablet each (the scene votes and the battle on the phones), or
+   * without devices (cards held up and the battle aloud). Who cannot change the course changes it for this screen.
+   */
+  function modes() {
+    var devices = state.devices !== undefined ? state.devices : state.cls.region.devices !== false;
+    state.scene.mode = devices ? 'phones' : 'cards';
+    state.battle.mode = devices ? 'phones' : 'aloud';
+  }
+
+  function devicesPicker() {
+    var on = state.scene.mode === 'phones';
+    return '<span class="pills devices" role="group" aria-label="' + esc(t('board_devices')) + '"><span class="devices-label">' +
+      esc(t('board_devices')) + '</span>' + [['1', 'board_devices_tablets'], ['0', 'board_devices_none']].map(function(d) {
+        return '<button type="button" class="chip" data-devices="' + d[0] + '" aria-pressed="' + (on === (d[0] === '1')) + '">' +
+          esc(t(d[1])) + '</button>';
+      }).join('') + '</span>';
   }
 
   function refresh() {
@@ -168,9 +188,7 @@
     };
     return '<section class="card board-battle"><div class="kicker">' + esc(t('board_battle')) + '</div><div class="event-head">' +
       '<span class="event-icon">' + T.embrollo(1) + '</span><p>' + esc(t('board_battle_help')) + '</p></div>' +
-      '<div class="battle-options-row">' + pills('mode', ['phones', 'aloud'], function(v) {
-        return t('board_battle_' + v);
-      }) + '</div><div class="battle-options-row"><span>' + esc(t('board_battle_count')) + '</span>' +
+      '<div class="battle-options-row"><span>' + esc(t('board_battle_count')) + '</span>' +
       pills('count', [4, 6, 8, 10], String) + '</div><div class="battle-options-row"><span>' + esc(t('board_battle_secs')) +
       '</span>' + pills('secs', [0, 20, 30, 45, 60], function(v) {
         return v ? v + ' s' : t('board_battle_nolimit');
@@ -646,11 +664,7 @@
       return ch.id === sc.chapter;
     })[0] || m.chapters[0];
     return '<section class="card board-scene"><div class="kicker">' + esc(t('board_scene')) + '</div><p class="help-soft">' +
-      esc(t('board_scene_help')) + '</p><div class="battle-options-row"><span class="pills">' + ['phones', 'cards']
-      .map(function(mode) {
-        return '<button class="chip" data-scenemode="' + mode + '" aria-pressed="' + (sc.mode === mode) + '">' +
-          esc(t('board_scene_' + mode)) + '</button>';
-      }).join('') + '</span></div><div class="battle-options-row"><span class="pills">' + m.chapters.map(function(ch) {
+      esc(t('board_scene_help')) + '</p><div class="battle-options-row"><span class="pills">' + m.chapters.map(function(ch) {
         return '<button class="chip" data-scenechapter="' + ch.id + '" aria-pressed="' + (ch.id === chapter.id) + '">' +
           esc(ch.name) + '</button>';
       }).join('') + '</span></div><ul class="list">' + chapter.scenes.map(function(scene) {
@@ -835,7 +849,7 @@
       '<div class="board-tools">' + (pending && can('approvepowers') ? '<a class="btn btn-soft" href="' +
       esc(cfg.wwwroot + '/local/oksigeniatesape/teach.php?id=' + cfg.courseid) + '">' + esc(t('board_powers', pending)) +
       '</a>' : '') + '<a class="btn btn-soft" href="' + esc(cfg.wwwroot + '/local/oksigeniatesape/teach.php?id=' +
-      cfg.courseid) + '">' + esc(t('board_panel')) + '</a>' + musicButton() + lightButton() +
+      cfg.courseid) + '">' + esc(t('board_panel')) + '</a>' + devicesPicker() + musicButton() + lightButton() +
       '<button class="btn btn-soft" data-full>' +
       esc(t('board_fullscreen')) + '</button></div></header>' +
       '<div class="board-grid">' + map() + '<div class="board-side">' + todayCard() + openerCard() + eventCard() + battleCard() +
@@ -863,9 +877,18 @@
       state.battle[p[0]] = p[0] === 'mode' ? p[1] : +p[1];
       render();
     });
-    on('[data-scenemode]', function(el) {
-      state.scene.mode = el.dataset.scenemode;
+    on('[data-devices]', function(el) {
+      state.devices = el.dataset.devices === '1';
+      modes();
       render();
+      if (can('manageregion')) {
+        T.api('save_region', {courseid: cfg.courseid, devices: state.devices}).then(function(region) {
+          state.cls.region = region;
+          state.devices = undefined;
+        }).catch(function(e) {
+          T.toast(esc(e.message), true);
+        });
+      }
     });
     on('[data-scenechapter]', function(el) {
       state.scene.chapter = +el.dataset.scenechapter;

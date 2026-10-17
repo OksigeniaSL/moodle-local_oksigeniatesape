@@ -92,7 +92,8 @@ final class regions {
      * @param array $settings Any of enabled, family, groupingid, weeklycap, dailymanualcap, dailyenergylosscap,
      *     leaderboard, nicknames, timezone (99: the one of the site), rules (an array), portal (the cover of the course
      *     page), hideacts (the activities of the mission only inside the valley), quiet (no sound on the devices of the
-     *     students) and look (the theme of the class: night, day, or empty for the one of the world).
+     *     students), devices (how the class plays: with a tablet each, or without devices) and look (the theme of the
+     *     class: night, day, or empty for the one of the world).
      * @param int|null $now
      * @return \stdClass
      */
@@ -105,7 +106,7 @@ final class regions {
             'family' => 'storyheroes',
             'timecreated' => $now,
         ];
-        foreach (['enabled', 'leaderboard', 'quiet'] as $flag) {
+        foreach (['enabled', 'leaderboard', 'quiet', 'devices'] as $flag) {
             if (array_key_exists($flag, $settings)) {
                 $region->$flag = $settings[$flag] ? 1 : 0;
             }

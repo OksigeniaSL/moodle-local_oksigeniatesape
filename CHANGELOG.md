@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.62.0 (2026-10-17)
+
+Block 1.8 of the plan: three cheap pieces for the teacher.
+
+- **«Today we play»**: one setting for the course, with tablets or without devices, which sets how the scene at the
+  class screen and the battle are played (the votes and the battle on the phones, or cards held up and the battle
+  aloud). It is in the header of the class screen and in the settings of the panel; the cards of the scene and of the
+  battle no longer ask for a mode, and «Play on the class screen» from Today uses it. A teacher who cannot change the
+  course changes it for that screen only.
+- **«How Tesapé works, in two minutes»**: the six ideas of the first day, in a moment of the panel that opens by itself
+  the first time and with the «?» of its header after. Energy and breath in the class list only for who asks to see
+  them.
+- **Commitments in a batch**: «All kept» for each team, and then who did not is unmarked; `decide_pact` takes a list.
+
 ## 0.61.0 (2026-10-17)
 
 Block 1.7 of the plan: the start, the next step and the words of the game.

@@ -33,7 +33,7 @@ require_capability('local/oksigeniatesape:award', $context);
 $PAGE->set_context($context);
 $PAGE->set_url(new moodle_url('/local/oksigeniatesape/board.php', ['id' => $course->id]));
 $caps = [];
-foreach (['award', 'approvepowers', 'runclassscreen'] as $cap) {
+foreach (['award', 'approvepowers', 'runclassscreen', 'manageregion'] as $cap) {
     $caps[$cap] = has_capability('local/oksigeniatesape:' . $cap, $context);
 }
 \local_oksigeniatesape\local\page::output('board', $course, ['caps' => $caps]);
