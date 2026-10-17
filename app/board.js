@@ -290,12 +290,35 @@
       // By turns: the Embrollo lets a knot go, says what it claims and which team it goes for; the roles get ready.
       main = '<p class="battle-qround">' + esc(t(l.stage ? 'board_turn_round' : 'board_battle_round', l)) + '</p><div class="knot-call"><p class="knot-name">' +
         esc(l.knot.name) + '</p><p class="knot-claim">«' + esc(l.knot.claim.replace(/^«|»$/g, '')) + '»</p>' +
-        (l.target ? '<p class="knot-target">' + esc(t('board_turn_goes', l.target)) + '</p>' : '') + '</div>' +
+        intentLine(l) + '</div>' +
         (l.stage === 'prep' ? '<p class="battle-count" data-stageleft="board_turn_prep" aria-live="off">' +
         esc(t('board_turn_prep', l.stageleft)) + '</p>' : '');
       main += (l.tokens || []).map(function(k) {
         return '<p class="battle-token-used">' + esc(t('board_token_' + k.kind, k.team || '')) + '</p>';
       }).join('');
+    } else if (l.lanes && l.lanes.length) {
+      // By turns: each team has its lane in its tablets; here, which one, and once resolved, whether it was undone.
+      main = '<p class="battle-qround">' + esc(t('board_turn_round', l)) + (l.stage === 'strike' ? ' · ' +
+        esc(t('board_turn_strike', l.knot.name)) : '') + '</p><ul class="lanes">' + l.lanes.map(function(lane) {
+          var q = lane.question;
+          return '<li class="lane' + (l.revealed ? (lane.done ? ' done' : ' failed') : '') +
+            (l.tangled.indexOf(lane.teamid) >= 0 ? ' tangled' : '') + '"><b>' + esc(lane.team) + '</b><span>' +
+            esc(q.text) + '</span>' + (l.revealed ? '<small>' + (lane.done ? '✓ ' : '✗ ') +
+            esc(q.options[q.correct] || '') + '</small>' : '') + '</li>';
+        }).join('') + '</ul>';
+      main += (l.tokens || []).map(function(k) {
+        return '<p class="battle-token-used">' + esc(t('board_token_' + k.kind, k.team || '')) + '</p>';
+      }).join('');
+      if (l.revealed) {
+        main += turnOutcome(l);
+        buttons = l.round < l.total && l.candles > 0 && l.hp > 0 ? '<button class="btn btn-main" data-battlenext>' +
+          esc(t('board_turn_nextnow')) + '</button>' : '';
+      } else {
+        main += '<p class="battle-count"><span data-answered>' + esc(t('board_battle_answered', l)) + '</span>' +
+          (l.left >= 0 ? ' <span class="battle-left" data-left="' + l.left + '" aria-live="off">' + l.left + ' s</span>' : '') +
+          '</p>';
+        buttons = '<button class="btn btn-main" data-battlereveal>' + esc(t('board_battle_reveal')) + '</button>';
+      }
     } else {
       var q = l.question;
       main = '<p class="battle-qround">' + esc(t(l.stage ? 'board_turn_round' : 'board_battle_round', l)) + (l.stage === 'strike' ? ' · ' +
@@ -331,7 +354,8 @@
         team.id + ':1" aria-pressed="' + (team.mark === 1) + '" aria-label="' + esc(t('board_battle_markright', team.name)) +
         '">✓</button><button class="chip" data-mark="' + team.id + ':0" aria-pressed="' + (team.mark === 0) +
         '" aria-label="' + esc(t('board_battle_markwrong', team.name)) + '">✗</button></span>' : '';
-      return '<div class="battle-team' + (l.targetid === team.id && !l.outcome ? ' target' : '') + '"><b>' + esc(team.name) +
+      return '<div class="battle-team' + (l.targetid === team.id && !l.outcome ? ' target' : '') +
+        ((l.tangled || []).indexOf(team.id) >= 0 && !l.outcome ? ' tangled' : '') + '"><b>' + esc(team.name) +
         '</b><small>' + (l.mode === 'phones' ?
         esc(t('board_battle_joined', team.joined)) + ' · ' : '') + esc(t('board_battle_teamright', team.right)) + '</small>' +
         marks + '</div>';
@@ -343,8 +367,9 @@
       '<button class="btn btn-soft" data-full>' + esc(t('board_fullscreen')) + '</button></div></header>' +
       '<div class="battle-stage"><div class="battle-boss' +
       (hit ? ' hit' : '') + (laugh ? ' laugh' : '') + '">' + embrolloSays(l) + T.embrollo(life) + '<span class="meter boss"><i style="width:' +
-      Math.round(100 * life) + '%"></i></span><small>' + esc(t('board_battle_life')) + (l.maxhp ? ': ' + l.hp + ' / ' +
-      l.maxhp : '') + '</small></div><div class="battle-main">' + main + '<div class="actions">' + buttons + '</div></div></div>' +
+      Math.round(100 * life) + '%"></i></span><small>' + esc(t(l.maxcandles ? 'board_turn_threads' : 'board_battle_life')) +
+      (l.maxhp ? ': ' + l.hp + ' / ' + l.maxhp : '') + '</small>' + candles(l) + '</div><div class="battle-main">' + main +
+      '<div class="actions">' + buttons + '</div></div></div>' +
       '<div class="battle-teams">' + teams + '</div></div>';
     battleFx(l);
     bindBattle();
@@ -361,12 +386,55 @@
     if (l.stage !== 'resolve') {
       return '';
     }
+    if (l.lanes && l.lanes.length) {
+      return (l.knot.broken ? '<p class="turn-outcome undone knot-broken">' + esc(t('board_turn_broken')) + '</p>' +
+        (l.knot.why ? '<p class="why">' + esc(l.knot.why) + '</p>' : '') : '') + (l.shielded ? '<p class="turn-outcome">' +
+        esc(t('board_turn_shield', l.target)) + '</p>' : '') + (l.counter && !l.recovered ? '<p class="turn-outcome fell">' +
+        esc(t(l.intent === 'all' ? 'board_turn_candle_all' : 'board_turn_candle', l.target)) + '</p>' : '') +
+        (l.recovered ? '<p class="turn-outcome fell">' + esc(t('board_turn_recovered', l.counter)) + '</p>' : '') +
+        (l.knot.laugh ? '<p class="knot-laugh">«' + esc(l.knot.laugh.replace(/^«|»$/g, '')) + '»</p>' : '') +
+        (l.damage ? '<p class="battle-count">' + esc(t('board_turn_threads_off', l.damage)) + '</p>' : '') +
+        (l.stageleft > 0 && l.round < l.total ? '<p class="help-soft" data-stageleft="board_turn_next" aria-live="off">' +
+        esc(t('board_turn_next', l.stageleft)) + '</p>' : '');
+    }
     var fell = l.counter || l.shielded;
     return (l.target ? '<p class="turn-outcome' + (fell ? ' fell' : ' undone') + '">' + esc(t(!fell ? 'board_turn_undone' :
       l.shielded ? 'board_turn_shield' : 'board_turn_fell', l.target)) + '</p>' : '') + (l.knot.laugh ?
       '<p class="knot-laugh">«' + esc(l.knot.laugh.replace(/^«|»$/g, '')) + '»</p>' : '') + (l.damage ? '<p class="battle-count">' +
       esc(t('board_turn_damage', l.damage)) + '</p>' : '') + (l.stageleft > 0 && l.round < l.total ? '<p class="help-soft" ' +
       'data-stageleft="board_turn_next" aria-live="off">' + esc(t('board_turn_next', l.stageleft)) + '</p>' : '');
+  }
+
+  /**
+   * What the Embrollo means to do in a turn: go for a team, for everybody, pull itself together, or nothing, dazed.
+   *
+   * @param {Object} l
+   * @return {string}
+   */
+  function intentLine(l) {
+    if (!l.intent) {
+      return l.target ? '<p class="knot-target">' + esc(t('board_turn_goes', l.target)) + '</p>' : '';
+    }
+    return '<p class="knot-target intent-' + l.intent + '">' + esc(l.intent === 'team' ? t('board_turn_goes', l.target) :
+      t('board_turn_intent_' + l.intent)) + '</p>';
+  }
+
+  /**
+   * The candles of the tower, under the Embrollo: if they all go out, it escapes.
+   *
+   * @param {Object} l
+   * @return {string}
+   */
+  function candles(l) {
+    if (!l.maxcandles) {
+      return '';
+    }
+    var out = '';
+    for (var i = 0; i < l.maxcandles; i++) {
+      out += '<span class="candle' + (i < l.candles ? ' lit' : ' out') + '" aria-hidden="true">' + T.icon('lantern') + '</span>';
+    }
+    return '<div class="candles" role="img" aria-label="' + esc(t('board_turn_candles', {lit: l.candles, all: l.maxcandles})) +
+      '">' + out + '</div>';
   }
 
   /**

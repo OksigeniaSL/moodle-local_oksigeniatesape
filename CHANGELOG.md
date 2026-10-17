@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.70.0 (2026-10-17)
+
+Block 2.2 of the plan, its first part: the battle by turns as a turn machine.
+
+- **A lane for each team**: each team plays its own lane of the knot on its tablets (one of the questions of the knot;
+  two teams share one if there are more teams than lanes); the class screen shows the lane of each team and, once
+  resolved, whether the team undid it.
+- **Threads and candles**: each lane undone pulls a thread out of the Embrollo (two with the cheer of the healer); if
+  every lane is undone, the knot breaks: three threads more, its whole why on the class screen, and the next turn the
+  Embrollo is dazed (it does not attack, and what the class undoes counts double). The five candles of the tower are
+  at stake: if they all go out, the Embrollo escapes.
+- **What the Embrollo means to do**, announced: go for a team (if it does not undo its lane and no shield is on it, a
+  candle goes out and the team is tangled, which shows on its card until it undoes a lane); while frayed, also go for
+  everybody (a candle goes out if fewer than half undo theirs) or pull itself together (it gets threads back). A knot
+  that does not break is left hanging.
+- No more «vosotros» on the class screen: «¡A deshacer la lazada de…!», «A preparar los verbos».
+
 ## 0.69.0 (2026-10-17)
 
 - **«Why?» in every option of the core scenes** (mission v30): what happens in the world when it is chosen (`say`),

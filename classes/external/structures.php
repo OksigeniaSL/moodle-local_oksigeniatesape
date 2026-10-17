@@ -521,10 +521,23 @@ final class structures {
                 'name' => new external_value(PARAM_TEXT, 'Who carries it'),
                 'claim' => new external_value(PARAM_TEXT, 'What the Embrollo claims'),
                 'laugh' => new external_value(PARAM_TEXT, 'Its laugh, once resolved, if the attack fell (empty: none)'),
+                'why' => new external_value(PARAM_TEXT, 'Its whole why, once resolved, if the class broke it', VALUE_DEFAULT, ''),
+                'broken' => new external_value(PARAM_BOOL, 'The class broke it in this turn', VALUE_DEFAULT, false),
             ], 'By turns: the knot of the turn', VALUE_OPTIONAL),
             'targetid' => new external_value(PARAM_INT, 'By turns: the team the knot goes for (0: none)', VALUE_DEFAULT, 0),
             'target' => new external_value(PARAM_TEXT, 'By turns: the name of that team', VALUE_DEFAULT, ''),
             'damage' => new external_value(PARAM_INT, 'By turns: life taken from the Embrollo in the turn', VALUE_DEFAULT, 0),
+            'intent' => new external_value(PARAM_ALPHA, 'By turns: team, all, recompose or dazed', VALUE_DEFAULT, ''),
+            'candles' => new external_value(PARAM_INT, 'By turns: candles of the tower still lit', VALUE_DEFAULT, 0),
+            'maxcandles' => new external_value(PARAM_INT, 'By turns: candles of the tower at the start', VALUE_DEFAULT, 0),
+            'tangled' => new external_multiple_structure(
+                new external_value(PARAM_INT, 'Group'),
+                'By turns: teams tangled',
+                VALUE_DEFAULT,
+                []
+            ),
+            'broken' => new external_value(PARAM_INT, 'By turns: knots the class broke', VALUE_DEFAULT, 0),
+            'recovered' => new external_value(PARAM_BOOL, 'By turns: the Embrollo pulled itself together', VALUE_DEFAULT, false),
             'tally' => new external_multiple_structure(
                 new external_value(PARAM_INT, 'Votes'),
                 'Votes for each option, once a vote is closed',
@@ -562,6 +575,20 @@ final class structures {
                 'kind' => new external_value(PARAM_ALPHA, 'glance, trail, shield or cheer'),
                 'team' => new external_value(PARAM_TEXT, 'Team of who used it'),
             ]), 'Battle tokens used in the round', VALUE_DEFAULT, []),
+            'lanes' => new external_multiple_structure(new external_single_structure([
+                'teamid' => new external_value(PARAM_INT, 'Group'),
+                'team' => new external_value(PARAM_TEXT, 'Team'),
+                'question' => new external_single_structure([
+                    'id' => new external_value(PARAM_RAW, 'Question'),
+                    'text' => new external_value(PARAM_TEXT, 'Question'),
+                    'options' => new external_multiple_structure(new external_value(PARAM_TEXT, 'Option')),
+                    'correct' => new external_value(PARAM_INT, 'Right option, once resolved', VALUE_OPTIONAL),
+                    'why' => new external_value(PARAM_TEXT, 'Why, once resolved', VALUE_OPTIONAL),
+                ]),
+                'done' => new external_value(PARAM_BOOL, 'The team undid it'),
+                'right' => new external_value(PARAM_INT, 'Right answers of the team'),
+                'answered' => new external_value(PARAM_INT, 'Answers of the team'),
+            ]), 'By turns: the lane of each team', VALUE_OPTIONAL),
         ], 'Battle of the course', VALUE_OPTIONAL);
     }
 
@@ -575,6 +602,7 @@ final class structures {
             'joined' => new external_value(PARAM_BOOL, 'The student came in'),
             'myteam' => new external_value(PARAM_INT, 'The team they came in with (0: none)', VALUE_DEFAULT, 0),
             'mine' => new external_value(PARAM_INT, 'Their answer in the round (-1: none)'),
+            'done' => new external_value(PARAM_BOOL, 'By turns: their team undid its lane, once resolved', VALUE_OPTIONAL),
             'prize' => new external_single_structure([
                 'saber' => new external_value(PARAM_INT, 'Saber'),
                 'capped' => new external_value(PARAM_INT, 'Saber left out by the weekly cap', VALUE_DEFAULT, 0),

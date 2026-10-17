@@ -82,6 +82,12 @@ final class live {
     /** @var int Seconds what happened in a turn is shown before the next one starts by itself. */
     public const RESOLVE = 10;
 
+    /** @var int Threads more the Embrollo loses when every lane of a knot is undone: the knot breaks. */
+    public const BREAK_THREADS = 3;
+
+    /** @var int Threads the Embrollo gets back when it pulls itself together and the class does not stop it. */
+    public const RECOMPOSE = 2;
+
     /** @var int Saber for each player when the class wins. */
     public const WIN_SABER = 10;
 
@@ -126,7 +132,11 @@ final class live {
         $state = ['mode' => $mode, 'secs' => $secs, 'questions' => $questions, 'rounds' => [], 'open' => false,
             'closesat' => 0, 'hp' => 0, 'maxhp' => 0, 'outcome' => '', 'rewarded' => [], 'final' => $final];
         if ($plan) {
+            // By turns: the candles of the tower, the teams tangled, the knots broken and those left hanging.
             $state['knots'] = array_column($plan, 0);
+            $rules = knots::rules(missions::get($courseid));
+            $state += ['candles' => $rules['candles'], 'maxcandles' => $rules['candles'], 'phases' => $rules['phases'],
+                'tangled' => [], 'broken' => [], 'hanging' => [], 'dazed' => false];
         }
         $record = (object) ['courseid' => $courseid, 'kind' => 'battle', 'state' => json_encode($state), 'round' => 0,
             'timecreated' => $now, 'timemodified' => $now, 'timeend' => 0];
@@ -331,7 +341,9 @@ final class live {
         if (!$joined || $round !== (int) $live->round || !self::is_open($state, $now)) {
             throw new \moodle_exception('roundclosed', 'local_oksigeniatesape');
         }
-        if ($answer < 0 || $answer >= (int) ($state['rounds'][$round]['options'] ?? 0)) {
+        $info = $state['rounds'][$round] ?? [];
+        $options = (int) ($info['lanes'][(int) $joined->team]['options'] ?? $info['options'] ?? 0);
+        if ($answer < 0 || $answer >= $options) {
             throw new \invalid_parameter_exception('Not an option of the question');
         }
         try {
@@ -388,6 +400,11 @@ final class live {
         if ($round === 0) {
             $players = $state['mode'] === 'aloud' ? count(self::teams((int) $live->courseid)) : self::players($live);
             $state['maxhp'] = max(1, (int) round($players * count($state['questions']) * self::TO_WIN));
+            if (!empty($state['knots'])) {
+                // By turns, the threads of the Embrollo: a lane undone takes one, a knot broken three more.
+                $lanes = max(1, count(self::playing($live, $state)));
+                $state['maxhp'] = max(1, (int) round(count($state['knots']) * ($lanes + self::BREAK_THREADS) * self::TO_WIN));
+            }
             $state['hp'] = $state['maxhp'];
         }
         $round++;
@@ -408,10 +425,12 @@ final class live {
         $secs = $state['secs'] && self::phase($state) > 1 ? max(10, $state['secs'] - self::PHASE_SECS) : $state['secs'];
         $state['opensat'] = 0;
         if (!empty($state['knots'])) {
-            // By turns: the knot, the team it goes for (each in turn, among those that play), and the time to announce
-            // it and get ready before the lazada takes answers.
+            // By turns: the knot, the team it goes for (each in turn, among those that play), what the Embrollo means to
+            // do, the lane of each team, and the time to announce it and get ready before the lanes take answers.
             $state['rounds'][$round]['knot'] = $state['knots'][$round - 1];
             $state['rounds'][$round]['target'] = self::target($live, $state, $round);
+            $state['rounds'][$round]['intent'] = self::intent($state, $round);
+            $state['rounds'][$round]['lanes'] = self::lanes($live, $state, $round);
             $state['rounds'][$round]['startat'] = $now;
             $state['opensat'] = $now + self::INTENT + self::PREP;
         }
@@ -491,7 +510,8 @@ final class live {
         if ($live->kind === 'vote') {
             $state['outcome'] = 'done';
         } else {
-            $state['outcome'] = $round > 0 && $state['hp'] <= 0 ? 'won' : 'lost';
+            // By turns, the tower in the dark is lost even if the Embrollo has no threads left.
+            $state['outcome'] = $round > 0 && $state['hp'] <= 0 && ($state['candles'] ?? 1) > 0 ? 'won' : 'lost';
         }
         $transaction = $DB->start_delegated_transaction();
         if ($state['outcome'] === 'won') {
@@ -549,6 +569,16 @@ final class live {
                 $DB->count_records(self::T . 'livein', ['liveid' => $live->id, 'round' => $round]);
             if (self::shown($live, $state, $now)) {
                 $view['question'] = self::question($info);
+                if (!empty($info['lanes'])) {
+                    $byid = array_column($teams, 'name', 'id');
+                    $view['lanes'] = [];
+                    foreach ($info['lanes'] as $team => $lane) {
+                        $view['lanes'][] = ['teamid' => (int) $team, 'team' => (string) ($byid[$team] ?? ''),
+                            'question' => self::question(['question' => $lane['question'], 'revealed' => $info['revealed']]),
+                            'done' => !empty($lane['done']), 'right' => (int) ($lane['right'] ?? 0),
+                            'answered' => (int) ($lane['answered'] ?? 0)];
+                    }
+                }
             }
             $view['right'] = (int) $info['right'];
             if ($info['revealed'] && $live->kind === 'vote') {
@@ -583,8 +613,13 @@ final class live {
         if ($round > 0) {
             $info = $state['rounds'][$round];
             $view['mine'] = (int) ($mine[$round]->answer ?? -1);
+            $lane = $info['lanes'][(int) ($mine[0]->team ?? 0)] ?? null;
             if (self::shown($live, $state, $now)) {
-                $view['question'] = self::question($info);
+                $view['question'] = self::question($lane ? ['question' => $lane['question'], 'revealed' => $info['revealed']] :
+                    $info);
+            }
+            if ($lane && $info['revealed']) {
+                $view['done'] = !empty($lane['done']);
             }
             if ($info['revealed'] && $live->kind === 'vote') {
                 $view['tally'] = $info['tally'];
@@ -661,7 +696,8 @@ final class live {
                 $kinds[] = $token->kind;
             }
         }
-        $info = $state['rounds'][$round];
+        // By turns, what the team plays is its lane.
+        $info = array_merge($state['rounds'][$round], $state['rounds'][$round]['lanes'][$team] ?? []);
         if (in_array('glance', $kinds, true) && $info['options'] > 1) {
             // Always the same wrong option for the round, so that the phones of the team agree.
             $wrong = array_values(array_diff(range(0, $info['options'] - 1), [(int) $info['correct']]));
@@ -811,13 +847,18 @@ final class live {
         }
         $info = $state['rounds'][(int) $live->round];
         $knot = knots::get(missions::get((int) $live->courseid), (string) $info['knot']) ?? ['name' => '', 'claim' => '',
-            'laugh' => ''];
+            'laugh' => '', 'why' => ''];
         $teams = self::teams((int) $live->courseid);
         $target = (int) ($info['target'] ?? 0);
+        $resolved = $stage === 'resolve';
         return ['stage' => $stage, 'stageleft' => $left, 'knot' => ['name' => $knot['name'], 'claim' => $knot['claim'],
-            'laugh' => $stage === 'resolve' && !empty($info['counter']) ? $knot['laugh'] : ''], 'targetid' => $target,
-            'target' => isset($teams[$target]) ? format_string($teams[$target]->name) : '',
-            'damage' => (int) ($info['damage'] ?? 0)];
+            'laugh' => $resolved && !empty($info['counter']) ? $knot['laugh'] : '',
+            'why' => $resolved && !empty($info['broken']) ? $knot['why'] : '', 'broken' => $resolved && !empty($info['broken'])],
+            'targetid' => $target, 'target' => isset($teams[$target]) ? format_string($teams[$target]->name) : '',
+            'damage' => (int) ($info['damage'] ?? 0), 'intent' => (string) ($info['intent'] ?? 'team'),
+            'candles' => (int) ($state['candles'] ?? 0), 'maxcandles' => (int) ($state['maxcandles'] ?? 0),
+            'tangled' => array_map('intval', array_keys($state['tangled'] ?? [])), 'broken' => count($state['broken'] ?? []),
+            'recovered' => $resolved && !empty($info['recovered'])];
     }
 
     /**
@@ -875,6 +916,8 @@ final class live {
             foreach ($answers as $answer) {
                 $info['tally'][(int) $answer->answer]++;
             }
+        } else if ($state['mode'] === 'phones' && !empty($info['lanes'])) {
+            [$state, $info] = self::resolve($live, $state, $info, $answers);
         } else if ($state['mode'] === 'phones') {
             $tokens = $DB->get_records(self::T . 'livetoken', ['liveid' => $live->id, 'round' => $round], '', 'id, team, kind');
             $cheer = array_map(fn($t) => (int) $t->team, array_filter($tokens, fn($t) => $t->kind === 'cheer'));
@@ -917,6 +960,81 @@ final class live {
         $state['open'] = false;
         $state['closesat'] = 0;
         return $state;
+    }
+
+    /**
+     * The resolution of a turn by turns: each lane its team undoes (most of its players in got it right) takes a thread
+     * from the Embrollo, two with the cheer of the healer; if every lane is undone, the knot breaks (three threads more,
+     * and the Embrollo is dazed the next turn: its guard is broken, what the class undoes counts double). Then what it
+     * meant to do: going for a team, the lane of that team not undone puts out a candle and leaves the team tangled,
+     * unless a shield is on it; going for everybody, a candle goes out if fewer than half the lanes were undone; pulling
+     * itself together, it gets threads back if fewer than half were undone. A team that undoes its lane is not tangled
+     * any more. A knot that does not break is left hanging.
+     *
+     * @param \stdClass $live
+     * @param array $state
+     * @param array $info The round.
+     * @param array $answers The answers of the round (team, answer).
+     * @return array [state, round].
+     */
+    private static function resolve(\stdClass $live, array $state, array $info, array $answers): array {
+        global $DB;
+        $round = (int) $live->round;
+        $tokens = $DB->get_records(self::T . 'livetoken', ['liveid' => $live->id, 'round' => $round], '', 'id, team, kind');
+        $cheer = array_map(fn($t) => (int) $t->team, array_filter($tokens, fn($t) => $t->kind === 'cheer'));
+        $shields = array_map(fn($t) => (int) $t->team, array_filter($tokens, fn($t) => $t->kind === 'shield'));
+        $in = $DB->get_fieldset_select(self::T . 'livein', 'team', 'liveid = ? AND round = 0', [$live->id]);
+        $present = array_count_values(array_map('intval', $in));
+        $damage = 0;
+        $done = 0;
+        foreach ($info['lanes'] as $team => $lane) {
+            $mine = array_filter($answers, fn($a) => (int) $a->team === (int) $team);
+            $right = count(array_filter($mine, fn($a) => (int) $a->answer === (int) $lane['correct']));
+            $undone = !empty($present[$team]) && 2 * $right > $present[$team];
+            $info['lanes'][$team] += ['answered' => count($mine), 'right' => $right, 'done' => $undone];
+            $info['teams'][$team] = $right;
+            $info['right'] += $right;
+            if ($undone) {
+                $done++;
+                $damage += in_array((int) $team, $cheer, true) ? 2 : 1;
+                unset($state['tangled'][$team]);
+            }
+        }
+        $all = $info['lanes'] && $done === count($info['lanes']);
+        if ($all) {
+            $damage += self::BREAK_THREADS;
+            $state['broken'][] = (string) $info['knot'];
+        } else {
+            $state['hanging'][] = (string) $info['knot'];
+        }
+        $info['broken'] = $all;
+        if (($info['intent'] ?? '') === 'dazed') {
+            $damage *= 2;
+        }
+        $state['dazed'] = $all;
+        $state['hp'] = max(0, $state['hp'] - $damage);
+        $info['damage'] = $damage;
+        $few = 2 * $done < count($info['lanes']);
+        $target = (int) ($info['target'] ?? 0);
+        if ($state['hp'] > 0) {
+            if (($info['intent'] ?? '') === 'team' && isset($info['lanes'][$target]) && empty($info['lanes'][$target]['done'])) {
+                if (in_array($target, $shields, true)) {
+                    $info['shielded'] = $target;
+                } else {
+                    $state['candles'] = max(0, $state['candles'] - 1);
+                    $state['tangled'][$target] = true;
+                    $info['counter'] = 1;
+                }
+            } else if (($info['intent'] ?? '') === 'all' && $few) {
+                $state['candles'] = max(0, $state['candles'] - 1);
+                $info['counter'] = 1;
+            } else if (($info['intent'] ?? '') === 'recompose' && $few) {
+                $state['hp'] = min($state['maxhp'], $state['hp'] + self::RECOMPOSE);
+                $info['counter'] = self::RECOMPOSE;
+                $info['recovered'] = true;
+            }
+        }
+        return [$state, $info];
     }
 
     /**
@@ -1106,14 +1224,13 @@ final class live {
     }
 
     /**
-     * The team a knot goes for: each team in turn, among those with players in (all of them, aloud).
+     * The teams that play a battle: those with players in (all of them, aloud).
      *
      * @param \stdClass $live
      * @param array $state
-     * @param int $round
-     * @return int Group id (0: no teams).
+     * @return int[] Group ids, in order.
      */
-    private static function target(\stdClass $live, array $state, int $round): int {
+    private static function playing(\stdClass $live, array $state): array {
         global $DB;
         $teams = array_map('intval', array_keys(self::teams((int) $live->courseid)));
         if ($state['mode'] === 'phones') {
@@ -1122,6 +1239,64 @@ final class live {
             $teams = array_values(array_intersect($teams, $in)) ?: $teams;
         }
         sort($teams);
+        return $teams;
+    }
+
+    /**
+     * What the Embrollo means to do in a turn: go for a team; while frayed, also go for everybody or pull itself
+     * together; and nothing, dazed, the turn after a knot broke (its guard is broken: what the class undoes counts double).
+     *
+     * @param array $state
+     * @param int $round
+     * @return string team, all, recompose or dazed.
+     */
+    private static function intent(array $state, int $round): string {
+        if (!empty($state['dazed'])) {
+            return 'dazed';
+        }
+        $left = $state['maxhp'] ? 100 * $state['hp'] / $state['maxhp'] : 100;
+        $phases = $state['phases'] ?? ['frayed' => 60, 'last' => 25];
+        if ($left <= $phases['frayed'] && $left > $phases['last']) {
+            return ['team', 'all', 'recompose'][$round % 3];
+        }
+        return 'team';
+    }
+
+    /**
+     * The lane of each team in a turn, with its question ready for the phones (the right option is not shown until the
+     * turn is resolved).
+     *
+     * @param \stdClass $live
+     * @param array $state
+     * @param int $round
+     * @return array Team id => q, options, correct, question, chapter, trail.
+     */
+    private static function lanes(\stdClass $live, array $state, int $round): array {
+        $courseid = (int) $live->courseid;
+        $knot = array_column(knots::usable(missions::get($courseid)), null, 'code')[$state['knots'][$round - 1]] ?? null;
+        $lanes = [];
+        foreach ($knot ? knots::lanes($knot, self::playing($live, $state), $round - 1) : [] as $team => $lane) {
+            $question = questions::get($courseid, (string) ($lane['question'] ?? ''), self::seed($live, $round) + $team);
+            if ($question) {
+                $chapter = (string) ($question['chapter'] ?? '');
+                $lanes[$team] = ['q' => $question['id'], 'options' => count($question['options']),
+                    'correct' => $question['correct'], 'question' => array_diff_key($question, ['chapter' => 1, 'objective' => 1]),
+                    'chapter' => $chapter, 'trail' => self::chapter_name($courseid, $chapter)];
+            }
+        }
+        return $lanes;
+    }
+
+    /**
+     * The team a knot goes for: each team in turn, among those with players in (all of them, aloud).
+     *
+     * @param \stdClass $live
+     * @param array $state
+     * @param int $round
+     * @return int Group id (0: no teams).
+     */
+    private static function target(\stdClass $live, array $state, int $round): int {
+        $teams = self::playing($live, $state);
         return $teams ? $teams[($round - 1) % count($teams)] : 0;
     }
 
@@ -1175,7 +1350,7 @@ final class live {
             return self::reveal($live, $now, $round);
         }
         if ($stage === 'resolve' && $left === 0) {
-            if ($round < count($state['questions']) && $state['hp'] > 0) {
+            if ($round < count($state['questions']) && $state['hp'] > 0 && ($state['candles'] ?? 1) > 0) {
                 return self::next($live, $now, $round);
             }
             return $canfinish ? self::finish($live, $actorid, $now) : $live;

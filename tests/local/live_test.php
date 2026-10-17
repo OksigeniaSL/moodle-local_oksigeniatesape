@@ -74,6 +74,38 @@ final class live_test extends \advanced_testcase {
         return (int) $state['rounds'][$live->round]['correct'];
     }
 
+    /**
+     * By turns, the right option of the lane of a team in the round being played.
+     *
+     * @param \stdClass $live
+     * @param int $team
+     * @return int
+     */
+    private function lane_correct(\stdClass $live, int $team): int {
+        $state = json_decode($live->state, true);
+        return (int) $state['rounds'][$live->round]['lanes'][$team]['correct'];
+    }
+
+    /**
+     * By turns: a turn played to its resolution, each team right or wrong in its lane.
+     *
+     * @param \stdClass $live
+     * @param array $members
+     * @param array $groups
+     * @param bool[] $right For each team, in order: its players get its lane right.
+     * @param int $at When the turn started.
+     * @return \stdClass The session, resolved.
+     */
+    private function play_turn(\stdClass $live, array $members, array $groups, array $right, int $at): \stdClass {
+        $strike = $at + live::INTENT + live::PREP;
+        foreach ($members as $i => $member) {
+            $team = $i < 2 ? 0 : 1;
+            $correct = $this->lane_correct($live, (int) $groups[$team]->id);
+            live::answer($live, $member, (int) $live->round, $right[$team] ? $correct : ($correct + 1) % 2, $strike + 1);
+        }
+        return live::tick($live, 2, true, $strike + 31);
+    }
+
     public function test_phones_never_see_the_answer_before_it_is_shown(): void {
         $this->resetAfterTest();
         [$course, $members] = $this->make_class();
@@ -385,27 +417,89 @@ final class live_test extends \advanced_testcase {
         $this->assertSame('strike', $view['stage']);
         $this->assertArrayHasKey('question', $view);
         $this->assertSame((int) $groups[0]->id, $view['myteam']);
+        // Each team plays its own lane: two of the questions of the knot.
+        $board = live::board_view($live, $strike);
+        $this->assertCount(2, $board['lanes']);
+        $this->assertNotSame($board['lanes'][0]['question']['id'], $board['lanes'][1]['question']['id']);
+        $this->assertArrayNotHasKey('correct', $board['lanes'][0]['question']);
+        $this->assertSame($board['lanes'][0]['question']['id'], $view['question']['id']);
+        $this->assertSame(5, $view['candles']);
         // The team it goes for gets it wrong, the other right; the shield is on the other team, so the attack falls.
-        $correct = $this->correct($live);
+        $right = $this->lane_correct($live, (int) $groups[1]->id);
+        $wrong = ($this->lane_correct($live, (int) $groups[0]->id) + 1) % 2;
         foreach ($members as $i => $member) {
-            live::answer($live, $member, 1, $i < 2 ? ($correct + 1) % 2 : $correct, $strike + 1);
+            live::answer($live, $member, 1, $i < 2 ? $wrong : $right, $strike + 1);
         }
         // Nothing moves before the time is over.
         $this->assertFalse(live::board_view(live::tick($live, 2, true, $strike + 10), $strike + 10)['revealed']);
-        // When it is over, the lazada is counted: two threads off, and the Embrollo laughs and pulls itself together.
+        // When it is over, the lanes are counted: one thread off; a candle goes out and the team it went for is tangled.
         $end = $strike + 31;
         $live = live::tick($live, 2, true, $end);
         $view = live::board_view($live, $end);
         $this->assertSame('resolve', $view['stage']);
-        $this->assertSame(2, $view['damage']);
+        $this->assertSame(1, $view['damage']);
+        $this->assertSame(12, $view['maxhp']);
+        $this->assertSame(4, $view['candles']);
+        $this->assertSame([(int) $groups[0]->id], $view['tangled']);
+        $this->assertFalse($view['knot']['broken']);
         $this->assertGreaterThan(0, $view['counter']);
         $this->assertNotSame('', $view['knot']['laugh']);
+        $this->assertTrue(live::device_view($live, $members[2], $end)['done']);
+        $this->assertFalse(live::device_view($live, $members[0], $end)['done']);
         // After the resolution, the next turn starts by itself, for the other team.
         $live = live::tick($live, 2, true, $end + live::RESOLVE);
         $this->assertSame(2, (int) $live->round);
         $view = live::board_view($live, $end + live::RESOLVE);
         $this->assertSame('intent', $view['stage']);
         $this->assertSame((int) $groups[1]->id, $view['targetid']);
+    }
+
+    public function test_a_knot_breaks_when_every_lane_is_undone_and_the_embrollo_is_dazed(): void {
+        $this->resetAfterTest();
+        [$course, $members, $groups] = $this->make_class();
+        $live = live::start($course->id, 'phones', 4, 30, self::NOW, false, true);
+        foreach ($members as $member) {
+            live::join($live, $member, $member->userid, self::NOW);
+        }
+        $live = live::next($live, self::NOW);
+        // Both teams undo their lanes: two threads, and three more because the knot breaks; its why is told.
+        $live = $this->play_turn($live, $members, $groups, [true, true], self::NOW);
+        $view = live::board_view($live, self::NOW + 60);
+        $this->assertSame(5, $view['damage']);
+        $this->assertTrue($view['knot']['broken']);
+        $this->assertNotSame('', $view['knot']['why']);
+        $this->assertSame(1, $view['broken']);
+        $this->assertSame(5, $view['candles']);
+        // The next turn the Embrollo is dazed: it does not attack, and what the class undoes counts double.
+        $next = self::NOW + live::INTENT + live::PREP + 31 + live::RESOLVE;
+        $live = live::tick($live, 2, true, $next);
+        $this->assertSame('dazed', live::board_view($live, $next)['intent']);
+        $live = $this->play_turn($live, $members, $groups, [true, false], $next);
+        $view = live::board_view($live, $next + 60);
+        $this->assertSame(2, $view['damage']);
+        $this->assertSame(5, $view['candles']);
+        $this->assertSame(0, $view['counter']);
+    }
+
+    public function test_the_tower_in_the_dark_loses_the_battle(): void {
+        global $DB;
+        $this->resetAfterTest();
+        [$course, $members, $groups] = $this->make_class();
+        $live = live::start($course->id, 'phones', 6, 30, self::NOW, false, true);
+        foreach ($members as $member) {
+            live::join($live, $member, $member->userid, self::NOW);
+        }
+        $live = live::next($live, self::NOW);
+        // Down to one candle: the team it goes for gets its lane wrong and the last candle goes out.
+        $state = json_decode($live->state, true);
+        $state['candles'] = 1;
+        $DB->set_field(self::T . 'live', 'state', json_encode($state), ['id' => $live->id]);
+        $live = $DB->get_record(self::T . 'live', ['id' => $live->id]);
+        $live = $this->play_turn($live, $members, $groups, [false, false], self::NOW);
+        $this->assertSame(0, live::board_view($live, self::NOW + 60)['candles']);
+        $end = self::NOW + live::INTENT + live::PREP + 31 + live::RESOLVE;
+        $live = live::tick($live, 2, true, $end);
+        $this->assertSame('lost', json_decode($live->state, true)['outcome']);
     }
 
     public function test_the_tokens_help_the_team_of_who_uses_them_once_a_battle(): void {

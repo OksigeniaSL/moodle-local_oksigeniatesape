@@ -151,14 +151,16 @@ final class knots {
      *
      * @param \stdClass $mission With data.
      * @param string $code
-     * @return array|null name, claim, laugh.
+     * @return array|null name, claim, laugh, weakness, why.
      */
     public static function get(\stdClass $mission, string $code): ?array {
         foreach ($mission->data['battle']['knots'] ?? [] as $knot) {
             if (($knot['code'] ?? '') === $code) {
                 return ['code' => $code, 'name' => missions::text($knot['name'] ?? '', $mission->skin),
                     'claim' => missions::text($knot['claim'] ?? '', $mission->skin),
-                    'laugh' => missions::text($knot['laugh'] ?? '', $mission->skin)];
+                    'laugh' => missions::text($knot['laugh'] ?? '', $mission->skin),
+                    'weakness' => missions::text($knot['weakness'] ?? '', $mission->skin),
+                    'why' => missions::text($knot['why'] ?? '', $mission->skin)];
             }
         }
         return null;

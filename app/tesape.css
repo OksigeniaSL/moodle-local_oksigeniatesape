@@ -7001,3 +7001,88 @@ body.adapt-still .mission-grid .chapter.as-sheet {
   font-size: 13px;
   color: var(--text-soft);
 }
+
+/* The battle by turns on the class screen: the candles of the tower, the lanes of the teams, the tangled ones. */
+.candles {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.candle svg {
+  width: 30px;
+  height: 30px;
+}
+
+.candle.lit {
+  color: var(--lantern);
+  filter: drop-shadow(0 0 6px rgba(var(--lantern-rgb), .8));
+}
+
+.candle.out {
+  color: var(--text-soft);
+  opacity: .35;
+}
+
+.lanes {
+  display: grid;
+  gap: 8px;
+  margin: 10px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lane {
+  display: grid;
+  gap: 2px;
+  padding: 10px 14px;
+  border-radius: var(--r-s);
+  border: 1px solid var(--line);
+  background: rgba(var(--hi), .05);
+  font-size: 20px;
+}
+
+.lane b {
+  color: var(--lantern);
+}
+
+.lane.done {
+  border-color: var(--lantern);
+}
+
+.lane.failed {
+  opacity: .8;
+}
+
+.lane small {
+  font-size: 18px;
+}
+
+.lane.tangled,
+.battle-team.tangled {
+  background-image: repeating-linear-gradient(135deg, rgba(160, 120, 220, .22) 0 6px, transparent 6px 14px);
+  border-color: rgba(160, 120, 220, .7);
+}
+
+.knot-broken {
+  font-size: 26px;
+}
+
+.candles-left {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  color: var(--lantern);
+}
+
+.candles-left svg {
+  width: 16px;
+  height: 16px;
+}
+
+.knot-call.tangled {
+  background-image: repeating-linear-gradient(135deg, rgba(160, 120, 220, .18) 0 6px, transparent 6px 14px);
+  border-radius: var(--r-s);
+}

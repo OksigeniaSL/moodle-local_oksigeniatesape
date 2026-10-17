@@ -130,7 +130,9 @@
     var life = live.maxhp ? live.hp / live.maxhp : 1;
     return '<div class="battle-head"><span class="battle-mini">' + T.embrollo(life) + '</span><div class="grow"><b>' +
       esc(t('app_battle_title')) + '</b>' + (live.round ? '<small>' + esc(t(live.stage ? 'board_turn_round' : 'app_battle_round', live)) + '</small>' : '') +
-      '<span class="meter boss"><i style="width:' + Math.round(100 * life) + '%"></i></span></div></div>';
+      '<span class="meter boss"><i style="width:' + Math.round(100 * life) + '%"></i></span>' + (live.maxcandles ?
+      '<small class="candles-left">' + T.icon('lantern') + ' ' + esc(t('board_turn_candles', {lit: live.candles,
+      all: live.maxcandles})) + '</small>' : '') + '</div></div>';
   }
 
   function body(live) {
@@ -153,9 +155,12 @@
     if (live.stage === 'intent' || live.stage === 'prep') {
       // By turns: the knot, what the Embrollo claims and which team it goes for; meanwhile, the verb of the role.
       var mine = live.targetid && live.targetid === live.myteam;
-      return '<div class="knot-call"><p class="knot-name">' + esc(live.knot.name) + '</p><p class="knot-claim">«' +
-        esc(live.knot.claim.replace(/^«|»$/g, '')) + '»</p>' + (live.target ? '<p class="knot-target' + (mine ? ' mine' : '') +
-        '">' + esc(mine ? t('app_turn_mine') : t('app_turn_goes', live.target)) + '</p>' : '') + '</div>' +
+      var tangled = (live.tangled || []).indexOf(live.myteam) >= 0;
+      var intent = live.intent && live.intent !== 'team' ? '<p class="knot-target intent-' + live.intent + '">' +
+        esc(t('board_turn_intent_' + live.intent)) + '</p>' : live.target ? '<p class="knot-target' + (mine ? ' mine' : '') +
+        '">' + esc(mine ? t('app_turn_mine') : t('app_turn_goes', live.target)) + '</p>' : '';
+      return '<div class="knot-call' + (tangled ? ' tangled' : '') + '"><p class="knot-name">' + esc(live.knot.name) +
+        '</p><p class="knot-claim">«' + esc(live.knot.claim.replace(/^«|»$/g, '')) + '»</p>' + intent + '</div>' +
         (live.stage === 'prep' && !T.adapted.notime ? '<p class="battle-left" aria-live="off">' + esc(t('app_turn_prep',
         live.stageleft)) + '</p>' : '') + token(live);
     }
@@ -185,7 +190,14 @@
     }
     var trail = live.trail && !live.revealed ? '<p class="battle-trail">' + esc(t('app_token_trail_shown', live.trail)) +
       '</p>' : '';
-    if (live.stage === 'resolve' && live.target) {
+    if (live.stage === 'resolve' && live.done !== undefined) {
+      // By turns: what the team did with its lane, the knot if it broke, and what the Embrollo did.
+      note += '<p class="turn-outcome' + (live.done ? ' undone' : ' fell') + '">' + esc(t(live.done ? 'app_turn_lane_done' :
+        'app_turn_lane_failed')) + '</p>' + (live.knot.broken ? '<p class="turn-outcome undone">' +
+        esc(t('board_turn_broken')) + '</p>' : '') + (live.counter && !live.recovered ? '<p class="turn-outcome fell">' +
+        esc(t(live.intent === 'all' ? 'board_turn_candle_all' : 'board_turn_candle', live.target)) + '</p>' : '') +
+        (live.knot.laugh ? '<p class="knot-laugh">«' + esc(live.knot.laugh.replace(/^«|»$/g, '')) + '»</p>' : '');
+    } else if (live.stage === 'resolve' && live.target) {
       var fell = live.counter || live.shielded;
       note += '<p class="turn-outcome' + (fell ? ' fell' : ' undone') + '">' + esc(t(!fell ? 'app_turn_undone' : live.shielded ?
         'app_turn_shield' : 'app_turn_fell', live.target)) + '</p>' + (live.knot.laugh ? '<p class="knot-laugh">«' +
