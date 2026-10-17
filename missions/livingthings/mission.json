@@ -1,11 +1,17 @@
 {
  "code": "livingthings",
- "version": 19,
+ "version": 20,
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 20,
+   "kind": "fix",
+   "date": "2026-10-17",
+   "text": "Cada opción cuenta para el objetivo de su pregunta; el sótano pide la luz; la criatura dormida despierta al rehacer el nido; la página de las huellas de tinta; la pregunta de la célula, en la biblioteca"
+  },
   {
    "version": 19,
    "kind": "improvement",
@@ -144,7 +150,7 @@
       "idnumber": "tesape-sv-02",
       "objective": "SV-02",
       "name": "La célula",
-      "description": "Reconoce que todos los seres vivos están formados por células y que algunos tienen una sola. Distingue, a grandes rasgos, una célula vegetal de una animal. **Opcional**: el docente la usa si trabaja la célula con su clase.",
+      "description": "Reconoce que todos los seres vivos están formados por células y que algunos tienen una sola. Distingue, a grandes rasgos, una célula vegetal de una animal. Opcional: el docente la usa si trabaja la célula con su clase.",
       "levels": [
        "Sabe que hay seres y partes tan pequeños que no se ven a simple vista, pero no los relaciona con todos los seres vivos.",
        "Dice que los seres vivos están hechos de células y que algunos tienen una sola, pero no distingue tipos de células.",
@@ -1058,7 +1064,7 @@
       "caracol",
       "lombriz"
      ],
-     "goal": 10,
+     "goal": 11,
      "shield": 4,
      "speed": 2
     },
@@ -1091,7 +1097,7 @@
       "pulpo",
       "babosa"
      ],
-     "goal": 12,
+     "goal": 13,
      "shield": 4,
      "speed": 3
     },
@@ -2085,7 +2091,7 @@
   },
   {
    "id": "Q1-3",
-   "chapter": "claro",
+   "chapter": "biblioteca",
    "objective": "SV-02",
    "text": "¿De qué están hechos todos los seres vivos?",
    "options": [
@@ -2095,6 +2101,19 @@
     "De aire"
    ],
    "why": "La célula es la parte más pequeña de un ser vivo. Algunos, como las bacterias, son una sola célula."
+  },
+  {
+   "id": "Q1-4",
+   "chapter": "claro",
+   "objective": "SV-01",
+   "text": "¿Por qué una semilla seca es un ser vivo, aunque no se mueva?",
+   "options": [
+    "Porque dentro lleva una planta que puede crecer",
+    "Porque es de color marrón",
+    "Porque es muy pequeña",
+    "Porque cae de un árbol"
+   ],
+   "why": "Está en reposo. Con agua y calor despierta la planta que lleva dentro. Que no se mueva no quiere decir que no esté viva."
   },
   {
    "id": "Q2-1",

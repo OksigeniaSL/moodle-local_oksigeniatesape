@@ -584,5 +584,19 @@ function xmldb_local_oksigeniatesape_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026101498, 'local', 'oksigeniatesape');
     }
 
+    if ($oldversion < 2026101705) {
+        // A minigame sent again from the queue of the device counts once, as the scenes do.
+        $table = new xmldb_table('local_oksigeniatesape_minigame');
+        $field = new xmldb_field('playid', XMLDB_TYPE_CHAR, '20', null, null, null, null, 'game');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        $index = new xmldb_index('charid-playid', XMLDB_INDEX_NOTUNIQUE, ['charid', 'playid']);
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+        upgrade_plugin_savepoint(true, 2026101705, 'local', 'oksigeniatesape');
+    }
+
     return true;
 }

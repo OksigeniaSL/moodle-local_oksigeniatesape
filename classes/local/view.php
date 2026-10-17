@@ -170,6 +170,26 @@ final class view {
     }
 
     /**
+     * How many pages of the Gran Libro a student of a role can get, out of those the scenes give.
+     *
+     * @param array $data The mission.
+     * @param array $summaries Of scenes::summaries().
+     * @param string $role
+     * @return int
+     */
+    private static function pagecount(array $data, array $summaries, string $role): int {
+        $reachable = [];
+        foreach ($summaries as $summary) {
+            foreach ($summary['pages'] ?? [] as $page => $roles) {
+                if (in_array('', $roles, true) || in_array($role, $roles, true)) {
+                    $reachable[$page] = true;
+                }
+            }
+        }
+        return count(array_intersect_key($data['pages'] ?? [], $reachable));
+    }
+
+    /**
      * The mission of a course as a student sees it: the map with its chapters and lanterns, the scenes of their step
      * and what they have done, and the pages of the book they have found.
      *
@@ -287,7 +307,8 @@ final class view {
             'book' => missions::text($data['book'] ?? '', $skin),
             'skin' => $skin,
             'variant' => $mission->variant,
-            'pagecount' => count($data['pages'] ?? []),
+            // The pages this student can get: some are given only by an option of a role that is not theirs.
+            'pagecount' => self::pagecount($data, $summaries, (string) $char->role),
             // The painted map: that of the mission, or of the world a mission of a teacher lives in; or a map in layers.
             'map' => (string) ($data['map'] ?? $mission->code),
             'mapworld' => (string) ($data['maplayers']['world'] ?? ''),

@@ -51,6 +51,21 @@ final class questions {
     }
 
     /**
+     * The questions of the mission a course uses: not those of an objective the teacher linked to no competency (an
+     * optional part they do not work, like the cell).
+     *
+     * @param \stdClass $mission
+     * @return array
+     */
+    public static function usable(\stdClass $mission): array {
+        $links = competencies::links((int) $mission->courseid);
+        $off = array_keys(array_filter($links, fn($id) => !(int) $id));
+        $all = $mission->data['questions'] ?? [];
+        $kept = array_values(array_filter($all, fn($q) => !in_array($q['objective'] ?? '', $off, true)));
+        return $kept ?: $all;
+    }
+
+    /**
      * A question from the chapters the class has reached: those with the lantern of the class lit and the next one.
      *
      * @param int $courseid
@@ -66,7 +81,7 @@ final class questions {
         $chapters = $DB->get_records(self::T . 'chapter', ['missionid' => $mission->id], 'sortorder', 'id, code, litat');
         $lit = count(array_filter($chapters, fn($c) => (int) $c->litat > 0));
         $open = array_slice(array_map(fn($c) => $c->code, array_values($chapters)), 0, max(1, $lit + 1));
-        $all = $mission->data['questions'];
+        $all = self::usable($mission);
         $candidates = array_filter($all, fn($q) => in_array($q['chapter'] ?? '', $open, true));
         $fresh = array_filter($candidates ?: $all, fn($q) => !in_array($q['id'], $exclude, true));
         $list = array_values($fresh ?: ($candidates ?: $all));
@@ -83,13 +98,14 @@ final class questions {
      */
     public static function pick_many(int $courseid, int $count): array {
         $mission = missions::get($courseid);
-        $all = $mission ? count($mission->data['questions'] ?? []) : 0;
+        $usable = $mission ? self::usable($mission) : [];
+        $all = count($usable);
         $ids = [];
         while (count($ids) < min($count, $all)) {
             $id = self::pick($courseid, $ids);
             if (in_array($id, $ids, true)) {
                 // The chapters reached are used up: any other question of the mission.
-                $rest = array_values(array_diff(array_column($mission->data['questions'], 'id'), $ids));
+                $rest = array_values(array_diff(array_column($usable, 'id'), $ids));
                 $id = $rest[random_int(0, count($rest) - 1)];
             }
             $ids[] = $id;

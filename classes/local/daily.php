@@ -52,8 +52,9 @@ final class daily {
         }
         $courseid = (int) $member->courseid;
         $day = engine::day_start($now, $courseid);
-        $done = $DB->get_record(self::T . 'daily', ['charid' => $char->id, 'courseid' => $courseid, 'daystart' => $day]);
-        $id = $done ? $done->question : self::pick($char, $courseid, $day);
+        $shown = self::shown($char, $courseid, $day, $now);
+        $done = $shown && (int) $shown->answer >= 0 ? $shown : null;
+        $id = $shown ? $shown->question : null;
         $question = $id ? questions::get($courseid, $id, self::seed($char, $day)) : null;
         if (!$question) {
             return null;
@@ -85,10 +86,12 @@ final class daily {
         if (empty($char->creature) || $member->status === 'paused') {
             throw new \moodle_exception('nopage', 'local_oksigeniatesape');
         }
-        if ($DB->record_exists(self::T . 'daily', ['charid' => $char->id, 'courseid' => $courseid, 'daystart' => $day])) {
+        $shown = self::shown($char, $courseid, $day, $now);
+        if ($shown && (int) $shown->answer >= 0) {
             throw new \moodle_exception('pagedone', 'local_oksigeniatesape');
         }
-        $id = self::pick($char, $courseid, $day);
+        // The question that was shown, never another one picked now.
+        $id = $shown ? $shown->question : null;
         $question = $id ? questions::get($courseid, $id, self::seed($char, $day)) : null;
         if (!$question || !isset($question['options'][$answer])) {
             throw new \moodle_exception('nopage', 'local_oksigeniatesape');
@@ -96,6 +99,7 @@ final class daily {
         $right = $answer === (int) $question['correct'];
         $transaction = $DB->start_delegated_transaction();
         try {
+            $DB->delete_records_select(self::T . 'daily', 'id = ? AND answer < 0', [$shown->id]);
             $DB->insert_record(self::T . 'daily', (object) ['charid' => $char->id, 'courseid' => $courseid, 'daystart' => $day,
                 'question' => $id, 'answer' => $answer, 'success' => (int) $right, 'timecreated' => $now]);
         } catch (\dml_write_exception $e) {
@@ -107,6 +111,37 @@ final class daily {
         }
         $transaction->allow_commit();
         return $right;
+    }
+
+    /**
+     * The page of a day as it was first shown: its question is kept then (answer -1), so that the one answered is the
+     * one seen, even if the student plays a new chapter in between.
+     *
+     * @param \stdClass $char
+     * @param int $courseid
+     * @param int $day
+     * @param int $now
+     * @return \stdClass|null The row of the day, or null if there is no question for it.
+     */
+    private static function shown(\stdClass $char, int $courseid, int $day, int $now): ?\stdClass {
+        global $DB;
+        $key = ['charid' => $char->id, 'courseid' => $courseid, 'daystart' => $day];
+        $row = $DB->get_record(self::T . 'daily', $key);
+        if ($row) {
+            return $row;
+        }
+        $id = self::pick($char, $courseid, $day);
+        if (!$id) {
+            return null;
+        }
+        try {
+            $DB->insert_record(self::T . 'daily', (object) ($key + ['question' => $id, 'answer' => -1, 'success' => 0,
+                'timecreated' => $now]));
+        } catch (\dml_write_exception $e) {
+            // Two requests at the same time: the other one kept it, and it is read just below.
+            debugging('The page of the day was kept by another request', DEBUG_DEVELOPER);
+        }
+        return $DB->get_record(self::T . 'daily', $key) ?: null;
     }
 
     /**
@@ -132,13 +167,13 @@ final class daily {
               WHERE f.charid = ? AND f.missionid = ? AND f.kind = 'scene'",
             [$char->id, $mission->id]
         );
-        $eligible = array_values(array_filter($mission->data['questions'], fn($q) => in_array($q['chapter'] ?? '', $played, true)));
+        $eligible = array_values(array_filter(questions::usable($mission), fn($q) => in_array($q['chapter'] ?? '', $played, true)));
         if (!$eligible) {
             return null;
         }
         $history = $DB->get_records_select(
             self::T . 'daily',
-            'charid = ? AND courseid = ? AND daystart < ?',
+            'charid = ? AND courseid = ? AND daystart < ? AND answer >= 0',
             [$char->id, $courseid, $day],
             'daystart DESC',
             'id, question, success'
@@ -166,7 +201,7 @@ final class daily {
         global $DB;
         $rows = $DB->get_records_select_menu(
             self::T . 'daily',
-            'charid = ? AND courseid = ? AND daystart <= ?',
+            'charid = ? AND courseid = ? AND daystart <= ? AND answer >= 0',
             [$char->id, $courseid, $day],
             'daystart DESC',
             'daystart, success',

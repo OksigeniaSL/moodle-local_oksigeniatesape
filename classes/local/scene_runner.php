@@ -57,6 +57,9 @@ final class scene_runner {
     /** @var string The student's own role. */
     private string $role;
 
+    /** @var bool Played by the whole class at the class screen. */
+    private bool $wholeclass = false;
+
     /** @var array Hints opened: node => [index => true]. */
     private array $hints = [];
 
@@ -98,13 +101,22 @@ final class scene_runner {
      * @param string[] $teamroles Roles of the characters in the student's team.
      * @param string[] $flags Flags of the mission the character carries (what they did in other scenes).
      * @param string $role The student's own role.
+     * @param bool $wholeclass Played by the whole class at the class screen: it has the role of any of its players.
      */
-    public function __construct(array $scene, array $items = [], array $teamroles = [], array $flags = [], string $role = '') {
+    public function __construct(
+        array $scene,
+        array $items = [],
+        array $teamroles = [],
+        array $flags = [],
+        string $role = '',
+        bool $wholeclass = false
+    ) {
         $this->scene = $scene;
         $this->items = $items;
         $this->teamroles = $teamroles;
         $this->flags = $flags;
         $this->role = $role;
+        $this->wholeclass = $wholeclass;
         $this->shield = $role === 'protector';
     }
 
@@ -125,7 +137,8 @@ final class scene_runner {
             return in_array($requires['flag'], $this->flags, true);
         }
         if (isset($requires['role'])) {
-            return $requires['role'] === $this->role;
+            // The whole class, at the class screen, has the role of any of its players.
+            return $requires['role'] === $this->role || ($this->wholeclass && in_array($requires['role'], $this->teamroles, true));
         }
         if (isset($requires['teamrole'])) {
             return in_array($requires['teamrole'], $this->teamroles, true);
@@ -299,7 +312,9 @@ final class scene_runner {
             $option = $options[$id];
             $this->points += (int) ($option['points'] ?? 0);
             $correct = $option['correct'] ?? null;
-            $this->tally($option['objective'] ?? null, $correct !== false && ($correct === true || ($option['points'] ?? 0) > 0));
+            // The objective of the option, or that of the question when the options do not say.
+            $objective = $option['objective'] ?? $n['objective'] ?? null;
+            $this->tally($objective, $correct !== false && ($correct === true || ($option['points'] ?? 0) > 0));
             foreach ($option['effects'] ?? [] as $effect) {
                 if (isset($effect['extraquestion'])) {
                     $this->extra += (int) $effect['extraquestion'];
@@ -353,7 +368,7 @@ final class scene_runner {
                 }
                 if ($event['bin'] === $item['bin']) {
                     $this->points += $first || $saved ? 2 : 1;
-                    $this->tally($item['objective'] ?? null, $first);
+                    $this->tally($item['objective'] ?? $n['objective'] ?? null, $first);
                     if ($first) {
                         $this->placed[$node][] = $item['id'];
                     }
@@ -363,7 +378,7 @@ final class scene_runner {
                     continue 2;
                 }
                 if ($once) {
-                    $this->tally($item['objective'] ?? null, false);
+                    $this->tally($item['objective'] ?? $n['objective'] ?? null, false);
                     continue 2;
                 }
                 $wrong[] = $event['bin'];
@@ -440,6 +455,9 @@ final class scene_runner {
      * @param array $effect
      */
     private function effect(array $effect): void {
+        if (isset($effect['unflag'])) {
+            $this->flags = array_values(array_diff($this->flags, [(string) $effect['unflag']]));
+        }
         if (isset($effect['flag'])) {
             $this->flags[] = (string) $effect['flag'];
         }

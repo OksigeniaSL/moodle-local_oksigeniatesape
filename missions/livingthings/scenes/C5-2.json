@@ -123,7 +123,7 @@
   "noche-hormigas": {
    "type": "story",
    "image": "noche-hormigas",
-   "text": "Al amanecer falta media cosa de todo. {{local:hormigas}}",
+   "text": "Al amanecer falta un poco de cada cosa. {{local:hormigas}}",
    "next": "refugio"
   },
   "noche-alto": {

@@ -73,7 +73,16 @@ final class engine {
             'timecreated' => $now,
             'timemodified' => $now,
         ];
-        $member->id = $DB->insert_record(self::T . 'member', $member);
+        try {
+            $member->id = $DB->insert_record(self::T . 'member', $member);
+        } catch (\dml_write_exception $e) {
+            // The world and the poll of a battle, coming in at the same moment the first time: the other one made it.
+            $made = $DB->get_record(self::T . 'member', ['charid' => $char->id, 'courseid' => $courseid]);
+            if (!$made) {
+                throw $e;
+            }
+            return $made;
+        }
         return $DB->get_record(self::T . 'member', ['id' => $member->id], '*', MUST_EXIST);
     }
 
@@ -138,6 +147,26 @@ final class engine {
         }
         $transaction->allow_commit();
         return $entry;
+    }
+
+    /**
+     * Runs something that reads and spends what a character has, one at a time for that character: a double tap, or
+     * two tabs, cannot spend the same breath or gems twice.
+     *
+     * @param int $charid
+     * @param callable $action
+     * @return mixed What the action returns.
+     */
+    public static function one_at_a_time(int $charid, callable $action) {
+        $lock = \core\lock\lock_config::get_lock_factory('local_oksigeniatesape')->get_lock('char-' . $charid, 10);
+        if (!$lock) {
+            throw new \moodle_exception('charbusy', 'local_oksigeniatesape');
+        }
+        try {
+            return $action();
+        } finally {
+            $lock->release();
+        }
     }
 
     /**
@@ -212,7 +241,7 @@ final class engine {
             }
             $guard = powers::guard($member, $now);
             if ($guard) {
-                return self::guarded($member, -$amount, $guard, $actorid, $now);
+                return self::guarded($member, -$amount, $guard, $actorid, $refid, $now);
             }
         }
         $capped = 0;
@@ -252,17 +281,19 @@ final class engine {
      * @param int $loss More than 0.
      * @param array $guard Of powers::guard().
      * @param int $actorid
+     * @param int $refid What caused the loss (a commitment).
      * @param int $now
      * @return \stdClass The entry of the one protected, with nothing lost and the loss as left out.
      */
-    private static function guarded(\stdClass $member, int $loss, array $guard, int $actorid, int $now): \stdClass {
+    private static function guarded(\stdClass $member, int $loss, array $guard, int $actorid, int $refid, int $now): \stdClass {
         global $DB;
         $request = $guard['request'];
         $transaction = $DB->start_delegated_transaction();
-        $entry = self::record($member, 'energy', 0, $guard['kind'], $actorid, 0, (int) $request->id, $loss, $now);
+        // Both entries point to what caused the loss (a commitment), so that undoing it undoes them too.
+        $entry = self::record($member, 'energy', 0, $guard['kind'], $actorid, 0, $refid, $loss, $now);
         if ($guard['kind'] === 'shield') {
             $DB->set_field('local_oksigeniatesape_powerreq', 'status', 'used', ['id' => $request->id]);
-            self::energy($guard['protector'], -(int) ceil($loss / 2), 'shield', $actorid, (int) $request->id, $now);
+            self::energy($guard['protector'], -(int) ceil($loss / 2), 'shield', $actorid, $refid, $now);
         }
         $transaction->allow_commit();
         return $entry;

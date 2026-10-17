@@ -153,7 +153,7 @@ final class badges {
             $sql = 'SELECT c.userid
                       FROM {' . self::T . 'member} m
                       JOIN {' . self::T . 'char} c ON c.id = m.charid
-                     WHERE m.courseid = ?';
+                     WHERE m.courseid = ? AND m.leftat = 0';
             foreach ($DB->get_fieldset_sql($sql, [$courseid]) as $userid) {
                 self::check($courseid, (int) $userid);
             }

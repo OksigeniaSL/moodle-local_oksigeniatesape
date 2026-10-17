@@ -169,7 +169,7 @@ final class events {
         $data['solved'] = $right;
         $DB->update_record(self::T . 'event', (object) ['id' => $event->id, 'data' => json_encode($data), 'timemodified' => $now]);
         if ($right) {
-            foreach ($DB->get_records(self::T . 'member', ['courseid' => $courseid]) as $member) {
+            foreach ($DB->get_records(self::T . 'member', ['courseid' => $courseid, 'leftat' => 0]) as $member) {
                 engine::saber($member, self::FOOTPRINT_SABER, 'event', $actorid, 0, (int) $event->id, $now);
             }
         }

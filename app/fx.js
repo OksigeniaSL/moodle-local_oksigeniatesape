@@ -692,7 +692,13 @@
     }
   };
 
-  // Browsers let a page sound only after the first touch: then the sound of the place starts.
+  // Browsers let a page sound only after the first touch: then the sound of the place starts. On a click too, once:
+  // some versions of Safari on the iPad do not take the first touch down as the gesture that lets it sound.
+  document.addEventListener('click', function() {
+    if (ctx && ctx.state === 'suspended') {
+      ctx.resume();
+    }
+  }, {passive: true, once: true});
   document.addEventListener('pointerdown', function() {
     if (audio()) {
       loadSamples();

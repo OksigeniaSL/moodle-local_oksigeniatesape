@@ -89,6 +89,14 @@
 
   /* ---------- The battle against the Embrollo ---------- */
 
+  var SEEN = 'tesape-board-seen-' + cfg.courseid;
+  try {
+    // The battle the teacher already closed stays closed after reloading the page of the class screen.
+    state.seen = Number(window.sessionStorage.getItem(SEEN)) || 0;
+  } catch (e) {
+    state.seen = 0;
+  }
+
   function battling() {
     var l = state.live;
     return !!(l && l.kind === 'battle' && (!l.outcome || state.seen !== l.id));
@@ -131,7 +139,8 @@
       }
       state.live = r.live || null;
       if (battling()) {
-        drawBattle();
+        // A poll that brings nothing new only moves the countdown; an action draws it all again.
+        drawBattle(action !== 'state');
       } else {
         load(false);
       }
@@ -140,7 +149,7 @@
         state.hosting = false;
         T.toast(esc(e.message), true);
         if (battling()) {
-          drawBattle();
+          drawBattle(true);
         }
       }
     }).then(schedule);
@@ -201,8 +210,33 @@
     }
   }
 
-  function drawBattle() {
+  /**
+   * Draws the battle on the class screen. Every 1.5 s a poll brings it again: if nothing seen has changed, only the
+   * countdown and the count of answers move, so that a tap on a button is never lost while it is drawn again.
+   *
+   * @param {boolean} force Draw it all, after an action of the teacher.
+   */
+  function drawBattle(force) {
     var l = state.live;
+    var sig = JSON.stringify(Object.assign({}, l, {left: 0, answered: 0}));
+    if (!force && sig === state.battlesig && app.querySelector('.battle-board')) {
+      var left = app.querySelector('[data-left]');
+      if (left && l.left >= 0) {
+        left.textContent = l.left + ' s';
+        left.dataset.left = l.left;
+      }
+      var answered = app.querySelector('[data-answered]');
+      if (answered) {
+        answered.textContent = t('board_battle_answered', l);
+      }
+      return;
+    }
+    state.battlesig = sig;
+    // The Embrollo shakes once when it is hit, not at every drawing after.
+    var hit = l.revealed && (l.right || 0) > 0 && state.hitlast !== l.id + ':' + l.round;
+    if (hit) {
+      state.hitlast = l.id + ':' + l.round;
+    }
     var life = l.maxhp ? l.hp / l.maxhp : 1;
     var main;
     var buttons = '';
@@ -237,7 +271,8 @@
         buttons = l.round < l.total ? '<button class="btn btn-main" data-battlenext>' + esc(t('board_battle_next')) +
           '</button>' : '';
       } else {
-        main += '<p class="battle-count">' + (l.mode === 'phones' ? esc(t('board_battle_answered', l)) : '') +
+        main += '<p class="battle-count">' + (l.mode === 'phones' ? '<span data-answered>' + esc(t('board_battle_answered', l)) +
+          '</span>' : '') +
           (l.left >= 0 ? ' <span class="battle-left" data-left="' + l.left + '">' + l.left + ' s</span>' : '') + '</p>';
         buttons = '<button class="btn btn-main" data-battlereveal>' + esc(t('board_battle_reveal')) + '</button>';
       }
@@ -259,7 +294,7 @@
       esc(t('board_battle_phase')) : '') + '</small></div><div class="board-tools">' + musicButton() + lightButton() +
       '<button class="btn btn-soft" data-full>' + esc(t('board_fullscreen')) + '</button></div></header>' +
       '<div class="battle-stage"><div class="battle-boss' +
-      (l.revealed && (l.right || 0) > 0 ? ' hit' : '') + '">' + T.embrollo(life) + '<span class="meter boss"><i style="width:' +
+      (hit ? ' hit' : '') + '">' + T.embrollo(life) + '<span class="meter boss"><i style="width:' +
       Math.round(100 * life) + '%"></i></span><small>' + esc(t('board_battle_life')) + (l.maxhp ? ': ' + l.hp + ' / ' +
       l.maxhp : '') + '</small></div><div class="battle-main">' + main + '<div class="actions">' + buttons + '</div></div></div>' +
       '<div class="battle-teams">' + teams + '</div></div>';
@@ -294,6 +329,11 @@
     });
     on('[data-dismiss]', function() {
       state.seen = l.id;
+      try {
+        window.sessionStorage.setItem(SEEN, String(l.id));
+      } catch (e) {
+        // Without storage, a reload shows the end of the battle once more.
+      }
       render();
       load(false);
     });
@@ -620,6 +660,11 @@
   }
 
   function playScene(sceneid) {
+    // A double tap on «Play» opens one scene and one vote, not two.
+    if (state.opening || document.querySelector('.scene-layer')) {
+      return;
+    }
+    state.opening = true;
     var phones = state.scene.mode === 'phones';
     var m = state.board.mission;
     var host = function(action, extra) {
@@ -658,6 +703,7 @@
     };
     var world = {family: state.cls.region.family, character: {role: 'sage', creature: '{}'}, items: [], team: null};
     var go = function() {
+      state.opening = false;
       T.playScene({sceneid: sceneid, world: world, classmode: classmode, onclose: function() {
         if (phones) {
           host('state').then(function(live) {
@@ -671,6 +717,7 @@
     };
     if (phones) {
       host('startvote', {sceneid: sceneid}).then(go).catch(function(e) {
+        state.opening = false;
         T.toast(esc(e.message), true);
       });
     } else {
@@ -711,7 +758,7 @@
    */
   function diplomas(fam) {
     var m = state.board.mission;
-    var date = new Intl.DateTimeFormat(cfg.lang, {day: 'numeric', month: 'long', year: 'numeric'}).format(new Date());
+    var date = T.date(new Date(), {day: 'numeric', month: 'long', year: 'numeric'});
     return state.cls.students.filter(function(s) {
       return s.character;
     }).map(function(s) {
@@ -775,7 +822,7 @@
 
   function render() {
     if (battling()) {
-      drawBattle();
+      drawBattle(true);
       return;
     }
     if (state.print) {

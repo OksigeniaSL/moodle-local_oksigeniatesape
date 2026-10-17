@@ -79,7 +79,7 @@ final class teams {
             'SELECT c.userid, m.*
                FROM {' . self::T . 'char} c
                JOIN {' . self::T . "member} m ON m.charid = c.id
-              WHERE c.userid $insql AND m.courseid = ?",
+              WHERE c.userid $insql AND m.courseid = ? AND m.leftat = 0",
             $params
         );
         return array_filter($members, fn($m) => $paused || $m->status !== 'paused');

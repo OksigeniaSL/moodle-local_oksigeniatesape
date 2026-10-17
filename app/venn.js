@@ -240,14 +240,15 @@
         return;
       }
       run.over = true;
+      run.playid = run.playid || T.playId();
       document.removeEventListener('keydown', onKey);
       show('<p class="help">' + esc(t('app_saving')) + '</p>');
       var events = JSON.stringify(run.events);
-      T.api('play_minigame', {courseid: cfg.courseid, game: game.code, events: events}).then(function(result) {
+      T.api('play_minigame', {courseid: cfg.courseid, game: game.code, playid: run.playid, events: events}).then(function(result) {
         world = result.world;
         ending(result);
       }).catch(function(e) {
-        if ((e.network || e.retry) && T.keepPlay && T.keepPlay({kind: 'minigame', game: game.code, title: game.title || '',
+        if ((e.network || e.retry) && T.keepPlay && T.keepPlay({kind: 'minigame', game: game.code, playid: run.playid, title: game.title || '',
           events: events, at: Date.now()})) {
           // No connection: what was played is kept on the device and goes by itself when the connection comes back.
           show('<div class="conseq good"><span class="what">' + esc(t('app_offline_kept')) + '</span>' +

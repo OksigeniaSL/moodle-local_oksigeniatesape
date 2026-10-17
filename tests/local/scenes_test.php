@@ -185,6 +185,29 @@ final class scenes_test extends \advanced_testcase {
         $this->assertEquals(0, characters::get($w->users[0]->id)->saber);
     }
 
+    public function test_only_the_scenes_of_the_mission_in_course_are_played(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $w = $this->make_class(1);
+        $old = $DB->get_record(self::T . 'scene', ['missionid' => $w->mission->id, 'code' => 'C1-1']);
+        // The class goes on to another expedition: the scenes of the past one are only read.
+        missions::install($w->course->id, 'livingthings', 'valley', 'py');
+        $this->assertNotEmpty(scenes::get($w->course->id, $old->id)->data);
+        $this->expectException(\moodle_exception::class);
+        scenes::play($w->course->id, $w->users[0]->id, $old->id, [], null);
+    }
+
+    public function test_a_play_starts_at_a_retry_node_only_after_that_retry(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $w = $this->make_class(1);
+        $scene = $DB->get_record(self::T . 'scene', ['missionid' => $w->mission->id, 'code' => 'C1-4']);
+        $retry = array_values(array_filter(array_column(json_decode($scene->definition, true)['nodes'], 'retry')))[0];
+        $this->assertNotSame(json_decode($scene->definition, true)['start'], $retry);
+        $this->expectException(\moodle_exception::class);
+        scenes::play($w->course->id, $w->users[0]->id, $scene->id, [], $retry);
+    }
+
     public function test_chapter_reward_opens_an_option(): void {
         $this->resetAfterTest();
         $w = $this->make_class(1);

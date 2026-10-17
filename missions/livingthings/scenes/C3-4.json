@@ -115,21 +115,21 @@
      "id": "color",
      "label": "¿Es de color marrón?",
      "correct": false,
-     "objective": "SV-07",
+     "objective": "SV-04",
      "feedback": "El primer caracol es marrón; el segundo, amarillo. La clave falla con el siguiente ejemplar. El color cambia."
     },
     {
      "id": "grande",
      "label": "¿Es grande?",
      "correct": false,
-     "objective": "SV-07",
+     "objective": "SV-04",
      "feedback": "«¿Grande según quién?» Una cría de gato es más pequeña que un caracol gordo. El tamaño cambia y, además, cada uno lo mide a su manera."
     },
     {
      "id": "martes",
      "label": "¿Lo vimos el martes?",
      "correct": false,
-     "objective": "SV-07",
+     "objective": "SV-04",
      "feedback": "Al equipo que lo pruebe el jueves no le sirve de nada. La clave tiene que valer para cualquiera, cualquier día."
     }
    ],
@@ -155,7 +155,7 @@
      "id": "color",
      "label": "¿Es de color gris?",
      "correct": false,
-     "objective": "SV-07",
+     "objective": "SV-04",
      "feedback": "Hay gatos grises y hay gatos naranjas. Al siguiente gato, la clave vuelve a atascarse."
     },
     {

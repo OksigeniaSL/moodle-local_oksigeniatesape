@@ -177,7 +177,8 @@
       if (!run || run.over) {
         return;
       }
-      if (ev.key === ' ' && !calm) {
+      // Space pauses, except on a button, where it presses the button (a net, for who plays with the keyboard).
+      if (ev.key === ' ' && !calm && !/^(BUTTON|INPUT|SELECT|TEXTAREA)$/.test(ev.target.tagName)) {
         ev.preventDefault();
         togglePause();
         return;
@@ -413,16 +414,17 @@
         return;
       }
       run.over = true;
+      run.playid = run.playid || T.playId();
       stop();
       document.removeEventListener('keydown', onKey);
       show('<p class="help">' + esc(t('app_saving')) + '</p>');
-      T.api('play_minigame', {courseid: cfg.courseid, game: game.code, events: JSON.stringify(run.events)})
+      T.api('play_minigame', {courseid: cfg.courseid, game: game.code, playid: run.playid, events: JSON.stringify(run.events)})
         .then(function(result) {
           world = result.world;
           ending(result);
         }).catch(function(e) {
           var events = JSON.stringify(run.events);
-          if ((e.network || e.retry) && T.keepPlay && T.keepPlay({kind: 'minigame', game: game.code, title: game.title || '',
+          if ((e.network || e.retry) && T.keepPlay && T.keepPlay({kind: 'minigame', game: game.code, playid: run.playid, title: game.title || '',
             events: events, at: Date.now()})) {
             // No connection: what was played is kept on the device and goes by itself when the connection comes back.
             show('<div class="conseq good"><span class="what">' + esc(t('app_offline_kept')) + '</span>' +

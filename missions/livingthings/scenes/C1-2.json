@@ -187,6 +187,9 @@
     },
     {
      "page": "ser-vivo"
+    },
+    {
+     "unflag": "criatura-dormida"
     }
    ]
   },

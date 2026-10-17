@@ -76,7 +76,7 @@
     {
      "id": "tierra",
      "label": "tierra con restos de hojas",
-     "correct": true,
+     "correct": false,
      "points": 1,
      "objective": "SV-05",
      "feedback": "Ayuda un poco: de la tierra toman agua y sales minerales. Pero sin luz no basta."
@@ -86,7 +86,7 @@
      "label": "música",
      "correct": false,
      "points": 1,
-     "objective": "SV-07",
+     "objective": "SV-05",
      "feedback": "La planta no cambia… o eso parece. ¿Cómo se podría comprobar si la música le hace algo? Queda apuntado para un experimento."
     },
     {

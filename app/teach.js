@@ -92,14 +92,34 @@
     });
   }
 
+  var flushing = false;
+
+  /**
+   * Takes one word given out of the queue: the one that was sent, not whatever is first now.
+   *
+   * @param {Object} sent
+   */
+  function unqueue(sent) {
+    var key = JSON.stringify(sent);
+    var list = queued();
+    var at = list.map(JSON.stringify).indexOf(key);
+    if (at >= 0) {
+      list.splice(at, 1);
+      setQueue(list);
+    }
+  }
+
   function flush() {
     var list = queued();
-    if (!list.length || navigator.onLine === false) {
+    // One at a time: the connection that comes back while one is on its way does not send it twice.
+    if (flushing || !list.length || navigator.onLine === false) {
       return;
     }
+    flushing = true;
     var next = list[0];
     T.api('validate', next).then(function() {
-      setQueue(queued().slice(1));
+      flushing = false;
+      unqueue(next);
       if (queued().length) {
         flush();
       } else {
@@ -107,13 +127,14 @@
         load(true);
       }
     }).catch(function(e) {
+      flushing = false;
       if (e.network) {
         // Still no luck; it will try again when the connection comes back.
         return;
       }
       // The server said no (the challenge was deleted meanwhile, for instance): it will not say yes later.
       T.toast(esc(e.message), true);
-      setQueue(queued().slice(1));
+      unqueue(next);
       flush();
     });
   }
@@ -572,7 +593,8 @@
           '</button>';
       }).join('') + '<button class="pill" data-award="gems" data-amount="1">+1 ' + esc(t('app_gems')) + '</button>' +
       '<button class="pill" data-award="breath" data-amount="1">+1 ' + esc(t('app_breath')) + '</button>' +
-      '<button class="pill" data-award="energy" data-amount="-1" title="' + esc(t('teach_commitment_help')) + '">−1 ' +
+      // A commitment not kept costs the same here as in «Challenges» (LOSS in pacts.php).
+      '<button class="pill" data-award="energy" data-amount="-2" title="' + esc(t('teach_commitment_help')) + '">−2 ' +
       esc(t('app_energy')) + '</button></div></section>';
     bar.querySelectorAll('[data-award]').forEach(function(b) {
       b.onclick = function() {
@@ -1814,7 +1836,8 @@
       var reason = cfg.strings['app_reason_' + e.reason] ? t('app_reason_' + e.reason) : e.reason;
       return '<li class="item"><span style="width:22px;height:22px;flex:none">' + T.icon(e.resource === 'item' ? 'gems' :
         e.resource) + '</span><span class="grow"><b>' + esc(e.fullname) + '</b><small>' + esc(reason) +
-        (e.actor ? ' · ' + esc(e.actor) : '') + ' · ' + esc(new Date(e.time * 1000).toLocaleString(cfg.lang)) +
+        (e.actor ? ' · ' + esc(e.actor) : '') + ' · ' + esc(T.date(new Date(e.time * 1000), {day: 'numeric', month: 'short',
+          hour: '2-digit', minute: '2-digit'})) +
         (e.capped ? ' · ' + esc(t('app_capped', e.capped)) : '') + '</small></span><span class="amount ' + cls + '">' +
         (e.resource === 'item' ? '' : (e.amount > 0 ? '+' : '') + e.amount) + '</span>' + (can('undo') && !e.undone &&
         e.reason !== 'undo' ? '<button class="chip" data-undo="' + e.id + '">' + esc(t('teach_undo')) + '</button>' : '') +

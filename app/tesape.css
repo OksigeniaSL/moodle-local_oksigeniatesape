@@ -1628,6 +1628,11 @@ body.in-scene {
   animation: scene-turn .45s cubic-bezier(.2, .8, .2, 1) both;
 }
 
+/* The moment takes the focus when it comes in, so that the keyboard and the screen reader start there. */
+.scene-body:focus {
+  outline: none;
+}
+
 @keyframes scene-turn {
   from {
     opacity: 0;

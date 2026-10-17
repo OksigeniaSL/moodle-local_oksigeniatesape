@@ -49,6 +49,7 @@ final class play_minigame extends external_api {
             'courseid' => new external_value(PARAM_INT, 'Course'),
             'game' => new external_value(PARAM_ALPHANUMEXT, 'Minigame'),
             'events' => new external_value(PARAM_RAW, 'What the student did, in order (JSON list of a and net)'),
+            'playid' => new external_value(PARAM_ALPHANUM, 'Made by the device for the play: sent again, it counts once', VALUE_DEFAULT, ''),
         ]);
     }
 
@@ -58,18 +59,21 @@ final class play_minigame extends external_api {
      * @param int $courseid
      * @param string $game
      * @param string $events
+     * @param string $playid
      * @return array
      */
     public static function execute(
         int $courseid,
         string $game,
-        string $events
+        string $events,
+        string $playid = ''
     ): array {
         global $USER;
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
             'game' => $game,
             'events' => $events,
+            'playid' => $playid,
         ]);
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
@@ -78,7 +82,7 @@ final class play_minigame extends external_api {
         if (!is_array($events) || !array_is_list($events) || count($events) > 100) {
             throw new \invalid_parameter_exception('Events must be a JSON list');
         }
-        $result = minigames::play($params['courseid'], (int) $USER->id, $params['game'], $events);
+        $result = minigames::play($params['courseid'], (int) $USER->id, $params['game'], $events, null, $params['playid']);
         $mission = missions::get($params['courseid']);
         $result['items'] = array_map(fn($code) => (string) ($mission->data['items'][$code]['name'] ?? $code), $result['items']);
         $result['world'] = view::world($params['courseid'], (int) $USER->id);

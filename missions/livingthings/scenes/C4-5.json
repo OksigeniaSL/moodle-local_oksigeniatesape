@@ -248,7 +248,7 @@
      "id": "nada",
      "label": "No predecimos nada: ya se verá",
      "correct": false,
-     "objective": "SV-07",
+     "objective": "SV-05",
      "feedback": "Sin predicción, al final no hay con qué comparar. Apostar antes es parte del experimento."
     },
     {

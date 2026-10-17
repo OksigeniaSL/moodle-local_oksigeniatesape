@@ -57,6 +57,34 @@ final class market {
         if (!$item || !$member || $member->status === 'paused' || !regions::enabled($courseid)) {
             throw new \moodle_exception('nomarket', 'local_oksigeniatesape');
         }
+        // One purchase at a time for a character: a double tap does not pay twice.
+        engine::one_at_a_time((int) $char->id, function () use ($item, $courseid, $userid, $code, $amount, $member, $now) {
+            self::pay($item, $courseid, $userid, $code, $amount, $member, $now);
+        });
+    }
+
+    /**
+     * Pays for something, inside the lock of the character.
+     *
+     * @param array $item
+     * @param int $courseid
+     * @param int $userid
+     * @param string $code
+     * @param int $amount
+     * @param \stdClass $member
+     * @param int $now
+     */
+    private static function pay(
+        array $item,
+        int $courseid,
+        int $userid,
+        string $code,
+        int $amount,
+        \stdClass $member,
+        int $now
+    ): void {
+        global $DB;
+        $char = characters::get($userid);
         $transaction = $DB->start_delegated_transaction();
         if ($item['team']) {
             $team = teams::of($courseid, $userid);

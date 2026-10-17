@@ -150,6 +150,31 @@ final class pacts {
             foreach ($DB->get_records_select(self::T . 'ledger', $where, [$pact->charid, $pact->courseid, $pact->id]) as $entry) {
                 engine::undo((int) $entry->id, $actorid, $now);
             }
+            // And what a shield cost the protector for it, with the shield ready again.
+            $where = "courseid = ? AND resource = 'energy' AND reason = 'shield' AND refid = ? AND undoneby = 0 AND amount < 0";
+            $shields = $DB->get_records_select(self::T . 'ledger', $where, [$pact->courseid, $pact->id]);
+            foreach ($shields as $entry) {
+                engine::undo((int) $entry->id, $actorid, $now);
+            }
+            $guarded = $member ? $DB->record_exists_select(self::T . 'ledger', "charid = ? AND courseid = ? AND reason = 'shield'
+                AND refid = ? AND undoneby = 0", [$pact->charid, $pact->courseid, $pact->id]) : false;
+            if ($guarded) {
+                $used = $DB->get_records_sql(
+                    "SELECT r.id
+                       FROM {" . self::T . "powerreq} r
+                       JOIN {" . self::T . "power} p ON p.id = r.powerid
+                      WHERE p.code = 'shield' AND r.status = 'used' AND r.targetmemberid = ?
+                   ORDER BY r.id DESC",
+                    [$member->id],
+                    0,
+                    1
+                );
+                foreach ($used as $request) {
+                    $DB->set_field(self::T . 'powerreq', 'status', 'approved', ['id' => $request->id]);
+                }
+                $DB->set_field_select(self::T . 'ledger', 'undoneby', $actorid, "charid = ? AND courseid = ? AND reason = 'shield'
+                    AND refid = ? AND undoneby = 0", [$pact->charid, $pact->courseid, $pact->id]);
+            }
         }
         $pact->status = $status;
         $pact->decidedby = $status === 'open' ? 0 : $actorid;

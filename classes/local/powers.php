@@ -243,28 +243,34 @@ final class powers {
         if ((int) $char->level < (int) $power->minlevel) {
             throw new \moodle_exception('powerlocked', 'local_oksigeniatesape', '', $power->minlevel);
         }
-        if ($DB->record_exists(self::T . 'powerreq', ['powerid' => $power->id, 'memberid' => $member->id, 'status' => 'pending'])) {
-            throw new \moodle_exception('powerpending', 'local_oksigeniatesape');
-        }
         $target = self::check_target($courseid, $userid, self::target($power), $targetuserid);
-        if ((int) $member->breath < (int) $power->cost) {
-            throw new \moodle_exception('notenoughbreath', 'local_oksigeniatesape');
-        }
-        $transaction = $DB->start_delegated_transaction();
-        $request = (object) [
-            'powerid' => $power->id,
-            'memberid' => $member->id,
-            'targetmemberid' => $target ? $target->id : 0,
-            'status' => 'pending',
-            'decidedby' => 0,
-            'timecreated' => $now,
-            'timedecided' => 0,
-        ];
-        $request->id = $DB->insert_record(self::T . 'powerreq', $request);
-        if ($power->cost > 0) {
-            engine::breath($member, -(int) $power->cost, 'power', $userid, (int) $request->id, $now);
-        }
-        $transaction->allow_commit();
+        // One request at a time for a character: what is pending and the breath are read again inside.
+        $request = engine::one_at_a_time((int) $char->id, function () use ($DB, $power, $member, $target, $userid, $now) {
+            $member = $DB->get_record(self::T . 'member', ['id' => $member->id], '*', MUST_EXIST);
+            $pending = ['powerid' => $power->id, 'memberid' => $member->id, 'status' => 'pending'];
+            if ($DB->record_exists(self::T . 'powerreq', $pending)) {
+                throw new \moodle_exception('powerpending', 'local_oksigeniatesape');
+            }
+            if ((int) $member->breath < (int) $power->cost) {
+                throw new \moodle_exception('notenoughbreath', 'local_oksigeniatesape');
+            }
+            $transaction = $DB->start_delegated_transaction();
+            $request = (object) [
+                'powerid' => $power->id,
+                'memberid' => $member->id,
+                'targetmemberid' => $target ? $target->id : 0,
+                'status' => 'pending',
+                'decidedby' => 0,
+                'timecreated' => $now,
+                'timedecided' => 0,
+            ];
+            $request->id = $DB->insert_record(self::T . 'powerreq', $request);
+            if ($power->cost > 0) {
+                engine::breath($member, -(int) $power->cost, 'power', $userid, (int) $request->id, $now);
+            }
+            $transaction->allow_commit();
+            return $request;
+        });
         if ($power->autoapprove) {
             return self::decide((int) $request->id, true, 0, $now);
         }

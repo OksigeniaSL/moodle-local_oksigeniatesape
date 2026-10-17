@@ -167,15 +167,15 @@
      "id": "si",
      "label": "Sí: se reproduce, y con eso basta",
      "correct": false,
-     "objective": "SV-01",
+     "objective": "SV-07",
      "feedback": "Solo si entra en una célula de otro. Fuera, no se alimenta, no crece y no responde. Una sola prueba no basta."
     },
     {
-     "id": false,
+     "id": "no",
      "label": "No: no tiene células, así que no hay más que hablar",
      "correct": false,
      "points": 1,
-     "objective": "SV-01",
+     "objective": "SV-07",
      "feedback": "Buen argumento, y hay sabios que lo defienden. Pero otros no, y por eso el consejo prefiere «caso abierto» a cerrar lo que no está cerrado."
     },
     {
@@ -218,7 +218,7 @@
      "id": "vieja",
      "label": "No podía estar viva: nada aguanta dos mil años",
      "correct": false,
-     "objective": "SV-07",
+     "objective": "SV-01",
      "feedback": "Pues germinó. Cuando los hechos contradicen lo que creíamos, cambiamos lo que creíamos, no los hechos."
     },
     {

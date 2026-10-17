@@ -359,9 +359,10 @@
         <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="cmid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Activity it was launched from, if any"/>
         <FIELD NAME="game" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false" COMMENT="For example nestdefence"/>
+        <FIELD NAME="playid" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="Made by the device for each play, so that a play sent again counts once"/>
         <FIELD NAME="success" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="tries" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
-        <FIELD NAME="detail" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="What they mixed up (JSON), for the teacher"/>
+        <FIELD NAME="detail" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="What they mixed up (JSON), for the teacher; and what the play gave, when it has a playid"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
@@ -369,6 +370,9 @@
         <KEY NAME="charid" TYPE="foreign" FIELDS="charid" REFTABLE="local_oksigeniatesape_char" REFFIELDS="id"/>
         <KEY NAME="courseid" TYPE="foreign" FIELDS="courseid" REFTABLE="course" REFFIELDS="id"/>
       </KEYS>
+      <INDEXES>
+        <INDEX NAME="charid-playid" UNIQUE="false" FIELDS="charid, playid"/>
+      </INDEXES>
     </TABLE>
     <TABLE NAME="local_oksigeniatesape_idea" COMMENT="Ideas from students to their teacher: only the teachers of the course read them">
       <FIELDS>
@@ -499,7 +503,7 @@
         <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="daystart" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Start of the day, in the time zone of the region"/>
         <FIELD NAME="question" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false" COMMENT="Id of the question of the mission"/>
-        <FIELD NAME="answer" TYPE="int" LENGTH="4" NOTNULL="true" SEQUENCE="false" COMMENT="Option chosen, as shown"/>
+        <FIELD NAME="answer" TYPE="int" LENGTH="4" NOTNULL="true" SEQUENCE="false" COMMENT="Option chosen, as shown (-1: shown, not answered yet)"/>
         <FIELD NAME="success" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>

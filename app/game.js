@@ -367,12 +367,17 @@
       var had = null;
       try {
         had = window.localStorage.getItem(bkey);
-        window.localStorage.setItem(bkey, b.name);
       } catch (e) {
         had = b.name;
       }
       if (had !== b.name) {
         moments.push(function(then) {
+          // Seen once it shows, not when it is queued: a scene opened from the welcome does not leave it unseen.
+          try {
+            window.localStorage.setItem(bkey, b.name);
+          } catch (e) {
+            // Without storage it shows again next time, which is better than never.
+          }
           badgeMoment(b, then);
         });
       }
@@ -439,6 +444,8 @@
           state.world = world;
           remember();
           route();
+          // The moments that were waiting after the welcome come now.
+          then();
         }});
       };
     });

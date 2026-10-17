@@ -142,13 +142,15 @@ final class live_test extends \advanced_testcase {
         $this->assertEquals(live::WIN_SABER, $best['saber']);
         $this->assertEquals(live::WIN_GEMS, $best['gems']);
         $this->assertTrue($best['best']);
-        // The sample mission has an object for the team that helped most.
-        $this->assertEquals('el hilo desenredado', $best['item']);
+        // The object of the mission is what is left of the Embrollo at the end: not in a battle to practise. The team
+        // that helped most gets more gems.
+        $this->assertEquals('', $best['item']);
+        $this->assertEquals(live::WIN_GEMS + live::TEAM_GEMS, $best['gems']);
         $this->assertEquals('', $other['item']);
         $this->assertEquals(live::WIN_GEMS, $other['gems']);
         $thread = $DB->get_field(self::T . 'item', 'id', ['code' => 'thread']);
-        $this->assertTrue($DB->record_exists(self::T . 'inventory', ['charid' => $members[0]->charid, 'itemid' => $thread]));
-        $this->assertFalse($DB->record_exists(self::T . 'inventory', ['charid' => $members[2]->charid, 'itemid' => $thread]));
+        $this->assertFalse($thread && $DB->record_exists(self::T . 'inventory', ['charid' => $members[0]->charid,
+            'itemid' => $thread]));
         $where = "reason = 'battle' AND refid = ? AND resource IN ('saber', 'gems')";
         $this->assertEquals(8, $DB->count_records_select(self::T . 'ledger', $where, [$live->id]));
         // Finishing again gives nothing more.
@@ -182,14 +184,9 @@ final class live_test extends \advanced_testcase {
             $this->assertTrue($best['best']);
             $this->assertFalse($other['best']);
             $this->assertEquals(live::WIN_GEMS, $other['gems']);
-            if ($battle === 1) {
-                $this->assertEquals('el hilo desenredado', $best['item']);
-                $this->assertEquals(live::WIN_GEMS, $best['gems']);
-            } else {
-                // They already have the object: the gems instead.
-                $this->assertEquals('', $best['item']);
-                $this->assertEquals(live::WIN_GEMS + live::TEAM_GEMS, $best['gems']);
-            }
+            // Battles to practise: more gems for the team that helped most, each time.
+            $this->assertEquals('', $best['item']);
+            $this->assertEquals(live::WIN_GEMS + live::TEAM_GEMS, $best['gems']);
         }
     }
 

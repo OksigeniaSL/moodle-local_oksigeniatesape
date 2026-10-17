@@ -412,11 +412,19 @@ final class minigames {
      * @param int $courseid
      * @param int $userid
      * @param string $code
-     * @param array $events Each one: a (the animal) and net (the net thrown; empty if it reached the nest).
+     * @param array $events What the student did, as each kind of game counts it.
      * @param int|null $now
-     * @return array success, caught, missed, goal, tries, first, items, coat.
+     * @param string $playid Made by the device: a play sent again with it counts once.
+     * @return array success, caught, missed, goal, tries, first, items, coat, gems.
      */
-    public static function play(int $courseid, int $userid, string $code, array $events, ?int $now = null): array {
+    public static function play(
+        int $courseid,
+        int $userid,
+        string $code,
+        array $events,
+        ?int $now = null,
+        string $playid = ''
+    ): array {
         global $DB;
         $now = $now ?? time();
         if (!regions::enabled($courseid)) {
@@ -429,6 +437,15 @@ final class minigames {
         $member = engine::member($char, $courseid, $now);
         if ($member->status === 'paused') {
             throw new \moodle_exception('pausedgame', 'local_oksigeniatesape');
+        }
+        if ($playid !== '') {
+            $done = $DB->get_record(self::T . 'minigame', ['charid' => $char->id, 'playid' => $playid]);
+            $kept = $done ? (json_decode((string) $done->detail, true)['result'] ?? null) : null;
+            if ($kept) {
+                // The same play, sent again because the answer was lost on the way: counted once, and what it gave is
+                // shown again.
+                return $kept;
+            }
         }
         $mission = missions::get($courseid);
         $game = $mission ? self::config($mission, $code, (int) $member->step) : null;
@@ -448,17 +465,19 @@ final class minigames {
         }
         $transaction = $DB->start_delegated_transaction();
         $tries = $DB->count_records(self::T . 'minigame', ['charid' => $char->id, 'courseid' => $courseid, 'game' => $code]) + 1;
-        $DB->insert_record(self::T . 'minigame', (object) [
+        $detail = ['step' => (int) $member->step, 'caught' => $caught, 'missed' => $missed, 'wrong' => $wrong];
+        $playrecord = (object) [
             'charid' => $char->id,
             'courseid' => $courseid,
             'cmid' => 0,
             'game' => $code,
+            'playid' => $playid !== '' ? $playid : null,
             'success' => $success ? 1 : 0,
             'tries' => $tries,
-            'detail' => json_encode(['step' => (int) $member->step, 'caught' => $caught, 'missed' => $missed,
-                'wrong' => $wrong]),
+            'detail' => json_encode($detail),
             'timecreated' => $now,
-        ]);
+        ];
+        $playrecord->id = $DB->insert_record(self::T . 'minigame', $playrecord);
         $result = ['success' => $success, 'caught' => $caught, 'missed' => $missed, 'goal' => $game['goal'],
             'tries' => $tries, 'first' => false, 'items' => [], 'coat' => false, 'gems' => 0];
         $key = ['charid' => $char->id, 'missionid' => $mission->id, 'kind' => 'game', 'code' => $code];
@@ -474,6 +493,9 @@ final class minigames {
             if (!empty($reward['gems']) && engine::gems($member, (int) $reward['gems'], 'minigame', 0, 0, 0, $now)) {
                 $result['gems'] = (int) $reward['gems'];
             }
+        }
+        if ($playid !== '') {
+            $DB->set_field(self::T . 'minigame', 'detail', json_encode($detail + ['result' => $result]), ['id' => $playrecord->id]);
         }
         $transaction->allow_commit();
         return $result;

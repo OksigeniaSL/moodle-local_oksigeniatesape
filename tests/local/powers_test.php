@@ -290,6 +290,32 @@ final class powers_test extends \advanced_testcase {
         $this->assertSame(engine::ENERGY_MAX - 2, (int) $this->member($w, 'sage')->energy);
     }
 
+    public function test_a_commitment_kept_after_all_gives_the_shield_back(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $w = $this->make_team();
+        $request = powers::request(
+            $w->course->id,
+            $w->users['protector']->id,
+            $this->power($w, 'shield')->id,
+            $w->users['sage']->id
+        );
+        powers::decide((int) $request->id, true, $w->teacher->id);
+        $sage = $this->member($w, 'sage');
+        $pact = (object) ['charid' => $sage->charid, 'courseid' => $w->course->id, 'missionid' => 0, 'groupid' => 0,
+            'chapter' => 'claro', 'text' => 'Bring a seed', 'status' => 'open', 'decidedby' => 0, 'timecreated' => time(),
+            'timedecided' => 0];
+        $pact->id = $DB->insert_record(self::T . 'pact', $pact);
+        // Marked as not kept by mistake: the shield stops it and the protector pays half.
+        pacts::decide((int) $pact->id, 'broken', $w->teacher->id);
+        $this->assertSame(engine::ENERGY_MAX, (int) $this->member($w, 'sage')->energy);
+        $this->assertLessThan(engine::ENERGY_MAX, (int) $this->member($w, 'protector')->energy);
+        // Kept after all: the protector gets it back, and the shield is ready again.
+        pacts::decide((int) $pact->id, 'kept', $w->teacher->id);
+        $this->assertSame(engine::ENERGY_MAX, (int) $this->member($w, 'protector')->energy);
+        $this->assertSame('approved', $DB->get_field(self::T . 'powerreq', 'status', ['id' => $request->id]));
+    }
+
     public function test_wall_stops_the_team_today(): void {
         global $DB;
         $this->resetAfterTest();

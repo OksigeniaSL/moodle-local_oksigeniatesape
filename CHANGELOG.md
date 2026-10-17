@@ -1,5 +1,37 @@
 # Changelog
 
+## 0.56.0 (2026-10-17)
+
+Fixes from a review of the code, the data and the texts (mission version 20):
+
+- **Rules the server now closes**: only the scenes of the mission in course are played (those of past expeditions are
+  read); a play starts at a retry node only after that retry; the page of the day keeps the question it showed, even if
+  a new chapter is played before answering; who left the course no longer counts for lanterns, footprints, the final
+  lantern, results or badges.
+- **Races**: two requests creating the player in a course at once; a double tap (or two tabs) spending the same breath
+  on two powers, or paying twice in the market; a commitment kept after all now gives back what the shield cost the
+  protector, and the shield is ready again.
+- **A minigame sent again** from the queue of the device counts once and shows again what it gave (database: `playid`
+  in `minigame`).
+- **The class screen**: during a battle it is drawn again only when something changes (a tap on «Reveal» was lost now
+  and then, and the Embrollo shook at every poll); a double tap on «Play» opens one scene and one vote; the button to
+  close a vote is drawn once; the roles of the class open the options of a role at the class screen, on both sides;
+  the battle closed stays closed after reloading the page.
+- **Scenes**: each new moment takes the focus (keyboard and screen reader no longer start from the page under it);
+  a failure while showing the end of a play no longer asks to play it again; a session lost in the middle of a scene
+  waits until it is closed to start the page again.
+- **Mission data**: every option of a question counts for the objective of the question (some objectives only
+  collected mistakes); in «The cellar of the lanterns» the good ending needs the light; the creature born asleep wakes
+  up when the nest is made well; the page «The footprints of nobody» is given at the end of the owl; the page count
+  is what the role of the student can get; an option id read as «false» broke «The court of life»; the question of the
+  cell goes with the library and does not show if the teacher leaves SV-02 without a competency; the goals of
+  Defensa del nido match its shield.
+- **Smaller**: a student paused during a battle no longer answers or uses tokens; the thread of the Embrollo only in
+  the final battle; −2 energy in «Class», as for a commitment not kept;
+  Space presses buttons in the minigames; the queue of words given by the teacher sends one at a time; the badge is
+  celebrated even after a scene from the welcome; dates for any language of the site; sound unlocked on the first
+  click too (iPad); texts that promised a blot more than the rule allows, or one minigame where there are two.
+
 ## 0.55.0 (2026-10-17)
 
 - **Who am I?**, a new kind of minigame, in the garden and in the tower (mission version 19): the Embrollo has turned

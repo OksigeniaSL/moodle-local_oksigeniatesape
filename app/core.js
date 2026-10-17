@@ -198,6 +198,25 @@
       'rx="1" fill="currentColor"/>') + '</svg>';
   };
 
+  /**
+   * A date in the language of the site, also when Moodle's name for it is not one the browser knows (en_kids).
+   *
+   * @param {Date} date
+   * @param {Object} opts As for Intl.DateTimeFormat.
+   * @return {string}
+   */
+  T.date = function(date, opts) {
+    var langs = [cfg.lang, String(cfg.lang || '').slice(0, 2), undefined];
+    for (var i = 0; i < langs.length; i++) {
+      try {
+        return new Intl.DateTimeFormat(langs[i], opts).format(date);
+      } catch (e) {
+        // The next one.
+      }
+    }
+    return date.toLocaleString();
+  };
+
   T.mapWalk = function(key, chapters, here) {
     var store = 'tesape-here-' + key;
     var now = Date.now();
@@ -346,9 +365,21 @@
         err.errorcode = e.errorcode || 'error';
         if (e.errorcode === 'servicerequireslogin' || e.errorcode === 'invalidsesskey') {
           // The session ended, or another student came in on this device: what was being sent waits, and the page
-          // starts again.
+          // starts again. Not in the middle of a scene or a game: the page starts again when it is closed.
           err.retry = true;
-          window.location.reload();
+          var open = document.querySelector('.scene-layer');
+          if (!open) {
+            window.location.reload();
+          } else if (!T.reloading) {
+            T.reloading = true;
+            T.toast(T.esc(T.t('app_session_ended')), true);
+            new MutationObserver(function(changes, watch) {
+              if (!document.querySelector('.scene-layer')) {
+                watch.disconnect();
+                window.location.reload();
+              }
+            }).observe(document.body, {childList: true});
+          }
         }
         throw err;
       }

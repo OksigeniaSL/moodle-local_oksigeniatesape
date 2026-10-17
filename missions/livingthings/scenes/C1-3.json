@@ -41,8 +41,8 @@
    "speaker": "druida-mayor",
    "image": "claro-lupa",
    "text": {
-    "valley": "{{creature}} sigue con los ojos cerrados. La druida mayor la mira con la lupa potente: «Respira despacio y el pecho le sube y le baja. Dormida también está viva. Hoy aprendemos a mirar así: de cerca y sin prisa». Deja en el claro una bandeja con cosas que parecen polvo y tres cajas: lo vivo, lo no vivo y lo que la ciencia todavía discute. «Usar la tercera no es rendirse: es ser honrado.»",
-    "azara": "{{creature}} sigue con los ojos cerrados. El naturalista la mira con su lupa: «Respira despacio y el pecho le sube y le baja. Dormida también está viva. Hoy aprendemos a mirar así: de cerca y sin prisa». Saca una bandeja con muestras que parecen polvo y tres cajas: lo vivo, lo no vivo y lo que los sabios todavía discuten. «Usar la tercera no es rendirse: es ser honrado.»"
+    "valley": "{{creature}} todavía tiene los ojos medio cerrados: nació dormida y le cuesta despertar. La druida mayor la mira con la lupa potente: «Respira despacio y el pecho le sube y le baja. Dormida o despierta, está viva. Hoy aprendemos a mirar así: de cerca y sin prisa». Deja en el claro una bandeja con cosas que parecen polvo y tres cajas: lo vivo, lo no vivo y lo que la ciencia todavía discute. «Usar la tercera no es rendirse: es ser honrado.»",
+    "azara": "{{creature}} todavía tiene los ojos medio cerrados: nació dormida y le cuesta despertar. El naturalista la mira con su lupa: «Respira despacio y el pecho le sube y le baja. Dormida o despierta, está viva. Hoy aprendemos a mirar así: de cerca y sin prisa». Saca una bandeja con muestras que parecen polvo y tres cajas: lo vivo, lo no vivo y lo que los sabios todavía discuten. «Usar la tercera no es rendirse: es ser honrado.»"
    },
    "next": "mirar"
   },

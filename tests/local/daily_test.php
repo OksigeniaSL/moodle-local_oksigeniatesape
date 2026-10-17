@@ -124,6 +124,22 @@ final class daily_test extends \advanced_testcase {
         $this->assertSame($wrong['question']['text'], $next['question']['text']);
     }
 
+    public function test_the_page_answered_is_the_page_shown(): void {
+        global $DB;
+        $this->resetAfterTest();
+        [$course, $char, $member] = $this->make_student();
+        $shown = daily::today($char, $member, self::NOW);
+        $right = $this->right($char, $member, self::NOW);
+        // A scene of another chapter in between: more questions to pick from, and still the same page.
+        $mission = missions::get($course->id);
+        $scene = $DB->get_record(self::T . 'scene', ['missionid' => $mission->id, 'code' => 'C2-1']);
+        $events = autoplayer::play(json_decode($scene->definition, true), [], ['sage'], [], 'sage');
+        scenes::play($course->id, $char->userid, $scene->id, $events, null, self::NOW + HOURSECS);
+        $later = self::NOW + 2 * HOURSECS;
+        $this->assertSame($shown['question'], daily::today($char, $member, $later)['question']);
+        $this->assertTrue(daily::answer($char, $member, $right, $later));
+    }
+
     public function test_no_page_without_a_creature_or_while_paused(): void {
         $this->resetAfterTest();
         [$course, $char, $member] = $this->make_student();

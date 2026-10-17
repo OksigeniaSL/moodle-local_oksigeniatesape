@@ -127,7 +127,7 @@ final class live {
     public static function start_vote(int $courseid, int $sceneid, ?int $now = null): \stdClass {
         global $DB;
         $now = $now ?? time();
-        scenes::get($courseid, $sceneid);
+        scenes::playable($courseid, $sceneid);
         $DB->set_field_select(self::T . 'live', 'timeend', $now, 'courseid = ? AND timeend = 0', [$courseid]);
         $state = ['mode' => 'phones', 'secs' => 0, 'sceneid' => $sceneid, 'questions' => [], 'rounds' => [], 'open' => false,
             'closesat' => 0, 'hp' => 0, 'maxhp' => 0, 'outcome' => '', 'rewarded' => []];
@@ -304,6 +304,10 @@ final class live {
         global $DB;
         $now = $now ?? time();
         $state = self::state($live);
+        // Paused after coming in: no more answers, as when coming in.
+        if ($member->status === 'paused') {
+            throw new \moodle_exception('pausedgame', 'local_oksigeniatesape');
+        }
         $joined = $DB->get_record(self::T . 'livein', ['liveid' => $live->id, 'round' => 0, 'charid' => $member->charid]);
         if (!$joined || $round !== (int) $live->round || !self::is_open($state, $now)) {
             throw new \moodle_exception('roundclosed', 'local_oksigeniatesape');
@@ -579,6 +583,9 @@ final class live {
         $state = self::state($live);
         $round = (int) $live->round;
         $kind = self::TOKENS[self::role($member)] ?? '';
+        if ($member->status === 'paused') {
+            throw new \moodle_exception('pausedgame', 'local_oksigeniatesape');
+        }
         $joined = $DB->get_record(self::T . 'livein', ['liveid' => $live->id, 'round' => 0, 'charid' => $member->charid]);
         $playing = $live->kind === 'battle' && $state['mode'] === 'phones' && $state['outcome'] === '';
         if (!$kind || !$joined || !$playing || $round < 1 || !self::is_open($state, $now)) {
@@ -873,7 +880,9 @@ final class live {
         $mission = missions::get($courseid);
         $code = (string) ($mission->data['battle']['reward'] ?? '');
         $item = $code ? ($mission->data['items'][$code] ?? []) : [];
-        $itemid = $code ? missions::item_id($code, $item['name'] ?? null, $item['description'] ?? null, $mission->code) : 0;
+        // What is left of the Embrollo when the class beats it: only in the final battle.
+        $itemid = $code && !empty($state['final']) ?
+            missions::item_id($code, $item['name'] ?? null, $item['description'] ?? null, $mission->code) : 0;
         // The final battle gives what the mission saves for the end, once for each player.
         $final = !empty($state['final']) ? ($mission->data['battle']['final'] ?? []) : [];
         if ($final && !empty($final['lantern'])) {
@@ -905,7 +914,7 @@ final class live {
             // The lantern of the place is the class beating the Embrollo, also for whoever was not in class that day: missing
             // the battle does not leave anyone without the badge of the mission.
             $lantern = (string) $final['lantern'];
-            $where = 'courseid = ? AND status <> ?';
+            $where = 'courseid = ? AND status <> ? AND leftat = 0';
             foreach ($DB->get_records_select(self::T . 'member', $where, [$courseid, 'paused'], '', 'id, charid') as $member) {
                 $charid = (int) $member->charid;
                 if (!isset($players[$charid]) && self::once($charid, $courseid, (int) $mission->id, 'lantern', $lantern, $now)) {

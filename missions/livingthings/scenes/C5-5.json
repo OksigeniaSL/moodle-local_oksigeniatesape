@@ -59,7 +59,7 @@
      "id": "solos",
      "label": "Que los números suben solos con el tiempo",
      "correct": false,
-     "objective": "SV-06",
+     "objective": "SV-08",
      "feedback": "Nada subió solo: hubo años en los que bajaba. Algo cambió entre medias, y eso es lo que hay que averiguar."
     },
     {

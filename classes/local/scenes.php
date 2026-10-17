@@ -69,6 +69,22 @@ final class scenes {
     }
 
     /**
+     * A scene of the mission in course, to play it: those of past expeditions are only read.
+     *
+     * @param int $courseid
+     * @param int $sceneid
+     * @return \stdClass With the definition decoded in data.
+     */
+    public static function playable(int $courseid, int $sceneid): \stdClass {
+        $scene = self::get($courseid, $sceneid);
+        $mission = missions::get($courseid);
+        if (!$mission || (int) $scene->missionid !== (int) $mission->id) {
+            throw new \moodle_exception('invalidgameplay', 'local_oksigeniatesape');
+        }
+        return $scene;
+    }
+
+    /**
      * The scenes of a chapter a student plays: those of their step, or the core ones where there are none for it. Not
      * the quests.
      *
@@ -124,11 +140,40 @@ final class scenes {
                     'minutes' => (int) ($def['minutes'] ?? 0),
                     'mode' => in_array($def['mode'] ?? '', ['solo', 'team'], true) ? $def['mode'] : 'both',
                     'best' => array_map('strval', $best),
+                    'pages' => self::pages_given($def),
                 ];
             }
             $cache->set($key, $list);
         }
         return $list;
+    }
+
+    /**
+     * The pages of the Gran Libro a scene gives, and who can get each: anybody (''), or only one role, when the
+     * only way to it is an option of that role.
+     *
+     * @param array $def The scene.
+     * @return array Page => roles that can get it ('' for anybody).
+     */
+    private static function pages_given(array $def): array {
+        $pages = [];
+        $add = function (array $effects, string $role) use (&$pages) {
+            foreach ($effects as $effect) {
+                if (isset($effect['page'])) {
+                    $pages[(string) $effect['page']][$role] = true;
+                }
+            }
+        };
+        foreach ($def['nodes'] ?? [] as $node) {
+            $add($node['effects'] ?? [], '');
+            foreach ($node['options'] ?? [] as $option) {
+                $add($option['effects'] ?? [], (string) ($option['requires']['role'] ?? ''));
+            }
+            foreach ($node['items'] ?? [] as $item) {
+                $add($item['effects'] ?? [], '');
+            }
+        }
+        return array_map('array_keys', $pages);
     }
 
     /**
@@ -311,7 +356,7 @@ final class scenes {
         if ($member->status === 'paused') {
             throw new \moodle_exception('pausedgame', 'local_oksigeniatesape');
         }
-        $scene = self::get($courseid, $sceneid);
+        $scene = self::playable($courseid, $sceneid);
         if ($playid !== '') {
             $done = $DB->get_record(self::T . 'sceneattempt', ['charid' => $char->id, 'sceneid' => $scene->id,
                 'playid' => $playid]);
@@ -322,6 +367,16 @@ final class scenes {
                     'retry' => (string) ($node['retry'] ?? ''), 'points' => (int) $done->score,
                     'objectives' => json_decode((string) $done->objectives, true) ?: [], 'rewards' => [],
                     'attempt' => (int) $done->attempt, 'teamwith' => []];
+            }
+        }
+        // A play starts where the scene starts, or where a retry ending of the last play of this student sent back.
+        if ($from !== null && $from !== (string) ($scene->data['start'] ?? '')) {
+            $mine = ['sceneid' => $scene->id, 'charid' => $char->id];
+            $last = $DB->get_records(self::T . 'sceneattempt', $mine, 'id DESC', 'id, ending', 0, 1);
+            $last = reset($last);
+            $ending = $last ? ($scene->data['nodes'][$last->ending] ?? []) : [];
+            if ((string) ($ending['retry'] ?? '') !== $from) {
+                throw new \moodle_exception('invalidgameplay', 'local_oksigeniatesape');
             }
         }
         [$items, $roles, $flags] = self::context($char, $courseid);
@@ -492,17 +547,17 @@ final class scenes {
         if (!regions::enabled($courseid)) {
             throw new \moodle_exception('gameoff', 'local_oksigeniatesape');
         }
-        $scene = self::get($courseid, $sceneid);
+        $scene = self::playable($courseid, $sceneid);
         [$items, $roles] = self::class_context($courseid);
         $members = array_filter(
             $DB->get_records(self::T . 'member', ['courseid' => $courseid]),
-            fn($m) => $m->status !== 'paused' && (!$charids || in_array((int) $m->charid, $charids, true))
+            fn($m) => $m->status !== 'paused' && empty($m->leftat) && (!$charids || in_array((int) $m->charid, $charids, true))
         );
         $chars = [];
         foreach ($members as $member) {
             $chars[$member->id] = $DB->get_record(self::T . 'char', ['id' => $member->charid], '*', MUST_EXIST);
         }
-        $runner = new scene_runner($scene->data, $items, $roles);
+        $runner = new scene_runner($scene->data, $items, $roles, [], '', true);
         $result = $runner->run($events, $from);
         $rewarded = 0;
         if (in_array($result['outcome'], ['success', 'partial'], true)) {
@@ -588,6 +643,11 @@ final class scenes {
             if (isset($effect['flag'])) {
                 // Memory of the mission: what they did here changes other scenes.
                 self::found($char, $member, $mission, 'flag', (string) $effect['flag'], $now);
+            }
+            if (isset($effect['unflag'])) {
+                // And what is undone: the creature born asleep wakes up when the nest is made well.
+                $DB->delete_records(self::T . 'found', ['charid' => $char->id, 'missionid' => $mission->id, 'kind' => 'flag',
+                    'code' => (string) $effect['unflag']]);
             }
             if (isset($effect['breath']) && self::found($char, $member, $mission, 'breath', $scene->code, $now)) {
                 engine::breath($member, (int) $effect['breath'], 'scene', 0, (int) $scene->id, $now);
@@ -714,7 +774,8 @@ final class scenes {
         if (!$chapter || $chapter->litat) {
             return false;
         }
-        $players = $DB->count_records_select(self::T . 'member', "courseid = ? AND status <> 'paused'", [$mission->courseid]);
+        $where = "courseid = ? AND status <> 'paused' AND leftat = 0";
+        $players = $DB->count_records_select(self::T . 'member', $where, [$mission->courseid]);
         $lit = $DB->count_records(self::T . 'found', ['missionid' => $mission->id, 'kind' => 'lantern', 'code' => $code]);
         if (!$players || $lit < $players * self::CLASS_LANTERN_SHARE) {
             return false;

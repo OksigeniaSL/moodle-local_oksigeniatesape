@@ -47,6 +47,9 @@ final class leaving_test extends \advanced_testcase {
         $left = (int) $DB->get_field(self::T . 'member', 'leftat', ['id' => $member->id]);
         $this->assertGreaterThan(0, $left);
         $this->assertEquals(0, leaving::forget());
+        // Who left plays no more: they do not count in the results of the class.
+        missions::install($course->id, 'livingthings', 'valley', 'es');
+        $this->assertSame(0, results::mission($course->id)['players']);
         // Back by mistake: all theirs again.
         $manual->enrol_user($instance, $user->id, $DB->get_field('role', 'id', ['shortname' => 'student']));
         $this->assertEquals(0, (int) $DB->get_field(self::T . 'member', 'leftat', ['id' => $member->id]));

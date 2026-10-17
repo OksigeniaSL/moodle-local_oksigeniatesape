@@ -298,7 +298,8 @@
         return Promise.resolve(count);
       }
       var p = list[0];
-      var call = p.kind === 'minigame' ? T.api('play_minigame', {courseid: cfg.courseid, game: p.game, events: p.events}) :
+      var call = p.kind === 'minigame' ? T.api('play_minigame', {courseid: cfg.courseid, game: p.game, playid: p.playid || '',
+        events: p.events}) :
         T.api('play_scene', {courseid: cfg.courseid, sceneid: p.sceneid, events: p.events, start: p.start || '',
         team: p.team || '', playid: p.playid || ''});
       return call.then(function() {
@@ -425,7 +426,7 @@
         esc(t('app_read_aloud')) + '" title="' + esc(t('app_read_aloud')) + '">🔊</button>' : '') +
         (saving ? '' : '<button class="btn btn-soft scene-close" type="button" aria-label="' + esc(t('app_close')) +
         '">✕</button>') + '</div>' + (opts.team && opts.team.length ? '<p class="team-banner">' + esc(t('app_team_banner')) +
-        '</p>' : '') + '<div class="scene-body">' + html + '</div></div>';
+        '</p>' : '') + '<div class="scene-body" tabindex="-1">' + html + '</div></div>';
       var cross = layer.querySelector('.scene-close');
       if (cross) {
         cross.onclick = close;
@@ -437,10 +438,9 @@
         };
       }
       layer.scrollTop = 0;
-      var focus = layer.querySelector('[data-focus]');
-      if (focus) {
-        focus.focus();
-      }
+      // The keyboard and the screen reader go on from the start of the new moment, never from the page under the scene.
+      var focus = layer.querySelector('[data-focus]') || layer.querySelector('.scene-body');
+      focus.focus({preventScroll: true});
       return layer.querySelector('.scene-body');
     }
 
@@ -496,7 +496,8 @@
         return run.flags.indexOf(req.flag) >= 0;
       }
       if (req.role) {
-        return !cm && data.role === req.role;
+        // The whole class, at the class screen, has the role of any of its players.
+        return cm ? cm.roles.indexOf(req.role) >= 0 : data.role === req.role;
       }
       if (cm && req.item) {
         return cm.items.indexOf(req.item) >= 0;
@@ -980,21 +981,32 @@
     function classVote(body, n, open) {
       var box = body.querySelector('[data-vote]');
       var timer = 0;
+      // The button to close the vote is drawn once; each poll only changes the count beside it, so that a tap on it is
+      // never lost while it is drawn again. Once closed, a poll that was on its way changes nothing.
+      var closed = false;
       function count(live) {
-        box.innerHTML = '<span>' + esc(t('board_scene_votes', {answered: live.answered, joined: live.joined})) + '</span>' +
+        var label = box.querySelector('[data-votecount]');
+        var text = t('board_scene_votes', {answered: live.answered, joined: live.joined});
+        if (label) {
+          label.textContent = text;
+          return;
+        }
+        box.innerHTML = '<span data-votecount>' + esc(text) + '</span>' +
           '<button class="btn btn-main" data-voteclose>' + esc(t('board_scene_voteclose')) + '</button>';
         box.querySelector('[data-voteclose]').onclick = function() {
+          closed = true;
+          this.disabled = true;
           clearTimeout(timer);
           cm.vote.close().then(tally);
         };
       }
       function poll() {
         timer = setTimeout(function() {
-          if (!document.body.contains(box)) {
+          if (!document.body.contains(box) || closed) {
             return;
           }
           cm.vote.state().then(function(live) {
-            if (live && live.open) {
+            if (live && live.open && !closed) {
               count(live);
               poll();
             }
@@ -1206,6 +1218,14 @@
             esc(t('app_backtomap')) +
             '</button></div>');
           kept.querySelector('[data-map]').onclick = close;
+          return;
+        }
+        if (!e.network && !e.retry && !e.errorcode) {
+          // Not the server: the play was kept, and something failed while showing its end. Playing it again would count
+          // it twice; back to the map, where it shows as done.
+          window.console.error(e);
+          show('<p class="scene-text">' + esc(t('app_saved')) + '</p><div class="actions"><button class="btn btn-main" ' +
+            'data-focus data-map>' + esc(t('app_backtomap')) + '</button></div>').querySelector('[data-map]').onclick = close;
           return;
         }
         if (!e.network && !e.retry) {
