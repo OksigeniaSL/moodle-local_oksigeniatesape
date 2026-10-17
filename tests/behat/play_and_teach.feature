@@ -23,10 +23,12 @@ Feature: A teacher runs the game from the panel and a student plays the mission
   Scenario: The teacher goes through the tabs of the panel
     Given I log in as "teacher1"
     When I open the Tesapé teacher panel of course "C1"
-    # The first time, how Tesapé works in two minutes shows by itself.
+    # The first time, how Tesapé works in two minutes shows by itself; it is there with the «?» of the header after.
+    And I close how Tesapé works if it shows
+    Then I should see "Teacher panel"
+    When I click on "[data-how]" "css_element"
     Then I should see "How Tesapé works, in two minutes"
     And I click on "Got it" "button"
-    And I should see "Teacher panel"
     And I should see "Student One"
     When I click on "nav.tabs [data-tab='mission']" "css_element"
     Then I should see "Los seres vivos"
