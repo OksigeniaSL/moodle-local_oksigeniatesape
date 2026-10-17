@@ -66,7 +66,7 @@ class provider implements
             'inventory' => ['charid', 'itemid', 'courseid', 'source', 'timecreated'],
             'sceneattempt' => ['sceneid', 'charid', 'courseid', 'teamplay', 'path', 'score', 'objectives', 'ending', 'attempt',
                 'timestarted', 'timefinished'],
-            'minigame' => ['charid', 'courseid', 'cmid', 'game', 'success', 'tries', 'detail', 'timecreated'],
+            'minigame' => ['charid', 'courseid', 'cmid', 'game', 'playid', 'success', 'tries', 'detail', 'timecreated'],
             'validation' => ['challengeid', 'charid', 'courseid', 'status', 'note', 'validatedby', 'timemodified'],
             'found' => ['charid', 'courseid', 'missionid', 'kind', 'code', 'timecreated'],
             'idea' => ['courseid', 'charid', 'anonymous', 'message', 'status', 'timecreated'],
@@ -87,6 +87,13 @@ class provider implements
         // The plan for the next class goes to the AI of the site with counts and the content of the mission only; the
         // AI subsystem keeps who asked for it.
         $collection->add_subsystem_link('core_ai', [], 'privacy:metadata:core_ai');
+        // A suggestion of a teacher or an administrator to Oksigenia, only if the site has them on; nothing is kept here.
+        $collection->add_external_location_link('oksigeniasuggestions', [
+            'text' => 'privacy:metadata:oksigeniasuggestions:text',
+            'role' => 'privacy:metadata:oksigeniasuggestions:role',
+            'lang' => 'privacy:metadata:oksigeniasuggestions:lang',
+            'email' => 'privacy:metadata:oksigeniasuggestions:email',
+        ], 'privacy:metadata:oksigeniasuggestions');
         return $collection;
     }
 

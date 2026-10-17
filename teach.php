@@ -37,4 +37,6 @@ foreach (['manageregion', 'award', 'approvepowers', 'pause', 'viewlog', 'undo', 
 }
 // The administration of the site, who can turn on what the game needs from it.
 $caps['siteconfig'] = has_capability('moodle/site:config', context_system::instance());
-\local_oksigeniatesape\local\page::output('teach', $course, ['caps' => $caps]);
+// The form of suggestions to Oksigenia, only where the site has it on.
+$suggest = \local_oksigeniatesape\local\suggestions::enabled();
+\local_oksigeniatesape\local\page::output('teach', $course, ['caps' => $caps, 'suggest' => $suggest]);

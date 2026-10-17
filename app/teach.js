@@ -1087,7 +1087,34 @@
           esc(t('teach_ideas_read')) + '</button>' : '<span class="tag done">' + esc(t('app_ideas_read')) + '</span>') +
           '<button class="chip" data-idea="' + i.id + '" data-action="delete">' + esc(t('teach_delete')) + '</button>' +
           '</span></li>';
-      }).join('') + '</ul>' : '<p class="empty">' + esc(t('teach_ideas_none')) + '</p>') + '</section>');
+      }).join('') + '</ul>' : '<p class="empty">' + esc(t('teach_ideas_none')) + '</p>') + '</section>' +
+      // The ideas of the teacher for Oksigenia, where the site has suggestions on: they go from the server.
+      (cfg.suggest ? '<section class="card suggest"><h2>' + esc(t('teach_suggest_title')) + '</h2><p style="color:' +
+      'var(--text-soft)">' + esc(t('teach_suggest_help')) + '</p><label style="display:block;margin-bottom:12px">' +
+      '<span class="sr-only">' + esc(t('teach_suggest_title')) + '</span><textarea data-suggest-text rows="4" ' +
+      'maxlength="3500"></textarea></label>' + field('email', t('teach_suggest_email'), '<input type="email" ' +
+      'data-suggest-email autocomplete="email">') + '<div class="actions"><button class="btn btn-main" data-suggest>' +
+      esc(t('teach_suggest_send')) + '</button></div></section>' : ''));
+    var send = el.querySelector('[data-suggest]');
+    if (send) {
+      send.onclick = function() {
+        var text = el.querySelector('[data-suggest-text]').value.trim();
+        if (!text) {
+          el.querySelector('[data-suggest-text]').focus();
+          return;
+        }
+        send.disabled = true;
+        T.api('send_suggestion', {courseid: cfg.courseid, text: text, email: el.querySelector('[data-suggest-email]').value})
+          .then(function() {
+            el.querySelector('[data-suggest-text]').value = '';
+            T.toast(esc(t('teach_suggest_sent')));
+          }).catch(function(e) {
+            T.toast(esc(e.message), true);
+          }).then(function() {
+            send.disabled = false;
+          });
+      };
+    }
     el.querySelectorAll('[data-idea]').forEach(function(b) {
       b.onclick = function() {
         if (b.dataset.action === 'delete' && !window.confirm(t('teach_ideas_delete'))) {

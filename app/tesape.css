@@ -1222,6 +1222,7 @@ body.tesape {
 .tesape input[type="text"],
 .tesape input:not([type]),
 .tesape input[type="number"],
+.tesape input[type="email"],
 .tesape textarea,
 .tesape select {
   width: 100%;

@@ -298,6 +298,13 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:play',
     ],
+    'local_oksigeniatesape_send_suggestion' => [
+        'classname' => 'local_oksigeniatesape\\external\\send_suggestion',
+        'description' => 'Sends a suggestion of a teacher or an administrator to Oksigenia, when the site has them on.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:award',
+    ],
     'local_oksigeniatesape_get_powers' => [
         'classname' => 'local_oksigeniatesape\\external\\get_powers',
         'description' => 'The powers of the course and the requests of the students, for its teachers.',

@@ -50,6 +50,13 @@ if ($hassiteconfig) {
             \local_oksigeniatesape\local\leaving::KEEP_DAYS,
             PARAM_INT
         ));
+        // Suggestions of teachers and administrators to Oksigenia: off unless the administration turns them on.
+        $settings->add(new admin_setting_configcheckbox(
+            'local_oksigeniatesape/suggestions',
+            get_string('settings_suggestions', 'local_oksigeniatesape'),
+            get_string('settings_suggestions_desc', 'local_oksigeniatesape'),
+            0
+        ));
         // What the game needs from the site, asked when the plugin is installed.
         $settings->add(new admin_setting_heading(
             'local_oksigeniatesape/requirements',

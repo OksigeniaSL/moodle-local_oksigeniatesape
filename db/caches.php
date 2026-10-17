@@ -40,6 +40,12 @@ $definitions = [
         'staticacceleration' => true,
         'staticaccelerationsize' => 2,
     ],
+    // The suggestions to Oksigenia each person sent in the last hour: no more than a few.
+    'suggested' => [
+        'mode' => cache_store::MODE_APPLICATION,
+        'simplekeys' => true,
+        'ttl' => 3600,
+    ],
     // What confuses the class most, for the class screen: it reads every play, so it is kept for ten minutes.
     'mixups' => [
         'mode' => cache_store::MODE_APPLICATION,

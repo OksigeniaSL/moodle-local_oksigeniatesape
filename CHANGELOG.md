@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.57.0 (2026-10-17)
+
+- **Suggestions to Oksigenia** (block C0.6 of the plan), off by default: when the administration turns them on
+  (Site administration › Plugins › Local plugins › Tesapé), teachers and administrators can send ideas and problems
+  about Tesapé to its makers from the box of ideas of the teacher panel. It goes from the server of the site, with the
+  text, whether it is a teacher or an administrator, the versions, the language and, only if they write it, an email
+  to answer them; three an hour for each person. Declared in the privacy provider. Students never send anything out.
+- **The focus goes back to what opened a scene or a minigame** when it closes, as a dialog does (the page under it is
+  often drawn again: then to the button of the same scene, or else to the content). Campus saw it.
+
 ## 0.56.1 (2026-10-17)
 
 - **A scene or a minigame open is a dialog for the keyboard** (block 1.2 of the plan): Tab goes round inside it, never

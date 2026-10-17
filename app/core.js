@@ -1002,6 +1002,61 @@
       '<path d="M40 112 L56 66 L72 112Z M266 108 L284 58 L302 108Z" fill="#12301f"/>' + lights + '</svg></div>';
   };
 
+  // When a scene or a minigame closes, the focus goes back to what opened it, as a dialog does. The page under it is
+  // often drawn again meanwhile: then, to the button of the same scene or game, or else to the content.
+  var opener = null;
+  // What was last touched or focused outside a scene: by the time a scene is on the page, the focus is inside it.
+  var lastOutside = null;
+  var remember = function(ev) {
+    var el = ev.target && ev.target.closest ? ev.target.closest('button, a, [tabindex], [role="button"]') : null;
+    if (el && !el.closest('.scene-layer')) {
+      lastOutside = el;
+    }
+  };
+  document.addEventListener('focusin', remember, true);
+  document.addEventListener('pointerdown', remember, true);
+  new MutationObserver(function(changes) {
+    changes.forEach(function(change) {
+      Array.prototype.forEach.call(change.addedNodes, function(node) {
+        if (node.classList && node.classList.contains('scene-layer') && !opener) {
+          var from = lastOutside;
+          var keys = from && from.attributes ? Array.prototype.filter.call(from.attributes, function(a) {
+            return /^data-(scene|game|playscene|teamscene|visit|welcomescene)$/.test(a.name);
+          }) : [];
+          opener = {el: from, selector: keys.length ? '[' + keys[0].name + '="' + keys[0].value + '"]' : ''};
+        }
+      });
+      Array.prototype.forEach.call(change.removedNodes, function(node) {
+        if (node.classList && node.classList.contains('scene-layer') && opener &&
+            !document.querySelector('.scene-layer')) {
+          var back = opener;
+          opener = null;
+          // The world is often drawn again after a scene, a moment later: wait for the button to be there again.
+          var tries = 0;
+          var place = function() {
+            if (document.querySelector('.scene-layer')) {
+              return;
+            }
+            var el = (back.selector && document.querySelector(back.selector)) ||
+              (back.el && document.body.contains(back.el) && tries > 5 ? back.el : null);
+            if (!el && ++tries <= 8) {
+              setTimeout(place, 150);
+              return;
+            }
+            el = el || document.getElementById('content');
+            if (el) {
+              if (!el.hasAttribute('tabindex') && !/^(BUTTON|A|INPUT|SELECT|TEXTAREA)$/.test(el.tagName)) {
+                el.setAttribute('tabindex', '-1');
+              }
+              el.focus({preventScroll: false});
+            }
+          };
+          setTimeout(place, 60);
+        }
+      });
+    });
+  }).observe(document.body, {childList: true});
+
   // A scene or a minigame open over the page is a dialog: Tab goes round inside it, never to the page under it, and
   // Escape closes it as its ✕ does (there is no ✕ while a play is being saved, and then Escape does nothing).
   document.addEventListener('keydown', function(ev) {
