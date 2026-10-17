@@ -141,6 +141,8 @@ final class scenes {
                     'mode' => in_array($def['mode'] ?? '', ['solo', 'team'], true) ? $def['mode'] : 'both',
                     'best' => array_map('strval', $best),
                     'pages' => self::pages_given($def),
+                    // A scene only while the Embrollo is out after a battle lost (lost), or always ('').
+                    'after' => (string) ($def['after'] ?? ''),
                 ];
             }
             $cache->set($key, $list);

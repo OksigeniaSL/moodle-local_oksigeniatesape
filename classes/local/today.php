@@ -92,6 +92,11 @@ final class today {
         if (!empty($region->battlestate) && $gloat) {
             $today['gloat'] = missions::text($gloat, $mission->skin, $mission->variant);
         }
+        // And the scene the battle lost opens, to play it with the class.
+        $lost = (string) ($mission->data['battle']['lost']['scene'] ?? '');
+        if (!empty($region->battlestate) && isset($scenes[$lost])) {
+            $today['lostscene'] = $scenes[$lost];
+        }
         if ($mixup) {
             $cache = \cache::make('local_oksigeniatesape', 'mixups');
             $found = $cache->get($courseid);

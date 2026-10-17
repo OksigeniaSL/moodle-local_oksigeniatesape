@@ -1,0 +1,93 @@
+{
+ "id": "C1-5",
+ "mission": "livingthings",
+ "chapter": "claro",
+ "title": "La noche después",
+ "quest": true,
+ "step": 3,
+ "mode": "both",
+ "objectives": [
+  "SV-07"
+ ],
+ "minutes": 3,
+ "after": "lost",
+ "start": "intro",
+ "nodes": {
+  "intro": {
+   "type": "story",
+   "speaker": "druida-mayor",
+   "image": "claro",
+   "text": {
+    "valley": "Es de noche en el claro. La druida mayor ha encendido una vela y mira hacia la torre, por cuya ventana se escapó el Embrollo con una página del Gran Libro bajo el brazo. «No se ha llevado una página cualquiera», dice. «Se ha llevado la de lo que damos por sabido. Les cuento algo que no estaba escrito en ninguna parte: el Embrollo no inventa sus nudos. Los encuentra. Se los da quien repite una idea sin comprobarla. Cada nudo que dejamos colgando es un hilo que lo sujeta; cada uno que se deshace, un hilo menos para la revancha.»",
+    "azara": "Es de noche en la casa del naturalista. Junto a la ventana abierta falta una página del cuaderno: se la llevó la nota de letra enredada. «No se ha llevado una página cualquiera», dice el naturalista. «Se ha llevado la de lo que damos por sabido. Les cuento algo que no está escrito en ningún cuaderno: las ideas enredadas no se inventan. Se encuentran. Las trae quien repite algo sin comprobarlo. Cada idea que dejamos sin revisar las sujeta; cada una que revisamos, las afloja.»"
+   },
+   "next": "noche"
+  },
+  "noche": {
+   "type": "choice",
+   "prompt": "¿Qué hacemos esta noche, antes de la revancha?",
+   "dilemma": true,
+   "options": [
+    {
+     "id": "repasar",
+     "label": "Repasar en el cuaderno las ideas que quedaron sin deshacer",
+     "feedback": {
+      "valley": "La vela se acerca al cuaderno. Empezamos por el nudo que más costó: lo que no se deshizo es lo que más conviene mirar otra vez.",
+      "azara": "La vela se acerca al cuaderno. Empezamos por la idea que más costó: lo que no se revisó es lo que más conviene mirar otra vez."
+     },
+     "effects": [
+      {
+       "flag": "repasar-nudos"
+      }
+     ],
+     "next": "fin"
+    },
+    {
+     "id": "buscar",
+     "label": "Salir a buscar la página que falta",
+     "feedback": {
+      "valley": "«Está escondida entre lo que se da por sabido», sonríe la druida. «Se encuentra mirando con calma, no corriendo.» Habrá que estar atentos a cada lugar del valle.",
+      "azara": "«Está escondida entre lo que se da por sabido», sonríe el naturalista. «Se encuentra mirando con calma, no corriendo.» Habrá que estar atentos a cada rincón."
+     },
+     "effects": [
+      {
+       "flag": "buscar-pagina"
+      }
+     ],
+     "next": "fin"
+    },
+    {
+     "id": "descansar",
+     "label": "Descansar y mirar mañana con ojos nuevos",
+     "feedback": {
+      "valley": "«Descansar también es de naturalista», dice la druida, y sopla la vela. «Mañana, con la cabeza despejada, los nudos se ven mejor.»",
+      "azara": "«Descansar también es de naturalista», dice él, y sopla la vela. «Mañana, con la cabeza despejada, las ideas enredadas se ven mejor.»"
+     },
+     "effects": [
+      {
+       "flag": "descansar-noche"
+      }
+     ],
+     "next": "fin"
+    }
+   ]
+  },
+  "fin": {
+   "type": "ending",
+   "outcome": "success",
+   "text": {
+    "valley": "Antes de irse a dormir, la druida deja sobre la mesa un hilo de color atado en un lazo flojo. «Para que se acuerden en la revancha: un nudo flojo se deshace tirando del extremo correcto.»",
+    "azara": "Antes de irse a dormir, el naturalista deja sobre la mesa un cordel atado en un lazo flojo. «Para que se acuerden: una idea enredada se deshace tirando del extremo correcto, que es comprobarla.»"
+   },
+   "effects": [
+    {
+     "gems": 1
+    },
+    {
+     "flag": "noche-despues"
+    }
+   ]
+  }
+ },
+ "method": "SV-07"
+}

@@ -827,7 +827,9 @@
     var taunt = d.letter && d.mixup ? '<span class="taunt">' + esc(t('board_today_taunt', d.mixup)) + '</span>' : '';
     return '<section class="card board-today"><div class="kicker">' + esc(t('board_today')) + '</div><h3>' +
       esc(d.chapter) + '</h3>' + (d.gloat ? '<blockquote class="letter gloat"><small>' + esc(t('board_today_gloat')) +
-      '</small>' + esc(d.gloat) + '</blockquote>' : '') + (d.letter ? '<blockquote class="letter"><small>' + esc(t('board_today_letter',
+      '</small>' + esc(d.gloat) + '</blockquote>' : '') + (award && d.lostscene ? '<div class="actions board-small">' +
+      '<button class="btn btn-soft" data-playscene="' + d.lostscene.id + '">' + esc(t('board_today_scene', d.lostscene.title)) +
+      '</button></div>' : '') + (d.letter ? '<blockquote class="letter"><small>' + esc(t('board_today_letter',
       d.letter.chapter)) + '</small>' + esc(d.letter.text) + taunt + '</blockquote>' + (d.letter.teaser ? '<p class="teaser">' +
       '<b>' + esc(t('app_teaser')) + '</b> ' + esc(d.letter.teaser) + '</p>' : '') : '') + (sessions ?
       '<ol class="today-sessions">' + sessions + '</ol>' : '') + (d.offscreen ? '<p class="help-soft">' +

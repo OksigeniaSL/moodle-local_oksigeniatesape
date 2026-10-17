@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 32,
+ "version": 33,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 33,
+   "kind": "improvement",
+   "date": "2026-10-18",
+   "text": "Perder abre historia: «La noche después», una escena en el claro que solo aparece mientras el Embrollo anda escapado, con algo que no se sabía de él y lo que decide la clase antes de la revancha"
+  },
   {
    "version": 32,
    "kind": "improvement",
@@ -417,6 +423,7 @@
    "last": 25
   },
   "lost": {
+   "scene": "C1-5",
    "letter": {
     "valley": "Me escapé torre arriba con mis mejores hilos y una página del Gran Libro bajo el brazo. La he escondido donde nadie mira: entre lo que se da por sabido. La próxima vez, más nudos. ¡Y más gordos!",
     "azara": "Nota suelta, de letra enredada: «Una página del cuaderno se vino conmigo por la ventana. La escondí entre lo que se da por sabido. La próxima vez, más enredos, y más gordos»."
@@ -3150,6 +3157,7 @@
   "C1-2",
   "C1-3",
   "C1-4",
+  "C1-5",
   "C2-1",
   "C2-2",
   "C2-3",

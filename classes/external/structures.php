@@ -98,6 +98,7 @@ final class structures {
             'better' => new external_value(PARAM_BOOL, 'Done with a partial ending', VALUE_DEFAULT, false),
             'attempts' => new external_value(PARAM_INT, 'Plays'),
             'mode' => new external_value(PARAM_ALPHA, 'solo, team or both: how it can be played', VALUE_DEFAULT, 'both'),
+            'after' => new external_value(PARAM_ALPHA, 'lost: only while the Embrollo is out', VALUE_DEFAULT, ''),
         ]);
     }
 
@@ -213,6 +214,10 @@ final class structures {
                 'teaser' => new external_value(PARAM_TEXT, 'What waits in the next place', VALUE_DEFAULT, ''),
             ], 'The last letter of the Embrollo', VALUE_OPTIONAL),
             'gloat' => new external_value(PARAM_TEXT, 'While a rematch is pending: the letter the Embrollo boasts in', VALUE_OPTIONAL),
+            'lostscene' => new external_single_structure([
+                'id' => new external_value(PARAM_INT, 'Scene'),
+                'title' => new external_value(PARAM_TEXT, 'Its title'),
+            ], 'While a rematch is pending: the scene a battle lost opens', VALUE_OPTIONAL),
             'mixup' => new external_single_structure([
                 'question' => new external_value(PARAM_TEXT, 'Question or game'),
                 'answer' => new external_value(PARAM_TEXT, 'The wrong answer most given'),

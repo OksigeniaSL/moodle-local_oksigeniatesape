@@ -7440,3 +7440,29 @@ body.adapt-still .mission-grid .chapter.as-sheet {
   border-radius: 50%;
   background: rgba(var(--hi), .14);
 }
+
+/* The scene a battle lost opens, in its place until the rematch: a night card. */
+.night-scene {
+  display: grid;
+  gap: 6px;
+  margin: 12px 0;
+  padding: 14px 16px;
+  border-radius: var(--r-s);
+  border: 1px solid rgba(160, 120, 220, .6);
+  background: linear-gradient(160deg, rgba(40, 24, 70, .9), rgba(20, 16, 40, .9));
+}
+
+.night-scene small {
+  color: var(--lilac-text, #e1d8ff);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  font-size: .78em;
+}
+
+.night-scene p {
+  margin: 0;
+}
+
+.night-scene .btn {
+  justify-self: start;
+}

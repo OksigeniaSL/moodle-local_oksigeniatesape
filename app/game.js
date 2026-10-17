@@ -1452,8 +1452,18 @@
     var acts = past ? [] : w.activities.filter(function(a) {
       return a.chapterid === ch.id;
     });
+    // The scene a battle lost opens, only until the rematch: out of the fold, so that it is seen.
+    var night = (ch.quests || []).filter(function(q) {
+      return q.after === 'lost';
+    }).map(function(q) {
+      return '<div class="night-scene"><small>' + esc(t('app_night_scene')) + '</small><b>' + esc(q.title) + done(q) + '</b>' +
+        '<p class="help-soft">' + esc(t('app_night_help')) + '</p>' + (past ? '' : '<button class="btn btn-main" data-scene="' +
+        q.id + '">' + esc(q.done ? t('app_playagain') : t('app_play')) + '</button>') + '</div>';
+    }).join('');
     // Quests: for whoever wants more, whatever their step; gems and pages, never saber.
-    var quests = (ch.quests || []).map(function(q) {
+    var quests = (ch.quests || []).filter(function(q) {
+      return q.after !== 'lost';
+    }).map(function(q) {
       return '<li class="item"><span class="grow"><b>' + esc(q.title) + done(q) + '</b><small>' + esc(t('app_quest_step_' +
         (q.step === 4 ? 4 : 3))) + (q.done && q.better ? ' · ' + esc(t('app_status_better')) : '') + '</small></span>' +
         (past ? '' :
@@ -1479,7 +1489,7 @@
         return '<p>' + esc(line) + '</p>';
       }).join('') + '</div>' : '') + (ch.letter ? '<blockquote class="letter"><small>' + esc(t('app_letter')) +
       '</small>' + esc(ch.letter) + '</blockquote>' : '') + (ch.teaser ? '<p class="teaser"><b>' + esc(t('app_teaser')) +
-      '</b> ' + esc(ch.teaser) + '</p>' : '') + (scenes ? '<ul class="list">' + scenes + '</ul>' : '') +
+      '</b> ' + esc(ch.teaser) + '</p>' : '') + night + (scenes ? '<ul class="list">' + scenes + '</ul>' : '') +
       more(games, quests, acts, challenge) + '</section>';
   }
 

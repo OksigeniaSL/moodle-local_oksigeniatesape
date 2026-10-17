@@ -241,6 +241,9 @@ final class view {
         $fields = 'id, missionid, chapterid, code, step, quest';
         $scenes = $DB->get_records(self::T . 'scene', ['missionid' => $mission->id], 'code', $fields);
         $summaries = scenes::summaries($mission);
+        // The scene a battle lost opens is there only while the Embrollo is out, until the class wins the rematch.
+        $escaped = !empty(regions::get($courseid)->battlestate);
+        $scenes = array_filter($scenes, fn($s) => $escaped || ($summaries[(int) $s->id]['after'] ?? '') !== 'lost');
         $challenges = $DB->get_records_select_menu(
             self::T . 'challenge',
             'courseid = ? AND cmid = 0 AND chapterid > 0',
@@ -267,6 +270,7 @@ final class view {
                 'better' => $done && !$best,
                 'attempts' => (int) ($attempts[$scene->id] ?? 0),
                 'mode' => $sum['mode'],
+                'after' => (string) ($sum['after'] ?? ''),
             ];
         };
         $list = [];

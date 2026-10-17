@@ -866,6 +866,10 @@ final class live_test extends \advanced_testcase {
         $this->assertSame(1.0, (float) $saved['left']);
         $this->assertSame(['piedra'], $saved['hanging']);
         $this->assertNotSame('', today::get($course->id)['gloat']);
+        // And losing opens a scene: «The night after», offered to the class and in the clearing of each student.
+        $night = $this->night_scenes($course->id, $members[0]->userid);
+        $this->assertSame(['C1-5'], array_column($night, 'code'));
+        $this->assertSame($night[0]['id'], today::get($course->id)['lostscene']['id']);
         $rematch = live::start($course->id, 'phones', 4, 30, $end + 100, false, true);
         foreach ($members as $member) {
             live::join($rematch, $member, $member->userid, $end + 100);
@@ -881,6 +885,21 @@ final class live_test extends \advanced_testcase {
         live::finish($DB->get_record(self::T . 'live', ['id' => $rematch->id]), 2, $end + 200);
         $this->assertNull($DB->get_field(self::T . 'region', 'battlestate', ['courseid' => $course->id]));
         $this->assertArrayNotHasKey('gloat', today::get($course->id));
+        // The night after was until the rematch.
+        $this->assertArrayNotHasKey('lostscene', today::get($course->id));
+        $this->assertSame([], $this->night_scenes($course->id, $members[0]->userid));
+    }
+
+    /**
+     * The scenes a battle lost opens, as the map of a student shows them in their places.
+     *
+     * @param int $courseid
+     * @param int $userid
+     * @return array
+     */
+    private function night_scenes(int $courseid, int $userid): array {
+        $quests = array_merge(...array_column(view::world($courseid, $userid)['mission']['chapters'], 'quests'));
+        return array_values(array_filter($quests, fn($q) => $q['after'] === 'lost'));
     }
 
     public function test_a_rematch_leaves_out_the_knots_the_class_broke(): void {

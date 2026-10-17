@@ -90,7 +90,7 @@ final class scenes_test extends \advanced_testcase {
         $w = $this->make_class(0);
         $this->assertSame('py', $w->mission->variant);
         $this->assertEquals(6, $DB->count_records(self::T . 'chapter', ['missionid' => $w->mission->id]));
-        $this->assertEquals(27, $DB->count_records(self::T . 'scene', ['missionid' => $w->mission->id]));
+        $this->assertEquals(28, $DB->count_records(self::T . 'scene', ['missionid' => $w->mission->id]));
         $this->assertTrue($DB->record_exists(self::T . 'item', ['code' => 'naturalistlens']));
         // A classroom challenge per chapter, from the activity off the screen.
         $challenges = classroom::list($w->course->id);
@@ -99,7 +99,7 @@ final class scenes_test extends \advanced_testcase {
         // Installing again changes the skin and keeps everything else.
         missions::install($w->course->id, 'livingthings', 'azara', 'es');
         $this->assertEquals(1, $DB->count_records(self::T . 'mission', ['courseid' => $w->course->id]));
-        $this->assertEquals(27, $DB->count_records(self::T . 'scene', ['missionid' => $w->mission->id]));
+        $this->assertEquals(28, $DB->count_records(self::T . 'scene', ['missionid' => $w->mission->id]));
         $this->assertCount(6, classroom::list($w->course->id));
         $this->assertSame('azara', missions::get($w->course->id)->skin);
         $this->expectException(\invalid_parameter_exception::class);
@@ -233,7 +233,7 @@ final class scenes_test extends \advanced_testcase {
         $w = $this->make_class(1);
         $user = $w->users[0];
         $quests = $DB->get_records(self::T . 'scene', ['missionid' => $w->mission->id, 'quest' => 1], 'code');
-        $this->assertCount(12, $quests);
+        $this->assertCount(13, $quests);
         // Nobody's route: a student of the extension step plays the core scenes, and the quests apart.
         $member = engine::member(characters::get($user->id), $w->course->id);
         $DB->set_field(self::T . 'member', 'step', 3, ['id' => $member->id]);
