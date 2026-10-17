@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.74.0 (2026-10-17)
+
+Block 2.3 of the plan: the lanes of the battle on the tablet.
+
+- **Lanes to sort and with mistakes**, besides those to choose: a knot can give a team a lane where things go into
+  their groups (sorted by one player of the team, who changes from turn to turn; the others see who and help aloud) or
+  a sheet of the Embrollo where the wrong words are touched (each player; most of the team undoes it). What the tablet
+  does goes to the server, which says whether it undoes the lane; once resolved, the tablet shows the solution (each
+  thing in its group, each mistake with the right words and why). The words with mistakes look like the others until
+  touched. A common way of drawing lanes on tablets, `exercises.js`.
+- **The tablet does not draw everything again every second** while a turn runs: the seconds left count down on their
+  own, so that a touch never lands on something being redrawn.
+- **The battle by turns for everybody** (written first in the design, §9.1): who plays with «no hurry» and does not
+  get to answer does not count against their team (and a team in which nobody had to answer is not in play that
+  turn); the screen reader hears one sentence at each change of stage; with reading aloud, the knot and the lane are
+  read when they come.
+- On the map, the bubble of the hungry creature goes above the hero, clear of «Today» over the place (seen on campus);
+  the silhouettes of the team go outside the place, so that its name is what it says (and they do not take the
+  touch).
+
 ## 0.73.0 (2026-10-17)
 
 Block 2.2 of the plan: losing has a rematch (mission v31).
@@ -11,10 +31,11 @@ Block 2.2 of the plan: losing has a rematch (mission v31).
   page of the Great Book under its arm; the class screen announces the rematch, and the end of a battle lost says so.
 - Every turn says what happened, also when the Embrollo did not get what it meant to do.
 
-Tested locally, without CI (the minutes of GitHub Actions of the month are spent; Enrique's decision, 17 October):
+Tested locally first, while the CI could not run (the minutes of GitHub Actions of the month were spent):
 PHPUnit (323 tests), moodlecheck and phpcs clean; in the browser, accessibility of every screen, every scene of a
 student to an ending, the minigames and a battle by turns with class screen and two tablets; the server walkthrough of
-the mission with the final battle. This covers 0.70.0 to 0.73.0, which did not get to CI either.
+the mission with the final battle. This covers 0.70.0 to 0.73.0; the repository is public since then, and the CI
+runs again.
 
 ## 0.72.0 (2026-10-17)
 
@@ -755,7 +776,7 @@ A review of performance, robustness and privacy, for a whole class at once on a 
 ## 0.28.6 (2026-10-12)
 
 - The card of the game shows on the page of the course only, not on its participants (Moodle gives that page a type
-  that also starts with «course-view»; seen by the agent of campus).
+  that also starts with «course-view»; seen on campus).
 
 ## 0.28.5 (2026-10-12)
 
@@ -826,7 +847,7 @@ A review of performance, robustness and privacy, for a whole class at once on a 
 ## 0.26.9 (2026-10-12)
 
 - Accepting the policy of the AI for the plan checks on the server that the teacher may accept it
-  (`moodle/ai:acceptpolicy`), not only in the panel (seen by the agent of campus.oksigenia.com).
+  (`moodle/ai:acceptpolicy`), not only in the panel (seen on campus.oksigenia.com).
 
 ## 0.26.8 (2026-10-12)
 

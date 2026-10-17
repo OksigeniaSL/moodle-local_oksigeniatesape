@@ -606,6 +606,7 @@ final class structures {
             'myteam' => new external_value(PARAM_INT, 'The team they came in with (0: none)', VALUE_DEFAULT, 0),
             'mine' => new external_value(PARAM_INT, 'Their answer in the round (-1: none)'),
             'done' => new external_value(PARAM_BOOL, 'By turns: their team undid its lane, once resolved', VALUE_OPTIONAL),
+            'lane' => new external_value(PARAM_RAW, 'By turns: their lane when it is not one to choose (JSON)', VALUE_OPTIONAL),
             'prize' => new external_single_structure([
                 'saber' => new external_value(PARAM_INT, 'Saber'),
                 'capped' => new external_value(PARAM_INT, 'Saber left out by the weekly cap', VALUE_DEFAULT, 0),

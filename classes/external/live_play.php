@@ -39,10 +39,11 @@ final class live_play extends external_api {
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
             'courseid' => new external_value(PARAM_INT, 'Course'),
-            'action' => new external_value(PARAM_ALPHA, 'state, join, answer or token (the battle token of their role)'),
+            'action' => new external_value(PARAM_ALPHA, 'state, join, answer, strike (by turns, a lane of another engine) or token'),
             'round' => new external_value(PARAM_INT, 'answer: the round', VALUE_DEFAULT, 0),
             'answer' => new external_value(PARAM_INT, 'answer: index of the option', VALUE_DEFAULT, -1),
             'target' => new external_value(PARAM_INT, 'token, by turns: the team the shield or the cheer goes to', VALUE_DEFAULT, 0),
+            'payload' => new external_value(PARAM_RAW, 'strike, by turns: what was done in a lane (JSON)', VALUE_DEFAULT, ''),
         ]);
     }
 
@@ -54,9 +55,17 @@ final class live_play extends external_api {
      * @param int $round
      * @param int $answer
      * @param int $target
+     * @param string $payload
      * @return array
      */
-    public static function execute(int $courseid, string $action, int $round = 0, int $answer = -1, int $target = 0): array {
+    public static function execute(
+        int $courseid,
+        string $action,
+        int $round = 0,
+        int $answer = -1,
+        int $target = 0,
+        string $payload = ''
+    ): array {
         global $USER;
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
@@ -64,6 +73,7 @@ final class live_play extends external_api {
             'round' => $round,
             'answer' => $answer,
             'target' => $target,
+            'payload' => $payload,
         ]);
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
@@ -90,6 +100,9 @@ final class live_play extends external_api {
                 break;
             case 'answer':
                 live::answer($live, $member, $params['round'], $params['answer'], $now);
+                break;
+            case 'strike':
+                live::strike($live, $member, $params['round'], (array) (json_decode($params['payload'], true) ?: []), $now);
                 break;
             default:
                 throw new \invalid_parameter_exception('Unknown action');

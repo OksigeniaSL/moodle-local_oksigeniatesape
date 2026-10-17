@@ -1100,7 +1100,11 @@
         '<rect x="' + (ch.x - 2) + '" y="' + (ch.y - 4) + '" width="4" height="17" rx="1" fill="#2b2219"/>' +
         '<circle cx="' + ch.x + '" cy="' + (ch.y - 7) + '" r="7" class="flame"/>') +
         (i > opened && !today ? '<ellipse cx="' + ch.x + '" cy="' + (ch.y + 6) + '" rx="62" ry="34" class="fog"/>' : '') +
-        silhouettes(ch, here) + T.mapLabel(ch.x, ch.y + 44, ch.name) + '</g>';
+        T.mapLabel(ch.x, ch.y + 44, ch.name) + '</g>';
+    }).join('');
+    // The team, beside the lanterns but outside the places: the name of a place is what it says, and the team is in it.
+    var crowd = m.chapters.map(function(ch) {
+      return silhouettes(ch, mates[ch.id] || 0);
     }).join('');
     var c = state.world.character;
     var reached = Math.min(lastDone + 1, m.chapters.length - 1);
@@ -1122,8 +1126,9 @@
       T.creature(c.creature, c.creaturestage) + '</div></foreignObject>' : '';
     // The page of the day: the creature is hungry, over the hero.
     var p = state.world.page;
-    var hungry = p && !p.answered && c.creature && !state.visit ? '<foreignObject x="' + (current.x - 128) + '" y="' +
-      (current.y - 66) + '" width="150" height="40" class="hunger"><div xmlns="http://www.w3.org/1999/xhtml"><button type="button" ' +
+    // Above the hero and clear of the «Today» over the place.
+    var hungry = p && !p.answered && c.creature && !state.visit ? '<foreignObject x="' + Math.max(4, current.x - 140) + '" y="' +
+      (current.y - 96) + '" width="140" height="40" class="hunger"><div xmlns="http://www.w3.org/1999/xhtml"><button type="button" ' +
       'class="hunger-bubble" data-feed>' + esc(t('app_feed_bubble')) + '<span class="sr-only"> ' +
       esc(t('app_page_hungry', creatureName(c))) + '</span></button></div></foreignObject>' : '';
     var me = '<foreignObject x="' + (current.x - 74) + '" y="' + (current.y - 22) + '" width="44" height="44" class="me-marker' +
@@ -1140,7 +1145,7 @@
       '" role="group" aria-label="' + esc(m.title) + '"><defs>' + T.MAPGLOW + '</defs>' + T.mapGround(m) +
       T.mapLandmarks(m) + T.mapNight(m) + '<polyline points="' + pts + '" class="road"/>' +
       (walked ? '<polyline points="' + walked + '" class="road walked"/>' : '') + roadDrawing(fresh) +
-      (T.critters ? T.critters.fireflies(m) : '') + places + me + pet + hungry + '</svg></div>';
+      (T.critters ? T.critters.fireflies(m) : '') + places + crowd + me + pet + hungry + '</svg></div>';
   }
 
   /**

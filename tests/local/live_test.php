@@ -591,6 +591,88 @@ final class live_test extends \advanced_testcase {
         }
     }
 
+    public function test_lanes_to_sort_and_to_touch_the_mistakes_are_checked_by_the_server(): void {
+        global $DB;
+        $this->resetAfterTest();
+        [$course, $members, $groups] = $this->make_class();
+        $mission = missions::get($course->id);
+        $knot = array_column(knots::usable($mission, null), null, 'code')['setuga'];
+        $make = new \ReflectionMethod(live::class, 'lane_of');
+        $sort = $make->invoke(null, $knot['lanes'][2], $mission);
+        $mistakes = $make->invoke(null, $knot['lanes'][3], $mission);
+        // What the tablets see does not say where each thing goes, nor the right words.
+        $this->assertArrayNotHasKey('bin', $sort['shown']['items'][0]);
+        $this->assertArrayNotHasKey('right', $mistakes['shown']['parts'][1]);
+        $all = $sort['solution'];
+        $this->assertTrue(live::lane_right($sort, ['placed' => $all]));
+        // One slip of five things is forgiven; two are not.
+        $one = $all;
+        $one['seta'] = 'planta';
+        $this->assertTrue(live::lane_right($sort, ['placed' => $one]));
+        $two = $one;
+        $two['musgo'] = 'hongo';
+        $this->assertFalse(live::lane_right($sort, ['placed' => $two]));
+        $marks = array_column($mistakes['solution'], 'mark');
+        $this->assertTrue(live::lane_right($mistakes, ['marks' => $marks, 'misses' => 1]));
+        $this->assertFalse(live::lane_right($mistakes, ['marks' => [$marks[0]], 'misses' => 0]));
+        $this->assertFalse(live::lane_right($mistakes, ['marks' => $marks, 'misses' => 2]));
+        // In a battle: the first team sorts (by one of its players), the second touches the mistakes.
+        $live = live::start($course->id, 'phones', 4, 30, self::NOW, false, true);
+        foreach ($members as $member) {
+            live::join($live, $member, $member->userid, self::NOW);
+        }
+        $live = live::next($live, self::NOW);
+        $state = json_decode($live->state, true);
+        $speaker = min((int) $members[0]->charid, (int) $members[1]->charid);
+        $state['rounds'][1]['lanes'] = [(int) $groups[0]->id => $sort + ['options' => 2, 'correct' => 1, 'speaker' => $speaker],
+            (int) $groups[1]->id => $mistakes + ['options' => 2, 'correct' => 1]];
+        $DB->set_field(self::T . 'live', 'state', json_encode($state), ['id' => $live->id]);
+        $live = $DB->get_record(self::T . 'live', ['id' => $live->id]);
+        $strike = self::NOW + live::INTENT + live::PREP + 1;
+        $sorter = $speaker === (int) $members[0]->charid ? $members[0] : $members[1];
+        $other = $sorter === $members[0] ? $members[1] : $members[0];
+        $lane = json_decode(live::device_view($live, $other, $strike)['lane'], true);
+        $this->assertFalse($lane['mine']);
+        $this->assertNotSame('', $lane['speaker']);
+        try {
+            live::strike($live, $other, 1, ['placed' => $all], $strike);
+            $this->fail('Who does not sort for the team in this turn sorted');
+        } catch (\invalid_parameter_exception $e) {
+            $this->assertTrue(true);
+        }
+        live::strike($live, $sorter, 1, ['placed' => $all], $strike);
+        live::strike($live, $members[2], 1, ['marks' => $marks], $strike);
+        live::strike($live, $members[3], 1, ['marks' => [$marks[0]]], $strike);
+        $live = live::tick($live, 2, true, $strike + 30);
+        $view = live::board_view($live, $strike + 30);
+        // The sorter undid the lane of their team; of the second, one of two got it: not most of them.
+        $done = array_column($view['lanes'], 'done', 'teamid');
+        $this->assertTrue($done[(int) $groups[0]->id]);
+        $this->assertFalse($done[(int) $groups[1]->id]);
+        // Once resolved, the tablets get the solution.
+        $this->assertArrayHasKey('solution', json_decode(live::device_view($live, $members[2], $strike + 31)['lane'], true));
+    }
+
+    public function test_who_plays_with_no_hurry_does_not_count_against_their_team_if_they_do_not_answer(): void {
+        global $DB;
+        $this->resetAfterTest();
+        [$course, $members, $groups] = $this->make_class();
+        $DB->set_field(self::T . 'member', 'adapt', 'notime', ['id' => $members[1]->id]);
+        $live = live::start($course->id, 'phones', 4, 30, self::NOW, false, true);
+        foreach ($members as $member) {
+            live::join($live, $member, $member->userid, self::NOW);
+        }
+        $live = live::next($live, self::NOW);
+        $strike = self::NOW + live::INTENT + live::PREP + 1;
+        // In the first team, one gets it right and the one with no hurry does not get to answer: their team undoes it.
+        live::answer($live, $members[0], 1, $this->lane_correct($live, (int) $groups[0]->id), $strike);
+        $live = live::tick($live, 2, true, $strike + 30);
+        $done = array_column(live::board_view($live, $strike + 30)['lanes'], 'done', 'teamid');
+        $this->assertTrue($done[(int) $groups[0]->id]);
+        // The second team, with nobody answering and nobody with no hurry, does not.
+        $this->assertFalse($done[(int) $groups[1]->id]);
+    }
+
     public function test_the_tower_in_the_dark_loses_the_battle(): void {
         global $DB;
         $this->resetAfterTest();

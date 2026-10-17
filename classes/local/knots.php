@@ -29,8 +29,8 @@ final class knots {
     /** @var string Prefix of the tables of the plugin. */
     private const T = 'local_oksigeniatesape_';
 
-    /** The engines of a lane the battle plays today (classify, errors and order come with the tablet client, 2.3). */
-    public const ENGINES = ['choice'];
+    /** The engines of a lane the battle plays: choose, sort (by one player of the team) and the mistakes (order: later). */
+    public const ENGINES = ['choice', 'classify', 'errors'];
 
     /** Candles of the tower, and knots of each size of battle, when the mission does not say. */
     public const CANDLES = 5;

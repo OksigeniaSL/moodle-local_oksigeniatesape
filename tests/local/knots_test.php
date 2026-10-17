@@ -43,10 +43,10 @@ final class knots_test extends \advanced_testcase {
         $this->assertSame('SV-03', $setuga['objective']);
         $this->assertNotSame('', $setuga['weakness']);
         $this->assertNotSame('', $setuga['why']);
-        // The battle of today plays the lanes to choose; with every engine, the four.
-        $this->assertSame(['choice', 'choice'], array_column($setuga['lanes'], 'engine'));
-        $all = array_column(knots::usable($mission, null), null, 'code');
-        $this->assertSame(['choice', 'choice', 'classify', 'errors'], array_column($all['setuga']['lanes'], 'engine'));
+        // The battle plays its four lanes: to choose, to sort and the mistakes; only to choose, two.
+        $this->assertSame(['choice', 'choice', 'classify', 'errors'], array_column($setuga['lanes'], 'engine'));
+        $choose = array_column(knots::usable($mission, ['choice']), null, 'code');
+        $this->assertSame(['choice', 'choice'], array_column($choose['setuga']['lanes'], 'engine'));
         // A knot without lanes of its own: each of its questions is a lane to choose.
         $this->assertSame(['Q1-1', 'Q1-2', 'Q1-4'], array_column($today['piedra']['lanes'], 'question'));
     }

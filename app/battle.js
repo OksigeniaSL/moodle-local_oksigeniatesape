@@ -22,6 +22,11 @@
   var layer = document.createElement('div');
   layer.className = 'battle-layer';
   document.body.appendChild(layer);
+  // By turns, one sentence at each change of stage, for the screen reader: it is there before it says anything.
+  var said = document.createElement('p');
+  said.className = 'sr-only';
+  said.setAttribute('aria-live', 'polite');
+  document.body.appendChild(said);
   var state = {live: null, inside: false, dismissed: 0, timer: 0, sig: '', sending: false, tick: 0, idle: 0};
   // The result of a battle shows for a few minutes after it ends: once closed, not again on the next page.
   var SEEN = 'tesape-battle-' + cfg.courseid + '-' + cfg.userid;
@@ -79,7 +84,7 @@
     var playing = live && live.mode === 'phones' && state.dismissed !== live.id;
     state.inside = !!(playing && live.joined);
     // The seconds left change on every poll; the countdown shows them without drawing everything again.
-    var sig = JSON.stringify([live ? Object.assign({}, live, {left: 0}) : null, state.inside]);
+    var sig = JSON.stringify([live ? Object.assign({}, live, {left: 0, stageleft: 0}) : null, state.inside]);
     if (sig === state.sig) {
       return;
     }
@@ -120,6 +125,45 @@
     layer.innerHTML = '<div class="battle-phone" role="dialog" aria-modal="true" aria-label="' +
       esc(t('app_battle_title')) + '">' + head(live) + body(live) + '</div>';
     bind(live);
+    tell(live);
+  }
+
+  /**
+   * By turns, what each stage is, said once: for the screen reader always; aloud, the knot and the lane, with the
+   * reading aloud of the student.
+   *
+   * @param {Object} live
+   */
+  function tell(live) {
+    var at = live.id + ':' + live.round + ':' + live.stage;
+    if (!live.stage || state.told === at) {
+      return;
+    }
+    state.told = at;
+    var text = '';
+    var aloud = false;
+    if (live.stage === 'intent') {
+      text = live.knot.name + ': «' + live.knot.claim.replace(/^«|»$/g, '') + '». ' + (live.intent && live.intent !== 'team' ?
+        t('board_turn_intent_' + live.intent) : live.targetid === live.myteam ? t('app_turn_mine') :
+        t('app_turn_goes', live.target));
+      aloud = true;
+    } else if (live.stage === 'prep') {
+      text = t('app_turn_prep_say');
+    } else if (live.stage === 'strike') {
+      var lane = live.lane ? JSON.parse(live.lane) : null;
+      text = t('app_turn_strike', live.knot.name) + '. ' + (lane && lane.prompt ? lane.prompt : lane ? t('board_lane_errors') :
+        live.question ? live.question.text : '');
+      aloud = true;
+    } else if (live.stage === 'resolve' && live.done !== undefined) {
+      text = t(live.done ? 'app_turn_lane_done' : 'app_turn_lane_failed');
+    }
+    said.textContent = text;
+    if (aloud && text && T.adapted.readaloud && T.readAloud && window.speechSynthesis) {
+      var el = document.createElement('div');
+      el.textContent = text;
+      window.speechSynthesis.cancel();
+      T.readAloud(el);
+    }
   }
 
   function head(live) {
@@ -163,11 +207,20 @@
         '">' + esc(mine ? t('app_turn_mine') : t('app_turn_goes', live.target)) + '</p>' : '';
       return '<div class="knot-call' + (tangled ? ' tangled' : '') + '"><p class="knot-name">' + esc(live.knot.name) +
         '</p><p class="knot-claim">«' + esc(live.knot.claim.replace(/^«|»$/g, '')) + '»</p>' + intent + '</div>' +
-        (live.stage === 'prep' && !T.adapted.notime ? '<p class="battle-left" aria-live="off">' + esc(t('app_turn_prep',
-        live.stageleft)) + '</p>' : '') + token(live);
+        (live.stage === 'prep' && !T.adapted.notime ? '<p class="battle-left" data-left="' + live.stageleft +
+        '" data-say="app_turn_prep" aria-live="off">' + esc(t('app_turn_prep', live.stageleft)) + '</p>' : '') + token(live);
     }
     if (!live.round || !live.question) {
       return '<p class="battle-wait">' + esc(t('app_battle_wait')) + '</p>';
+    }
+    if (live.lane) {
+      // By turns, a lane of another engine: drawn by the lanes of exercises.js once the layer is there.
+      var laneNote = live.revealed ? '' : live.mine >= 0 ? '<p class="battle-note">' + esc(t('app_battle_answered')) + '</p>' :
+        !live.open ? '<p class="battle-note">' + esc(t('app_battle_closed')) + '</p>' : live.left >= 0 && !T.adapted.notime ?
+        '<p class="battle-left" data-left="' + live.left + '" aria-live="off">' + esc(t('app_battle_left', live.left)) + '</p>' :
+        '';
+      return (live.stage === 'strike' ? '<p class="knot-name">' + esc(t('app_turn_strike', live.knot.name)) + '</p>' : '') +
+        '<div class="lane-play" data-lane></div>' + laneNote + turnNote(live) + token(live);
     }
     var q = live.question;
     var answered = live.mine >= 0;
@@ -193,12 +246,7 @@
     var trail = live.trail && !live.revealed ? '<p class="battle-trail">' + esc(t('app_token_trail_shown', live.trail)) +
       '</p>' : '';
     if (live.stage === 'resolve' && live.done !== undefined) {
-      // By turns: what the team did with its lane, the knot if it broke, and what the Embrollo did.
-      note += '<p class="turn-outcome' + (live.done ? ' undone' : ' fell') + '">' + esc(t(live.done ? 'app_turn_lane_done' :
-        'app_turn_lane_failed')) + '</p>' + (live.knot.broken ? '<p class="turn-outcome undone">' +
-        esc(t('board_turn_broken')) + '</p>' : '') + (live.counter && !live.recovered ? '<p class="turn-outcome fell">' +
-        esc(t(live.intent === 'all' ? 'board_turn_candle_all' : 'board_turn_candle', live.target)) + '</p>' : '') +
-        (live.knot.laugh ? '<p class="knot-laugh">«' + esc(live.knot.laugh.replace(/^«|»$/g, '')) + '»</p>' : '');
+      note += turnNote(live);
     } else if (live.stage === 'resolve' && live.target) {
       var fell = live.counter || live.shielded;
       note += '<p class="turn-outcome' + (fell ? ' fell' : ' undone') + '">' + esc(t(!fell ? 'app_turn_undone' : live.shielded ?
@@ -208,6 +256,23 @@
     return (live.stage === 'strike' ? '<p class="knot-name">' + esc(t('app_turn_strike', live.knot.name)) + '</p>' : '') +
       '<p class="battle-q">' + esc(q.text) + '</p>' + trail + '<div class="battle-options">' + options + '</div>' + note +
       token(live);
+  }
+
+  /**
+   * By turns, at the resolution: what the team did with its lane, the knot if it broke, and what the Embrollo did.
+   *
+   * @param {Object} live
+   * @return {string}
+   */
+  function turnNote(live) {
+    if (live.stage !== 'resolve' || live.done === undefined) {
+      return '';
+    }
+    return '<p class="turn-outcome' + (live.done ? ' undone' : ' fell') + '">' + esc(t(live.done ? 'app_turn_lane_done' :
+      'app_turn_lane_failed')) + '</p>' + (live.knot.broken ? '<p class="turn-outcome undone">' +
+      esc(t('board_turn_broken')) + '</p>' : '') + (live.counter && !live.recovered ? '<p class="turn-outcome fell">' +
+      esc(t(live.intent === 'all' ? 'board_turn_candle_all' : 'board_turn_candle', live.target)) + '</p>' : '') +
+      (live.knot.laugh ? '<p class="knot-laugh">«' + esc(live.knot.laugh.replace(/^«|»$/g, '')) + '»</p>' : '');
   }
 
   /**
@@ -271,6 +336,23 @@
   }
 
   function bind(live) {
+    var laneEl = layer.querySelector('[data-lane]');
+    if (laneEl && T.lane) {
+      // A lane of another engine: what the student did goes to the server, which says whether it undoes it.
+      T.lane(laneEl, JSON.parse(live.lane), {key: live.id + ':' + live.round, sent: live.mine >= 0, open: live.open,
+        onsend: function(payload) {
+          if (navigator.vibrate) {
+            navigator.vibrate(30);
+          }
+          api('strike', {round: live.round, payload: JSON.stringify(payload)}).then(function(r) {
+            show(r.live || null);
+          }).catch(function(e) {
+            T.toast(esc(e.message), true);
+            state.sig = '';
+            poll();
+          });
+        }});
+    }
     layer.querySelectorAll('[data-answer]').forEach(function(b) {
       b.onclick = function() {
         if (state.sending) {
@@ -332,7 +414,7 @@
       var secs = +left.dataset.left;
       state.tick = setInterval(function() {
         secs = Math.max(0, secs - 1);
-        left.textContent = t('app_battle_left', secs);
+        left.textContent = t(left.dataset.say || 'app_battle_left', secs);
       }, 1000);
     }
   }

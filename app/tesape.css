@@ -6575,6 +6575,11 @@ body.adapt-still .spot.next .spot-icon {
 }
 
 /* The teammates on the map, without names: small silhouettes beside the lantern of their place. */
+.map .mate,
+.map .mate-more {
+  pointer-events: none;
+}
+
 .map .mate {
   fill: rgba(236, 244, 255, .85);
   stroke: rgba(15, 33, 49, .8);
@@ -7085,4 +7090,101 @@ body.adapt-still .mission-grid .chapter.as-sheet {
 .knot-call.tangled {
   background-image: repeating-linear-gradient(135deg, rgba(160, 120, 220, .18) 0 6px, transparent 6px 14px);
   border-radius: var(--r-s);
+}
+
+/* The lanes of a battle by turns that are not to choose: sorting into groups, the mistakes of a sheet. */
+.lane-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.lane-item.picked {
+  outline: 3px solid var(--lantern);
+}
+
+.lane-item.right {
+  border-color: var(--lantern);
+}
+
+.lane-item.wrong {
+  border-style: dashed;
+}
+
+.lane-bins {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.lane-bin {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-height: 110px;
+  padding: 10px;
+  border-radius: var(--r-s);
+  border: 2px dashed rgba(var(--lantern-rgb), .5);
+  background: rgba(var(--lantern-rgb), .06);
+  color: var(--text);
+}
+
+.lane-put {
+  justify-self: start;
+  min-height: var(--tap);
+  padding: 4px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--lantern);
+  font: 700 16px var(--f-text);
+}
+
+.lane-put:not([disabled]) {
+  background: rgba(var(--lantern-rgb), .18);
+  cursor: pointer;
+}
+
+.lane-bin > span {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.lane-sheet {
+  padding: 14px;
+  border-radius: var(--r-s);
+  background: rgba(244, 233, 210, .95);
+  color: #2b2219;
+  font-size: 19px;
+  line-height: 1.8;
+}
+
+.lane-word {
+  cursor: pointer;
+}
+
+.lane-word.mark {
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: inherit;
+  font: inherit;
+}
+
+.lane-word.touched {
+  background: rgba(var(--lantern-rgb), .45);
+}
+
+.lane-word.slip {
+  text-decoration: line-through;
+  opacity: .6;
+}
+
+.lane-whys {
+  margin: 10px 0 0;
+  padding-left: 20px;
+  color: var(--text-soft);
 }

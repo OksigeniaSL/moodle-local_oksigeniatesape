@@ -367,6 +367,44 @@ final class live {
     }
 
     /**
+     * By turns, what a player did in the lane of their team when it is not one to choose: the server says whether it
+     * undoes it, and keeps it as their answer (1: it does, 0: not). Sorting counts only from the player who sorts for the
+     * team in this turn.
+     *
+     * @param \stdClass $live
+     * @param \stdClass $member
+     * @param int $round
+     * @param array $payload
+     * @param int|null $now
+     */
+    public static function strike(\stdClass $live, \stdClass $member, int $round, array $payload, ?int $now = null): void {
+        global $DB;
+        $now = $now ?? time();
+        $state = self::state($live);
+        if ($member->status === 'paused') {
+            throw new \moodle_exception('pausedgame', 'local_oksigeniatesape');
+        }
+        $joined = $DB->get_record(self::T . 'livein', ['liveid' => $live->id, 'round' => 0, 'charid' => $member->charid]);
+        if (!$joined || $round !== (int) $live->round || !self::is_open($state, $now)) {
+            throw new \moodle_exception('roundclosed', 'local_oksigeniatesape');
+        }
+        $lane = $state['rounds'][$round]['lanes'][(int) $joined->team] ?? null;
+        if (!$lane || empty($lane['engine'])) {
+            throw new \invalid_parameter_exception('Not a lane of another engine');
+        }
+        if (isset($lane['speaker']) && (int) $lane['speaker'] !== (int) $member->charid) {
+            throw new \invalid_parameter_exception('Another player sorts for the team in this turn');
+        }
+        try {
+            $DB->insert_record(self::T . 'livein', (object) ['liveid' => $live->id, 'courseid' => $live->courseid,
+                'charid' => $member->charid, 'round' => $round, 'team' => $joined->team,
+                'answer' => self::lane_right($lane, $payload) ? 1 : 0, 'timecreated' => $now]);
+        } catch (\dml_write_exception $e) {
+            return;
+        }
+    }
+
+    /**
      * Runs an action of the class screen on the session of a course with nobody else acting on it at the same time:
      * two taps on a button, or two class screens, would otherwise act twice.
      *
@@ -651,6 +689,14 @@ final class live {
             if ($lane && $info['revealed']) {
                 $view['done'] = !empty($lane['done']);
             }
+            if ($lane && !empty($lane['engine']) && self::shown($live, $state, $now)) {
+                // A lane of another engine: what it shows, who sorts for the team, and once resolved, the solution.
+                $speaker = (int) ($lane['speaker'] ?? 0);
+                $view['lane'] = json_encode($lane['shown'] + ['engine' => $lane['engine'],
+                    'mine' => $speaker === 0 || $speaker === (int) $member->charid,
+                    'speaker' => $speaker ? self::player_name((int) $live->courseid, $speaker) : ''] +
+                    ($info['revealed'] ? ['solution' => $lane['solution']] : []));
+            }
             if ($info['revealed'] && $live->kind === 'vote') {
                 $view['tally'] = $info['tally'];
             }
@@ -775,9 +821,9 @@ final class live {
                 $kinds[] = $token->kind;
             }
         }
-        // By turns, what the team plays is its lane.
+        // By turns, what the team plays is its lane; the glance strikes out an option only in one to choose.
         $info = array_merge($state['rounds'][$round], $state['rounds'][$round]['lanes'][$team] ?? []);
-        if (in_array('glance', $kinds, true) && $info['options'] > 1) {
+        if (in_array('glance', $kinds, true) && $info['options'] > 1 && empty($info['engine'])) {
             // Always the same wrong option for the round, so that the phones of the team agree.
             $wrong = array_values(array_diff(range(0, $info['options'] - 1), [(int) $info['correct']]));
             $view['struck'] = $wrong[self::seed($live, $round) % count($wrong)];
@@ -807,6 +853,21 @@ final class live {
     private static function role(\stdClass $member): string {
         global $DB;
         return (string) ($member->role ?? $DB->get_field(self::T . 'char', 'role', ['id' => $member->charid]));
+    }
+
+    /**
+     * The name a player shows to their classmates (the hero name where the course allows it).
+     *
+     * @param int $courseid
+     * @param int $charid
+     * @return string
+     */
+    private static function player_name(int $courseid, int $charid): string {
+        global $DB;
+        $char = $DB->get_record(self::T . 'char', ['id' => $charid]);
+        $user = $char ? \core_user::get_user((int) $char->userid) : null;
+        $region = regions::get($courseid);
+        return $user && $region ? view::display_name($user, $char, $region) : '';
     }
 
     /**
@@ -1000,7 +1061,7 @@ final class live {
         global $DB;
         $round = (int) $live->round;
         $info = $state['rounds'][$round];
-        $answers = $DB->get_records(self::T . 'livein', ['liveid' => $live->id, 'round' => $round], '', 'id, team, answer');
+        $answers = $DB->get_records(self::T . 'livein', ['liveid' => $live->id, 'round' => $round], '', 'id, charid, team, answer');
         $info['answered'] = count($answers);
         if ($live->kind === 'vote') {
             $info['tally'] = array_fill(0, (int) $info['options'], 0);
@@ -1087,14 +1148,31 @@ final class live {
                 $info['relit'] = true;
             }
         }
-        $in = $DB->get_fieldset_select(self::T . 'livein', 'team', 'liveid = ? AND round = 0', [$live->id]);
-        $present = array_count_values(array_map('intval', $in));
+        // Who is in each team, for its majority; with «no hurry», only if they answered: not answering does not count
+        // against the team.
+        $answered = array_map(fn($a) => (int) $a->charid, $answers);
+        $present = [];
+        $in = $DB->get_records_sql(
+            'SELECT l.charid, l.team, m.adapt
+               FROM {' . self::T . 'livein} l
+               JOIN {' . self::T . 'member} m ON m.charid = l.charid AND m.courseid = l.courseid
+              WHERE l.liveid = ? AND l.round = 0',
+            [$live->id]
+        );
+        foreach ($in as $player) {
+            $slow = in_array('notime', explode(',', (string) $player->adapt), true);
+            if (!$slow || in_array((int) $player->charid, $answered, true)) {
+                $present[(int) $player->team] = ($present[(int) $player->team] ?? 0) + 1;
+            }
+        }
         $damage = 0;
         $done = 0;
         foreach ($info['lanes'] as $team => $lane) {
             $mine = array_filter($answers, fn($a) => (int) $a->team === (int) $team);
             $right = count(array_filter($mine, fn($a) => (int) $a->answer === (int) $lane['correct']));
-            $undone = !empty($present[$team]) && 2 * $right > $present[$team];
+            // Sorted for the team by one player: that one counts.
+            $players = isset($lane['speaker']) ? 1 : (int) ($present[$team] ?? 0);
+            $undone = $players > 0 && 2 * $right > $players;
             $info['lanes'][$team] += ['answered' => count($mine), 'right' => $right, 'done' => $undone];
             $info['teams'][$team] = $right;
             $info['right'] += $right;
@@ -1118,10 +1196,14 @@ final class live {
         $state['dazed'] = $all;
         $state['hp'] = max(0, $state['hp'] - $damage);
         $info['damage'] = $damage;
-        $few = 2 * $done < count($info['lanes']);
+        // A team nobody of which had to answer (all of it with «no hurry», and nobody did) is not in play this turn.
+        $inplay = array_filter(array_keys($info['lanes']), fn($team) => !empty($present[$team]) ||
+            isset($info['lanes'][$team]['speaker']));
+        $few = $inplay && 2 * $done < count($inplay);
         $target = (int) ($info['target'] ?? 0);
         if ($state['hp'] > 0) {
-            if (($info['intent'] ?? '') === 'team' && isset($info['lanes'][$target]) && empty($info['lanes'][$target]['done'])) {
+            $intarget = in_array($target, array_map('intval', $inplay), true);
+            if (($info['intent'] ?? '') === 'team' && $intarget && empty($info['lanes'][$target]['done'])) {
                 if (in_array($target, $shields, true)) {
                     $info['shielded'] = $target;
                 } else {
@@ -1438,10 +1520,25 @@ final class live {
      * @return array Team id => q, options, correct, question, chapter, trail.
      */
     private static function lanes(\stdClass $live, array $state, int $round): array {
+        global $DB;
         $courseid = (int) $live->courseid;
-        $knot = array_column(knots::usable(missions::get($courseid)), null, 'code')[$state['knots'][$round - 1]] ?? null;
+        $mission = missions::get($courseid);
+        $knot = array_column(knots::usable($mission), null, 'code')[$state['knots'][$round - 1]] ?? null;
         $lanes = [];
         foreach ($knot ? knots::lanes($knot, self::playing($live, $state), $round - 1) : [] as $team => $lane) {
+            $engine = (string) ($lane['engine'] ?? 'choice');
+            if ($engine !== 'choice') {
+                // Another engine: what it shows goes to the tablets; what solves it stays here until the turn is resolved.
+                $lanes[$team] = self::lane_of($lane, $mission) + ['options' => 2, 'correct' => 1];
+                if ($engine === 'classify') {
+                    // Sorting is done by the team: one of its players, by turns, sorts; the others help aloud.
+                    $where = 'liveid = ? AND round = 0 AND team = ?';
+                    $in = $DB->get_fieldset_select(self::T . 'livein', 'charid', $where, [$live->id, $team]);
+                    sort($in);
+                    $lanes[$team]['speaker'] = $in ? (int) $in[($round - 1) % count($in)] : 0;
+                }
+                continue;
+            }
             $question = questions::get($courseid, (string) ($lane['question'] ?? ''), self::seed($live, $round) + $team);
             if ($question) {
                 $chapter = (string) ($question['chapter'] ?? '');
@@ -1451,6 +1548,55 @@ final class live {
             }
         }
         return $lanes;
+    }
+
+    /**
+     * A lane of another engine than choosing, ready for the turn: what the tablets show (shown) and what solves it
+     * (solution), with its prompt as the question the class screen shows.
+     *
+     * @param array $lane From the knot: classify (prompt, bins, items) or errors (text).
+     * @param \stdClass $mission
+     * @return array engine, question, shown, solution.
+     */
+    private static function lane_of(array $lane, \stdClass $mission): array {
+        $text = fn($t) => missions::text($t ?? '', $mission->skin, $mission->variant);
+        if ($lane['engine'] === 'classify') {
+            $items = array_map(fn($i) => ['id' => (string) $i['id'], 'label' => $text($i['label'])], $lane['items'] ?? []);
+            return ['engine' => 'classify', 'question' => ['id' => 'classify', 'text' => $text($lane['prompt'] ?? ''),
+                'options' => []], 'shown' => ['prompt' => $text($lane['prompt'] ?? ''), 'items' => $items,
+                'bins' => array_map(fn($b) => ['id' => (string) $b['id'], 'label' => $text($b['label'])], $lane['bins'] ?? [])],
+                'solution' => array_column($lane['items'] ?? [], 'bin', 'id')];
+        }
+        // The mistakes of the Embrollo in a sheet: plain text and marked words, each a mistake.
+        $parts = minigames::parts($text($lane['text'] ?? ''));
+        $prompt = get_string('board_lane_errors', 'local_oksigeniatesape');
+        $shown = array_map(fn($p) => ['text' => $p['text'], 'mark' => $p['mark'], 'wrong' => $p['wrong']], $parts);
+        $marks = array_values(array_filter($parts, fn($p) => $p['mark'] >= 0));
+        return ['engine' => 'errors', 'question' => ['id' => 'errors', 'text' => $prompt, 'options' => []],
+            'shown' => ['parts' => $shown],
+            'solution' => array_map(fn($p) => ['mark' => $p['mark'], 'right' => $p['right'], 'why' => $p['why']], $marks)];
+    }
+
+    /**
+     * Whether what a player did in a lane of another engine undoes it: sorting, each thing in its group (one slip is
+     * forgiven from five things on); the mistakes, each one touched and at most one word that was right.
+     *
+     * @param array $lane As lane_of() makes it.
+     * @param array $payload classify: placed (item id => bin id); errors: marks (numbers), misses (words right touched).
+     * @return bool
+     */
+    public static function lane_right(array $lane, array $payload): bool {
+        if ($lane['engine'] === 'classify') {
+            $placed = (array) ($payload['placed'] ?? []);
+            $wrong = 0;
+            foreach ($lane['solution'] as $item => $bin) {
+                $wrong += ($placed[$item] ?? '') === $bin ? 0 : 1;
+            }
+            return $wrong <= intdiv(count($lane['solution']), 5);
+        }
+        $marks = array_map('intval', (array) ($payload['marks'] ?? []));
+        $all = array_column($lane['solution'], 'mark');
+        return !array_diff($all, $marks) && (int) ($payload['misses'] ?? 0) <= 1;
     }
 
     /**
