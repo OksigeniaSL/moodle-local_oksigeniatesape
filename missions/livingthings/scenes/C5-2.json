@@ -56,7 +56,8 @@
        "flag": "mosquitos"
       }
      ],
-     "feedback": "Es un sitio llano y bonito.",
+     "say": "Es un sitio llano y bonito, junto al agua quieta.",
+     "feedback": "Junto al agua quieta viven muchos seres: plantas, ranas, peces… y las larvas de los mosquitos, que crecen en el agua y luego salen volando.",
      "next": "noche-agua"
     },
     {
@@ -64,7 +65,8 @@
      "label": "Acampar bajo un árbol hueco con un camino de hormigas",
      "points": 1,
      "objective": "SV-06",
-     "feedback": "El árbol protege del viento.",
+     "say": "El árbol protege del viento, y las hormigas siguen su camino, muy ocupadas.",
+     "feedback": "Un camino de hormigas lleva a su hormiguero: las hormigas van y vienen buscando comida, y se llevan lo que encuentran.",
      "next": "noche-hormigas"
     },
     {
@@ -77,7 +79,8 @@
        "flag": "alto-seco"
       }
      ],
-     "feedback": "Hay que subir un poco, pero el suelo está seco.",
+     "say": "Hay que subir un poco, pero el suelo está seco.",
+     "feedback": "Lejos del agua quieta hay menos mosquitos, y en un suelo seco no se acumula la humedad de la noche. Elegir sitio también es saber quién vive en cada uno.",
      "next": "noche-alto"
     },
     {
@@ -93,7 +96,8 @@
        "flag": "alto-seco"
       }
      ],
-     "feedback": "Esta vez, ni un mosquito. Lo que se vive también enseña.",
+     "say": "Esta vez, ni un mosquito.",
+     "feedback": "Los mosquitos crecen en el agua quieta: lejos de ella hay muchos menos. Lo que se vive también enseña.",
      "next": "noche-alto"
     },
     {
@@ -111,7 +115,8 @@
        "flag": "alto-seco"
       }
      ],
-     "feedback": "En la ronda se ve todo: sobre el agua quieta bailan nubecillas de mosquitos; al pie del árbol hueco pasa una fila de hormigas cargadas; en el alto, el suelo está seco. La expedición acampa arriba. Una gema por la ronda.",
+     "say": "Mosquitos sobre el agua, hormigas en el árbol, suelo seco en el alto: la expedición acampa arriba. Una gema por la ronda.",
+     "feedback": "Antes de decidir conviene mirar, porque cada sitio tiene sus habitantes: el agua quieta, los mosquitos; el árbol hueco, las hormigas. El alto seco es el sitio con menos vecinos que molesten.",
      "next": "noche-alto"
     }
    ]
@@ -142,14 +147,16 @@
        "gems": 1
       }
      ],
-     "feedback": "En la red, unas larvas de mosquito y un renacuajo. Bien mirados, vuelven al agua: la red es para observar, no para llevarse nada."
+     "say": "En la red, unas larvas de mosquito y un renacuajo. Bien mirados, vuelven al agua.",
+     "feedback": "Mirar de cerca dice qué vive en la charca: larvas de mosquito, que respiran por un tubito, y un renacuajo, que será rana. La red sirve para observar y soltar, sin llevarse nada."
     },
     {
      "id": "orilla",
      "label": "Mirarlo desde la orilla",
      "points": 1,
      "objective": "SV-06",
-     "feedback": "Desde la orilla solo se ven puntitos que se mueven. Algo vive ahí, pero no se sabe qué."
+     "say": "Desde la orilla solo se ven puntitos que se mueven.",
+     "feedback": "Algo vive en el agua, pero desde lejos no se sabe qué. Para conocer a un ser vivo hay que observarlo de cerca, con cuidado de no hacerle daño."
     },
     {
      "id": "picaduras",
@@ -163,7 +170,8 @@
        "gems": 1
       }
      ],
-     "feedback": "El picor se calma y vuelve el ánimo. Mientras tanto, agachados y muy quietos junto al agua, se ve de cerca lo que se mueve: larvas de mosquito que suben a respirar por un tubito. Así empezaron las de anoche. Una gema por cuidar a la expedición."
+     "say": "El picor se calma y, junto al agua, se ven larvas que suben a respirar. Una gema por cuidar a todos.",
+     "feedback": "Los mosquitos de anoche empezaron así: sus larvas viven en el agua quieta y suben a respirar aire por un tubito. Luego cambian de forma y salen volando."
     }
    ],
    "next": "memoria-buho"
@@ -200,14 +208,16 @@
        "gems": 1
       }
      ],
-     "feedback": "Con el farol se ve al búho en una rama, con el ratón. A sus pies, unas bolitas grises: egagrópilas, con huesecillos de lo que comió."
+     "say": "Con el farol se ve al búho en una rama, con un ratón. A sus pies hay unas bolitas grises.",
+     "feedback": "Las bolitas grises son egagrópilas: el búho se traga sus presas enteras y luego echa por el pico lo que no digiere, los huesecillos y el pelo. Cuentan lo que ha comido."
     },
     {
      "id": "dormir",
      "label": "Seguir durmiendo",
      "points": 1,
      "objective": "SV-06",
-     "feedback": "Por la mañana, bajo el árbol, aparecen unas bolitas grises: egagrópilas del búho, con huesecillos de ratón dentro."
+     "say": "Por la mañana, bajo el árbol, aparecen unas bolitas grises con huesecillos dentro.",
+     "feedback": "Son egagrópilas: el búho se traga sus presas enteras y echa por el pico lo que no puede digerir, como los huesos y el pelo. Aunque no se le vea cazar, lo que deja cuenta lo que comió."
     },
     {
      "id": "guardia",
@@ -218,7 +228,8 @@
      "locked": "Esto lo haría alguien que no tiene miedo de la noche: el protector del equipo.",
      "points": 2,
      "objective": "SV-06",
-     "feedback": "Sin luz y sin ruido, el protector ve al búho tragarse el ratón entero. Luego, nada: el bosque sigue. A la mañana, bajo la rama, las egagrópilas con los huesecillos."
+     "say": "Sin luz y sin ruido, el protector ve al búho tragarse el ratón entero.",
+     "feedback": "Los búhos cazan de noche y se tragan sus presas enteras; lo que no digieren, los huesos y el pelo, lo echan después en bolitas, las egagrópilas. Por la mañana estarán bajo la rama."
     },
     {
      "id": "conocido",
@@ -231,10 +242,11 @@
      },
      "points": 2,
      "objective": "SV-06",
-     "feedback": {
-      "valley": "El búho tarda tanto en contestar que parece dormido. Al fin baja a una rama cercana: «Los que preguntan bien. Esta noche, un ratón. Mañana, bajo la rama, una bolita gris con sus huesos: una egagrópila».",
-      "azara": "El baqueano tarda tanto en contestar que parece dormido. Al fin señala una rama, donde un búho se traga un ratón entero: «Los que preguntan bien. Mañana, bajo esa rama, una bolita gris con sus huesos: una egagrópila»."
-     }
+     "say": {
+      "valley": "El búho tarda tanto en contestar que parece dormido. Al fin dice: «Los que preguntan bien. Esta noche, un ratón».",
+      "azara": "El baqueano tarda tanto en contestar que parece dormido. Al fin señala una rama, donde un búho se traga un ratón."
+     },
+     "feedback": "El búho caza de noche y se traga los ratones enteros. Lo que no digiere, los huesos y el pelo, lo echa en una bolita gris, una egagrópila, que mañana estará bajo la rama."
     },
     {
      "id": "bolitas",
@@ -249,10 +261,11 @@
        "page": "egagropilas"
       }
      ],
-     "feedback": {
-      "valley": "Entre las raíces, unas bolitas grises y secas. Dentro, huesecillos y pelo: lo que el búho no digiere. Una página nueva para el Gran Libro.",
-      "azara": "Entre las raíces, unas bolitas grises y secas. Dentro, huesecillos y pelo: lo que el búho no digiere. Una página nueva para el cuaderno."
-     }
+     "say": {
+      "valley": "Entre las raíces, unas bolitas grises y secas, con huesecillos y pelo dentro. Una página nueva para el Gran Libro.",
+      "azara": "Entre las raíces, unas bolitas grises y secas, con huesecillos y pelo dentro. Una página nueva para el cuaderno."
+     },
+     "feedback": "Son egagrópilas: el búho echa por el pico lo que no puede digerir. Abriéndolas se sabe qué ha comido sin verlo cazar."
     }
    ],
    "next": "memoria-buho"
@@ -306,7 +319,8 @@
      "correct": true,
      "points": 2,
      "objective": "SV-08",
-     "feedback": "Ramas secas del suelo: aguantan bien y no dañan nada vivo."
+     "say": "Las ramas caídas aguantan bien el peso del techo.",
+     "feedback": "Las ramas caídas ya no forman parte de un árbol vivo: sirven para el refugio sin dañar a ningún ser vivo."
     },
     {
      "id": "hojas",
@@ -314,7 +328,8 @@
      "correct": true,
      "points": 2,
      "objective": "SV-08",
-     "feedback": "Las caídas hacen un buen techo."
+     "say": "Las hojas que ya estaban caídas, una sobre otra, hacen un buen techo.",
+     "feedback": "Las hojas caídas ya se han separado de su planta: usarlas no daña a ningún ser vivo, y bien puestas, una sobre otra, dejan pasar poca agua."
     },
     {
      "id": "ramas-verdes",
@@ -327,7 +342,8 @@
        "flag": "ramas-verdes"
       }
      ],
-     "feedback": "Al secarse se encogen y el refugio se hunde. Y el arbusto queda herido. «Para el refugio sirve lo que ya no está vivo.»"
+     "say": "Al secarse, las ramas se encogen y el refugio se hunde. El arbusto queda herido.",
+     "feedback": "Una rama verde está viva: por dentro lleva savia, y al cortarla se daña el arbusto. Además, al secarse pierde agua y se encoge. Para el refugio sirve lo que ya no está vivo."
     },
     {
      "id": "piedras",
@@ -335,7 +351,8 @@
      "correct": true,
      "points": 1,
      "objective": "SV-08",
-     "feedback": "Sujetan las ramas contra el viento."
+     "say": "Las piedras sujetan las ramas contra el viento.",
+     "feedback": "Las piedras no son seres vivos: sujetan las ramas sin dañar a ningún ser vivo, y después se pueden devolver a su sitio."
     },
     {
      "id": "barro",
@@ -344,7 +361,8 @@
      "correct": false,
      "points": 1,
      "objective": "SV-08",
-     "feedback": "Tapa huecos, pero si llueve se deshace."
+     "say": "El barro tapa los huecos, pero con el rocío de la noche se ablanda.",
+     "feedback": "El barro sirve para tapar huecos, pero con el agua se deshace: con la lluvia o el rocío, el refugio se queda sin él."
     }
    ],
    "next": "garza"
@@ -375,21 +393,24 @@
      "correct": true,
      "points": 3,
      "objective": "SV-06",
-     "feedback": "La tinta se seca limpia, flecha a flecha: las plantas fabrican su alimento, el ratón se las come y el búho se come al ratón."
+     "say": "La tinta se seca limpia, flecha a flecha.",
+     "feedback": "Una cadena alimentaria empieza por los que fabrican su propio alimento: las plantas. El ratón come semillas y hierba, y el búho se come al ratón; cada flecha va del que es comido al que come."
     },
     {
      "id": "reves",
      "label": "Apuntar «búho → ratón → semillas y hierba»",
      "correct": false,
      "objective": "SV-06",
-     "feedback": "El ratón se ríe: «¿Yo comerme un búho?». Las flechas van del que es comido al que come."
+     "say": "El ratón se ríe desde su agujero: «¿Yo comerme un búho?».",
+     "feedback": "En una cadena alimentaria, las flechas van del que es comido al que come. Escrita al revés, dice que el ratón se come al búho."
     },
     {
      "id": "suelta",
      "label": "Apuntar «mosquito → búho → hierba»",
      "correct": false,
      "objective": "SV-06",
-     "feedback": "La flecha que va del búho a la hierba se emborrona en la página: la hierba no se come al búho. Se empieza por quien fabrica su propio alimento."
+     "say": "La flecha que va del búho a la hierba se emborrona en la página.",
+     "feedback": "La hierba no se come al búho: las flechas van del que es comido al que come. Y una cadena empieza por quien fabrica su propio alimento, una planta."
     },
     {
      "id": "recordar",
@@ -404,7 +425,8 @@
        "gems": 1
       }
      ],
-     "feedback": "El búho caza ratones; el ratón roe semillas y hierba; la hierba fabrica su alimento con la luz, y las semillas llevan dentro el que les guardó su planta. Con eso, las flechas se ponen solas, del que es comido al que come. Una gema por recordar lo aprendido."
+     "say": "Con lo que come cada uno en la cabeza, las flechas se ponen solas. Una gema por recordar lo aprendido.",
+     "feedback": "El búho caza ratones; el ratón roe semillas y hierba; la hierba fabrica su alimento con la luz, y las semillas llevan dentro el que les guardó su planta. Las flechas van del que es comido al que come."
     }
    ],
    "next": "apuntado"

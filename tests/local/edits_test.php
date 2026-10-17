@@ -111,6 +111,11 @@ final class edits_test extends \advanced_testcase {
         $course = $this->make_course();
         edits::save($course->id, edits::MISSION, 'chapters/claro/sessions/0/do', 'Otra primera sesión');
         $this->assertSame('Otra primera sesión', missions::get($course->id)->data['chapters'][0]['sessions'][0]['do']);
+        // The knots of the battle are texts of their place: what the Embrollo claims can be the teacher's.
+        $paths = array_column(edits::view($course->id)['chapters'][0]['fields'], 'path');
+        $this->assertContains('battle/knots/piedra/claim', $paths);
+        $this->assertTrue(edits::save($course->id, edits::MISSION, 'battle/knots/piedra/claim', '¡La piedra respira!'));
+        $this->assertSame('¡La piedra respira!', knots::get(missions::get($course->id), 'piedra')['claim']);
         $questions = edits::view($course->id)['questions'];
         $questions[0]['text'] = '¿Una pregunta mía?';
         $questions[] = ['id' => '', 'chapter' => 'lago', 'objective' => 'SV-06', 'text' => '¿Una más?',

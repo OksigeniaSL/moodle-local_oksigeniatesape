@@ -153,14 +153,16 @@
        "flag": "salamandra-a-la-sombra"
       }
      ],
-     "feedback": "La piel húmeda es su vida: también respira por ella. Se recupera despacio durante el viaje."
+     "say": "Con la piel mojada y a la sombra, la salamandra se recupera despacio durante el viaje.",
+     "feedback": "La salamandra es un anfibio: tiene la piel fina y húmeda, y también respira por ella. Si se le seca, le cuesta respirar."
     },
     {
      "id": "sol",
      "label": "Ponerla al sol para que se seque y entre en calor",
      "correct": false,
      "objective": "SV-04",
-     "feedback": "Se queda más quieta y la piel se le agrieta: un anfibio necesita humedad. El barquero la moja a tiempo."
+     "say": "Al sol, se queda más quieta y la piel se le agrieta. El barquero la moja a tiempo.",
+     "feedback": "Un anfibio tiene la piel fina y sin escamas, que pierde agua enseguida: al sol se seca y le cuesta respirar por ella. Lo que necesita es humedad y sombra."
     },
     {
      "id": "sanador",
@@ -180,7 +182,8 @@
        "flag": "salamandra-a-la-sombra"
       }
      ],
-     "feedback": "Con la hoja húmeda, la salamandra vuelve a moverse antes de llegar a la otra orilla. «Un anfibio se cura con agua, no con sol.»"
+     "say": "Con la hoja húmeda sobre la pata, la salamandra vuelve a moverse antes de llegar a la otra orilla.",
+     "feedback": "La hoja mojada mantiene húmeda la piel de la salamandra, que es un anfibio y también respira por ella; la sombra evita que se seque. Un anfibio se cura con agua, no con sol."
     },
     {
      "id": "guardia",
@@ -197,10 +200,8 @@
        "flag": "salamandra-a-la-sombra"
       }
      ],
-     "feedback": {
-      "valley": "Nadie la pisa. Mientras vigila, el protector se fija en que la piel se le está quedando seca y sin brillo: la lleva a un rincón a la sombra y le echa agua del lago con las manos. «A salvo de los pies y a salvo del sol: así viaja un anfibio», dice el barquero. Una gema por guardar a quien no puede apartarse.",
-      "azara": "Nadie la pisa. Mientras vigila, el protector se fija en que la piel se le está quedando seca y sin brillo: la lleva a un rincón a la sombra y le echa agua del río con las manos. «A salvo de los pies y a salvo del sol: así viaja un anfibio», dice el barquero. Una gema por guardar a quien no puede apartarse."
-     }
+     "say": "Nadie la pisa, y el protector la moja y la deja a la sombra. Una gema por guardar a quien no puede apartarse.",
+     "feedback": "A un anfibio hay que protegerlo de los pies y también del sol: tiene la piel fina, respira también por ella y se le seca enseguida."
     },
     {
      "id": "cuidar",
@@ -217,10 +218,8 @@
        "flag": "salamandra-a-la-sombra"
       }
      ],
-     "feedback": {
-      "valley": "La pata solo tiene un rasguño, pero al sanador le preocupa otra cosa: la piel se le está quedando seca. Se moja las manos en el lago antes de tocarla y la deja en un rincón a la sombra, y al rato vuelve a moverse. «A un anfibio se le toca siempre con las manos mojadas», dice el barquero. Una gema por cuidar con calma.",
-      "azara": "La pata solo tiene un rasguño, pero al sanador le preocupa otra cosa: la piel se le está quedando seca. Se moja las manos en el río antes de tocarla y la deja en un rincón a la sombra, y al rato vuelve a moverse. «A un anfibio se le toca siempre con las manos mojadas», dice el barquero. Una gema por cuidar con calma."
-     }
+     "say": "La pata solo tiene un rasguño. Con las manos mojadas, el sanador la lleva a la sombra. Una gema por cuidar con calma.",
+     "feedback": "Lo urgente no era la pata, sino la piel, que se le secaba. A un anfibio se le toca siempre con las manos mojadas: su piel es fina y también respira por ella."
     },
     {
      "id": "recordar",
@@ -237,7 +236,8 @@
        "flag": "salamandra-a-la-sombra"
       }
      ],
-     "feedback": "Bajo las piedras y la hojarasca, cerca de los arroyos: donde la tierra nunca se seca. El sabio le prepara a bordo algo parecido, un rincón en sombra con hojas bien mojadas, y al rato la salamandra mueve la pata. Una gema por recordar antes de actuar."
+     "say": "El sabio le prepara un rincón a la sombra, con hojas mojadas, y al rato mueve la pata. Una gema por recordar antes de actuar.",
+     "feedback": "Las salamandras viven bajo las piedras y la hojarasca, cerca de los arroyos, donde la tierra nunca se seca. Saber dónde vive un ser vivo dice qué necesita."
     },
     {
      "id": "rastro",
@@ -254,7 +254,8 @@
        "flag": "salamandra-a-la-sombra"
       }
      ],
-     "feedback": "Son huellas mojadas que van de la orilla hacia el cubo del barquero, que gotea, y se cortan a medio camino: con la pata lastimada no ha podido llegar. El explorador la lleva hasta allí, a la sombra y junto al agua, y al rato mueve la pata. Una gema por leer lo que cuenta un rastro."
+     "say": "Las huellas van hacia el cubo del barquero, que gotea, y el explorador la lleva allí. Una gema por leer el rastro.",
+     "feedback": "Las huellas se cortaban a medio camino: con la pata lastimada, no podía llegar al agua que buscaba. Un anfibio busca la humedad porque la necesita para su piel."
     }
    ],
    "next": "rumbo"
@@ -262,6 +263,7 @@
   "rumbo": {
    "type": "choice",
    "dilemma": true,
+   "provisional": true,
    "prompt": "Ya a bordo, el barquero pregunta: «¿Por dónde cruzamos?»",
    "options": [
     {

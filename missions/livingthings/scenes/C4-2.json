@@ -41,7 +41,8 @@
      "correct": true,
      "points": 3,
      "objective": "SV-05",
-     "feedback": "Las hojas se giran hacia la ventana y empiezan a ponerse verdes: con la luz fabrican su alimento."
+     "say": "Las hojas se giran hacia la ventana y empiezan a ponerse verdes.",
+     "feedback": "Las plantas fabrican su alimento en las hojas, con la luz del sol. A oscuras no pueden, y por eso se quedan pálidas y débiles."
     },
     {
      "id": "agua",
@@ -49,7 +50,8 @@
      "correct": true,
      "points": 3,
      "objective": "SV-05",
-     "feedback": "La tierra se oscurece y los tallos se enderezan: el agua sube por la raíz hasta las hojas."
+     "say": "La tierra se oscurece y los tallos se enderezan.",
+     "feedback": "La planta toma el agua por la raíz y la sube por el tallo hasta las hojas, donde la usa para fabricar su alimento. El agua también la mantiene firme."
     },
     {
      "id": "aire",
@@ -57,14 +59,16 @@
      "correct": true,
      "points": 2,
      "objective": "SV-05",
-     "feedback": "Las hojas «respiran»: del aire toman el dióxido de carbono que necesitan para fabricar su alimento."
+     "say": "Entra aire fresco por la puerta y las hojas se mecen un poco.",
+     "feedback": "Por unos poros diminutos de las hojas entra el dióxido de carbono del aire, que la planta necesita para fabricar su alimento con la luz. Y, como todo ser vivo, también respira."
     },
     {
      "id": "azucar",
      "label": "Echarles azúcar en la tierra",
      "correct": false,
      "objective": "SV-05",
-     "feedback": "Al día siguiente la tierra tiene moho. «Las plantas no comen azúcar: lo fabrican ellas mismas con la luz.»"
+     "say": "Al día siguiente, la tierra tiene moho y las plantas siguen pálidas.",
+     "feedback": "Las plantas no toman azúcar de la tierra: lo fabrican ellas mismas en las hojas, con la luz. El azúcar de la maceta solo alimenta al moho, que es un hongo."
     },
     {
      "id": "leche",
@@ -76,7 +80,8 @@
        "flag": "leche-a-las-plantas"
       }
      ],
-     "feedback": "La maceta huele mal y aparece moho. «Las plantas no comen como nosotros.»"
+     "say": "La maceta empieza a oler mal y aparece moho.",
+     "feedback": "Las plantas no comen como los animales: fabrican su alimento con la luz, el agua y el aire. La leche se estropea en la tierra y solo alimenta al moho."
     },
     {
      "id": "tierra",
@@ -85,7 +90,8 @@
      "correct": false,
      "points": 1,
      "objective": "SV-05",
-     "feedback": "Las plantas se enderezan un poco, porque de la tierra toman agua y sales minerales. Pero siguen pálidas: sin luz, la tierra no basta."
+     "say": "Las plantas se enderezan un poco, pero siguen pálidas.",
+     "feedback": "De la tierra, las plantas toman agua y sales minerales, que las ayudan. Pero su alimento lo fabrican con la luz: sin luz, la tierra no basta."
     },
     {
      "id": "musica",
@@ -93,7 +99,8 @@
      "correct": false,
      "points": 1,
      "objective": "SV-05",
-     "feedback": "La planta no cambia… o eso parece. ¿Cómo se podría comprobar si la música le hace algo? Queda apuntado para un experimento."
+     "say": "La planta no cambia… o eso parece. Queda apuntado para un experimento.",
+     "feedback": "Que hoy no se vea nada no prueba que la música no haga nada. Para saberlo habría que hacer un experimento: dos plantas iguales, una con música y otra sin ella, y comparar."
     },
     {
      "id": "oscuridad",
@@ -106,7 +113,8 @@
      },
      "correct": false,
      "objective": "SV-05",
-     "feedback": "Al volver, la planta está aún más larga y pálida: crece estirándose para buscar una luz que no encuentra."
+     "say": "Al volver, la planta está aún más larga y pálida.",
+     "feedback": "A oscuras, la planta no puede fabricar su alimento y gasta sus reservas en estirarse, buscando una luz que no encuentra. Por eso crece larga, pálida y débil."
     }
    ],
    "next": "etiquetas"
@@ -124,16 +132,18 @@
      "correct": true,
      "points": 2,
      "objective": "SV-07",
-     "feedback": "La etiqueta dice «cactus» y la planta es una lechuga. Lo escrito de memoria no vale si nadie lo mira."
+     "say": "La etiqueta dice «cactus», pero en la maceta crece una lechuga.",
+     "feedback": "Una etiqueta no es una prueba: lo que se escribió de memoria hay que compararlo con la cosa de verdad antes de creerlo."
     },
     {
      "id": "creer",
      "label": "—Quien las escribió sabría lo que hacía. Nos fiamos.",
      "correct": false,
      "objective": "SV-07",
+     "say": "La planta de la etiqueta «cactus» se queda sin regar, como un cactus, y al día siguiente está mustia.",
      "feedback": {
-      "valley": "La etiqueta dice «cactus» y la planta es una lechuga. De lo que se da por cierto sin comprobar se alimenta el Embrollo.",
-      "azara": "La etiqueta dice «cactus» y la planta es una lechuga. De lo que se da por cierto sin comprobar salen las notas mezcladas."
+      "valley": "Era una lechuga, que necesita agua a menudo: quien escribió la etiqueta lo hizo de memoria y se equivocó. De lo que se da por cierto sin comprobar se alimenta el Embrollo.",
+      "azara": "Era una lechuga, que necesita agua a menudo: quien escribió la etiqueta lo hizo de memoria y se equivocó. De lo que se da por cierto sin comprobar salen las notas mezcladas."
      }
     },
     {
@@ -151,7 +161,8 @@
        "gems": 1
       }
      ],
-     "feedback": "Las etiquetas dudosas van a una caja aparte, con un cartel: «Sin comprobar». Un error que no se copia es un error que no crece."
+     "say": "Las etiquetas dudosas van a una caja aparte, con un cartel: «Sin comprobar».",
+     "feedback": "Un error que no se copia es un error que no crece: apartar lo dudoso hasta comprobarlo evita que otros lo repitan."
     },
     {
      "id": "letra",
@@ -168,9 +179,13 @@
        "page": "la-letra"
       }
      ],
-     "feedback": {
+     "say": {
       "valley": "Es la misma letra apurada de las páginas copiadas la noche del enredo. Una página nueva para el Gran Libro.",
       "azara": "Es la misma letra apurada de las notas copiadas la noche del traslado. Una página nueva para el cuaderno."
+     },
+     "feedback": {
+      "valley": "Comparar dos pruebas puede decir quién está detrás: si la letra es la misma, quien escribió las etiquetas copió también aquellas páginas.",
+      "azara": "Comparar dos pruebas puede decir quién está detrás: si la letra es la misma, quien escribió las notas de las macetas copió también las del cuaderno."
      }
     },
     {
@@ -185,7 +200,8 @@
        "gems": 1
       }
      ],
-     "feedback": "La etiqueta dice «cactus». Un cactus tiene el tallo grueso y con espinas; esta planta tiene hojas anchas y blandas: es una lechuga. «Lo que se sabe bien desenreda lo que se escribió deprisa», dice la jardinera. Una gema por recordar antes de creer."
+     "say": "«Lo que se sabe bien desenreda lo que se escribió deprisa», dice la jardinera. Una gema por recordar antes de creer.",
+     "feedback": "Un cactus tiene el tallo grueso y con espinas, y casi nunca hojas; esta planta tiene hojas anchas y blandas: es una lechuga. Recordar cómo es algo permite comprobar una etiqueta."
     }
    ],
    "next": "hebra"
@@ -193,6 +209,7 @@
   "hebra": {
    "type": "choice",
    "dilemma": true,
+   "provisional": true,
    "prompt": {
     "valley": "Doña Hebra ha bajado al sótano detrás de la expedición. Se queda en el último escalón, lejos de las etiquetas, contando páginas con los dedos. ¿Le decimos algo?",
     "azara": "La archivera ha entrado en el almacén detrás de la expedición. Se queda junto a la puerta, lejos de las macetas, contando páginas con los dedos. ¿Le decimos algo?"
@@ -241,14 +258,22 @@
      "correct": true,
      "points": 2,
      "objective": "SV-07",
-     "feedback": "Apostado. Ahora, a mirar las macetas de la clase."
+     "say": "La jardinera apunta la apuesta con letra clara. Ahora, a mirar las macetas de la clase.",
+     "feedback": {
+      "valley": "Es lo que les pasaba a las plantas del sótano: sin luz, crecen estirándose, pálidas y débiles. Esta apuesta se apoya en lo que ya se ha visto; ahora toca comprobarla.",
+      "azara": "Es lo que les pasaba a las plantas del almacén: sin luz, crecen estirándose, pálidas y débiles. Esta apuesta se apoya en lo que ya se ha visto; ahora toca comprobarla."
+     }
     },
     {
      "id": "igual",
      "label": "—Apostamos a que están igual que las de la luz.",
      "correct": false,
      "objective": "SV-07",
-     "feedback": "Apostado. Ahora, a mirar las macetas de la clase."
+     "say": "La jardinera apunta la apuesta con letra clara. Ahora, a mirar las macetas de la clase.",
+     "feedback": {
+      "valley": "Las plantas del sótano, sin luz, no estaban igual que las del sol: estaban largas y pálidas. Una apuesta se apoya mejor en lo que ya se ha visto; ahora toca comprobarla.",
+      "azara": "Las plantas del almacén, sin luz, no estaban igual que las del sol: estaban largas y pálidas. Una apuesta se apoya mejor en lo que ya se ha visto; ahora toca comprobarla."
+     }
     },
     {
      "id": "nada",
@@ -256,7 +281,8 @@
      "correct": false,
      "points": 1,
      "objective": "SV-07",
-     "feedback": "Apostado. Ahora, a mirar las macetas: ¿germinar necesita luz, o solo crecer?"
+     "say": "La jardinera apunta la apuesta con letra clara. Ahora, a mirar las macetas de la clase.",
+     "feedback": "Germinar (que la semilla se abra y saque raíz) no es lo mismo que crecer después. Al mirar las macetas hay que fijarse en las dos cosas: ¿han germinado? ¿Cómo han crecido?"
     },
     {
      "id": "guardia",
@@ -270,7 +296,8 @@
        "gems": 1
       }
      ],
-     "feedback": "Nadie se asoma antes de tiempo. «Apostar después de mirar no es apostar», dice la jardinera. Ahora, a mirar las macetas de la clase. Una gema por guardar el experimento."
+     "say": "Nadie se asoma antes de tiempo. «Apostar después de mirar no es apostar», dice la jardinera. Una gema por guardar el experimento.",
+     "feedback": "Una apuesta se hace antes de ver el resultado; si no, no pone a prueba lo que pensamos. Ahora, a mirar las macetas de la clase."
     },
     {
      "id": "animar",
@@ -284,7 +311,8 @@
        "gems": 1
       }
      ],
-     "feedback": "«Una apuesta no se gana ni se pierde: se comprueba», dice la jardinera, y apunta todas las apuestas, también las más dudosas. Ahora, a mirar las macetas de la clase. Una gema por animar a pensar en voz alta."
+     "say": "La jardinera apunta todas las apuestas, también las más dudosas. Una gema por animar a pensar en voz alta.",
+     "feedback": "Una apuesta no se gana ni se pierde: se comprueba. Cuantas más ideas se dicen en voz alta, más cosas hay que mirar en las macetas de la clase."
     }
    ],
    "next": "resultado"

@@ -78,14 +78,16 @@
      "correct": true,
      "points": 2,
      "objective": "SV-05",
-     "feedback": "La gota entra por la raíz y, al rato, las hojas se levantan. «¡Este camino ya lo conozco!»"
+     "say": "La gota se hunde en la tierra junto a la raíz y, al rato, las hojas se levantan. «¡Este camino ya lo conozco!»",
+     "feedback": "Las plantas toman el agua de la tierra por las raíces, y el agua sube por el tallo hasta las hojas: es el mismo viaje que acaba de hacer la gota."
     },
     {
      "id": "hoja",
      "label": "Dejarla caer encima de las hojas, que es donde está la sed",
      "correct": false,
      "objective": "SV-05",
-     "feedback": "La gota resbala por la hoja y cae al suelo. «Por fuera de la hoja no entro: el agua entra por la raíz.»"
+     "say": "La gota resbala por la hoja y cae al suelo. «Por aquí no entro.»",
+     "feedback": "Las hojas casi no toman agua por fuera: la planta la toma de la tierra, por las raíces. El agua que se queda encima de las hojas se evapora o resbala al suelo."
     },
     {
      "id": "sanador",
@@ -102,7 +104,8 @@
        "gems": 1
       }
      ],
-     "feedback": "A la sombra pierde menos agua por las hojas, y la que entra por la raíz le llega entera. Se endereza antes que ninguna."
+     "say": "A la sombra y con la raíz bien regada, la planta se endereza antes que ninguna.",
+     "feedback": "Al sol, la planta pierde mucha agua en forma de vapor por los poros de las hojas; a la sombra pierde menos, y la que entra por la raíz le dura más."
     },
     {
      "id": "murito",
@@ -116,7 +119,8 @@
        "gems": 1
       }
      ],
-     "feedback": "El agua de la lluvia se queda dentro del murito y empapa la tierra. La gota baja con ella y entra por la raíz: «¡Este camino ya lo conozco!». Al rato, las hojas se levantan. Una gema por poner el agua a salvo."
+     "say": "El agua se queda en el murito y empapa la tierra: las hojas se levantan. Una gema por poner el agua a salvo.",
+     "feedback": "Si el agua de la lluvia se escapa por encima del suelo, la raíz no la aprovecha. Retenida junto a la planta, empapa la tierra y la raíz la puede tomar."
     },
     {
      "id": "atender",
@@ -130,7 +134,8 @@
        "gems": 1
       }
      ],
-     "feedback": "Las hojas no tienen manchas ni bichos; la tierra, en cambio, está seca y agrietada: es sed. La gota baja a esa tierra seca y entra por la raíz. «¡Por aquí se cura esta sed!» Una gema por mirar antes de curar."
+     "say": "Las hojas no tienen manchas ni bichos; la tierra, en cambio, está seca y agrietada. Una gema por mirar antes de curar.",
+     "feedback": "Antes de curar hay que saber qué le pasa: sin manchas ni bichos y con la tierra seca, es sed. Por eso la gota va a la tierra, donde la raíz la puede tomar."
     },
     {
      "id": "regadera",
@@ -144,7 +149,8 @@
        "gems": 1
       }
      ],
-     "feedback": "A la tierra, no a las hojas: el agua que se queda en las hojas se evapora y la planta casi no la aprovecha. La gota se deja caer junto al tallo, empapa la tierra y entra por la raíz. «¡Este camino ya lo conozco!» Una gema por recordar lo que ya se sabía."
+     "say": "La gota se deja caer junto al tallo: «¡Este camino ya lo conozco!». Una gema por recordar lo que ya se sabía.",
+     "feedback": "Una regadera se apunta a la tierra, no a las hojas: el agua que se queda en las hojas se evapora y la planta casi no la aprovecha; la de la tierra le llega por la raíz."
     },
     {
      "id": "gotas",
@@ -158,7 +164,8 @@
        "gems": 1
       }
      ],
-     "feedback": "Unas resbalan por las hojas, otras bajan por el tallo, y todas acaban en el mismo sitio: la tierra se oscurece alrededor de la planta. La gota las sigue y entra por la raíz. «¡Este camino ya lo conozco!» Una gema por mirar lo que nadie miraba."
+     "say": "Unas gotas resbalan por las hojas y otras por el tallo, pero todas acaban en la tierra. Una gema por seguirlas.",
+     "feedback": "Seguir el agua enseña su camino: la lluvia acaba en la tierra, y de ahí la toman las raíces. Por eso la gota entra por la raíz."
     }
    ],
    "next": "fin"

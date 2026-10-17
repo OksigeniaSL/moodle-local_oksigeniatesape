@@ -189,6 +189,7 @@
   "orden": {
    "type": "choice",
    "dilemma": true,
+   "provisional": true,
    "prompt": {
     "valley": "Cada ser ya está en su estante. Y dentro de cada estante, ¿en qué orden los ponemos?",
     "azara": "Cada muestra ya está en su caja. Y dentro de cada caja, ¿en qué orden las ponemos?"
@@ -247,9 +248,13 @@
      },
      "correct": true,
      "points": 2,
+     "say": {
+      "valley": "La torre se queda en silencio. «Lo mal colocado pesa el doble», dice Doña Hebra.",
+      "azara": "Las etiquetas se quedan quietas. «Lo mal etiquetado se cae solo», dice la archivera."
+     },
      "feedback": {
-      "valley": "La torre, ahora, está en silencio. «Lo mal colocado pesa el doble.»",
-      "azara": "Las etiquetas, ahora, se quedan quietas. «Lo mal etiquetado se cae solo.»"
+      "valley": "Clasificar sirve para encontrar y comparar a los seres vivos, pero solo si cada uno está en su grupo. Uno mal colocado desordena todo lo demás.",
+      "azara": "Una etiqueta sirve para saber qué es cada muestra, pero solo si dice la verdad. Una etiqueta equivocada engaña a todos los que la leen después."
      }
     },
     {
@@ -259,9 +264,13 @@
       "azara": "—Porque el pegamento es muy viejo"
      },
      "correct": false,
+     "say": {
+      "valley": "«Vieja es», dice Doña Hebra. «Pero crujía solo desde que el Embrollo pasó por aquí.»",
+      "azara": "«Viejo es», dice la archivera. «Pero se caían solo desde que alguien las copió de memoria.»"
+     },
      "feedback": {
-      "valley": "«Vieja es. Pero crujía solo desde que el Embrollo pasó por aquí.»",
-      "azara": "«Viejo es. Pero se caían solo desde que alguien las copió de memoria.»"
+      "valley": "Para encontrar la causa de un problema hay que fijarse en cuándo empezó: la torre ya era vieja y antes no crujía. Lo que cambió fue el orden de los estantes.",
+      "azara": "Para encontrar la causa de un problema hay que fijarse en cuándo empezó: el pegamento ya era viejo y antes las etiquetas no se caían. Lo que cambió fue cómo se escribieron."
      }
     },
     {
@@ -276,7 +285,8 @@
        "gems": 1
       }
      ],
-     "feedback": "Nadie toca nada y, al rato, todo se queda quieto y en silencio: lo que daba problemas era lo que estaba fuera de su sitio. Una gema por guardar el orden."
+     "say": "Nadie toca nada y, al rato, todo se queda quieto y en silencio. Una gema por guardar el orden.",
+     "feedback": "Si, con todo ya en su sitio, el problema se acaba y no vuelve, la causa era lo que estaba mal colocado. Vigilar que nada cambie permite comprobarlo."
     },
     {
      "id": "descanso",
@@ -290,7 +300,11 @@
        "gems": 1
       }
      ],
-     "feedback": "Se sienta, respira hondo y por fin deja de contar. «Ahora, con calma, lo veo claro: el problema era que cada ser estaba donde no le tocaba.» Una gema por darle un respiro."
+     "say": "Se sienta, respira hondo y por fin deja de contar con los dedos. Una gema por darle un respiro.",
+     "feedback": {
+      "valley": "Con prisa y nervios se piensa peor. Con calma, Doña Hebra lo ve claro: la torre crujía porque cada ser estaba donde no le tocaba.",
+      "azara": "Con prisa y nervios se piensa peor. Con calma, la archivera lo ve claro: las etiquetas se caían porque cada una estaba en una muestra que no era la suya."
+     }
     },
     {
      "id": "etiquetas",
@@ -304,7 +318,11 @@
        "gems": 1
       }
      ],
-     "feedback": "La letra es apresurada y la tinta está corrida, y lo que dicen no coincide con lo que hay al lado: cada etiqueta mandaba a un ser a un sitio que no era el suyo. Una gema por leer despacio lo que alguien escribió deprisa."
+     "say": "La letra es apresurada, y lo que dicen las etiquetas no coincide con lo que hay al lado. Una gema por leer despacio.",
+     "feedback": {
+      "valley": "Una etiqueta no es una prueba: hay que compararla con el ser que tiene al lado. Aquí, cada etiqueta mandaba a un ser a un estante que no era el suyo.",
+      "azara": "Una etiqueta no es una prueba: hay que compararla con la muestra que tiene al lado. Aquí, cada etiqueta vieja mandaba a una muestra a una caja que no era la suya."
+     }
     },
     {
      "id": "rastro",
@@ -321,9 +339,13 @@
        "gems": 1
       }
      ],
-     "feedback": {
+     "say": {
       "valley": "Doña Hebra palidece y se mira los dedos manchados. «Esa tinta es mía.» Una gema por mirar donde nadie miraba.",
       "azara": "La archivera palidece y se mira los dedos manchados. «Esa tinta es mía.» Una gema por mirar donde nadie miraba."
+     },
+     "feedback": {
+      "valley": "Seguir un rastro lleva a quien lo dejó: la tinta de los estantes es la misma que Doña Hebra tiene en los dedos.",
+      "azara": "Seguir un rastro lleva a quien lo dejó: la tinta de los cajones es la misma que la archivera tiene en los dedos."
      }
     }
    ],

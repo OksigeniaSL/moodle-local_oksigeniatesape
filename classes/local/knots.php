@@ -26,24 +26,86 @@ namespace local_oksigeniatesape\local;
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class knots {
+    /** @var string Prefix of the tables of the plugin. */
+    private const T = 'local_oksigeniatesape_';
+
+    /** The engines of a lane the battle plays today (classify, errors and order come with the tablet client, 2.3). */
+    public const ENGINES = ['choice'];
+
+    /** Candles of the tower, and knots of each size of battle, when the mission does not say. */
+    public const CANDLES = 5;
+
+    /** @var int[] Knots of a short, a normal and a final battle. */
+    public const SIZES = ['short' => 5, 'normal' => 8, 'final' => 10];
+
     /**
      * The knots of a mission that can be played in a course: each with the questions the course uses (an objective
-     * the teacher left without competency takes its questions out).
+     * the teacher left without competency takes its questions out) and its lanes, one for each team, with their engine.
      *
      * @param \stdClass $mission With data.
-     * @return array List of knots: code, name, claim, laugh, questions (ids).
+     * @param string[] $engines The engines that can be played (all of them: null).
+     * @return array List of knots: code, name, claim, laugh, chapter, objective, weakness, why, questions (ids), lanes.
      */
-    public static function usable(\stdClass $mission): array {
+    public static function usable(\stdClass $mission, ?array $engines = self::ENGINES): array {
         $ids = array_column(questions::usable($mission), 'id');
         $list = [];
         foreach ($mission->data['battle']['knots'] ?? [] as $knot) {
             $mine = array_values(array_intersect((array) ($knot['questions'] ?? []), $ids));
-            if ($mine && !empty($knot['code'])) {
+            // Its lanes, or else each of its questions is a lane to choose; a question the course does not use, out.
+            $lanes = [];
+            foreach ($knot['lanes'] ?? array_map(fn($q) => ['engine' => 'choice', 'question' => $q], $mine) as $lane) {
+                $engine = (string) ($lane['engine'] ?? '');
+                $playable = $engines === null || in_array($engine, $engines, true);
+                if (!$playable || ($engine === 'choice' && !in_array($lane['question'] ?? '', $ids, true))) {
+                    continue;
+                }
+                $lanes[] = $lane;
+            }
+            if ($lanes && !empty($knot['code'])) {
                 $list[] = ['code' => (string) $knot['code'], 'name' => (string) ($knot['name'] ?? ''),
-                    'claim' => (string) ($knot['claim'] ?? ''), 'laugh' => (string) ($knot['laugh'] ?? ''), 'questions' => $mine];
+                    'claim' => (string) ($knot['claim'] ?? ''), 'laugh' => (string) ($knot['laugh'] ?? ''),
+                    'chapter' => (int) ($knot['chapter'] ?? 0), 'objective' => (string) ($knot['objective'] ?? ''),
+                    'weakness' => (string) ($knot['weakness'] ?? ''), 'why' => (string) ($knot['why'] ?? ''),
+                    'questions' => array_values(array_filter(array_column($lanes, 'question'))), 'lanes' => $lanes];
             }
         }
         return $list;
+    }
+
+    /**
+     * The lane of each team in a turn: one each, in order; if there are more teams than lanes, two share one. From one
+     * turn to the next the lanes go round, so that a team does not always get the same engine.
+     *
+     * @param array $knot As usable() gives it.
+     * @param int[] $teamids
+     * @param int $turn From 0.
+     * @return array Team id => lane.
+     */
+    public static function lanes(array $knot, array $teamids, int $turn = 0): array {
+        $lanes = $knot['lanes'] ?? [];
+        if (!$lanes) {
+            return [];
+        }
+        $out = [];
+        foreach (array_values($teamids) as $i => $teamid) {
+            $out[(int) $teamid] = $lanes[($i + $turn) % count($lanes)];
+        }
+        return $out;
+    }
+
+    /**
+     * The size of the battle: its candles and how many knots each size has, from the mission or the default ones.
+     *
+     * @param \stdClass $mission With data.
+     * @return array candles, sizes (short, normal, final), phases (frayed, last: percent of threads left).
+     */
+    public static function rules(\stdClass $mission): array {
+        $battle = $mission->data['battle'] ?? [];
+        return [
+            'candles' => max(1, (int) ($battle['candles'] ?? self::CANDLES)),
+            'sizes' => array_map('intval', array_merge(self::SIZES, (array) ($battle['sizes'] ?? []))),
+            'phases' => ['frayed' => (int) ($battle['phases']['frayed'] ?? 60), 'last' => (int) ($battle['phases']['last'] ?? 25)],
+        ];
     }
 
     /**
@@ -52,13 +114,26 @@ final class knots {
      *
      * @param int $courseid
      * @param int $count Turns.
+     * @param bool $final The final battle: the knots of the whole mission.
      * @return array List of [knot code, question id]; empty if the mission has no knots.
      */
-    public static function plan(int $courseid, int $count): array {
+    public static function plan(int $courseid, int $count, bool $final = false): array {
+        global $DB;
         $mission = missions::get($courseid);
         $knots = $mission ? self::usable($mission) : [];
         if (!$knots || $count < 1) {
             return [];
+        }
+        // The knots of the places the class has reached: up to the one after the furthest it lit; the final, all of them.
+        if (!$final) {
+            $lit = $DB->get_fieldset_select(self::T . 'chapter', 'code', 'missionid = ? AND litat > 0', [$mission->id]);
+            $codes = array_column($mission->data['chapters'] ?? [], 'code');
+            $reached = 1;
+            foreach ($lit as $code) {
+                $reached = max($reached, (int) array_search($code, $codes, true) + 2);
+            }
+            $near = array_values(array_filter($knots, fn($k) => !$k['chapter'] || $k['chapter'] <= $reached));
+            $knots = $near ?: $knots;
         }
         $plan = [];
         $seen = [];

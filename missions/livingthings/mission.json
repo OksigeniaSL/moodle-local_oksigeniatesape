@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 29,
+ "version": 30,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 30,
+   "kind": "improvement",
+   "date": "2026-10-17",
+   "text": "En las escenas de núcleo, cada opción dice lo que pasa en el mundo y guarda su porqué; los nudos de la batalla, con su capítulo, su objetivo, la idea que los deshace y su porqué entero"
+  },
   {
    "version": 29,
    "kind": "improvement",
@@ -388,6 +394,16 @@
    "lantern": "torre",
    "creature": "grow"
   },
+  "candles": 5,
+  "sizes": {
+   "short": 5,
+   "normal": 8,
+   "final": 10
+  },
+  "phases": {
+   "frayed": 60,
+   "last": 25
+  },
   "knots": [
    {
     "code": "piedra",
@@ -398,7 +414,11 @@
      "Q1-1",
      "Q1-2",
      "Q1-4"
-    ]
+    ],
+    "chapter": 1,
+    "objective": "SV-01",
+    "weakness": "Las tres funciones vitales",
+    "why": "Está vivo lo que se nutre, se relaciona y se reproduce. Moverse o crecer no basta: la piedra rueda y el fuego crece, y no hacen ninguna de las tres."
    },
    {
     "code": "arena",
@@ -408,7 +428,11 @@
     "questions": [
      "Q1-3",
      "Q2-3"
-    ]
+    ],
+    "chapter": 2,
+    "objective": "SV-02",
+    "weakness": "La célula",
+    "why": "Todos los seres vivos están hechos de células, y algunos, como las bacterias, de una sola."
    },
    {
     "code": "setuga",
@@ -418,7 +442,66 @@
     "questions": [
      "Q2-1",
      "Q2-2"
-    ]
+    ],
+    "lanes": [
+     {
+      "engine": "choice",
+      "question": "Q2-1"
+     },
+     {
+      "engine": "choice",
+      "question": "Q2-2"
+     },
+     {
+      "engine": "classify",
+      "prompt": "Cada uno a su red: las plantas a un lado y los hongos al otro.",
+      "bins": [
+       {
+        "id": "planta",
+        "label": "Plantas"
+       },
+       {
+        "id": "hongo",
+        "label": "Hongos"
+       }
+      ],
+      "items": [
+       {
+        "id": "seta",
+        "label": "Seta",
+        "bin": "hongo"
+       },
+       {
+        "id": "lechuga",
+        "label": "Lechuga",
+        "bin": "planta"
+       },
+       {
+        "id": "champinon",
+        "label": "Champiñón",
+        "bin": "hongo"
+       },
+       {
+        "id": "musgo",
+        "label": "Musgo",
+        "bin": "planta"
+       },
+       {
+        "id": "moho",
+        "label": "Moho del pan",
+        "bin": "hongo"
+       }
+      ]
+     },
+     {
+      "engine": "errors",
+      "text": "La seta [fabrica su alimento con la luz|toma su alimento de restos de otros seres vivos|Las setas no hacen la fotosíntesis: son hongos.] y por eso es [una planta|un hongo|Va con los hongos, no con las plantas.]."
+     }
+    ],
+    "chapter": 2,
+    "objective": "SV-03",
+    "weakness": "Los hongos no son plantas",
+    "why": "La seta es un hongo: no fabrica su alimento con la luz, como la lechuga, sino que lo toma de restos de otros seres vivos."
    },
    {
     "code": "murcielago",
@@ -427,7 +510,11 @@
     "laugh": "¡Pío, pío!, dice el murciélago. Bueno, eso digo yo.",
     "questions": [
      "Q3-1"
-    ]
+    ],
+    "chapter": 3,
+    "objective": "SV-04",
+    "weakness": "Los mamíferos",
+    "why": "El murciélago tiene pelo y sus crías maman: es un mamífero que vuela, no un ave."
    },
    {
     "code": "arana",
@@ -437,7 +524,11 @@
     "questions": [
      "Q3-2",
      "Q3-3"
-    ]
+    ],
+    "chapter": 3,
+    "objective": "SV-04",
+    "weakness": "Insectos y arácnidos",
+    "why": "Los insectos tienen seis patas; la araña tiene ocho, porque es un arácnido. Y el caracol no tiene huesos: es un molusco, un invertebrado."
    },
    {
     "code": "raiz",
@@ -448,7 +539,11 @@
      "Q4-1",
      "Q4-2",
      "Q4-3"
-    ]
+    ],
+    "chapter": 4,
+    "objective": "SV-05",
+    "weakness": "Las partes de la planta",
+    "why": "El agua entra por la raíz, la hoja fabrica el alimento con la luz y en la flor se forman las semillas."
    },
    {
     "code": "garza",
@@ -459,7 +554,11 @@
      "Q5-1",
      "Q5-2",
      "Q5-3"
-    ]
+    ],
+    "chapter": 5,
+    "objective": "SV-06",
+    "weakness": "La cadena alimentaria",
+    "why": "La garza come peces, y los peces comen algas: si falta un eslabón de la cadena, lo notan todos los que dependen de él."
    },
    {
     "code": "pompa",
@@ -470,7 +569,11 @@
      "Q6-1",
      "Q6-2",
      "Q6-3"
-    ]
+    ],
+    "chapter": 6,
+    "objective": "SV-07",
+    "weakness": "Observar, anotar y comprobar",
+    "why": "Para saber algo hay que observar con cuidado, anotarlo y comprobarlo: la primera idea puede ser una pompa."
    }
   ],
   "lines": {

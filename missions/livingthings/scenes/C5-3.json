@@ -182,6 +182,7 @@
   "la-lata": {
    "type": "choice",
    "dilemma": true,
+   "provisional": true,
    "prompt": {
     "valley": "La lata no es del lago. ¿Qué hacemos con ella?",
     "azara": "La lata no es del río. ¿Qué hacemos con ella?"
@@ -232,16 +233,21 @@
      "correct": true,
      "points": 2,
      "objective": "SV-06",
-     "feedback": "En un rincón tibio de la orilla, un pez sube a la superficie y abre y cierra la boca, como si le faltara el aire. «Con el agua caliente hay menos aire en ella», dice la garza, «y los peces lo notan los primeros»."
+     "say": "En un rincón tibio de la orilla, un pez sube a la superficie y abre y cierra la boca.",
+     "feedback": {
+      "valley": "El agua caliente lleva menos oxígeno, y los peces lo notan los primeros. Todo lo vivo del lago depende de lo que no está vivo: el agua, la luz, la temperatura.",
+      "azara": "El agua caliente lleva menos oxígeno, y los peces lo notan los primeros. Todo lo vivo del río depende de lo que no está vivo: el agua, la luz, la temperatura."
+     }
     },
     {
      "id": "nadie",
      "label": "—Nadie: el agua no está viva.",
      "correct": false,
      "objective": "SV-06",
+     "say": "Un pez sube a la superficie de un rincón tibio y abre y cierra la boca. La garza lo señala con el pico.",
      "feedback": {
-      "valley": "En un rincón tibio de la orilla, un pez sube a la superficie y abre y cierra la boca, como si le faltara el aire. La garza lo señala con el pico: «El agua no está viva, pero todo lo vivo del lago la necesita como es. En un ecosistema todo está unido».",
-      "azara": "En un rincón tibio de la orilla, un pez sube a la superficie y abre y cierra la boca, como si le faltara el aire. La garza lo señala con el pico: «El agua no está viva, pero todo lo vivo del río la necesita como es. En un ecosistema todo está unido»."
+      "valley": "El agua no está viva, pero todo lo vivo del lago la necesita como es: si se calienta, lleva menos oxígeno y los peces lo notan. En un ecosistema, lo vivo y lo no vivo están unidos.",
+      "azara": "El agua no está viva, pero todo lo vivo del río la necesita como es: si se calienta, lleva menos oxígeno y los peces lo notan. En un ecosistema, lo vivo y lo no vivo están unidos."
      }
     },
     {
@@ -259,7 +265,8 @@
        "gems": 1
       }
      ],
-     "feedback": "Donde el agua está más caliente y quieta, menos peces y más algas. Lo vivo y lo no vivo, unidos: eso es un ecosistema."
+     "say": "El explorador apunta: donde el agua está más caliente y quieta, hay menos peces y más algas.",
+     "feedback": "La temperatura del agua cambia quién puede vivir en cada sitio: algunas algas crecen bien en el agua tibia, y los peces buscan agua más fresca, con más oxígeno. Lo vivo y lo no vivo, unidos: eso es un ecosistema."
     },
     {
      "id": "renacuajos",
@@ -276,9 +283,13 @@
        "gems": 1
       }
      ],
+     "say": {
+      "valley": "Devueltos al lago, a la sombra de los juncos, los renacuajos se quedan abajo, tranquilos. Una gema por ponerlos a salvo.",
+      "azara": "Devueltos al río, a la sombra de los juncos, los renacuajos se quedan abajo, tranquilos. Una gema por ponerlos a salvo."
+     },
      "feedback": {
-      "valley": "En el charco queda poca agua y está tibia: los renacuajos suben una y otra vez a tomar aire. Devueltos al lago, a la sombra de los juncos, se quedan abajo, tranquilos. Una gema por ponerlos a salvo.",
-      "azara": "En el charco queda poca agua y está tibia: los renacuajos suben una y otra vez a tomar aire. Devueltos al río, a la sombra de los juncos, se quedan abajo, tranquilos. Una gema por ponerlos a salvo."
+      "valley": "En un charco que se seca queda poca agua y muy tibia, con poco oxígeno: por eso los renacuajos subían una y otra vez a tomar aire. En el lago, a la sombra, el agua es más fresca.",
+      "azara": "En un charco que se seca queda poca agua y muy tibia, con poco oxígeno: por eso los renacuajos subían una y otra vez a tomar aire. En el río, a la sombra, el agua es más fresca."
      }
     },
     {
@@ -293,7 +304,8 @@
        "gems": 1
       }
      ],
-     "feedback": "A la sombra de los juncos, {{creature}} bebe y se tumba en el barro fresco. Al rato vuelve a corretear. «Agua fresca y sombra», dice la garza, «lo que necesita cualquiera que viva aquí». Una gema por cuidar de {{creature}}."
+     "say": "A la sombra de los juncos, {{creature}} bebe y se tumba en el barro fresco. Una gema por cuidar de {{creature}}.",
+     "feedback": "Agua fresca y sombra: lo que necesita cualquiera que viva en la orilla. Todos los seres vivos dependen del agua y de la temperatura del lugar donde viven."
     },
     {
      "id": "repaso",
@@ -307,7 +319,8 @@
        "gems": 1
       }
      ],
-     "feedback": "Al repasar, las flechas salen solas: del agua a los peces, a las ranas y a las algas; de la luz a las algas, que dan de comer a otros. No queda ni un ser vivo sin su flecha. Una gema por recordar lo aprendido."
+     "say": "Al repasar, las flechas salen solas: no queda ni un ser vivo sin la suya. Una gema por recordar lo aprendido.",
+     "feedback": "El agua la necesitan los peces, las ranas y las algas; la luz, las algas, que fabrican su alimento con ella y dan de comer a otros. Si algo de lo no vivo cambia, todos lo notan."
     },
     {
      "id": "burbujas",
@@ -321,7 +334,8 @@
        "gems": 1
       }
      ],
-     "feedback": "Al sol, las algas sueltan burbujitas: es oxígeno, que sale al fabricar su alimento con la luz. Alrededor, los peces van y vienen. La luz, el agua, las algas, los peces: todo atado. Una gema por mirar donde nadie mira."
+     "say": "Al sol, las algas sueltan burbujitas, y alrededor los peces van y vienen. Una gema por mirar donde nadie mira.",
+     "feedback": "Las burbujitas son oxígeno: las algas lo sueltan al fabricar su alimento con la luz, y parte se queda en el agua, donde lo respiran los peces. La luz, el agua, las algas y los peces: todo está atado."
     }
    ],
    "next": "fin"

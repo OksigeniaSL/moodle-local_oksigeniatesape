@@ -43,7 +43,8 @@ final class edits {
     public const MISSION = '#';
 
     /** @var string[] Fields with one text, in a scene, a node or an element of a list. */
-    private const TEXTS = ['title', 'whatif', 'text', 'prompt', 'label', 'feedback', 'intro', 'offscreen', 'do', 'materials'];
+    private const TEXTS = ['title', 'whatif', 'text', 'prompt', 'label', 'say', 'feedback', 'intro', 'offscreen', 'do', 'materials',
+        'name', 'claim', 'laugh', 'weakness', 'why'];
 
     /** @var string[] Lists of elements with an id, in a node. */
     private const ELEMENTS = ['options', 'items', 'bins', 'steps'];
@@ -135,6 +136,12 @@ final class edits {
                     }
                 }
             }
+            // The knots of the battle: the minion, what the Embrollo claims and its laugh, the idea that undoes it and why.
+            foreach ($definition['battle']['knots'] ?? [] as $knot) {
+                if (!empty($knot['code'])) {
+                    self::field($texts, 'battle/knots/' . $knot['code'], $knot, ['name', 'claim', 'laugh', 'weakness', 'why']);
+                }
+            }
             return $texts;
         }
         self::field($texts, '', $definition, ['title', 'whatif']);
@@ -157,7 +164,7 @@ final class edits {
                         continue;
                     }
                     $at = $base . '/' . $list . '/' . $element['id'];
-                    self::field($texts, $at, $element, ['label']);
+                    self::field($texts, $at, $element, ['label', 'say']);
                     $feedback = $element['feedback'] ?? null;
                     if (self::is_text($feedback)) {
                         $texts[$at . '/feedback'] = $feedback;
@@ -404,11 +411,15 @@ final class edits {
             }
             usort($list, fn($a, $b) => [$a['quest'], $a['step'], $a['code']] <=> [$b['quest'], $b['step'], $b['code']]);
             $prefix = 'chapters/' . $chapter['code'] . '/';
+            // The knots of the battle of this place go with its texts.
+            $here = array_filter($original['battle']['knots'] ?? [], fn($k) => (int) ($k['chapter'] ?? 0) === $i + 1);
+            $knots = array_map(fn($k) => 'battle/knots/' . ($k['code'] ?? '') . '/', $here);
+            $mine = fn($f) => strpos($f['path'], $prefix) === 0 || array_filter($knots, fn($k) => strpos($f['path'], $k) === 0);
             $chapters[] = [
                 'code' => (string) $chapter['code'],
                 'number' => $i + 1,
                 'name' => self::resolve($chapter['name'] ?? $chapter['code'], $skin, $variant),
-                'fields' => array_values(array_filter($places, fn($f) => strpos($f['path'], $prefix) === 0)),
+                'fields' => array_values(array_filter($places, $mine)),
                 'scenes' => $list,
             ];
         }

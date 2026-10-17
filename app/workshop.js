@@ -61,6 +61,15 @@
         return t('teach_ws_k_materials', parseInt(parts[3], 10) + 1);
       case 'pacts':
         return t('teach_ws_k_pact', n);
+      case 'say':
+        return t('teach_ws_k_say');
+      case 'name':
+      case 'claim':
+      case 'laugh':
+      case 'weakness':
+      case 'why':
+        // A knot of the battle: its texts, with the knot they belong to.
+        return t('teach_ws_k_knot_' + f.kind, parts[2]);
       default:
         return f.kind;
     }

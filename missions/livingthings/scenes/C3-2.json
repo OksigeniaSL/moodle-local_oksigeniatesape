@@ -69,7 +69,11 @@
     {
      "id": "huesos",
      "label": "¿Tiene huesos por dentro?",
-     "feedback": "«No.» Y añade: «Con esa pregunta se separan de golpe los vertebrados de los invertebrados». Regala una pregunta más. Y se queda con la cara de quien la hizo.",
+     "say": {
+      "valley": "«No.» El búho se queda mirando a quien preguntó y le regala una pregunta más.",
+      "azara": "«No.» El baqueano se queda mirando a quien preguntó y le regala una pregunta más."
+     },
+     "feedback": "Esa pregunta parte a todos los animales en dos grandes grupos: los vertebrados, con huesos, y los invertebrados, sin ellos. Con un solo «no» quedan fuera todos los vertebrados.",
      "effects": [
       {
        "extraquestion": 1
@@ -85,7 +89,8 @@
     {
      "id": "huevos",
      "label": "¿Pone huevos?",
-     "feedback": "«Sí.» Pero con ese sí casi nadie queda fuera: ponen huevos las aves, los reptiles, los peces, muchos anfibios, los insectos… «Cuanto más separa una pregunta, más dice su respuesta.»",
+     "say": "«Sí.» Y espera, sin moverse, la pregunta siguiente.",
+     "feedback": "Ponen huevos las aves, los reptiles, casi todos los peces y los insectos, y muchos anfibios: con ese sí casi nadie queda fuera. Cuanto más separa una pregunta, más dice su respuesta.",
      "effects": [
       {
        "clue": "huevos"
@@ -95,7 +100,8 @@
     {
      "id": "pelo",
      "label": "¿Tiene pelo?",
-     "feedback": "«No.» Queda claro que no es un mamífero.",
+     "say": "«No», contesta, sin apartar la vista del rastro.",
+     "feedback": "Todos los mamíferos tienen pelo, aunque sea poco: si no tiene pelo, no es un mamífero. Pero quedan todavía muchos grupos.",
      "effects": [
       {
        "clue": "sinpelo"
@@ -105,7 +111,8 @@
     {
      "id": "plumas",
      "label": "¿Tiene plumas?",
-     "feedback": "«No.» Queda claro que no es un ave.",
+     "say": "«No.» Y vuelve a quedarse en silencio.",
+     "feedback": "Solo las aves tienen plumas: si no tiene plumas, no es un ave. Pero quedan todavía muchos grupos.",
      "effects": [
       {
        "clue": "sinplumas"
@@ -125,7 +132,8 @@
     {
      "id": "patas6",
      "label": "¿Tiene seis patas?",
-     "feedback": "«No.» Entonces no es un insecto.",
+     "say": "«No.» Y sigue mirando el barro.",
+     "feedback": "Todos los insectos tienen seis patas: si no tiene seis, no es un insecto. Quedan otros animales por descartar.",
      "effects": [
       {
        "clue": "sin6patas"
@@ -135,7 +143,8 @@
     {
      "id": "concha",
      "label": "¿Tiene concha?",
-     "feedback": "«Sí.» Y señala, entre las hojas, un trozo de algo duro y curvo.",
+     "say": "«Sí.» Y señala, entre las hojas, un trozo de algo duro y curvo.",
+     "feedback": "Una concha es una casa dura que fabrica el propio animal para proteger su cuerpo blando. Pocos animales la llevan, así que esa respuesta deja fuera a muchos.",
      "effects": [
       {
        "clue": "concha"
@@ -145,7 +154,8 @@
     {
      "id": "humeda",
      "label": "¿Su piel está húmeda?",
-     "feedback": "«Sí.» Y el hilo brillante que sigue el rastro es lo que deja al moverse.",
+     "say": "«Sí.» Y señala el hilo brillante que acompaña al rastro.",
+     "feedback": "La piel húmeda se seca enseguida al aire, por eso quien la tiene busca sitios húmedos. El hilo brillante es la baba que suelta al moverse.",
      "effects": [
       {
        "clue": "humeda"
@@ -155,7 +165,8 @@
     {
      "id": "agua",
      "label": "¿Respira en el agua?",
-     "feedback": "«No.» Vive en tierra, en sitios húmedos.",
+     "say": "«No.» El rastro no va hacia el agua: sigue por el barro.",
+     "feedback": "Si no respira en el agua, vive en tierra: quedan fuera los peces y los demás animales que respiran con branquias.",
      "effects": [
       {
        "clue": "tierra"
@@ -174,10 +185,11 @@
        "clue": "humedad"
       }
      ],
-     "feedback": {
-      "valley": "El rastro acaba bajo una hoja mojada, en lo más húmedo del bosque. «Eso no es preguntar», dice el búho, «pero también es saber mirar.» Vive donde hay humedad.",
-      "azara": "El rastro acaba bajo una hoja mojada, en lo más húmedo del monte. «Eso no es preguntar», dice el baqueano, «pero también es saber mirar.» Vive donde hay humedad."
-     }
+     "say": {
+      "valley": "El rastro acaba bajo una hoja mojada. «Eso no es preguntar», dice el búho, «pero también es saber mirar.»",
+      "azara": "El rastro acaba bajo una hoja mojada. «Eso no es preguntar», dice el baqueano, «pero también es saber mirar.»"
+     },
+     "feedback": "Mirar también da respuestas: si el rastro acaba en el sitio más húmedo, su dueño vive donde hay humedad."
     },
     {
      "id": "guardia",
@@ -191,7 +203,8 @@
        "gems": 1
       }
      ],
-     "feedback": "Nadie lo pisa. Al rato, el rastro sigue entero y hasta es un poco más largo: quien lo dejó anda todavía cerca. «Una pista pisada ya no contesta a nadie.» Una gema por proteger el rastro."
+     "say": "Nadie lo pisa y, al rato, el rastro es un poco más largo. Una gema por proteger el rastro.",
+     "feedback": "Una pista pisada ya no dice nada: las pruebas se protegen antes de estudiarlas. Y si el rastro crece, quien lo deja anda todavía cerca."
     }
    ],
    "next": "p3"
@@ -210,7 +223,8 @@
     {
      "id": "concha",
      "label": "¿Tiene concha?",
-     "feedback": "«Sí.»",
+     "say": "«Sí.» Y señala, entre las hojas, un trozo de algo duro y curvo.",
+     "feedback": "Una concha es una casa dura que fabrica el propio animal para proteger su cuerpo blando. Pocos animales la llevan, así que esa respuesta deja fuera a muchos.",
      "effects": [
       {
        "clue": "concha"
@@ -220,7 +234,8 @@
     {
      "id": "humeda",
      "label": "¿Su piel está húmeda?",
-     "feedback": "«Sí.»",
+     "say": "«Sí.» Y señala el hilo brillante que acompaña al rastro.",
+     "feedback": "La piel húmeda se seca enseguida al aire, por eso quien la tiene busca sitios húmedos. El hilo brillante es la baba que suelta al moverse.",
      "effects": [
       {
        "clue": "humeda"
@@ -230,7 +245,8 @@
     {
      "id": "patas",
      "label": "¿Tiene patas?",
-     "feedback": "«No: se arrastra sobre un pie musculoso.»",
+     "say": "«No: se arrastra sobre un pie musculoso.»",
+     "feedback": "Sin patas quedan fuera muchos animales: los que caminan con cuatro, con seis, con ocho o con más. Arrastrarse sobre un solo pie musculoso es una manera muy distinta de moverse.",
      "effects": [
       {
        "clue": "sinpatas"
@@ -252,7 +268,8 @@
        "clue": "sinprisa"
       }
      ],
-     "feedback": "Se toma un momento antes de contestar: «Nadie me pregunta nunca eso. Bien, gracias». Y añade algo que no es ni sí ni no: «El que dejó este rastro iba sin ninguna prisa». Una gema por acordarse de quien responde."
+     "say": "«Nadie me pregunta nunca eso. Bien, gracias. El que dejó este rastro iba sin ninguna prisa.» Una gema por acordarse de quien responde.",
+     "feedback": "Quien se siente escuchado cuenta más de lo que se le pregunta. Y un rastro lento también es una pista: su dueño se mueve muy despacio."
     },
     {
      "id": "repasar",
@@ -266,7 +283,8 @@
        "gems": 1
       }
      ],
-     "feedback": "Dichas todas juntas, las respuestas sueltas empiezan a encajar. «Quien ordena lo que ya sabe gasta menos preguntas.» Una gema por ordenar lo que ya se sabe."
+     "say": "Dichas en voz alta, todas juntas, las respuestas sueltas empiezan a encajar. Una gema por ordenar lo que ya se sabe.",
+     "feedback": "Quien ordena lo que ya sabe gasta menos preguntas: juntas, las respuestas dejan fuera a más candidatos que cada una por separado."
     },
     {
      "id": "marcas",
@@ -280,9 +298,13 @@
        "gems": 1
       }
      ],
+     "say": {
+      "valley": "Son manchas de tinta corrida, como las del nido. El búho las mira mucho rato. Una gema por fijarse antes que nadie.",
+      "azara": "Son manchas de tinta corrida, como las del margen del cuaderno. El baqueano las mira mucho rato. Una gema por fijarse antes que nadie."
+     },
      "feedback": {
-      "valley": "Son manchas de tinta corrida, como las del nido. El búho las mira mucho rato: «Esas no son de ningún animal». Una gema por fijarse antes que nadie.",
-      "azara": "Son manchas de tinta corrida, como las del margen del cuaderno. El baqueano las mira mucho rato: «Esas no son de ningún animal». Una gema por fijarse antes que nadie."
+      "valley": "No todas las marcas del suelo son huellas: estas no tienen forma de pata ni de cuerpo, y son de la misma tinta que las del nido. No son de ningún animal.",
+      "azara": "No todas las marcas del suelo son huellas: estas no tienen forma de pata ni de cuerpo, y son de la misma tinta que las del margen del cuaderno. No son de ningún animal."
      }
     }
    ],
@@ -306,7 +328,8 @@
      "correct": true,
      "points": 5,
      "objective": "SV-04",
-     "feedback": "El caracol asoma los cuernos: «Invertebrado, con concha y piel húmeda. Soy un molusco».",
+     "say": "El caracol asoma los cuernos bajo una hoja y sigue su camino, sin ninguna prisa.",
+     "feedback": "El caracol no tiene huesos, lleva concha y tiene la piel húmeda: es un invertebrado del grupo de los moluscos, y encaja con todas las respuestas.",
      "next": "porque"
     },
     {
@@ -320,7 +343,8 @@
       "humeda",
       "sinpatas"
      ],
-     "feedback": "El escarabajo sale del tronco: «Yo tengo seis patas y un caparazón duro, pero no en espiral».",
+     "say": "El escarabajo sale del tronco y se aleja con sus seis patas.",
+     "feedback": "El escarabajo es un insecto: tiene seis patas y un caparazón duro, pero no lleva concha ni tiene la piel húmeda. No encaja con las respuestas.",
      "next": "dormido"
     },
     {
@@ -333,7 +357,8 @@
       "humeda",
       "sinpatas"
      ],
-     "feedback": "La tortuga se asoma: «Mi caparazón tiene huesos por dentro: soy un reptil, un vertebrado».",
+     "say": "La tortuga asoma la cabeza de su caparazón y vuelve a esconderla.",
+     "feedback": "El caparazón de la tortuga está unido a sus costillas y a su columna: es un reptil, un vertebrado. Además, tiene patas y la piel seca.",
      "next": "dormido"
     },
     {
@@ -346,7 +371,8 @@
       "humeda",
       "sinpatas"
      ],
-     "feedback": "El cangrejo chasquea las pinzas: «Yo tengo patas, y muchas. Y vivo junto al agua».",
+     "say": "El cangrejo chasquea las pinzas y se va de lado hacia el agua.",
+     "feedback": "El cangrejo tiene diez patas, contando las pinzas, y un caparazón duro, no una concha. Además, la mayoría vive en el agua y respira con branquias. No encaja con las respuestas.",
      "next": "dormido"
     }
    ]
@@ -371,33 +397,38 @@
      "label": "No tiene huesos por dentro",
      "correct": true,
      "points": 2,
-     "feedback": "La tortuga queda fuera: su caparazón tiene huesos debajo."
+     "say": "La tortuga se aparta del rastro, despacio.",
+     "feedback": "La tortuga es la única de los cuatro que tiene huesos: su caparazón está unido a su esqueleto. Esa respuesta la deja fuera."
     },
     {
      "id": "concha",
      "label": "Tiene concha",
      "correct": true,
      "points": 2,
-     "feedback": "Ni el escarabajo ni el cangrejo llevan una concha en espiral."
+     "say": "El escarabajo y el cangrejo se apartan del rastro.",
+     "feedback": "El escarabajo y el cangrejo tienen un caparazón duro, pero no una concha, y el de la tortuga está unido a sus huesos. Solo el caracol lleva concha."
     },
     {
      "id": "humeda",
      "label": "Tiene la piel húmeda",
      "correct": true,
      "points": 2,
-     "feedback": "Ni el escarabajo, ni la tortuga, ni el cangrejo tienen la piel húmeda."
+     "say": "El escarabajo, la tortuga y el cangrejo se quedan atrás.",
+     "feedback": "Ni el escarabajo, ni la tortuga, ni el cangrejo tienen la piel húmeda y blanda, ni dejan un hilo de baba al moverse: esa respuesta deja fuera a los tres."
     },
     {
      "id": "huevos",
      "label": "Pone huevos",
      "correct": false,
-     "feedback": "Eso también lo hacen el escarabajo, la tortuga y el cangrejo: no separa a nadie."
+     "say": "Nadie se aparta: los cuatro siguen junto al rastro.",
+     "feedback": "El escarabajo, la tortuga y el cangrejo también ponen huevos: una respuesta que vale para todos no ayuda a elegir."
     },
     {
      "id": "pequeno",
      "label": "Es pequeño",
      "correct": false,
-     "feedback": "El escarabajo y muchos cangrejos también lo son: no separa a nadie."
+     "say": "Nadie se aparta: los cuatro se miran unos a otros.",
+     "feedback": "El escarabajo y muchos cangrejos también son pequeños, y hay tortugas pequeñas: lo que vale para todos no separa a nadie."
     }
    ],
    "next": "bien"

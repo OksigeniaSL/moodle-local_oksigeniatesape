@@ -42,7 +42,8 @@
     {
      "id": "buscar",
      "label": "Ponernos a buscar sin perder tiempo",
-     "feedback": "Alrededor hay de todo: cosas que se mueven, cosas que brillan, cosas que parecen dormidas. Hay que mirar bien antes de elegir."
+     "say": "Alrededor hay de todo: cosas que se mueven, cosas que brillan y cosas que parecen dormidas.",
+     "feedback": "Moverse o brillar no prueba que algo esté vivo, y estar quieto no prueba que no lo esté: antes de elegir, conviene mirar bien cada cosa."
     },
     {
      "id": "guardia",
@@ -56,7 +57,8 @@
        "gems": 1
       }
      ],
-     "feedback": "Una racha de viento arrastra hojas secas hacia las semillas, pero no llegan a taparlas: hay alguien de guardia, y lo que está por nacer sigue a salvo. Una gema por montar guardia."
+     "say": "Una racha de viento arrastra hojas secas hacia las semillas, pero no llegan a taparlas. Una gema por montar guardia.",
+     "feedback": "Repartir las tareas ayuda: mientras unos buscan, otro cuida lo que ya se tiene, y nada se pierde ni se estropea por el camino."
     },
     {
      "id": "calor",
@@ -70,7 +72,8 @@
        "gems": 1
       }
      ],
-     "feedback": "Bajo las manos, las semillas se templan un poco. El calor de alguien vivo es buena compañía, pero para despertar del todo les hace falta más vida alrededor. Una gema por cuidar de lo que está por nacer."
+     "say": "Bajo las manos, las semillas se templan un poco. Una gema por cuidar de lo que está por nacer.",
+     "feedback": "Para germinar, una semilla necesita agua, aire y una temperatura templada. El calor de unas manos ayuda un poco, pero por sí solo no basta."
     },
     {
      "id": "pagina",
@@ -87,7 +90,8 @@
        "gems": 1
       }
      ],
-     "feedback": "La primera página está casi en blanco: solo se lee el título, «Ser vivo», y debajo, una mancha de tinta corrida. Lo que falta habrá que recuperarlo mirando. Una gema por consultar antes de decidir."
+     "say": "La primera página está casi en blanco: solo se lee «Ser vivo», sobre una mancha de tinta. Una gema por consultar antes de decidir.",
+     "feedback": "Antes de decidir conviene mirar lo que ya se sabe. Aquí la página está casi borrada: lo que falta habrá que averiguarlo observando."
     },
     {
      "id": "tinta",
@@ -101,7 +105,8 @@
        "gems": 1
       }
      ],
-     "feedback": "Las manchas van en zigzag, como la letra de alguien que escribe deprisa y sin mirar, y de pronto se acaban. Habrá que estar atentos por si vuelven a aparecer. Una gema por seguir un rastro que nadie seguía."
+     "say": "Las manchas van en zigzag, como una letra escrita deprisa, y de pronto se acaban. Una gema por seguir el rastro.",
+     "feedback": "Un rastro dice algo de quien lo dejó. Estas manchas no son de ningún animal: conviene recordarlas por si vuelven a aparecer."
     }
    ],
    "next": "elegir"
@@ -127,20 +132,22 @@
      "correct": true,
      "points": 2,
      "objective": "SV-01",
-     "feedback": {
-      "valley": "El nido se ilumina. La seta se alimenta de la madera podrida, crece y suelta esporas para que nazcan otras.",
-      "azara": "Las semillas del cajón se calientan un poco. La seta se alimenta de la madera podrida, crece y suelta esporas para que nazcan otras."
-     }
+     "say": {
+      "valley": "El nido se ilumina, y de la seta cae un polvillo finísimo.",
+      "azara": "Las semillas del cajón se calientan un poco, y de la seta cae un polvillo finísimo."
+     },
+     "feedback": "La seta es solo la parte que asoma de un hongo: el resto vive bajo tierra o dentro del tronco y se alimenta de restos. El polvillo son esporas, de las que nacen hongos nuevos."
     },
     {
      "id": "cristal",
      "label": "Sacar el cristal que “crece” en una roca húmeda",
      "correct": false,
      "objective": "SV-01",
-     "feedback": {
-      "valley": "El nido parpadea y se apaga. «Crece, sí, pero no come, no siente y no tiene hijos.»",
-      "azara": "Las semillas del cajón se enfrían. «Crece, sí, pero no come, no siente y no tiene hijos», anota el naturalista."
-     }
+     "say": {
+      "valley": "El nido parpadea y se apaga.",
+      "azara": "Las semillas del cajón se enfrían."
+     },
+     "feedback": "Un cristal crece porque se le pegan por fuera más trocitos del mismo mineral, pero no se alimenta, no reacciona a lo que pasa a su alrededor ni tiene descendencia: no está vivo."
     },
     {
      "id": "lombriz",
@@ -148,17 +155,19 @@
      "correct": true,
      "points": 2,
      "objective": "SV-01",
-     "feedback": {
-      "valley": "El nido se ilumina. La lombriz come restos de hojas, se encoge si la tocan y pone huevos.",
-      "azara": "Las semillas del cajón se calientan un poco. La lombriz come restos de hojas, se encoge si la tocan y pone huevos."
-     }
+     "say": {
+      "valley": "El nido se ilumina, y la lombriz se encoge al tocarla.",
+      "azara": "Las semillas del cajón se calientan un poco, y la lombriz se encoge al tocarla."
+     },
+     "feedback": "La lombriz se alimenta de restos de hojas, se encoge si la tocan y pone huevos: se nutre, se relaciona y se reproduce, como todo ser vivo."
     },
     {
      "id": "humo",
      "label": "Atrapar el humo de la hoguera",
      "correct": false,
      "objective": "SV-01",
-     "feedback": "El humo sube y se deshace. «Se mueve y cambia, pero nadie lo ha engendrado ni se alimenta.»"
+     "say": "El humo se escapa entre los dedos y se deshace en el aire.",
+     "feedback": "El humo es una mezcla de gases y de ceniza que el calor empuja hacia arriba: se mueve, pero no se alimenta, no reacciona a nada ni se reproduce."
     },
     {
      "id": "pluma",
@@ -171,10 +180,11 @@
        "flag": "pluma-en-el-nido"
       }
      ],
-     "feedback": {
-      "valley": "El nido duda y parpadea. «Viene de un ser vivo… pero ¿come? ¿Crece? ¿Tendrá crías?» Una buena discusión para el equipo. El búho del bosque se acordará de esta pluma.",
-      "azara": "Las semillas del cajón ni se calientan ni se enfrían. «Viene de un ser vivo… pero ¿come? ¿Crece? ¿Tendrá crías?» Una buena discusión para el equipo. El baqueano se acordará de esta pluma."
-     }
+     "say": {
+      "valley": "El nido duda y parpadea, sin decidirse. El búho del bosque se acordará de esta pluma.",
+      "azara": "Las semillas del cajón ni se calientan ni se enfrían. El baqueano se acordará de esta pluma."
+     },
+     "feedback": "La pluma la fabricó un ave viva, pero ella sola no se alimenta, no crece ni se reproduce: viene de un ser vivo, pero no es un ser vivo."
     },
     {
      "id": "musgo",
@@ -182,10 +192,11 @@
      "correct": true,
      "points": 2,
      "objective": "SV-01",
-     "feedback": {
-      "valley": "El nido se ilumina. El musgo es una planta pequeña: fabrica su alimento con la luz y bebe agua.",
-      "azara": "Las semillas del cajón se calientan un poco. El musgo es una planta pequeña: fabrica su alimento con la luz y bebe agua."
-     }
+     "say": {
+      "valley": "El nido se ilumina, y el musgo se pone de un verde más vivo.",
+      "azara": "Las semillas del cajón se calientan un poco, y el musgo se pone de un verde más vivo."
+     },
+     "feedback": "El musgo es una planta pequeña: fabrica su alimento con la luz, toma el agua por toda su superficie y se reproduce con esporas."
     },
     {
      "id": "semilla",
@@ -198,17 +209,19 @@
        "flag": "semilla-en-el-nido"
       }
      ],
-     "feedback": {
-      "valley": "Parece muerta, pero el nido se ilumina despacio. Dentro guarda una planta plegada que despertará con agua.",
-      "azara": "Parece muerta, pero las semillas del cajón se calientan despacio. Dentro guarda una planta plegada que despertará con agua."
-     }
+     "say": {
+      "valley": "Parece muerta, pero el nido se ilumina despacio.",
+      "azara": "Parece muerta, pero las semillas del cajón se calientan despacio."
+     },
+     "feedback": "Una semilla parece muerta, pero dentro guarda una planta diminuta, dormida, con alimento de reserva. Con agua y calor, despierta y germina."
     },
     {
      "id": "pompa",
      "label": "Llevar una pompa de jabón",
      "correct": false,
      "objective": "SV-01",
-     "feedback": "La pompa flota, brilla… y explota. «Moverse y brillar no es estar vivo.»"
+     "say": "La pompa flota, brilla… y explota.",
+     "feedback": "Una pompa es una capa finísima de agua y jabón con aire dentro: flota porque la lleva el aire y brilla con la luz. Moverse y brillar no es estar vivo."
     },
     {
      "id": "hormiga",
@@ -216,17 +229,19 @@
      "correct": true,
      "points": 2,
      "objective": "SV-01",
-     "feedback": {
-      "valley": "El nido se ilumina. La hormiga come, trabaja con las demás y nace de un huevo.",
-      "azara": "Las semillas del cajón se calientan un poco. La hormiga come, trabaja con las demás y nace de un huevo."
-     }
+     "say": {
+      "valley": "El nido se ilumina, y la hormiga sigue cargando su hoja.",
+      "azara": "Las semillas del cajón se calientan un poco, y la hormiga sigue cargando su hoja."
+     },
+     "feedback": "La hormiga se alimenta, se comunica con las demás por el olor y nace de un huevo que puso la reina del hormiguero: es un ser vivo."
     },
     {
      "id": "piedra",
      "label": "Recoger la piedra que rueda por la ladera",
      "correct": false,
      "objective": "SV-01",
-     "feedback": "La piedra rueda y se para. «Moverse no basta para estar vivo.»"
+     "say": "La piedra rueda y se para.",
+     "feedback": "La piedra rueda cuesta abajo por su peso, no por sí misma: no se alimenta, no crece ni se reproduce. Moverse no basta para estar vivo."
     },
     {
      "id": "rana",
@@ -234,10 +249,11 @@
      "correct": true,
      "points": 2,
      "objective": "SV-01",
-     "feedback": {
-      "valley": "El nido se ilumina. La rana no se mueve, pero respira, caza mosquitos y pone huevos en la charca.",
-      "azara": "Las semillas del cajón se calientan un poco. La rana no se mueve, pero respira, caza mosquitos y pone huevos en la charca."
-     }
+     "say": {
+      "valley": "El nido se ilumina, y la rana parpadea sin moverse.",
+      "azara": "Las semillas del cajón se calientan un poco, y la rana parpadea sin moverse."
+     },
+     "feedback": "Estar quieta no quiere decir no estar viva: la rana respira, caza insectos para alimentarse y pone huevos en el agua."
     },
     {
      "id": "gota",
@@ -249,10 +265,11 @@
       "teamrole": "sage"
      },
      "locked": "Esto lo haría alguien que sabe mirar de cerca: el sabio del equipo tiene lupa.",
-     "feedback": {
-      "valley": "En la gota hay seres diminutos que nadan y se parten en dos. El nido se ilumina: vida que no se ve a simple vista.",
-      "azara": "En la gota hay seres diminutos que nadan y se parten en dos. Las semillas del cajón se calientan un poco: vida que no se ve a simple vista."
-     }
+     "say": {
+      "valley": "Bajo la lupa, en la gota nadan seres diminutos. El nido se ilumina.",
+      "azara": "Bajo la lupa, en la gota nadan seres diminutos. Las semillas del cajón se calientan un poco."
+     },
+     "feedback": "En el agua del charco viven seres de una sola célula, tan pequeños que no se ven a simple vista. Se alimentan y se reproducen partiéndose en dos."
     }
    ],
    "next": "rana"
@@ -260,6 +277,7 @@
   "rana": {
    "type": "choice",
    "dilemma": true,
+   "provisional": true,
    "prompt": {
     "valley": "Con el nido ya lleno, una rana sale de la charca y se sube de un salto al borde. ¿Qué hacemos?",
     "azara": "Con el cajón ya lleno, una rana sale de la charca y se sube de un salto al borde. ¿Qué hacemos?"

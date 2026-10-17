@@ -117,7 +117,7 @@ final class live {
         if (!in_array($mode, ['phones', 'aloud'], true) || !in_array($count, self::COUNTS) || !in_array($secs, self::SECONDS)) {
             throw new \invalid_parameter_exception('Not a battle that can be played');
         }
-        $plan = $turns ? knots::plan($courseid, $count) : [];
+        $plan = $turns ? knots::plan($courseid, $count, $final) : [];
         $questions = $plan ? array_column($plan, 1) : questions::pick_many($courseid, $count);
         if (!$questions) {
             throw new \moodle_exception('noquestions', 'local_oksigeniatesape');

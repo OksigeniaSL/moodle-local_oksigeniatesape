@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.69.0 (2026-10-17)
+
+- **«Why?» in every option of the core scenes** (mission v30): what happens in the world when it is chosen (`say`),
+  and why, folded; also in the choices of several options at once, which showed only the first.
+- **Block 2.1 of the plan, the knot of the battle**: each knot says its chapter, its objective, the idea that undoes it
+  and its whole why; it can bring lanes, one for each team, with their engine (choice, classify, errors or order; two
+  teams share one if there are more teams, and they go round from turn to turn); the battle has candles, sizes and
+  phases. A battle that is not the final one plays only the knots of the places the class has reached. The battle of
+  today plays the lanes to choose; the others come with the tablet client.
+- **The workshop**: the teacher can change the texts of the knots of the battle (with the texts of their place) and
+  what the world says in each option.
+
 ## 0.68.0 (2026-10-17)
 
 The end of block 1.11 of the plan (mission v29):

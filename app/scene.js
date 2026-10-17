@@ -1337,7 +1337,10 @@
             answer(body, o);
           });
           out.innerHTML = '<div class="conseq said"><ul class="cls-said">' + list.map(function(o) {
-            return '<li><b>' + esc(tx(o.label)) + '</b> ' + esc(tx(o.say || o.feedback || '')) + '</li>';
+            // What the world says, and why, folded, when the option has both.
+            return '<li><b>' + esc(tx(o.label)) + '</b> ' + esc(tx(o.say || o.feedback || '')) + (o.say && o.feedback ?
+              '<details class="why-more"><summary>' + esc(t('app_why')) + '</summary><p>' + esc(tx(o.feedback)) + '</p></details>' :
+              '') + '</li>';
           }).join('') + '</ul></div><div class="actions"><button class="btn btn-main" data-more>' +
             esc(t('app_continue')) + '</button></div>';
           var more = out.querySelector('[data-more]');

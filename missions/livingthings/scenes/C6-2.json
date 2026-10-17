@@ -93,14 +93,22 @@
      "correct": true,
      "points": 3,
      "objective": "SV-04",
-     "feedback": "El enredo se deshace."
+     "say": {
+      "valley": "El enredo se deshace, y el hilo cae suelto sobre la mesa.",
+      "azara": "El naturalista tacha la nota mezclada y escribe al lado: «Murciélago: mamífero»."
+     },
+     "feedback": "El murciélago tiene el cuerpo cubierto de pelo y sus crías maman: es un mamífero. Volar no hace ave a nadie; lo que tienen todas las aves son plumas."
     },
     {
      "id": "medio",
      "label": "—No: sale de noche y las aves son de día. Es otra cosa.",
      "correct": false,
      "objective": "SV-04",
-     "feedback": "El hilo se tensa: hay aves nocturnas, como el búho. ¿Qué tiene el murciélago que no tienen las aves?",
+     "say": {
+      "valley": "El hilo se tensa y no se suelta.",
+      "azara": "El naturalista niega con la cabeza y deja la nota sin tachar."
+     },
+     "feedback": "Salir de noche no separa a nadie: también hay aves nocturnas, como el búho. Lo que separa es el cuerpo: ¿qué tiene el murciélago que no tiene ningún ave?",
      "next": "e1"
     },
     {
@@ -108,7 +116,11 @@
      "label": "—Sí: tiene alas y vuela de noche, como los búhos.",
      "correct": false,
      "objective": "SV-04",
-     "feedback": "El hilo se aprieta. Las alas no bastan: ¿plumas o pelo?",
+     "say": {
+      "valley": "El hilo se aprieta un poco más.",
+      "azara": "La tinta de la nota se corre un poco más."
+     },
+     "feedback": "Tener alas y volar no hace ave a nadie: también vuelan muchos insectos. Lo que tienen todas las aves son plumas: ¿las tiene el murciélago?",
      "next": "e1"
     },
     {
@@ -123,7 +135,11 @@
        "gems": 1
       }
      ],
-     "feedback": "Camino de la noche, pasa junto a la lámpara y se le ve bien: el cuerpo cubierto de pelo, las alas de piel tendida entre unos dedos larguísimos, ni una sola pluma. El enredo se deshace. Una gema por cuidarlo.",
+     "say": {
+      "valley": "Al salir, pasa junto a la lámpara: tiene pelo y ni una pluma. El enredo se deshace. Una gema por cuidarlo.",
+      "azara": "Al salir, pasa junto a la lámpara: tiene pelo y ni una pluma. El naturalista tacha la nota. Una gema por cuidarlo."
+     },
+     "feedback": "Con el murciélago a la vista se ve lo que es: el cuerpo cubierto de pelo y las alas de piel tendida entre unos dedos larguísimos. Es un mamífero, no un ave.",
      "next": "e2"
     }
    ],
@@ -142,14 +158,22 @@
      "correct": true,
      "points": 3,
      "objective": "SV-04",
-     "feedback": "Otro hilo se suelta y cae, deshecho."
+     "say": {
+      "valley": "Otro hilo se suelta y cae, deshecho.",
+      "azara": "El naturalista tacha la nota y escribe al lado: «Ballena: mamífero»."
+     },
+     "feedback": "La ballena respira aire con pulmones, y por eso sube a la superficie; además, sus crías maman. Es un mamífero que vive en el mar."
     },
     {
      "id": "mal",
      "label": "—Sí: vive en el mar y nada con aletas, como el atún.",
      "correct": false,
      "objective": "SV-04",
-     "feedback": "El hilo se aprieta: vivir en el agua no hace a nadie pez. ¿Cómo respira la ballena?",
+     "say": {
+      "valley": "El hilo se aprieta y da otra vuelta.",
+      "azara": "La nota sigue mezclada, y la tinta se corre un poco más."
+     },
+     "feedback": "Vivir en el mar y nadar con aletas no hace pez a nadie: también lo hacen las tortugas marinas, que son reptiles. Los peces respiran con branquias: ¿y la ballena?",
      "next": "e2"
     },
     {
@@ -157,7 +181,11 @@
      "label": "—No: es demasiado grande para ser un pez. Es otra cosa.",
      "correct": false,
      "objective": "SV-04",
-     "feedback": "El hilo cede un poco y vuelve a apretarse: hay peces enormes, como el tiburón ballena. ¿Cómo respira y cómo alimenta a sus crías?",
+     "say": {
+      "valley": "El hilo cede un poco y vuelve a apretarse.",
+      "azara": "El naturalista duda un momento y no tacha la nota."
+     },
+     "feedback": "El tamaño no decide el grupo: hay peces enormes, como el tiburón ballena, el pez más grande que existe. Hay que mirar cómo respira y cómo alimenta a sus crías.",
      "next": "e2"
     }
    ],
@@ -176,17 +204,22 @@
      "correct": true,
      "points": 3,
      "objective": "SV-03",
-     "feedback": {
+     "say": {
       "valley": "El Embrollo pierde un hilo.",
       "azara": "Una nota mezclada menos en el cuaderno."
-     }
+     },
+     "feedback": "La seta no tiene hojas verdes ni fabrica su alimento con la luz: se alimenta de restos. Es un hongo, un grupo distinto del de las plantas."
     },
     {
      "id": "mal",
      "label": "—Sí: no se mueve y sale de la tierra, como las plantas.",
      "correct": false,
      "objective": "SV-03",
-     "feedback": "El hilo da otra vuelta: las plantas no se mueven, pero los hongos tampoco. ¿Cómo consigue la seta su alimento?",
+     "say": {
+      "valley": "El hilo da otra vuelta.",
+      "azara": "La nota sigue mezclada en el cuaderno."
+     },
+     "feedback": "No moverse y salir de la tierra no basta: los hongos tampoco se mueven. Lo propio de las plantas es fabricar su alimento con la luz: ¿lo hace la seta?",
      "next": "e3"
     },
     {
@@ -194,7 +227,11 @@
      "label": "—No: es un animal muy lento que se come la madera.",
      "correct": false,
      "objective": "SV-03",
-     "feedback": "El hilo se enreda un poco más. Lenta es, pero no come como un animal: absorbe los restos. ¿Qué grupo hace eso?",
+     "say": {
+      "valley": "El hilo se enreda un poco más.",
+      "azara": "La tinta de la nota se emborrona un poco más."
+     },
+     "feedback": "La seta no se mueve ni tiene boca: no come como un animal, sino que absorbe el alimento de los restos sobre los que crece. ¿Qué grupo hace eso?",
      "next": "e3"
     }
    ],
@@ -213,17 +250,22 @@
      "correct": true,
      "points": 3,
      "objective": "SV-06",
-     "feedback": {
+     "say": {
       "valley": "El Embrollo se tambalea.",
       "azara": "Otra nota mezclada vuelve a su sitio."
-     }
+     },
+     "feedback": "El león come cebras y antílopes, y ellos comen hierba. En tierra, las cadenas alimentarias empiezan por las plantas: sin ellas, el león se queda sin comida."
     },
     {
      "id": "mal",
      "label": "—Es verdad: el león come carne, y las plantas no le importan.",
      "correct": false,
      "objective": "SV-06",
-     "feedback": "El hilo se aprieta. ¿Y qué comen las cebras que se come el león? La cadena, hacia atrás.",
+     "say": {
+      "valley": "El hilo se aprieta.",
+      "azara": "El naturalista deja la nota sin tachar y espera."
+     },
+     "feedback": "El león come carne, pero es carne de animales que comen plantas, como las cebras. Siguiendo la cadena del león hacia atrás, se llega a una planta.",
      "next": "e4"
     },
     {
@@ -231,7 +273,11 @@
      "label": "—Sí pasa: el león se quedaría sin sombra para dormir la siesta.",
      "correct": false,
      "objective": "SV-06",
-     "feedback": "El hilo se afloja… y se vuelve a tensar. Sombra sí, pero lo grave es otra cosa: ¿qué comen los animales que come el león?",
+     "say": {
+      "valley": "El hilo se afloja… y se vuelve a tensar.",
+      "azara": "El naturalista sonríe un momento, pero no tacha la nota."
+     },
+     "feedback": "Las plantas dan sombra, sí, pero eso no es lo más importante para el león. ¿Qué comen los animales que él se come?",
      "next": "e4"
     },
     {
@@ -246,7 +292,11 @@
        "gems": 1
       }
      ],
-     "feedback": "En las páginas de las cadenas, la primera flecha sale siempre de una planta: la hierba, la hoja, las semillas. Sin plantas, ninguna cadena tiene por dónde empezar, tampoco la del león. El enredo se deshace. Una gema por recordar lo aprendido.",
+     "say": {
+      "valley": "En todas las páginas, la primera flecha sale de una planta. El enredo se deshace. Una gema por recordar lo aprendido.",
+      "azara": "En todas las páginas, la primera flecha sale de una planta. La nota vuelve a su sitio. Una gema por recordar lo aprendido."
+     },
+     "feedback": "Las cadenas empiezan por quien fabrica su propio alimento con la luz, y en tierra son las plantas: la hierba, la hoja, las semillas. Sin plantas no hay cadena, tampoco la del león.",
      "next": "e5"
     }
    ],
@@ -265,14 +315,22 @@
      "correct": true,
      "points": 3,
      "objective": "SV-04",
-     "feedback": "Se suelta el último hilo: no queda ni un enredo viejo."
+     "say": {
+      "valley": "Se suelta el último hilo: no queda ni un enredo viejo.",
+      "azara": "El naturalista tacha la última nota mezclada y escribe al lado: «Araña: arácnido»."
+     },
+     "feedback": "La araña tiene ocho patas, y los insectos, seis: es un arácnido, como los escorpiones y los ácaros. Ser pequeño no dice a qué grupo pertenece un animal."
     },
     {
      "id": "mal",
      "label": "—Sí: es un bicho pequeño con patas, como la hormiga.",
      "correct": false,
      "objective": "SV-04",
-     "feedback": "El hilo se retuerce: «bicho» no es un grupo de seres vivos. A contar patas.",
+     "say": {
+      "valley": "El hilo se retuerce.",
+      "azara": "La nota se queda como estaba, mezclada."
+     },
+     "feedback": "«Bicho» no es un grupo de seres vivos, y tener patas y ser pequeño no basta. Los insectos tienen seis patas: ¿cuántas tiene la araña?",
      "next": "e5"
     },
     {
@@ -280,7 +338,11 @@
      "label": "—No: es demasiado grande para ser un insecto.",
      "correct": false,
      "objective": "SV-04",
-     "feedback": "El hilo se aprieta: hay insectos grandes, como el escarabajo rinoceronte. A contar patas.",
+     "say": {
+      "valley": "El hilo se aprieta.",
+      "azara": "El naturalista frunce el ceño y deja la nota sin tachar."
+     },
+     "feedback": "El tamaño no decide el grupo: hay insectos grandes, como el escarabajo rinoceronte, y arañas diminutas. Lo que cuenta son las patas.",
      "next": "e5"
     },
     {
@@ -295,7 +357,8 @@
        "gems": 1
       }
      ],
-     "feedback": "En un rincón, una araña arregla su tela. De cerca se le cuentan las patas: una, dos, tres… hasta ocho. Los insectos tienen seis: el último enredo viejo se deshace. Una gema por mirar donde nadie mira.",
+     "say": "En un rincón, una araña arregla su tela. Una, dos, tres… hasta ocho patas. Una gema por mirar donde nadie mira.",
+     "feedback": "Los insectos tienen seis patas, y las arañas, ocho: es un arácnido, no un insecto. Mirar de cerca un ejemplar de verdad deshace el enredo.",
      "next": "memoria-hebra"
     }
    ],
@@ -357,10 +420,11 @@
        "flag": "junto-a-hebra"
       }
      ],
-     "feedback": {
+     "say": {
       "valley": "Doña Hebra respira. «Juntos. Y con la cosa delante, no de memoria.»",
       "azara": "La archivera respira. «Juntos. Y con la cosa delante, no de memoria.»"
-     }
+     },
+     "feedback": "Equivocarse le pasa a cualquiera; lo que arregla un error es comprobarlo. Revisar juntos, con la cosa delante y no de memoria: así trabaja la ciencia."
     },
     {
      "id": "culpa",
@@ -370,9 +434,13 @@
      },
      "correct": false,
      "objective": "SV-07",
+     "say": {
+      "valley": "Doña Hebra se encoge. La druida se pone a su lado: «¿Quién no ha dado nunca algo por cierto sin mirarlo?».",
+      "azara": "La archivera se encoge. El naturalista se pone a su lado: «¿Quién no ha dado nunca algo por cierto sin mirarlo?»."
+     },
      "feedback": {
-      "valley": "Doña Hebra se encoge. La druida se pone a su lado y pregunta: «¿El Embrollo nace de una persona o de dar algo por cierto sin mirarlo? ¿Quién no lo ha hecho alguna vez?».",
-      "azara": "La archivera se encoge. El naturalista se pone a su lado y pregunta: «¿La mezcla nace de una persona o de dar algo por cierto sin mirarlo? ¿Quién no lo ha hecho alguna vez?»."
+      "valley": "El Embrollo no nace de una persona, sino de dar algo por cierto sin mirarlo, y eso lo hemos hecho todos alguna vez. Buscar un culpable no arregla el error; comprobar, sí.",
+      "azara": "La mezcla no nace de una persona, sino de dar algo por cierto sin mirarlo, y eso lo hemos hecho todos alguna vez. Buscar un culpable no arregla el error; comprobar, sí."
      }
     },
     {
@@ -390,10 +458,11 @@
        "flag": "junto-a-hebra"
       }
      ],
-     "feedback": {
+     "say": {
       "valley": "Doña Hebra se seca los ojos y sonríe. «Mañana leeré cada página en voz alta, con la cosa delante.»",
       "azara": "La archivera se seca los ojos y sonríe. «Mañana leeré cada nota en voz alta, con la cosa delante.»"
-     }
+     },
+     "feedback": "Todos hemos copiado alguna vez sin comprobar. Con ánimo, quien se equivocó se atreve a revisar su trabajo, y eso es lo que arregla el error."
     },
     {
      "id": "lado",
@@ -410,7 +479,8 @@
        "flag": "junto-a-hebra"
       }
      ],
-     "feedback": "Con alguien a su lado, levanta la vista y sigue: «Mañana las repaso todas, una por una, con la cosa delante». Nadie la señala: dar algo por cierto sin mirarlo lo hacemos todos alguna vez. Una gema por estar a su lado."
+     "say": "Con alguien a su lado, levanta la vista: «Mañana las repaso todas, con la cosa delante». Una gema por estar a su lado.",
+     "feedback": "Nadie la señala: dar algo por cierto sin mirarlo lo hacemos todos alguna vez. Lo que arregla el error es repasarlo, no buscar a quien culpar."
     }
    ],
    "next": "manana"
@@ -418,6 +488,7 @@
   "manana": {
    "type": "choice",
    "dilemma": true,
+   "provisional": true,
    "prompt": {
     "valley": "Mañana toca subir a la torre. ¿Qué le pedimos a Doña Hebra?",
     "azara": "Mañana es la revisión final del cuaderno. ¿Qué le pedimos a la archivera?"
