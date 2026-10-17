@@ -21,8 +21,8 @@
    "speaker": "druida-mayor",
    "image": "torre-ensayo",
    "text": {
-    "valley": "La víspera de subir a la torre, la druida mayor reúne a la expedición en la biblioteca. Trae un frasco lleno de hilos revueltos. «Antes de enfrentarse al Embrollo hay que entrenar con enredos viejos: los que ya lanzó otras veces. Cada enredo que se deshace con su porqué nos deja más listos.» Doña Hebra, a su lado, cuenta páginas con los dedos y no mira a nadie.",
-    "azara": "Antes de entregar el cuaderno, el naturalista repasa con la expedición las notas que se mezclaron en el viaje. «Cada error corregido con su porqué deja el cuaderno un poco más listo.» La archivera, a su lado, cuenta páginas con los dedos y no mira a nadie."
+    "valley": "La víspera de subir a la torre, la druida mayor reúne a la expedición en la biblioteca. Trae un frasco lleno de hilos revueltos. «Antes de enfrentarnos al Embrollo, entrenamos con enredos viejos: los que ya lanzó otras veces. ¿Qué nos deja más listos: deshacer un enredo o saber por qué estaba mal?». Doña Hebra, a su lado, cuenta páginas con los dedos y no mira a nadie.",
+    "azara": "Antes de entregar el cuaderno, el naturalista repasa con la expedición las notas que se mezclaron en el viaje. «¿Qué deja más listo un cuaderno: tachar un error o saber por qué estaba mal?». La archivera, a su lado, cuenta páginas con los dedos y no mira a nadie."
    },
    "next": "memoria"
   },
@@ -43,8 +43,8 @@
    "speaker": "druida-mayor",
    "image": "torre-ensayo",
    "text": {
-    "valley": "La druida saca del frasco una pluma. «Alguien de esta expedición la puso en el nido, el primer día. El nido dudó, ¿recordamos? Así empieza el Embrollo: con algo que parece y no es, y que nadie comprueba.» {{creature}} mira la pluma con la cabeza ladeada.",
-    "azara": "El naturalista saca del cajón una pluma. «Alguien la puso entre los seres vivos, el primer día. Así empiezan las notas mezcladas: con algo que parece y no es, y que nadie comprueba.» {{creature}} mira la pluma con la cabeza ladeada."
+    "valley": "La druida saca del frasco una pluma. «Alguien de esta expedición la puso en el nido, el primer día. El nido dudó, ¿recordamos? ¿Qué parecía esta pluma? ¿Y qué era de verdad? ¿No empieza así el Embrollo?». {{creature}} mira la pluma con la cabeza ladeada.",
+    "azara": "El naturalista saca del cajón una pluma. «Alguien la puso entre los seres vivos, el primer día. ¿Qué parecía esta pluma? ¿Y qué era de verdad? ¿No empiezan así las notas mezcladas?». {{creature}} mira la pluma con la cabeza ladeada."
    },
    "next": "memoria2"
   },
@@ -58,15 +58,25 @@
      "next": "buho"
     }
    ],
-   "else": "e1"
+   "else": "buho-callado"
+  },
+  "buho-callado": {
+   "type": "story",
+   "speaker": "buho",
+   "image": "torre-ensayo",
+   "text": {
+    "valley": "El búho guardián está en la ventana. Le preguntamos si viene a la torre y esta vez no contesta, ni sí ni no: solo cierra los ojos, muy despacio. Las respuestas de mañana tendremos que encontrarlas nosotros.",
+    "azara": "El baqueano está en la puerta. Le preguntamos si nos acompaña en la revisión y esta vez no contesta, ni sí ni no: solo se baja el sombrero sobre los ojos. Las respuestas de mañana tendremos que encontrarlas nosotros."
+   },
+   "next": "e1"
   },
   "buho": {
    "type": "story",
    "speaker": "buho",
    "image": "torre-ensayo",
    "text": {
-    "valley": "El búho guardián está en la ventana. Reconoce a quienes preguntaron bien en el bosque y, por primera vez, no tiene nada que decir: solo asiente. «Preguntar bien es la mitad de saber. La otra mitad, comprobar.»",
-    "azara": "El baqueano está en la puerta. Reconoce a quienes preguntaron bien junto al rastro y, por primera vez, no tiene nada que decir: solo asiente. «Preguntar bien es la mitad de saber. La otra mitad, comprobar.»"
+    "valley": "El búho guardián está en la ventana. Reconoce a quienes preguntaron bien en el bosque. Le preguntamos si viene a la torre y esta vez no contesta, ni sí ni no: solo cierra los ojos, muy despacio. A preguntar bien ya hemos aprendido. Ahora nos toca comprobar.",
+    "azara": "El baqueano está en la puerta. Reconoce a quienes preguntaron bien junto al rastro. Le preguntamos si nos acompaña en la revisión y esta vez no contesta, ni sí ni no: solo se baja el sombrero sobre los ojos. A preguntar bien ya hemos aprendido. Ahora nos toca comprobar."
    },
    "next": "e1"
   },
@@ -166,7 +176,10 @@
      "correct": true,
      "points": 3,
      "objective": "SV-03",
-     "feedback": "El Embrollo pierde un hilo."
+     "feedback": {
+      "valley": "El Embrollo pierde un hilo.",
+      "azara": "Una nota mezclada menos en el cuaderno."
+     }
     },
     {
      "id": "mal",
@@ -200,7 +213,10 @@
      "correct": true,
      "points": 3,
      "objective": "SV-06",
-     "feedback": "El Embrollo se tambalea."
+     "feedback": {
+      "valley": "El Embrollo se tambalea.",
+      "azara": "Otra nota mezclada vuelve a su sitio."
+     }
     },
     {
      "id": "mal",
@@ -280,19 +296,54 @@
       }
      ],
      "feedback": "En un rincón, una araña arregla su tela. De cerca se le cuentan las patas: una, dos, tres… hasta ocho. Los insectos tienen seis: el último enredo viejo se deshace. Una gema por mirar donde nadie mira.",
-     "next": "confesion"
+     "next": "memoria-hebra"
     }
    ],
+   "next": "memoria-hebra"
+  },
+  "memoria-hebra": {
+   "type": "branch",
+   "rules": [
+    {
+     "if": {
+      "flag": "hebra-esquiva"
+     },
+     "next": "confiesa-letra"
+    }
+   ],
+   "else": "confiesa"
+  },
+  "confiesa": {
+   "type": "story",
+   "speaker": "bibliotecaria",
+   "image": "torre-ensayo",
+   "text": {
+    "valley": "El frasco está vacío. Doña Hebra levanta la mano: «Las páginas copiadas de memoria eran mías. El Embrollo salió de ahí».",
+    "azara": "Ya no queda ninguna nota mezclada. La archivera levanta la mano: «Las notas copiadas de memoria eran mías. De ahí salió la mezcla»."
+   },
+   "next": "confesion"
+  },
+  "confiesa-letra": {
+   "type": "story",
+   "speaker": "bibliotecaria",
+   "image": "torre-ensayo",
+   "text": {
+    "valley": "El frasco está vacío. Doña Hebra levanta la mano y busca con los ojos a quien le preguntó en el sótano. «Allí abajo me preguntaron de quién era la letra de las etiquetas, y me escapé escaleras arriba. Es mía. Las páginas copiadas de memoria eran mías, y el Embrollo aprendió mi letra de ellas. Gracias por preguntar.»",
+    "azara": "Ya no queda ninguna nota mezclada. La archivera levanta la mano y busca con los ojos a quien le preguntó en el almacén. «Allí me preguntaron de quién era la letra de las notas, y me escapé. Es mía. Las notas copiadas de memoria eran mías, y de ahí salió la mezcla. Gracias por preguntar.»"
+   },
    "next": "confesion"
   },
   "confesion": {
    "type": "choice",
    "prompt": {
-    "valley": "El frasco está vacío. Doña Hebra levanta la mano: «Las páginas copiadas de memoria eran mías. El Embrollo salió de ahí». ¿Qué le decimos?",
-    "azara": "Las notas quedan corregidas. La archivera levanta la mano: «Las notas copiadas de memoria eran mías. De ahí salió la mezcla». ¿Qué le decimos?"
+    "valley": "¿Qué le decimos a Doña Hebra?",
+    "azara": "¿Qué le decimos a la archivera?"
    },
    "hints": [
-    "El Embrollo no nace de una persona. Nace de algo que hacemos todos alguna vez."
+    {
+     "valley": "El Embrollo no nace de una persona. Nace de algo que hacemos todos alguna vez.",
+     "azara": "Las notas mezcladas no nacen de una persona. Nacen de algo que hacemos todos alguna vez."
+    }
    ],
    "options": [
     {
@@ -301,6 +352,11 @@
      "correct": true,
      "points": 2,
      "objective": "SV-07",
+     "effects": [
+      {
+       "flag": "junto-a-hebra"
+      }
+     ],
      "feedback": {
       "valley": "Doña Hebra respira. «Juntos. Y con la cosa delante, no de memoria.»",
       "azara": "La archivera respira. «Juntos. Y con la cosa delante, no de memoria.»"
@@ -308,12 +364,15 @@
     },
     {
      "id": "culpa",
-     "label": "—La culpa del Embrollo es tuya.",
+     "label": {
+      "valley": "—La culpa del Embrollo es tuya.",
+      "azara": "—La culpa de la mezcla es tuya."
+     },
      "correct": false,
      "objective": "SV-07",
      "feedback": {
-      "valley": "Doña Hebra se encoge. La druida la defiende: «El Embrollo no nace de una persona: nace de dar por cierto sin mirar. Eso lo hacemos todos».",
-      "azara": "La archivera se encoge. El naturalista la defiende: «La mezcla no nace de una persona: nace de dar por cierto sin mirar. Eso lo hacemos todos»."
+      "valley": "Doña Hebra se encoge. La druida se pone a su lado y pregunta: «¿El Embrollo nace de una persona o de dar algo por cierto sin mirarlo? ¿Quién no lo ha hecho alguna vez?».",
+      "azara": "La archivera se encoge. El naturalista se pone a su lado y pregunta: «¿La mezcla nace de una persona o de dar algo por cierto sin mirarlo? ¿Quién no lo ha hecho alguna vez?»."
      }
     },
     {
@@ -326,6 +385,11 @@
      "correct": true,
      "points": 3,
      "objective": "SV-07",
+     "effects": [
+      {
+       "flag": "junto-a-hebra"
+      }
+     ],
      "feedback": {
       "valley": "Doña Hebra se seca los ojos y sonríe. «Mañana leeré cada página en voz alta, con la cosa delante.»",
       "azara": "La archivera se seca los ojos y sonríe. «Mañana leeré cada nota en voz alta, con la cosa delante.»"
@@ -341,19 +405,104 @@
      "effects": [
       {
        "gems": 1
+      },
+      {
+       "flag": "junto-a-hebra"
       }
      ],
      "feedback": "Con alguien a su lado, levanta la vista y sigue: «Mañana las repaso todas, una por una, con la cosa delante». Nadie la señala: dar algo por cierto sin mirarlo lo hacemos todos alguna vez. Una gema por estar a su lado."
     }
    ],
+   "next": "libro1"
+  },
+  "libro1": {
+   "type": "branch",
+   "rules": [
+    {
+     "if": {
+      "flag": "semilla-en-el-nido"
+     },
+     "next": "libro-semilla"
+    }
+   ],
+   "else": "libro2"
+  },
+  "libro-semilla": {
+   "type": "story",
+   "speaker": "bibliotecaria",
+   "image": "torre-ensayo",
+   "text": {
+    "valley": "Doña Hebra abre el Gran Libro por la página del claro. Hay una línea nueva, escrita con letra limpia: «Esta expedición llevó al nido una semilla que parecía muerta, y la semilla despertó». Pasa el dedo por encima: «Esto no se escribió de memoria».",
+    "azara": "La archivera abre el cuaderno por la página del campamento. Hay una línea nueva, escrita con letra limpia: «La expedición guardó en el cajón una semilla seca que parecía muerta, y la semilla germinó». Pasa el dedo por encima: «Esto no se escribió de memoria»."
+   },
+   "next": "libro2"
+  },
+  "libro2": {
+   "type": "branch",
+   "rules": [
+    {
+     "if": {
+      "flag": "salamandra-a-la-sombra"
+     },
+     "next": "libro-salamandra"
+    }
+   ],
+   "else": "libro3"
+  },
+  "libro-salamandra": {
+   "type": "story",
+   "speaker": "bibliotecaria",
+   "image": "torre-ensayo",
+   "text": {
+    "valley": "Doña Hebra busca en el Gran Libro la página del bosque y lee en voz alta: «Al cruzar el lago, esta expedición llevó a la sombra a una salamandra herida y le mojó la piel. Llegó a la otra orilla moviendo la pata». {{creature}} se asoma a la página, como si se acordara.",
+    "azara": "La archivera busca en el cuaderno la página del monte y lee en voz alta: «Al cruzar el río, la expedición llevó a la sombra a una salamandra herida y le mojó la piel. Llegó a la otra orilla moviendo la pata». {{creature}} se asoma a la página, como si se acordara."
+   },
+   "next": "libro3"
+  },
+  "libro3": {
+   "type": "branch",
+   "rules": [
+    {
+     "if": {
+      "flag": "alto-seco"
+     },
+     "next": "libro-alto"
+    },
+    {
+     "if": {
+      "flag": "mosquitos"
+     },
+     "next": "libro-mosquitos"
+    }
+   ],
+   "else": "fin"
+  },
+  "libro-alto": {
+   "type": "story",
+   "speaker": "bibliotecaria",
+   "image": "torre-ensayo",
+   "text": {
+    "valley": "Doña Hebra busca en el Gran Libro la página del lago y lee en voz alta: «Esta expedición durmió en el alto seco. De madrugada oyó cazar a un búho, y por la mañana encontró sus egagrópilas». Levanta la vista: «Con la cosa delante. Así se apunta».",
+    "azara": "La archivera busca en el cuaderno la página del río y lee en voz alta: «La expedición durmió en el alto seco. De madrugada oyó cazar a un búho, y por la mañana encontró sus egagrópilas». Levanta la vista: «Con la cosa delante. Así se apunta»."
+   },
+   "next": "fin"
+  },
+  "libro-mosquitos": {
+   "type": "story",
+   "speaker": "bibliotecaria",
+   "image": "torre-ensayo",
+   "text": {
+    "valley": "Doña Hebra busca en el Gran Libro la página del lago y lee en voz alta: «Esta expedición acampó junto al agua quieta, y los mosquitos no la dejaron dormir». Se rasca el brazo sin darse cuenta. {{creature}} también.",
+    "azara": "La archivera busca en el cuaderno la página del río y lee en voz alta: «La expedición acampó junto al agua quieta, y los mosquitos no la dejaron dormir». Se rasca el brazo sin darse cuenta. {{creature}} también."
+   },
    "next": "fin"
   },
   "fin": {
    "type": "ending",
    "outcome": "success",
    "text": {
-    "valley": "Cinco enredos viejos deshechos. La druida mayor cierra el frasco vacío. «Mañana, en la torre, el Embrollo lanzará los suyos. Pero ya sabemos de qué está hecho: de todo lo que alguien dio por cierto sin comprobarlo. Por eso no se vence con fuerza. Se vence mirando.» {{creature}} se duerme a sus pies, tranquila: mañana toca madrugar.",
-    "azara": "Las notas mezcladas quedan corregidas. Mañana, la revisión final del cuaderno antes de enviarlo a España, como hizo Azara con sus Apuntamientos. «Una nota se comprueba con la cosa delante», dice el naturalista. «Lo demás es memoria, y la memoria mezcla.» {{creature}} bosteza: mañana toca madrugar."
+    "valley": "Cinco enredos viejos deshechos. La druida mayor cierra el frasco vacío. «Mañana, en la torre, el Embrollo lanzará los suyos. Si está hecho de todo lo que alguien dio por cierto sin comprobarlo, ¿cómo se vence? ¿Con fuerza o mirando?». {{creature}} se duerme a sus pies, tranquila: mañana toca madrugar.",
+    "azara": "Las notas mezcladas quedan corregidas. Mañana, la revisión final del cuaderno antes de enviarlo a España, como hizo Azara con sus Apuntamientos. El naturalista pregunta: «Y una nota, ¿con qué se comprueba? ¿Con la memoria, que mezcla, o con la cosa delante?». {{creature}} bosteza: mañana toca madrugar."
    },
    "effects": [
     {

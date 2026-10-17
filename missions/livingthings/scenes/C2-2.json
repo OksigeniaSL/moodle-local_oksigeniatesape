@@ -9,7 +9,10 @@
   "SV-03"
  ],
  "minutes": 8,
- "whatif": "¿Y si se descubriera un ser vivo que no cabe en ningún estante? ¿Qué haría la ciencia: meterlo a la fuerza o construir un estante nuevo?",
+ "whatif": {
+  "valley": "¿Y si se descubriera un ser vivo que no cabe en ningún estante? ¿Qué haría la ciencia: meterlo a la fuerza o construir un estante nuevo?",
+  "azara": "¿Y si se descubriera un ser vivo que no cabe en ninguna caja? ¿Qué haría la ciencia: meterlo a la fuerza o hacer una caja nueva?"
+ },
  "start": "intro",
  "nodes": {
   "intro": {
@@ -17,8 +20,8 @@
    "speaker": "bibliotecaria",
    "image": "biblioteca-torre",
    "text": {
-    "valley": "En la torre de la biblioteca, el Gran Libro guarda a los seres vivos por grupos, cada uno en su estante. El Embrollo los ha cambiado de sitio y la torre cruje. Doña Hebra, la bibliotecaria, cuenta páginas con los dedos y señala una carretilla llena de seres mal colocados: «Cada uno a su estante, por favor. Y nada de fiarse de lo que diga la etiqueta».",
-    "azara": "Las muestras viajan en cajas, una por cada gran grupo de seres vivos. En el traslado se han caído las etiquetas. La archivera cuenta las cajas con los dedos: «Hay que volver a colocarlas antes de que salga el barco. Y nada de fiarse de la etiqueta vieja»."
+    "valley": "En la torre de la biblioteca, el Gran Libro guarda a los seres vivos por grupos, cada uno en su estante. El Embrollo los ha cambiado de sitio y la torre cruje. Doña Hebra, la bibliotecaria, cuenta páginas con los dedos sin levantar la vista: «Cuarenta y una, cuarenta y dos… ¿Por dónde iba?». Vuelve a empezar. Sin mirar a nadie, señala una carretilla llena de seres mal colocados: «Cada uno a su estante, por favor. Y nada de fiarse de lo que diga la etiqueta».",
+    "azara": "Las muestras viajan en cajas, una por cada gran grupo de seres vivos. En el traslado se han caído las etiquetas. La archivera cuenta las cajas con los dedos sin levantar la vista: «Once, doce… ¿Por dónde iba?». Vuelve a empezar. Sin mirar a nadie, avisa: «Hay que colocar cada muestra en su caja antes de que salga el barco. Y nada de fiarse de la etiqueta vieja»."
    },
    "next": "memoria"
   },
@@ -46,12 +49,18 @@
   },
   "colocar": {
    "type": "classify",
-   "prompt": "Cada ser vivo, a su estante.",
+   "prompt": {
+    "valley": "Cada ser vivo, a su estante.",
+    "azara": "Cada muestra, a su caja."
+   },
    "aid": "En el cuaderno: los animales comen otros seres; las plantas son verdes y fabrican su alimento con la luz; los hongos se alimentan de restos; y algunos seres son tan pequeños que solo se ven con lupa.",
    "retry": "item",
    "hints": [
     "¿Fabrica su alimento con la luz, o se alimenta de otros seres o de sus restos?",
-    "Lo que es tan pequeño que no se ve a simple vista tiene estante propio."
+    {
+     "valley": "Lo que es tan pequeño que no se ve a simple vista tiene estante propio.",
+     "azara": "Lo que es tan pequeño que no se ve a simple vista tiene caja propia."
+    }
    ],
    "bins": [
     {
@@ -78,7 +87,10 @@
      "bin": "hongos",
      "objective": "SV-03",
      "feedback": {
-      "plantas": "El estante de las plantas se inclina. «No tiene hojas verdes ni fabrica su alimento con la luz: se alimenta de restos. Es de otro grupo, los hongos.»"
+      "plantas": {
+       "valley": "El estante de las plantas se inclina. «No tiene hojas verdes ni fabrica su alimento con la luz: se alimenta de restos. Es de otro grupo, los hongos.»",
+       "azara": "La caja de las plantas no cierra bien con ella dentro. «No tiene hojas verdes ni fabrica su alimento con la luz: se alimenta de restos. Es de otro grupo, los hongos.»"
+      }
      }
     },
     {
@@ -96,7 +108,10 @@
      "bin": "animales",
      "objective": "SV-03",
      "feedback": {
-      "plantas": "La medusa se escurre del estante de las plantas. «Flota y no tiene huesos, pero caza para comer: es un animal.»"
+      "plantas": {
+       "valley": "La medusa se escurre del estante de las plantas. «Flota y no tiene huesos, pero caza para comer: es un animal.»",
+       "azara": "La medusa se escurre de la caja de las plantas. «Flota y no tiene huesos, pero caza para comer: es un animal.»"
+      }
      }
     },
     {
@@ -107,7 +122,10 @@
      "hard": true,
      "objective": "SV-03",
      "feedback": {
-      "micro": "El moho asoma por el borde del estante, a la vista de todos. «Al principio no se ve, pero crece hasta formar una mancha que se ve a simple vista: es un hongo, como las setas.»"
+      "micro": {
+       "valley": "El moho asoma por el borde del estante, a la vista de todos. «Al principio no se ve, pero crece hasta formar una mancha que se ve a simple vista: es un hongo, como las setas.»",
+       "azara": "El moho asoma por el borde de la caja, a la vista de todos. «Al principio no se ve, pero crece hasta formar una mancha que se ve a simple vista: es un hongo, como las setas.»"
+      }
      }
     },
     {
@@ -153,10 +171,16 @@
      "effects": [
       {
        "gems": 1
+      },
+      {
+       "flag": "bacterias-con-lupa"
       }
      ],
      "feedback": {
-      "animales": "En el estante de los animales no se ve nada: parece vacío. «Son seres vivos de una sola célula, tan pequeños que solo se ven con la lupa. Tienen su propio estante.»"
+      "animales": {
+       "valley": "En el estante de los animales no se ve nada: parece vacío. «Son seres vivos de una sola célula, tan pequeños que solo se ven con la lupa. Tienen su propio estante.»",
+       "azara": "En la caja de los animales no se ve nada: parece vacía. «Son seres vivos de una sola célula, tan pequeños que solo se ven con la lupa. Tienen su propia caja.»"
+      }
      }
     }
    ],

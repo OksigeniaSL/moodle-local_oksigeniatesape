@@ -30,8 +30,8 @@
    "speaker": "buho",
    "image": "bosque-rastro",
    "text": {
-    "valley": "En el barro, junto a un tronco, hay un rastro que se pierde entre las hojas. Al lado, otras marcas que no se parecen a nada. El búho guardián mira el rastro y no dice nada: solo responde sí o no. «Tres preguntas. Hay que elegirlas bien.»",
-    "azara": "El baqueano de la expedición se agacha junto a un rastro que se pierde entre las hojas. Al lado, otras marcas que no se parecen a nada. «Contesto sí o no. Tres preguntas, ni una más.»"
+    "valley": "En el barro, junto a un tronco, hay un rastro que se pierde entre las hojas. Al lado, otras marcas que no se parecen a nada. El búho guardián mira el rastro un buen rato, en silencio. Cuando por fin habla, es para avisar de que solo responde sí o no: «Tres preguntas. Hay que elegirlas bien».",
+    "azara": "El baqueano de la expedición se agacha junto a un rastro que se pierde entre las hojas. Al lado, otras marcas que no se parecen a nada. Lo mira un buen rato, en silencio. Cuando por fin habla, dice muy poco: «Contesto sí o no. Tres preguntas, ni una más»."
    },
    "next": "p1"
   },
@@ -40,8 +40,8 @@
    "speaker": "buho",
    "image": "bosque-rastro",
    "text": {
-    "valley": "El búho guardián nos mira antes de mirar el barro. «Alguien de esta expedición puso una pluma en el nido. Una pluma no es un animal: es lo que un animal deja. Hoy toca separar lo que es de lo que parece.» En el barro, junto a un tronco, hay un rastro que se pierde entre las hojas. El búho solo responde sí o no. «Tres preguntas. Hay que elegirlas bien.»",
-    "azara": "El baqueano nos mira antes de mirar el barro. «Alguien puso una pluma en el cajón de los seres vivos. Una pluma no es un animal: es lo que un animal deja.» Se agacha junto a un rastro que se pierde entre las hojas. «Contesto sí o no. Tres preguntas, ni una más.»"
+    "valley": "El búho guardián nos mira un buen rato, en silencio, antes de mirar el barro. «Alguien de esta expedición puso una pluma en el nido. Una pluma no es un animal: es lo que un animal deja. Hoy toca separar lo que es de lo que parece.» En el barro, junto a un tronco, hay un rastro que se pierde entre las hojas. El búho solo responde sí o no. «Tres preguntas. Hay que elegirlas bien.»",
+    "azara": "El baqueano nos mira un buen rato, en silencio, antes de mirar el barro. «Alguien puso una pluma en el cajón de los seres vivos. Una pluma no es un animal: es lo que un animal deja.» Se agacha junto a un rastro que se pierde entre las hojas. «Contesto sí o no. Tres preguntas, ni una más.»"
    },
    "next": "p1"
   },
@@ -136,7 +136,10 @@
      "locked": "Esto lo haría alguien que sigue rastros: el explorador del equipo.",
      "points": 3,
      "objective": "SV-04",
-     "feedback": "El rastro acaba bajo una hoja mojada, en lo más húmedo del bosque. «Eso no es preguntar», dice el búho, «pero también es saber mirar.» Vive donde hay humedad."
+     "feedback": {
+      "valley": "El rastro acaba bajo una hoja mojada, en lo más húmedo del bosque. «Eso no es preguntar», dice el búho, «pero también es saber mirar.» Vive donde hay humedad.",
+      "azara": "El rastro acaba bajo una hoja mojada, en lo más húmedo del monte. «Eso no es preguntar», dice el baqueano, «pero también es saber mirar.» Vive donde hay humedad."
+     }
     },
     {
      "id": "guardia",
@@ -158,7 +161,10 @@
   "p3": {
    "type": "choice",
    "extra": true,
-   "prompt": "Última pregunta (o dos, si el búho regaló una)",
+   "prompt": {
+    "valley": "Última pregunta (o dos, si el búho regaló una)",
+    "azara": "Última pregunta (o dos, si el baqueano regaló una)"
+   },
    "hints": [
     "Una pregunta que confirme lo que ya sospechamos vale más que una al azar."
    ],
@@ -224,7 +230,10 @@
        "gems": 1
       }
      ],
-     "feedback": "Son manchas de tinta corrida, como las del nido. El búho las mira mucho rato: «Esas no son de ningún animal». Una gema por fijarse antes que nadie."
+     "feedback": {
+      "valley": "Son manchas de tinta corrida, como las del nido. El búho las mira mucho rato: «Esas no son de ningún animal». Una gema por fijarse antes que nadie.",
+      "azara": "Son manchas de tinta corrida, como las del margen del cuaderno. El baqueano las mira mucho rato: «Esas no son de ningún animal». Una gema por fijarse antes que nadie."
+     }
     }
    ],
    "next": "adivinar"
@@ -234,7 +243,10 @@
    "prompt": "¿De quién es el rastro?",
    "image": "cuatro-candidatos",
    "hints": [
-    "Repasemos las respuestas del búho: ¿cuál de los cuatro las cumple todas?",
+    {
+     "valley": "Repasemos las respuestas del búho: ¿cuál de los cuatro las cumple todas?",
+     "azara": "Repasemos las respuestas del baqueano: ¿cuál de los cuatro las cumple todas?"
+    },
     "Caparazón no es lo mismo que concha: uno de los cuatro tiene huesos debajo."
    ],
    "options": [
@@ -277,8 +289,8 @@
    "type": "ending",
    "outcome": "success",
    "text": {
-    "valley": "El nombre del caracol vuelve al Gran Libro y una luciérnaga se enciende sobre el rastro. El búho abre las alas: «Preguntar bien es la mitad de saber». Después mira las otras marcas, las que no se parecen a nada, y por una vez tarda en contestar: «Esas no son de ningún animal. Son de una idea mal escrita». {{creature}} intenta seguirlas y se mancha la nariz de tinta.",
-    "azara": "El baqueano sonríe y el cuaderno recupera su página. «Así trabajaba el naturalista: preguntando a cada rastro.» Mira las otras marcas y tarda en contestar: «Esas no son de ningún bicho. Son de alguien que escribió sin mirar». {{creature}} intenta seguirlas y se mancha la nariz de tinta."
+    "valley": "El nombre del caracol vuelve al Gran Libro y una luciérnaga se enciende sobre el rastro. El búho abre las alas: «Preguntar bien es la mitad de saber». Después mira las otras marcas, las que no se parecen a nada, y tarda todavía más en contestar: «Esas no son de ningún animal. Son de una idea mal escrita». {{creature}} intenta seguirlas y se mancha la nariz de tinta.",
+    "azara": "El baqueano sonríe y el cuaderno recupera su página. «Así trabajaba el naturalista: preguntando a cada rastro.» Mira las otras marcas y tarda todavía más en contestar: «Esas no son de ningún bicho. Son de alguien que escribió sin mirar». {{creature}} intenta seguirlas y se mancha la nariz de tinta."
    },
    "effects": [
     {

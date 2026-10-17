@@ -141,10 +141,18 @@
    "options": [
     {
      "id": "agua",
-     "label": "Mojarla con agua del lago y dejarla a la sombra",
+     "label": {
+      "valley": "Mojarla con agua del lago y dejarla a la sombra",
+      "azara": "Mojarla con agua del río y dejarla a la sombra"
+     },
      "correct": true,
      "points": 2,
      "objective": "SV-04",
+     "effects": [
+      {
+       "flag": "salamandra-a-la-sombra"
+      }
+     ],
      "feedback": "La piel húmeda es su vida: también respira por ella. Se recupera despacio durante el viaje."
     },
     {
@@ -167,6 +175,9 @@
      "effects": [
       {
        "gems": 1
+      },
+      {
+       "flag": "salamandra-a-la-sombra"
       }
      ],
      "feedback": "Con la hoja húmeda, la salamandra vuelve a moverse antes de llegar a la otra orilla. «Un anfibio se cura con agua, no con sol.»"
@@ -181,9 +192,15 @@
      "effects": [
       {
        "gems": 1
+      },
+      {
+       "flag": "salamandra-a-la-sombra"
       }
      ],
-     "feedback": "Nadie la pisa. Mientras vigila, el protector se fija en que la piel se le está quedando seca y sin brillo: la lleva a un rincón a la sombra y le echa agua del lago con las manos. «A salvo de los pies y a salvo del sol: así viaja un anfibio», dice el barquero. Una gema por guardar a quien no puede apartarse."
+     "feedback": {
+      "valley": "Nadie la pisa. Mientras vigila, el protector se fija en que la piel se le está quedando seca y sin brillo: la lleva a un rincón a la sombra y le echa agua del lago con las manos. «A salvo de los pies y a salvo del sol: así viaja un anfibio», dice el barquero. Una gema por guardar a quien no puede apartarse.",
+      "azara": "Nadie la pisa. Mientras vigila, el protector se fija en que la piel se le está quedando seca y sin brillo: la lleva a un rincón a la sombra y le echa agua del río con las manos. «A salvo de los pies y a salvo del sol: así viaja un anfibio», dice el barquero. Una gema por guardar a quien no puede apartarse."
+     }
     },
     {
      "id": "cuidar",
@@ -195,9 +212,15 @@
      "effects": [
       {
        "gems": 1
+      },
+      {
+       "flag": "salamandra-a-la-sombra"
       }
      ],
-     "feedback": "La pata solo tiene un rasguño, pero al sanador le preocupa otra cosa: la piel se le está quedando seca. Se moja las manos en el lago antes de tocarla y la deja en un rincón a la sombra, y al rato vuelve a moverse. «A un anfibio se le toca siempre con las manos mojadas», dice el barquero. Una gema por cuidar con calma."
+     "feedback": {
+      "valley": "La pata solo tiene un rasguño, pero al sanador le preocupa otra cosa: la piel se le está quedando seca. Se moja las manos en el lago antes de tocarla y la deja en un rincón a la sombra, y al rato vuelve a moverse. «A un anfibio se le toca siempre con las manos mojadas», dice el barquero. Una gema por cuidar con calma.",
+      "azara": "La pata solo tiene un rasguño, pero al sanador le preocupa otra cosa: la piel se le está quedando seca. Se moja las manos en el río antes de tocarla y la deja en un rincón a la sombra, y al rato vuelve a moverse. «A un anfibio se le toca siempre con las manos mojadas», dice el barquero. Una gema por cuidar con calma."
+     }
     },
     {
      "id": "recordar",
@@ -209,6 +232,9 @@
      "effects": [
       {
        "gems": 1
+      },
+      {
+       "flag": "salamandra-a-la-sombra"
       }
      ],
      "feedback": "Bajo las piedras y la hojarasca, cerca de los arroyos: donde la tierra nunca se seca. El sabio le prepara a bordo algo parecido, un rincón en sombra con hojas bien mojadas, y al rato la salamandra mueve la pata. Una gema por recordar antes de actuar."
@@ -223,6 +249,9 @@
      "effects": [
       {
        "gems": 1
+      },
+      {
+       "flag": "salamandra-a-la-sombra"
       }
      ],
      "feedback": "Son huellas mojadas que van de la orilla hacia el cubo del barquero, que gotea, y se cortan a medio camino: con la pata lastimada no ha podido llegar. El explorador la lleva hasta allí, a la sombra y junto al agua, y al rato mueve la pata. Una gema por leer lo que cuenta un rastro."

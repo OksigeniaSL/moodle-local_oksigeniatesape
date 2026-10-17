@@ -92,6 +92,9 @@ final class get_scene extends external_api {
             $member = engine::member($char, $params['courseid']);
             $breath = (int) $member->breath;
             $aided = scenes::aided($member, $scene);
+        } else {
+            // On the class screen, the memory of the class.
+            $flags = scenes::class_flags($params['courseid'], (int) $mission->id);
         }
         return [
             'id' => (int) $scene->id,

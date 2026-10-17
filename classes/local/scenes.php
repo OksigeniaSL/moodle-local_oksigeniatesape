@@ -552,6 +552,32 @@ final class scenes {
     }
 
     /**
+     * The marks of a mission the class carries: those that at least half of the students who play left (on the class
+     * screen, the memory of a scene is that of the class; at the end, the Great Book tells it).
+     *
+     * @param int $courseid
+     * @param int $missionid
+     * @return string[]
+     */
+    public static function class_flags(int $courseid, int $missionid): array {
+        global $DB;
+        $where = 'courseid = ? AND leftat = 0 AND status <> ?';
+        $players = $DB->count_records_select(self::T . 'member', $where, [$courseid, 'paused']);
+        if (!$players) {
+            return [];
+        }
+        $marks = $DB->get_records_sql_menu(
+            "SELECT f.code, COUNT(DISTINCT f.charid)
+               FROM {" . self::T . "found} f
+               JOIN {" . self::T . "member} m ON m.charid = f.charid AND m.courseid = ?
+              WHERE f.missionid = ? AND f.kind = 'flag' AND m.leftat = 0 AND m.status <> ?
+           GROUP BY f.code",
+            [$courseid, $missionid, 'paused']
+        );
+        return array_values(array_map('strval', array_keys(array_filter($marks, fn($n) => 2 * (int) $n >= $players))));
+    }
+
+    /**
      * A scene played by the whole class on the class screen: the server plays it again with the decisions of the class
      * (which has what any of its players carries, and their roles), and each player gets what the scene gives that they
      * did not have yet. It is not kept as anybody's own try, so that what the teacher sees of each student stays theirs.
@@ -587,7 +613,8 @@ final class scenes {
         foreach ($members as $member) {
             $chars[$member->id] = $DB->get_record(self::T . 'char', ['id' => $member->charid], '*', MUST_EXIST);
         }
-        $runner = new scene_runner($scene->data, $items, $roles, [], '', true);
+        $flags = self::class_flags($courseid, (int) $scene->missionid);
+        $runner = new scene_runner($scene->data, $items, $roles, $flags, '', true);
         $result = $runner->run($events, $from);
         $rewarded = 0;
         if (in_array($result['outcome'], ['success', 'partial'], true)) {

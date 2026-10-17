@@ -9,7 +9,10 @@
   "SV-01"
  ],
  "minutes": 8,
- "whatif": "¿Y si en el nido hubiera una semilla seca, que parece una piedrecita? ¿Está viva? ¿Cómo se podría comprobar?",
+ "whatif": {
+  "valley": "¿Y si en el nido hubiera una semilla seca, que parece una piedrecita? ¿Está viva? ¿Cómo se podría comprobar?",
+  "azara": "¿Y si en el cajón hubiera una semilla seca, que parece una piedrecita? ¿Está viva? ¿Cómo se podría comprobar?"
+ },
  "locals": {
   "semilla": {
    "py": "una semilla seca de lapacho",
@@ -24,8 +27,8 @@
    "speaker": "druida-mayor",
    "image": "claro-nido",
    "text": {
-    "valley": "La druida mayor señala el nido de ramas en el centro del claro. «Las semillas solo despiertan rodeadas de vida de verdad. En el claro hay cosas que parecen vivas y no lo están, y alguna que parece muerta y no lo está. Caben cinco. A ver quién sabe mirar.» Alrededor del nido hay huellas que no son de ningún animal: manchas de tinta corrida, como las de una página escrita deprisa.",
-    "azara": "El cuaderno dice: «Antes de describir a nadie, distingue lo que vive de lo que no». En el cajón de muestras caben cinco. Hay cosas que parecen vivas y no lo están, y alguna que parece muerta y no lo está. En el margen de la página, manchas de tinta corrida, como de alguien que escribió deprisa."
+    "valley": "La druida mayor señala el nido de ramas en el centro del claro. «Las semillas solo despiertan rodeadas de vida de verdad. En el nido caben cinco cosas. ¿Todo lo que se mueve está vivo? ¿Y todo lo que parece muerto lo está? ¿Tú qué harías para saberlo?». Alrededor del nido hay huellas que no son de ningún animal: manchas de tinta corrida, como las de una página escrita deprisa.",
+    "azara": "El cuaderno dice: «Antes de describir a nadie, distingue lo que vive de lo que no». En el cajón de muestras caben cinco cosas. El naturalista lo mira y pregunta: «¿Todo lo que se mueve está vivo? ¿Y todo lo que parece muerto lo está? ¿Tú qué harías para saberlo?». En el margen de la página, manchas de tinta corrida, como de alguien que escribió deprisa."
    },
    "next": "antes"
   },
@@ -124,14 +127,20 @@
      "correct": true,
      "points": 2,
      "objective": "SV-01",
-     "feedback": "El nido se ilumina. La seta se alimenta de la madera podrida, crece y suelta esporas para que nazcan otras."
+     "feedback": {
+      "valley": "El nido se ilumina. La seta se alimenta de la madera podrida, crece y suelta esporas para que nazcan otras.",
+      "azara": "Las semillas del cajón se calientan un poco. La seta se alimenta de la madera podrida, crece y suelta esporas para que nazcan otras."
+     }
     },
     {
      "id": "cristal",
      "label": "Sacar el cristal que “crece” en una roca húmeda",
      "correct": false,
      "objective": "SV-01",
-     "feedback": "El nido parpadea y se apaga. «Crece, sí, pero no come, no siente y no tiene hijos.»"
+     "feedback": {
+      "valley": "El nido parpadea y se apaga. «Crece, sí, pero no come, no siente y no tiene hijos.»",
+      "azara": "Las semillas del cajón se enfrían. «Crece, sí, pero no come, no siente y no tiene hijos», anota el naturalista."
+     }
     },
     {
      "id": "lombriz",
@@ -139,7 +148,10 @@
      "correct": true,
      "points": 2,
      "objective": "SV-01",
-     "feedback": "El nido se ilumina. La lombriz come restos de hojas, se encoge si la tocan y pone huevos."
+     "feedback": {
+      "valley": "El nido se ilumina. La lombriz come restos de hojas, se encoge si la tocan y pone huevos.",
+      "azara": "Las semillas del cajón se calientan un poco. La lombriz come restos de hojas, se encoge si la tocan y pone huevos."
+     }
     },
     {
      "id": "humo",
@@ -159,7 +171,10 @@
        "flag": "pluma-en-el-nido"
       }
      ],
-     "feedback": "El nido duda y parpadea. «Viene de un ser vivo… pero ¿come? ¿Crece? ¿Tendrá crías?» Una buena discusión para el equipo. El búho del bosque se acordará de esta pluma."
+     "feedback": {
+      "valley": "El nido duda y parpadea. «Viene de un ser vivo… pero ¿come? ¿Crece? ¿Tendrá crías?» Una buena discusión para el equipo. El búho del bosque se acordará de esta pluma.",
+      "azara": "Las semillas del cajón ni se calientan ni se enfrían. «Viene de un ser vivo… pero ¿come? ¿Crece? ¿Tendrá crías?» Una buena discusión para el equipo. El baqueano se acordará de esta pluma."
+     }
     },
     {
      "id": "musgo",
@@ -167,7 +182,10 @@
      "correct": true,
      "points": 2,
      "objective": "SV-01",
-     "feedback": "El nido se ilumina. El musgo es una planta pequeña: fabrica su alimento con la luz y bebe agua."
+     "feedback": {
+      "valley": "El nido se ilumina. El musgo es una planta pequeña: fabrica su alimento con la luz y bebe agua.",
+      "azara": "Las semillas del cajón se calientan un poco. El musgo es una planta pequeña: fabrica su alimento con la luz y bebe agua."
+     }
     },
     {
      "id": "semilla",
@@ -175,7 +193,15 @@
      "correct": true,
      "points": 2,
      "objective": "SV-01",
-     "feedback": "Parece muerta, pero el nido se ilumina despacio. Dentro guarda una planta plegada que despertará con agua."
+     "effects": [
+      {
+       "flag": "semilla-en-el-nido"
+      }
+     ],
+     "feedback": {
+      "valley": "Parece muerta, pero el nido se ilumina despacio. Dentro guarda una planta plegada que despertará con agua.",
+      "azara": "Parece muerta, pero las semillas del cajón se calientan despacio. Dentro guarda una planta plegada que despertará con agua."
+     }
     },
     {
      "id": "pompa",
@@ -190,7 +216,10 @@
      "correct": true,
      "points": 2,
      "objective": "SV-01",
-     "feedback": "El nido se ilumina. La hormiga come, trabaja con las demás y nace de un huevo."
+     "feedback": {
+      "valley": "El nido se ilumina. La hormiga come, trabaja con las demás y nace de un huevo.",
+      "azara": "Las semillas del cajón se calientan un poco. La hormiga come, trabaja con las demás y nace de un huevo."
+     }
     },
     {
      "id": "piedra",
@@ -205,7 +234,10 @@
      "correct": true,
      "points": 2,
      "objective": "SV-01",
-     "feedback": "El nido se ilumina. La rana no se mueve, pero respira, caza mosquitos y pone huevos en la charca."
+     "feedback": {
+      "valley": "El nido se ilumina. La rana no se mueve, pero respira, caza mosquitos y pone huevos en la charca.",
+      "azara": "Las semillas del cajón se calientan un poco. La rana no se mueve, pero respira, caza mosquitos y pone huevos en la charca."
+     }
     },
     {
      "id": "gota",
@@ -217,7 +249,10 @@
       "teamrole": "sage"
      },
      "locked": "Esto lo haría alguien que sabe mirar de cerca: el sabio del equipo tiene lupa.",
-     "feedback": "En la gota hay seres diminutos que nadan y se parten en dos. El nido se ilumina: vida que no se ve a simple vista."
+     "feedback": {
+      "valley": "En la gota hay seres diminutos que nadan y se parten en dos. El nido se ilumina: vida que no se ve a simple vista.",
+      "azara": "En la gota hay seres diminutos que nadan y se parten en dos. Las semillas del cajón se calientan un poco: vida que no se ve a simple vista."
+     }
     }
    ],
    "next": "resultado"
@@ -275,8 +310,8 @@
    "type": "ending",
    "outcome": "partial",
    "text": {
-    "valley": "Las semillas tiemblan, pero la tuya apenas se calienta: hay algo en el nido que no está vivo y le roba calor. La druida mayor la arropa: «Despertará mañana. O hoy mismo, si el nido vuelve a tener solo compañía de verdad». El Gran Libro recupera su primera página, un poco arrugada.",
-    "azara": "Las semillas germinan, pero la tuya apenas se calienta: algo del cajón no estaba vivo y le robó calor. «Despertará mañana», anota el naturalista, «o hoy mismo, si revisamos el cajón». El cuaderno recupera su primera página, un poco arrugada."
+    "valley": "Las semillas tiemblan, pero la tuya apenas se calienta: hay algo en el nido que no está vivo y le roba calor. La druida mayor la arropa: «Despertará mañana. ¿O hoy mismo? ¿Qué cambiarías tú en el nido?». El Gran Libro recupera su primera página, un poco arrugada.",
+    "azara": "Las semillas germinan, pero la tuya apenas se calienta: algo del cajón no estaba vivo y le robó calor. «Despertará mañana», anota el naturalista. «¿O hoy mismo? ¿Qué cambiarías tú en el cajón?». El cuaderno recupera su primera página, un poco arrugada."
    },
    "born": {
     "valley": "Sale {{creature}} con los ojos cerrados: nace dormida.",
@@ -300,9 +335,15 @@
   "duerme": {
    "type": "ending",
    "outcome": "retry",
-   "text": "El nido sigue a oscuras: hay demasiadas cosas que no están vivas a su alrededor. La druida mayor devuelve a la expedición al claro: «¿Qué hacen los seres vivos que no hacen las piedras ni el humo?».",
+   "text": {
+    "valley": "El nido sigue a oscuras: hay demasiadas cosas que no están vivas a su alrededor. La druida mayor devuelve a la expedición al claro: «¿Qué hacen los seres vivos que no hacen las piedras ni el humo?».",
+    "azara": "El cajón sigue frío: hay demasiadas cosas que no están vivas dentro. El naturalista lo vacía y pregunta: «¿Qué hacen los seres vivos que no hacen las piedras ni el humo?»."
+   },
    "retry": "elegir",
-   "keep": "Junto al nido, solo lo que nace, se alimenta, crece y se reproduce. Las piedras y el humo, no."
+   "keep": {
+    "valley": "Junto al nido, solo lo que nace, se alimenta, crece y se reproduce. Las piedras y el humo, no.",
+    "azara": "En el cajón, solo lo que nace, se alimenta, crece y se reproduce. Las piedras y el humo, no."
+   }
   }
  },
  "method": "SV-07"

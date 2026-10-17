@@ -814,25 +814,14 @@ final class view {
      * @return string[]
      */
     public static function remembered(int $courseid, \stdClass $mission): array {
-        global $DB;
         $lines = $mission->data['endingmemory'] ?? [];
         if (!$lines) {
             return [];
         }
-        $players = $DB->count_records(self::T . 'member', ['courseid' => $courseid, 'leftat' => 0]);
-        if (!$players) {
-            return [];
-        }
-        $marks = $DB->get_records_sql_menu(
-            "SELECT code, COUNT(DISTINCT charid)
-               FROM {" . self::T . "found}
-              WHERE missionid = ? AND kind = 'flag'
-           GROUP BY code",
-            [$mission->id]
-        );
+        $marks = scenes::class_flags($courseid, (int) $mission->id);
         $out = [];
         foreach ($lines as $line) {
-            if (2 * (int) ($marks[$line['flag'] ?? ''] ?? 0) >= $players) {
+            if (in_array($line['flag'] ?? '', $marks, true)) {
                 $out[] = missions::text($line['text'] ?? '', $mission->skin, $mission->variant);
             }
         }

@@ -9,7 +9,10 @@
   "SV-06"
  ],
  "minutes": 5,
- "whatif": "¿Y si el lago se quedara sin luz, como tapado por una manta enorme? ¿Qué seres vivos lo notarían primero?",
+ "whatif": {
+  "valley": "¿Y si el lago se quedara sin luz, como tapado por una manta enorme? ¿Qué seres vivos lo notarían primero?",
+  "azara": "¿Y si el río se quedara sin luz, como tapado por una manta enorme? ¿Qué seres vivos lo notarían primero?"
+ },
  "start": "memoria",
  "nodes": {
   "memoria": {
@@ -47,24 +50,39 @@
   "anotar": {
    "type": "classify",
    "prompt": "¿Dónde apuntamos cada cosa?",
-   "aid": "En el cuaderno: lo vivo nace, se alimenta y crece; lo no vivo del lago es lo que los seres vivos necesitan, como el agua o la luz; y lo que no es del lago lo trajo alguien de fuera.",
+   "aid": {
+    "valley": "En el cuaderno: lo vivo nace, se alimenta y crece; lo no vivo del lago es lo que los seres vivos necesitan, como el agua o la luz; y lo que no es del lago lo trajo alguien de fuera.",
+    "azara": "En el cuaderno: lo vivo nace, se alimenta y crece; lo no vivo del río es lo que los seres vivos necesitan, como el agua o la luz; y lo que no es del río lo trajo alguien de fuera."
+   },
    "retry": "item",
    "hints": [
-    "Lo no vivo también forma parte del lago si los seres vivos lo necesitan.",
+    {
+     "valley": "Lo no vivo también forma parte del lago si los seres vivos lo necesitan.",
+     "azara": "Lo no vivo también forma parte del río si los seres vivos lo necesitan."
+    },
     "¿Estaba aquí antes que nosotros, o lo trajo alguien de fuera?"
    ],
    "bins": [
     {
      "id": "vivo",
-     "label": "Lo vivo del lago"
+     "label": {
+      "valley": "Lo vivo del lago",
+      "azara": "Lo vivo del río"
+     }
     },
     {
      "id": "novivo",
-     "label": "Lo no vivo del lago"
+     "label": {
+      "valley": "Lo no vivo del lago",
+      "azara": "Lo no vivo del río"
+     }
     },
     {
      "id": "fuera",
-     "label": "No es del lago"
+     "label": {
+      "valley": "No es del lago",
+      "azara": "No es del río"
+     }
     }
    ],
    "items": [
@@ -139,7 +157,10 @@
      },
      "locked": "Solo las vio de cerca quien pasó la noche junto al agua quieta.",
      "feedback": {
-      "fuera": "«Pican, pero son del lago: alimento de peces, ranas y murciélagos.»",
+      "fuera": {
+       "valley": "«Pican, pero son del lago: alimento de peces, ranas y murciélagos.»",
+       "azara": "«Pican, pero son del río: alimento de peces, ranas y murciélagos.»"
+      },
       "novivo": "«Se mueven, comen y se convierten en mosquitos: están vivas, por desgracia para la expedición.»"
      }
     },
@@ -149,7 +170,10 @@
      "bin": "fuera",
      "objective": "SV-06",
      "feedback": {
-      "novivo": "«La lata no forma parte del lago: alguien la dejó aquí.» La garza la saca con el pico."
+      "novivo": {
+       "valley": "«La lata no forma parte del lago: alguien la dejó aquí.» La garza la saca con el pico.",
+       "azara": "«La lata no forma parte del río: alguien la dejó aquí.» La garza la saca con el pico."
+      }
      }
     }
    ],
@@ -157,9 +181,15 @@
   },
   "orilla": {
    "type": "choice",
-   "prompt": "La garza pregunta: «Si el agua del lago se calentara mucho, ¿quién lo notaría?»",
+   "prompt": {
+    "valley": "La garza pregunta: «Si el agua del lago se calentara mucho, ¿quién lo notaría?»",
+    "azara": "La garza pregunta: «Si el agua del río se calentara mucho, ¿quién lo notaría?»"
+   },
    "hints": [
-    "Lo vivo del lago necesita lo no vivo del lago."
+    {
+     "valley": "Lo vivo del lago necesita lo no vivo del lago.",
+     "azara": "Lo vivo del río necesita lo no vivo del río."
+    }
    ],
    "options": [
     {
@@ -175,7 +205,10 @@
      "label": "—Nadie: el agua no está viva.",
      "correct": false,
      "objective": "SV-06",
-     "feedback": "En un rincón tibio de la orilla, un pez sube a la superficie y abre y cierra la boca, como si le faltara el aire. La garza lo señala con el pico: «El agua no está viva, pero todo lo vivo del lago la necesita como es. En un ecosistema todo está unido»."
+     "feedback": {
+      "valley": "En un rincón tibio de la orilla, un pez sube a la superficie y abre y cierra la boca, como si le faltara el aire. La garza lo señala con el pico: «El agua no está viva, pero todo lo vivo del lago la necesita como es. En un ecosistema todo está unido».",
+      "azara": "En un rincón tibio de la orilla, un pez sube a la superficie y abre y cierra la boca, como si le faltara el aire. La garza lo señala con el pico: «El agua no está viva, pero todo lo vivo del río la necesita como es. En un ecosistema todo está unido»."
+     }
     },
     {
      "id": "explorador",
@@ -196,7 +229,10 @@
     },
     {
      "id": "renacuajos",
-     "label": "Devolver al lago los renacuajos de un charco que se seca al sol",
+     "label": {
+      "valley": "Devolver al lago los renacuajos de un charco que se seca al sol",
+      "azara": "Devolver al río los renacuajos de un charco que se seca al sol"
+     },
      "requires": {
       "role": "protector"
      },
@@ -206,7 +242,10 @@
        "gems": 1
       }
      ],
-     "feedback": "En el charco queda poca agua y está tibia: los renacuajos suben una y otra vez a tomar aire. Devueltos al lago, a la sombra de los juncos, se quedan abajo, tranquilos. Una gema por ponerlos a salvo."
+     "feedback": {
+      "valley": "En el charco queda poca agua y está tibia: los renacuajos suben una y otra vez a tomar aire. Devueltos al lago, a la sombra de los juncos, se quedan abajo, tranquilos. Una gema por ponerlos a salvo.",
+      "azara": "En el charco queda poca agua y está tibia: los renacuajos suben una y otra vez a tomar aire. Devueltos al río, a la sombra de los juncos, se quedan abajo, tranquilos. Una gema por ponerlos a salvo."
+     }
     },
     {
      "id": "sombra",

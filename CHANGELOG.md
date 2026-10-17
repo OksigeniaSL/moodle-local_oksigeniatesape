@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.67.0 (2026-10-17)
+
+Block 1.11 of the plan, content (mission v28):
+
+- **The places remember**: twelve marks in the pilot mission (eight new: the seed in the nest, the bacteria under the
+  lens, the salamander in the shade, milk for the plants, asking Doña Hebra, the dry high ground, the green branches,
+  beside Doña Hebra); each place tells «What happened here» with those of the student.
+- **The class screen plays with the marks of the class** (those at least half of it has), so that the memory of a
+  scene also shows there; and **the end of the battle remembers** what the expedition did, in the voice of the Great
+  Book.
+- **Characters who want something**: Doña Hebra counts pages and does not look, dodges the question about the
+  handwriting and confesses differently if she was asked (the first dilemma: what the class decided shows in the
+  results); the owl takes longer each time and in the tower does not answer; the druid gives the questions back.
+- **The skin of Azara, without names of the valley** in the core scenes.
+- **No «Play» buttons**: «Go in», «Go in again» and «Try it again».
+
 ## 0.66.0 (2026-10-17)
 
 Block 1.6 of the plan: the place and the map.

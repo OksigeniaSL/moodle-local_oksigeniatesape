@@ -71,6 +71,11 @@
      "label": "Regarlas con leche",
      "correct": false,
      "objective": "SV-05",
+     "effects": [
+      {
+       "flag": "leche-a-las-plantas"
+      }
+     ],
      "feedback": "La maceta huele mal y aparece moho. «Las plantas no comen como nosotros.»"
     },
     {
@@ -93,7 +98,12 @@
     {
      "id": "oscuridad",
      "label": "Taparlas para que descansen a oscuras",
-     "look": "Las plantas del sótano están pálidas y estiradas hacia la única rendija por la que entra luz.",
+     "look": {
+      "text": {
+       "valley": "Las plantas del sótano están pálidas y estiradas hacia la única rendija por la que entra luz.",
+       "azara": "Las plantas del almacén están pálidas y estiradas hacia la única rendija por la que entra luz."
+      }
+     },
      "correct": false,
      "objective": "SV-05",
      "feedback": "Al volver, la planta está aún más larga y pálida: crece estirándose para buscar una luz que no encuentra."
@@ -121,7 +131,10 @@
      "label": "—Quien las escribió sabría lo que hacía. Nos fiamos.",
      "correct": false,
      "objective": "SV-07",
-     "feedback": "La etiqueta dice «cactus» y la planta es una lechuga. De lo que se da por cierto sin comprobar se alimenta el Embrollo."
+     "feedback": {
+      "valley": "La etiqueta dice «cactus» y la planta es una lechuga. De lo que se da por cierto sin comprobar se alimenta el Embrollo.",
+      "azara": "La etiqueta dice «cactus» y la planta es una lechuga. De lo que se da por cierto sin comprobar salen las notas mezcladas."
+     }
     },
     {
      "id": "guardar",
@@ -142,7 +155,10 @@
     },
     {
      "id": "letra",
-     "label": "Comparar la letra de las etiquetas con la de las páginas del Gran Libro",
+     "label": {
+      "valley": "Comparar la letra de las etiquetas con la de las páginas del Gran Libro",
+      "azara": "Comparar la letra de las notas de las macetas con la de las notas del cuaderno"
+     },
      "requires": {
       "role": "scout"
      },
@@ -152,7 +168,10 @@
        "page": "la-letra"
       }
      ],
-     "feedback": "Es la misma letra apurada de las páginas copiadas la noche del enredo. Una página nueva para el Gran Libro."
+     "feedback": {
+      "valley": "Es la misma letra apurada de las páginas copiadas la noche del enredo. Una página nueva para el Gran Libro.",
+      "azara": "Es la misma letra apurada de las notas copiadas la noche del traslado. Una página nueva para el cuaderno."
+     }
     },
     {
      "id": "recordar",
@@ -169,13 +188,50 @@
      "feedback": "La etiqueta dice «cactus». Un cactus tiene el tallo grueso y con espinas; esta planta tiene hojas anchas y blandas: es una lechuga. «Lo que se sabe bien desenreda lo que se escribió deprisa», dice la jardinera. Una gema por recordar antes de creer."
     }
    ],
+   "next": "hebra"
+  },
+  "hebra": {
+   "type": "choice",
+   "prompt": {
+    "valley": "Doña Hebra ha bajado al sótano detrás de la expedición. Se queda en el último escalón, lejos de las etiquetas, contando páginas con los dedos. ¿Le decimos algo?",
+    "azara": "La archivera ha entrado en el almacén detrás de la expedición. Se queda junto a la puerta, lejos de las macetas, contando páginas con los dedos. ¿Le decimos algo?"
+   },
+   "options": [
+    {
+     "id": "preguntar",
+     "label": {
+      "valley": "Preguntarle a Doña Hebra de quién es la letra de las etiquetas",
+      "azara": "Preguntarle a la archivera de quién es la letra de las notas"
+     },
+     "effects": [
+      {
+       "flag": "hebra-esquiva"
+      }
+     ],
+     "feedback": {
+      "valley": "Doña Hebra se mete las manos manchadas de tinta en los bolsillos. «¿La letra? Pues… una letra apurada, como tantas. ¡Huy, qué tarde! Los libros no se ordenan solos.» Y sube la escalera de dos en dos.",
+      "azara": "La archivera se mete las manos manchadas de tinta en los bolsillos. «¿La letra? Pues… una letra apurada, como tantas. ¡Huy, qué tarde! Las cajas no se cierran solas.» Y sale del almacén a toda prisa."
+     }
+    },
+    {
+     "id": "seguir",
+     "label": "Dejarla tranquila y seguir con las plantas",
+     "feedback": {
+      "valley": "Doña Hebra sigue en su escalón, contando páginas. Cada vez que alguien se acerca a las etiquetas, mira hacia otro lado.",
+      "azara": "La archivera sigue junto a la puerta, contando páginas. Cada vez que alguien se acerca a las notas, mira hacia otro lado."
+     }
+    }
+   ],
    "next": "apuesta"
   },
   "apuesta": {
    "type": "choice",
    "prompt": "Antes de mirar el experimento de verdad: ¿qué habrá pasado con las semillas que pusimos a oscuras?",
    "hints": [
-    "Pensemos en las plantas del sótano: ¿qué les pasó sin luz?"
+    {
+     "valley": "Pensemos en las plantas del sótano: ¿qué les pasó sin luz?",
+     "azara": "Pensemos en las plantas del almacén: ¿qué les pasó sin luz?"
+    }
    ],
    "options": [
     {
@@ -292,7 +348,10 @@
    "outcome": "retry",
    "text": "Las plantas siguen pálidas y una se ha marchitado del todo. La jardinera las riega mientras pregunta: «¿Qué necesita una hoja para fabricar el alimento de la planta?».",
    "retry": "elegir",
-   "keep": "Las plantas del sótano ya tienen tierra en las macetas y siguen pálidas: lo que les falta no está en la maceta."
+   "keep": {
+    "valley": "Las plantas del sótano ya tienen tierra en las macetas y siguen pálidas: lo que les falta no está en la maceta.",
+    "azara": "Las plantas del almacén ya tienen tierra en las macetas y siguen pálidas: lo que les falta no está en la maceta."
+   }
   }
  },
  "method": "SV-07"

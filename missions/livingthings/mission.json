@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 27,
+ "version": 28,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 28,
+   "kind": "improvement",
+   "date": "2026-10-17",
+   "text": "Los lugares recuerdan lo que hizo cada uno y el final de la batalla, lo que hizo la clase; Doña Hebra esquiva y confiesa distinto, el búho tarda cada vez más y la druida devuelve las preguntas; la piel de Azara, sin nombres del valle en las escenas de núcleo"
+  },
   {
    "version": 27,
    "kind": "improvement",
@@ -656,6 +662,64 @@
   "valley": "Sin enredos que lanzar, el Embrollo se encoge hasta quedarse en una madeja pequeña, que todavía rebulle. La druida mayor la guarda en un frasco y lo mira al trasluz. «No lo hemos destruido. Lo hemos ordenado. Y los nudos, ya se sabe, vuelven a hacerse solos: siempre habrá algo que demos por cierto sin mirar. Por eso existen los naturalistas.» La linterna de la torre se enciende y el Gran Libro queda completo, con las páginas de esta expedición dentro. Las criaturas se estiran, crecen un poco… y se quedan mirando el frasco: del tapón sale un hilo finísimo que se pierde ventana afuera, montaña arriba.",
   "azara": "Las últimas notas mezcladas quedan en su sitio. El naturalista cierra el cuaderno y lo mira al trasluz: entre las páginas asoma un hilo de tinta que sigue más allá de la última, hacia tierras que todavía no están dibujadas. «Un cuaderno nunca se acaba», dice. «Siempre hay una página que comprobar.» Como hizo Azara con sus Apuntamientos, la expedición va a compartir lo que ha descubierto. Las criaturas crecen un poco y se quedan mirando el hilo."
  },
+ "endingmemory": [
+  {
+   "flag": "semilla-en-el-nido",
+   "text": {
+    "valley": "En el claro, esta expedición llevó al nido una semilla que parecía muerta, y la semilla despertó.",
+    "azara": "En el campamento, esta expedición guardó en el cajón una semilla seca que parecía muerta, y la semilla germinó."
+   }
+  },
+  {
+   "flag": "pluma-en-el-nido",
+   "text": {
+    "valley": "En el claro, esta expedición puso una pluma en el nido y la discutió hasta saber que no era un ser vivo.",
+    "azara": "En el campamento, esta expedición guardó una pluma entre los seres vivos y la discutió hasta saber que no era uno de ellos."
+   }
+  },
+  {
+   "flag": "pregunta-buena",
+   "text": {
+    "valley": "En el bosque, esta expedición preguntó bien al búho: lo primero, si el animal del rastro tenía huesos.",
+    "azara": "En el monte, esta expedición preguntó bien al baqueano: lo primero, si el animal del rastro tenía huesos."
+   }
+  },
+  {
+   "flag": "salamandra-a-la-sombra",
+   "text": {
+    "valley": "Al cruzar el lago, esta expedición llevó a la sombra a una salamandra herida y le mojó la piel.",
+    "azara": "Al cruzar el río, esta expedición llevó a la sombra a una salamandra herida y le mojó la piel."
+   }
+  },
+  {
+   "flag": "hebra-esquiva",
+   "text": {
+    "valley": "En el sótano, esta expedición le preguntó a Doña Hebra de quién era la letra de las etiquetas. Ella tardó en contestar, pero contestó.",
+    "azara": "En el almacén, esta expedición le preguntó a la archivera de quién era la letra de las notas. Ella tardó en contestar, pero contestó."
+   }
+  },
+  {
+   "flag": "mosquitos",
+   "text": {
+    "valley": "A orillas del lago, esta expedición acampó junto al agua quieta, y los mosquitos no la dejaron dormir.",
+    "azara": "A orillas del río, esta expedición acampó junto al agua quieta, y los mosquitos no la dejaron dormir."
+   }
+  },
+  {
+   "flag": "alto-seco",
+   "text": {
+    "valley": "A orillas del lago, esta expedición durmió en el alto seco y oyó cazar a un búho.",
+    "azara": "A orillas del río, esta expedición durmió en el alto seco y oyó cazar a un búho."
+   }
+  },
+  {
+   "flag": "junto-a-hebra",
+   "text": {
+    "valley": "La víspera de subir a la torre, esta expedición se quedó al lado de Doña Hebra, y nadie la señaló.",
+    "azara": "Antes de entregar el cuaderno, esta expedición se quedó al lado de la archivera, y nadie la señaló."
+   }
+  }
+ ],
  "chapters": [
   {
    "code": "claro",
@@ -668,6 +732,29 @@
     "azara": "La primera noche de la expedición. El cuaderno pide distinguir lo que vive de lo que no."
    },
    "offscreen": "El rastreo del patio, inventario de seres vivos e inertes",
+   "memory": [
+    {
+     "flag": "semilla-en-el-nido",
+     "text": {
+      "valley": "Llevamos al nido una semilla que parecía muerta, y el nido se iluminó despacio.",
+      "azara": "Guardamos en el cajón una semilla seca que parecía muerta. Estaba viva."
+     }
+    },
+    {
+     "flag": "pluma-en-el-nido",
+     "text": {
+      "valley": "Llevamos una pluma al nido. El nido dudó, y hubo mucho que discutir.",
+      "azara": "Guardamos una pluma en el cajón de muestras, y hubo mucho que discutir."
+     }
+    },
+    {
+     "flag": "criatura-dormida",
+     "text": {
+      "valley": "La criatura nació dormida: algo del nido no estaba vivo y le robó calor.",
+      "azara": "La criatura nació dormida: algo del cajón no estaba vivo y le robó calor."
+     }
+    }
+   ],
    "pacts": [
     "Traer de casa una hoja, una semilla o una piedra para el inventario",
     "Apuntar en el cuaderno de campo tres seres vivos del camino a clase",
@@ -755,6 +842,15 @@
     "azara": "Las muestras viajan en cajas por grupos, pero se han caído las etiquetas."
    },
    "offscreen": "Al rincón de tu reino, juego en el patio",
+   "memory": [
+    {
+     "flag": "bacterias-con-lupa",
+     "text": {
+      "valley": "Con la lupa vimos las bacterias del yogur y les dimos su propio estante.",
+      "azara": "Con la lupa vimos las bacterias del yogur y les dimos su propia caja."
+     }
+    }
+   ],
    "pacts": [
     "Recortar en casa las tarjetas de los seres vivos del equipo",
     "Buscar un hongo de verdad, en la cocina o en el parque, y contarlo en clase",
@@ -817,6 +913,22 @@
     "azara": "En el cuaderno hay descripciones de animales sin nombre."
    },
    "offscreen": "Lupas de cartón y caza de bichos, sin dañarlos",
+   "memory": [
+    {
+     "flag": "pregunta-buena",
+     "text": {
+      "valley": "Lo primero que le preguntamos al búho fue si el animal del rastro tenía huesos. Nos regaló una pregunta más.",
+      "azara": "Lo primero que le preguntamos al baqueano fue si el animal del rastro tenía huesos. Nos regaló una pregunta más."
+     }
+    },
+    {
+     "flag": "salamandra-a-la-sombra",
+     "text": {
+      "valley": "Una salamandra con una pata lastimada cruzó el lago con nosotros, a la sombra y con la piel mojada.",
+      "azara": "Una salamandra con una pata lastimada cruzó el río con nosotros, a la sombra y con la piel mojada."
+     }
+    }
+   ],
    "pacts": [
     "Traer hecha de casa una lupa o un visor de cartón",
     "Dibujar o fotografiar un invertebrado sin tocarlo",
@@ -889,6 +1001,22 @@
     "azara": "Las plantas que viajaron a oscuras han salido pálidas."
    },
    "offscreen": "El experimento de la luz, semillas con luz y sin luz",
+   "memory": [
+    {
+     "flag": "leche-a-las-plantas",
+     "text": {
+      "valley": "Regamos las plantas con leche, como había hecho el Embrollo, y salió moho en la maceta.",
+      "azara": "Regamos las plantas con leche, como alguien había hecho antes, y salió moho en la maceta."
+     }
+    },
+    {
+     "flag": "hebra-esquiva",
+     "text": {
+      "valley": "Le preguntamos a Doña Hebra de quién era la letra de las etiquetas. Cambió de tema y se fue escaleras arriba.",
+      "azara": "Le preguntamos a la archivera de quién era la letra de las notas. Cambió de tema y se fue a toda prisa."
+     }
+    }
+   ],
    "pacts": [
     "Regar y medir las semillas del experimento los días de su turno",
     "Apuntar en la tabla del equipo lo medido cada día",
@@ -970,6 +1098,29 @@
     "azara": "La expedición llega a la orilla de un gran río al caer la tarde."
    },
    "offscreen": "La carrera de la cadena, un juego de atrapar entre productores y consumidores",
+   "memory": [
+    {
+     "flag": "mosquitos",
+     "text": {
+      "valley": "Acampamos junto al agua quieta: fue una noche larga, llena de mosquitos.",
+      "azara": "Acampamos junto al agua quieta: fue una noche larga, llena de mosquitos."
+     }
+    },
+    {
+     "flag": "alto-seco",
+     "text": {
+      "valley": "Dormimos en el alto seco, entre arbustos. De madrugada, un búho cazó un ratón.",
+      "azara": "Dormimos en el alto seco, entre arbustos. De madrugada, un búho cazó un ratón."
+     }
+    },
+    {
+     "flag": "ramas-verdes",
+     "text": {
+      "valley": "Cortamos ramas verdes para el refugio. Al secarse, se encogieron y el techo se hundió.",
+      "azara": "Cortamos ramas verdes para el refugio. Al secarse, se encogieron y el techo se hundió."
+     }
+    }
+   ],
    "pacts": [
     "Traer dibujada en una tira una cadena alimentaria del entorno",
     "Leer lo del lince o lo del tagua y traer una pregunta",
@@ -1049,6 +1200,15 @@
     "azara": "Antes de entregar el cuaderno hay que corregir lo que se mezcló."
    },
    "offscreen": "La exposición del naturalista, la guía de campo de la clase",
+   "memory": [
+    {
+     "flag": "junto-a-hebra",
+     "text": {
+      "valley": "Doña Hebra nos contó que las páginas copiadas de memoria eran suyas, y no la dejamos sola.",
+      "azara": "La archivera nos contó que las notas copiadas de memoria eran suyas, y no la dejamos sola."
+     }
+    }
+   ],
    "pacts": [
     "Terminar la ficha de su especie en la guía de campo",
     "Comprobar un dato de la ficha de otro equipo y decir de dónde sale",

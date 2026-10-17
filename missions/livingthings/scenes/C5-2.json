@@ -10,7 +10,10 @@
   "SV-08"
  ],
  "minutes": 10,
- "whatif": "¿Y si en el lago no hubiera mosquitos? Molestan mucho, pero… ¿a quién le faltaría comida?",
+ "whatif": {
+  "valley": "¿Y si en el lago no hubiera mosquitos? Molestan mucho, pero… ¿a quién le faltaría comida?",
+  "azara": "¿Y si en el río no hubiera mosquitos? Molestan mucho, pero… ¿a quién le faltaría comida?"
+ },
  "locals": {
   "hojas": {
    "py": "hojas grandes de palmera",
@@ -29,7 +32,10 @@
    "type": "story",
    "speaker": "narrador",
    "image": "lago-atardecer",
-   "text": "La expedición llega a la orilla del Gran Lago y empieza a oscurecer. Hay que pasar aquí la noche. Lo primero, decidir dónde acampar.",
+   "text": {
+    "valley": "La expedición llega a la orilla del Gran Lago y empieza a oscurecer. Hay que pasar aquí la noche. Lo primero, decidir dónde acampar.",
+    "azara": "La expedición llega a la orilla de un gran río y empieza a oscurecer. Hay que pasar aquí la noche. Lo primero, decidir dónde acampar."
+   },
    "next": "lugar"
   },
   "lugar": {
@@ -66,6 +72,11 @@
      "label": "Acampar en un alto seco entre arbustos",
      "points": 2,
      "objective": "SV-06",
+     "effects": [
+      {
+       "flag": "alto-seco"
+      }
+     ],
      "feedback": "Hay que subir un poco, pero el suelo está seco.",
      "next": "noche-alto"
     },
@@ -77,6 +88,11 @@
      },
      "points": 2,
      "objective": "SV-06",
+     "effects": [
+      {
+       "flag": "alto-seco"
+      }
+     ],
      "feedback": "Esta vez, ni un mosquito. Lo que se vive también enseña.",
      "next": "noche-alto"
     },
@@ -90,6 +106,9 @@
      "effects": [
       {
        "gems": 1
+      },
+      {
+       "flag": "alto-seco"
       }
      ],
      "feedback": "En la ronda se ve todo: sobre el agua quieta bailan nubecillas de mosquitos; al pie del árbol hueco pasa una fila de hormigas cargadas; en el alto, el suelo está seco. La expedición acampa arriba. Una gema por la ronda.",
@@ -147,13 +166,13 @@
      "feedback": "El picor se calma y vuelve el ánimo. Mientras tanto, agachados y muy quietos junto al agua, se ve de cerca lo que se mueve: larvas de mosquito que suben a respirar por un tubito. Así empezaron las de anoche. Una gema por cuidar a la expedición."
     }
    ],
-   "next": "refugio"
+   "next": "memoria-buho"
   },
   "noche-hormigas": {
    "type": "story",
    "image": "noche-hormigas",
    "text": "Al amanecer falta un poco de cada cosa. {{local:hormigas}}",
-   "next": "refugio"
+   "next": "memoria-buho"
   },
   "noche-alto": {
    "type": "story",
@@ -203,13 +222,19 @@
     },
     {
      "id": "conocido",
-     "label": "Llamar al búho en voz baja, que nos conoce del bosque",
+     "label": {
+      "valley": "Llamar al búho en voz baja, que nos conoce del bosque",
+      "azara": "Preguntar en voz baja al baqueano qué ha sido eso"
+     },
      "requires": {
       "flag": "pregunta-buena"
      },
      "points": 2,
      "objective": "SV-06",
-     "feedback": "El búho baja a una rama cercana. «Los que preguntan bien. Esta noche, un ratón. Mañana, bajo la rama, una bolita gris con sus huesos: una egagrópila.»"
+     "feedback": {
+      "valley": "El búho tarda tanto en contestar que parece dormido. Al fin baja a una rama cercana: «Los que preguntan bien. Esta noche, un ratón. Mañana, bajo la rama, una bolita gris con sus huesos: una egagrópila».",
+      "azara": "El baqueano tarda tanto en contestar que parece dormido. Al fin señala una rama, donde un búho se traga un ratón entero: «Los que preguntan bien. Mañana, bajo esa rama, una bolita gris con sus huesos: una egagrópila»."
+     }
     },
     {
      "id": "bolitas",
@@ -224,9 +249,44 @@
        "page": "egagropilas"
       }
      ],
-     "feedback": "Entre las raíces, unas bolitas grises y secas. Dentro, huesecillos y pelo: lo que el búho no digiere. Una página nueva para el Gran Libro."
+     "feedback": {
+      "valley": "Entre las raíces, unas bolitas grises y secas. Dentro, huesecillos y pelo: lo que el búho no digiere. Una página nueva para el Gran Libro.",
+      "azara": "Entre las raíces, unas bolitas grises y secas. Dentro, huesecillos y pelo: lo que el búho no digiere. Una página nueva para el cuaderno."
+     }
     }
    ],
+   "next": "memoria-buho"
+  },
+  "memoria-buho": {
+   "type": "branch",
+   "rules": [
+    {
+     "if": {
+      "flag": "pregunta-buena"
+     },
+     "next": "buho-conocido"
+    }
+   ],
+   "else": "buho-dormido"
+  },
+  "buho-conocido": {
+   "type": "story",
+   "speaker": "buho",
+   "image": "noche-buho",
+   "text": {
+    "valley": "Con la primera luz, el búho guardián dormita en una rama de la orilla. Nos reconoce del bosque y ladea la cabeza. Le damos los buenos días y tarda tanto en contestar que parece dormido. Al final abre un ojo, muy despacio, y lo vuelve a cerrar sin decir nada. De día, los búhos descansan.",
+    "azara": "Con la primera luz, el baqueano dormita apoyado en un tronco. Se acuerda de quienes preguntaron bien junto al rastro y se toca el sombrero. Le damos los buenos días y tarda tanto en contestar que parece dormido. Al final abre un ojo, muy despacio, y lo vuelve a cerrar sin decir nada."
+   },
+   "next": "refugio"
+  },
+  "buho-dormido": {
+   "type": "story",
+   "speaker": "buho",
+   "image": "noche-buho",
+   "text": {
+    "valley": "Con la primera luz, el búho guardián dormita en una rama de la orilla. Le damos los buenos días y tarda tanto en contestar que parece dormido. Al final abre un ojo, muy despacio, y lo vuelve a cerrar sin decir nada. De día, los búhos descansan.",
+    "azara": "Con la primera luz, el baqueano dormita apoyado en un tronco. Le damos los buenos días y tarda tanto en contestar que parece dormido. Al final abre un ojo, muy despacio, y lo vuelve a cerrar sin decir nada."
+   },
    "next": "refugio"
   },
   "refugio": {
@@ -262,6 +322,11 @@
      "look": "Por el corte de una rama verde sale savia: el arbusto sigue vivo y la necesita para crecer.",
      "correct": false,
      "objective": "SV-08",
+     "effects": [
+      {
+       "flag": "ramas-verdes"
+      }
+     ],
      "feedback": "Al secarse se encogen y el refugio se hunde. Y el arbusto queda herido. «Para el refugio sirve lo que ya no está vivo.»"
     },
     {
@@ -282,11 +347,24 @@
      "feedback": "Tapa huecos, pero si llueve se deshace."
     }
    ],
+   "next": "garza"
+  },
+  "garza": {
+   "type": "story",
+   "speaker": "garza",
+   "image": "lago-pagina",
+   "text": {
+    "valley": "Antes de apuntar nada en el Gran Libro, la garza se acerca por el agua. «La noche del enredo, Doña Hebra vino a esta orilla a lavarse la tinta de los dedos. Frotaba y frotaba, y la tinta no salía. Estaba muy preocupada.» Mira la página en blanco y añade: «Despacio, ¿eh? Lo que se apunta deprisa mancha».",
+    "azara": "Antes de apuntar nada en el cuaderno, la garza se acerca por el agua. «La noche del traslado, la archivera vino a esta orilla a lavarse la tinta de los dedos. Frotaba y frotaba, y la tinta no salía. Estaba muy preocupada.» Mira la página en blanco y añade: «Despacio, ¿eh? Lo que se apunta deprisa mancha»."
+   },
    "next": "cadena"
   },
   "cadena": {
    "type": "choice",
-   "prompt": "Con lo visto esta noche, ¿qué cadena alimentaria apuntamos en el Gran Libro?",
+   "prompt": {
+    "valley": "Con lo visto esta noche, ¿qué cadena alimentaria apuntamos en el Gran Libro?",
+    "azara": "Con lo visto esta noche, ¿qué cadena alimentaria apuntamos en el cuaderno?"
+   },
    "hints": [
     "Se empieza por quien fabrica su propio alimento. La flecha va hacia quien se lo come."
    ],
@@ -347,7 +425,10 @@
   "fin": {
    "type": "ending",
    "outcome": "success",
-   "text": "Cuando las cadenas del lago vuelven a estar unidas, el agua refleja todas las linternas del valle a la vez. Solo queda una a oscuras: la de la torre, donde se esconde el Embrollo. {{creature}} se duerme junto al fuego con la barriga llena de nada: todavía no sabe qué come.",
+   "text": {
+    "valley": "Cuando las cadenas del lago vuelven a estar unidas, el agua refleja todas las linternas del valle a la vez. Solo queda una a oscuras: la de la torre, donde se esconde el Embrollo. {{creature}} se duerme junto al fuego con la barriga llena de nada: todavía no sabe qué come.",
+    "azara": "Cuando las cadenas del río vuelven a estar unidas, la página de la orilla queda completa en el cuaderno. Solo falta revisarlo entero antes de enviarlo. {{creature}} se duerme junto al fuego con la barriga llena de nada: todavía no sabe qué come."
+   },
    "effects": [
     {
      "saber": 25
@@ -363,7 +444,10 @@
   "a-medias": {
    "type": "ending",
    "outcome": "partial",
-   "text": "Amanece y la página del lago queda apuntada a medias: las flechas van hacia donde no deben. El agua refleja las linternas, pero la del lago parpadea. «Otra noche aquí, y lo apuntamos bien», dice la garza desde el agua. {{creature}} bosteza.",
+   "text": {
+    "valley": "Amanece y la página del lago queda apuntada a medias: las flechas van hacia donde no deben. El agua refleja las linternas, pero la del lago parpadea. «Otra noche aquí, y lo apuntamos bien», dice la garza desde el agua. {{creature}} bosteza.",
+    "azara": "Amanece y la página del río queda apuntada a medias: las flechas van hacia donde no deben. «Otra noche aquí, y lo apuntamos bien», dice la garza desde el agua. {{creature}} bosteza."
+   },
    "effects": [
     {
      "saber": 15

@@ -60,4 +60,38 @@ final class view_test extends \advanced_testcase {
         $spots = array_column($clearing['spots'], null, 'target');
         $this->assertSame(['target' => 'C1-2', 'x' => 50, 'y' => 76], $spots['C1-2']);
     }
+
+    public function test_the_class_carries_the_marks_of_at_least_half_of_it(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $dg = $this->getDataGenerator();
+        $course = $dg->create_course();
+        regions::save($course->id, ['enabled' => 1, 'weeklycap' => 0]);
+        $mission = missions::install($course->id, 'livingthings', 'valley', 'es');
+        $chars = [];
+        foreach ([0, 1, 2, 3] as $i) {
+            $user = $dg->create_and_enrol($course, 'student');
+            characters::create($user->id, 'healer', 'f');
+            $chars[$i] = characters::get($user->id);
+            engine::member($chars[$i], $course->id);
+        }
+        $mark = function (int $i, string $code) use ($DB, $chars, $course, $mission): void {
+            $DB->insert_record(self::T . 'found', ['charid' => $chars[$i]->id, 'courseid' => $course->id,
+                'missionid' => $mission->id, 'kind' => 'flag', 'code' => $code, 'timecreated' => time()]);
+        };
+        // Two of four put the seed in the nest; only one asked the owl well.
+        $mark(0, 'semilla-en-el-nido');
+        $mark(1, 'semilla-en-el-nido');
+        $mark(2, 'pregunta-buena');
+        $this->assertSame(['semilla-en-el-nido'], scenes::class_flags($course->id, (int) $mission->id));
+        // The end of the mission tells it, in the voice of the Great Book.
+        $lines = view::remembered($course->id, missions::get($course->id));
+        $this->assertCount(1, $lines);
+        $this->assertStringContainsString('semilla', $lines[0]);
+        // Who is paused does not count among those who play.
+        $DB->set_field(self::T . 'member', 'status', 'paused', ['charid' => $chars[3]->id]);
+        $DB->set_field(self::T . 'member', 'status', 'paused', ['charid' => $chars[1]->id]);
+        $marks = scenes::class_flags($course->id, (int) $mission->id);
+        $this->assertEqualsCanonicalizing(['semilla-en-el-nido', 'pregunta-buena'], $marks);
+    }
 }
