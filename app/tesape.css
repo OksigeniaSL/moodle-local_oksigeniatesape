@@ -6348,3 +6348,44 @@ body.adapt-still .feed-face.eating .creature {
   border-top-color: rgba(var(--lilac-rgb), .6);
   border-bottom: 0;
 }
+
+/* The sheet: what the role does, and what comes next as the hero grows. */
+.traits {
+  display: grid;
+  gap: 2px;
+  margin: 8px 0 12px;
+  padding: 10px 12px;
+  border-radius: var(--r-s);
+  background: rgba(var(--lantern-rgb), .1);
+}
+
+.traits b {
+  color: var(--lantern);
+}
+
+.traits span {
+  color: var(--text-soft);
+  font-size: 15px;
+}
+
+.unlock {
+  margin: 6px 0 10px;
+  color: var(--lantern);
+  font-weight: 700;
+}
+
+/* The creature goes with the hero: on the map, and next to each one in the team. */
+.map .me-creature .creature {
+  width: 34px;
+  height: 34px;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .6));
+}
+
+.map .me-creature.walking {
+  animation: me-walk 1.8s ease-in-out .45s both;
+}
+
+.team-creature .creature {
+  width: 34px;
+  height: 34px;
+}

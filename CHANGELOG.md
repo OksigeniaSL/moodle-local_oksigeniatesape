@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.65.0 (2026-10-17)
+
+Block 1.10 of the plan: the sheet of a hero.
+
+- **Titles of the story as the hero grows**: Apprentice of the valley (levels 1 to 4), Walker (5), Tracker (12),
+  Naturalist (25) and Guardian of the lanterns (40), on the sheet and in the team; and under the bar of the level, what
+  comes next («At level 12: you will be Tracker», or the next power).
+- **What the role does, seen**: two traits and a sentence on the sheet («Shield 1 · Guard. As a knight, you stop the
+  first mistake of each scene: it costs you nothing»).
+- **The creature goes with the hero**: beside them on the map, walking with them, and next to each one in the team,
+  with its name.
+
 ## 0.64.0 (2026-10-17)
 
 - **The core scenes stop sounding like a test** (mission v25): their options are what the group does or says aloud

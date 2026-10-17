@@ -242,6 +242,60 @@
     draw();
   }
 
+  /** The titles of the story as the hero grows, from the level they start at. */
+  var RANKS = [[1, 'apprentice'], [5, 'walker'], [12, 'tracker'], [25, 'naturalist'], [40, 'guardian']];
+
+  function rankName(key, form) {
+    return t('app_rank_' + key + '_' + (form === 'f' ? 'f' : 'm'));
+  }
+
+  /**
+   * The title of the story of a hero, by their level: Apprentice of the valley, Walker, Tracker…
+   *
+   * @param {Object} c
+   * @return {string}
+   */
+  function rank(c) {
+    return rankName(RANKS.filter(function(r) {
+      return c.level >= r[0];
+    }).pop()[1], c.nameform);
+  }
+
+  /**
+   * What comes next as the hero grows, whichever comes first: the next title of the story or the next power.
+   *
+   * @param {Object} c
+   * @return {string}
+   */
+  function nextUnlock(c) {
+    var next = RANKS.filter(function(r) {
+      return r[0] > c.level;
+    }).map(function(r) {
+      return {level: r[0], what: t('app_unlock_rank', rankName(r[1], c.nameform))};
+    }).concat((state.world.powers || []).filter(function(p) {
+      return p.minlevel > c.level;
+    }).map(function(p) {
+      return {level: p.minlevel, what: t('app_unlock_power', p.name)};
+    })).sort(function(a, b) {
+      return a.level - b.level;
+    })[0];
+    return next ? t('app_unlock', next) : '';
+  }
+
+  /**
+   * What the role of the hero does, as numbers and a sentence: the passive of each role, seen.
+   *
+   * @param {Object} c
+   * @return {string}
+   */
+  function traits(c) {
+    // In the middle of a sentence: «Como druida», not «Como Druida».
+    var name = T.roleName(state.world.family, c.role, c.nameform);
+    name = name.charAt(0).toLocaleLowerCase(cfg.lang || 'es') + name.slice(1);
+    return '<p class="traits"><b>' + esc(t('app_trait_' + c.role)) + '</b><span>' + esc(t('app_trait_' + c.role + '_help', name)) +
+      '</span></p>';
+  }
+
   function title(d) {
     var name = T.roleName(state.world.family, d.role, d.nameform);
     var lineage = T.hasLineages(state.world.family) ? T.lineageName(d.lineage, d.nameform) : '';
@@ -951,6 +1005,10 @@
     var step = T.mapWalk(cfg.courseid + '-' + cfg.userid + '-' + m.code, m.chapters, current);
     var walk = step.from ? ' walking" style="--walk-x:' + (step.from.x - current.x) + 'px;--walk-y:' +
       (step.from.y - current.y) + 'px;animation-delay:' + (0.3 + step.delay) + 's' : '';
+    // The creature goes with the hero, at their feet.
+    var pet = c.creature ? '<foreignObject x="' + (current.x - 106) + '" y="' + (current.y - 6) + '" width="34" height="34" ' +
+      'class="me-creature' + walk + '"><div xmlns="http://www.w3.org/1999/xhtml">' +
+      T.creature(c.creature, c.creaturestage) + '</div></foreignObject>' : '';
     // The page of the day: the creature is hungry, over the hero.
     var p = state.world.page;
     var hungry = p && !p.answered && c.creature && !state.visit ? '<foreignObject x="' + (current.x - 128) + '" y="' +
@@ -970,7 +1028,7 @@
       '" role="group" aria-label="' + esc(m.title) + '"><defs>' + T.MAPGLOW + '</defs>' + T.mapGround(m) +
       T.mapLandmarks(m) + T.mapNight(m) + '<polyline points="' + pts + '" class="road"/>' +
       (walked ? '<polyline points="' + walked + '" class="road walked"/>' : '') + roadDrawing(fresh) +
-      (T.critters ? T.critters.fireflies(m) : '') + places + me + hungry + '</svg></div>';
+      (T.critters ? T.critters.fireflies(m) : '') + places + me + pet + hungry + '</svg></div>';
   }
 
   /**
@@ -1480,8 +1538,10 @@
             m && m.remote && !mate.me ? '<span class="tag">' + esc(t('app_team_far')) + '</span>' : '';
           return '<li class="item"><span class="face">' + (c ? avatarOf(c, '', true) : '') + '</span><span class="grow"><b>' +
             esc(mate.name) + (mate.me ? ' (' + esc(t('app_you')) + ')' : '') + '</b><small>' +
-            (c ? esc(T.roleName(fam, c.role, c.nameform)) + ' · ' + esc(t('app_level')) + ' ' + c.level :
-            esc(t('app_nocharacter'))) + '</small></span>' + tag + (m && m.energy >= 0 ? '<span class="bars">' +
+            (c ? esc(T.roleName(fam, c.role, c.nameform)) + ' · ' + esc(rank(c)) + ' · ' + esc(t('app_level')) + ' ' + c.level +
+            (c.creature ? ' · ' + esc(t('app_with_creature', creatureName(c))) : '') : esc(t('app_nocharacter'))) +
+            '</small></span>' + (c && c.creature ? '<span class="team-creature" aria-hidden="true">' +
+            T.creature(c.creature, c.creaturestage) + '</span>' : '') + tag + (m && m.energy >= 0 ? '<span class="bars">' +
             '<span class="meter energy" ' +
             'title="' + esc(t('app_energy')) + '"><i style="width:' + Math.round(100 * m.energy / w.energymax) +
             '%"></i></span></span>' : '') + '</li>';
@@ -1765,12 +1825,14 @@
     var glow = w.page && w.page.streak >= w.page.glow ? ' glow' : '';
     var creature = c.creature ? '<div class="creature-box' + glow + '">' + T.creature(c.creature, c.creaturestage) + '<b>' +
       esc(creatureName(c)) + '</b><small>' + esc(t('app_creaturestage', c.creaturestage)) + '</small></div>' : '';
+    var unlock = nextUnlock(c);
     return '<section class="card sheet"><div class="sheet-art">' + avatarOf(c, title(c)) + creature + '</div><div class="stats"><h2>' + esc(myName()) +
-      '</h2><p style="color:var(--text-soft)">' + esc(title(c)) + '</p>' +
+      '</h2><p style="color:var(--text-soft)">' + esc(rank(c)) + ' · ' + esc(title(c)) + '</p>' + traits(c) +
       '<div class="stat"><span>' + esc(t('app_level')) + '</span><b>' + c.level + '</b></div>' +
       '<div class="meter level" style="margin:6px 0 4px"><i style="width:' + pct + '%"></i></div><small style="color:' +
       'var(--text-soft)">' + esc(c.levelneeded ? t('app_tonext', c.levelneeded - c.levelinto) : t('app_maxlevel')) +
-      '</small><div class="stat"><span>' + esc(t('app_saber')) + '</span><b>' + c.saber + '</b></div>' +
+      '</small>' + (unlock ? '<p class="unlock">' + esc(unlock) + '</p>' : '') + '<div class="stat"><span>' +
+      esc(t('app_saber')) + '</span><b>' + c.saber + '</b></div>' +
       '<div class="stat"><span>' + esc(t('app_renown')) + '</span><b>' + (m.renown || 0) + '</b></div>' +
       '<div class="stat"><span>' + esc(t('app_gems')) + '</span><b>' + c.gems + '</b></div>' +
       '<div class="stat"><span>' + esc(t('app_energy')) + '</span><b>' + (m.energy || 0) + ' / ' + w.energymax + '</b></div>' +
