@@ -502,6 +502,16 @@ final class structures {
             'final' => new external_value(PARAM_BOOL, 'The final battle of the mission', VALUE_DEFAULT, false),
             'counter' => new external_value(PARAM_INT, 'Life the Embrollo got back after the round', VALUE_DEFAULT, 0),
             'shielded' => new external_value(PARAM_BOOL, 'A protector\'s shield stopped that', VALUE_DEFAULT, false),
+            'stage' => new external_value(PARAM_ALPHA, 'By turns: intent, prep, strike or resolve', VALUE_DEFAULT, ''),
+            'stageleft' => new external_value(PARAM_INT, 'By turns: seconds left of the stage (-1: no limit)', VALUE_DEFAULT, 0),
+            'knot' => new external_single_structure([
+                'name' => new external_value(PARAM_TEXT, 'Who carries it'),
+                'claim' => new external_value(PARAM_TEXT, 'What the Embrollo claims'),
+                'laugh' => new external_value(PARAM_TEXT, 'Its laugh, once resolved, if the attack fell (empty: none)'),
+            ], 'By turns: the knot of the turn', VALUE_OPTIONAL),
+            'targetid' => new external_value(PARAM_INT, 'By turns: the team the knot goes for (0: none)', VALUE_DEFAULT, 0),
+            'target' => new external_value(PARAM_TEXT, 'By turns: the name of that team', VALUE_DEFAULT, ''),
+            'damage' => new external_value(PARAM_INT, 'By turns: life taken from the Embrollo in the turn', VALUE_DEFAULT, 0),
             'tally' => new external_multiple_structure(
                 new external_value(PARAM_INT, 'Votes'),
                 'Votes for each option, once a vote is closed',
@@ -550,6 +560,7 @@ final class structures {
     public static function live_device(): external_single_structure {
         return new external_single_structure(self::live_common() + [
             'joined' => new external_value(PARAM_BOOL, 'The student came in'),
+            'myteam' => new external_value(PARAM_INT, 'The team they came in with (0: none)', VALUE_DEFAULT, 0),
             'mine' => new external_value(PARAM_INT, 'Their answer in the round (-1: none)'),
             'prize' => new external_single_structure([
                 'saber' => new external_value(PARAM_INT, 'Saber'),

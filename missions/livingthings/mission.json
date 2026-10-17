@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 22,
+ "version": 23,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 23,
+   "kind": "improvement",
+   "date": "2026-10-17",
+   "text": "Los ocho nudos de la batalla por turnos, con su esbirro, lo que dice el Embrollo y su risa"
+  },
   {
    "version": 22,
    "kind": "improvement",
@@ -345,7 +351,92 @@
    "item": "naturalistlens",
    "lantern": "torre",
    "creature": "grow"
-  }
+  },
+  "knots": [
+   {
+    "code": "piedra",
+    "name": "la Piedra que rueda",
+    "claim": "¡La piedra que rueda está viva, que se mueve! Y el fuego también, que crece.",
+    "laugh": "¡Ja! Si se mueve, está vivo. Lo dice mi piedra, que no para quieta.",
+    "questions": [
+     "Q1-1",
+     "Q1-2",
+     "Q1-4"
+    ]
+   },
+   {
+    "code": "arena",
+    "name": "la Nube de arena",
+    "claim": "¡Los seres vivos están hechos de agua y de arena, nada más! Y una bacteria, de ninguna célula.",
+    "laugh": "Agua, arena y un poco de mi tinta. ¡Receta perfecta!",
+    "questions": [
+     "Q1-3",
+     "Q2-3"
+    ]
+   },
+   {
+    "code": "setuga",
+    "name": "la Seta-lechuga",
+    "claim": "¡La seta es una planta, como la lechuga! Las dos son blandas.",
+    "laugh": "Blanda y verde... bueno, blanda. ¡Ensalada de setas!",
+    "questions": [
+     "Q2-1",
+     "Q2-2"
+    ]
+   },
+   {
+    "code": "murcielago",
+    "name": "el Murciélago-pájaro",
+    "claim": "¡El murciélago es un pájaro, que vuela! ¿Lo ves? ¡Pío, pío!",
+    "laugh": "¡Pío, pío!, dice el murciélago. Bueno, eso digo yo.",
+    "questions": [
+     "Q3-1"
+    ]
+   },
+   {
+    "code": "arana",
+    "name": "la Araña de seis patas",
+    "claim": "¡La araña es un insecto, y el caracol tiene huesos por dentro!",
+    "laugh": "Seis, ocho... ¿Quién cuenta patas a estas horas?",
+    "questions": [
+     "Q3-2",
+     "Q3-3"
+    ]
+   },
+   {
+    "code": "raiz",
+    "name": "la Raíz al revés",
+    "claim": "¡Las plantas beben por la flor y comen tierra! La raíz está de adorno.",
+    "laugh": "¡Sorbe, sorbe, flor! Que la raíz está de vacaciones.",
+    "questions": [
+     "Q4-1",
+     "Q4-2",
+     "Q4-3"
+    ]
+   },
+   {
+    "code": "garza",
+    "name": "la Garza herbívora",
+    "claim": "¡La garza come algas! Y si se van los peces del lago, ni lo nota.",
+    "laugh": "La garza, a dieta de algas. ¡Qué sana!",
+    "questions": [
+     "Q5-1",
+     "Q5-2",
+     "Q5-3"
+    ]
+   },
+   {
+    "code": "pompa",
+    "name": "la Pompa que no apunta",
+    "claim": "¡Para saber algo basta con la primera idea! ¿Un cuaderno de campo? Para guardar secretos.",
+    "laugh": "Primera idea, mejor idea. ¿Para qué comprobar nada?",
+    "questions": [
+     "Q6-1",
+     "Q6-2",
+     "Q6-3"
+    ]
+   }
+  ]
  },
  "pages": {
   "ser-vivo": {

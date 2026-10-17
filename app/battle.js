@@ -129,7 +129,7 @@
     }
     var life = live.maxhp ? live.hp / live.maxhp : 1;
     return '<div class="battle-head"><span class="battle-mini">' + T.embrollo(life) + '</span><div class="grow"><b>' +
-      esc(t('app_battle_title')) + '</b>' + (live.round ? '<small>' + esc(t('app_battle_round', live)) + '</small>' : '') +
+      esc(t('app_battle_title')) + '</b>' + (live.round ? '<small>' + esc(t(live.stage ? 'board_turn_round' : 'app_battle_round', live)) + '</small>' : '') +
       '<span class="meter boss"><i style="width:' + Math.round(100 * life) + '%"></i></span></div></div>';
   }
 
@@ -149,6 +149,15 @@
     if (live.outcome === 'lost') {
       return '<div class="battle-end"><h2>' + esc(t('app_battle_escaped')) + '</h2><p>' + esc(t('app_battle_lost')) + '</p>' +
         '<button class="btn btn-main" data-back>' + esc(t('app_battle_back')) + '</button></div>';
+    }
+    if (live.stage === 'intent' || live.stage === 'prep') {
+      // By turns: the knot, what the Embrollo claims and which team it goes for; meanwhile, the verb of the role.
+      var mine = live.targetid && live.targetid === live.myteam;
+      return '<div class="knot-call"><p class="knot-name">' + esc(live.knot.name) + '</p><p class="knot-claim">«' +
+        esc(live.knot.claim.replace(/^«|»$/g, '')) + '»</p>' + (live.target ? '<p class="knot-target' + (mine ? ' mine' : '') +
+        '">' + esc(mine ? t('app_turn_mine') : t('app_turn_goes', live.target)) + '</p>' : '') + '</div>' +
+        (live.stage === 'prep' && !T.adapted.notime ? '<p class="battle-left" aria-live="off">' + esc(t('app_turn_prep',
+        live.stageleft)) + '</p>' : '') + token(live);
     }
     if (!live.round || !live.question) {
       return '<p class="battle-wait">' + esc(t('app_battle_wait')) + '</p>';
@@ -176,7 +185,14 @@
     }
     var trail = live.trail && !live.revealed ? '<p class="battle-trail">' + esc(t('app_token_trail_shown', live.trail)) +
       '</p>' : '';
-    return '<p class="battle-q">' + esc(q.text) + '</p>' + trail + '<div class="battle-options">' + options + '</div>' + note +
+    if (live.stage === 'resolve' && live.target) {
+      var fell = live.counter || live.shielded;
+      note += '<p class="turn-outcome' + (fell ? ' fell' : ' undone') + '">' + esc(t(!fell ? 'app_turn_undone' : live.shielded ?
+        'app_turn_shield' : 'app_turn_fell', live.target)) + '</p>' + (live.knot.laugh ? '<p class="knot-laugh">«' +
+        esc(live.knot.laugh.replace(/^«|»$/g, '')) + '»</p>' : '');
+    }
+    return (live.stage === 'strike' ? '<p class="knot-name">' + esc(t('app_turn_strike', live.knot.name)) + '</p>' : '') +
+      '<p class="battle-q">' + esc(q.text) + '</p>' + trail + '<div class="battle-options">' + options + '</div>' + note +
       token(live);
   }
 
@@ -193,8 +209,11 @@
     if (live.tokenused) {
       return '<p class="help-soft battle-token-used">' + esc(t('app_token_used')) + '</p>';
     }
-    return live.open ? '<div class="battle-token"><button type="button" class="btn btn-soft" data-token>' +
-      esc(t('app_token_' + live.token)) + '</button></div>' : '';
+    // By turns, the verb is ready from the moment the knot is announced, in big while the roles get ready.
+    var ready = live.open || live.stage === 'intent' || live.stage === 'prep';
+    var big = live.stage === 'intent' || live.stage === 'prep';
+    return ready ? '<div class="battle-token"><button type="button" class="btn ' + (big ? 'btn-main btn-big' : 'btn-soft') +
+      '" data-token>' + esc(t('app_token_' + live.token)) + '</button></div>' : '';
   }
 
   function voteBody(live) {

@@ -6227,3 +6227,101 @@ body.adapt-still .feed-face.eating .creature {
   gap: 8px;
   align-items: center;
 }
+
+/* The battle by turns: the knot the Embrollo lets go, the team it goes for, and what happened. */
+.knot-call {
+  margin: 8px 0 14px;
+}
+
+.knot-name {
+  margin: 0 0 6px;
+  color: var(--lilac, #b9a6ff);
+  font: 700 18px var(--f-title);
+}
+
+.knot-claim {
+  position: relative;
+  margin: 0 0 12px;
+  padding: 14px 18px;
+  border-radius: 18px;
+  background: var(--parchment);
+  color: var(--ink);
+  font: 700 22px var(--f-text);
+}
+
+.knot-claim::before {
+  content: "";
+  position: absolute;
+  left: -10px;
+  top: 22px;
+  border: 10px solid transparent;
+  border-right-color: var(--parchment);
+  border-left: 0;
+}
+
+.knot-target {
+  display: inline-block;
+  margin: 0;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(var(--lilac-rgb), .25);
+  font-weight: 800;
+}
+
+.battle-team.target {
+  border-color: var(--lilac, #b9a6ff);
+  box-shadow: 0 0 0 3px rgba(var(--lilac-rgb), .45);
+}
+
+.turn-outcome {
+  font: 800 20px var(--f-text);
+}
+
+.turn-outcome.undone {
+  color: var(--leaf);
+}
+
+.turn-outcome.fell {
+  color: var(--lilac, #b9a6ff);
+}
+
+.knot-laugh {
+  font-style: italic;
+  color: var(--text-soft);
+}
+
+/* When the Embrollo is hit, the whole board trembles a little; when the attack falls, it laughs. */
+.battle-board.shake {
+  animation: board-shake .3s ease;
+}
+
+@keyframes board-shake {
+  25% {
+    transform: translate(-3px, 1px);
+  }
+
+  50% {
+    transform: translate(3px, -1px);
+  }
+
+  75% {
+    transform: translate(-2px, 0);
+  }
+}
+
+.battle-boss.laugh .embrollo {
+  animation: tangle-laugh .25s ease-in-out 4;
+}
+
+@keyframes tangle-laugh {
+  50% {
+    transform: translateY(-6px) scale(1.04, .96);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .battle-board.shake,
+  .battle-boss.laugh .embrollo {
+    animation: none;
+  }
+}

@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.63.0 (2026-10-17)
+
+Block 1.9 of the plan: a vertical slice of the battle by turns, «the knots of the tower», over the battle there was.
+
+- **A battle started on the class screen goes by turns**, with the knots of the mission (mission v23 brings eight, each
+  with the minion that carries it, what the Embrollo claims and its laugh). Each turn: the Embrollo lets a knot go and
+  says which team it goes for (5 s); the roles get ready and use their verbs, in big on their tablets (15 s); the knot
+  falls and the class undoes its lazada (the time of the question); and what happened is shown (10 s) before the next
+  turn starts by itself. The times are the server's; without a time per question, the teacher leads.
+- **The attack falls on the team it goes for**: if that team does not undo the lazada, the Embrollo laughs and pulls
+  itself together, unless a protector of that team raised the shield. The class screen trembles when the Embrollo is
+  hit, and it laughs when the attack falls; the team it goes for is marked, on the board and on its tablets («It goes
+  for your team!»).
+- Battles without knots, and those already open, go on as before.
+
 ## 0.62.0 (2026-10-17)
 
 Block 1.8 of the plan: three cheap pieces for the teacher.

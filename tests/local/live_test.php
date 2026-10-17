@@ -349,6 +349,65 @@ final class live_test extends \advanced_testcase {
         return $live;
     }
 
+    public function test_a_battle_by_turns_announces_the_knot_and_moves_on_by_itself(): void {
+        global $DB;
+        $this->resetAfterTest();
+        [$course, $members, $groups] = $this->make_class();
+        foreach (['sage', 'scout', 'protector', 'healer'] as $i => $role) {
+            $DB->set_field(self::T . 'char', 'role', $role, ['id' => $members[$i]->charid]);
+        }
+        $live = live::start($course->id, 'phones', 4, 30, self::NOW, false, true);
+        $knots = json_decode($live->state, true)['knots'];
+        $this->assertCount(4, $knots);
+        $this->assertSame('piedra', $knots[0]);
+        foreach ($members as $member) {
+            live::join($live, $member, $member->userid, self::NOW);
+        }
+        // The Embrollo announces the knot and the team it goes for: the lazada is not seen yet.
+        $live = live::next($live, self::NOW);
+        $view = live::board_view($live, self::NOW);
+        $this->assertSame('intent', $view['stage']);
+        $this->assertArrayNotHasKey('question', $view);
+        $this->assertNotSame('', $view['knot']['claim']);
+        $this->assertSame('', $view['knot']['laugh']);
+        $this->assertSame((int) $groups[0]->id, $view['targetid']);
+        // While it is announced and got ready, the verbs can be used, and the lazada takes no answers.
+        $this->assertSame('shield', live::token($live, $members[2], self::NOW + 2));
+        $this->assertSame('prep', live::board_view($live, self::NOW + live::INTENT)['stage']);
+        try {
+            live::answer($live, $members[0], 1, 0, self::NOW + live::INTENT);
+            $this->fail('An answer before the knot fell');
+        } catch (\moodle_exception $e) {
+            $this->assertSame('roundclosed', $e->errorcode);
+        }
+        $strike = self::NOW + live::INTENT + live::PREP;
+        $view = live::device_view($live, $members[0], $strike);
+        $this->assertSame('strike', $view['stage']);
+        $this->assertArrayHasKey('question', $view);
+        $this->assertSame((int) $groups[0]->id, $view['myteam']);
+        // The team it goes for gets it wrong, the other right; the shield is on the other team, so the attack falls.
+        $correct = $this->correct($live);
+        foreach ($members as $i => $member) {
+            live::answer($live, $member, 1, $i < 2 ? ($correct + 1) % 2 : $correct, $strike + 1);
+        }
+        // Nothing moves before the time is over.
+        $this->assertFalse(live::board_view(live::tick($live, 2, true, $strike + 10), $strike + 10)['revealed']);
+        // When it is over, the lazada is counted: two threads off, and the Embrollo laughs and pulls itself together.
+        $end = $strike + 31;
+        $live = live::tick($live, 2, true, $end);
+        $view = live::board_view($live, $end);
+        $this->assertSame('resolve', $view['stage']);
+        $this->assertSame(2, $view['damage']);
+        $this->assertGreaterThan(0, $view['counter']);
+        $this->assertNotSame('', $view['knot']['laugh']);
+        // After the resolution, the next turn starts by itself, for the other team.
+        $live = live::tick($live, 2, true, $end + live::RESOLVE);
+        $this->assertSame(2, (int) $live->round);
+        $view = live::board_view($live, $end + live::RESOLVE);
+        $this->assertSame('intent', $view['stage']);
+        $this->assertSame((int) $groups[1]->id, $view['targetid']);
+    }
+
     public function test_the_tokens_help_the_team_of_who_uses_them_once_a_battle(): void {
         $this->resetAfterTest();
         [$course, $members] = $this->make_class();

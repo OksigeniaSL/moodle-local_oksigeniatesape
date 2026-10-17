@@ -51,6 +51,7 @@ final class live_host extends external_api {
             'options' => new external_value(PARAM_RAW, 'vote: the options, in JSON', VALUE_DEFAULT, '[]'),
             'round' => new external_value(PARAM_INT, 'next and reveal: round on the class screen (-1: any)', VALUE_DEFAULT, -1),
             'final' => new external_value(PARAM_BOOL, 'start: the final battle of the mission', VALUE_DEFAULT, false),
+            'turns' => new external_value(PARAM_BOOL, 'start: by turns, with the knots of the mission', VALUE_DEFAULT, false),
         ]);
     }
 
@@ -69,6 +70,7 @@ final class live_host extends external_api {
      * @param string $options
      * @param int $round
      * @param bool $final
+     * @param bool $turns
      * @return array
      */
     public static function execute(
@@ -83,7 +85,8 @@ final class live_host extends external_api {
         string $text = '',
         string $options = '[]',
         int $round = -1,
-        bool $final = false
+        bool $final = false,
+        bool $turns = false
     ): array {
         global $USER;
         $params = self::validate_parameters(self::execute_parameters(), [
@@ -99,6 +102,7 @@ final class live_host extends external_api {
             'options' => $options,
             'round' => $round,
             'final' => $final,
+            'turns' => $turns,
         ]);
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
@@ -112,6 +116,10 @@ final class live_host extends external_api {
             }
             if (!$live->timeend) {
                 live::heartbeat($live, $now);
+                // A battle by turns moves on by itself when the time of a stage is over.
+                $award = has_capability('local/oksigeniatesape:award', $context);
+                $userid = (int) $USER->id;
+                $live = live::locked($courseid, fn() => live::tick(live::recent($courseid, $now, true) ?? $live, $userid, $award, $now));
             }
             return ['live' => live::board_view($live, $now)];
         }
@@ -135,7 +143,15 @@ final class live_host extends external_api {
         $courseid = $params['courseid'];
         $from = $params['round'] >= 0 ? $params['round'] : null;
         if ($params['action'] === 'start') {
-            $live = live::start($courseid, $params['mode'], $params['count'], $params['secs'], $now, $params['final']);
+            $live = live::start(
+                $courseid,
+                $params['mode'],
+                $params['count'],
+                $params['secs'],
+                $now,
+                $params['final'],
+                $params['turns']
+            );
             return ['live' => live::board_view($live, $now)];
         }
         if ($params['action'] === 'startvote') {

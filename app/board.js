@@ -236,12 +236,16 @@
    */
   function drawBattle(force) {
     var l = state.live;
-    var sig = JSON.stringify(Object.assign({}, l, {left: 0, answered: 0}));
+    var sig = JSON.stringify(Object.assign({}, l, {left: 0, answered: 0, stageleft: 0}));
     if (!force && sig === state.battlesig && app.querySelector('.battle-board')) {
       var left = app.querySelector('[data-left]');
       if (left && l.left >= 0) {
         left.textContent = l.left + ' s';
         left.dataset.left = l.left;
+      }
+      var stageleft = app.querySelector('[data-stageleft]');
+      if (stageleft && l.stageleft >= 0) {
+        stageleft.textContent = t(stageleft.dataset.stageleft, l.stageleft);
       }
       var answered = app.querySelector('[data-answered]');
       if (answered) {
@@ -254,6 +258,11 @@
     var hit = l.revealed && (l.right || 0) > 0 && state.hitlast !== l.id + ':' + l.round;
     if (hit) {
       state.hitlast = l.id + ':' + l.round;
+    }
+    // By turns, when the attack fell and was not stopped, it laughs: once too.
+    var laugh = l.stage === 'resolve' && l.knot && l.knot.laugh && state.laughlast !== l.id + ':' + l.round;
+    if (laugh) {
+      state.laughlast = l.id + ':' + l.round;
     }
     var life = l.maxhp ? l.hp / l.maxhp : 1;
     var main;
@@ -272,9 +281,20 @@
       buttons = '<button class="btn btn-main" data-battlenext' + (l.mode === 'phones' && !l.joined ? ' disabled' : '') + '>' +
         esc(t('board_battle_first')) + '</button>' + (l.kind === 'battle' ? '<button class="btn btn-soft" data-battlefinish>' +
         esc(t('board_battle_cancel')) + '</button>' : '');
+    } else if (l.stage === 'intent' || l.stage === 'prep') {
+      // By turns: the Embrollo lets a knot go, says what it claims and which team it goes for; the roles get ready.
+      main = '<p class="battle-qround">' + esc(t(l.stage ? 'board_turn_round' : 'board_battle_round', l)) + '</p><div class="knot-call"><p class="knot-name">' +
+        esc(l.knot.name) + '</p><p class="knot-claim">«' + esc(l.knot.claim.replace(/^«|»$/g, '')) + '»</p>' +
+        (l.target ? '<p class="knot-target">' + esc(t('board_turn_goes', l.target)) + '</p>' : '') + '</div>' +
+        (l.stage === 'prep' ? '<p class="battle-count" data-stageleft="board_turn_prep" aria-live="off">' +
+        esc(t('board_turn_prep', l.stageleft)) + '</p>' : '');
+      main += (l.tokens || []).map(function(k) {
+        return '<p class="battle-token-used">' + esc(t('board_token_' + k.kind, k.team || '')) + '</p>';
+      }).join('');
     } else {
       var q = l.question;
-      main = '<p class="battle-qround">' + esc(t('board_battle_round', l)) + '</p><p class="battle-q">' + esc(q.text) +
+      main = '<p class="battle-qround">' + esc(t(l.stage ? 'board_turn_round' : 'board_battle_round', l)) + (l.stage === 'strike' ? ' · ' +
+        esc(t('board_turn_strike', l.knot.name)) : '') + '</p><p class="battle-q">' + esc(q.text) +
         '</p><ol class="battle-board-options">' + q.options.map(function(o, i) {
           return '<li class="' + (l.revealed && q.correct === i ? 'right' : '') + '"><b>' + LETTERS[i] + '</b>' + esc(o) + '</li>';
         }).join('') + '</ol>';
@@ -282,10 +302,13 @@
         return '<p class="battle-token-used">' + esc(t('board_token_' + k.kind, k.team || '')) + '</p>';
       }).join('');
       if (l.revealed) {
+        // By turns, what happened is told by the turn; without them, as it was.
+        var told = l.stage === 'resolve' && l.target;
         main += '<p class="why">' + esc(q.why || '') + '</p>' + (l.mode === 'phones' ? '<p class="battle-count">' +
           esc(t('board_battle_rights', l.right || 0)) + '</p>' : '<p class="help-soft">' + esc(t('board_battle_markhelp')) +
-          '</p>') + (l.counter ? '<p class="battle-counter">' + esc(t('board_battle_counter', l.counter)) + '</p>' : '') +
-          (l.shielded ? '<p class="battle-counter shield">' + esc(t('board_battle_shielded')) + '</p>' : '');
+          '</p>') + (l.counter && !told ? '<p class="battle-counter">' + esc(t('board_battle_counter', l.counter)) + '</p>' : '') +
+          (l.shielded && !told ? '<p class="battle-counter shield">' + esc(t('board_battle_shielded')) + '</p>' : '') +
+          turnOutcome(l);
         buttons = l.round < l.total ? '<button class="btn btn-main" data-battlenext>' + esc(t('board_battle_next')) +
           '</button>' : '';
       } else {
@@ -303,21 +326,42 @@
         team.id + ':1" aria-pressed="' + (team.mark === 1) + '" aria-label="' + esc(t('board_battle_markright', team.name)) +
         '">✓</button><button class="chip" data-mark="' + team.id + ':0" aria-pressed="' + (team.mark === 0) +
         '" aria-label="' + esc(t('board_battle_markwrong', team.name)) + '">✗</button></span>' : '';
-      return '<div class="battle-team"><b>' + esc(team.name) + '</b><small>' + (l.mode === 'phones' ?
+      return '<div class="battle-team' + (l.targetid === team.id && !l.outcome ? ' target' : '') + '"><b>' + esc(team.name) +
+        '</b><small>' + (l.mode === 'phones' ?
         esc(t('board_battle_joined', team.joined)) + ' · ' : '') + esc(t('board_battle_teamright', team.right)) + '</small>' +
         marks + '</div>';
     }).join('');
-    app.innerHTML = '<div class="board battle-board"><header class="board-top">' + T.emblem() + '<div><b>' + esc(cfg.coursename) + '</b><small>' +
+    app.innerHTML = '<div class="board battle-board' + (hit ? ' shake' : '') + '"><header class="board-top">' + T.emblem() +
+      '<div><b>' + esc(cfg.coursename) + '</b><small>' +
       esc(t(l.final ? 'board_battle_final' : 'board_battle')) + (l.phase > 1 && !l.outcome ? ' · ' +
       esc(t('board_battle_phase')) : '') + '</small></div><div class="board-tools">' + musicButton() + lightButton() +
       '<button class="btn btn-soft" data-full>' + esc(t('board_fullscreen')) + '</button></div></header>' +
       '<div class="battle-stage"><div class="battle-boss' +
-      (hit ? ' hit' : '') + '">' + T.embrollo(life) + '<span class="meter boss"><i style="width:' +
+      (hit ? ' hit' : '') + (laugh ? ' laugh' : '') + '">' + T.embrollo(life) + '<span class="meter boss"><i style="width:' +
       Math.round(100 * life) + '%"></i></span><small>' + esc(t('board_battle_life')) + (l.maxhp ? ': ' + l.hp + ' / ' +
       l.maxhp : '') + '</small></div><div class="battle-main">' + main + '<div class="actions">' + buttons + '</div></div></div>' +
       '<div class="battle-teams">' + teams + '</div></div>';
     battleFx(l);
     bindBattle();
+  }
+
+  /**
+   * What happened in a turn, at its resolution: the team the knot went for undid it, or the attack fell on them (a
+   * shield stopped it, or the Embrollo laughs and pulls itself together); the life it lost; and when the next turn starts.
+   *
+   * @param {Object} l
+   * @return {string}
+   */
+  function turnOutcome(l) {
+    if (l.stage !== 'resolve') {
+      return '';
+    }
+    var fell = l.counter || l.shielded;
+    return (l.target ? '<p class="turn-outcome' + (fell ? ' fell' : ' undone') + '">' + esc(t(!fell ? 'board_turn_undone' :
+      l.shielded ? 'board_turn_shield' : 'board_turn_fell', l.target)) + '</p>' : '') + (l.knot.laugh ?
+      '<p class="knot-laugh">«' + esc(l.knot.laugh.replace(/^«|»$/g, '')) + '»</p>' : '') + (l.damage ? '<p class="battle-count">' +
+      esc(t('board_turn_damage', l.damage)) + '</p>' : '') + (l.stageleft > 0 && l.round < l.total ? '<p class="help-soft" ' +
+      'data-stageleft="board_turn_next" aria-live="off">' + esc(t('board_turn_next', l.stageleft)) + '</p>' : '');
   }
 
   function bindBattle() {
@@ -356,7 +400,10 @@
       load(false);
     });
     // The answer shows by itself when the time is up or, with phones, when everybody in has answered.
-    var done = l.round && !l.revealed && !l.outcome && (!l.open || (l.mode === 'phones' && l.joined && l.answered >= l.joined));
+    // By turns, not while the knot is announced and the roles get ready (it does not take answers yet).
+    var waiting = l.stage === 'intent' || l.stage === 'prep';
+    var done = l.round && !l.revealed && !l.outcome && !waiting && (!l.open || (l.mode === 'phones' && l.joined &&
+      l.answered >= l.joined));
     if (done && state.auto !== l.id * 100 + l.round) {
       state.auto = l.id * 100 + l.round;
       clearTimeout(state.autotimer);
@@ -903,7 +950,7 @@
     });
     on('[data-battlestart]', function() {
       var b = state.battle;
-      host('start', {mode: b.mode, count: b.count, secs: b.secs, final: !!b.final});
+      host('start', {mode: b.mode, count: b.count, secs: b.secs, final: !!b.final, turns: true});
     });
     on('[data-draw]', function() {
       state.reveal = false;

@@ -28,6 +28,10 @@ namespace local_oksigeniatesape\local;
  * Each right answer takes life from the Embrollo; a wrong one takes nothing from anybody. If the class wins, saber and
  * gems for everybody who played, and the object of the mission (or more gems) for the team that helped most.
  *
+ * A battle by turns (the knots of the tower) goes in turns with their times set here: the Embrollo announces a knot of
+ * the mission and the team it goes for (intent), each role gets ready (prep), the knot falls and the class undoes its
+ * lazada (strike), and what happened is shown (resolve) before the next turn starts by itself.
+ *
  * @package    local_oksigeniatesape
  * @copyright  2026 Oksigenia <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -69,6 +73,15 @@ final class live {
     /** @var string[] The battle token of each role: one for each player and battle, in an open round, with phones. */
     public const TOKENS = ['sage' => 'glance', 'scout' => 'trail', 'protector' => 'shield', 'healer' => 'cheer'];
 
+    /** @var int Seconds the Embrollo takes to announce the knot of a turn and the team it goes for. */
+    public const INTENT = 5;
+
+    /** @var int Seconds to get ready before the knot falls: each role uses its verb. */
+    public const PREP = 15;
+
+    /** @var int Seconds what happened in a turn is shown before the next one starts by itself. */
+    public const RESOLVE = 10;
+
     /** @var int Saber for each player when the class wins. */
     public const WIN_SABER = 10;
 
@@ -87,6 +100,7 @@ final class live {
      * @param int $secs Seconds per question (0: no limit).
      * @param int|null $now
      * @param bool $final The final battle of the mission: it gives what the mission saves for the end.
+     * @param bool $turns By turns, with the knots of the mission, if it has them.
      * @return \stdClass The session.
      */
     public static function start(
@@ -95,20 +109,25 @@ final class live {
         int $count,
         int $secs,
         ?int $now = null,
-        bool $final = false
+        bool $final = false,
+        bool $turns = false
     ): \stdClass {
         global $DB;
         $now = $now ?? time();
         if (!in_array($mode, ['phones', 'aloud'], true) || !in_array($count, self::COUNTS) || !in_array($secs, self::SECONDS)) {
             throw new \invalid_parameter_exception('Not a battle that can be played');
         }
-        $questions = questions::pick_many($courseid, $count);
+        $plan = $turns ? knots::plan($courseid, $count) : [];
+        $questions = $plan ? array_column($plan, 1) : questions::pick_many($courseid, $count);
         if (!$questions) {
             throw new \moodle_exception('noquestions', 'local_oksigeniatesape');
         }
         $DB->set_field_select(self::T . 'live', 'timeend', $now, 'courseid = ? AND timeend = 0', [$courseid]);
         $state = ['mode' => $mode, 'secs' => $secs, 'questions' => $questions, 'rounds' => [], 'open' => false,
             'closesat' => 0, 'hp' => 0, 'maxhp' => 0, 'outcome' => '', 'rewarded' => [], 'final' => $final];
+        if ($plan) {
+            $state['knots'] = array_column($plan, 0);
+        }
         $record = (object) ['courseid' => $courseid, 'kind' => 'battle', 'state' => json_encode($state), 'round' => 0,
             'timecreated' => $now, 'timemodified' => $now, 'timeend' => 0];
         $id = $DB->insert_record(self::T . 'live', $record);
@@ -154,7 +173,7 @@ final class live {
         }
         $round = (int) $live->round;
         if ($round > 0 && empty($state['rounds'][$round]['revealed'])) {
-            $state = self::count($live, $state);
+            $state = self::count($live, $state, $now);
         }
         $round++;
         $options = array_values(array_map(fn($o) => clean_param((string) $o, PARAM_TEXT), $options));
@@ -364,7 +383,7 @@ final class live {
             throw new \moodle_exception('battleover', 'local_oksigeniatesape');
         }
         if ($round > 0 && empty($state['rounds'][$round]['revealed'])) {
-            $state = self::count($live, $state);
+            $state = self::count($live, $state, $now);
         }
         if ($round === 0) {
             $players = $state['mode'] === 'aloud' ? count(self::teams((int) $live->courseid)) : self::players($live);
@@ -387,7 +406,16 @@ final class live {
         $state['open'] = true;
         // Down to half its life, the Embrollo tangles itself more: less time for each question.
         $secs = $state['secs'] && self::phase($state) > 1 ? max(10, $state['secs'] - self::PHASE_SECS) : $state['secs'];
-        $state['closesat'] = $secs ? $now + $secs + 1 : 0;
+        $state['opensat'] = 0;
+        if (!empty($state['knots'])) {
+            // By turns: the knot, the team it goes for (each in turn, among those that play), and the time to announce
+            // it and get ready before the lazada takes answers.
+            $state['rounds'][$round]['knot'] = $state['knots'][$round - 1];
+            $state['rounds'][$round]['target'] = self::target($live, $state, $round);
+            $state['rounds'][$round]['startat'] = $now;
+            $state['opensat'] = $now + self::INTENT + self::PREP;
+        }
+        $state['closesat'] = $secs ? max($now, $state['opensat']) + $secs + 1 : 0;
         return self::save($live, $state, $round, $now);
     }
 
@@ -407,7 +435,7 @@ final class live {
         if ($round < 1 || !empty($state['rounds'][$round]['revealed']) || ($from !== null && $from !== $round)) {
             return $live;
         }
-        $state = self::count($live, $state);
+        $state = self::count($live, $state, $now);
         return self::save($live, $state, $round, $now);
     }
 
@@ -457,7 +485,7 @@ final class live {
             return $live;
         }
         if ($round > 0 && empty($state['rounds'][$round]['revealed'])) {
-            $state = self::count($live, $state);
+            $state = self::count($live, $state, $now);
         }
         $state['open'] = false;
         if ($live->kind === 'vote') {
@@ -519,7 +547,9 @@ final class live {
             $info = $state['rounds'][$round];
             $view['answered'] = $info['revealed'] ? $info['answered'] :
                 $DB->count_records(self::T . 'livein', ['liveid' => $live->id, 'round' => $round]);
-            $view['question'] = self::question($info);
+            if (self::shown($live, $state, $now)) {
+                $view['question'] = self::question($info);
+            }
             $view['right'] = (int) $info['right'];
             if ($info['revealed'] && $live->kind === 'vote') {
                 $view['tally'] = $info['tally'];
@@ -548,11 +578,14 @@ final class live {
         $round = (int) $live->round;
         $conditions = ['liveid' => $live->id, 'charid' => $member->charid];
         $mine = $DB->get_records(self::T . 'livein', $conditions, '', 'round, answer, team');
-        $view = self::common($live, $state, $now) + ['joined' => array_key_exists(0, $mine), 'mine' => -1];
+        $view = self::common($live, $state, $now) + ['joined' => array_key_exists(0, $mine), 'mine' => -1,
+            'myteam' => (int) ($mine[0]->team ?? 0)];
         if ($round > 0) {
             $info = $state['rounds'][$round];
             $view['mine'] = (int) ($mine[$round]->answer ?? -1);
-            $view['question'] = self::question($info);
+            if (self::shown($live, $state, $now)) {
+                $view['question'] = self::question($info);
+            }
             if ($info['revealed'] && $live->kind === 'vote') {
                 $view['tally'] = $info['tally'];
             }
@@ -588,7 +621,7 @@ final class live {
         }
         $joined = $DB->get_record(self::T . 'livein', ['liveid' => $live->id, 'round' => 0, 'charid' => $member->charid]);
         $playing = $live->kind === 'battle' && $state['mode'] === 'phones' && $state['outcome'] === '';
-        if (!$kind || !$joined || !$playing || $round < 1 || !self::is_open($state, $now)) {
+        if (!$kind || !$joined || !$playing || $round < 1 || !self::is_live($state, $now)) {
             throw new \moodle_exception('roundclosed', 'local_oksigeniatesape');
         }
         try {
@@ -759,7 +792,44 @@ final class live {
             'final' => !empty($state['final']),
             'counter' => $round > 0 ? (int) ($state['rounds'][$round]['counter'] ?? 0) : 0,
             'shielded' => $round > 0 && !empty($state['rounds'][$round]['shielded']),
-        ];
+        ] + self::turn($live, $state, $now);
+    }
+
+    /**
+     * The turn of a battle by turns, for the views: its stage and the seconds it has left, the knot (who carries it, what
+     * the Embrollo claims and, once resolved, its laugh if the attack fell) and the team it goes for.
+     *
+     * @param \stdClass $live
+     * @param array $state
+     * @param int $now
+     * @return array
+     */
+    private static function turn(\stdClass $live, array $state, int $now): array {
+        [$stage, $left] = self::stage($live, $state, $now);
+        if ($stage === '') {
+            return [];
+        }
+        $info = $state['rounds'][(int) $live->round];
+        $knot = knots::get(missions::get((int) $live->courseid), (string) $info['knot']) ?? ['name' => '', 'claim' => '',
+            'laugh' => ''];
+        $teams = self::teams((int) $live->courseid);
+        $target = (int) ($info['target'] ?? 0);
+        return ['stage' => $stage, 'stageleft' => $left, 'knot' => ['name' => $knot['name'], 'claim' => $knot['claim'],
+            'laugh' => $stage === 'resolve' && !empty($info['counter']) ? $knot['laugh'] : ''], 'targetid' => $target,
+            'target' => isset($teams[$target]) ? format_string($teams[$target]->name) : '',
+            'damage' => (int) ($info['damage'] ?? 0)];
+    }
+
+    /**
+     * Whether the lazada of the round can be seen: always, except while a turn is announced and got ready.
+     *
+     * @param \stdClass $live
+     * @param array $state
+     * @param int $now
+     * @return bool
+     */
+    private static function shown(\stdClass $live, array $state, int $now): bool {
+        return !in_array(self::stage($live, $state, $now)[0], ['intent', 'prep'], true);
     }
 
     /**
@@ -791,9 +861,10 @@ final class live {
      *
      * @param \stdClass $live
      * @param array $state
+     * @param int|null $now
      * @return array The state.
      */
-    private static function count(\stdClass $live, array $state): array {
+    private static function count(\stdClass $live, array $state, ?int $now = null): array {
         global $DB;
         $round = (int) $live->round;
         $info = $state['rounds'][$round];
@@ -818,8 +889,20 @@ final class live {
                 }
             }
             $state['hp'] = max(0, $state['hp'] - $damage);
-            // A round the class mostly got wrong: the Embrollo pulls itself together, unless a protector's shield stops it.
-            if ($state['hp'] > 0 && $info['answered'] > 0 && 2 * $info['right'] < $info['answered']) {
+            $info['damage'] = $damage;
+            if (!empty($info['target'])) {
+                // By turns: the attack falls if the team it went for did not undo its lazada (most of who answered got
+                // it wrong, or nobody answered); only a shield on that team stops it.
+                $target = (int) $info['target'];
+                $tried = count(array_filter($answers, fn($a) => (int) $a->team === $target));
+                $failed = !$tried || 2 * (int) ($info['teams'][$target] ?? 0) < $tried;
+                $shield = array_values(array_filter($shield, fn($t) => (int) $t->team === $target));
+            } else {
+                // A round the class mostly got wrong.
+                $failed = $info['answered'] > 0 && 2 * $info['right'] < $info['answered'];
+            }
+            // The Embrollo pulls itself together, unless a protector's shield stops it.
+            if ($state['hp'] > 0 && $failed) {
                 if ($shield) {
                     $info['shielded'] = (int) $shield[0]->team ?: -1;
                 } else {
@@ -829,6 +912,7 @@ final class live {
             }
         }
         $info['revealed'] = true;
+        $info['revealedat'] = $now ?? time();
         $state['rounds'][$round] = $info;
         $state['open'] = false;
         $state['closesat'] = 0;
@@ -1007,7 +1091,96 @@ final class live {
      * @return bool
      */
     private static function is_open(array $state, int $now): bool {
+        return self::is_live($state, $now) && $now >= (int) ($state['opensat'] ?? 0);
+    }
+
+    /**
+     * Whether the round is on: from the start of a turn (the verbs can be used while it is announced) until it closes.
+     *
+     * @param array $state
+     * @param int $now
+     * @return bool
+     */
+    private static function is_live(array $state, int $now): bool {
         return $state['open'] && (!$state['closesat'] || $now < $state['closesat']);
+    }
+
+    /**
+     * The team a knot goes for: each team in turn, among those with players in (all of them, aloud).
+     *
+     * @param \stdClass $live
+     * @param array $state
+     * @param int $round
+     * @return int Group id (0: no teams).
+     */
+    private static function target(\stdClass $live, array $state, int $round): int {
+        global $DB;
+        $teams = array_map('intval', array_keys(self::teams((int) $live->courseid)));
+        if ($state['mode'] === 'phones') {
+            $in = array_map('intval', $DB->get_fieldset_select(self::T . 'livein', 'DISTINCT team', 'liveid = ? AND round = 0 ' .
+                'AND team > 0', [$live->id]));
+            $teams = array_values(array_intersect($teams, $in)) ?: $teams;
+        }
+        sort($teams);
+        return $teams ? $teams[($round - 1) % count($teams)] : 0;
+    }
+
+    /**
+     * The stage of the turn of a battle by turns, and the seconds it has left: intent, prep, strike or resolve.
+     *
+     * @param \stdClass $live
+     * @param array $state
+     * @param int $now
+     * @return array [stage, seconds left] ('' when it is not a turn being played).
+     */
+    private static function stage(\stdClass $live, array $state, int $now): array {
+        $round = (int) $live->round;
+        $info = $state['rounds'][$round] ?? null;
+        if (!$info || empty($info['knot']) || $state['outcome'] !== '') {
+            return ['', 0];
+        }
+        if (!empty($info['revealed'])) {
+            return ['resolve', max(0, (int) ($info['revealedat'] ?? $now) + self::RESOLVE - $now)];
+        }
+        $startat = (int) ($info['startat'] ?? $now);
+        if ($now < $startat + self::INTENT) {
+            return ['intent', $startat + self::INTENT - $now];
+        }
+        if ($now < (int) $state['opensat']) {
+            return ['prep', (int) $state['opensat'] - $now];
+        }
+        return ['strike', $state['closesat'] ? max(0, $state['closesat'] - 1 - $now) : -1];
+    }
+
+    /**
+     * Moves a battle by turns on by itself when the time of a stage is over: the lazada closes and is counted, and after
+     * the resolution the next turn starts, or the battle ends after the last one. Without a time per question, the teacher
+     * leads: nothing moves by itself. Called on the polls of the class screen.
+     *
+     * @param \stdClass $live
+     * @param int $actorid Who ends it, if it ends.
+     * @param bool $canfinish They can end it (and give its prizes).
+     * @param int|null $now
+     * @return \stdClass The session.
+     */
+    public static function tick(\stdClass $live, int $actorid, bool $canfinish, ?int $now = null): \stdClass {
+        $now = $now ?? time();
+        $state = self::state($live);
+        if ($live->kind !== 'battle' || empty($state['knots']) || !$state['secs'] || $state['outcome'] !== '') {
+            return $live;
+        }
+        [$stage, $left] = self::stage($live, $state, $now);
+        $round = (int) $live->round;
+        if ($stage === 'strike' && $state['closesat'] && $now >= $state['closesat']) {
+            return self::reveal($live, $now, $round);
+        }
+        if ($stage === 'resolve' && $left === 0) {
+            if ($round < count($state['questions']) && $state['hp'] > 0) {
+                return self::next($live, $now, $round);
+            }
+            return $canfinish ? self::finish($live, $actorid, $now) : $live;
+        }
+        return $live;
     }
 
     /**
