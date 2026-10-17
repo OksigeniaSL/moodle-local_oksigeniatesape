@@ -40,5 +40,6 @@ Feature: A teacher runs the game from the panel and a student plays the mission
     When I click on "Begin the mission" "button"
     And I click on "[data-chapter]" "css_element"
     And I click on "[data-scene]" "css_element"
-    Then I should see "Continue"
-    And I click on "Continue" "button"
+    # A told moment is a dialogue: its parchment goes on with the same button, «Next» or «Continue».
+    Then ".dlg-box [data-next]" "css_element" should exist
+    And I click on ".dlg-box [data-next]" "css_element"
