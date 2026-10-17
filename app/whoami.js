@@ -46,7 +46,7 @@
     function show(html) {
       layer.innerHTML = '<div class="scene whoami"><div class="scene-top"><span class="scene-title">' +
         esc(game ? game.title : '') + '</span><button class="btn btn-soft scene-close" type="button" aria-label="' +
-        esc(t('app_close')) + '">✕</button></div><div class="scene-body">' + html + '</div></div>';
+        esc(t('app_close')) + '">' + T.icon('close') + '</button></div><div class="scene-body">' + html + '</div></div>';
       layer.querySelector('.scene-close').onclick = close;
       return layer.querySelector('.scene-body');
     }
@@ -107,7 +107,7 @@
         total: game.riddles.length})) + '</span><span class="whoami-stars" title="' + esc(t('app_whoami_stars',
         run.stars)) + '"><span aria-hidden="true">★ </span>' + run.stars + '</span></div>' +
         '<section class="card whoami-card">' + (reads ? '<button type="button" class="btn btn-soft read-card" ' +
-        'data-readcard aria-label="' + esc(t('app_read_aloud')) + '">🔊</button>' : '') + '<div class="whoami-head">' +
+        'data-readcard aria-label="' + esc(t('app_read_aloud')) + '">' + T.icon('speak') + '</button>' : '') + '<div class="whoami-head">' +
         '<span class="whoami-shadow' + (run.done === 'found' ? ' found' : '') + '" aria-hidden="true">' +
         (run.done === 'found' ? '✓' : '?') + '</span><h2>' + esc(run.done ? cap(r.answer) : t('app_whoami_who')) + '</h2>' +
         '</div><ol class="whoami-clues">' + r.clues.slice(0, run.done ? r.clues.length : run.shown).map(function(c, i) {

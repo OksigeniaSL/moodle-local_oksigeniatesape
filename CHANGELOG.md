@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.61.0 (2026-10-17)
+
+Block 1.7 of the plan: the start, the next step and the words of the game.
+
+- **«Your next step»**: one card over the map, one big button, for the one thing to do now: the scene of the student's
+  step not done in the place of today, the page the creature asks for, a minigame or a quest of that place, or else
+  «Look at the board». The panel of the place opens on the place of today (the same source as «Today in the valley»),
+  only what comes next has the main button, and «Challenges» glows only for what the place of today asks for.
+- **The creature brings the page of the day**: a bubble «I am hungry!» over the hero on the map, and a moment with its
+  face and the question; it munches the page when it is right. The page is no longer the first card of the world.
+- **A shorter start**: no prologue screen and no «ready» screen; the cards of the roles without descriptions (one line
+  on the card touched); the lineage and the look on one screen, with the button always at hand; and «Ready» goes
+  straight into the first scene of the mission, with the map after it (who arrives with the expedition on its way goes
+  through the welcome instead). Three touches to the first decision. The teacher guide says it so.
+- **The words of the game, not of a platform**: «Go» instead of «Open», a lit lantern instead of «Done», «When your
+  teacher says» instead of «To do», «Course tasks» instead of «In Moodle», «Explore», «Go in again», «Book» and «Your
+  bag»; no minutes and no «Stage n» for the student; the small labels over titles in lower case; icons of our own for
+  sound, voice and close; reading aloud always at hand in a scene; the countdowns of the battle are not read aloud
+  every second.
+
 ## 0.60.0 (2026-10-17)
 
 Block 1.5 of the plan: what is won is felt.

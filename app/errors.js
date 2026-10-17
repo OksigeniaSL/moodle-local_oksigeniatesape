@@ -42,7 +42,7 @@
     function show(html) {
       layer.innerHTML = '<div class="scene errors"><div class="scene-top"><span class="scene-title">' +
         esc(game ? game.title : '') + '</span><button class="btn btn-soft scene-close" type="button" aria-label="' +
-        esc(t('app_close')) + '">✕</button></div><div class="scene-body">' + html + '</div></div>';
+        esc(t('app_close')) + '">' + T.icon('close') + '</button></div><div class="scene-body">' + html + '</div></div>';
       layer.querySelector('.scene-close').onclick = close;
       layer.scrollTop = 0;
       return layer.querySelector('.scene-body');
@@ -130,7 +130,7 @@
       var html = '<div class="errors-head"><span class="kicker">' + esc(t('app_errors_sheet', {n: run.sheet + 1,
         total: game.sheets.length})) + '</span>' + blots() + '</div><section class="card errors-sheet">' +
         (reads ? '<button type="button" class="btn btn-soft read-card" data-readcard aria-label="' +
-        esc(t('app_read_aloud')) + '">🔊</button>' : '') + '<h2>' + esc(s.title) + '</h2><p class="errors-text">' + text +
+        esc(t('app_read_aloud')) + '">' + T.icon('speak') + '</button>' : '') + '<h2>' + esc(s.title) + '</h2><p class="errors-text">' + text +
         '</p></section>' + (why ? '<ul class="errors-why">' + why + '</ul>' : '') + '<p class="help" aria-live="polite">' +
         esc(left ? t('app_errors_left', left) : t('app_errors_clean')) + '</p>' + (left ? '' :
         '<div class="actions"><button class="btn btn-main" data-focus data-next>' + esc(last ? t('app_errors_finish') :

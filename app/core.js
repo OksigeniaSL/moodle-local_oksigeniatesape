@@ -1052,6 +1052,13 @@
       net: '<path d="M3 21l7-7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><circle cx="15" cy="9" r="6.5" ' +
         'fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M10.5 5.5l9 7M9.5 10l9-5.5M12 15l6-11M15 2.5v13" ' +
         'stroke="currentColor" stroke-width="1" opacity=".7"/>',
+      close: '<path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>',
+      sound: '<path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" ' +
+        'stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>',
+      mute: '<path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16.5 9.5l5 5M21.5 9.5l-5 5" stroke="currentColor" ' +
+        'stroke-width="2" stroke-linecap="round"/>',
+      speak: '<path d="M5 4h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-8l-5 4v-4H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" fill="currentColor"/>' +
+        '<path d="M7 9h10M7 12.5h7" stroke="#0f2131" stroke-width="1.8" stroke-linecap="round"/>',
       lens: '<circle cx="10" cy="10" r="6" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M14.5 14.5 L21 21" ' +
         'stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="10" cy="10" r="3.2" fill="currentColor" ' +
         'opacity=".25"/>',

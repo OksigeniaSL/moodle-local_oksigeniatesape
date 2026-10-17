@@ -838,9 +838,9 @@ body.tesape {
 
 .region .kicker {
   color: var(--accent);
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: .08em;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: .02em;
 }
 
 .list {
@@ -1268,9 +1268,9 @@ body.tesape {
 /* The mission: header, map and the panel of a place. */
 .kicker {
   color: var(--accent);
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: .08em;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: .02em;
 }
 
 .mission-head {
@@ -6056,4 +6056,128 @@ body.adapt-still .mission-grid .chapter {
 .hatch .creature {
   display: block;
   margin: 0 auto;
+}
+
+/* Done, as a lit lantern. */
+.done-lantern {
+  display: inline-flex;
+  vertical-align: -3px;
+  margin-left: 6px;
+}
+
+.done-lantern svg {
+  width: 18px;
+  height: 18px;
+}
+
+.scene-read svg,
+.scene-close svg,
+.read-card svg,
+.hud .sound svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* «Your next step»: one card, one big button. */
+.next-step {
+  margin-bottom: 14px;
+  border: 2px solid rgba(var(--lantern-rgb), .55);
+  background: linear-gradient(180deg, rgba(var(--lantern-rgb), .14), rgba(var(--lantern-rgb), .04)), var(--night-2);
+}
+
+.next-step h2 {
+  margin: 4px 0 2px;
+}
+
+.next-step .help {
+  margin: 0 0 12px;
+}
+
+.btn-big {
+  width: 100%;
+  min-height: 60px;
+  font-size: 20px;
+}
+
+/* The creature is hungry: a bubble over the hero on the map. */
+.map .hunger {
+  overflow: visible;
+}
+
+.hunger-bubble {
+  position: relative;
+  padding: 6px 12px;
+  border: 2px solid var(--ink);
+  border-radius: 14px;
+  background: var(--parchment);
+  color: var(--ink);
+  font: 800 13px var(--f-text);
+  cursor: pointer;
+  animation: bob 1.8s ease-in-out infinite;
+}
+
+.hunger-bubble::after {
+  content: "";
+  position: absolute;
+  right: 18px;
+  bottom: -9px;
+  border: 8px solid transparent;
+  border-top-color: var(--ink);
+  border-bottom: 0;
+}
+
+@keyframes bob {
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+/* The page of the day, with the face of the creature, which eats it when it is right. */
+.feed-face {
+  display: grid;
+  place-items: center;
+}
+
+.feed-face .creature {
+  width: 130px;
+  height: auto;
+}
+
+.feed-face.eating .creature {
+  animation: munch .25s ease-in-out 4;
+}
+
+@keyframes munch {
+  50% {
+    transform: scale(1.08, .92);
+  }
+}
+
+.feed-card .opts {
+  grid-template-columns: 1fr;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hunger-bubble,
+  .feed-face.eating .creature {
+    animation: none;
+  }
+}
+
+body.adapt-still .hunger-bubble,
+body.adapt-still .feed-face.eating .creature {
+  animation: none;
+}
+
+/* The button to go on, always at hand while the hero is made. */
+.story .sticky-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  padding: 12px 0 calc(12px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(180deg, transparent, var(--night) 40%);
+}
+
+.choice small[data-roleline]:empty {
+  display: none;
 }

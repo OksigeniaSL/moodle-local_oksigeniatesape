@@ -273,7 +273,7 @@
       } else {
         main += '<p class="battle-count">' + (l.mode === 'phones' ? '<span data-answered>' + esc(t('board_battle_answered', l)) +
           '</span>' : '') +
-          (l.left >= 0 ? ' <span class="battle-left" data-left="' + l.left + '">' + l.left + ' s</span>' : '') + '</p>';
+          (l.left >= 0 ? ' <span class="battle-left" data-left="' + l.left + '" aria-live="off">' + l.left + ' s</span>' : '') + '</p>';
         buttons = '<button class="btn btn-main" data-battlereveal>' + esc(t('board_battle_reveal')) + '</button>';
       }
     }

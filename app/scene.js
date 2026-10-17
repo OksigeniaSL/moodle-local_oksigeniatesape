@@ -484,15 +484,16 @@
     }
 
     function show(html) {
-      var reads = T.adapted.readaloud && window.speechSynthesis;
+      // Reading aloud is always at hand in a scene (who has it in their adaptations hears it by itself).
+      var reads = !!window.speechSynthesis;
       if (reads) {
         window.speechSynthesis.cancel();
       }
       layer.innerHTML = '<div class="scene"><div class="scene-top"><span class="scene-title">' + esc(sc ? sc.title : '') +
         '</span>' + (reads ? '<button class="btn btn-soft scene-read" type="button" data-read aria-label="' +
-        esc(t('app_read_aloud')) + '" title="' + esc(t('app_read_aloud')) + '">🔊</button>' : '') +
+        esc(t('app_read_aloud')) + '" title="' + esc(t('app_read_aloud')) + '">' + T.icon('speak') + '</button>' : '') +
         (saving ? '' : '<button class="btn btn-soft scene-close" type="button" aria-label="' + esc(t('app_close')) +
-        '">✕</button>') + '</div>' + (opts.team && opts.team.length ? '<p class="team-banner">' + esc(t('app_team_banner')) +
+        '">' + T.icon('close') + '</button>') + '</div>' + (opts.team && opts.team.length ? '<p class="team-banner">' + esc(t('app_team_banner')) +
         '</p>' : '') + '<div class="scene-body" tabindex="-1">' + html + '</div></div>';
       var cross = layer.querySelector('.scene-close');
       if (cross) {

@@ -48,7 +48,7 @@
     }
     if (!w.character) {
       state.draft = {role: '', nameform: 'm', lineage: '', look: null};
-      prologue();
+      go('role');
       return;
     }
     celebrate();
@@ -64,13 +64,10 @@
     if (state.draft.role && !T.isPeople(state.world.family) && T.hasForms(state.world.family, state.draft.role)) {
       list.push('form');
     }
-    if (T.hasLineages(state.world.family)) {
-      list.push('lineage');
-    }
-    if (lookChanges(state.draft, 1)) {
+    // The lineage and the look, on one screen.
+    if (T.hasLineages(state.world.family) || lookChanges(state.draft, 1)) {
       list.push('look');
     }
-    list.push('ready');
     var i = list.indexOf(current);
     return {
       list: list,
@@ -83,17 +80,12 @@
   }
 
   function go(step) {
-    ({role: chooseRole, form: chooseForm, lineage: chooseLineage, look: chooseLook, ready: ready})[step]();
+    if (!step) {
+      create();
+      return;
+    }
+    ({role: chooseRole, form: chooseForm, look: chooseLook})[step]();
     window.scrollTo(0, 0);
-  }
-
-  function prologue() {
-    app.innerHTML = '<div class="story">' + T.vignette('prologue') + '<h1>' + esc(t('app_prologue_title')) + '</h1>' +
-      '<p class="lead">' + esc(t('app_prologue')) + '</p><div class="actions"><button class="btn btn-main" data-go="role">' +
-      esc(t('app_start')) + '</button></div></div>';
-    app.querySelector('[data-go]').onclick = function() {
-      go('role');
-    };
   }
 
   function draftAvatar(extra) {
@@ -111,11 +103,13 @@
         var on = state.draft.role === role && (!people || state.draft.nameform === form);
         return '<button class="choice" type="button" data-role="' + role + '" data-nameform="' + form + '" aria-pressed="' +
           on + '">' + T.avatar({role: role, nameform: form, look: T.defaultLook(role), stage: 1}) + '<strong>' +
-          esc(T.roleName(fam, role, form)) + '</strong><small>' + esc(t('roledesc_' + role)) + '</small></button>';
+          esc(T.roleName(fam, role, form)) + '</strong><small data-roleline>' + (on ? esc(t('roledesc_' + role)) : '') +
+          '</small></button>';
       }).join('');
     }).join('');
-    app.innerHTML = '<div class="story">' + s.bar + '<h2>' + esc(t('app_who')) + '</h2><p class="help">' +
-      esc(t('app_who_help')) + '</p><div class="choices">' + cards + '</div><div class="actions">' +
+    // What each role does, in one line, only on the card touched.
+    app.innerHTML = '<div class="story">' + s.bar + '<h2>' + esc(t('app_who')) + '</h2><div class="choices">' + cards +
+      '</div><div class="actions sticky-actions">' +
       '<button class="btn btn-main" data-next disabled>' + esc(t('app_next')) + '</button></div></div>';
     var next = app.querySelector('[data-next]');
     next.disabled = !state.draft.role;
@@ -131,6 +125,7 @@
         }
         app.querySelectorAll('[data-role]').forEach(function(o) {
           o.setAttribute('aria-pressed', o === b);
+          o.querySelector('[data-roleline]').textContent = o === b ? t('roledesc_' + b.dataset.role) : '';
         });
         next.disabled = false;
       };
@@ -158,26 +153,6 @@
       b.onclick = function() {
         state.draft.nameform = b.dataset.form;
         app.querySelectorAll('[data-form]').forEach(function(o) {
-          o.setAttribute('aria-pressed', o === b);
-        });
-      };
-    });
-    bindNav(s);
-  }
-
-  function chooseLineage() {
-    var s = steps('lineage');
-    state.draft.lineage = state.draft.lineage || 'human';
-    var cards = T.LINEAGES.map(function(l) {
-      return '<button class="choice" type="button" data-lineage="' + l + '" aria-pressed="' + (state.draft.lineage === l) +
-        '">' + draftAvatar({lineage: l}) + '<strong>' + esc(T.lineageName(l, state.draft.nameform)) + '</strong></button>';
-    }).join('');
-    app.innerHTML = '<div class="story">' + s.bar + '<h2>' + esc(t('app_lineage')) + '</h2><p class="help">' +
-      esc(t('app_lineage_help')) + '</p><div class="choices">' + cards + '</div>' + nav(s) + '</div>';
-    app.querySelectorAll('[data-lineage]').forEach(function(b) {
-      b.onclick = function() {
-        state.draft.lineage = b.dataset.lineage;
-        app.querySelectorAll('[data-lineage]').forEach(function(o) {
           o.setAttribute('aria-pressed', o === b);
         });
       };
@@ -243,11 +218,28 @@
 
   function chooseLook() {
     var s = steps('look');
-    state.draft.look = state.draft.look || T.defaultLook(state.draft.role);
-    app.innerHTML = '<div class="story">' + s.bar + '<h2>' + esc(t('app_look')) + '</h2>' + builder(state.draft, 1) +
-      nav(s) + '</div>';
-    bindBuilder(state.draft, 1);
-    bindNav(s);
+    var d = state.draft;
+    d.look = d.look || T.defaultLook(d.role);
+    var lineages = T.hasLineages(state.world.family);
+    d.lineage = d.lineage || (lineages ? 'human' : '');
+    var draw = function() {
+      var cards = lineages ? '<div class="choices lineages">' + T.LINEAGES.map(function(l) {
+        return '<button class="choice" type="button" data-lineage="' + l + '" aria-pressed="' + (d.lineage === l) + '">' +
+          draftAvatar({lineage: l}) + '<strong>' + esc(T.lineageName(l, d.nameform)) + '</strong></button>';
+      }).join('') + '</div><p class="help">' + esc(t('app_lineage_help')) + '</p>' : '';
+      app.innerHTML = '<div class="story">' + s.bar + '<h2>' + esc(t('app_look')) + '</h2>' + cards +
+        (lookChanges(d, 1) ? builder(d, 1) : '') + nav(s) + '</div>';
+      app.querySelectorAll('[data-lineage]').forEach(function(b) {
+        b.onclick = function() {
+          d.lineage = b.dataset.lineage;
+          draw();
+          app.querySelector('[data-lineage="' + d.lineage + '"]').focus();
+        };
+      });
+      bindBuilder(d, 1);
+      bindNav(s);
+    };
+    draw();
   }
 
   function title(d) {
@@ -256,51 +248,57 @@
     return lineage ? name + ' ' + lineage : name;
   }
 
-  function ready() {
-    var s = steps('ready');
+  /**
+   * Creates the character and goes straight into the first scene of the mission (the map comes after it); who arrives
+   * with the expedition on its way goes through the welcome instead.
+   */
+  function create() {
     var d = state.draft;
-    app.innerHTML = '<div class="story"><div class="halo">' + draftAvatar() + '</div><h2>' + esc(t('app_youwillbe',
-      title(d))) + '</h2><p class="help">' + esc(t('app_who_help')) + '</p><div class="actions">' +
-      '<button class="btn btn-soft" data-prev>' + esc(t('app_back')) + '</button><button class="btn btn-main" data-create>' +
-      esc(t('app_ready')) + '</button></div></div>';
-    app.querySelector('[data-prev]').onclick = function() {
-      go(s.prev);
-    };
-    var create = app.querySelector('[data-create]');
-    create.onclick = function() {
-      create.disabled = true;
-      T.api('create_character', {
-        courseid: cfg.courseid,
-        role: d.role,
-        nameform: d.nameform,
-        lineage: T.hasLineages(state.world.family) ? d.lineage : '',
-        appearance: JSON.stringify(d.look)
-      }).then(function(world) {
-        state.world = world;
-        reveal();
-      }).catch(function(e) {
-        create.disabled = false;
-        T.toast(esc(e.message), true);
-      });
-    };
-  }
-
-  function reveal() {
-    var c = state.world.character;
-    app.innerHTML = '<div class="story reveal"><div class="halo">' + avatarOf(c) + '</div><h1>' +
-      esc(t('app_welcome', myName())) + '</h1><p class="lead">' + esc(title(c)) + '</p><div class="actions">' +
-      '<button class="btn btn-main" data-enter>' + esc(t('app_enter')) + '</button></div></div>';
-    remember();
-    app.querySelector('[data-enter]').onclick = function() {
+    var button = app.querySelector('[data-next]');
+    if (button) {
+      button.disabled = true;
+    }
+    T.api('create_character', {
+      courseid: cfg.courseid,
+      role: d.role,
+      nameform: d.nameform,
+      lineage: T.hasLineages(state.world.family) ? d.lineage : '',
+      appearance: JSON.stringify(d.look)
+    }).then(function(world) {
+      state.world = world;
       state.tab = 'world';
-      // Through the welcome, for who arrives with the expedition on its way.
-      route();
-    };
+      remember();
+      var m = world.mission;
+      var first = !world.welcome && m && m.chapters.length ? m.chapters[0].scenes.filter(function(sc) {
+        return !sc.done;
+      })[0] : null;
+      if (!first) {
+        route();
+        return;
+      }
+      try {
+        window.localStorage.setItem('tesape-mission-' + cfg.courseid + '-' + m.id + '-' + cfg.userid, '1');
+      } catch (e) {
+        // Without storage the opening of the mission shows once more; nothing else.
+      }
+      app.innerHTML = '<div class="loading"><div><div class="lamp"></div></div></div>';
+      T.playScene({sceneid: first.id, world: world, onclose: function(w) {
+        state.world = w;
+        route();
+      }});
+    }).catch(function(e) {
+      if (button) {
+        button.disabled = false;
+      }
+      T.toast(esc(e.message), true);
+    });
   }
 
   function nav(s) {
-    return '<div class="actions">' + (s.prev ? '<button class="btn btn-soft" data-prev>' + esc(t('app_back')) +
-      '</button>' : '') + '<button class="btn btn-main" data-next>' + esc(t('app_next')) + '</button></div>';
+    // The last step creates the character.
+    return '<div class="actions sticky-actions">' + (s.prev ? '<button class="btn btn-soft" data-prev>' + esc(t('app_back')) +
+      '</button>' : '') + '<button class="btn btn-main" data-next>' + esc(t(s.next ? 'app_next' : 'app_ready')) +
+      '</button></div>';
   }
 
   function bindNav(s) {
@@ -460,8 +458,8 @@
     var layer = moment('<div class="kicker">' + esc(t('app_levelup_kicker')) + '</div><div class="rise">' +
       (staged ? '<div class="rise-from">' + avatarOf(was) + '</div><div class="rise-to">' + avatarOf(c) + '</div>' :
       '<div class="rise-from ring big"><b>' + before.level + '</b></div><div class="rise-to ring big"><b>' + c.level +
-      '</b></div>') + '</div><h2 id="tesape-rise-title">' + esc(t('app_levelup', c.level)) + '</h2><p>' + esc(title(c)) +
-      (staged ? ' · ' + esc(t('app_stage', c.stage)) : '') + '</p>' + (staged ? '<p class="help">' +
+      '</b></div>') + '</div><h2 id="tesape-rise-title">' + esc(t('app_levelup', c.level)) + '</h2><p>' + esc(title(c)) + '</p>' +
+      (staged ? '<p class="help">' +
       esc(t('app_stageup_help')) + '</p>' : ''), 'tesape-rise-title', then);
     if (T.fx) {
       T.fx.sound('drumroll');
@@ -623,10 +621,12 @@
     var c = w.character;
     var m = c.member || {energy: 0, breath: 0};
     var pct = c.levelneeded ? Math.round(100 * c.levelinto / c.levelneeded) : 100;
+    // What waits in «Challenges»: only what the place of today asks for, with a mission.
+    var place = w.mission && w.mission.chapters.length ? todayChapter(w.mission) : null;
     var pending = w.challenges.filter(function(ch) {
-      return !ch.status || ch.status === 'notyet';
+      return (!ch.status || ch.status === 'notyet') && (!place || ch.id === place.challengeid);
     }).length + w.activities.filter(function(a) {
-      return a.tracked && !a.done;
+      return a.tracked && !a.done && (!place || a.chapterid === place.id);
     }).length;
     app.innerHTML = '<div class="sky"></div><div class="world">' +
       // Its name starts with what it shows (the name of the character), and says where it goes.
@@ -634,7 +634,7 @@
       '</span><span class="who"><b>' + esc(myName()) + '</b> <small>' + esc(title(c)) + '</small></span><span class="sr-only">' +
       ' · ' + esc(t('app_tab_me')) + '</span></button><div class="ring" style="--p:' + pct + '" title="' + esc(t('app_level')) + ' ' + c.level + '"><b>' +
       c.level + '</b></div>' + (T.fx && !w.quiet && !T.adapted.quiet ? '<button type="button" class="sound" data-sound aria-pressed="' + !T.fx.muted() +
-      '" aria-label="' + esc(t('app_sound')) + '" title="' + esc(t('app_sound')) + '">' + (T.fx.muted() ? '🔇' : '🔊') +
+      '" aria-label="' + esc(t('app_sound')) + '" title="' + esc(t('app_sound')) + '">' + T.icon(T.fx.muted() ? 'mute' : 'sound') +
       '</button>' : '') + '<details class="exit"><summary aria-label="' + esc(t('app_leave')) + '" title="' +
       esc(t('app_leave')) + '">⎋</summary><div class="exit-menu">' +
       // A course that goes straight into the game has no page of its own to go back to: only the dashboard.
@@ -660,7 +660,7 @@
     if (sound) {
       sound.onclick = function() {
         var on = T.fx.toggle();
-        sound.textContent = on ? '🔊' : '🔇';
+        sound.innerHTML = T.icon(on ? 'sound' : 'mute');
         sound.setAttribute('aria-pressed', String(on));
       };
     }
@@ -764,6 +764,136 @@
 
   /* ---------- The mission: map, places and scenes ---------- */
 
+  /**
+   * The place of today: where the teacher has the class («Today in the valley»), or else the first one not done.
+   *
+   * @param {Object} m The mission.
+   * @return {Object}
+   */
+  function todayChapter(m) {
+    return m.chapters.filter(function(ch) {
+      return m.today && ch.code === m.today;
+    })[0] || nextChapter(m);
+  }
+
+  /**
+   * What the student does next, one thing: the scene of their step not done in the place of today, the page the creature
+   * asks for, a minigame or a quest of that place, or else to look at the board.
+   *
+   * @param {Object} m The mission.
+   * @return {Object} kind (scene, page, game, quest or board), and id, code, type, title and place as it needs.
+   */
+  function nextStep(m) {
+    var ch = todayChapter(m);
+    var sc = ch.scenes.filter(function(x) {
+      return !x.done;
+    })[0];
+    if (sc) {
+      return {kind: 'scene', id: sc.id, title: sc.title, place: ch.name};
+    }
+    var p = state.world.page;
+    if (p && !p.answered && state.world.character.creature) {
+      return {kind: 'page'};
+    }
+    var g = (ch.games || []).filter(function(x) {
+      return !x.done;
+    })[0];
+    if (g) {
+      return {kind: 'game', code: g.code, type: g.type || 'nest', title: g.title, place: ch.name};
+    }
+    var q = (ch.quests || []).filter(function(x) {
+      return !x.done;
+    })[0];
+    if (q) {
+      return {kind: 'quest', id: q.id, title: q.title, place: ch.name};
+    }
+    return {kind: 'board'};
+  }
+
+  /**
+   * «Your next step»: one card, one big button.
+   *
+   * @param {Object} m The mission.
+   * @return {string}
+   */
+  function nextCard(m) {
+    var n = nextStep(m);
+    state.next = n;
+    var name = creatureName(state.world.character);
+    var body = n.kind === 'board' ? '<h2>' + esc(t('app_next_board')) + '</h2><p class="help">' + esc(t('app_next_board_help')) +
+      '</p>' : '<h2>' + esc(n.kind === 'page' ? t('app_next_feed', name) : n.title) + '</h2>' + (n.place ? '<p class="help">' +
+      esc(n.place) + '</p>' : '') + '<button type="button" class="btn btn-main btn-big" data-next-step>' + esc(t('app_open')) +
+      '</button>';
+    return '<section class="card next-step">' + listen() + '<div class="kicker">' + esc(t('app_next_step')) + '</div>' + body +
+      '</section>';
+  }
+
+  /**
+   * The creature asks for the page of the day: its face, the question, and it eats it when it is right.
+   */
+  function feedMoment() {
+    var layer = document.createElement('div');
+    layer.className = 'badge-moment feed-moment';
+    layer.setAttribute('role', 'dialog');
+    layer.setAttribute('aria-modal', 'true');
+    layer.setAttribute('aria-labelledby', 'tesape-feed-title');
+    document.body.appendChild(layer);
+    var close = function() {
+      document.removeEventListener('keydown', onkey);
+      layer.remove();
+      world();
+    };
+    var onkey = function(ev) {
+      if (ev.key === 'Escape') {
+        close();
+      }
+    };
+    document.addEventListener('keydown', onkey);
+    var draw = function(ate) {
+      var p = state.world.page;
+      var c = state.world.character;
+      var name = creatureName(c);
+      var title = !p.answered ? t('app_page_hungry', name) : p.right ? t('app_page_fed', name) : t('app_page_missed', name);
+      var note = p.streak >= p.glow ? t('app_page_glow', {name: name, days: p.streak}) : p.streak > 1 ?
+        t('app_page_streak', p.streak) : '';
+      layer.innerHTML = '<div class="badge-card feed-card"><div class="feed-face' + (ate ? ' eating' : '') + '">' +
+        T.creature(c.creature, c.creaturestage, true) + '</div><h2 id="tesape-feed-title">' + esc(title) + '</h2>' +
+        (note ? '<p class="help">' + esc(note) + '</p>' : '') + (!p.answered ? '<p class="help">' + esc(t('app_page_help',
+        {name: name, breath: p.breath})) + '</p>' : '') + '<p class="page-q">' + esc(p.question.text) + '</p><div class="opts">' +
+        p.question.options.map(function(o, i) {
+          return '<button type="button" class="opt' + (p.answered && i === p.correct ? ' sel' : '') + '" data-feedopt="' + i +
+            '"' + (p.answered ? ' disabled' : '') + '>' + esc(o) + '</button>';
+        }).join('') + '</div>' + (p.answered ? (p.why ? '<p class="help">' + esc(p.why) + '</p>' : '') + '<p class="conseq said">' +
+        esc(p.right ? t('app_page_breath', p.breath) : t('app_page_tomorrow')) + '</p>' : '') +
+        '<div class="actions"><button class="btn ' + (p.answered ? 'btn-main' : 'btn-soft') + '" type="button" data-close>' +
+        esc(t(p.answered ? 'app_continue' : 'app_later')) + '</button></div></div>';
+      layer.querySelector('[data-close]').onclick = close;
+      layer.querySelectorAll('[data-feedopt]:not([disabled])').forEach(function(b) {
+        b.onclick = function() {
+          layer.querySelectorAll('[data-feedopt]').forEach(function(o) {
+            o.disabled = true;
+          });
+          T.api('answer_page', {courseid: cfg.courseid, answer: Number(b.dataset.feedopt)}).then(function(w) {
+            state.world = w;
+            draw(!!w.page.right);
+            if (T.fx) {
+              T.fx.sound(w.page.right ? 'heart' : 'choose');
+              if (w.page.right) {
+                T.fx.hearts();
+              }
+            }
+            layer.querySelector('[data-close]').focus();
+          }).catch(function(e) {
+            T.toast(esc(e.message), true);
+            draw(false);
+          });
+        };
+      });
+    };
+    draw(false);
+    (layer.querySelector('[data-feedopt]:not([disabled])') || layer.querySelector('[data-close]')).focus();
+  }
+
   function nextChapter(m) {
     var open = m.chapters.filter(function(ch) {
       return !ch.done;
@@ -821,6 +951,12 @@
     var step = T.mapWalk(cfg.courseid + '-' + cfg.userid + '-' + m.code, m.chapters, current);
     var walk = step.from ? ' walking" style="--walk-x:' + (step.from.x - current.x) + 'px;--walk-y:' +
       (step.from.y - current.y) + 'px;animation-delay:' + (0.3 + step.delay) + 's' : '';
+    // The page of the day: the creature is hungry, over the hero.
+    var p = state.world.page;
+    var hungry = p && !p.answered && c.creature && !state.visit ? '<foreignObject x="' + (current.x - 128) + '" y="' +
+      (current.y - 66) + '" width="150" height="40" class="hunger"><div xmlns="http://www.w3.org/1999/xhtml"><button type="button" ' +
+      'class="hunger-bubble" data-feed>' + esc(t('app_feed_bubble')) + '<span class="sr-only"> ' +
+      esc(t('app_page_hungry', creatureName(c))) + '</span></button></div></foreignObject>' : '';
     var me = '<foreignObject x="' + (current.x - 74) + '" y="' + (current.y - 22) + '" width="44" height="44" class="me-marker' +
       walk + '">' +
       '<div xmlns="http://www.w3.org/1999/xhtml" class="face">' + T.avatar({role: c.role, nameform: c.nameform,
@@ -834,7 +970,7 @@
       '" role="group" aria-label="' + esc(m.title) + '"><defs>' + T.MAPGLOW + '</defs>' + T.mapGround(m) +
       T.mapLandmarks(m) + T.mapNight(m) + '<polyline points="' + pts + '" class="road"/>' +
       (walked ? '<polyline points="' + walked + '" class="road walked"/>' : '') + roadDrawing(fresh) +
-      (T.critters ? T.critters.fireflies(m) : '') + places + me + '</svg></div>';
+      (T.critters ? T.critters.fireflies(m) : '') + places + me + hungry + '</svg></div>';
   }
 
   /**
@@ -890,6 +1026,11 @@
     }
   }
 
+  function isNext(kind, id) {
+    var n = state.next;
+    return !!n && n.kind === kind && (kind === 'game' ? n.code === id : n.id === id);
+  }
+
   function chapterPanel(m, ch, past) {
     var w = state.world;
     var challenge = w.challenges.filter(function(x) {
@@ -905,11 +1046,11 @@
         'btn-soft') + '" data-teamscene="' + sc.id + '">' + esc(t('app_team_play')) + '</button>' : '';
     };
     var scenes = ch.scenes.map(function(sc) {
-      return '<li class="item"><span class="grow"><b>' + esc(sc.title) + '</b><small>' + (sc.minutes ?
-        esc(t('app_minutes', sc.minutes)) : '') + (sc.mode === 'team' ? ' · ' + esc(t('app_team_meant')) : '') +
-        (sc.done ? ' · ' + esc(t(sc.better ? 'app_status_better' : 'app_status_done')) : '') + '</small></span>' +
-        (past ? '' : '<span class="item-actions">' + together(sc) + '<button class="btn ' + (sc.done || sc.mode ===
-        'team' ? 'btn-soft' : 'btn-main') + '" data-scene="' + sc.id + '">' + esc(sc.done ? t('app_playagain') :
+      return '<li class="item"><span class="grow"><b>' + esc(sc.title) + done(sc) + '</b><small>' + (sc.mode === 'team' ?
+        esc(t('app_team_meant')) : '') + (sc.done && sc.better ? (sc.mode === 'team' ? ' · ' : '') +
+        esc(t('app_status_better')) : '') + '</small></span>' +
+        (past ? '' : '<span class="item-actions">' + together(sc) + '<button class="btn ' + (isNext('scene', sc.id) ?
+        'btn-main' : 'btn-soft') + '" data-scene="' + sc.id + '">' + esc(sc.done ? t('app_playagain') :
         t('app_play')) + '</button></span>') + '</li>';
     }).join('');
     var acts = past ? [] : w.activities.filter(function(a) {
@@ -917,16 +1058,16 @@
     });
     // Quests: for whoever wants more, whatever their step; gems and pages, never saber.
     var quests = (ch.quests || []).map(function(q) {
-      return '<li class="item"><span class="grow"><b>' + esc(q.title) + '</b><small>' + esc(t('app_quest_step_' +
-        (q.step === 4 ? 4 : 3))) + (q.minutes ? ' · ' + esc(t('app_minutes', q.minutes)) : '') + (q.done ? ' · ' +
-        esc(t(q.better ? 'app_status_better' : 'app_status_done')) : '') + '</small></span>' + (past ? '' :
+      return '<li class="item"><span class="grow"><b>' + esc(q.title) + done(q) + '</b><small>' + esc(t('app_quest_step_' +
+        (q.step === 4 ? 4 : 3))) + (q.done && q.better ? ' · ' + esc(t('app_status_better')) : '') + '</small></span>' +
+        (past ? '' :
         '<button class="btn btn-soft" data-scene="' + q.id + '">' + esc(q.done ? t('app_playagain') : t('app_play')) +
         '</button>') + '</li>';
     }).join('');
     var games = (ch.games || []).map(function(g) {
       return '<li class="item"><span class="mini-icon">' + T.icon('game') + '</span><span class="grow"><b>' + esc(g.title) +
         '</b><small>' + esc(g.done ? t('app_game_done') : t('app_game_help')) + '</small></span>' + (past ? '' :
-        '<button class="btn ' + (g.done ? 'btn-soft' : 'btn-main') + '" data-game="' + esc(g.code) + '" data-gametype="' +
+        '<button class="btn ' + (isNext('game', g.code) ? 'btn-main' : 'btn-soft') + '" data-game="' + esc(g.code) + '" data-gametype="' +
         esc(g.type || 'nest') + '">' +
         esc(g.done ? t('app_playagain') : t('app_play')) + '</button>') + '</li>';
     }).join('');
@@ -955,7 +1096,7 @@
     if (!count) {
       return '';
     }
-    return '<details class="more-place"><summary>' + esc(t('app_more_place', count)) + '</summary>' +
+    return '<details class="more-place"><summary>' + esc(t('app_more_place')) + '</summary>' +
       (games ? '<h3 style="margin-top:16px">' + esc(t('app_minigames')) + '</h3><ul class="list">' + games + '</ul>' : '') +
       (quests ? '<h3 style="margin-top:16px">' + esc(t('app_quests')) + '</h3><p class="help-soft">' +
       esc(t('app_quests_help')) + '</p><ul class="list">' + quests + '</ul>' : '') +
@@ -984,7 +1125,7 @@
     }
     return '<li class="item"><span class="mini-icon"><img src="' + esc(a.icon) + '" alt="" width="24" height="24"></span>' +
       '<span class="grow"><b>' + esc(a.name) + '</b><small>' + esc(rewards.join(' · ')) + '</small></span>' +
-      (a.done ? '<span class="tag done">' + esc(t('app_status_done')) + '</span>' : '') + '<button class="btn ' +
+      done(a) + '<button class="btn ' +
       (a.done ? 'btn-soft' : 'btn-main') + '" data-activity="' + a.cmid + '">' + esc(t('app_open')) + '</button></li>';
   }
 
@@ -1065,7 +1206,7 @@
     }
     var chapter = m.chapters.filter(function(ch) {
       return ch.id === state.chapter;
-    })[0] || nextChapter(m);
+    })[0] || todayChapter(m);
     var lit = m.chapters.filter(function(ch) {
       return ch.mine;
     }).length;
@@ -1073,7 +1214,7 @@
       esc(m.title) + '</h2></div><div class="tally"><span>' + T.icon('lantern') + ' ' + lit + '/' + m.chapters.length +
       '</span><span>' + T.icon('log') + ' ' + m.pages.length + '/' + m.pagecount + '</span></div></div>' +
       (!past && farFrom() ? '<p class="team-banner far-banner">' + esc(t('app_far_banner')) + '</p>' : '') +
-      (past ? '' : pageCard()) + '<div class="mission-grid">' + missionMap(m) + chapterPanel(m, chapter, past) + '</div></div>';
+      (past ? '' : nextCard(m)) + '<div class="mission-grid">' + missionMap(m) + chapterPanel(m, chapter, past) + '</div></div>';
   }
 
   /**
@@ -1093,42 +1234,6 @@
           esc(t('app_expedition_mine', {mine: x.mine, pages: x.pages})) + '</small></span><button class="btn btn-soft" ' +
           'data-visit="' + x.id + '">' + esc(t('app_expedition_visit')) + '</button></li>';
       }).join('') + '</ul></section>';
-  }
-
-  /**
-   * The page of the day: the creature asks for a quick question of what the student has played; answered right, it
-   * eats it and gives breath. Three days in a row and it glows.
-   *
-   * @return {string}
-   */
-  function pageCard() {
-    var p = state.world.page;
-    var c = state.world.character;
-    if (!p) {
-      return '';
-    }
-    var name = creatureName(c);
-    var glow = p.streak >= p.glow;
-    var title = !p.answered ? t('app_page_hungry', name) : p.right ? t('app_page_fed', name) : t('app_page_missed', name);
-    var note = glow ? t('app_page_glow', {name: name, days: p.streak}) : p.streak > 1 ? t('app_page_streak', p.streak) : '';
-    var options = p.question.options.map(function(o, i) {
-      var cls = 'opt';
-      if (p.answered) {
-        cls += i === p.correct ? ' right' : i === p.mine ? ' wrong' : '';
-      }
-      return '<button type="button" class="' + cls + '" data-page="' + i + '"' + (p.answered ? ' disabled' : '') + '>' +
-        esc(o) + '</button>';
-    }).join('');
-    var after = '';
-    if (p.answered) {
-      after = (p.why ? '<p class="help">' + esc(p.why) + '</p>' : '') + '<p class="conseq ' + (p.right ? 'good' : '') + '">' +
-        '<span class="what">' + esc(p.right ? t('app_page_breath', p.breath) : t('app_page_tomorrow')) + '</span></p>';
-    }
-    return '<section class="card page-card' + (glow ? ' glow' : '') + '">' + listen() + '<div class="page-head">' +
-      T.creature(c.creature, c.creaturestage) + '<div><b>' + esc(title) + '</b>' + (note ? '<small>' + esc(note) +
-      '</small>' : '') + (!p.answered ? '<small>' + esc(t('app_page_help', {name: name, breath: p.breath})) + '</small>' :
-      '') + '</div></div><p class="page-q">' + esc(p.question.text) + '</p><div class="opts">' + options + '</div>' + after +
-      '</section>';
   }
 
   /**
@@ -1167,20 +1272,30 @@
         world();
       };
     }
-    app.querySelectorAll('[data-page]:not([disabled])').forEach(function(b) {
-      b.onclick = function() {
-        app.querySelectorAll('[data-page]').forEach(function(o) {
-          o.disabled = true;
-        });
-        T.api('answer_page', {courseid: cfg.courseid, answer: Number(b.dataset.page)}).then(function(w) {
-          state.world = w;
-          world();
-        }).catch(function(e) {
-          T.toast(esc(e.message), true);
-          world();
-        });
+    var step = app.querySelector('[data-next-step]');
+    if (step && state.next) {
+      step.onclick = function() {
+        var n = state.next;
+        if (n.kind === 'page') {
+          feedMoment();
+        } else if (n.kind === 'game') {
+          var play = {errors: T.playErrors, whack: T.playWhack, venn: T.playVenn, whoami: T.playWhoami}[n.type] || T.playNest;
+          play({code: n.code, world: state.world, onclose: function(world) {
+            state.world = world;
+            route();
+          }});
+        } else {
+          T.playScene({sceneid: Number(n.id), world: state.world, onclose: function(world) {
+            state.world = world;
+            route();
+          }});
+        }
       };
-    });
+    }
+    var feed = app.querySelector('[data-feed]');
+    if (feed) {
+      feed.onclick = feedMoment;
+    }
     var begin = app.querySelector('[data-begin]');
     if (begin) {
       begin.onclick = function() {
@@ -1296,7 +1411,7 @@
   function listen() {
     return T.adapted.readaloud && T.readAloud && window.speechSynthesis ? '<button type="button" class="btn btn-soft ' +
       'read-card" data-readcard aria-label="' + esc(t('app_read_aloud')) + '" title="' + esc(t('app_read_aloud')) +
-      '">🔊</button>' : '';
+      '">' + T.icon('speak') + '</button>' : '';
   }
 
   /**
@@ -1551,6 +1666,17 @@
     }
   }
 
+  /**
+   * Done, as the game says it: a lit lantern (and the word, for who listens).
+   *
+   * @param {Object} x Anything with done.
+   * @return {string}
+   */
+  function done(x) {
+    return x.done ? ' <span class="done-lantern" title="' + esc(t('app_status_done')) + '">' + T.icon('lantern') +
+      '<span class="sr-only">' + esc(t('app_status_done')) + '</span></span>' : '';
+  }
+
   function challengeItem(ch) {
     var status = ch.status || 'todo';
     var label = {done: 'app_status_done', merit: 'app_status_merit', notyet: 'app_status_notyet',
@@ -1566,7 +1692,8 @@
       esc(rewards.join(' · ')) + (ch.teamwork ? ' · ' + esc(t('app_teamwork')) : '') + '</small>' +
       (ch.description ? '<div style="margin-top:6px;font-size:15px">' + ch.description + '</div>' : '') +
       (ch.note ? '<div class="note"><b>' + esc(t('app_teachersays')) + ':</b> ' + esc(ch.note) + '</div>' : '') +
-      '</span>' + listen() + '<span class="tag ' + status + '">' + esc(t(label)) + '</span></li>';
+      '</span>' + listen() + (status === 'done' ? done({done: true}) : '<span class="tag ' + status + '">' + esc(t(label)) +
+      '</span>') + '</li>';
   }
 
   function tabChallenges() {
@@ -1639,7 +1766,7 @@
     var creature = c.creature ? '<div class="creature-box' + glow + '">' + T.creature(c.creature, c.creaturestage) + '<b>' +
       esc(creatureName(c)) + '</b><small>' + esc(t('app_creaturestage', c.creaturestage)) + '</small></div>' : '';
     return '<section class="card sheet"><div class="sheet-art">' + avatarOf(c, title(c)) + creature + '</div><div class="stats"><h2>' + esc(myName()) +
-      '</h2><p style="color:var(--text-soft)">' + esc(title(c)) + ' · ' + esc(t('app_stage', c.stage)) + '</p>' +
+      '</h2><p style="color:var(--text-soft)">' + esc(title(c)) + '</p>' +
       '<div class="stat"><span>' + esc(t('app_level')) + '</span><b>' + c.level + '</b></div>' +
       '<div class="meter level" style="margin:6px 0 4px"><i style="width:' + pct + '%"></i></div><small style="color:' +
       'var(--text-soft)">' + esc(c.levelneeded ? t('app_tonext', c.levelneeded - c.levelinto) : t('app_maxlevel')) +

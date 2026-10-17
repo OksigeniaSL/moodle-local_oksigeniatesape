@@ -73,7 +73,7 @@
     function show(html) {
       layer.innerHTML = '<div class="scene whack"><div class="scene-top"><span class="scene-title">' +
         esc(game ? game.title : '') + '</span><button class="btn btn-soft scene-close" type="button" aria-label="' +
-        esc(t('app_close')) + '">✕</button></div><div class="scene-body">' + html + '</div></div>';
+        esc(t('app_close')) + '">' + T.icon('close') + '</button></div><div class="scene-body">' + html + '</div></div>';
       layer.querySelector('.scene-close').onclick = close;
       layer.scrollTop = 0;
       return layer.querySelector('.scene-body');
@@ -361,7 +361,7 @@
       box.innerHTML = '<div class="whack-thing up" data-thing>' + esc(thing.label) + '</div><p class="sr-only" ' +
         'aria-live="polite">' + esc(t('app_whack_comes', thing.label)) + '</p><div class="actions">' +
         (reads ? '<button type="button" class="btn btn-soft" data-read aria-label="' + esc(t('app_read_aloud')) +
-        '">🔊</button>' : '') + '<button class="btn btn-main" data-yes>' + esc(t('app_whack_yes')) + '</button>' +
+        '">' + T.icon('speak') + '</button>' : '') + '<button class="btn btn-main" data-yes>' + esc(t('app_whack_yes')) + '</button>' +
         '<button class="btn btn-soft" data-no>' + esc(t('app_whack_no')) + '</button></div>';
       var o = {thing: thing, el: box.querySelector('[data-thing]'), hole: -1, left: 0, done: false};
       box.querySelector('[data-yes]').onclick = function() {

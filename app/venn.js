@@ -61,7 +61,7 @@
     function show(html) {
       layer.innerHTML = '<div class="scene venn"><div class="scene-top"><span class="scene-title">' +
         esc(game ? game.title : '') + '</span><button class="btn btn-soft scene-close" type="button" aria-label="' +
-        esc(t('app_close')) + '">✕</button></div><div class="scene-body">' + html + '</div></div>';
+        esc(t('app_close')) + '">' + T.icon('close') + '</button></div><div class="scene-body">' + html + '</div></div>';
       layer.querySelector('.scene-close').onclick = close;
       return layer.querySelector('.scene-body');
     }
