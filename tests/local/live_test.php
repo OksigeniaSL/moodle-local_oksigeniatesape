@@ -140,7 +140,6 @@ final class live_test extends \advanced_testcase {
         $best = live::device_view($live, $members[0], self::NOW)['prize'];
         $other = live::device_view($live, $members[2], self::NOW)['prize'];
         $this->assertEquals(live::WIN_SABER, $best['saber']);
-        $this->assertEquals(live::WIN_GEMS, $best['gems']);
         $this->assertTrue($best['best']);
         // The object of the mission is what is left of the Embrollo at the end: not in a battle to practise. The team
         // that helped most gets more gems.

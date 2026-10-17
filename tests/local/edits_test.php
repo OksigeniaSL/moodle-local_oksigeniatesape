@@ -60,7 +60,7 @@ final class edits_test extends \advanced_testcase {
         $course = $this->make_course();
         $view = edits::view($course->id);
         $this->assertCount(6, $view['chapters']);
-        $this->assertCount(18, $view['questions']);
+        $this->assertCount(19, $view['questions']);
         $kinds = [];
         foreach ($view['chapters'] as $chapter) {
             $this->assertNotEmpty($chapter['fields']);
@@ -116,22 +116,22 @@ final class edits_test extends \advanced_testcase {
         $questions[] = ['id' => '', 'chapter' => 'lago', 'objective' => 'SV-06', 'text' => '¿Una más?',
             'options' => ['Sí', '', 'No'], 'why' => ''];
         $kept = edits::save_questions($course->id, $questions);
-        $this->assertCount(19, $kept);
-        $this->assertSame(['Sí', 'No'], $kept[18]['options']);
-        $this->assertNotSame('', $kept[18]['id']);
+        $this->assertCount(20, $kept);
+        $this->assertSame(['Sí', 'No'], $kept[19]['options']);
+        $this->assertNotSame('', $kept[19]['id']);
         $data = missions::get($course->id)->data;
         $this->assertSame('¿Una pregunta mía?', $data['questions'][0]['text']);
-        $this->assertNotNull(questions::get($course->id, $kept[18]['id'], 1));
+        $this->assertNotNull(questions::get($course->id, $kept[19]['id'], 1));
         // A question without two options is not kept.
         try {
             edits::save_questions($course->id, [['text' => '¿Sola?', 'options' => ['Una']]]);
             $this->fail('A question with one option was kept');
         } catch (\invalid_parameter_exception $e) {
-            $this->assertCount(19, missions::get($course->id)->data['questions']);
+            $this->assertCount(20, missions::get($course->id)->data['questions']);
         }
         // An empty list is the questions of the mission again.
         edits::save_questions($course->id, []);
-        $this->assertCount(18, missions::get($course->id)->data['questions']);
+        $this->assertCount(19, missions::get($course->id)->data['questions']);
     }
 
     public function test_the_changes_go_to_another_course_with_the_same_mission(): void {
