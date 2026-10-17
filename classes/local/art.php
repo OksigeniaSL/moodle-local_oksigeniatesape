@@ -25,6 +25,11 @@ namespace local_oksigeniatesape\local;
  * (character.storyheroes.healer.fairy.f.1, creature.2.feathers, icon.saber, map.livingthings…) to the images in the
  * zip. The client looks for the most precise key first and goes down to the general ones.
  *
+ * Packs come in layers (kind in pack.json): the world (its map in layers, sounds, creature, the Embrollo…), a style
+ * (the heroes) and a mission (its scenes, album, speakers and maps). The site has one world and any number of styles
+ * and missions; each key is taken from the mission first, then the style, then the world, and the client draws what no
+ * pack has. So no zip has to carry everything, and each one stays light enough to upload.
+ *
  * @package    local_oksigeniatesape
  * @copyright  2026 Oksigenia <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -41,6 +46,12 @@ final class art {
 
     /** @var string[] Sounds a pack can have, under keys that start with «sound.»: the sounds, places and music of a world. */
     public const SOUNDS = ['mp3', 'ogg', 'm4a'];
+
+    /** @var string[] The layers of a pack, from the one under to the one on top. */
+    public const KINDS = ['world', 'style', 'mission'];
+
+    /** @var array|null The packs read in this request, by code. */
+    private static $packs = null;
 
     /**
      * Installs a pack from a zip and makes it the pack of the site. A pack with the same code is replaced.
@@ -59,6 +70,10 @@ final class art {
         $code = (string) ($info['code'] ?? '');
         if (!is_array($info) || !preg_match('/^[a-z0-9-]{2,40}$/', $code) || !is_array($info['files'] ?? null)) {
             throw new \moodle_exception('artpackbad', self::COMPONENT, '', 'pack.json');
+        }
+        $kind = (string) ($info['kind'] ?? 'world');
+        if (!in_array($kind, self::KINDS, true)) {
+            throw new \moodle_exception('artpackbad', self::COMPONENT, '', 'kind');
         }
         $files = [];
         foreach ($info['files'] as $key => $path) {
@@ -96,6 +111,7 @@ final class art {
             'code' => $code,
             'name' => clean_param((string) ($info['name'] ?? $code), PARAM_TEXT),
             'version' => max(1, (int) ($info['version'] ?? 1)),
+            'kind' => $kind,
             'files' => $files,
             'theme' => themes::clean($info['theme'] ?? null),
         ];
@@ -107,7 +123,18 @@ final class art {
             'filepath' => '/' . $code . '/',
             'filename' => 'pack.json',
         ], json_encode($manifest));
-        set_config('artpack', $code, self::COMPONENT);
+        // The world is the one of the site; a style or a mission goes over it, beside those already there.
+        $layers = array_values(array_diff(self::layers(), [$code]));
+        if ($kind === 'world') {
+            set_config('artpack', $code, self::COMPONENT);
+        } else {
+            $layers[] = $code;
+            if ((string) get_config(self::COMPONENT, 'artpack') === $code) {
+                set_config('artpack', '', self::COMPONENT);
+            }
+        }
+        set_config('artlayers', implode(',', $layers), self::COMPONENT);
+        self::$packs = null;
         return $manifest;
     }
 
@@ -116,37 +143,138 @@ final class art {
      */
     public static function off(): void {
         set_config('artpack', '', self::COMPONENT);
+        set_config('artlayers', '', self::COMPONENT);
+        self::$packs = null;
     }
 
     /**
-     * The pack of the site, for the client: each key with the address of its image.
+     * Takes one pack out of the site, with its files: the world, a style or a mission.
      *
-     * @return array|null code, name, version and files (key => URL); null without a pack.
+     * @param string $code
+     * @return bool Whether it was there.
+     */
+    public static function remove(string $code): bool {
+        $there = (string) get_config(self::COMPONENT, 'artpack') === $code || in_array($code, self::layers(), true);
+        if ((string) get_config(self::COMPONENT, 'artpack') === $code) {
+            set_config('artpack', '', self::COMPONENT);
+        }
+        set_config('artlayers', implode(',', array_diff(self::layers(), [$code])), self::COMPONENT);
+        $context = \context_system::instance();
+        foreach (get_file_storage()->get_area_files($context->id, self::COMPONENT, self::FILEAREA, 0, 'filepath', true) as $old) {
+            if (strpos($old->get_filepath(), '/' . $code . '/') === 0) {
+                $old->delete();
+            }
+        }
+        self::$packs = null;
+        return $there;
+    }
+
+    /**
+     * The codes of the styles and missions installed over the world, in the order they came.
+     *
+     * @return string[]
+     */
+    private static function layers(): array {
+        return array_values(array_filter(explode(',', (string) get_config(self::COMPONENT, 'artlayers'))));
+    }
+
+    /**
+     * What a pack installed in the site says of itself (its pack.json), or null.
+     *
+     * @param string $code
+     * @return array|null
+     */
+    private static function pack(string $code): ?array {
+        if (!isset(self::$packs[$code])) {
+            $context = \context_system::instance();
+            $file = get_file_storage()->get_file($context->id, self::COMPONENT, self::FILEAREA, 0, '/' . $code . '/', 'pack.json');
+            $info = $file ? json_decode($file->get_content(), true) : null;
+            self::$packs[$code] = is_array($info) && is_array($info['files'] ?? null) ? $info + ['kind' => 'world'] : false;
+        }
+        return self::$packs[$code] ?: null;
+    }
+
+    /**
+     * The art of the site, for the client: each key with the address of its image, taken from the mission, the style or
+     * the world, in that order.
+     *
+     * @return array|null code, name, version and theme of the world (or of the first layer, without a world), files
+     *     (key => URL) and layers (code, kind and version of each pack); null without packs.
      */
     public static function manifest(): ?array {
-        $code = (string) get_config(self::COMPONENT, 'artpack');
-        if ($code === '') {
+        $context = \context_system::instance();
+        $world = (string) get_config(self::COMPONENT, 'artpack');
+        $packs = [];
+        foreach (array_merge($world !== '' ? [$world] : [], self::layers()) as $code) {
+            $info = self::pack($code);
+            if ($info) {
+                $packs[$code] = $info;
+            }
+        }
+        if (!$packs) {
+            return null;
+        }
+        // The one under first: each layer writes over it.
+        uksort($packs, fn($a, $b) => array_search($packs[$a]['kind'], self::KINDS) <=> array_search($packs[$b]['kind'], self::KINDS));
+        $files = [];
+        $layers = [];
+        foreach ($packs as $code => $info) {
+            foreach ($info['files'] as $key => $path) {
+                $files[$key] = \moodle_url::make_pluginfile_url(
+                    $context->id,
+                    self::COMPONENT,
+                    self::FILEAREA,
+                    (int) $info['version'],
+                    '/' . $code . '/' . (dirname($path) === '.' ? '' : dirname($path) . '/'),
+                    basename($path)
+                )->out(false);
+            }
+            $layers[] = ['code' => (string) $code, 'kind' => $info['kind'], 'version' => (int) $info['version']];
+        }
+        $base = reset($packs);
+        return ['code' => (string) key($packs), 'name' => $base['name'], 'version' => (int) $base['version'], 'files' => $files,
+            'theme' => themes::clean($base['theme'] ?? null), 'layers' => $layers];
+    }
+
+    /**
+     * The art of the site as the pages carry it: the address of each pack once (roots) and, for each key, its pack and
+     * the rest of its address; only the extension when the image is where its key says (its kind/key.extension). The
+     * client puts the addresses together again. Where Moodle does not use slashes in its file addresses, each key goes
+     * with its whole address.
+     *
+     * @return array|null As manifest(), with roots, and files as key => [pack, rest] or key => address.
+     */
+    public static function client(): ?array {
+        $art = self::manifest();
+        if (!$art) {
             return null;
         }
         $context = \context_system::instance();
-        $file = get_file_storage()->get_file($context->id, self::COMPONENT, self::FILEAREA, 0, '/' . $code . '/', 'pack.json');
-        $info = $file ? json_decode($file->get_content(), true) : null;
-        if (!is_array($info)) {
-            return null;
-        }
-        $files = [];
-        foreach ($info['files'] as $key => $path) {
-            $files[$key] = \moodle_url::make_pluginfile_url(
+        $roots = [];
+        foreach ($art['layers'] as $i => $layer) {
+            $roots[$i] = \moodle_url::make_pluginfile_url(
                 $context->id,
                 self::COMPONENT,
                 self::FILEAREA,
-                (int) $info['version'],
-                '/' . $code . '/' . (dirname($path) === '.' ? '' : dirname($path) . '/'),
-                basename($path)
+                $layer['version'],
+                '/' . $layer['code'] . '/',
+                ''
             )->out(false);
         }
-        return ['code' => $code, 'name' => $info['name'], 'version' => (int) $info['version'], 'files' => $files,
-            'theme' => themes::clean($info['theme'] ?? null)];
+        $files = [];
+        foreach ($art['files'] as $key => $url) {
+            $files[$key] = $url;
+            foreach ($roots as $i => $root) {
+                if (strpos($url, $root) === 0 && preg_match('~^[a-z0-9_./-]+$~', substr($url, strlen($root)))) {
+                    $rest = substr($url, strlen($root));
+                    $derived = strtok($key, '.') . '/' . $key . '.';
+                    $files[$key] = [$i, strpos($rest, $derived) === 0 && strpos(substr($rest, strlen($derived)), '/') === false ?
+                        substr($rest, strlen($derived)) : $rest];
+                    break;
+                }
+            }
+        }
+        return ['roots' => $roots, 'files' => $files] + $art;
     }
 
     /**

@@ -11,6 +11,16 @@
   var cfg = window.TESAPE_CONFIG || {};
   var T = window.Tesape = {cfg: cfg};
 
+  // The art comes light (the address of each pack once, and the rest of each image): its addresses, whole again.
+  if (cfg.art && cfg.art.roots) {
+    Object.keys(cfg.art.files).forEach(function(key) {
+      var f = cfg.art.files[key];
+      if (Array.isArray(f)) {
+        cfg.art.files[key] = cfg.art.roots[f[0]] + (/[./]/.test(f[1]) ? f[1] : key.split('.')[0] + '/' + key + '.' + f[1]);
+      }
+    });
+  }
+
   /*
    * A device may be shared (a tablet of the class, the computer of the teacher): what the game keeps on it of somebody
    * else goes when another one comes in. Only what still waits to be sent stays, so that nothing played is lost: the

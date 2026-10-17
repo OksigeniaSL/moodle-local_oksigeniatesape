@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.76.0 (2026-10-17)
+
+Block 2.6 of the plan: the weight of the art.
+
+- **Art packs in layers**: a pack says its kind in pack.json, `world` (the default: its map in layers, sounds,
+  creature, the Embrollo…), `style` (the heroes) or `mission` (its scenes, album, speakers and maps). The site has one
+  world and any number of styles and missions; each key is taken from the mission, then the style, then the world.
+  So no zip has to carry everything (each one under 20 MB), and a new mission brings only its own art.
+  `cli/art.php` can now take a pack out (`--remove`) and list them (`--list`).
+- **Lighter pages**: the art goes in each page with the address of each pack once and, for each image, only the rest
+  of it (often just its extension), and the client puts the addresses together again: the list of the art of the valley
+  goes from 144 KB to 38 KB before compression. Where Moodle does not use slashes in its file addresses, each image
+  goes with its whole address, as before.
+
+Block 2.7: the tests of the phase.
+
+- A class of twenty-five in five teams plays a whole final battle by turns, with every kind of lane, and wins it; on
+  every poll, the class screen and a tablet ask the database little, with the whole class in.
+- In the browser (Behat), the teacher plays a battle by turns aloud on the class screen, pauses it and goes on.
+
 ## 0.75.0 (2026-10-17)
 
 Block 2.4 of the plan: the class screen as the stage of the battle by turns.

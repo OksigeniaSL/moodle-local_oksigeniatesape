@@ -67,7 +67,7 @@ final class page {
             'firstname' => $USER->firstname,
             'lang' => str_replace('_', '-', $lang),
             'strings' => $strings,
-            'art' => art::manifest(),
+            'art' => art::client(),
         ];
         // The theme of the class, chosen by the teacher or else the one of the world; the board may switch it.
         $region = regions::get((int) $course->id);

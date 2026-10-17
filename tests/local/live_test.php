@@ -454,6 +454,76 @@ final class live_test extends \advanced_testcase {
         $this->assertSame((int) $groups[1]->id, $view['targetid']);
     }
 
+    public function test_a_class_of_twenty_five_plays_a_whole_final_battle_by_turns_and_wins_it(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $gen = $this->getDataGenerator();
+        $course = $gen->create_course();
+        regions::save($course->id, ['enabled' => 1]);
+        missions::install($course->id, 'livingthings', 'valley', 'es', self::NOW);
+        $roles = ['sage', 'scout', 'protector', 'healer', 'sage'];
+        $members = [];
+        for ($t = 0; $t < 5; $t++) {
+            $group = $gen->create_group(['courseid' => $course->id]);
+            foreach ($roles as $role) {
+                $user = $gen->create_and_enrol($course, 'student');
+                $gen->create_group_member(['groupid' => $group->id, 'userid' => $user->id]);
+                $member = engine::member(characters::create($user->id, $role, 'f'), $course->id, self::NOW);
+                $member->userid = $user->id;
+                $member->team = (int) $group->id;
+                $members[] = $member;
+            }
+        }
+        $now = self::NOW;
+        $live = live::start($course->id, 'phones', 10, 30, $now, true, true);
+        foreach ($members as $member) {
+            live::join($live, $member, $member->userid, $now);
+        }
+        $this->assertSame(25, live::board_view($live, $now)['joined']);
+        $live = live::next($live, $now);
+        $engines = [];
+        for ($turn = 0; $turn < 10 && json_decode($live->state, true)['outcome'] === ''; $turn++) {
+            $round = (int) $live->round;
+            $lanes = json_decode($live->state, true)['rounds'][$round]['lanes'];
+            $now += live::INTENT + live::PREP + 1;
+            // Every team undoes its lane, each in its own way: to choose, everybody; to sort, the one who sorts.
+            foreach ($members as $member) {
+                $lane = $lanes[$member->team];
+                $engine = $lane['engine'] ?? 'choice';
+                $engines[$engine] = true;
+                if ($engine === 'classify') {
+                    if ((int) $lane['speaker'] === (int) $member->charid) {
+                        live::strike($live, $member, $round, ['placed' => $lane['solution']], $now);
+                    }
+                } else if ($engine === 'errors') {
+                    live::strike($live, $member, $round, ['marks' => array_column($lane['solution'], 'mark')], $now);
+                } else {
+                    live::answer($live, $member, $round, (int) $lane['correct'], $now);
+                }
+            }
+            // What the class screen and a tablet ask on every poll stays small with a whole class in.
+            $reads = $DB->perf_get_reads();
+            live::board_view($live, $now);
+            live::device_view($live, $members[7], $now);
+            $this->assertLessThan(40, $DB->perf_get_reads() - $reads);
+            $now += 31;
+            $live = live::tick($live, 2, true, $now);
+            $view = live::board_view($live, $now);
+            $this->assertTrue($view['knot']['broken'] ?? $view['outcome'] !== '');
+            $now += live::RESOLVE;
+            $live = live::tick($live, 2, true, $now);
+        }
+        $state = json_decode($live->state, true);
+        $this->assertSame('won', $state['outcome']);
+        $this->assertSame(5, $state['candles']);
+        $this->assertSame([], $state['hanging']);
+        // On the way, the class chose, sorted and found the mistakes of the Embrollo.
+        $this->assertEqualsCanonicalizing(['choice', 'classify', 'errors'], array_keys($engines));
+        // Everybody who played gets the prize of the battle.
+        $this->assertCount(25, $state['rewarded']);
+        $this->assertSame('', (string) $DB->get_field(self::T . 'region', 'battlestate', ['courseid' => $course->id]));
+    }
+
     public function test_a_pause_stops_the_time_of_the_turn_and_nobody_answers_until_it_goes_on(): void {
         $this->resetAfterTest();
         [$course, $members, $groups] = $this->make_class();

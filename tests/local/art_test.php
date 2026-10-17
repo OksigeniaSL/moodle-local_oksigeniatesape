@@ -101,12 +101,82 @@ final class art_test extends \advanced_testcase {
         $this->assertNull(art::manifest());
     }
 
+    public function test_packs_in_layers_take_each_key_from_the_mission_the_style_and_the_world(): void {
+        $this->resetAfterTest();
+        art::install($this->make_zip(
+            ['code' => 'valle', 'version' => 2, 'theme' => ['base' => 'night'],
+                'files' => ['map.livingthings' => 'map.webp', 'icon.saber' => 'saber.png', 'character.healer' => 'old.png']],
+            ['map.webp', 'saber.png', 'old.png']
+        ));
+        art::install($this->make_zip(
+            ['code' => 'mission-livingthings', 'kind' => 'mission', 'version' => 5,
+                'files' => ['map.livingthings' => 'map.webp', 'scene.claro' => 'claro.webp']],
+            ['map.webp', 'claro.webp']
+        ));
+        $manifest = art::install($this->make_zip(
+            ['code' => 'heroes', 'kind' => 'style', 'version' => 1, 'files' => ['character.healer' => 'healer.png']],
+            ['healer.png']
+        ));
+        $this->assertSame('style', $manifest['kind']);
+        $art = art::manifest();
+        // The world stays the pack of the site; the mission wins over it, and so does the style.
+        $this->assertSame('valle', $art['code']);
+        $this->assertSame('night', $art['theme']['base']);
+        $this->assertStringEndsWith('/art/5/mission-livingthings/map.webp', $art['files']['map.livingthings']);
+        $this->assertStringEndsWith('/art/5/mission-livingthings/claro.webp', $art['files']['scene.claro']);
+        $this->assertStringEndsWith('/art/2/valle/saber.png', $art['files']['icon.saber']);
+        $this->assertStringEndsWith('/art/1/heroes/healer.png', $art['files']['character.healer']);
+        $this->assertSame(['world', 'style', 'mission'], array_column($art['layers'], 'kind'));
+        // A new world keeps the layers over it.
+        art::install($this->make_zip(
+            ['code' => 'valle', 'version' => 3, 'files' => ['icon.saber' => 'saber.png']],
+            ['saber.png']
+        ));
+        $this->assertStringEndsWith('/art/3/valle/saber.png', art::manifest()['files']['icon.saber']);
+        $this->assertArrayHasKey('scene.claro', art::manifest()['files']);
+        // Without the mission, the world is seen again where it was under.
+        $this->assertTrue(art::remove('mission-livingthings'));
+        $this->assertArrayNotHasKey('scene.claro', art::manifest()['files']);
+        $this->assertFalse(art::remove('mission-livingthings'));
+        // Without a world, the layers are still the art of the site.
+        art::remove('valle');
+        $this->assertSame('heroes', art::manifest()['code']);
+        art::off();
+        $this->assertNull(art::manifest());
+    }
+
+    public function test_the_pages_carry_the_art_light_and_whole_again_it_is_the_same(): void {
+        $this->resetAfterTest();
+        art::install($this->make_zip(
+            ['code' => 'valle', 'version' => 2, 'files' => ['icon.saber' => 'icon/icon.saber.png', 'map.x' => 'maps/x.webp']],
+            ['icon/icon.saber.png', 'maps/x.webp']
+        ));
+        art::install($this->make_zip(
+            ['code' => 'mission-x', 'kind' => 'mission', 'version' => 1, 'files' => ['scene.a' => 'scene/scene.a.webp']],
+            ['scene/scene.a.webp']
+        ));
+        $client = art::client();
+        $this->assertCount(2, $client['roots']);
+        // Where the image is where its key says, only its extension; elsewhere, the rest of its address.
+        $this->assertSame([0, 'png'], $client['files']['icon.saber']);
+        $this->assertSame([0, 'maps/x.webp'], $client['files']['map.x']);
+        $this->assertSame([1, 'webp'], $client['files']['scene.a']);
+        // Put together as the client does, the addresses are those of the manifest.
+        $whole = [];
+        foreach ($client['files'] as $key => $f) {
+            $whole[$key] = is_array($f) ? $client['roots'][$f[0]] . (preg_match('~[./]~', $f[1]) ? $f[1] :
+                strtok($key, '.') . '/' . $key . '.' . $f[1]) : $f;
+        }
+        $this->assertSame(art::manifest()['files'], $whole);
+    }
+
     public function test_bad_packs(): void {
         $this->resetAfterTest();
         $cases = [
             ['code' => 'Bad Code', 'files' => ['icon.saber' => 'a.png']],
             ['code' => 'nofiles', 'files' => ['icon.saber' => 'a.svg']],
             ['name' => 'No code'],
+            ['code' => 'badkind', 'kind' => 'galaxy', 'files' => ['icon.saber' => 'a.png']],
         ];
         foreach ($cases as $manifest) {
             try {

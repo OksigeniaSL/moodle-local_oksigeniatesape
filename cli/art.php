@@ -28,7 +28,7 @@ require(__DIR__ . '/../../../config.php');
 require_once($CFG->libdir . '/clilib.php');
 
 [$options, $unrecognized] = cli_get_params(
-    ['help' => false, 'install' => '', 'off' => false],
+    ['help' => false, 'install' => '', 'off' => false, 'remove' => '', 'list' => false],
     ['h' => 'help']
 );
 
@@ -36,16 +36,20 @@ if ($unrecognized) {
     cli_error(get_string('cliunknowoption', 'admin', implode("\n  ", $unrecognized)), 2);
 }
 
-if ($options['help'] || ($options['install'] === '' && !$options['off'])) {
-    echo "Installs an art pack for Tesapé and makes it the art of the site, or turns the packs off (the game goes
-back to its own drawings).
+if ($options['help'] || ($options['install'] === '' && !$options['off'] && $options['remove'] === '' && !$options['list'])) {
+    echo "Installs an art pack for Tesapé in the site, takes one out, lists them, or turns the packs off (the game
+goes back to its own drawings).
 
-A pack is a zip with pack.json and its images (png, webp or jpg). pack.json has a code, a name, a version and
-files: a map from keys (character.storyheroes.healer, character.storyheroes.healer.fairy.f.1, creature.2.feathers,
-icon.saber, map.livingthings…) to the images in the zip.
+A pack is a zip with pack.json and its images (png, webp or jpg). pack.json has a code, a name, a version, a kind
+and files: a map from keys (character.storyheroes.healer, character.storyheroes.healer.fairy.f.1, creature.2.feathers,
+icon.saber, map.livingthings…) to the images in the zip. The kind is its layer: world (the default; the site has one),
+style (the heroes) or mission (its scenes, album and maps). Each key is taken from the mission, then the style, then
+the world.
 
 Options:
 --install=FILE      Install the pack in this zip
+--remove=CODE       Take the pack with this code out, with its files
+--list              List the packs of the site
 --off               Turn the packs off
 -h, --help          Print this help
 
@@ -61,9 +65,22 @@ if ($options['off']) {
     cli_writeln('Art packs off.');
     exit(0);
 }
+if ($options['remove'] !== '') {
+    $there = \local_oksigeniatesape\local\art::remove((string) $options['remove']);
+    cli_writeln($there ? 'Taken out: ' . $options['remove'] : 'No pack ' . $options['remove'] . ' in the site.');
+    exit(0);
+}
+if ($options['list']) {
+    $art = \local_oksigeniatesape\local\art::manifest();
+    foreach ($art['layers'] ?? [] as $layer) {
+        cli_writeln($layer['kind'] . ': ' . $layer['code'] . ' (version ' . $layer['version'] . ')');
+    }
+    cli_writeln(count($art['files'] ?? []) . ' keys in all.');
+    exit(0);
+}
 if (!is_readable($options['install'])) {
     cli_error('Cannot read ' . $options['install']);
 }
 $manifest = \local_oksigeniatesape\local\art::install($options['install']);
-cli_writeln('Installed: ' . $manifest['name'] . ' (' . $manifest['code'] . ', version ' . $manifest['version'] . '), ' .
-    count($manifest['files']) . ' images.');
+cli_writeln('Installed: ' . $manifest['name'] . ' (' . $manifest['code'] . ', ' . $manifest['kind'] . ', version ' .
+    $manifest['version'] . '), ' . count($manifest['files']) . ' images.');
