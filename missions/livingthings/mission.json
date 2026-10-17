@@ -8,6 +8,12 @@
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
   {
+   "version": 21,
+   "kind": "improvement",
+   "date": "2026-10-17",
+   "text": "Ayudas de primeros pasos en ocho clasificaciones; lo que se ve con la lupa, la red o el farol en cinco escenas; la nota a lápiz de cada final para volver a intentarlo"
+  },
+  {
    "version": 20,
    "kind": "fix",
    "date": "2026-10-17",

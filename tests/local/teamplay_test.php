@@ -100,25 +100,26 @@ final class teamplay_test extends \advanced_testcase {
             engine::member(characters::get($users[$i]->id), $course->id);
             $dg->create_group_member(['groupid' => $team->id, 'userid' => $users[$i]->id]);
         }
-        $scene = $DB->get_record(self::T . 'scene', ['missionid' => $mission->id, 'code' => 'C1-2']);
+        // The library: a sorting and then a question, two decisions.
+        $scene = $DB->get_record(self::T . 'scene', ['missionid' => $mission->id, 'code' => 'C2-2']);
         [$carried, $roles, $flags, $role] = scenes::context(characters::get($users[0]->id), $course->id);
         $events = autoplayer::play(json_decode($scene->definition, true), $carried, $roles, $flags, $role);
-        // The device passes from hand to hand: the first decision is of who opened it, the rest of the second one. One
-        // event says it was of the third, who was not in the play: it is not kept.
+        // The device passes from hand to hand: the first decision is of who opened it, the rest of the second one. The
+        // first placement says it was of the third, who was not in the play: it is not kept.
         $nodes = array_values(array_unique(array_column($events, 'n')));
         $this->assertGreaterThanOrEqual(2, count($nodes));
         foreach ($events as $i => $event) {
             $events[$i]['by'] = $event['n'] === $nodes[0] ? (int) $users[0]->id : (int) $users[1]->id;
         }
-        $events[count($events) - 1]['by'] = (int) $users[2]->id;
+        $events[0]['by'] = (int) $users[2]->id;
         scenes::play($course->id, $users[0]->id, $scene->id, $events, null, null, [$users[1]->id]);
         $mate = characters::get($users[1]->id);
         $path = json_decode($DB->get_field(self::T . 'sceneattempt', 'path', ['charid' => $mate->id]), true);
-        $this->assertArrayNotHasKey('by', end($path['events']));
+        $this->assertArrayNotHasKey('by', $path['events'][0]);
         $play = teamplay::for_teacher($course->id)[$users[1]->id][0];
         // Each decision counts once, for who took it last; the one of the third is not anyone's.
         $took = [];
-        foreach (array_slice($events, 0, -1) as $event) {
+        foreach (array_slice($events, 1) as $event) {
             $took[$event['n']] = $event['by'];
         }
         $this->assertSame(count($took), $play['decisions']);
