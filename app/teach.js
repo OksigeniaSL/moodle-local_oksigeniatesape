@@ -903,7 +903,8 @@
     return '<h3 style="margin-top:16px">' + esc(t('teach_teamplays')) + '</h3><p class="help-soft">' +
       esc(t('teach_teamplays_help')) + '</p><ul class="list">' + list.map(function(p) {
         return '<li class="item"><span class="grow"><b>' + esc(p.scene) + '</b><small>' + esc(t('teach_teamplay_by',
-          {by: p.by || '—', time: when(p.time)})) + '</small></span>' + (can('undo') ? '<button class="btn btn-soft" ' +
+          {by: p.by || '—', time: when(p.time)})) + (p.decisions ? ' · ' + esc(t('teach_teamplay_decided',
+          {decided: p.decided, decisions: p.decisions})) : '') + '</small></span>' + (can('undo') ? '<button class="btn btn-soft" ' +
           'data-undoteamplay="' + p.id + '">' + esc(t('teach_teamplay_undo')) + '</button>' : '') + '</li>';
       }).join('') + '</ul>';
   }

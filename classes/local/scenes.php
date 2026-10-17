@@ -235,6 +235,18 @@ final class scenes {
     }
 
     /**
+     * Whether a student plays a scene with the aids of the first steps: they are on the first step and the scene was not
+     * written for it (a core one, or one for everybody). The lens is free and the hard items of a sorting stay out.
+     *
+     * @param \stdClass $member
+     * @param \stdClass $scene
+     * @return bool
+     */
+    public static function aided(\stdClass $member, \stdClass $scene): bool {
+        return (int) $member->step < self::CORE_STEP && (int) $scene->step !== (int) $member->step;
+    }
+
+    /**
      * The hints opened in a play cost breath: one each; the sage gets the first free and pays half for the rest.
      *
      * @param \stdClass $char
@@ -242,11 +254,20 @@ final class scenes {
      * @param int $sceneid
      * @param int $hints Hints opened.
      * @param int $now
+     * @param bool $free Played with the aids of the first steps.
      * @return int Breath paid.
      */
-    private static function pay_hints(\stdClass $char, \stdClass $member, int $sceneid, int $hints, int $now): int {
-        // With «more help», the hints are free.
-        $cost = adapt::has($member, 'hints') ? 0 : ($char->role === 'sage' ? (int) ceil(max(0, $hints - 1) / 2) : $hints);
+    private static function pay_hints(
+        \stdClass $char,
+        \stdClass $member,
+        int $sceneid,
+        int $hints,
+        int $now,
+        bool $free = false
+    ): int {
+        // With «more help» or the aids of the first steps, the hints are free.
+        $free = $free || adapt::has($member, 'hints');
+        $cost = $free ? 0 : ($char->role === 'sage' ? (int) ceil(max(0, $hints - 1) / 2) : $hints);
         $fresh = engine::member($char, (int) $member->courseid, $now);
         $cost = min($cost, (int) $fresh->breath);
         if ($cost > 0) {
@@ -386,7 +407,8 @@ final class scenes {
             $items = array_merge($items, self::context($mate['char'], $courseid)[0]);
         }
         $items = array_values(array_unique($items));
-        $result = (new scene_runner($scene->data, $items, $roles, $flags, $char->role))->run($events, $from);
+        $runner = new scene_runner($scene->data, $items, $roles, $flags, $char->role);
+        $result = $runner->aided(self::aided($member, $scene))->run($events, $from);
 
         $transaction = $DB->start_delegated_transaction();
         try {
@@ -451,6 +473,13 @@ final class scenes {
         global $DB;
         $rewards = [];
         $attempt = null;
+        // Who of the team took each decision stays with the play, only if they were in it.
+        $players = array_map('intval', array_merge([$char->userid], array_map(fn($p) => $p['char']->userid, $team)));
+        foreach ($events as $i => $event) {
+            if (isset($event['by']) && (!$team || !in_array((int) $event['by'], $players, true))) {
+                unset($events[$i]['by']);
+            }
+        }
         // A team game: the same number in the play of each one, the one of the play of who played it.
         $game = 0;
         foreach (array_merge([['char' => $char, 'member' => $member]], $team) as $i => $player) {
@@ -491,7 +520,8 @@ final class scenes {
         if (!empty($rewards['saber']) && $char->role === 'healer') {
             $rewards['cared'] = self::care($char, $member, (int) $scene->id, $now);
         }
-        $rewards['hints'] = self::pay_hints($char, $member, (int) $scene->id, (int) $result['hints'], $now);
+        $free = self::aided($member, $scene);
+        $rewards['hints'] = self::pay_hints($char, $member, (int) $scene->id, (int) $result['hints'], $now, $free);
         $rewards['shielded'] = (bool) $result['shielded'];
         return [$attempt, $rewards];
     }

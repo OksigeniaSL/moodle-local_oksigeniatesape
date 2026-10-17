@@ -225,7 +225,9 @@
     "valley": "El consejo devuelve la página: «Con esto, el mirikiná seguiría siendo pariente de los gatos». La druida mayor señala las dos páginas: «¿Qué cambió entre una y otra, y por qué?».",
     "azara": "El naturalista devuelve la página: «Con esto, el mirikiná seguiría siendo pariente de los gatos». Señala las dos páginas: «¿Qué cambió entre una y otra, y por qué?»."
    },
-   "retry": "pagina"
+   "retry": "pagina",
+   "keep": "Comparamos las dos páginas: qué se sabía entonces, qué se sabe ahora y qué prueba lo cambió."
   }
- }
+ },
+ "method": "SV-07"
 }

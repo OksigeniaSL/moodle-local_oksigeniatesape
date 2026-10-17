@@ -258,7 +258,9 @@
     "valley": "Las etiquetas están más revueltas que antes. Doña Hebra las despega todas: «El primer nombre es el apellido, y lo comparten los primos. Empecemos por los dos felinos grandes».",
     "azara": "Las etiquetas están más revueltas que antes. La archivera las despega todas: «El primer nombre es el apellido, y lo comparten los primos. Empecemos por los dos felinos grandes»."
    },
-   "retry": "pegar"
+   "retry": "pegar",
+   "keep": "El primer nombre es el apellido, y lo comparten los primos. Empezamos por los dos felinos grandes."
   }
- }
+ },
+ "method": "SV-07"
 }

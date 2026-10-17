@@ -49,6 +49,7 @@
   "mirar": {
    "type": "classify",
    "prompt": "Con la lupa: ¿en qué caja va cada cosa?",
+   "aid": "En el cuaderno: lo vivo se nutre, responde y se reproduce, aunque sea diminuto; lo no vivo no hace nada de eso; y la tercera caja es para lo que cumple unas pruebas y otras no.",
    "retry": "item",
    "hints": [
     "Lo pequeño también se nutre, responde y se reproduce, si está vivo. La lupa enseña si lo hace.",
@@ -74,6 +75,7 @@
      "id": "levadura",
      "label": "la levadura de panadería",
      "bin": "vivo",
+     "hard": true,
      "objective": "SV-01",
      "feedback": {
       "novivo": "Con la lupa, un grano de levadura se hincha y se parte en dos. Se alimenta y se multiplica: está viva, aunque venga en un sobre.",
@@ -104,6 +106,7 @@
      "id": "semilla",
      "label": "una semilla dormida",
      "bin": "vivo",
+     "hard": true,
      "objective": "SV-01",
      "feedback": {
       "novivo": "La lupa enseña la plantita doblada dentro: está viva, esperando agua.",
@@ -283,7 +286,9 @@
     "valley": "Casi todo ha ido a la caja equivocada. La druida mayor limpia la lupa: «La lupa no piensa por nosotros. ¿Qué hace un ser vivo que no hace una piedra, por pequeño que sea?».",
     "azara": "Casi todo ha ido a la caja equivocada. El naturalista limpia la lupa: «La lupa no piensa por nosotros. ¿Qué hace un ser vivo que no hace una piedra, por pequeño que sea?»."
    },
-   "retry": "mirar"
+   "retry": "mirar",
+   "keep": "Lo vivo, aunque sea diminuto, se nutre, responde y se reproduce. Una piedra, no."
   }
- }
+ },
+ "method": "SV-07"
 }

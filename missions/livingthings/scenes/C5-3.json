@@ -47,6 +47,7 @@
   "anotar": {
    "type": "classify",
    "prompt": "¿Dónde apuntamos cada cosa?",
+   "aid": "En el cuaderno: lo vivo nace, se alimenta y crece; lo no vivo del lago es lo que los seres vivos necesitan, como el agua o la luz; y lo que no es del lago lo trajo alguien de fuera.",
    "retry": "item",
    "hints": [
     "Lo no vivo también forma parte del lago si los seres vivos lo necesitan.",
@@ -83,7 +84,8 @@
      "id": "temperatura",
      "label": "la temperatura",
      "bin": "novivo",
-     "objective": "SV-06"
+     "objective": "SV-06",
+     "hard": true
     },
     {
      "id": "piedras",
@@ -115,7 +117,9 @@
     {
      "id": "bacterias",
      "label": "las bacterias del fondo",
+     "look": "Con la lupa no se ven: hace falta un microscopio. Pero en el fondo las hojas muertas se deshacen, y alguien lo está haciendo.",
      "bin": "vivo",
+     "hard": true,
      "objective": "SV-06",
      "feedback": {
       "fuera": "«Son diminutas, pero importantísimas: descomponen los restos y devuelven al agua lo que las plantas necesitan.»"
@@ -124,6 +128,10 @@
     {
      "id": "larvas",
      "label": "las larvas de mosquito de la orilla",
+     "look": {
+      "text": "En la red, la larva se retuerce: respira por un tubito que saca al aire y un día saldrá volando.",
+      "tool": "net"
+     },
      "bin": "vivo",
      "objective": "SV-06",
      "requires": {
@@ -205,5 +213,6 @@
     }
    ]
   }
- }
+ },
+ "method": "SV-07"
 }

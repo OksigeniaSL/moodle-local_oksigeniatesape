@@ -239,7 +239,9 @@
     "valley": "La clave se atasca a la segunda pregunta. El búho, sin abrir los ojos: «Preguntar por el color o por el tamaño es preguntar por lo que cambia. ¿Qué no cambia nunca en un animal?».",
     "azara": "La clave se atasca a la segunda pregunta. El baqueano, sin abrir los ojos: «Preguntar por el color o por el tamaño es preguntar por lo que cambia. ¿Qué no cambia nunca en un animal?»."
    },
-   "retry": "elegir"
+   "retry": "elegir",
+   "keep": "En una clave se pregunta por lo que no cambia. El color y el tamaño cambian."
   }
- }
+ },
+ "method": "SV-07"
 }

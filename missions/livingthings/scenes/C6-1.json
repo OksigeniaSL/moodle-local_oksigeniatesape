@@ -128,7 +128,9 @@
    "type": "ending",
    "outcome": "retry",
    "text": "Doña Hebra devuelve la ficha: «Hay un apartado que no ayuda a reconocer a nadie. ¿Cuál cambiamos?».",
-   "retry": "elegir"
+   "retry": "elegir",
+   "keep": "En una ficha, cada apartado tiene que ayudar a reconocer al ser vivo."
   }
- }
+ },
+ "method": "SV-07"
 }

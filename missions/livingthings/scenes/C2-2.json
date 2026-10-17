@@ -47,6 +47,7 @@
   "colocar": {
    "type": "classify",
    "prompt": "Cada ser vivo, a su estante.",
+   "aid": "En el cuaderno: los animales comen otros seres; las plantas son verdes y fabrican su alimento con la luz; los hongos se alimentan de restos; y algunos seres son tan pequeños que solo se ven con lupa.",
    "retry": "item",
    "hints": [
     "¿Fabrica su alimento con la luz, o se alimenta de otros seres o de sus restos?",
@@ -101,7 +102,9 @@
     {
      "id": "moho",
      "label": "el moho del pan",
+     "look": "De cerca, el moho son hilos finísimos con bolitas en la punta, como los que tienen las setas por debajo.",
      "bin": "hongos",
+     "hard": true,
      "objective": "SV-03",
      "feedback": {
       "micro": "«Al principio no se ve, pero crece hasta formar una mancha que se ve a simple vista: es un hongo, como las setas.»"
@@ -110,7 +113,9 @@
     {
      "id": "esponja",
      "label": "una esponja de mar",
+     "look": "De cerca, la esponja está llena de agujeritos por donde entra el agua; dentro quedan los trocitos de comida que trae.",
      "bin": "animales",
+     "hard": true,
      "objective": "SV-03",
      "feedback": {
       "plantas": "«Parece una planta pegada a la roca, pero no fabrica su alimento: filtra el agua para comer. Es un animal.»"
@@ -125,6 +130,7 @@
     {
      "id": "musgo",
      "label": "un musgo",
+     "look": "De cerca, el musgo tiene hojitas verdes diminutas, como un bosque en miniatura.",
      "bin": "plantas",
      "objective": "SV-03"
     },
@@ -215,5 +221,6 @@
     }
    ]
   }
- }
+ },
+ "method": "SV-07"
 }

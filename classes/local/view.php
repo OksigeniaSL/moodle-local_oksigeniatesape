@@ -468,7 +468,8 @@ final class view {
                 'picture' => $board ? '' : self::picture($user),
                 'teamid' => $teamof[$user->id] ?? 0,
                 'teamplays' => array_map(fn($p) => ['id' => $p['id'], 'scene' => $p['scene'], 'time' => $p['time'],
-                    'by' => isset($students[$p['by']]) ? fullname($students[$p['by']]) : ''], $teamplays[$user->id] ?? []),
+                    'by' => isset($students[$p['by']]) ? fullname($students[$p['by']]) : '', 'decisions' => $p['decisions'],
+                    'decided' => $p['decided']], $teamplays[$user->id] ?? []),
             ];
             if ($char) {
                 $student['character'] = self::character($char, $member, !$board);

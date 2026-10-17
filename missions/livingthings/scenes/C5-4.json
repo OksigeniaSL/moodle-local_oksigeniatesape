@@ -55,6 +55,7 @@
   "tejer": {
    "type": "classify",
    "prompt": "¿En qué hilo de la red va cada uno?",
+   "aid": "En el cuaderno: las plantas y las algas fabrican su alimento con la luz; unos animales comen plantas, otros cazan y otros comen de todo; y hay seres que se alimentan de restos y los devuelven al suelo y al agua.",
    "retry": "item",
    "hints": [
     "Primero, quién fabrica su alimento con la luz: de ahí sale todo lo demás.",
@@ -149,6 +150,7 @@
      "id": "raton",
      "label": "el ratón, que come semillas y algún insecto",
      "bin": "omnivoros",
+     "hard": true,
      "objective": "SV-06",
      "feedback": {
       "herbivoros": "«Semillas, sí, pero también algún insecto. Come de todo.»"
@@ -158,6 +160,7 @@
      "id": "lombriz",
      "label": "la lombriz, que come hojas muertas del fondo",
      "bin": "descomponedores",
+     "hard": true,
      "objective": "SV-06",
      "feedback": {
       "herbivoros": "«Hojas muertas, no plantas vivas. Lo que come ya no está vivo: devuelve los restos al suelo.»"
@@ -312,7 +315,9 @@
    "type": "ending",
    "outcome": "retry",
    "text": "La red se deshace: demasiados hilos cruzados donde no tocaba. La garza la levanta con el pico: «Empecemos por quien fabrica su alimento con la luz. Luego, quién se lo come. Y al final, quién come lo que ya está muerto».",
-   "retry": "tejer"
+   "retry": "tejer",
+   "keep": "Primero, quien fabrica su alimento con la luz; luego, quien se lo come; al final, quien come lo que ya está muerto."
   }
- }
+ },
+ "method": "SV-07"
 }

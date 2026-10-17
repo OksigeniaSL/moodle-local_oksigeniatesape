@@ -76,6 +76,7 @@
     {
      "id": "tierra",
      "label": "tierra con restos de hojas",
+     "look": "En las macetas ya hay tierra con restos de hojas, y aun así las plantas siguen pálidas.",
      "correct": false,
      "points": 1,
      "objective": "SV-05",
@@ -92,6 +93,7 @@
     {
      "id": "oscuridad",
      "label": "oscuridad para que descanse",
+     "look": "Las plantas del sótano están pálidas y estiradas hacia la única rendija por la que entra luz.",
      "correct": false,
      "objective": "SV-05",
      "feedback": "Al volver, la planta está aún más larga y pálida: crece estirándose para buscar una luz que no encuentra."
@@ -247,7 +249,9 @@
    "type": "ending",
    "outcome": "retry",
    "text": "Las plantas siguen pálidas y una se ha marchitado del todo. La jardinera las riega mientras pregunta: «¿Qué necesita una hoja para fabricar el alimento de la planta?».",
-   "retry": "elegir"
+   "retry": "elegir",
+   "keep": "Las plantas del sótano ya tienen tierra en las macetas y siguen pálidas: lo que les falta no está en la maceta."
   }
- }
+ },
+ "method": "SV-07"
 }

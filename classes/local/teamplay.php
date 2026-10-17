@@ -35,12 +35,13 @@ final class teamplay {
      * The team plays made for the students of a course by a teammate, newest first, for their teachers.
      *
      * @param int $courseid
-     * @return array userid => list of [id, scene (its title), by (the user who played it), time].
+     * @return array userid => list of [id, scene (its title), by (the user who played it), time, decisions (taken in
+     *     turn, 0 if the play does not say who took them), decided (how many of them the student took)].
      */
     public static function for_teacher(int $courseid): array {
         global $DB;
         $rows = $DB->get_records_sql(
-            'SELECT a.id, c.userid, a.sceneid, a.timefinished, pc.userid AS byuserid
+            'SELECT a.id, c.userid, a.sceneid, a.timefinished, a.path, pc.userid AS byuserid
                FROM {' . self::T . 'sceneattempt} a
                JOIN {' . self::T . 'char} c ON c.id = a.charid
                JOIN {' . self::T . 'sceneattempt} p ON p.id = a.teamplay
@@ -59,8 +60,16 @@ final class teamplay {
             if (count($list[$userid] ?? []) >= self::SHOWN) {
                 continue;
             }
+            // The decisions of the play and how many of them the student took, when the play says who took each.
+            $decisions = [];
+            foreach (json_decode((string) $row->path, true)['events'] ?? [] as $event) {
+                if (isset($event['by'], $event['n'])) {
+                    $decisions[$event['n']] = (int) $event['by'];
+                }
+            }
             $list[$userid][] = ['id' => (int) $row->id, 'scene' => (string) ($titles[$row->sceneid]['title'] ?? ''),
-                'by' => (int) $row->byuserid, 'time' => (int) $row->timefinished];
+                'by' => (int) $row->byuserid, 'time' => (int) $row->timefinished, 'decisions' => count($decisions),
+                'decided' => count(array_filter($decisions, fn($by) => $by === $userid))];
         }
         return $list;
     }

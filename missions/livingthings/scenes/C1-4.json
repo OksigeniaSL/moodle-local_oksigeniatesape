@@ -317,7 +317,9 @@
     "valley": "El consejo devuelve la regla: «Con esta, el fuego y la piedra que rueda estarían vivos». La druida mayor señala la lista de las cinco pruebas: «La regla tiene que salir de aquí».",
     "azara": "Los sabios devuelven la regla: «Con esta, el fuego y la piedra que rueda estarían vivos». El naturalista señala la lista de las cinco pruebas: «La regla tiene que salir de aquí»."
    },
-   "retry": "regla"
+   "retry": "regla",
+   "keep": "La regla sale de las cinco pruebas: con ella, ni el fuego ni la piedra que rueda están vivos."
   }
- }
+ },
+ "method": "SV-07"
 }

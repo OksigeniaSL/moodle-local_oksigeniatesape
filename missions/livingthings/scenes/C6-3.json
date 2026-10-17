@@ -26,6 +26,7 @@
   "fuentes": {
    "type": "classify",
    "prompt": "¿Qué hacemos con cada fuente?",
+   "aid": "En el cuaderno: si sabemos quién lo escribió, cuándo y para qué, nos fiamos; si no lo sabemos, lo comprobamos en otra fuente; y lo que alguien recuerda de su vida se guarda como testimonio.",
    "retry": "item",
    "hints": [
     "¿Quién lo escribió, cuándo y para qué? Si no se sabe ninguna de las tres cosas, se comprueba antes.",
@@ -60,6 +61,7 @@
      "id": "parque",
      "label": "la guía de un parque natural",
      "bin": "fiamos",
+     "hard": true,
      "objective": "SV-07",
      "feedback": {
       "testimonio": "«No es lo que alguien recuerda: son datos tomados en el parque por quien lo cuida. Se apunta con su fuente.»"
@@ -260,7 +262,9 @@
     "valley": "La guía está llena de manchas de tinta: ha entrado casi todo sin comprobar. Doña Hebra la cierra: «Tres preguntas a cada fuente: ¿quién lo dice? ¿cuándo? ¿cómo lo sabe?».",
     "azara": "El cuaderno está lleno de manchas de tinta: ha entrado casi todo sin comprobar. La archivera lo cierra: «Tres preguntas a cada fuente: ¿quién lo dice? ¿cuándo? ¿cómo lo sabe?»."
    },
-   "retry": "fuentes"
+   "retry": "fuentes",
+   "keep": "Tres preguntas a cada fuente: ¿quién lo dice? ¿Cuándo? ¿Cómo lo sabe?"
   }
- }
+ },
+ "method": "SV-07"
 }

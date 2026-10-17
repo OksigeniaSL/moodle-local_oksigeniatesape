@@ -1106,12 +1106,14 @@ body.tesape {
 .toasts {
   position: fixed;
   left: 50%;
-  bottom: 88px;
+  bottom: 112px;
   transform: translateX(-50%);
-  z-index: 20;
+  /* Above the scenes and the moments too: what the role or the shield says in a scene is seen. */
+  z-index: 70;
   display: grid;
   gap: 8px;
   width: min(420px, calc(100% - 24px));
+  pointer-events: none;
 }
 
 .toast {
@@ -5527,4 +5529,184 @@ body.adapt-colours .errors-text .fixed ins {
   height: 22px;
   flex: none;
   vertical-align: -5px;
+}
+
+/* The role of the student, at hand in every decision: a medallion with its verb. */
+.role-bar {
+  position: sticky;
+  bottom: 10px;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  margin: 16px 0 4px;
+  pointer-events: none;
+}
+
+.role-bar .role-verb {
+  pointer-events: auto;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .45);
+}
+
+.role-verb {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 8px 18px 8px 8px;
+  border-radius: 999px;
+  border: 2px solid var(--accent);
+  background: linear-gradient(rgba(var(--lantern-rgb), .14), rgba(var(--lantern-rgb), .14)), var(--night-2);
+  color: var(--text);
+  font: 700 16px var(--f-text);
+  cursor: pointer;
+}
+
+.role-verb svg {
+  width: 36px;
+  height: 36px;
+  padding: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--ink);
+}
+
+.role-verb.used {
+  opacity: .6;
+  border-style: dashed;
+}
+
+/* Who decides now, in a play as a team. */
+.hand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding: 8px 12px;
+  border-radius: 14px;
+  background: rgba(var(--lilac-rgb), .16);
+  font-weight: 700;
+}
+
+.hand-face .avatar {
+  width: 48px;
+  height: auto;
+}
+
+/* An option found with the trail of the scout. */
+.opt.found {
+  border-color: var(--leaf);
+  animation: rise .35s ease both;
+}
+
+/* The aid of the first steps under the question: a note of the field notebook. */
+.aid-note {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: var(--r-s);
+  background: var(--parchment);
+  color: var(--ink);
+  font-size: 15px;
+}
+
+.aid-note svg {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  margin-top: 2px;
+}
+
+/* Looking with a tool: the tool next to an option, and what was seen, as a note of the field notebook. */
+.opt-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: stretch;
+}
+
+.opt-row .opt {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.look-tool {
+  flex: none;
+  width: var(--tap);
+  min-height: var(--tap);
+  border-radius: var(--r-s);
+  border: 2px solid var(--mist-2);
+  background: var(--night-2);
+  color: var(--lantern);
+  cursor: pointer;
+}
+
+.look-tool svg {
+  width: 26px;
+  height: 26px;
+}
+
+.look-tool:disabled {
+  opacity: .4;
+}
+
+.look-said {
+  flex-basis: 100%;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin: 0 0 6px;
+  padding: 8px 12px;
+  border-radius: var(--r-s);
+  background: var(--parchment);
+  color: var(--ink);
+  font-size: 15px;
+}
+
+.look-said svg {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  margin-top: 2px;
+}
+
+.cls-look {
+  margin: 8px 0;
+}
+
+.cls-look .btn svg {
+  width: 22px;
+  height: 22px;
+  vertical-align: -5px;
+}
+
+/* What a retry ending left in pencil, over the question when coming back. */
+.keep-note {
+  background: var(--parchment-2);
+  border-left: 4px solid var(--ink-soft);
+}
+
+/* Leaving a scene with decisions made: asked first, in the scene. */
+.leave-ask {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  margin: 0 0 12px;
+  padding: 14px 16px;
+  border-radius: var(--r);
+  background: var(--parchment);
+  color: var(--ink);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .45);
+}
+
+.leave-ask p {
+  margin: 0 0 10px;
+  font-weight: 700;
+}
+
+.leave-ask .actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }

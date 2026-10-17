@@ -1,5 +1,37 @@
 # Changelog
 
+## 0.59.0 (2026-10-17)
+
+Block 1.4 of the plan: the role and the team in the scenes.
+
+- **The role at hand in every decision**: a medallion at the bottom of the scene, always in view, with the verb of the
+  role. The protector's «Shield ready» (or «used», once it stopped a mistake), the sage's «Notebook» (opens the
+  notebook, free the first time as before), the healer's «Cheer» (says what their role does when the scene ends well) and the
+  scout's «Trail»: what only the scout sees is not shown until they follow the trail, and then it appears, found.
+- **The hand that goes round** in a play as a team on one device: each decision is taken by one of the team in turn,
+  starting with who opened it, with their portrait and name; a decision with an option of a role goes to who plays
+  that role. The banner says it: one device that passes from hand to hand. Each decision keeps who took it (the server
+  keeps it only if they were in the play), and the teacher sees on the card of each student, in the team plays made
+  for them, how many of the decisions were theirs.
+- **The aids of the first steps** (block 1.3): who is on the first step and plays a scene not written for their step
+  (one for everybody, a quest, or a core one where a mission has no first-steps scene) plays it with aids, and is not
+  told it is another route: the lens is free, a note of the field notebook under the question says what each group
+  has (`aid`), and the hard things of a sorting stay out of the table (`hard`). The server checks the play the same way.
+  Mission v21 brings the aids of eight sortings.
+- **Looking with a tool** (block 1.3): an option or a thing to sort can bring what is seen of it (`look`), with the
+  lens, the net or the lantern. The tool shows next to it if the student carries it (the lens, always); looking costs
+  what a hint costs, and what is seen stays as a note of the field notebook. Looking before deciding, and then deciding
+  well at the first try, is evidence of the objective of method of the mission (`method`, SV-07 in the pilot). Mission
+  v21 brings the first observations, in five scenes. The hints of a decision are now «Open the notebook» (what the
+  expedition wrote down to make one think), so that looking is always looking at something.
+- **Coming back is not repeating** (block 1.3): a retry ending can leave a note in pencil (`keep`) with what was
+  learned, over the question it sends back to; and an option that led back to its own question is gone when the
+  question comes back (the owl, the food chain, the rehearsal with the Embrollo). Mission v21 brings the notes of the
+  fifteen retry endings.
+- What a role or the shield says in a scene was shown under the scene, where nobody saw it: now it shows over
+  everything.
+- With «more help», the lens was free but its button said it cost 1 breath.
+
 ## 0.58.1 (2026-10-17)
 
 - When several options are chosen at once, the world answers for all of them in one view, not one after another.

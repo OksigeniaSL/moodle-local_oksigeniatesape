@@ -230,6 +230,7 @@
     {
      "id": "ramas-verdes",
      "label": "ramas verdes cortadas de un arbusto",
+     "look": "Por el corte de una rama verde sale savia: el arbusto sigue vivo y la necesita para crecer.",
      "correct": false,
      "objective": "SV-08",
      "feedback": "Al secarse se encogen y el refugio se hunde. Y el arbusto queda herido. «Para el refugio sirve lo que ya no está vivo.»"
@@ -245,6 +246,7 @@
     {
      "id": "barro",
      "label": "barro",
+     "look": "Con el rocío de la noche, el barro de la orilla se ablanda y se deshace entre los dedos.",
      "correct": false,
      "points": 1,
      "objective": "SV-08",
@@ -327,5 +329,6 @@
     }
    ]
   }
- }
+ },
+ "method": "SV-07"
 }

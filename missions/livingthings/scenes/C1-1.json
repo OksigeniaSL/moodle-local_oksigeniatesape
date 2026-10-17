@@ -146,7 +146,9 @@
    "type": "ending",
    "outcome": "retry",
    "text": "La semilla sigue quieta. La druida mayor sonríe: «Moverse o cambiar de forma no basta. ¿Quién necesita comer para crecer?».",
-   "retry": "elegir"
+   "retry": "elegir",
+   "keep": "Moverse o cambiar de forma no basta: lo vivo necesita alimentarse para crecer."
   }
- }
+ },
+ "method": "SV-07"
 }

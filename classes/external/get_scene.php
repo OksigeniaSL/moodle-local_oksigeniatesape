@@ -85,10 +85,13 @@ final class get_scene extends external_api {
         $flags = [];
         $role = '';
         $breath = 0;
+        $aided = false;
         $char = characters::get((int) $USER->id);
         if ($char && has_capability('local/oksigeniatesape:play', $context)) {
             [, , $flags, $role] = scenes::context($char, $params['courseid']);
-            $breath = (int) engine::member($char, $params['courseid'])->breath;
+            $member = engine::member($char, $params['courseid']);
+            $breath = (int) $member->breath;
+            $aided = scenes::aided($member, $scene);
         }
         return [
             'id' => (int) $scene->id,
@@ -108,6 +111,7 @@ final class get_scene extends external_api {
             'flags' => json_encode($flags),
             'role' => $role,
             'breath' => $breath,
+            'aided' => $aided,
         ];
     }
 
@@ -144,6 +148,7 @@ final class get_scene extends external_api {
             'flags' => new external_value(PARAM_RAW, 'Flags of the mission the student carries (JSON)', VALUE_DEFAULT, '[]'),
             'role' => new external_value(PARAM_ALPHA, 'Role of the student (empty on the class screen)', VALUE_DEFAULT, ''),
             'breath' => new external_value(PARAM_INT, 'Breath of the student, for the hints', VALUE_DEFAULT, 0),
+            'aided' => new external_value(PARAM_BOOL, 'With the aids of the first steps', VALUE_DEFAULT, false),
         ]);
     }
 }

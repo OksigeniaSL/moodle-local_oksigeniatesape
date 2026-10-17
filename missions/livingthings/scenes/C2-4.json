@@ -250,7 +250,9 @@
     "valley": "Demasiadas ramas dobladas: el árbol se viene abajo. Doña Hebra lo levanta: «Tres preguntas por cada ser, y en orden: ¿núcleo? ¿una célula o muchas? ¿fabrica o toma el alimento?».",
     "azara": "Demasiadas ramas dobladas: el árbol se viene abajo. La archivera lo levanta: «Tres preguntas por cada ser, y en orden: ¿núcleo? ¿una célula o muchas? ¿fabrica o toma el alimento?»."
    },
-   "retry": "colgar"
+   "retry": "colgar",
+   "keep": "Tres preguntas por cada ser, y en orden: ¿núcleo? ¿Una célula o muchas? ¿Fabrica su alimento o lo toma?"
   }
- }
+ },
+ "method": "SV-07"
 }

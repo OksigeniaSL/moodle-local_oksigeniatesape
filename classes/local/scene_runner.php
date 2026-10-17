@@ -25,6 +25,7 @@ namespace local_oksigeniatesape\local;
  * - {"n": node, "item": item id, "bin": bin id} for each try to put an item of a classify in a group;
  * - {"n": node, "step": step id} for each step put in an order;
  * - {"n": node, "hint": index} for each hint opened, before answering that node.
+ * - {"n": node, "look": id} for each option, item or step looked at with its tool, before answering that node.
  *
  * What a character brings changes what can be done: the items they carry, the roles of their team, the flags other
  * scenes of the mission left (what they did there) and their own role. The protector's shield stops the points lost to
@@ -62,6 +63,18 @@ final class scene_runner {
 
     /** @var array Hints opened: node => [index => true]. */
     private array $hints = [];
+
+    /** @var bool Played with the aids of the first steps. */
+    private bool $aided = false;
+
+    /** @var array Node => [option, item or step looked at => true]. */
+    private array $looks = [];
+
+    /** @var array Nodes already answered once, for the evidence of method. */
+    private array $methods = [];
+
+    /** @var string[] Item that each tool needs; the lens is always at hand. */
+    private const TOOLS = ['lens' => '', 'net' => 'net', 'lantern' => 'lantern'];
 
     /** @var bool The protector's shield is still up in this play. */
     private bool $shield;
@@ -118,6 +131,17 @@ final class scene_runner {
         $this->role = $role;
         $this->wholeclass = $wholeclass;
         $this->shield = $role === 'protector';
+    }
+
+    /**
+     * A play with the aids of the first steps: a core scene played by who is on the first step, without the hard items.
+     *
+     * @param bool $aided
+     * @return self
+     */
+    public function aided(bool $aided = true): self {
+        $this->aided = $aided;
+        return $this;
     }
 
     /**
@@ -197,14 +221,21 @@ final class scene_runner {
                     $node = $this->branch($n);
                     break;
                 case 'choice':
-                    $node = $this->choice($node, $n);
+                    $before = $this->objectives;
+                    $next = $this->choice($node, $n);
+                    $this->method($node, $before);
+                    $node = $next;
                     break;
                 case 'classify':
+                    $before = $this->objectives;
                     $this->classify($node, $n);
+                    $this->method($node, $before);
                     $node = $n['next'];
                     break;
                 case 'order':
+                    $before = $this->objectives;
                     $this->order($node, $n);
+                    $this->method($node, $before);
                     $node = $n['next'];
                     break;
                 case 'ending':
@@ -220,7 +251,8 @@ final class scene_runner {
                         'points' => $this->points,
                         'objectives' => $this->objectives,
                         'path' => $path,
-                        'hints' => array_sum(array_map('count', $this->hints)),
+                        // Looking with a tool costs as a hint does.
+                        'hints' => array_sum(array_map('count', $this->hints)) + array_sum(array_map('count', $this->looks)),
                         'shielded' => $this->shielded,
                     ];
                 default:
@@ -362,8 +394,8 @@ final class scene_runner {
         $known = [];
         foreach ($n['items'] as $item) {
             $known[(string) $item['id']] = true;
-            if (!$this->has($item['requires'] ?? null)) {
-                // Locked: they could not try it, so it does not count against the objective.
+            if (!$this->has($item['requires'] ?? null) || ($this->aided && !empty($item['hard']))) {
+                // Locked, or left out by the aids: they could not try it, so it does not count against the objective.
                 continue;
             }
             $first = true;
@@ -449,8 +481,13 @@ final class scene_runner {
      */
     private function take(string $node): array {
         $event = array_shift($this->events);
-        // The hints opened before answering: each one of the node, once.
-        while (is_array($event) && isset($event['hint'])) {
+        // The hints opened and what was looked at before answering: each one of the node, once.
+        while (is_array($event) && (isset($event['hint']) || isset($event['look']))) {
+            if (isset($event['look'])) {
+                $this->look($node, $event);
+                $event = array_shift($this->events);
+                continue;
+            }
             $hints = $this->scene['nodes'][$node]['hints'] ?? [];
             $index = (int) $event['hint'];
             if (($event['n'] ?? null) !== $node || !isset($hints[$index]) || isset($this->hints[$node][$index])) {
@@ -463,6 +500,59 @@ final class scene_runner {
             $this->fail('expected an event for ' . $node);
         }
         return $event;
+    }
+
+    /**
+     * Looking at an option, an item or a step of the node with its tool (the lens, or the net or the lantern if they are
+     * carried): once each.
+     *
+     * @param string $node
+     * @param array $event
+     */
+    private function look(string $node, array $event): void {
+        $n = $this->scene['nodes'][$node];
+        $id = (string) $event['look'];
+        $found = null;
+        foreach (array_merge($n['options'] ?? [], $n['items'] ?? [], $n['steps'] ?? []) as $thing) {
+            if ((string) ($thing['id'] ?? '') === $id && !empty($thing['look'])) {
+                $found = $thing;
+            }
+        }
+        $tool = is_array($found['look'] ?? null) ? (string) ($found['look']['tool'] ?? 'lens') : 'lens';
+        $needs = self::TOOLS[$tool] ?? null;
+        $carried = $needs === '' || ($needs !== null && $this->has(['item' => $needs]));
+        if (($event['n'] ?? null) !== $node || !$found || !$carried || isset($this->looks[$node][$id])) {
+            $this->fail('nothing to look at in ' . $node);
+        }
+        $this->looks[$node][$id] = true;
+    }
+
+    /**
+     * Looking before deciding, and then deciding well at the first try, is working as a scientist does: evidence for the
+     * objective of method of the scene (`method`), once for each node.
+     *
+     * @param string $node
+     * @param array $before The objectives before the node.
+     */
+    private function method(string $node, array $before): void {
+        $objective = $this->scene['method'] ?? null;
+        // Only the first time the node is answered: what comes back to it is not a first try.
+        if (!$objective || isset($this->methods[$node])) {
+            return;
+        }
+        $this->methods[$node] = false;
+        if (empty($this->looks[$node])) {
+            return;
+        }
+        $ok = 0;
+        $total = 0;
+        foreach ($this->objectives as $code => $o) {
+            $ok += $o['ok'] - ($before[$code]['ok'] ?? 0);
+            $total += $o['total'] - ($before[$code]['total'] ?? 0);
+        }
+        if ($total > 0 && $ok === $total) {
+            $this->tally((string) $objective, true);
+        }
     }
 
     /**

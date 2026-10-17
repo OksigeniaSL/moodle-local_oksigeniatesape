@@ -33,6 +33,7 @@
   "viajar": {
    "type": "classify",
    "prompt": "¿Cómo viaja cada semilla?",
+   "aid": "En el cuaderno: lo ligero y con pelillos vuela; lo que flota, navega; lo que tiene ganchos se engancha; lo que va dentro de una fruta lo lleva quien se la come; y una vaina seca se abre de golpe.",
    "retry": "item",
    "hints": [
     "La forma lo dice: lo ligero y con pelillos vuela; lo que flota, navega; lo que se engancha, va a cuestas.",
@@ -107,6 +108,7 @@
      "id": "vaina",
      "label": "una vaina seca que se retuerce al sol",
      "bin": "salto",
+     "hard": true,
      "objective": "SV-05",
      "feedback": {
       "viento": "El viento no la mueve. Pero al secarse, se abre de golpe y lanza sus semillas a unos pasos.",
@@ -252,7 +254,9 @@
    "type": "ending",
    "outcome": "retry",
    "text": "Casi todas las semillas han caído al pie de la madre. La jardinera las junta una a una: «La forma lo dice todo. ¿Qué es ligero, qué flota, qué se engancha, qué es dulce y qué estalla?».",
-   "retry": "viajar"
+   "retry": "viajar",
+   "keep": "La forma lo dice: lo ligero vuela, lo que flota navega, lo que tiene ganchos va a cuestas, lo dulce se lo comen y lo seco estalla."
   }
- }
+ },
+ "method": "SV-07"
 }

@@ -189,7 +189,9 @@
    "type": "ending",
    "outcome": "retry",
    "text": "La gráfica de la simulación se hunde. La garza la mira de lado: «¿Qué come el lince? Hasta que tenga qué comer, nada de lo demás sirve».",
-   "retry": "medidas"
+   "retry": "medidas",
+   "keep": "Antes que nada, el lince necesita qué comer."
   }
- }
+ },
+ "method": "SV-07"
 }

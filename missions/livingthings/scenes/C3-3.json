@@ -25,6 +25,7 @@
   "embarcar": {
    "type": "classify",
    "prompt": "¿En qué compartimento viaja cada pasajero?",
+   "aid": "En el cuaderno: los mamíferos tienen pelo y de pequeños maman; las aves, plumas; los reptiles, escamas secas; los anfibios, la piel húmeda; los peces respiran con branquias; y los invertebrados no tienen huesos.",
    "retry": "item",
    "hints": [
     "Vivir en el agua no hace pez a nadie: ¿cómo respira?",
@@ -60,7 +61,9 @@
     {
      "id": "murcielago",
      "label": "un murciélago",
+     "look": "De cerca, sus alas son piel estirada entre los dedos, y todo su cuerpo está cubierto de pelo.",
      "bin": "mamiferos",
+     "hard": true,
      "objective": "SV-04",
      "feedback": {
       "aves": "El murciélago protesta: «Vuelo, pero no tengo plumas: tengo pelo, y mis crías maman»."
@@ -79,6 +82,7 @@
     {
      "id": "delfin",
      "label": "un delfín",
+     "look": "Cada poco sube a la superficie y respira aire por un agujero que tiene encima de la cabeza.",
      "bin": "mamiferos",
      "objective": "SV-04",
      "feedback": {
@@ -107,7 +111,9 @@
     {
      "id": "caballito",
      "label": "un caballito de mar",
+     "look": "De cerca, tiene aletas finísimas y, a los lados de la cabeza, branquias que se abren y se cierran.",
      "bin": "peces",
+     "hard": true,
      "objective": "SV-04",
      "feedback": {
       "invertebrados": "«No lo parezco, pero tengo esqueleto, branquias y aletas: soy un pez.»",
@@ -210,5 +216,6 @@
     }
    ]
   }
- }
+ },
+ "method": "SV-07"
 }

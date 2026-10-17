@@ -362,6 +362,38 @@
     }
 
     /**
+     * The ✕ of a scene: with decisions made and no ending yet, it asks first, because what was decided is not kept. The
+     * ✕ again (or Escape) is «keep playing».
+     */
+    function leave() {
+      var asked = layer.querySelector('.leave-ask');
+      if (asked) {
+        asked.remove();
+        layer.querySelector('.scene-close').focus();
+        return;
+      }
+      var at = sc && run && sc.nodes[run.node];
+      var decided = run && run.events.some(function(e) {
+        return e.pick || e.item || e.step;
+      });
+      if (!decided || !at || at.type === 'ending') {
+        close();
+        return;
+      }
+      var ask = document.createElement('div');
+      ask.className = 'leave-ask';
+      ask.setAttribute('role', 'alertdialog');
+      ask.setAttribute('aria-labelledby', 'tesape-leave-ask');
+      ask.innerHTML = '<p id="tesape-leave-ask">' + esc(t('app_leave_ask')) + '</p><div class="actions"><button type="button" ' +
+        'class="btn btn-main" data-stay>' + esc(t('app_leave_stay')) + '</button><button type="button" class="btn btn-soft" ' +
+        'data-leave>' + esc(t('app_leave_go')) + '</button></div>';
+      layer.querySelector('.scene-top').insertAdjacentElement('afterend', ask);
+      ask.querySelector('[data-stay]').onclick = leave;
+      ask.querySelector('[data-leave]').onclick = close;
+      ask.querySelector('[data-stay]').focus();
+    }
+
+    /**
      * What is heard and seen at an ending: confetti and applause for a good one, hearts halfway, and the lanterns lit
      * and the creature born after it.
      *
@@ -429,7 +461,7 @@
         '</p>' : '') + '<div class="scene-body" tabindex="-1">' + html + '</div></div>';
       var cross = layer.querySelector('.scene-close');
       if (cross) {
-        cross.onclick = close;
+        cross.onclick = leave;
       }
       var read = layer.querySelector('[data-read]');
       if (read) {
@@ -543,7 +575,19 @@
 
     function start(from) {
       run = {node: from || sc.start, from: from || '', events: [], extra: 0, extraused: {}, hints: 0, shield: false,
-        flags: (data.flags || []).slice(), opened: {}, spent: 0};
+        flags: (data.flags || []).slice(), opened: {}, spent: 0, trailed: {}, turn: 0, handfor: {}, looks: {}, tried: {},
+        keep: ''};
+      // Back from an ending that sent here: what it left written in pencil shows over the question.
+      if (from) {
+        Object.keys(sc.nodes).some(function(id) {
+          var e = sc.nodes[id];
+          if (e.type === 'ending' && e.retry === from && e.keep) {
+            run.keep = e.keep;
+            return true;
+          }
+          return false;
+        });
+      }
       next();
     }
 
@@ -563,6 +607,14 @@
 
     function next() {
       var n = sc.nodes[run.node];
+      // In a play as a team, each new decision passes to the next one of the team.
+      if (/^(choice|classify|order)$/.test(n.type)) {
+        if (run.decided && run.decided !== run.node) {
+          run.turn++;
+        }
+        run.decided = run.node;
+        handTo(n);
+      }
       if (n.type === 'story') {
         story(n);
       } else if (n.type === 'branch') {
@@ -767,7 +819,8 @@
      * @return {number}
      */
     function hintCost() {
-      if (cm) {
+      // With «more help» or the aids of the first steps, the lens is free (the server charges the same).
+      if (cm || data.aided || T.adapted.hints) {
         return 0;
       }
       if (data.role === 'sage') {
@@ -777,12 +830,269 @@
     }
 
     /**
+     * The role of the student at hand in every decision, with its verb: the shield of the protector (ready or used), the
+     * lens of the sage, the cheer of the healer and the trail of the scout, which finds what only they see. In a team
+     * play, who decides now, in turn.
+     *
+     * @param {Object} n The node.
+     * @param {Element} body
+     */
+    function roleBar(n, body) {
+      if (cm || !data.role) {
+        return;
+      }
+      var mine = true;
+      var hand = turnOf();
+      if (hand && Number(hand.userid) !== Number(cfg.userid)) {
+        // The role at hand is the one of the student on whose device it is: the others decide with their words.
+        mine = false;
+      }
+      if (hand) {
+        var who = document.createElement('div');
+        who.className = 'hand';
+        who.setAttribute('aria-live', 'polite');
+        who.innerHTML = (hand.character ? '<span class="hand-face" aria-hidden="true">' + T.avatar({role: hand.character.role,
+          nameform: hand.character.nameform, lineage: hand.character.lineage, look: hand.character.appearance,
+          stage: hand.character.stage, family: world.family}) + '</span>' : '') + '<span>' + esc(t('app_hand',
+          {name: hand.name, role: hand.character ? T.roleName(world.family, hand.character.role,
+          hand.character.nameform) : ''})) + '</span>';
+        body.insertBefore(who, body.firstChild);
+      }
+      var verbs = {
+        protector: {icon: 'shield', label: run.shield ? t('app_role_shield_used') : t('app_role_shield_ready')},
+        sage: {icon: 'log', label: t('app_role_notebook')},
+        healer: {icon: 'cheer', label: t('app_role_cheer')},
+        scout: {icon: 'trail', label: t('app_role_trail')}
+      };
+      var verb = verbs[data.role];
+      if (!verb || !mine) {
+        return;
+      }
+      var bar = document.createElement('div');
+      bar.className = 'role-bar';
+      bar.innerHTML = '<button type="button" class="role-verb ' + esc(data.role) + (data.role === 'protector' && run.shield ?
+        ' used' : '') + '" data-role>' + T.icon(verb.icon) + '<span>' + esc(verb.label) + '</span></button>';
+      body.appendChild(bar);
+      bar.querySelector('[data-role]').onclick = function() {
+        if (data.role === 'sage') {
+          var lens = body.querySelector('[data-hint]');
+          if (lens) {
+            lens.click();
+          } else {
+            T.toast(esc(t('app_role_notebook_none')));
+          }
+        } else if (data.role === 'scout') {
+          var found = body.querySelectorAll('[data-trail]');
+          run.trailed[run.node] = true;
+          if (found.length) {
+            found.forEach(function(o) {
+              o.hidden = false;
+              o.removeAttribute('data-trail');
+              o.classList.add('found');
+            });
+            if (T.fx) {
+              T.fx.sound('choose');
+            }
+            T.toast(esc(t('app_role_trail_found')));
+          } else {
+            T.toast(esc(t('app_role_trail_none')));
+          }
+        } else {
+          T.toast(esc(t(data.role === 'protector' ? 'app_role_shield_help' : 'app_role_cheer_help')));
+        }
+      };
+    }
+
+    /**
+     * An event with who of the team decided it, in a play as a team: it stays with the play, as its team does.
+     *
+     * @param {Object} e
+     * @return {Object}
+     */
+    function by(e) {
+      var hand = turnOf();
+      if (hand) {
+        e.by = Number(hand.userid);
+      }
+      return e;
+    }
+
+    /**
+     * A decision with an option that asks for a role of the team goes to who plays that role, if they are playing:
+     * their turn, out of the order.
+     *
+     * @param {Object} n The node.
+     */
+    function handTo(n) {
+      if (!opts.team || !opts.team.length || !world.team || run.handfor[run.node] !== undefined) {
+        return;
+      }
+      // An option of the role of whoever plays it (teamrole), or of the role of the student on whose device it is.
+      var need = (n.options || []).map(function(o) {
+        var req = o.requires || {};
+        return req.teamrole || (req.role && req.role === data.role ? req.role : '');
+      }).filter(Boolean)[0];
+      var who = 0;
+      if (need) {
+        [cfg.userid].concat(opts.team).forEach(function(id) {
+          var m = (world.team.members || []).filter(function(mm) {
+            return Number(mm.userid) === Number(id);
+          })[0];
+          if (!who && m && m.character && m.character.role === need) {
+            who = Number(id);
+          }
+        });
+      }
+      run.handfor[run.node] = who;
+    }
+
+    /**
+     * Who decides now in a play as a team on one device: each decision a different one, in turn, starting with who
+     * opened it.
+     *
+     * @return {Object|null} A member of the team (name, character), or null if it is not a play as a team.
+     */
+    function turnOf() {
+      if (!opts.team || !opts.team.length || !world.team) {
+        return null;
+      }
+      var order = [cfg.userid].concat(opts.team);
+      var id = run.handfor[run.node] || order[run.turn % order.length];
+      return (world.team.members || []).filter(function(m) {
+        return Number(m.userid) === Number(id);
+      })[0] || null;
+    }
+
+    /**
      * The hints of a decision, if it has any: the ones already opened and a button for the next.
      *
      * @param {Object} n The node.
      * @param {Element} body
      */
+    /**
+     * What can be looked at in an option or an item: its observation and its tool, if the student carries the tool (the
+     * lens is always at hand). Not at the class screen.
+     *
+     * @param {Object} thing
+     * @return {Object|null} {text, tool}
+     */
+    function lookOf(thing) {
+      if (cm || !thing || !thing.look) {
+        return null;
+      }
+      var look = typeof thing.look === 'string' ? {text: thing.look} : thing.look;
+      var tool = look.tool || 'lens';
+      var needs = {lens: '', net: 'net', lantern: 'lantern'}[tool];
+      if (needs === undefined || (needs && !has({item: needs}))) {
+        return null;
+      }
+      return {text: look.text || '', tool: tool};
+    }
+
+    function looked(id) {
+      return (run.looks[run.node] || []).indexOf(id) >= 0;
+    }
+
+    function lookLabel(look, label) {
+      var cost = hintCost();
+      return t('app_look_on', {tool: t('app_look_' + look.tool), thing: label,
+        price: cost ? t('app_look_price', cost) : t('app_look_free')});
+    }
+
+    function lookSaid(look, label) {
+      return '<p class="look-said">' + T.icon(look.tool) + '<span>' + (label ? '<b>' + esc(label) + '</b> ' : '') +
+        esc(tx(look.text)) + '</span></p>';
+    }
+
+    /**
+     * Looks at a thing with its tool: it costs as a hint does, and what is seen is a note of the field notebook.
+     *
+     * @param {Object} thing
+     * @param {Function} done
+     */
+    function doLook(thing, done) {
+      var cost = hintCost();
+      if (cost > (data.breath || 0) - run.spent) {
+        T.toast(esc(t('app_hint_nobreath')), true);
+        return;
+      }
+      run.events.push({n: run.node, look: thing.id});
+      run.looks[run.node] = (run.looks[run.node] || []).concat([thing.id]);
+      run.hints++;
+      run.spent += cost;
+      if (T.fx) {
+        T.fx.sound('choose');
+      }
+      if (run.hintDraw) {
+        run.hintDraw();
+      }
+      done();
+    }
+
+    /**
+     * The tool next to each option that can be looked at.
+     *
+     * @param {Object[]} options
+     * @param {Element} body
+     */
+    function lookTools(options, body) {
+      body.querySelectorAll('.opts .opt[data-id]').forEach(function(b) {
+        var o = options.filter(function(x) {
+          return x.id === b.dataset.id;
+        })[0];
+        var look = lookOf(o);
+        if (!look) {
+          return;
+        }
+        var row = document.createElement('div');
+        row.className = 'opt-row';
+        b.parentNode.insertBefore(row, b);
+        row.appendChild(b);
+        if (looked(o.id)) {
+          row.insertAdjacentHTML('beforeend', lookSaid(look, ''));
+          return;
+        }
+        var tool = document.createElement('button');
+        tool.type = 'button';
+        tool.className = 'look-tool';
+        tool.innerHTML = T.icon(look.tool);
+        tool.setAttribute('aria-label', lookLabel(look, tx(o.label)));
+        tool.title = tool.getAttribute('aria-label');
+        row.appendChild(tool);
+        tool.onclick = function() {
+          doLook(o, function() {
+            tool.remove();
+            row.insertAdjacentHTML('beforeend', lookSaid(look, ''));
+          });
+        };
+      });
+    }
+
     function hintArea(n, body) {
+      if (run.keep && run.node === run.from) {
+        var keep = document.createElement('p');
+        keep.className = 'aid-note keep-note';
+        keep.innerHTML = T.icon('log') + ' <span><b>' + esc(t('app_keep')) + '</b> ' + esc(tx(run.keep)) + '</span>';
+        var top = body.querySelector('.scene-prompt');
+        if (top) {
+          top.insertAdjacentElement('beforebegin', keep);
+        } else {
+          body.insertBefore(keep, body.firstChild);
+        }
+        run.keep = '';
+      }
+      if (data.aided && n.aid && !cm) {
+        // The aid of the first steps: a note of the field notebook under the question.
+        var aid = document.createElement('p');
+        aid.className = 'aid-note';
+        aid.innerHTML = T.icon('log') + ' ' + esc(tx(n.aid));
+        var prompt = body.querySelector('.scene-prompt');
+        if (prompt) {
+          prompt.insertAdjacentElement('afterend', aid);
+        } else {
+          body.insertBefore(aid, body.firstChild);
+        }
+      }
       if (!n.hints || !n.hints.length) {
         return;
       }
@@ -792,11 +1102,12 @@
       var draw = function() {
         var opened = run.opened[run.node] || [];
         var cost = hintCost();
-        // Looking closer with the lens, not a clue bought: what is seen is a note of the field notebook.
+        run.hintDraw = box.isConnected ? draw : null;
+        // The field notebook: what the expedition wrote down that makes one think, not the answer.
         box.innerHTML = opened.map(function(i) {
-          return '<p class="hint">' + T.icon('lens') + ' ' + esc(tx(n.hints[i])) + '</p>';
+          return '<p class="hint">' + T.icon('log') + ' ' + esc(tx(n.hints[i])) + '</p>';
         }).join('') + (opened.length < n.hints.length ? '<button class="btn btn-soft" type="button" data-hint>' +
-          T.icon('lens') + ' ' + esc(cost ? t('app_hint_cost', cost) : t('app_hint_free')) + '</button>' : '');
+          T.icon('log') + ' ' + esc(cost ? t('app_hint_cost', cost) : t('app_hint_free')) + '</button>' : '');
         var b = box.querySelector('[data-hint]');
         if (b) {
           b.onclick = function() {
@@ -821,20 +1132,25 @@
       var min = (n.select && n.select.min) || max;
       var multi = max > 1;
       var selected = [];
+      // At the class screen the phones vote by letter: the options stay where they are.
+      var tried = cm ? [] : run.tried[run.node] || [];
       var open = n.options.filter(function(o) {
-        return has(o.requires);
+        return has(o.requires) && tried.indexOf(o.id) < 0;
       });
       var opts = n.options.filter(function(o) {
-        // What other scenes left (flags) is memory, not something to get: without it, the option is not there.
-        return !(o.requires && o.requires.flag) || has(o.requires);
+        // What other scenes left (flags) is memory, not something to get: without it, the option is not there. What was
+        // tried and led back here is not there either: the world changed, it is not the same question again.
+        return (!(o.requires && o.requires.flag) || has(o.requires)) && tried.indexOf(o.id) < 0;
       }).map(function(o) {
         if (!has(o.requires)) {
           return '<button class="opt locked" type="button" disabled><b>' + esc(tx(o.label)) + '</b><small>' +
             esc(o.locked ? tx(o.locked) : missing(o.requires)) + '</small></button>';
         }
         var letter = cm ? '<span class="opt-letter">' + LETTERS[open.indexOf(o)] + '</span>' : '';
-        return '<button class="opt" type="button" data-id="' + esc(o.id) + '">' + letter + esc(tx(o.label)) +
-          '<span class="opt-votes" data-votes></span></button>';
+        // What only the scout sees is there to be found: it shows when they follow the trail.
+        var trail = !cm && o.requires && o.requires.role === 'scout' && !run.trailed[run.node];
+        return '<button class="opt' + (trail ? ' trail' : '') + '" type="button" data-id="' + esc(o.id) + '"' +
+          (trail ? ' data-trail hidden' : '') + '>' + letter + esc(tx(o.label)) + '<span class="opt-votes" data-votes></span></button>';
       }).join('');
       var voting = cm && cm.vote && !multi && open.length >= 2;
       var body = show((n.image ? picture(n.image, data) : '') + '<p class="scene-prompt">' + esc(tx(n.prompt)) + '</p>' +
@@ -844,6 +1160,7 @@
         '</div><div class="actions"><button class="btn btn-main" data-confirm disabled>' + esc(t('app_confirm')) +
         '</button></div>' : '') + '<div data-out></div>');
       hintArea(n, body);
+      roleBar(n, body);
       if (voting) {
         classVote(body, n, open);
       }
@@ -852,15 +1169,16 @@
           return o.id === id;
         })[0];
       }
+      lookTools(n.options, body);
       body.querySelectorAll('.opt[data-id]').forEach(function(b) {
         b.onclick = function() {
           var id = b.dataset.id;
           if (!multi) {
-            body.querySelectorAll('.opt').forEach(function(x) {
+            body.querySelectorAll('.opt, .look-tool').forEach(function(x) {
               x.disabled = true;
             });
             b.classList.add('sel');
-            run.events.push({n: run.node, pick: [id]});
+            run.events.push(by({n: run.node, pick: [id]}));
             reveal(body, [pick(id)], function() {
               var o = pick(id);
               (o.effects || []).forEach(function(e) {
@@ -874,6 +1192,7 @@
               }
               var target = o.next || n.next;
               if (target === run.node) {
+                run.tried[run.node] = (run.tried[run.node] || []).concat([id]);
                 next();
               } else if (run.extra > 0 && n.extra && !run.extraused[run.node]) {
                 run.extra--;
@@ -900,11 +1219,11 @@
       });
       if (multi) {
         body.querySelector('[data-confirm]').onclick = function() {
-          body.querySelectorAll('.opt').forEach(function(x) {
+          body.querySelectorAll('.opt, .look-tool').forEach(function(x) {
             x.disabled = true;
           });
           this.disabled = true;
-          run.events.push({n: run.node, pick: selected.slice()});
+          run.events.push(by({n: run.node, pick: selected.slice()}));
           selected.forEach(function(id) {
             (pick(id).effects || []).forEach(function(e) {
               run.extra += e.extraquestion || 0;
@@ -991,8 +1310,9 @@
      */
     function classify(n) {
       var once = n.retry === 'none';
+      // With the aids of the first steps, the hard things stay out of the table.
       var items = n.items.filter(function(it) {
-        return has(it.requires);
+        return has(it.requires) && !(data.aided && it.hard);
       });
       var locked = n.items.filter(function(it) {
         return !has(it.requires);
@@ -1005,6 +1325,7 @@
         '</p><div data-cls></div><div data-out></div>');
       var box = body.querySelector('[data-cls]');
       hintArea(n, body);
+      roleBar(n, body);
       function table() {
         return items.filter(function(it) {
           return !right[it.id] && !place[it.id];
@@ -1030,7 +1351,7 @@
           }).join('') + locked.map(function(it) {
             return '<button type="button" class="cls-thing locked" disabled>' + esc(tx(it.label)) + '<small>' +
               esc(it.locked ? tx(it.locked) : missing(it.requires)) + '</small></button>';
-          }).join('') + '</div><div class="bins">' + n.bins.map(function(b) {
+          }).join('') + '</div>' + lookArea() + '<div class="bins">' + n.bins.map(function(b) {
             var inside = items.filter(function(it) {
               return (right[it.id] || place[it.id]) === b.id;
             });
@@ -1067,12 +1388,37 @@
           };
         });
         box.querySelector('[data-confirm]').onclick = commit;
+        var lookb = box.querySelector('[data-look]');
+        if (lookb) {
+          lookb.onclick = function() {
+            var thing = items.filter(function(it) {
+              return it.id === chosen;
+            })[0];
+            doLook(thing, function() {
+              draw('[data-thing="' + chosen + '"]');
+            });
+          };
+        }
         var again = focus && box.querySelector(focus);
         if (again && !again.disabled) {
           again.focus();
         } else if (all) {
           box.querySelector('[data-confirm]').focus();
         }
+      }
+      // The tool for the thing in hand, if it can be looked at, and what was seen of the things of the table.
+      function lookArea() {
+        var thing = chosen && items.filter(function(it) {
+          return it.id === chosen;
+        })[0];
+        var look = thing && lookOf(thing);
+        var html = look && !looked(thing.id) ? '<div class="cls-look"><button type="button" class="btn btn-soft" data-look>' +
+          T.icon(look.tool) + ' ' + esc(lookLabel(look, tx(thing.label))) + '</button></div>' : '';
+        return html + items.filter(function(it) {
+          return looked(it.id) && lookOf(it);
+        }).map(function(it) {
+          return lookSaid(lookOf(it), tx(it.label));
+        }).join('');
       }
       function commit() {
         var moved = items.filter(function(it) {
@@ -1081,7 +1427,7 @@
         var put = {};
         moved.forEach(function(it) {
           put[it.id] = place[it.id];
-          run.events.push({n: run.node, item: it.id, bin: place[it.id]});
+          run.events.push(by({n: run.node, item: it.id, bin: place[it.id]}));
         });
         if (moved.some(function(it) {
           return put[it.id] !== it.bin;
@@ -1164,13 +1510,14 @@
           return '<button class="opt" type="button" data-id="' + esc(s.id) + '">' + esc(tx(s.label)) + '</button>';
         }).join('') + '</div><div data-out></div>');
         hintArea(n, body);
+        roleBar(n, body);
         body.querySelectorAll('.opt').forEach(function(b) {
           b.onclick = function() {
             var s = n.steps.filter(function(x) {
               return x.id === b.dataset.id;
             })[0];
             var expected = n.steps[built.length];
-            run.events.push({n: run.node, step: s.id});
+            run.events.push(by({n: run.node, step: s.id}));
             if (s === expected) {
               built.push(s);
               draw();

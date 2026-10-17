@@ -1,6 +1,7 @@
 {
  "code": "livingthings",
- "version": 20,
+ "version": 21,
+ "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",

@@ -173,6 +173,52 @@ final class scene_runner_test extends \advanced_testcase {
         (new scene_runner($scene))->run(array_merge([['n' => $node, 'item' => 'nada', 'bin' => $bins[0]]], $events));
     }
 
+    public function test_looking_before_deciding_well_is_evidence_of_method(): void {
+        $scene = autoplayer::scene('C2-2');
+        $method = $scene['method'];
+        $events = autoplayer::play($scene);
+        $node = $events[0]['n'];
+        $mine = array_values(array_filter($events, fn($e) => ($e['n'] ?? '') === $node));
+        $rest = array_values(array_filter($events, fn($e) => ($e['n'] ?? '') !== $node));
+        $look = [['n' => $node, 'look' => 'musgo']];
+        $plain = (new scene_runner($scene))->run($events);
+        $looked = (new scene_runner($scene))->run(array_merge($look, $events));
+        // It costs as a hint, and it is evidence of method when everything of the node was right at the first try.
+        $this->assertSame($plain['hints'] + 1, $looked['hints']);
+        $this->assertSame(($plain['objectives'][$method]['ok'] ?? 0) + 1, $looked['objectives'][$method]['ok']);
+        // Looked at, and then a mistake: no evidence of method, and no evidence against it either.
+        $bins = array_column($scene['nodes'][$node]['bins'], 'id');
+        $trip = $mine;
+        $trip[0]['bin'] = array_values(array_diff($bins, [$mine[0]['bin']]))[0];
+        $missed = (new scene_runner($scene))->run(array_merge($look, $trip, [$mine[0]], $rest));
+        $this->assertSame($plain['objectives'][$method] ?? null, $missed['objectives'][$method] ?? null);
+        // Something with nothing to look at is not a play.
+        $this->expectException(\moodle_exception::class);
+        (new scene_runner($scene))->run(array_merge([['n' => $node, 'look' => 'lombriz']], $events));
+    }
+
+    public function test_aided_plays_leave_the_hard_things_out(): void {
+        $scene = autoplayer::scene('C2-2');
+        $events = autoplayer::play($scene);
+        $node = $events[0]['n'];
+        $hard = array_column(array_filter($scene['nodes'][$node]['items'], fn($i) => !empty($i['hard'])), 'id');
+        $this->assertNotEmpty($hard);
+        $without = array_values(array_filter($events, fn($e) => !in_array($e['item'] ?? '', $hard, true)));
+        $good = (new scene_runner($scene))->run($events);
+        $aided = (new scene_runner($scene))->aided()->run($without);
+        $this->assertSame($good['ending'], $aided['ending']);
+        $total = fn($r) => array_sum(array_column($r['objectives'], 'total'));
+        $this->assertSame($total($good) - count($hard), $total($aided));
+        // Who is on the first step plays with aids what was not written for their step.
+        $this->assertTrue(scenes::aided((object) ['step' => 1], (object) ['step' => 2]));
+        $this->assertTrue(scenes::aided((object) ['step' => 1], (object) ['step' => 0]));
+        $this->assertFalse(scenes::aided((object) ['step' => 1], (object) ['step' => 1]));
+        $this->assertFalse(scenes::aided((object) ['step' => 2], (object) ['step' => 2]));
+        // Without the aids, the hard things are expected.
+        $this->expectException(\moodle_exception::class);
+        (new scene_runner($scene))->run($without);
+    }
+
     /**
      * A small scene: a question that may leave a flag, a branch on it, and a sorting with hints.
      *

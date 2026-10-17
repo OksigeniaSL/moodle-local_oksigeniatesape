@@ -26,6 +26,7 @@
   "laminas": {
    "type": "classify",
    "prompt": "Con la lupa: ¿de qué ser vivo viene cada lámina?",
+   "aid": "En el cuaderno: las células de las plantas tienen pared y se ordenan como ladrillos; las de las hojas, además, tienen cuerpecillos verdes; las de los animales son redondeadas y sin pared.",
    "retry": "item",
    "hints": [
     "Las células de las plantas tienen una pared rígida y suelen ser regulares, como ladrillos.",
@@ -217,7 +218,9 @@
     "valley": "Las etiquetas vuelven a estar cambiadas. Doña Hebra las despega todas: «Pared o sin pared. Verde o sin verde. Solo con eso se distinguen las tres».",
     "azara": "Las etiquetas vuelven a estar cambiadas. La archivera las despega todas: «Pared o sin pared. Verde o sin verde. Solo con eso se distinguen las tres»."
    },
-   "retry": "laminas"
+   "retry": "laminas",
+   "keep": "Dos preguntas para cada lámina: ¿tiene pared? ¿Tiene algo verde dentro?"
   }
- }
+ },
+ "method": "SV-07"
 }

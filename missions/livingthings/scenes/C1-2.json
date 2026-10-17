@@ -219,7 +219,9 @@
    "type": "ending",
    "outcome": "retry",
    "text": "El nido sigue a oscuras: hay demasiadas cosas que no están vivas a su alrededor. La druida mayor devuelve a la expedición al claro: «¿Qué hacen los seres vivos que no hacen las piedras ni el humo?».",
-   "retry": "elegir"
+   "retry": "elegir",
+   "keep": "Junto al nido, solo lo que nace, se alimenta, crece y se reproduce. Las piedras y el humo, no."
   }
- }
+ },
+ "method": "SV-07"
 }

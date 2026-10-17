@@ -84,6 +84,8 @@ final class get_class extends external_api {
                     'scene' => new external_value(PARAM_TEXT, 'Title of the scene'),
                     'by' => new external_value(PARAM_TEXT, 'Who played it, on their device'),
                     'time' => new external_value(PARAM_INT, 'When'),
+                    'decisions' => new external_value(PARAM_INT, 'Decisions taken in turn (0: not said)', VALUE_DEFAULT, 0),
+                    'decided' => new external_value(PARAM_INT, 'How many of them they took', VALUE_DEFAULT, 0),
                 ]), 'Team plays a classmate made for them, newest first', VALUE_DEFAULT, []),
                 'character' => structures::character(VALUE_OPTIONAL),
             ])),

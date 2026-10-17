@@ -928,6 +928,17 @@
       power: '<path d="M13 2L5 13h6l-1 9 8-11h-6z" fill="#b9a6ff"/>',
       exit: '<path d="M10 4H5v16h5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/><path ' +
         'd="M14 8l4 4-4 4M18 12H9" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>',
+      shield: '<path d="M12 2l8 3v6c0 5-3.4 9.3-8 11-4.6-1.7-8-6-8-11V5z" fill="currentColor" opacity=".9"/><path d="M12 6v12" ' +
+        'stroke="#0f2131" stroke-width="1.6" opacity=".5"/>',
+      cheer: '<path d="M12 21s-7-4.6-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.4-7 10-7 10z" fill="currentColor"/><path ' +
+        'd="M12 9v6M9 12h6" stroke="#0f2131" stroke-width="2" stroke-linecap="round"/>',
+      trail: '<ellipse cx="7" cy="16" rx="2.6" ry="3.6" fill="currentColor"/><ellipse cx="16" cy="8" rx="2.6" ry="3.6" ' +
+        'fill="currentColor"/><circle cx="5" cy="11" r="1.1" fill="currentColor"/><circle cx="9" cy="10.6" r="1.1" ' +
+        'fill="currentColor"/><circle cx="14" cy="3.4" r="1.1" fill="currentColor"/><circle cx="18" cy="3" r="1.1" ' +
+        'fill="currentColor"/>',
+      net: '<path d="M3 21l7-7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><circle cx="15" cy="9" r="6.5" ' +
+        'fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M10.5 5.5l9 7M9.5 10l9-5.5M12 15l6-11M15 2.5v13" ' +
+        'stroke="currentColor" stroke-width="1" opacity=".7"/>',
       lens: '<circle cx="10" cy="10" r="6" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M14.5 14.5 L21 21" ' +
         'stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="10" cy="10" r="3.2" fill="currentColor" ' +
         'opacity=".25"/>',
