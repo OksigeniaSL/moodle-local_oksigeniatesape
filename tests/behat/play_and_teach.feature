@@ -28,7 +28,7 @@ Feature: A teacher runs the game from the panel and a student plays the mission
     Then I should see "Teacher panel"
     When I click on "[data-how]" "css_element"
     Then I should see "How Tesapé works, in two minutes"
-    And I click on "Got it" "button"
+    And I close how Tesapé works if it shows
     And I should see "Student One"
     When I click on "nav.tabs [data-tab='mission']" "css_element"
     Then I should see "Los seres vivos"
