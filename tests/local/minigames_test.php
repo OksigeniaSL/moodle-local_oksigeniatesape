@@ -267,6 +267,55 @@ final class minigames_test extends \advanced_testcase {
         minigames::play($w->course->id, $w->user->id, 'circuloslago', [$events[0], $events[0]]);
     }
 
+    public function test_a_riddle_of_who_am_i_from_its_plain_text(): void {
+        $riddle = minigames::riddle("# Un mamífero que vuela\n= murciélago / murciélagos\nDuermo cabeza abajo.\nVuelo de noche.");
+        $this->assertSame('murciélago', $riddle['answer']);
+        $this->assertSame(['murciélagos'], $riddle['accept']);
+        $this->assertSame(['Duermo cabeza abajo.', 'Vuelo de noche.'], $riddle['clues']);
+    }
+
+    public function test_who_am_i(): void {
+        $this->resetAfterTest();
+        $w = $this->make_class();
+        $member = engine::member(characters::get($w->user->id), $w->course->id);
+        $game = minigames::config($w->mission, 'sombrastorre', (int) $member->step);
+        $this->assertSame('whoami', $game['type']);
+        $this->assertSame(count($game['riddles']), $game['goal']);
+        foreach ($game['riddles'] as $riddle) {
+            // Four answers to choose from, the right one among them; the clues, hardest first.
+            $this->assertCount(4, array_unique($riddle['options']));
+            $this->assertContains($riddle['answer'], $riddle['options']);
+            $this->assertGreaterThanOrEqual(2, count($riddle['clues']));
+        }
+        // Every shadow found; one with another clue asked for and a wrong guess first: won.
+        $first = $game['riddles'][0];
+        $other = array_values(array_diff($first['options'], [$first['answer']]))[0];
+        $events = [['r' => $first['id'], 'c' => 1], ['r' => $first['id'], 'g' => $other]];
+        foreach ($game['riddles'] as $riddle) {
+            $events[] = ['r' => $riddle['id'], 'g' => $riddle['answer']];
+        }
+        $result = minigames::play($w->course->id, $w->user->id, 'sombrastorre', $events);
+        $this->assertTrue($result['success']);
+        $this->assertSame($game['goal'], $result['caught']);
+        $this->assertSame(1, $result['missed']);
+        $this->assertSame(5, $result['gems']);
+        // A shadow that gets away (a wrong guess with no clue left) does not win.
+        $away = [];
+        for ($i = 0; $i < count($first['clues']); $i++) {
+            $away[] = ['r' => $first['id'], 'g' => $other];
+        }
+        $lost = minigames::play($w->course->id, $w->user->id, 'sombrastorre', $away);
+        $this->assertFalse($lost['success']);
+        $this->assertSame(0, $lost['caught']);
+        // The teacher sees who was taken for whom.
+        $results = array_column(minigames::results($w->mission), null, 'code');
+        $mix = get_string('minigame_whoami_mix', 'local_oksigeniatesape', (object) ['answer' => $first['answer'], 'guess' => $other]);
+        $this->assertSame($mix, $results['sombrastorre']['confusions'][0]['text']);
+        // A guess after the shadow got away is not a play.
+        $this->expectException(\moodle_exception::class);
+        minigames::play($w->course->id, $w->user->id, 'sombrastorre', array_merge($away, [['r' => $first['id'], 'g' => $other]]));
+    }
+
     public function test_who_is_alive(): void {
         $this->resetAfterTest();
         $w = $this->make_class('py');

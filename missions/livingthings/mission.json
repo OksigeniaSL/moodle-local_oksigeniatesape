@@ -1,11 +1,17 @@
 {
  "code": "livingthings",
- "version": 18,
+ "version": 19,
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 19,
+   "kind": "improvement",
+   "date": "2026-10-17",
+   "text": "«¿Quién soy?», las sombras del jardín y de la torre"
+  },
   {
    "version": 18,
    "kind": "improvement",
@@ -615,6 +621,7 @@
    "x": 280,
    "y": 260,
    "games": [
+    "sombrasjardin",
     "enredojardin"
    ],
    "activities": [
@@ -713,6 +720,7 @@
    "x": 290,
    "y": 75,
    "games": [
+    "sombrastorre",
     "enredotorre"
    ],
    "activities": [
@@ -1490,6 +1498,224 @@
       "py": "Fabrica su alimento: alga, irupé, lapacho, hierba del prado\nVive en el agua del lago: alga, irupé, dorado, renacuajo\n? renacuajo: vive en el agua, pero no fabrica su alimento: come algas y restos.\n? irupé: es una planta: fabrica su alimento con la luz, con las raíces en el fondo del agua.",
       "gen": "Fabrica su alimento: alga, nenúfar, árbol, hierba del prado\nVive en el agua del lago: alga, nenúfar, trucha, renacuajo\n? renacuajo: vive en el agua, pero no fabrica su alimento: come algas y restos.\n? nenúfar: es una planta: fabrica su alimento con la luz, con las raíces en el fondo del lago."
      }
+    }
+   ]
+  },
+  "sombrasjardin": {
+   "type": "whoami",
+   "title": "Las sombras del jardín",
+   "intro": "Al caer la tarde, en el Jardín de la Luz se mueven unas sombras: son partes de las plantas que el Embrollo ha escondido en la niebla. Cada sombra te da una pista. Adivina quién es antes de que se escape.",
+   "win": "Todas las sombras han vuelto a su planta. Ya conoces cada parte y lo que hace.",
+   "lose": "Esta vez las sombras se han escapado. Abajo tienes las que se fueron, con todas sus pistas: léelas y vuelve a intentarlo.",
+   "misses": {
+    "1": 5,
+    "2": 4,
+    "3": 4,
+    "4": 3
+   },
+   "reward": {
+    "gems": 5
+   },
+   "decoys": [
+    "espina",
+    "corteza"
+   ],
+   "sheets": [
+    {
+     "id": "raiz",
+     "steps": [
+      1,
+      2
+     ],
+     "text": "= raíz / raíces\nVivo bajo tierra y nunca veo el sol.\nSujeto la planta para que el viento no la tumbe.\nPor mí entra en la planta el agua del suelo."
+    },
+    {
+     "id": "hoja",
+     "steps": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "text": "= hoja / hojas\nTengo unos poros diminutos por donde entra y sale el aire.\nCasi siempre soy verde y plana.\nEn mí la planta fabrica su alimento con la luz del sol."
+    },
+    {
+     "id": "tallo",
+     "steps": [
+      1,
+      2
+     ],
+     "text": "= tallo / tronco\nPor dentro de mí suben el agua y el alimento.\nEn los árboles me vuelvo duro y me llaman tronco.\nSostengo las hojas y las flores."
+    },
+    {
+     "id": "flor",
+     "steps": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "text": "= flor / flores\nTengo colores y olores para llamar a los insectos.\nLas abejas se llevan mi polen.\nDe mí saldrá el fruto, con sus semillas dentro."
+    },
+    {
+     "id": "fruto",
+     "steps": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "text": "= fruto / frutos\nMuchos animales me comen y se llevan lejos lo que guardo.\nProtejo las semillas.\nAntes de ser lo que soy, fui una flor."
+    },
+    {
+     "id": "semilla",
+     "steps": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "text": "= semilla / semillas\nViajo con el viento, pegada al pelo de un animal o flotando en el agua.\nLlevo dentro una planta diminuta y su comida.\nSi caigo en buena tierra, germino."
+    },
+    {
+     "id": "abeja",
+     "steps": [
+      2,
+      3,
+      4
+     ],
+     "text": "= abeja / abejas\nVisito flores todo el día y no soy una planta.\nLlevo polen pegado a las patas, de flor en flor.\nHago miel y vivo en una colmena."
+    },
+    {
+     "id": "polen",
+     "steps": [
+      3,
+      4
+     ],
+     "text": "= polen\nSoy un polvo muy fino, casi siempre amarillo.\nLos insectos y el viento me llevan de flor en flor.\nSin mí, la flor no puede hacer semillas."
+    },
+    {
+     "id": "clorofila",
+     "steps": [
+      3,
+      4
+     ],
+     "text": "= clorofila\nEstoy dentro de las hojas, pero no me ves a simple vista.\nAtrapo la luz del sol.\nSoy lo que hace verdes a las plantas."
+    }
+   ]
+  },
+  "sombrastorre": {
+   "type": "whoami",
+   "title": "Las sombras de la torre",
+   "intro": "En lo alto de la torre, el Embrollo ha convertido en sombras a los seres vivos que has conocido en el viaje. Cada sombra te da una pista. Adivina quién es y devuélvele su forma antes de que se escape.",
+   "win": "Todas las sombras han recuperado su forma. Has reconocido a cada ser vivo del valle por lo que hace y por cómo es, sin verlo.",
+   "lose": "Esta vez las sombras se han escapado. Abajo tienes las que se fueron, con todas sus pistas: léelas y vuelve a intentarlo.",
+   "misses": {
+    "1": 5,
+    "2": 4,
+    "3": 4,
+    "4": 3
+   },
+   "reward": {
+    "gems": 5
+   },
+   "decoys": [
+    "hormiga",
+    "mariposa",
+    "ardilla"
+   ],
+   "sheets": [
+    {
+     "id": "lombriz",
+     "steps": [
+      1,
+      2
+     ],
+     "text": "= lombriz / lombrices\nVivo bajo tierra y no tengo patas.\nCuando llueve mucho, salgo a la superficie.\nComo restos de hojas y dejo la tierra más fértil."
+    },
+    {
+     "id": "seta",
+     "steps": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "text": "= seta / setas\nNo tengo hojas ni flores, y no soy una planta.\nSalgo en otoño, junto a los troncos húmedos.\nMe alimento de restos de otros seres vivos: soy un hongo."
+    },
+    {
+     "id": "rana",
+     "steps": [
+      1,
+      2
+     ],
+     "text": "= rana / ranas\nDe pequeña vivía en el agua y respiraba por branquias.\nAhora tengo las patas largas y salto.\nMi piel es húmeda y sin escamas: soy un anfibio."
+    },
+    {
+     "id": "caracol",
+     "steps": [
+      1
+     ],
+     "text": "= caracol / caracoles\nDejo un rastro brillante por donde paso.\nLlevo mi casa a cuestas.\nTengo el cuerpo blando: soy un molusco."
+    },
+    {
+     "id": "semilla",
+     "steps": [
+      1,
+      2
+     ],
+     "text": "= semilla / semillas\nParezco dormida y no me muevo.\nSi me das agua y calor, despierto.\nDentro llevo una planta pequeñita."
+    },
+    {
+     "id": "buho",
+     "steps": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "text": "= búho / lechuza\nDejo bolitas con huesos y pelos de lo que como.\nCazo de noche y giro mucho la cabeza.\nTengo plumas y soy un ave rapaz nocturna."
+    },
+    {
+     "id": "murcielago",
+     "steps": [
+      2,
+      3,
+      4
+     ],
+     "text": "= murciélago / murciélagos\nDuermo de día, colgado cabeza abajo.\nVuelo de noche y me oriento con el eco.\nTengo pelo y de cría tomo leche de mi madre."
+    },
+    {
+     "id": "arana",
+     "steps": [
+      2,
+      3,
+      4
+     ],
+     "text": "= araña / arañas\nTejo trampas de seda.\nTengo ocho patas, así que no soy un insecto.\nSoy un arácnido."
+    },
+    {
+     "id": "alga",
+     "steps": [
+      3,
+      4
+     ],
+     "text": "= alga / algas\nNo tengo raíces de verdad, ni flores.\nVivo en el agua del lago o del mar.\nFabrico mi alimento con la luz, como las plantas."
+    },
+    {
+     "id": "levadura",
+     "steps": [
+      3,
+      4
+     ],
+     "text": "= levadura\nSoy tan pequeña que no me ves.\nMe usan para hacer pan y bizcocho.\nAl comer el azúcar suelto un gas que hincha la masa: soy un hongo."
+    },
+    {
+     "id": "bacteria",
+     "steps": [
+      4
+     ],
+     "text": "= bacteria / bacterias\nSoy un ser vivo de una sola célula.\nEn tu intestino hay muchísimas como yo, y muchas te ayudan.\nAlgunas de nosotras convierten la leche en yogur."
     }
    ]
   },

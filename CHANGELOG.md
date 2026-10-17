@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.55.0 (2026-10-17)
+
+- **Who am I?**, a new kind of minigame, in the garden and in the tower (mission version 19): the Embrollo has turned
+  parts of the plants, or the living things of the journey, into shadows; each shadow gives a clue, the hardest first,
+  and the student guesses who it is among four. Another clue can be asked for; a wrong guess crosses that answer out
+  and shows the next clue, and with no clue left the shadow gets away. The fewer clues needed, the more stars. Each
+  step has its shadows (20 in all), the first win gives 5 gems, and the teacher sees who is taken for whom. Riddles are
+  written as in Classtools: `= answer / also accepted` and a clue per line.
+
 ## 0.54.0 (2026-10-17)
 
 - **The two circles**, a new kind of minigame, in the library, the forest and the lake (mission version 18): the

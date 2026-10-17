@@ -5133,3 +5133,103 @@ body.adapt-colours .errors-text .fixed ins {
   font-weight: 400;
   opacity: .6;
 }
+
+/* Who am I?: a shadow that shows itself clue by clue. */
+.whoami-intro {
+  text-align: center;
+}
+
+.whoami-shadow {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 40%, #3a3454, #14111f 70%);
+  box-shadow: 0 0 0 3px rgba(123, 92, 201, .55), 0 0 22px rgba(123, 92, 201, .45);
+  color: #cbb8ff;
+  font: 700 28px var(--f-title);
+}
+
+.whoami-shadow.big {
+  width: 96px;
+  height: 96px;
+  font-size: 46px;
+}
+
+.whoami-shadow.found {
+  background: radial-gradient(circle at 50% 40%, #fff3c4, var(--accent) 70%);
+  box-shadow: 0 0 0 3px rgba(var(--lantern-rgb), .6), 0 0 26px rgba(var(--lantern-rgb), .55);
+  color: var(--ink);
+}
+
+.whoami-stars {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.whoami-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.whoami-head h2 {
+  margin: 0;
+}
+
+.whoami-clues {
+  margin: 14px 0 0;
+  padding-left: 22px;
+  font-size: 18px;
+  line-height: 1.45;
+}
+
+.whoami-clues li {
+  margin-bottom: 6px;
+}
+
+.whoami-clues li.late {
+  color: var(--text-soft);
+}
+
+.whoami-say {
+  min-height: 2.6em;
+  margin: 10px 0;
+  padding: 8px 12px;
+  border-radius: var(--r-s);
+  font-size: 15px;
+}
+
+.whoami-say.good {
+  background: rgba(var(--leaf-rgb), .92);
+  color: #10251a;
+}
+
+.whoami-say.bad {
+  background: rgba(var(--ember-rgb), .94);
+  color: #2a1209;
+}
+
+.whoami-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.whoami-options .btn {
+  min-width: 0;
+  min-height: 56px;
+  padding: .45em .6em;
+  font-size: 17px;
+  line-height: 1.15;
+  text-align: center;
+  hyphens: auto;
+  overflow-wrap: break-word;
+}
+
+.whoami-options .btn.tried {
+  text-decoration: line-through;
+  opacity: .55;
+}

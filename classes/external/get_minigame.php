@@ -93,7 +93,7 @@ final class get_minigame extends external_api {
             'code' => new external_value(PARAM_ALPHANUMEXT, 'Minigame'),
             'type' => new external_value(
                 PARAM_ALPHA,
-                'nest (Defensa del nido), errors (the hunt for mistakes), whack (Who is alive?) or venn (the two circles)',
+                'nest (Defensa del nido), errors (the hunt for mistakes), whack (Who is alive?), venn (the two circles) or whoami',
                 VALUE_DEFAULT,
                 'nest'
             ),
@@ -140,7 +140,13 @@ final class get_minigame extends external_api {
                 'alive' => new external_value(PARAM_BOOL, 'Whether it is alive'),
                 'why' => new external_value(PARAM_TEXT, 'Why, when it is tricky'),
             ]), 'What comes out of the holes in Who is alive?', VALUE_DEFAULT, []),
-            'misses' => new external_value(PARAM_INT, 'Slips a hunt for mistakes or Who is alive? allows', VALUE_DEFAULT, 0),
+            'riddles' => new external_multiple_structure(new external_single_structure([
+                'id' => new external_value(PARAM_ALPHANUMEXT, 'Riddle'),
+                'answer' => new external_value(PARAM_TEXT, 'Who it is'),
+                'clues' => new external_multiple_structure(new external_value(PARAM_TEXT, 'A clue, hardest first')),
+                'options' => new external_multiple_structure(new external_value(PARAM_TEXT, 'An answer to choose')),
+            ]), 'The shadows of Who am I?', VALUE_DEFAULT, []),
+            'misses' => new external_value(PARAM_INT, 'Slips or wrong guesses a game allows', VALUE_DEFAULT, 0),
             'goal' => new external_value(PARAM_INT, 'Animals to catch, or mistakes to find'),
             'shield' => new external_value(PARAM_INT, 'What the shield of the nest holds'),
             'speed' => new external_value(PARAM_INT, 'Speed, 1 to 4'),

@@ -31,6 +31,10 @@ namespace local_oksigeniatesape\local;
  * Sheets are written as in Classtools: «Group: thing, thing» for each circle (with «;» if a thing has commas), a thing
  * in both groups goes in the middle, and «? thing: why». A thing in the wrong place is a slip.
  *
+ * Who am I? (type whoami): a shadow gives its clues one by one, from the hardest to the easiest, and the student
+ * guesses who it is among four; a wrong guess shows the next clue, and with no clue left the shadow gets away.
+ * Written as in Classtools: «= answer / also accepted» and a clue per line.
+ *
  * Who is alive? (type whack): living things and things that are not come out of the holes of the clearing for a moment;
  * the student touches only what is alive. A thing touched that is not alive is a slip, with its why; a living thing let
  * go is not caught.
@@ -71,6 +75,9 @@ final class minigames {
         }
         if (($game['type'] ?? '') === 'venn') {
             return self::venn_config($mission, $code, $game, $step);
+        }
+        if (($game['type'] ?? '') === 'whoami') {
+            return self::whoami_config($mission, $code, $game, $step);
         }
         $level = self::level($game, $step);
         $nets = [];
@@ -219,6 +226,78 @@ final class minigames {
     }
 
     /**
+     * Who am I? as a student of a step plays it: the riddles of their step, each with its clues and four answers to
+     * choose from (its own and three of the other riddles or decoys of the game).
+     *
+     * @param \stdClass $mission With data.
+     * @param string $code
+     * @param array $game
+     * @param int $step
+     * @return array
+     */
+    private static function whoami_config(\stdClass $mission, string $code, array $game, int $step): array {
+        $pool = [];
+        foreach ($game['sheets'] ?? [] as $sheet) {
+            $pool[] = self::riddle(self::sheet_text($mission, $sheet))['answer'];
+        }
+        foreach ($game['decoys'] ?? [] as $decoy) {
+            $pool[] = is_array($decoy) ? (string) ($decoy[$mission->variant] ?? $decoy['gen'] ?? reset($decoy)) : (string) $decoy;
+        }
+        $pool = array_values(array_unique(array_filter($pool)));
+        $riddles = [];
+        foreach (self::sheets_for($game, $step) as $sheet) {
+            $riddle = self::riddle(self::sheet_text($mission, $sheet));
+            $others = array_values(array_diff($pool, [$riddle['answer']]));
+            shuffle($others);
+            $options = array_merge([$riddle['answer']], array_slice($others, 0, 3));
+            shuffle($options);
+            $riddles[] = ['id' => (string) $sheet['id'], 'answer' => $riddle['answer'], 'clues' => $riddle['clues'],
+                'options' => $options];
+        }
+        return [
+            'code' => $code,
+            'type' => 'whoami',
+            'title' => missions::text($game['title'] ?? $code, $mission->skin),
+            'intro' => missions::text($game['intro'] ?? '', $mission->skin, $mission->variant),
+            'win' => missions::text($game['win'] ?? '', $mission->skin, $mission->variant),
+            'lose' => missions::text($game['lose'] ?? '', $mission->skin, $mission->variant),
+            'nets' => [],
+            'animals' => [],
+            'riddles' => $riddles,
+            'goal' => count($riddles),
+            'misses' => self::misses($game, $step),
+            'shield' => 0,
+            'speed' => 0,
+        ];
+    }
+
+    /**
+     * A riddle of Who am I? from its plain text: the answer (and others accepted) and the clues, hardest first.
+     *
+     * @param string $text
+     * @return array answer, accept and clues.
+     */
+    public static function riddle(string $text): array {
+        $answer = '';
+        $accept = [];
+        $clues = [];
+        foreach (preg_split('/\R/u', $text) as $line) {
+            $line = trim($line);
+            if ($line === '' || $line[0] === '#') {
+                continue;
+            }
+            if ($line[0] === '=') {
+                $names = array_values(array_filter(array_map('trim', explode('/', substr($line, 1)))));
+                $answer = (string) array_shift($names);
+                $accept = $names;
+                continue;
+            }
+            $clues[] = $line;
+        }
+        return ['answer' => $answer, 'accept' => $accept, 'clues' => $clues];
+    }
+
+    /**
      * The text of a sheet with the examples of the place of the mission.
      *
      * @param \stdClass $mission
@@ -362,6 +441,8 @@ final class minigames {
             [$caught, $missed, $wrong, $success] = self::count_whack($game, $events);
         } else if (($game['type'] ?? '') === 'venn') {
             [$caught, $missed, $wrong, $success] = self::count_venn($game, $events);
+        } else if (($game['type'] ?? '') === 'whoami') {
+            [$caught, $missed, $wrong, $success] = self::count_whoami($game, $events);
         } else {
             [$caught, $missed, $wrong, $success] = self::count_nest($game, $events);
         }
@@ -501,6 +582,54 @@ final class minigames {
     }
 
     /**
+     * Counts a play of Who am I?: for each riddle (r), another clue asked for (c) or a guess (g). The first clue shows
+     * from the start; a wrong guess shows the next one, and a wrong guess with no clue left lets the shadow get away.
+     * Won when every shadow is found with fewer wrong guesses than allowed.
+     *
+     * @param array $game As the student plays it.
+     * @param array $events
+     * @return array [found, wrong guesses, wrong (riddle => first wrong guess), success]
+     */
+    private static function count_whoami(array $game, array $events): array {
+        $riddles = array_column($game['riddles'], null, 'id');
+        $state = [];
+        $found = 0;
+        $guesses = 0;
+        $wrong = [];
+        foreach ($events as $event) {
+            $id = (string) ($event['r'] ?? '');
+            $riddle = $riddles[$id] ?? null;
+            $st = $state[$id] ?? ['shown' => 1, 'over' => false];
+            if (!$riddle || $st['over']) {
+                throw new \moodle_exception('invalidgameplay', 'local_oksigeniatesape');
+            }
+            $clues = count($riddle['clues']);
+            if (!empty($event['c'])) {
+                if ($st['shown'] >= $clues) {
+                    throw new \moodle_exception('invalidgameplay', 'local_oksigeniatesape');
+                }
+                $st['shown']++;
+            } else {
+                $guess = \core_text::strtolower(trim((string) ($event['g'] ?? '')));
+                if ($guess === \core_text::strtolower($riddle['answer'])) {
+                    $found++;
+                    $st['over'] = true;
+                } else {
+                    $guesses++;
+                    $wrong[$id] = $wrong[$id] ?? (string) ($event['g'] ?? '');
+                    if ($st['shown'] >= $clues) {
+                        $st['over'] = true;
+                    } else {
+                        $st['shown']++;
+                    }
+                }
+            }
+            $state[$id] = $st;
+        }
+        return [$found, $guesses, $wrong, $found === count($riddles) && $guesses < $game['misses']];
+    }
+
+    /**
      * Counts a play of a hunt for mistakes: each mistake found once (s, the sheet, and m, its number) and each blot of
      * ink (s and x, a word touched that was right).
      *
@@ -624,6 +753,10 @@ final class minigames {
                     $confusions[] = ['text' => self::misplaced($mission, $game, (string) $key), 'count' => $count];
                     continue;
                 }
+                if (($game['type'] ?? '') === 'whoami') {
+                    $confusions[] = ['text' => self::mistaken($mission, $game, (string) $key), 'count' => $count];
+                    continue;
+                }
                 if (($game['type'] ?? '') === 'whack') {
                     [$id, $how] = explode('|', $key);
                     $label = $game['things'][$id]['label'] ?? $id;
@@ -670,6 +803,25 @@ final class minigames {
                 if ($part['mark'] === (int) $mark) {
                     return '«' . $part['wrong'] . '» → ' . ($part['right'][0] ?? '');
                 }
+            }
+        }
+        return $key;
+    }
+
+    /**
+     * A shadow of Who am I? taken for another, for the teacher: who it was and what they thought.
+     *
+     * @param \stdClass $mission With data.
+     * @param array $game
+     * @param string $key riddle|first wrong guess
+     * @return string
+     */
+    private static function mistaken(\stdClass $mission, array $game, string $key): string {
+        [$id, $guess] = array_pad(explode('|', $key, 2), 2, '');
+        foreach ($game['sheets'] ?? [] as $sheet) {
+            if ((string) ($sheet['id'] ?? '') === $id) {
+                $a = (object) ['answer' => self::riddle(self::sheet_text($mission, $sheet))['answer'], 'guess' => $guess];
+                return get_string('minigame_whoami_mix', 'local_oksigeniatesape', $a);
             }
         }
         return $key;
