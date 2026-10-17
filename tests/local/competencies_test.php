@@ -83,7 +83,11 @@ final class competencies_test extends \advanced_testcase {
         $this->resetAfterTest();
         $w = $this->make_class();
         $nest = $DB->get_record(self::T . 'scene', ['missionid' => $w->mission->id, 'code' => 'C1-2']);
-        $events = [['n' => 'antes', 'pick' => ['buscar']], ['n' => 'elegir', 'pick' => ['seta', 'lombriz', 'musgo', 'hormiga', 'rana']]];
+        $events = [
+            ['n' => 'antes', 'pick' => ['buscar']],
+            ['n' => 'elegir', 'pick' => ['seta', 'lombriz', 'musgo', 'hormiga', 'rana']],
+            ['n' => 'rana', 'pick' => ['charca']],
+        ];
         scenes::play($w->course->id, $w->student->id, $nest->id, $events, null);
         $sv01 = competency::get_record(['idnumber' => 'tesape-sv-01']);
         $uc = user_competency::get_record(['userid' => $w->student->id, 'competencyid' => $sv01->get('id')]);
@@ -132,7 +136,11 @@ final class competencies_test extends \advanced_testcase {
         $this->assertSame([], competencies::links($w->course->id));
         $this->assertFalse(competencies::view($w->course->id)['enabled']);
         $nest = $DB->get_record(self::T . 'scene', ['missionid' => $w->mission->id, 'code' => 'C1-2']);
-        $events = [['n' => 'antes', 'pick' => ['buscar']], ['n' => 'elegir', 'pick' => ['seta', 'lombriz', 'musgo', 'hormiga', 'rana']]];
+        $events = [
+            ['n' => 'antes', 'pick' => ['buscar']],
+            ['n' => 'elegir', 'pick' => ['seta', 'lombriz', 'musgo', 'hormiga', 'rana']],
+            ['n' => 'rana', 'pick' => ['charca']],
+        ];
         scenes::play($w->course->id, $w->student->id, $nest->id, $events, null);
         $this->assertSame(0, $DB->count_records('competency_evidence'));
     }

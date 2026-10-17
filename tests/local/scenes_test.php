@@ -176,7 +176,11 @@ final class scenes_test extends \advanced_testcase {
         $this->resetAfterTest();
         $w = $this->make_class(1);
         $scene = $DB->get_record(self::T . 'scene', ['missionid' => $w->mission->id, 'code' => 'C1-2']);
-        $events = [['n' => 'antes', 'pick' => ['buscar']], ['n' => 'elegir', 'pick' => ['seta', 'cristal', 'humo', 'pompa', 'piedra']]];
+        $events = [
+            ['n' => 'antes', 'pick' => ['buscar']],
+            ['n' => 'elegir', 'pick' => ['seta', 'cristal', 'humo', 'pompa', 'piedra']],
+            ['n' => 'rana', 'pick' => ['charca']],
+        ];
         $result = scenes::play($w->course->id, $w->users[0]->id, $scene->id, $events, null);
         $this->assertSame('retry', $result['outcome']);
         $this->assertSame('elegir', $result['retry']);
@@ -445,7 +449,11 @@ final class scenes_test extends \advanced_testcase {
             $w->course->id,
             $w->users[0]->id,
             $scene->id,
-            [['n' => 'antes', 'pick' => ['buscar']], ['n' => 'elegir', 'pick' => ['seta', 'cristal', 'humo', 'pompa', 'piedra']]],
+            [
+                ['n' => 'antes', 'pick' => ['buscar']],
+                ['n' => 'elegir', 'pick' => ['seta', 'cristal', 'humo', 'pompa', 'piedra']],
+                ['n' => 'rana', 'pick' => ['charca']],
+            ],
             null
         );
         $this->play($w, $w->users[0], 'C1-2');

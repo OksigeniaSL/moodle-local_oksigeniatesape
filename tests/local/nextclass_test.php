@@ -54,7 +54,11 @@ final class nextclass_test extends \advanced_testcase {
         characters::create($w->user->id, 'sage', 'm');
         engine::member(characters::get($w->user->id), $w->course->id);
         $scene = $DB->get_record(self::T . 'scene', ['missionid' => $mission->id, 'code' => 'C1-2']);
-        $events = [['n' => 'antes', 'pick' => ['buscar']], ['n' => 'elegir', 'pick' => ['seta', 'cristal', 'humo', 'pompa', 'piedra']]];
+        $events = [
+            ['n' => 'antes', 'pick' => ['buscar']],
+            ['n' => 'elegir', 'pick' => ['seta', 'cristal', 'humo', 'pompa', 'piedra']],
+            ['n' => 'rana', 'pick' => ['charca']],
+        ];
         scenes::play($w->course->id, $w->user->id, $scene->id, $events, null);
         return $w;
     }

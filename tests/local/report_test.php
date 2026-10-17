@@ -45,11 +45,17 @@ final class report_test extends \advanced_testcase {
         }
         $nest = $DB->get_record(self::T . 'scene', ['missionid' => $mission->id, 'code' => 'C1-2']);
         // Ana gets the nest right at once; Leo puts three living things of five, and then gets it right.
-        $right = [['n' => 'elegir', 'pick' => ['seta', 'lombriz', 'musgo', 'hormiga', 'rana']]];
+        $right = [
+            ['n' => 'elegir', 'pick' => ['seta', 'lombriz', 'musgo', 'hormiga', 'rana']],
+            ['n' => 'rana', 'pick' => ['charca']],
+        ];
         $first = [['n' => 'antes', 'pick' => ['buscar']]];
         scenes::play($course->id, $ana->id, $nest->id, array_merge($first, $right), null);
-        scenes::play($course->id, $leo->id, $nest->id, array_merge($first, [['n' => 'elegir', 'pick' => ['seta', 'lombriz', 'musgo',
-            'cristal', 'humo']]]), null);
+        $three = [
+            ['n' => 'elegir', 'pick' => ['seta', 'lombriz', 'musgo', 'cristal', 'humo']],
+            ['n' => 'rana', 'pick' => ['charca']],
+        ];
+        scenes::play($course->id, $leo->id, $nest->id, array_merge($first, $three), null);
         scenes::play($course->id, $leo->id, $nest->id, $right, 'elegir');
         $columns = report::columns($course->id);
         $this->assertSame(get_string('report_lastname', 'local_oksigeniatesape'), reset($columns));

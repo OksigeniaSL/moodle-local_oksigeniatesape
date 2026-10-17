@@ -91,19 +91,29 @@ final class scene_runner_test extends \advanced_testcase {
     public function test_the_nest_sleeps_with_too_few_living_things(): void {
         $scene = autoplayer::scene('C1-2');
         $runner = new scene_runner($scene);
-        $events = [['n' => 'antes', 'pick' => ['buscar']], ['n' => 'elegir', 'pick' => ['seta', 'lombriz', 'musgo', 'cristal', 'humo']]];
+        $events = [
+            ['n' => 'antes', 'pick' => ['buscar']],
+            ['n' => 'elegir', 'pick' => ['seta', 'lombriz', 'musgo', 'cristal', 'humo']],
+            ['n' => 'rana', 'pick' => ['charca']],
+        ];
         $result = $runner->run($events);
         $this->assertSame('duerme', $result['ending']);
         $this->assertSame('retry', $result['outcome']);
         $this->assertSame('elegir', $result['retry']);
         $this->assertSame(['SV-01' => ['ok' => 3, 'total' => 5]], $result['objectives']);
         // Again from where the ending sent back: four of five, the creature hatches asleep.
-        $events = [['n' => 'elegir', 'pick' => ['seta', 'lombriz', 'musgo', 'hormiga', 'cristal']]];
+        $events = [
+            ['n' => 'elegir', 'pick' => ['seta', 'lombriz', 'musgo', 'hormiga', 'cristal']],
+            ['n' => 'rana', 'pick' => ['charca']],
+        ];
         $result = (new scene_runner($scene))->run($events, 'elegir');
         $this->assertSame('dormida', $result['ending']);
         $this->assertSame('partial', $result['outcome']);
         // All five: it wakes up.
-        $events = [['n' => 'elegir', 'pick' => ['seta', 'lombriz', 'musgo', 'hormiga', 'rana']]];
+        $events = [
+            ['n' => 'elegir', 'pick' => ['seta', 'lombriz', 'musgo', 'hormiga', 'rana']],
+            ['n' => 'rana', 'pick' => ['charca']],
+        ];
         $this->assertSame('despierta', (new scene_runner($scene))->run($events, 'elegir')['ending']);
     }
 
