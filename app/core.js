@@ -171,7 +171,8 @@
         }
       }
       if (cut > 0) {
-        lines = [name.slice(0, cut), name.slice(cut + 1)];
+        // The space stays at the end of the first line, so that the name reads whole.
+        lines = [name.slice(0, cut + 1), name.slice(cut + 1)];
       }
     }
     // About eight pixels a letter, at the size of the names: kept inside the 400 of the map.

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.53.1 (2026-10-17)
+
+- **Names that read as they show** (WCAG 2.1, 2.5.3, with axe 4.14): the button of the character at the top reads its
+  name and title, then «Me»; the place marked «Today» on the map says «Today» too; a long name of a place in two lines
+  reads whole; and the box of ideas of the teacher panel reads «Box of ideas» with the ideas not read yet.
+
 ## 0.53.0 (2026-10-17)
 
 - **Who is alive?**, the minigame of the clearing (mission version 17): living things and things that are not come out

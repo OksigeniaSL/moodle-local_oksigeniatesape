@@ -164,8 +164,10 @@
       '<header class="hud"><div class="me"><span class="face emblem-face">' + T.emblem() + '</span><span class="who">' +
       '<b>' + esc(cfg.coursename) + '</b><small>' + esc(t('teach_title')) + (pending ? ' · ' + esc(t('teach_pending',
       pending)) : '') + '</small></span></div><div class="hud-actions"><button class="btn btn-soft icon-btn" type="button" ' +
-      'data-tab="ideas" aria-label="' + esc(t('teach_tab_ideas')) + '"' + (state.tab === 'ideas' ? ' aria-current="page"' : '') +
-      '>' + T.icon('idea') + (d.ideasunread ? '<span class="badge">' + d.ideasunread + '</span>' : '') + '</button>' +
+      // Its name, hidden, before the ideas not read yet: the button reads «Buzón de ideas 2», as it shows.
+      'data-tab="ideas"' + (state.tab === 'ideas' ? ' aria-current="page"' : '') + '><span class="sr-only">' +
+      esc(t('teach_tab_ideas')) + ' </span>' + T.icon('idea') + (d.ideasunread ? '<span class="badge">' + d.ideasunread +
+      '</span>' : '') + '</button>' +
       (can('runclassscreen') ? '<a class="btn btn-soft icon-btn" href="' +
       esc(cfg.wwwroot + '/local/oksigeniatesape/board.php?id=' + cfg.courseid) + '" aria-label="' + esc(t('teach_board')) +
       '" title="' + esc(t('teach_board')) + '">' + T.icon('world') + '</a>' : '') +

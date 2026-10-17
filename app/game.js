@@ -523,9 +523,10 @@
       return a.tracked && !a.done;
     }).length;
     app.innerHTML = '<div class="sky"></div><div class="world">' +
-      '<header class="hud"><button class="me" data-tab="me" aria-label="' + esc(t('app_tab_me')) + '"><span class="face">' +
-      avatarOf(c, '', true) + '</span><span class="who"><b>' + esc(myName()) + '</b><small>' + esc(title(c)) + '</small></span>' +
-      '</button><div class="ring" style="--p:' + pct + '" title="' + esc(t('app_level')) + ' ' + c.level + '"><b>' +
+      // Its name starts with what it shows (the name of the character), and says where it goes.
+      '<header class="hud"><button class="me" data-tab="me"><span class="face">' + avatarOf(c, '', true) +
+      '</span><span class="who"><b>' + esc(myName()) + '</b> <small>' + esc(title(c)) + '</small></span><span class="sr-only">' +
+      ' · ' + esc(t('app_tab_me')) + '</span></button><div class="ring" style="--p:' + pct + '" title="' + esc(t('app_level')) + ' ' + c.level + '"><b>' +
       c.level + '</b></div>' + (T.fx && !w.quiet && !T.adapted.quiet ? '<button type="button" class="sound" data-sound aria-pressed="' + !T.fx.muted() +
       '" aria-label="' + esc(t('app_sound')) + '" title="' + esc(t('app_sound')) + '">' + (T.fx.muted() ? '🔇' : '🔊') +
       '</button>' : '') + '<details class="exit"><summary aria-label="' + esc(t('app_leave')) + '" title="' +
@@ -690,12 +691,12 @@
       var cls = 'place' + (ch.mine ? ' mine' : '') + (ch.lit ? ' lit' : '') + (ch.id === current.id ? ' here' : '') +
         (ch.id === state.chapter ? ' selected' : '') + (today ? ' today' : '');
       return '<g class="' + cls + '" data-chapter="' + ch.id + '" data-art="' + esc(ch.art || ch.code) + '" tabindex="0" ' +
-        'role="button" aria-label="' + esc(ch.name) + '">' +
+        'role="button" aria-label="' + esc((today ? t('app_today_here') + ' ' : '') + ch.name) + '">' +
         '<rect class="hit" x="' + (ch.x - 80) + '" y="' + (ch.y - 32) + '" width="160" height="84" rx="16"/>' +
         (ch.lit ? '<circle cx="' + ch.x + '" cy="' + ch.y + '" r="40" class="classglow"/>' : '') +
         // Where the class is today: what the teacher has on «Today in the valley».
         (today ? '<circle cx="' + ch.x + '" cy="' + ch.y + '" r="33" class="today-ring"/><text x="' + ch.x + '" y="' +
-        (ch.y - 38) + '" text-anchor="middle" class="today-tag">' + esc(t('app_today_here')) + '</text>' : '') +
+        (ch.y - 38) + '" text-anchor="middle" class="today-tag">' + esc(t('app_today_here')) + ' </text>' : '') +
         '<circle cx="' + ch.x + '" cy="' + ch.y + '" r="25" class="ring"/>' +
         '<rect x="' + (ch.x - 2) + '" y="' + (ch.y - 4) + '" width="4" height="17" rx="1" fill="#2b2219"/>' +
         '<circle cx="' + ch.x + '" cy="' + (ch.y - 7) + '" r="7" class="flame"/>' +
