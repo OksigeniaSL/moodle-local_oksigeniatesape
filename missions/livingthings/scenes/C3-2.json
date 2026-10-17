@@ -12,6 +12,19 @@
  "minutes": 8,
  "whatif": "¿Y si solo se pudieran hacer tres preguntas de sí o no para adivinar un animal? ¿Cuáles serían las mejores para empezar?",
  "start": "memoria",
+ "clues": {
+  "sinhuesos": "No tiene huesos por dentro",
+  "huevos": "Pone huevos",
+  "sinpelo": "No tiene pelo",
+  "sinplumas": "No tiene plumas",
+  "sin6patas": "No tiene seis patas",
+  "concha": "Tiene concha",
+  "humeda": "Tiene la piel húmeda",
+  "tierra": "No respira en el agua; vive en tierra, en sitios húmedos",
+  "sinpatas": "No tiene patas; se arrastra sobre un pie",
+  "humedad": "Vive donde hay humedad",
+  "sinprisa": "Iba sin ninguna prisa"
+ },
  "nodes": {
   "memoria": {
    "type": "branch",
@@ -56,8 +69,6 @@
     {
      "id": "huesos",
      "label": "¿Tiene huesos por dentro?",
-     "points": 3,
-     "objective": "SV-04",
      "feedback": "«No.» Y añade: «Con esa pregunta se separan de golpe los vertebrados de los invertebrados». Regala una pregunta más. Y se queda con la cara de quien la hizo.",
      "effects": [
       {
@@ -65,29 +76,41 @@
       },
       {
        "flag": "pregunta-buena"
+      },
+      {
+       "clue": "sinhuesos"
       }
      ]
     },
     {
      "id": "huevos",
      "label": "¿Pone huevos?",
-     "points": 0,
-     "objective": "SV-04",
-     "feedback": "«Sí.» Pero con ese sí casi nadie queda fuera: ponen huevos las aves, los reptiles, los peces, muchos anfibios, los insectos… «Cuanto más separa una pregunta, más dice su respuesta.»"
+     "feedback": "«Sí.» Pero con ese sí casi nadie queda fuera: ponen huevos las aves, los reptiles, los peces, muchos anfibios, los insectos… «Cuanto más separa una pregunta, más dice su respuesta.»",
+     "effects": [
+      {
+       "clue": "huevos"
+      }
+     ]
     },
     {
      "id": "pelo",
      "label": "¿Tiene pelo?",
-     "points": 1,
-     "objective": "SV-04",
-     "feedback": "«No.» Queda claro que no es un mamífero."
+     "feedback": "«No.» Queda claro que no es un mamífero.",
+     "effects": [
+      {
+       "clue": "sinpelo"
+      }
+     ]
     },
     {
      "id": "plumas",
      "label": "¿Tiene plumas?",
-     "points": 1,
-     "objective": "SV-04",
-     "feedback": "«No.» Queda claro que no es un ave."
+     "feedback": "«No.» Queda claro que no es un ave.",
+     "effects": [
+      {
+       "clue": "sinplumas"
+      }
+     ]
     }
    ],
    "next": "p2"
@@ -102,30 +125,42 @@
     {
      "id": "patas6",
      "label": "¿Tiene seis patas?",
-     "points": 2,
-     "objective": "SV-04",
-     "feedback": "«No.» Entonces no es un insecto."
+     "feedback": "«No.» Entonces no es un insecto.",
+     "effects": [
+      {
+       "clue": "sin6patas"
+      }
+     ]
     },
     {
      "id": "concha",
      "label": "¿Tiene concha?",
-     "points": 3,
-     "objective": "SV-04",
-     "feedback": "«Sí.» Y señala, entre las hojas, un trozo de algo duro y curvo."
+     "feedback": "«Sí.» Y señala, entre las hojas, un trozo de algo duro y curvo.",
+     "effects": [
+      {
+       "clue": "concha"
+      }
+     ]
     },
     {
      "id": "humeda",
      "label": "¿Su piel está húmeda?",
-     "points": 2,
-     "objective": "SV-04",
-     "feedback": "«Sí.» Y el hilo brillante que sigue el rastro es lo que deja al moverse."
+     "feedback": "«Sí.» Y el hilo brillante que sigue el rastro es lo que deja al moverse.",
+     "effects": [
+      {
+       "clue": "humeda"
+      }
+     ]
     },
     {
      "id": "agua",
      "label": "¿Respira en el agua?",
-     "points": 1,
-     "objective": "SV-04",
-     "feedback": "«No.» Vive en tierra, en sitios húmedos."
+     "feedback": "«No.» Vive en tierra, en sitios húmedos.",
+     "effects": [
+      {
+       "clue": "tierra"
+      }
+     ]
     },
     {
      "id": "seguir",
@@ -134,8 +169,11 @@
       "teamrole": "scout"
      },
      "locked": "Esto lo haría alguien que sigue rastros: el explorador del equipo.",
-     "points": 3,
-     "objective": "SV-04",
+     "effects": [
+      {
+       "clue": "humedad"
+      }
+     ],
      "feedback": {
       "valley": "El rastro acaba bajo una hoja mojada, en lo más húmedo del bosque. «Eso no es preguntar», dice el búho, «pero también es saber mirar.» Vive donde hay humedad.",
       "azara": "El rastro acaba bajo una hoja mojada, en lo más húmedo del monte. «Eso no es preguntar», dice el baqueano, «pero también es saber mirar.» Vive donde hay humedad."
@@ -172,23 +210,32 @@
     {
      "id": "concha",
      "label": "¿Tiene concha?",
-     "points": 2,
-     "objective": "SV-04",
-     "feedback": "«Sí.»"
+     "feedback": "«Sí.»",
+     "effects": [
+      {
+       "clue": "concha"
+      }
+     ]
     },
     {
      "id": "humeda",
      "label": "¿Su piel está húmeda?",
-     "points": 2,
-     "objective": "SV-04",
-     "feedback": "«Sí.»"
+     "feedback": "«Sí.»",
+     "effects": [
+      {
+       "clue": "humeda"
+      }
+     ]
     },
     {
      "id": "patas",
      "label": "¿Tiene patas?",
-     "points": 2,
-     "objective": "SV-04",
-     "feedback": "«No: se arrastra sobre un pie musculoso.»"
+     "feedback": "«No: se arrastra sobre un pie musculoso.»",
+     "effects": [
+      {
+       "clue": "sinpatas"
+      }
+     ]
     },
     {
      "id": "cuidar",
@@ -200,6 +247,9 @@
      "effects": [
       {
        "gems": 1
+      },
+      {
+       "clue": "sinprisa"
       }
      ],
      "feedback": "Se toma un momento antes de contestar: «Nadie me pregunta nunca eso. Bien, gracias». Y añade algo que no es ni sí ni no: «El que dejó este rastro iba sin ninguna prisa». Una gema por acordarse de quien responde."
@@ -257,33 +307,110 @@
      "points": 5,
      "objective": "SV-04",
      "feedback": "El caracol asoma los cuernos: «Invertebrado, con concha y piel húmeda. Soy un molusco».",
-     "next": "bien"
+     "next": "porque"
     },
     {
      "id": "escarabajo",
      "label": "—Es de un escarabajo",
      "correct": false,
      "objective": "SV-04",
+     "contradicts": [
+      "sin6patas",
+      "concha",
+      "humeda",
+      "sinpatas"
+     ],
      "feedback": "El escarabajo sale del tronco: «Yo tengo seis patas y un caparazón duro, pero no en espiral».",
-     "next": "adivinar"
+     "next": "dormido"
     },
     {
      "id": "tortuga",
      "label": "—Es de una tortuga",
      "correct": false,
      "objective": "SV-04",
+     "contradicts": [
+      "sinhuesos",
+      "humeda",
+      "sinpatas"
+     ],
      "feedback": "La tortuga se asoma: «Mi caparazón tiene huesos por dentro: soy un reptil, un vertebrado».",
-     "next": "adivinar"
+     "next": "dormido"
     },
     {
      "id": "cangrejo",
      "label": "—Es de un cangrejo",
      "correct": false,
      "objective": "SV-04",
+     "contradicts": [
+      "tierra",
+      "humeda",
+      "sinpatas"
+     ],
      "feedback": "El cangrejo chasquea las pinzas: «Yo tengo patas, y muchas. Y vivo junto al agua».",
-     "next": "adivinar"
+     "next": "dormido"
     }
    ]
+  },
+  "porque": {
+   "type": "choice",
+   "prompt": {
+    "valley": "Antes de devolverle el nombre al Gran Libro: ¿qué respuestas del búho nos dicen que es un caracol?",
+    "azara": "Antes de apuntarlo en el cuaderno: ¿qué respuestas del baqueano nos dicen que es un caracol?"
+   },
+   "select": {
+    "min": 2,
+    "max": 3
+   },
+   "objective": "SV-07",
+   "hints": [
+    "Sirven las respuestas que dejan fuera a los otros tres, no las que valen para todos."
+   ],
+   "options": [
+    {
+     "id": "sinhuesos",
+     "label": "No tiene huesos por dentro",
+     "correct": true,
+     "points": 2,
+     "feedback": "La tortuga queda fuera: su caparazón tiene huesos debajo."
+    },
+    {
+     "id": "concha",
+     "label": "Tiene concha",
+     "correct": true,
+     "points": 2,
+     "feedback": "Ni el escarabajo ni el cangrejo llevan una concha en espiral."
+    },
+    {
+     "id": "humeda",
+     "label": "Tiene la piel húmeda",
+     "correct": true,
+     "points": 2,
+     "feedback": "Ni el escarabajo, ni la tortuga, ni el cangrejo tienen la piel húmeda."
+    },
+    {
+     "id": "huevos",
+     "label": "Pone huevos",
+     "correct": false,
+     "feedback": "Eso también lo hacen el escarabajo, la tortuga y el cangrejo: no separa a nadie."
+    },
+    {
+     "id": "pequeno",
+     "label": "Es pequeño",
+     "correct": false,
+     "feedback": "El escarabajo y muchos cangrejos también lo son: no separa a nadie."
+    }
+   ],
+   "next": "bien"
+  },
+  "dormido": {
+   "type": "ending",
+   "outcome": "retry",
+   "retry": "p1",
+   "text": {
+    "valley": "El búho cierra un ojo, luego el otro. «Mañana me preguntan mejor», murmura, y mete la cabeza bajo el ala. Lo que se averiguó no se pierde: con preguntas que dejen fuera a muchos animales de golpe, el rastro se lee solo.",
+    "azara": "El baqueano se baja el sombrero sobre los ojos. «Mañana me preguntan mejor», murmura, y se queda quieto. Lo que se averiguó no se pierde: con preguntas que dejen fuera a muchos animales de golpe, el rastro se lee solo."
+   },
+   "keep": "La otra vez el rastro no encajó con lo que se adivinó. Esta vez: primero, la pregunta que deja fuera a más animales."
   },
   "bien": {
    "type": "ending",

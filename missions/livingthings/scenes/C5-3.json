@@ -177,6 +177,40 @@
      }
     }
    ],
+   "next": "la-lata"
+  },
+  "la-lata": {
+   "type": "choice",
+   "dilemma": true,
+   "prompt": {
+    "valley": "La lata no es del lago. ¿Qué hacemos con ella?",
+    "azara": "La lata no es del río. ¿Qué hacemos con ella?"
+   },
+   "options": [
+    {
+     "id": "papelera",
+     "label": "Llevarla ahora a la papelera del campamento",
+     "effects": [
+      {
+       "flag": "lata-a-la-papelera"
+      }
+     ],
+     "feedback": "La garza la lleva con el pico hasta la papelera, muy seria, y vuelve al agua. La orilla queda como estaba antes de que llegara la lata."
+    },
+    {
+     "id": "guardar",
+     "label": "Guardarla en la mochila para enseñarla y contar dónde estaba",
+     "effects": [
+      {
+       "flag": "lata-anotada"
+      }
+     ],
+     "feedback": {
+      "valley": "La lata va a la mochila con una nota: «Encontrada en la orilla del lago, entre los juncos». Mañana la verá el resto de la expedición, y después irá a la papelera.",
+      "azara": "La lata va a la mochila con una nota: «Encontrada en la orilla del río, entre los juncos». Mañana la verá el resto de la expedición, y después irá a la papelera."
+     }
+    }
+   ],
    "next": "orilla"
   },
   "orilla": {
@@ -296,8 +330,8 @@
    "type": "ending",
    "outcome": "success",
    "text": {
-    "valley": "La página del lago queda completa: un ecosistema son los seres vivos y el lugar donde viven, juntos. La garza se lleva la lata a la papelera del campamento. {{creature}} se queda mirando el agua, donde se refleja la torre, todavía a oscuras.",
-    "azara": "La página del río queda completa: un ecosistema son los seres vivos y el lugar donde viven, juntos. La garza se lleva la lata a la papelera del campamento. {{creature}} se queda mirando el agua."
+    "valley": "La página del lago queda completa: un ecosistema son los seres vivos y el lugar donde viven, juntos. {{creature}} se queda mirando el agua, donde se refleja la torre, todavía a oscuras.",
+    "azara": "La página del río queda completa: un ecosistema son los seres vivos y el lugar donde viven, juntos. {{creature}} se queda mirando el agua."
    },
    "effects": [
     {

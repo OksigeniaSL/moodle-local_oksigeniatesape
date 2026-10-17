@@ -255,6 +255,46 @@
      }
     }
    ],
+   "next": "rana"
+  },
+  "rana": {
+   "type": "choice",
+   "dilemma": true,
+   "prompt": {
+    "valley": "Con el nido ya lleno, una rana sale de la charca y se sube de un salto al borde. ¿Qué hacemos?",
+    "azara": "Con el cajón ya lleno, una rana sale de la charca y se sube de un salto al borde. ¿Qué hacemos?"
+   },
+   "options": [
+    {
+     "id": "quedarse",
+     "label": {
+      "valley": "Dejar que se quede en el borde del nido",
+      "azara": "Dejar que se quede en el borde del cajón"
+     },
+     "effects": [
+      {
+       "flag": "rana-en-el-nido"
+      }
+     ],
+     "feedback": {
+      "valley": "La rana se queda en el borde, muy quieta. De un lengüetazo caza un mosquito que rondaba las semillas, y ahí sigue, haciendo compañía.",
+      "azara": "La rana se queda en el borde del cajón, muy quieta. De un lengüetazo caza un mosquito que rondaba las semillas, y ahí sigue, haciendo compañía."
+     }
+    },
+    {
+     "id": "charca",
+     "label": "Devolverla a la charca, con las manos mojadas",
+     "effects": [
+      {
+       "flag": "rana-en-la-charca"
+      }
+     ],
+     "feedback": {
+      "valley": "La rana se zambulle y croa desde el agua. Las semillas se quedan con música de fondo.",
+      "azara": "La rana se zambulle y croa desde el agua. El naturalista la apunta en el cuaderno: «Rana de charca, cantando al atardecer»."
+     }
+    }
+   ],
    "next": "resultado"
   },
   "resultado": {

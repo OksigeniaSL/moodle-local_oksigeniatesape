@@ -429,7 +429,9 @@ final class scenes_test extends \advanced_testcase {
         $DB->set_field(self::T . 'scene', 'definition', json_encode($def), ['id' => $scene->id]);
         $this->play($w, $w->users[0], 'C1-2');
         [, , $flags, $role] = scenes::context(characters::get($w->users[0]->id), $w->course->id);
-        $this->assertSame(['nido'], $flags);
+        // The mark of the ending, besides those the decisions of the scene leave (the seed in the nest…).
+        $this->assertContains('nido', $flags);
+        $this->assertContains('semilla-en-el-nido', $flags);
         $this->assertSame('sage', $role);
     }
 

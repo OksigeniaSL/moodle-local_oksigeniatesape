@@ -255,6 +255,23 @@ final class scene_runner_test extends \advanced_testcase {
         (new scene_runner($scene, [], ['scout']))->run([['n' => 'q', 'pick' => ['trail']]]);
     }
 
+    public function test_a_wrong_guess_puts_the_owl_to_sleep_and_the_questions_do_not_score(): void {
+        $scene = autoplayer::scene('C3-2');
+        $events = autoplayer::play($scene);
+        $good = (new scene_runner($scene))->run($events);
+        $this->assertSame('bien', $good['ending']);
+        // Asking is not scored: the guess and why it is right are.
+        $this->assertSame(['ok' => 1, 'total' => 1], $good['objectives']['SV-04']);
+        $this->assertSame(['ok' => 3, 'total' => 3], $good['objectives']['SV-07']);
+        // A wrong guess does not lead back to the guess: the owl falls asleep, and the questions start again.
+        $guess = array_search('adivinar', array_column($events, 'n'), true);
+        $wrong = array_slice($events, 0, $guess);
+        $wrong[] = ['n' => 'adivinar', 'pick' => ['tortuga']];
+        $result = (new scene_runner($scene))->run($wrong);
+        $this->assertSame('dormido', $result['ending']);
+        $this->assertSame('retry', $result['outcome']);
+    }
+
     public function test_a_dilemma_is_a_decision_and_not_evidence_of_an_objective(): void {
         $scene = [
             'id' => 'T-2', 'start' => 'd', 'nodes' => [

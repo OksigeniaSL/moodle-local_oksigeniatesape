@@ -192,6 +192,7 @@
   },
   "hebra": {
    "type": "choice",
+   "dilemma": true,
    "prompt": {
     "valley": "Doña Hebra ha bajado al sótano detrás de la expedición. Se queda en el último escalón, lejos de las etiquetas, contando páginas con los dedos. ¿Le decimos algo?",
     "azara": "La archivera ha entrado en el almacén detrás de la expedición. Se queda junto a la puerta, lejos de las macetas, contando páginas con los dedos. ¿Le decimos algo?"

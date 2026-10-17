@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 28,
+ "version": 29,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 29,
+   "kind": "improvement",
+   "date": "2026-10-17",
+   "text": "Un dilema en cada lugar, sin respuesta correcta; el búho: las respuestas se apuntan como pistas, lo que no encaja se tacha solo, se puntúa acertar y decir por qué, y si se falla se duerme"
+  },
   {
    "version": 28,
    "kind": "improvement",
@@ -748,6 +754,20 @@
      }
     },
     {
+     "flag": "rana-en-el-nido",
+     "text": {
+      "valley": "Una rana saltó al borde del nido y la dejamos quedarse: cazó un mosquito.",
+      "azara": "Una rana saltó al borde del cajón y la dejamos quedarse: cazó un mosquito."
+     }
+    },
+    {
+     "flag": "rana-en-la-charca",
+     "text": {
+      "valley": "Una rana saltó al nido y la devolvimos a la charca, con las manos mojadas. Croó toda la tarde.",
+      "azara": "Una rana saltó al cajón y la devolvimos a la charca, con las manos mojadas. Croó toda la tarde."
+     }
+    },
+    {
      "flag": "criatura-dormida",
      "text": {
       "valley": "La criatura nació dormida: algo del nido no estaba vivo y le robó calor.",
@@ -849,6 +869,20 @@
       "valley": "Con la lupa vimos las bacterias del yogur y les dimos su propio estante.",
       "azara": "Con la lupa vimos las bacterias del yogur y les dimos su propia caja."
      }
+    },
+    {
+     "flag": "estantes-por-tamano",
+     "text": {
+      "valley": "Dentro de cada estante, pusimos a los seres del más pequeño al más grande.",
+      "azara": "Dentro de cada caja, pusimos las muestras de la más pequeña a la más grande."
+     }
+    },
+    {
+     "flag": "estantes-por-abecedario",
+     "text": {
+      "valley": "Dentro de cada estante, pusimos a los seres por orden alfabético.",
+      "azara": "Dentro de cada caja, pusimos las muestras por orden alfabético."
+     }
     }
    ],
    "pacts": [
@@ -926,6 +960,20 @@
      "text": {
       "valley": "Una salamandra con una pata lastimada cruzó el lago con nosotros, a la sombra y con la piel mojada.",
       "azara": "Una salamandra con una pata lastimada cruzó el río con nosotros, a la sombra y con la piel mojada."
+     }
+    },
+    {
+     "flag": "por-los-juncos",
+     "text": {
+      "valley": "Cruzamos el lago despacio, entre los juncos, y vimos nidos escondidos.",
+      "azara": "Cruzamos el río despacio, entre los juncos, y vimos nidos escondidos."
+     }
+    },
+    {
+     "flag": "por-el-centro",
+     "text": {
+      "valley": "Cruzamos el lago por el centro, deprisa, y un pez saltó junto a la barcaza.",
+      "azara": "Cruzamos el río por el centro, deprisa, y un pez saltó junto a la barcaza."
      }
     }
    ],
@@ -1119,6 +1167,20 @@
       "valley": "Cortamos ramas verdes para el refugio. Al secarse, se encogieron y el techo se hundió.",
       "azara": "Cortamos ramas verdes para el refugio. Al secarse, se encogieron y el techo se hundió."
      }
+    },
+    {
+     "flag": "lata-a-la-papelera",
+     "text": {
+      "valley": "Encontramos una lata en la orilla, y la garza la llevó a la papelera.",
+      "azara": "Encontramos una lata en la orilla, y la garza la llevó a la papelera."
+     }
+    },
+    {
+     "flag": "lata-anotada",
+     "text": {
+      "valley": "Guardamos la lata de la orilla con una nota de dónde estaba, para enseñarla.",
+      "azara": "Guardamos la lata de la orilla con una nota de dónde estaba, para enseñarla."
+     }
     }
    ],
    "pacts": [
@@ -1206,6 +1268,20 @@
      "text": {
       "valley": "Doña Hebra nos contó que las páginas copiadas de memoria eran suyas, y no la dejamos sola.",
       "azara": "La archivera nos contó que las notas copiadas de memoria eran suyas, y no la dejamos sola."
+     }
+    },
+    {
+     "flag": "hebra-sube",
+     "text": {
+      "valley": "Le pedimos a Doña Hebra que subiera con nosotros a la torre, y dijo que sí.",
+      "azara": "Le pedimos a la archivera que hiciera la revisión con nosotros, y dijo que sí."
+     }
+    },
+    {
+     "flag": "hebra-guarda",
+     "text": {
+      "valley": "Doña Hebra se quedó abajo, guardando el Gran Libro hasta que volviéramos.",
+      "azara": "La archivera se quedó guardando las cajas de muestras mientras revisábamos el cuaderno."
      }
     }
    ],

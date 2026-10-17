@@ -6964,3 +6964,40 @@ body.adapt-still .mission-grid .chapter.as-sheet {
 .memory p + p {
   margin-top: 4px;
 }
+
+/* What the answers told, written down; what contradicts it, crossed out by itself. */
+.clues {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: var(--r-s);
+  border: 1px dashed rgba(var(--lantern-rgb), .5);
+  background: rgba(var(--lantern-rgb), .06);
+}
+
+.clues small {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--lantern);
+  font-weight: 700;
+}
+
+.clues small svg {
+  width: 18px;
+  height: 18px;
+}
+
+.clues ul {
+  margin: 6px 0 0;
+  padding-left: 20px;
+}
+
+.opt.crossed {
+  opacity: .55;
+}
+
+.opt.crossed small {
+  display: block;
+  font-size: 13px;
+  color: var(--text-soft);
+}

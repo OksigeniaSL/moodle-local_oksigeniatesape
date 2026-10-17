@@ -184,6 +184,49 @@
      }
     }
    ],
+   "next": "orden"
+  },
+  "orden": {
+   "type": "choice",
+   "dilemma": true,
+   "prompt": {
+    "valley": "Cada ser ya está en su estante. Y dentro de cada estante, ¿en qué orden los ponemos?",
+    "azara": "Cada muestra ya está en su caja. Y dentro de cada caja, ¿en qué orden las ponemos?"
+   },
+   "options": [
+    {
+     "id": "tamano",
+     "label": {
+      "valley": "Ponerlos del más pequeño al más grande",
+      "azara": "Ponerlas de la más pequeña a la más grande"
+     },
+     "effects": [
+      {
+       "flag": "estantes-por-tamano"
+      }
+     ],
+     "feedback": {
+      "valley": "Cada estante queda como una escalera: en el de las plantas, el musgo delante y el helecho detrás. De un vistazo se ve quién es pequeño y quién es grande.",
+      "azara": "Cada caja queda como una escalera: en la de las plantas, el musgo delante y el helecho detrás. De un vistazo se ve quién es pequeño y quién es grande."
+     }
+    },
+    {
+     "id": "abecedario",
+     "label": {
+      "valley": "Ponerlos por orden alfabético",
+      "azara": "Ponerlas por orden alfabético"
+     },
+     "effects": [
+      {
+       "flag": "estantes-por-abecedario"
+      }
+     ],
+     "feedback": {
+      "valley": "En el estante de las plantas, el helecho va antes que el musgo. Doña Hebra encuentra cada ser a la primera, sin contar con los dedos.",
+      "azara": "En la caja de las plantas, el helecho va antes que el musgo. La archivera encuentra cada muestra a la primera, sin contar con los dedos."
+     }
+    }
+   ],
    "next": "crujido"
   },
   "crujido": {

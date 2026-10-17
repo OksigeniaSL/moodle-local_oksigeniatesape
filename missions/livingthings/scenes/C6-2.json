@@ -413,6 +413,49 @@
      "feedback": "Con alguien a su lado, levanta la vista y sigue: «Mañana las repaso todas, una por una, con la cosa delante». Nadie la señala: dar algo por cierto sin mirarlo lo hacemos todos alguna vez. Una gema por estar a su lado."
     }
    ],
+   "next": "manana"
+  },
+  "manana": {
+   "type": "choice",
+   "dilemma": true,
+   "prompt": {
+    "valley": "Mañana toca subir a la torre. ¿Qué le pedimos a Doña Hebra?",
+    "azara": "Mañana es la revisión final del cuaderno. ¿Qué le pedimos a la archivera?"
+   },
+   "options": [
+    {
+     "id": "sube",
+     "label": {
+      "valley": "Pedirle que suba con la expedición a la torre",
+      "azara": "Pedirle que haga la revisión con nosotros"
+     },
+     "effects": [
+      {
+       "flag": "hebra-sube"
+      }
+     ],
+     "feedback": {
+      "valley": "Doña Hebra se lo piensa un momento y asiente: «Subiré. Y si el Embrollo suelta una página, la leo despacio, con la cosa delante».",
+      "azara": "La archivera se lo piensa un momento y asiente: «La haremos juntos. Y cada nota, con la muestra delante»."
+     }
+    },
+    {
+     "id": "guarda",
+     "label": {
+      "valley": "Pedirle que se quede abajo, guardando el Gran Libro",
+      "azara": "Pedirle que guarde mientras tanto las cajas de muestras"
+     },
+     "effects": [
+      {
+       "flag": "hebra-guarda"
+      }
+     ],
+     "feedback": {
+      "valley": "Doña Hebra abraza el Gran Libro: «Aquí no se cuela ni una mancha. Cuando la expedición baje, repasamos las páginas juntos».",
+      "azara": "La archivera se sienta junto a las cajas: «Aquí no se mezcla ni una muestra. Cuando acabe la revisión, comprobamos las etiquetas juntos»."
+     }
+    }
+   ],
    "next": "libro1"
   },
   "libro1": {

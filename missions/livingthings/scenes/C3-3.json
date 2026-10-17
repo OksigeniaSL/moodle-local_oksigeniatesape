@@ -257,6 +257,43 @@
      "feedback": "Son huellas mojadas que van de la orilla hacia el cubo del barquero, que gotea, y se cortan a medio camino: con la pata lastimada no ha podido llegar. El explorador la lleva hasta allí, a la sombra y junto al agua, y al rato mueve la pata. Una gema por leer lo que cuenta un rastro."
     }
    ],
+   "next": "rumbo"
+  },
+  "rumbo": {
+   "type": "choice",
+   "dilemma": true,
+   "prompt": "Ya a bordo, el barquero pregunta: «¿Por dónde cruzamos?»",
+   "options": [
+    {
+     "id": "juncos",
+     "label": "Cruzar pegados a la orilla, entre los juncos",
+     "effects": [
+      {
+       "flag": "por-los-juncos"
+      }
+     ],
+     "feedback": {
+      "valley": "La barcaza avanza despacio entre los juncos. Desde la borda se ven nidos escondidos y una rana que nos mira sin moverse. El viaje es largo, pero nadie se aburre.",
+      "azara": "La barcaza avanza despacio entre los juncos de la orilla. Desde la borda se ven nidos escondidos y una rana que nos mira sin moverse. El viaje es largo, pero nadie se aburre."
+     }
+    },
+    {
+     "id": "centro",
+     "label": {
+      "valley": "Cruzar por el centro del lago, donde el agua es más honda",
+      "azara": "Cruzar por el centro del río, donde corre más el agua"
+     },
+     "effects": [
+      {
+       "flag": "por-el-centro"
+      }
+     ],
+     "feedback": {
+      "valley": "En el centro del lago, la barcaza va más deprisa. Un pez salta junto a la borda y, a lo lejos, se ve el valle entero.",
+      "azara": "En el centro del río, la barcaza va más deprisa. Un pez salta junto a la borda y, a lo lejos, se ven las dos orillas."
+     }
+    }
+   ],
    "next": "revision"
   },
   "revision": {

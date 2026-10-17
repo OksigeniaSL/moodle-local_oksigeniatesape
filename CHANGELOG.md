@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.68.0 (2026-10-17)
+
+The end of block 1.11 of the plan (mission v29):
+
+- **The questions to the owl, a deduction**: each answer is written down in «What we know» (`clues` of a scene and
+  the effect `{clue}`), and the candidates that contradict it are crossed out by themselves (`contradicts`): who asked
+  well arrives with one. The questions no longer score; the guess and why it is right (a new node) do. A wrong guess
+  does not lead back to the same question: the owl falls asleep, «ask me better tomorrow», and the questions start
+  again.
+- **A dilemma in each place**, without a right answer and each with its mark and its line of memory: the frog by the
+  nest, the order inside the shelves, the course of the barge, Doña Hebra in the cellar, the can on the shore and what
+  is asked of Doña Hebra for tomorrow.
+
 ## 0.67.0 (2026-10-17)
 
 Block 1.11 of the plan, content (mission v28):

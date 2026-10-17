@@ -609,10 +609,33 @@
       return '';
     }
 
+    /**
+     * Writes down what an answer told, if it tells something (an effect {clue: code} of the clues of the scene).
+     *
+     * @param {Object} e An effect.
+     */
+    function clue(e) {
+      if (e.clue && sc.clues && sc.clues[e.clue] && run.clues.indexOf(e.clue) < 0) {
+        run.clues.push(e.clue);
+      }
+    }
+
+    /**
+     * What the answers told so far, in the field notebook, over the question.
+     *
+     * @return {string}
+     */
+    function clueBox() {
+      return run.clues.length ? '<div class="clues"><small>' + T.icon('log') + ' ' + esc(t('app_clues')) + '</small><ul>' +
+        run.clues.map(function(c) {
+          return '<li>' + esc(tx(sc.clues[c])) + '</li>';
+        }).join('') + '</ul></div>' : '';
+    }
+
     function start(from) {
       run = {node: from || sc.start, from: from || '', events: [], extra: 0, extraused: {}, hints: 0, shield: false,
         flags: (data.flags || []).slice(), opened: {}, spent: 0, trailed: {}, turn: 0, handfor: {}, looks: {}, tried: {},
-        keep: ''};
+        keep: '', clues: []};
       // Back from an ending that sent here: what it left written in pencil shows over the question.
       if (from) {
         Object.keys(sc.nodes).some(function(id) {
@@ -1171,8 +1194,14 @@
       var selected = [];
       // At the class screen the phones vote by letter: the options stay where they are.
       var tried = cm ? [] : run.tried[run.node] || [];
+      // What contradicts what the answers told is crossed out by itself: who asked well arrives with one candidate.
+      var crossed = function(o) {
+        return (o.contradicts || []).some(function(c) {
+          return run.clues.indexOf(c) >= 0;
+        });
+      };
       var open = n.options.filter(function(o) {
-        return has(o.requires) && tried.indexOf(o.id) < 0;
+        return has(o.requires) && tried.indexOf(o.id) < 0 && !crossed(o);
       });
       var opts = n.options.filter(function(o) {
         // What other scenes left (flags) is memory, not something to get: without it, the option is not there; nor is
@@ -1185,6 +1214,10 @@
           return '<button class="opt locked" type="button" disabled><b>' + esc(tx(o.label)) + '</b><small>' +
             esc(o.locked ? tx(o.locked) : missing(o.requires)) + '</small></button>';
         }
+        if (crossed(o)) {
+          return '<button class="opt crossed" type="button" disabled><s>' + esc(tx(o.label)) + '</s><small>' +
+            esc(t('app_clue_crossed')) + '</small></button>';
+        }
         var letter = cm ? '<span class="opt-letter">' + LETTERS[open.indexOf(o)] + '</span>' : '';
         // What only the scout sees is there to be found: it shows when they follow the trail.
         var trail = !cm && o.requires && o.requires.role === 'scout' && !run.trailed[run.node];
@@ -1192,7 +1225,8 @@
           (trail ? ' data-trail hidden' : '') + '>' + letter + esc(tx(o.label)) + '<span class="opt-votes" data-votes></span></button>';
       }).join('');
       var voting = cm && cm.vote && !multi && open.length >= 2;
-      var body = show((n.image ? picture(n.image, data) : '') + '<p class="scene-prompt">' + esc(tx(n.prompt)) + '</p>' +
+      var body = show((n.image ? picture(n.image, data) : '') + clueBox() + '<p class="scene-prompt">' + esc(tx(n.prompt)) +
+        '</p>' +
         (voting ? '<div class="class-vote" data-vote><button class="btn btn-soft" data-voteopen>' +
         esc(t('board_scene_voteopen')) + '</button></div>' : '') +
         '<div class="opts">' + opts + '</div>' + (multi ? '<div class="counter" data-count>' + esc(t('app_chosen', '0/' + max)) +
@@ -1225,6 +1259,7 @@
                 if (e.flag) {
                   run.flags.push(e.flag);
                 }
+                clue(e);
               });
               if (o.correct === false) {
                 mistake();
@@ -1269,6 +1304,7 @@
               if (e.flag) {
                 run.flags.push(e.flag);
               }
+              clue(e);
             });
             if (pick(id).correct === false) {
               mistake();
