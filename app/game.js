@@ -406,6 +406,9 @@
         var counter = app.querySelector('[data-res="' + r[0] + '"]');
         if (counter) {
           T.loot(counter, r[0], r[1], r[2]);
+          setTimeout(function() {
+            explain(r[0]);
+          }, 1300);
         }
       }, 400 + i * 450);
     });
@@ -664,6 +667,11 @@
 
   function world() {
     var w = state.world;
+    // What a counter is goes with the screen it was said on.
+    var said = document.querySelector('.res-callout');
+    if (said) {
+      said.remove();
+    }
     var member = w.character && w.character.member;
     T.adapt(member ? member.adapt : []);
     if (T.fx) {
@@ -686,8 +694,9 @@
       // Its name starts with what it shows (the name of the character), and says where it goes.
       '<header class="hud"><button class="me" data-tab="me"><span class="face">' + avatarOf(c, '', true) +
       '</span><span class="who"><b>' + esc(myName()) + '</b> <small>' + esc(title(c)) + '</small></span><span class="sr-only">' +
-      ' · ' + esc(t('app_tab_me')) + '</span></button><div class="ring" style="--p:' + pct + '" title="' + esc(t('app_level')) + ' ' + c.level + '"><b>' +
-      c.level + '</b></div>' + (T.fx && !w.quiet && !T.adapted.quiet ? '<button type="button" class="sound" data-sound aria-pressed="' + !T.fx.muted() +
+      ' · ' + esc(t('app_tab_me')) + '</span></button><button type="button" class="ring" data-tab="me" style="--p:' + pct + '" title="' + esc(t('app_level')) +
+      ' ' + c.level + '"><b>' + c.level + '</b><span class="sr-only"> · ' + esc(t('app_level')) + ' · ' + esc(t('app_tab_me')) +
+      '</span></button>' + (T.fx && !w.quiet && !T.adapted.quiet ? '<button type="button" class="sound" data-sound aria-pressed="' + !T.fx.muted() +
       '" aria-label="' + esc(t('app_sound')) + '" title="' + esc(t('app_sound')) + '">' + T.icon(T.fx.muted() ? 'mute' : 'sound') +
       '</button>' : '') + '<details class="exit"><summary aria-label="' + esc(t('app_leave')) + '" title="' +
       esc(t('app_leave')) + '">⎋</summary><div class="exit-menu">' +
@@ -696,18 +705,21 @@
       '<a href="' + esc(cfg.wwwroot + '/my/') + '">' + esc(t('app_exit_my')) + '</a>' + savedNote() +
       '</div></details><div class="res">' +
       res('saber', c.saber, t('app_saber')) + res('gems', c.gems, t('app_gems')) +
-      res('energy', m.energy + '/' + w.energymax, t('app_energy')) + res('breath', m.breath + '/' + w.breathmax,
-        t('app_breath')) + '</div></header>' +
+      // The creature goes with the hero also up here; touching it, «Me».
+      (c.creature ? '<button type="button" class="r pet" data-tab="me" title="' + esc(creatureName(c)) + '">' +
+      T.creature(c.creature, c.creaturestage) + '<span class="sr-only">' + esc(creatureName(c)) + ' · ' + esc(t('app_tab_me')) +
+      '</span></button>' : '') + '</div></header>' +
       '<nav class="tabs" aria-label="Tesapé">' + TABS.map(function(tab) {
         // What is waiting glows; how many, only for who listens.
         var badge = tab === 'challenges' && pending ? '<span class="new-glow" aria-hidden="true"></span><span class="sr-only"> (' +
           pending + ')</span>' : '';
-        return '<button type="button" data-tab="' + tab + '"' + (state.tab === tab ? ' aria-current="page"' : '') + '>' +
+        var on = state.tab === tab || (tab === 'world' && (state.tab === 'market' || state.tab === 'album'));
+        return '<button type="button" data-tab="' + tab + '"' + (on ? ' aria-current="page"' : '') + '>' +
           T.icon(tab) + '<span>' + esc(t('app_tab_' + tab)) + badge + '</span></button>';
       }).join('') + '</nav><main class="content" id="content"></main></div>';
     app.querySelectorAll('[data-res]').forEach(function(b) {
       b.onclick = function() {
-        T.toast('<b>' + esc(b.title) + '</b>: ' + esc(t('app_res_' + b.dataset.res + '_help')));
+        explain(b.dataset.res, true);
       };
     });
     var sound = app.querySelector('[data-sound]');
@@ -727,10 +739,22 @@
     });
     var content = document.getElementById('content');
     content.innerHTML = status(m) + ({world: tabWorld, team: tabTeam, challenges: tabChallenges, log: tabLog,
-      me: tabMe})[state.tab]();
-    if (state.tab === 'me') {
+      me: tabMe, market: function() {
+        return landmarkView('market');
+      }, album: function() {
+        return landmarkView('album');
+      }})[state.tab]();
+    if (state.tab === 'me' || state.tab === 'market' || state.tab === 'album') {
       bindMe();
     }
+    app.querySelectorAll('[data-tab-back], [data-landmark]').forEach(function(b) {
+      b.onclick = function() {
+        state.tab = b.dataset.tabBack || b.dataset.landmark;
+        state.meSection = null;
+        world();
+        window.scrollTo(0, 0);
+      };
+    });
     if (state.tab === 'world' || state.tab === 'challenges') {
       bindWorld();
     }
@@ -802,6 +826,68 @@
     var shown = state.loot && state.loot[kind] !== undefined ? state.loot[kind] : value;
     return '<button type="button" class="r" data-res="' + kind + '" title="' + esc(label) + '">' + T.icon(kind) + '<b>' +
       esc(shown) + '</b><span class="sr-only"> ' + esc(label) + '</span></button>';
+  }
+
+  /**
+   * What a counter of the header is, said next to it: once on each device, the first time it goes up; and whenever it
+   * is touched.
+   *
+   * @param {string} kind saber or gems.
+   * @param {boolean} [asked] Touched: it says it again.
+   */
+  function explain(kind, asked) {
+    var key = 'tesape-explained-' + kind;
+    try {
+      if (!asked && window.localStorage.getItem(key)) {
+        return;
+      }
+      window.localStorage.setItem(key, '1');
+    } catch (e) {
+      if (!asked) {
+        return;
+      }
+    }
+    var counter = app.querySelector('[data-res="' + kind + '"]');
+    var old = document.querySelector('.res-callout');
+    if (old) {
+      old.remove();
+    }
+    if (!counter) {
+      return;
+    }
+    var box = document.createElement('div');
+    box.className = 'res-callout';
+    box.setAttribute('role', 'status');
+    box.innerHTML = '<p><b>' + esc(t('app_' + kind)) + '</b>: ' + esc(t('app_res_' + kind + '_help')) + '</p><button type="button" ' +
+      'class="btn btn-soft" data-callout-ok>' + esc(t('app_callout_ok')) + '</button>';
+    document.body.appendChild(box);
+    var r = counter.getBoundingClientRect();
+    box.style.top = Math.round(r.bottom + 10) + 'px';
+    box.style.left = Math.round(Math.max(8, Math.min(window.innerWidth - box.offsetWidth - 8, r.left + r.width / 2 -
+      box.offsetWidth / 2))) + 'px';
+    box.style.setProperty('--arrow', Math.round(r.left + r.width / 2 - box.offsetLeft) + 'px');
+    // It never stands in the way: it goes with «Got it», Escape, a touch anywhere else or after a while.
+    var timer = null;
+    var close = function() {
+      box.remove();
+      clearTimeout(timer);
+      document.removeEventListener('keydown', onkey);
+      document.removeEventListener('pointerdown', outside, true);
+    };
+    var onkey = function(ev) {
+      if (ev.key === 'Escape') {
+        close();
+      }
+    };
+    var outside = function(ev) {
+      if (!box.contains(ev.target)) {
+        close();
+      }
+    };
+    timer = setTimeout(close, 9000);
+    document.addEventListener('keydown', onkey);
+    document.addEventListener('pointerdown', outside, true);
+    box.querySelector('[data-callout-ok]').onclick = close;
   }
 
   function status(m) {
@@ -982,27 +1068,52 @@
     }).join(' ');
     // The lanterns lit since this device last saw the map light in front of the student.
     var lighting = T.mapNewLanterns(cfg.courseid + '-' + cfg.userid + '-' + m.code, m.chapters);
-    var places = m.chapters.map(function(ch) {
+    // The lanterns painted for the map, if the art pack has them; the fog over the places the class has not opened yet
+    // (all after the one after the last lit by the class).
+    var lampOff = T.artUrl(['map.lantern.off']);
+    var lampOn = T.artUrl(['map.lantern.on']);
+    var opened = 0;
+    m.chapters.forEach(function(ch, i) {
+      if (ch.lit) {
+        opened = i + 1;
+      }
+    });
+    var mates = matesAt();
+    var places = m.chapters.map(function(ch, i) {
       var today = m.today && ch.code === m.today;
+      var here = mates[ch.id] || 0;
       var cls = 'place' + (ch.mine ? ' mine' : '') + (lighting[String(ch.id)] ? ' lighting' : '') + (ch.lit ? ' lit' : '') +
         (ch.id === current.id ? ' here' : '') +
         (ch.id === state.chapter ? ' selected' : '') + (today ? ' today' : '');
       return '<g class="' + cls + '" data-chapter="' + ch.id + '" data-art="' + esc(ch.art || ch.code) + '" tabindex="0" ' +
-        'role="button" aria-label="' + esc((today ? t('app_today_here') + ' ' : '') + ch.name) + '">' +
+        'role="button" aria-label="' + esc((today ? t('app_today_here') + ' ' : '') + ch.name + (here ? '. ' +
+        t('app_mates_here', here) : '')) + '">' +
         '<rect class="hit" x="' + (ch.x - 80) + '" y="' + (ch.y - 32) + '" width="160" height="84" rx="16"/>' +
         (ch.lit ? '<circle cx="' + ch.x + '" cy="' + ch.y + '" r="40" class="classglow"/>' : '') +
         // Where the class is today: what the teacher has on «Today in the valley».
         (today ? '<circle cx="' + ch.x + '" cy="' + ch.y + '" r="33" class="today-ring"/><text x="' + ch.x + '" y="' +
         (ch.y - 38) + '" text-anchor="middle" class="today-tag">' + esc(t('app_today_here')) + ' </text>' : '') +
-        '<circle cx="' + ch.x + '" cy="' + ch.y + '" r="25" class="ring"/>' +
+        '<circle cx="' + ch.x + '" cy="' + ch.y + '" r="25" class="ring' + (lampOff ? ' painted' : '') + '"/>' +
+        (lampOff && lampOn ? '<image href="' + esc(lampOff) + '" x="' + (ch.x - 20) + '" y="' + (ch.y - 30) + '" width="40" ' +
+        'height="50" class="lamp-off"/>' + (ch.mine ? '<image href="' + esc(lampOn) + '" x="' + (ch.x - 20) + '" y="' +
+        (ch.y - 30) + '" width="40" height="50" class="lamp-on"/>' : '') :
         '<rect x="' + (ch.x - 2) + '" y="' + (ch.y - 4) + '" width="4" height="17" rx="1" fill="#2b2219"/>' +
-        '<circle cx="' + ch.x + '" cy="' + (ch.y - 7) + '" r="7" class="flame"/>' +
-        T.mapLabel(ch.x, ch.y + 44, ch.name) + '</g>';
+        '<circle cx="' + ch.x + '" cy="' + (ch.y - 7) + '" r="7" class="flame"/>') +
+        (i > opened && !today ? '<ellipse cx="' + ch.x + '" cy="' + (ch.y + 6) + '" rx="62" ry="34" class="fog"/>' : '') +
+        silhouettes(ch, here) + T.mapLabel(ch.x, ch.y + 44, ch.name) + '</g>';
     }).join('');
     var c = state.world.character;
     var reached = Math.min(lastDone + 1, m.chapters.length - 1);
     var fresh = T.mapNewRoad(cfg.courseid + '-' + cfg.userid + '-' + m.code, m.chapters, reached);
     var step = T.mapWalk(cfg.courseid + '-' + cfg.userid + '-' + m.code, m.chapters, current);
+    // Where the student went on the map last, if not where the next step is: the hero waits there.
+    var went = m.chapters.filter(function(ch) {
+      return ch.id === state.chapter;
+    })[0];
+    if (went && went.id !== current.id) {
+      current = went;
+      step = {};
+    }
     var walk = step.from ? ' walking" style="--walk-x:' + (step.from.x - current.x) + 'px;--walk-y:' +
       (step.from.y - current.y) + 'px;animation-delay:' + (0.3 + step.delay) + 's' : '';
     // The creature goes with the hero, at their feet.
@@ -1024,11 +1135,157 @@
     if (T.fx) {
       T.fx.ambient(T.fx.place(current.art || current.code));
     }
-    return '<div class="map-wrap' + (height > 640 ? ' tall' : '') + '"><svg class="map" viewBox="0 0 400 ' + height +
+    return '<div class="map-wrap' + (height > 640 ? ' tall' : '') + '" data-herox="' + current.x + '" data-heroy="' + current.y +
+      '">' + (state.visit ? '' : landmarks()) + '<svg class="map" viewBox="0 0 400 ' + height +
       '" role="group" aria-label="' + esc(m.title) + '"><defs>' + T.MAPGLOW + '</defs>' + T.mapGround(m) +
       T.mapLandmarks(m) + T.mapNight(m) + '<polyline points="' + pts + '" class="road"/>' +
       (walked ? '<polyline points="' + walked + '" class="road walked"/>' : '') + roadDrawing(fresh) +
       (T.critters ? T.critters.fireflies(m) : '') + places + me + pet + hungry + '</svg></div>';
+  }
+
+  /**
+   * The market stall and the big book of the album, on the map: places of the valley, not cards of a profile.
+   *
+   * @return {string}
+   */
+  function landmarks() {
+    var w = state.world;
+    var list = [];
+    if (w.market && w.market.length) {
+      list.push(['market', T.artUrl(['landmark.market', 'market.banner-lantern']), 'gems']);
+    }
+    if (w.album) {
+      list.push(['album', T.artUrl(['landmark.album', 'album.ave']), 'log']);
+    }
+    return list.length ? '<div class="map-landmarks">' + list.map(function(l) {
+      return '<button type="button" class="landmark-btn ' + l[0] + '" data-landmark="' + l[0] + '"><span class="landmark-pic" ' +
+        'aria-hidden="true">' + (l[1] ? '<img src="' + esc(l[1]) + '" alt="">' : T.icon(l[2])) + '</span><span>' +
+        esc(t('app_landmark_' + l[0])) + '</span></button>';
+    }).join('') + '</div>' : '';
+  }
+
+  /**
+   * The market or the album as a place: what it has, and the way back to the map.
+   *
+   * @param {string} which market or album.
+   * @return {string}
+   */
+  function landmarkView(which) {
+    return '<div class="landmark-view"><button type="button" class="btn btn-soft back-map" data-tab-back="world">' +
+      T.icon('world') + ' ' + esc(t('app_back_map')) + '</button>' + (which === 'market' ? marketCard() : albumCard()) + '</div>';
+  }
+
+  /**
+   * How many of the team are in each place: where they last played, without names.
+   *
+   * @return {Object} Chapter id => count.
+   */
+  function matesAt() {
+    var at = {};
+    (state.world.team ? state.world.team.members : []).forEach(function(x) {
+      if (!x.me && x.at) {
+        at[x.at] = (at[x.at] || 0) + 1;
+      }
+    });
+    return at;
+  }
+
+  /**
+   * The teammates in a place, as small silhouettes beside its lantern: up to three, and how many more.
+   *
+   * @param {Object} ch
+   * @param {number} count
+   * @return {string}
+   */
+  function silhouettes(ch, count) {
+    var out = '';
+    for (var k = 0; k < Math.min(count, 3); k++) {
+      var x = ch.x + 30 + k * 13;
+      var y = ch.y + 4;
+      out += '<g class="mate" aria-hidden="true"><circle cx="' + x + '" cy="' + (y - 9) + '" r="4.6"/><path d="M' + (x - 7) + ' ' +
+        (y + 7) + 'q0-11 7-11t7 11z"/></g>';
+    }
+    return out + (count > 3 ? '<text class="mate-more" x="' + (ch.x + 70) + '" y="' + (ch.y + 8) + '" aria-hidden="true">+' +
+      (count - 3) + '</text>' : '');
+  }
+
+  /**
+   * The hero walks on the map to the place the student touched, with their creature; on a phone the map comes close
+   * to the place, under the sheet of the place.
+   *
+   * @param {Element} g The place.
+   * @param {Object} ch
+   */
+  function walkTo(g, ch) {
+    var wrap = app.querySelector('.map-wrap');
+    if (!wrap) {
+      return;
+    }
+    var dx = ch.x - Number(wrap.dataset.herox);
+    var dy = ch.y - Number(wrap.dataset.heroy);
+    wrap.querySelectorAll('.me-marker, .me-creature').forEach(function(el) {
+      el.classList.remove('walking');
+      el.style.animationDelay = '';
+      el.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+    });
+    var hunger = wrap.querySelector('.hunger');
+    if (hunger) {
+      hunger.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+    }
+    var svg = wrap.querySelector('.map');
+    var box = svg.viewBox.baseVal;
+    svg.style.transformOrigin = (100 * ch.x / box.width) + '% ' + (100 * ch.y / box.height) + '%';
+    wrap.classList.add('zoomed');
+  }
+
+  /**
+   * On a phone the place comes up as a sheet over the map, which stays close to it; closing it, the map goes back.
+   *
+   * @param {Element} g The place touched.
+   */
+  function openSheet(g) {
+    var panel = app.querySelector('.mission-grid .chapter');
+    if (!panel) {
+      return;
+    }
+    panel.classList.add('as-sheet');
+    panel.setAttribute('role', 'dialog');
+    panel.setAttribute('aria-label', g.getAttribute('aria-label'));
+    panel.insertAdjacentHTML('afterbegin', '<button type="button" class="sheet-close" data-sheetclose aria-label="' +
+      esc(t('app_close')) + '"><span class="sheet-grip" aria-hidden="true"></span>' + T.icon('close') + '</button>');
+    document.body.classList.add('sheet-up');
+    var close = function() {
+      panel.classList.remove('as-sheet');
+      panel.removeAttribute('role');
+      panel.removeAttribute('aria-label');
+      var b = panel.querySelector('[data-sheetclose]');
+      if (b) {
+        b.remove();
+      }
+      document.body.classList.remove('sheet-up');
+      var wrap = app.querySelector('.map-wrap');
+      if (wrap) {
+        wrap.classList.remove('zoomed');
+      }
+      document.removeEventListener('keydown', esc1);
+      g.focus();
+    };
+    var esc1 = function(ev) {
+      if (ev.key === 'Escape') {
+        close();
+      }
+    };
+    document.addEventListener('keydown', esc1);
+    panel.querySelector('[data-sheetclose]').onclick = close;
+    // The place, visible above the sheet.
+    var r = g.getBoundingClientRect();
+    var room = window.innerHeight - panel.getBoundingClientRect().height;
+    window.scrollBy({top: r.top + r.height / 2 - Math.max(120, room / 2), behavior: T.moves() ? 'smooth' : 'auto'});
+    var title = panel.querySelector('h2');
+    if (title) {
+      title.setAttribute('tabindex', '-1');
+      title.focus({preventScroll: true});
+    }
   }
 
   /**
@@ -1084,6 +1341,61 @@
     }
   }
 
+  /**
+   * Where the spots of a place go on its painting, in percent of the painting, when the mission does not say: inside
+   * what a phone shows of it.
+   */
+  var SPOTS = [[34, 74], [50, 56], [66, 76], [36, 32], [64, 30], [50, 14], [70, 52], [30, 50]];
+
+  /**
+   * The place as a place: its painting, with what there is to do in it as spots to touch (the scenes, the minigames
+   * and the quests); what is done carries its lantern, and what comes next glows, with the hero beside it. The list
+   * under it says the same, for the keyboard and the screen reader.
+   *
+   * @param {Object} ch The chapter.
+   * @param {boolean} past A past expedition: only to look.
+   * @return {string}
+   */
+  function placeView(ch, past) {
+    var art = T.artUrl(['scene.' + (ch.art || ch.code)]);
+    if (!art || past) {
+      return '';
+    }
+    var spots = ch.scenes.map(function(sc) {
+      return {kind: 'scene', id: sc.id, code: sc.code, title: sc.title, done: sc.done, next: isNext('scene', sc.id),
+        icon: 'saber'};
+    }).concat((ch.games || []).map(function(g) {
+      return {kind: 'game', id: g.code, code: g.code, title: g.title, done: g.done, next: isNext('game', g.code), icon: 'game'};
+    })).concat((ch.quests || []).map(function(q) {
+      return {kind: 'quest', id: q.id, code: q.code, title: q.title, done: q.done, next: false, icon: 'challenges'};
+    }));
+    // Each one where the mission puts it on the painting; the rest, in the free places of the default ones.
+    var placed = {};
+    (ch.spots || []).forEach(function(sp) {
+      placed[sp.target] = [sp.x, sp.y];
+    });
+    var free = SPOTS.slice();
+    spots = spots.filter(function(sp) {
+      sp.at = placed[sp.code] || free.shift();
+      return !!sp.at;
+    });
+    var c = state.world.character;
+    // What a phone shows of the painting: near its left edge, the hero goes to the other side of what comes next.
+    var narrow = window.innerWidth <= 600;
+    return '<div class="place-view" style="background-image:url(\'' + esc(art) + '\')">' + spots.map(function(sp) {
+      var left = narrow ? (sp.at[0] - 21.875) / 0.5625 : (sp.at[0] - 12.5) / 0.75;
+      // On the painting, the name before its colon («Bajo la lupa»); the whole of it, for who listens.
+      var short = sp.title.split(':')[0].trim();
+      return '<button type="button" class="spot ' + sp.kind + (sp.done ? ' done' : '') + (sp.next ? ' next' : '') +
+        (left < 26 ? ' flip' : '') + '" style="--x:' + sp.at[0] + ';--y:' + sp.at[1] + '" data-spot="' + sp.kind + ':' +
+        esc(String(sp.id)) + '"' + (short !== sp.title ? ' aria-label="' + esc(sp.title) + '"' : '') + '>' +
+        (sp.next ? '<span class="spot-hero" aria-hidden="true">' + avatarOf(c, '', true) + '</span>' +
+        (c.creature ? '<span class="spot-pet" aria-hidden="true">' + T.creature(c.creature, c.creaturestage) + '</span>' : '') : '') +
+        '<span class="spot-icon" aria-hidden="true">' + T.icon(sp.done ? 'lantern' : sp.icon) + '</span><span class="spot-name">' +
+        esc(short || sp.title) + '</span></button>';
+    }).join('') + '</div>';
+  }
+
   function isNext(kind, id) {
     var n = state.next;
     return !!n && n.kind === kind && (kind === 'game' ? n.code === id : n.id === id);
@@ -1132,10 +1444,16 @@
     if (past) {
       challenge = null;
     }
+    var here = past ? 0 : matesAt()[ch.id] || 0;
     return '<section class="card chapter">' + listen() + '<div class="kicker">' + esc(lantern) + '</div><h2>' +
-      esc(ch.name) + '</h2>' +
-      '<p>' + esc(ch.intro) + '</p>' + (ch.letter ? '<blockquote class="letter"><small>' + esc(t('app_letter')) +
-      '</small>' + esc(ch.letter) + '</blockquote>' : '') + (scenes ? '<ul class="list">' + scenes + '</ul>' : '') +
+      esc(ch.name) + '</h2>' + (here ? '<p class="mates-here">' + T.icon('team') + ' ' + esc(t('app_mates_here', here)) +
+      '</p>' : '') + placeView(ch, past) +
+      '<p>' + esc(ch.intro) + '</p>' + (ch.memory && ch.memory.length ? '<div class="memory"><small>' +
+      esc(t('app_memory')) + '</small>' + ch.memory.map(function(line) {
+        return '<p>' + esc(line) + '</p>';
+      }).join('') + '</div>' : '') + (ch.letter ? '<blockquote class="letter"><small>' + esc(t('app_letter')) +
+      '</small>' + esc(ch.letter) + '</blockquote>' : '') + (ch.teaser ? '<p class="teaser"><b>' + esc(t('app_teaser')) +
+      '</b> ' + esc(ch.teaser) + '</p>' : '') + (scenes ? '<ul class="list">' + scenes + '</ul>' : '') +
       more(games, quests, acts, challenge) + '</section>';
   }
 
@@ -1350,6 +1668,16 @@
         }
       };
     }
+    app.querySelectorAll('[data-spot]').forEach(function(b) {
+      b.onclick = function() {
+        var parts = b.dataset.spot.split(':');
+        var target = app.querySelector(parts[0] === 'game' ? '.chapter [data-game="' + parts[1] + '"]' :
+          '.chapter [data-scene="' + parts[1] + '"]');
+        if (target) {
+          target.click();
+        }
+      };
+    });
     var feed = app.querySelector('[data-feed]');
     if (feed) {
       feed.onclick = feedMoment;
@@ -1392,12 +1720,12 @@
           box.innerHTML = chapterPanel(m, ch, !!state.visit);
           old.replaceWith(box.firstElementChild);
           bindWorld(true);
+          walkTo(g, ch);
+          if (window.innerWidth < 900) {
+            openSheet(g);
+          }
         } else {
           world();
-        }
-        var panel = app.querySelector('.chapter');
-        if (panel && window.innerWidth < 900) {
-          panel.scrollIntoView({behavior: 'smooth', block: 'start'});
         }
       };
       g.onclick = pickChapter;
@@ -1837,14 +2165,44 @@
       '<div class="stat"><span>' + esc(t('app_gems')) + '</span><b>' + c.gems + '</b></div>' +
       '<div class="stat"><span>' + esc(t('app_energy')) + '</span><b>' + (m.energy || 0) + ' / ' + w.energymax + '</b></div>' +
       '<div class="stat"><span>' + esc(t('app_breath')) + '</span><b>' + (m.breath || 0) + ' / ' + w.breathmax + '</b></div>' +
-      '<div class="actions no-print" style="justify-content:flex-start;margin-top:16px">' + (lookChanges(c, c.stage) ?
-      '<button class="btn btn-soft" data-edit>' + esc(t('app_changelook')) + '</button>' : '') +
+      '<div class="actions no-print" style="justify-content:flex-start;margin-top:16px">' +
       '<button class="btn btn-soft" data-print>' + esc(t('app_print')) +
       '</button><a class="btn btn-soft" href="' + esc(cfg.courseurl) + '">' + esc(t('app_exit')) + '</a></div></div>' +
-      '</section>' + (w.hascoat && c.creature ? '<section class="card no-print" style="margin-top:16px"><h2>' +
+      '</section>' + meDoors();
+  }
+
+  /**
+   * The parts of «Me» besides the sheet, as big buttons in two rows; the one open, under them, with the way back.
+   *
+   * @return {string}
+   */
+  function meDoors() {
+    var w = state.world;
+    var c = w.character;
+    var coat = w.hascoat && c.creature ? '<section class="card no-print" style="margin-top:16px"><h2>' +
       esc(t('app_coat_title', creatureName(c))) + '</h2><p class="help-soft">' + esc(t('app_coat_help')) + '</p>' +
-      T.coatPicker(w, function() {}).html + '</section>' : '') + comfortCard() + marketCard() + albumCard() + namesCard() +
-      ideasCard();
+      T.coatPicker(w, function() {}).html + '</section>' : '';
+    var map = w.mission && w.mission.chapters.length;
+    var parts = [
+      // The look opens its builder: it is not a part under the buttons.
+      ['look', 'me', lookChanges(c, c.stage) ? 'edit' : ''],
+      ['comfort', 'sun', comfortCard()],
+      ['names', 'log', namesCard()],
+      ['coat', 'game', coat],
+      ['ideas', 'idea', ideasCard()],
+      // Without a map, the market and the album have no place of their own: they stay here.
+      ['market', 'gems', map ? '' : marketCard()],
+      ['album', 'log', map ? '' : albumCard()]
+    ].filter(function(p) {
+      return p[2];
+    });
+    var open = parts.filter(function(p) {
+      return p[0] === state.meSection;
+    })[0];
+    return '<div class="me-doors no-print">' + parts.map(function(p) {
+      return '<button type="button" class="me-door" ' + (p[2] === 'edit' ? 'data-edit' : 'data-mesection="' + p[0] +
+        '" aria-expanded="' + (open === p) + '"') + '>' + T.icon(p[1]) + '<span>' + esc(t('app_door_' + p[0])) + '</span></button>';
+    }).join('') + '</div>' + (open ? open[2] : '');
   }
 
   /** The adaptations a student can turn on for themselves: they do not change the game. */
@@ -2004,6 +2362,16 @@
 
   function bindMe() {
     var c = state.world.character;
+    app.querySelectorAll('[data-mesection]').forEach(function(b) {
+      b.onclick = function() {
+        state.meSection = state.meSection === b.dataset.mesection ? null : b.dataset.mesection;
+        world();
+        var part = app.querySelector('.me-doors + section');
+        if (part) {
+          part.scrollIntoView({behavior: T.moves() ? 'smooth' : 'auto', block: 'start'});
+        }
+      };
+    });
     app.querySelectorAll('[data-comfort]').forEach(function(box) {
       box.onchange = function() {
         var list = Array.prototype.map.call(app.querySelectorAll('[data-comfort]:checked:not([disabled])'), function(b) {

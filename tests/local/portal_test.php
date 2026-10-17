@@ -39,9 +39,12 @@ final class portal_test extends \advanced_testcase {
         $this->assertStringContainsString(get_string('portal_turnon', 'local_oksigeniatesape'), portal::cover($course));
         $this->setUser($student);
         $this->assertSame('', portal::cover($course));
-        // On, with the mission: the big door by default.
+        // On, with the mission: the students go straight into the valley; the big door, if the teacher wants it.
         regions::save($course->id, ['enabled' => 1]);
         missions::install($course->id, 'livingthings', 'valley', 'es');
+        $this->assertSame('direct', regions::get($course->id)->portal);
+        $this->assertTrue(portal::goes_straight_in($course->id));
+        regions::save($course->id, ['portal' => 'door']);
         $door = portal::cover($course);
         $this->assertStringContainsString('tesape-door', $door);
         $this->assertStringContainsString(get_string('portal_play', 'local_oksigeniatesape'), $door);

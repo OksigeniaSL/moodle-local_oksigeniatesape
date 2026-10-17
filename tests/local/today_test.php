@@ -56,6 +56,8 @@ final class today_test extends \advanced_testcase {
         $this->assertSame('biblioteca', $today['code']);
         $this->assertSame('Claro del Despertar', $today['letter']['chapter']);
         $this->assertStringContainsString('pompas', $today['letter']['text']);
+        // Under the letter, what waits in the next place.
+        $this->assertStringContainsString('Biblioteca de los Reinos', $today['letter']['teaser']);
         // The last chapter brings the final battle.
         $DB->set_field(self::T . 'chapter', 'litat', time(), ['missionid' => $mission->id]);
         $DB->set_field(self::T . 'chapter', 'litat', 0, ['missionid' => $mission->id, 'code' => 'torre']);
@@ -80,6 +82,8 @@ final class today_test extends \advanced_testcase {
         $this->assertSame('Las cajas de la expedición', $class['today']['chapter']);
         $map = view::world($course->id, $student->id)['mission']['chapters'];
         $this->assertStringContainsString('Nota suelta', $map[0]['letter']);
+        $this->assertStringContainsString('cajas de la expedición', $map[0]['teaser']);
         $this->assertSame('', $map[1]['letter']);
+        $this->assertSame('', $map[1]['teaser']);
     }
 }

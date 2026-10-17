@@ -267,8 +267,13 @@
     var life = l.maxhp ? l.hp / l.maxhp : 1;
     var main;
     var buttons = '';
-    var ending = l.final && l.outcome === 'won' && state.board.mission && state.board.mission.ending ?
-      '<p class="battle-ending">' + esc(state.board.mission.ending) + '</p>' : '';
+    var bm = state.board.mission;
+    // The end of the mission, and what the Great Book remembers of the class.
+    var ending = l.final && l.outcome === 'won' && bm && bm.ending ? '<p class="battle-ending">' + esc(bm.ending) + '</p>' +
+      (bm.remembered && bm.remembered.length ? '<div class="memory"><small>' + esc(t('board_remembered')) + '</small>' +
+      bm.remembered.map(function(line) {
+        return '<p>' + esc(line) + '</p>';
+      }).join('') + '</div>' : '') : '';
     if (l.outcome) {
       main = '<div class="battle-end ' + l.outcome + '"><h2>' + esc(t('board_battle_' + l.outcome)) + '</h2>' + ending +
         '<p class="lead">' + esc(l.outcome === 'won' ? t('board_battle_wonhelp', l.rewarded) : t('board_battle_losthelp')) +
@@ -517,15 +522,20 @@
     var walked = m.chapters.slice(0, lit + 1).map(function(ch) {
       return ch.x + ',' + ch.y;
     }).join(' ');
+    // The lanterns painted for the map, if the art pack has them: lit, those the class lit.
+    var lampOff = T.artUrl(['map.lantern.off']);
+    var lampOn = T.artUrl(['map.lantern.on']);
     var places = m.chapters.map(function(ch) {
       return '<g class="place' + (ch.lit ? ' mine lit' : '') + '" data-art="' + esc(ch.art || ch.code) + '" aria-label="' +
         esc(ch.name) + '">' +
         (ch.lit ? '<circle cx="' + ch.x + '" cy="' + ch.y + '" r="40" class="classglow"/>' : '') +
-        '<circle cx="' + ch.x + '" cy="' + ch.y + '" r="25" class="ring"/>' +
+        '<circle cx="' + ch.x + '" cy="' + ch.y + '" r="25" class="ring' + (lampOff && lampOn ? ' painted' : '') + '"/>' +
+        (lampOff && lampOn ? '<image href="' + esc(ch.lit ? lampOn : lampOff) + '" x="' + (ch.x - 20) + '" y="' + (ch.y - 30) +
+        '" width="40" height="50" class="' + (ch.lit ? 'lamp-on' : 'lamp-off') + '"/>' :
         '<rect x="' + (ch.x - 2) + '" y="' + (ch.y - 4) + '" width="4" height="17" rx="1" fill="#2b2219"/>' +
-        '<circle cx="' + ch.x + '" cy="' + (ch.y - 7) + '" r="7" class="flame"/>' +
+        '<circle cx="' + ch.x + '" cy="' + (ch.y - 7) + '" r="7" class="flame"/>') +
         T.mapLabel(ch.x, ch.y + 44, ch.name) + '</g>';
-    }).join('');
+    }).join('') + dozing(m);
     var height = T.mapHeight(m);
     var fresh = T.mapNewRoad('board-' + cfg.courseid + '-' + m.code, m.chapters, Math.min(lit, m.chapters.length - 1));
     var drawn = fresh.road ? fresh.road.replace('/>', ' style="animation-delay:' + (0.3 + fresh.delay) + 's,' +
@@ -535,6 +545,34 @@
       '</defs>' + T.mapGround(m) + T.mapLandmarks(m) + T.mapNight(m) +
       '<polyline points="' + pts + '" class="road"/>' + (lit ? '<polyline points="' + walked + '" class="road walked"/>' : '') +
       drawn + (T.critters ? T.critters.fireflies(m) : '') + places + '</svg></div>' + pastExpeditions() + '</section>';
+  }
+
+  /** Where the creatures doze around a lantern, in units of the map, nearest first. */
+  var DOZE = [[-44, 8], [44, 8], [-60, -8], [60, -8], [-40, -24], [40, -24], [-76, 8], [76, 8], [-56, 22], [56, 22]];
+
+  /**
+   * The creatures of the class dozing by the lanterns it lit (by the first place, while none is lit), without names:
+   * the creature exists outside the sheet.
+   *
+   * @param {Object} m The mission of the board.
+   * @return {string}
+   */
+  function dozing(m) {
+    var lit = m.chapters.filter(function(ch) {
+      return ch.lit;
+    });
+    var by = lit.length ? lit : m.chapters.slice(0, 1);
+    var pets = (state.cls ? state.cls.students : []).filter(function(st) {
+      return st.character && st.character.creature && st.character.creature !== '{}';
+    });
+    return pets.slice(0, by.length * DOZE.length).map(function(st, i) {
+      var ch = by[i % by.length];
+      var at = DOZE[Math.floor(i / by.length)];
+      return '<foreignObject x="' + (ch.x + at[0] - 13) + '" y="' + (ch.y + at[1] - 13) + '" width="26" height="26" ' +
+        'class="doze" style="animation-delay:-' + ((i * 0.7) % 4).toFixed(1) + 's" aria-hidden="true"><div ' +
+        'xmlns="http://www.w3.org/1999/xhtml">' + T.creature(st.character.creature, st.character.creaturestage) +
+        '</div></foreignObject>';
+    }).join('');
   }
 
   /**
@@ -587,7 +625,8 @@
     var taunt = d.letter && d.mixup ? '<span class="taunt">' + esc(t('board_today_taunt', d.mixup)) + '</span>' : '';
     return '<section class="card board-today"><div class="kicker">' + esc(t('board_today')) + '</div><h3>' +
       esc(d.chapter) + '</h3>' + (d.letter ? '<blockquote class="letter"><small>' + esc(t('board_today_letter',
-      d.letter.chapter)) + '</small>' + esc(d.letter.text) + taunt + '</blockquote>' : '') + (sessions ?
+      d.letter.chapter)) + '</small>' + esc(d.letter.text) + taunt + '</blockquote>' + (d.letter.teaser ? '<p class="teaser">' +
+      '<b>' + esc(t('app_teaser')) + '</b> ' + esc(d.letter.teaser) + '</p>' : '') : '') + (sessions ?
       '<ol class="today-sessions">' + sessions + '</ol>' : '') + (d.offscreen ? '<p class="help-soft">' +
       esc(t('board_today_offscreen', d.offscreen)) + '</p>' : '') + (d.mixup && !taunt ? '<p class="help-soft">' +
       esc(t('board_today_mixup', d.mixup)) + '</p>' : '') + '</section>';

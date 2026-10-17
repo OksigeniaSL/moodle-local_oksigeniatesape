@@ -93,6 +93,13 @@ final class get_results extends external_api {
                         'text' => new external_value(PARAM_TEXT, 'The mix-up'),
                         'count' => new external_value(PARAM_INT, 'How many times'),
                     ])),
+                    'dilemmas' => new external_multiple_structure(new external_single_structure([
+                        'question' => new external_value(PARAM_TEXT, 'The decision'),
+                        'options' => new external_multiple_structure(new external_single_structure([
+                            'text' => new external_value(PARAM_TEXT, 'What was decided'),
+                            'count' => new external_value(PARAM_INT, 'How many times'),
+                        ])),
+                    ]), 'Decisions without a right answer: what the class decided', VALUE_DEFAULT, []),
                 ])),
             ])),
             'games' => new external_multiple_structure(new external_single_structure([

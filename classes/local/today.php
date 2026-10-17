@@ -84,7 +84,7 @@ final class today {
         $letter = $last ? self::letter($mission, $last->code) : '';
         if ($letter !== '') {
             $today['letter'] = ['chapter' => missions::text($info[$last->code]['name'] ?? $last->code, $mission->skin),
-                'text' => $letter];
+                'text' => $letter, 'teaser' => self::teaser($mission, $last->code)];
         }
         if ($mixup) {
             $cache = \cache::make('local_oksigeniatesape', 'mixups');
@@ -113,5 +113,17 @@ final class today {
     public static function letter(\stdClass $mission, string $chapter): string {
         $letter = $mission->data['letters'][$chapter] ?? '';
         return $letter ? missions::text($letter, $mission->skin, $mission->variant) : '';
+    }
+
+    /**
+     * What waits in the next place, told under the letter of a place once the class lit it: «next time…».
+     *
+     * @param \stdClass $mission
+     * @param string $chapter
+     * @return string
+     */
+    public static function teaser(\stdClass $mission, string $chapter): string {
+        $teaser = $mission->data['teasers'][$chapter] ?? '';
+        return $teaser ? missions::text($teaser, $mission->skin, $mission->variant) : '';
     }
 }

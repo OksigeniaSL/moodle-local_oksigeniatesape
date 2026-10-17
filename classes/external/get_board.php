@@ -88,6 +88,12 @@ final class get_board extends external_api {
                 ])),
                 'final' => new external_value(PARAM_BOOL, 'The mission saves something for a final battle', VALUE_DEFAULT, false),
                 'ending' => new external_value(PARAM_TEXT, 'Text of the end of the mission', VALUE_DEFAULT, ''),
+                'remembered' => new external_multiple_structure(
+                    new external_value(PARAM_TEXT, 'A line of what the class did'),
+                    'What the Great Book remembers of the class at the end',
+                    VALUE_DEFAULT,
+                    []
+                ),
                 'lines' => new external_multiple_structure(new external_single_structure([
                     'kind' => new external_value(PARAM_ALPHANUM, 'start, hit, recover, phase2, won or lost'),
                     'lines' => new external_multiple_structure(new external_value(PARAM_TEXT, 'What it says')),

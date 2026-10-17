@@ -144,6 +144,14 @@ final class view {
         $mission = self::mission($courseid, $char, $member);
         if ($mission) {
             $world['mission'] = $mission;
+            if (!empty($world['team'])) {
+                // Where each one of the team is: the place where they last played, for the map (without names).
+                $at = self::team_places($courseid, (int) $mission['id'], array_column($world['team']['members'], 'userid'));
+                foreach ($world['team']['members'] as &$mate) {
+                    $mate['at'] = $at[$mate['userid']] ?? 0;
+                }
+                unset($mate);
+            }
         }
         $world['expeditions'] = self::expeditions($courseid, (int) $char->id);
         $entries = $DB->get_records(
@@ -282,11 +290,20 @@ final class view {
                 'y' => (int) ($meta['y'] ?? 0),
                 'landmark' => (string) ($meta['landmark'] ?? ''),
                 'art' => (string) ($meta['art'] ?? $chapter->code),
+                // Where each thing of the place is on its painting, in percent.
+                'spots' => array_map(fn($target, $xy) => ['target' => (string) $target, 'x' => (int) ($xy[0] ?? 50),
+                    'y' => (int) ($xy[1] ?? 50)], array_keys($meta['spots'] ?? []), array_values($meta['spots'] ?? [])),
                 'lit' => (bool) $chapter->litat,
                 'mine' => !empty($found['lantern'][$chapter->code]),
                 'done' => !empty($found['chapter'][$chapter->code]),
                 'challengeid' => (int) ($challenges[$chapter->id] ?? 0),
                 'letter' => $chapter->litat ? today::letter($mission, $chapter->code) : '',
+                'teaser' => $chapter->litat ? today::teaser($mission, $chapter->code) : '',
+                // What happened here: a line for each mark the student left in this place.
+                'memory' => array_values(array_map(
+                    fn($m) => missions::text($m['text'] ?? '', $skin, $mission->variant),
+                    array_filter($meta['memory'] ?? [], fn($m) => !empty($found['flag'][$m['flag'] ?? '']))
+                )),
                 'scenes' => array_map($sceneview, $mine),
                 // The quests of the place, for whoever wants more, whatever their step.
                 'quests' => array_map($sceneview, scenes::quests($here)),
@@ -402,6 +419,8 @@ final class view {
                 // The final battle, if the mission saves something for the end, and the text of its end.
                 'final' => !empty($mission->data['battle']['final']),
                 'ending' => missions::text($mission->data['ending'] ?? '', $mission->skin, $mission->variant),
+                // What the Great Book remembers of the class at the end: what at least half of it did, without names.
+                'remembered' => self::remembered($courseid, $mission),
                 // What the Embrollo says in a battle, by moment: start, hit, recover, phase2, won, lost.
                 'lines' => array_map(fn($kind) => ['kind' => $kind, 'lines' => array_values(array_map(
                     fn($line) => missions::text($line, $mission->skin, $mission->variant),
@@ -784,6 +803,71 @@ final class view {
         return ['id' => (int) $group->id, 'name' => format_string($group->name), 'members' => $mates,
             'energy' => $energy, 'energymax' => $playing * engine::ENERGY_MAX, 'carer' => $carers,
             'banner' => market::team_owns($courseid, (int) $group->id)];
+    }
+
+    /**
+     * The lines of the end of a mission that tell what the class did: each of its marks that at least half of the
+     * students who play left.
+     *
+     * @param int $courseid
+     * @param \stdClass $mission
+     * @return string[]
+     */
+    public static function remembered(int $courseid, \stdClass $mission): array {
+        global $DB;
+        $lines = $mission->data['endingmemory'] ?? [];
+        if (!$lines) {
+            return [];
+        }
+        $players = $DB->count_records(self::T . 'member', ['courseid' => $courseid, 'leftat' => 0]);
+        if (!$players) {
+            return [];
+        }
+        $marks = $DB->get_records_sql_menu(
+            "SELECT code, COUNT(DISTINCT charid)
+               FROM {" . self::T . "found}
+              WHERE missionid = ? AND kind = 'flag'
+           GROUP BY code",
+            [$mission->id]
+        );
+        $out = [];
+        foreach ($lines as $line) {
+            if (2 * (int) ($marks[$line['flag'] ?? ''] ?? 0) >= $players) {
+                $out[] = missions::text($line['text'] ?? '', $mission->skin, $mission->variant);
+            }
+        }
+        return $out;
+    }
+
+    /**
+     * The place where each of some students last played a scene of a mission.
+     *
+     * @param int $courseid
+     * @param int $missionid
+     * @param int[] $userids
+     * @return array userid => chapter id.
+     */
+    public static function team_places(int $courseid, int $missionid, array $userids): array {
+        global $DB;
+        if (!$userids) {
+            return [];
+        }
+        [$insql, $params] = $DB->get_in_or_equal($userids);
+        $rows = $DB->get_recordset_sql(
+            'SELECT a.id, c.userid, s.chapterid
+               FROM {' . self::T . 'sceneattempt} a
+               JOIN {' . self::T . 'char} c ON c.id = a.charid
+               JOIN {' . self::T . 'scene} s ON s.id = a.sceneid
+              WHERE a.courseid = ? AND s.missionid = ? AND a.timefinished > 0 AND c.userid ' . $insql . '
+           ORDER BY a.timefinished DESC, a.id DESC',
+            array_merge([$courseid, $missionid], $params)
+        );
+        $at = [];
+        foreach ($rows as $row) {
+            $at[(int) $row->userid] = $at[(int) $row->userid] ?? (int) $row->chapterid;
+        }
+        $rows->close();
+        return $at;
     }
 
     /**

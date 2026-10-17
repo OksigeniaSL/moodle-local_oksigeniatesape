@@ -640,6 +640,11 @@ body.tesape {
   position: relative;
   width: 46px;
   height: 46px;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
   border-radius: 50%;
   background: conic-gradient(var(--lantern) calc(var(--p) * 1%), rgba(var(--hi), .12) 0);
   display: grid;
@@ -671,7 +676,8 @@ body.tesape {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 4px 10px;
+  min-height: var(--tap);
+  padding: 4px 12px;
   border-radius: 999px;
   background: rgba(var(--hi), .07);
   border: 1px solid var(--line);
@@ -6388,4 +6394,573 @@ body.adapt-still .feed-face.eating .creature {
 .team-creature .creature {
   width: 34px;
   height: 34px;
+}
+
+/* The lanterns painted for the map: the one lit by the student over the one off; the ring, only to show where. */
+.map .place .ring.painted {
+  fill: transparent;
+  stroke: transparent;
+}
+
+.map .place.selected .ring.painted,
+.map .place.here .ring.painted {
+  stroke: rgba(255, 255, 255, .55);
+}
+
+.map .place .lamp-on {
+  filter: drop-shadow(0 0 8px rgba(var(--lantern-rgb), .9));
+}
+
+.map .place.mine.lighting .lamp-on {
+  animation: lamp-on 1.4s ease .9s both;
+}
+
+@keyframes lamp-on {
+  from {
+    opacity: 0;
+  }
+
+  50% {
+    opacity: 1;
+    filter: drop-shadow(0 0 22px rgba(var(--lantern-rgb), 1));
+  }
+}
+
+/* The fog over the places the class has not opened yet. */
+.map .place .fog {
+  fill: rgba(200, 212, 230, .55);
+  filter: blur(6px);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map .place.mine.lighting .lamp-on {
+    animation: none;
+  }
+}
+
+/* The place as a place: its painting, with what there is to do as spots to touch. */
+.place-view {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  margin: 10px 0 14px;
+  border-radius: var(--r);
+  background-size: cover;
+  background-position: center;
+  box-shadow: inset 0 -40px 60px rgba(0, 0, 0, .35);
+  overflow: hidden;
+}
+
+/* The painting is 16:9 and the place shows it cut at the sides (--crop percent of it on each side, --f the part left):
+   each spot goes where its point of the painting is. */
+.place-view {
+  --crop: 12.5;
+  --f: .75;
+}
+
+.spot {
+  position: absolute;
+  left: clamp(9%, calc((var(--x) - var(--crop)) * 1% / var(--f)), 91%);
+  top: calc(var(--y) * 1%);
+  transform: translate(-50%, -22px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 118px;
+  min-width: var(--tap);
+  min-height: var(--tap);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.spot-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, .7);
+  background: rgba(15, 33, 49, .78);
+  color: var(--lantern);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .5);
+}
+
+.spot-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.spot-name {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  max-width: 100%;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(15, 33, 49, .82);
+  font: 700 12px var(--f-text);
+  line-height: 1.25;
+  text-align: center;
+}
+
+.spot.done .spot-icon {
+  border-color: var(--lantern);
+}
+
+.spot.next .spot-icon {
+  border-color: var(--lantern);
+  background: var(--lantern);
+  color: var(--on-lantern);
+  animation: spot-glow 1.6s ease-in-out infinite;
+}
+
+@keyframes spot-glow {
+  50% {
+    box-shadow: 0 0 0 8px rgba(var(--lantern-rgb), .25), 0 4px 12px rgba(0, 0, 0, .5);
+  }
+}
+
+.spot-hero {
+  position: absolute;
+  left: calc(50% - 60px);
+  top: -2px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--lantern);
+  background: var(--night-2);
+}
+
+.spot-hero .avatar {
+  width: 100%;
+  height: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spot.next .spot-icon {
+    animation: none;
+  }
+}
+
+body.adapt-still .spot.next .spot-icon {
+  animation: none;
+}
+
+/* On a phone the painting is taller, so that its spots have room. */
+@media (max-width: 600px) {
+  .place-view {
+    aspect-ratio: 1 / 1;
+    --crop: 21.875;
+    --f: .5625;
+  }
+
+  .spot {
+    width: 104px;
+  }
+
+  .spot-name {
+    font-size: 11px;
+  }
+
+  .spot-icon {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* The teammates on the map, without names: small silhouettes beside the lantern of their place. */
+.map .mate {
+  fill: rgba(236, 244, 255, .85);
+  stroke: rgba(15, 33, 49, .8);
+  stroke-width: 1.2;
+}
+
+.map .mate-more {
+  fill: var(--text);
+  font: 700 12px var(--f-text);
+  paint-order: stroke;
+  stroke: rgba(15, 33, 49, .8);
+  stroke-width: 3px;
+}
+
+.mates-here {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px;
+  color: var(--text-soft);
+  font-weight: 700;
+}
+
+.mates-here svg {
+  width: 20px;
+  height: 20px;
+  color: var(--lantern);
+}
+
+/* The hero walks to the place touched; on a phone, the map comes close to it. */
+.map .me-marker,
+.map .me-creature,
+.map .hunger {
+  transition: transform .7s ease-in-out;
+}
+
+.map {
+  transition: transform .45s ease;
+}
+
+.map-wrap.zoomed .map {
+  transform: scale(1.6);
+}
+
+/* On a phone, the place comes up as a sheet over the map. */
+.mission-grid .chapter.as-sheet {
+  background: linear-gradient(180deg, var(--card-a), var(--card-b)), rgb(var(--night-rgb));
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 8;
+  max-height: 64vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin: 0;
+  padding-top: 8px;
+  border-radius: 22px 22px 0 0;
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, .55);
+  animation: sheet-up .35s ease both;
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+body.sheet-up {
+  padding-bottom: 64vh;
+}
+
+.sheet-close {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: var(--tap);
+  margin: -8px 0 4px;
+  border: 0;
+  background: linear-gradient(var(--card-a), var(--card-a)), rgb(var(--night-rgb));
+  color: var(--text-soft);
+  cursor: pointer;
+}
+
+.sheet-close svg {
+  position: absolute;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+}
+
+.sheet-grip {
+  width: 44px;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map,
+  .map .me-marker,
+  .map .me-creature,
+  .map .hunger {
+    transition: none;
+  }
+
+  .mission-grid .chapter.as-sheet {
+    animation: none;
+  }
+}
+
+body.adapt-still .map,
+body.adapt-still .map .me-marker,
+body.adapt-still .map .me-creature,
+body.adapt-still .map .hunger {
+  transition: none;
+}
+
+body.adapt-still .mission-grid .chapter.as-sheet {
+  animation: none;
+}
+
+/* The market and the album, places of the map: two landmarks over its corner. */
+.map-wrap {
+  position: relative;
+}
+
+.map-landmarks {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+  display: flex;
+  gap: 8px;
+}
+
+.map-wrap.tall .map-landmarks {
+  position: sticky;
+  float: left;
+  height: 0;
+  overflow: visible;
+}
+
+.landmark-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: var(--tap);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text);
+  font: 700 12px var(--f-text);
+  cursor: pointer;
+}
+
+.landmark-btn > span:last-child {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: rgba(15, 33, 49, .82);
+}
+
+.landmark-pic {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--lantern);
+  background: rgba(15, 33, 49, .85);
+  color: var(--lantern);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .5);
+}
+
+.landmark-pic img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.landmark-pic svg {
+  width: 26px;
+  height: 26px;
+}
+
+.map-wrap.zoomed .map-landmarks {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.back-map {
+  margin-bottom: 12px;
+}
+
+.back-map svg {
+  width: 20px;
+  height: 20px;
+  vertical-align: -4px;
+}
+
+.landmark-view .card {
+  margin-top: 0 !important;
+}
+
+/* «Me»: the parts besides the sheet, as two rows of big buttons. */
+.me-doors {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.me-door {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 84px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: linear-gradient(180deg, var(--card-a), var(--card-b));
+  color: var(--text);
+  font: 700 15px var(--f-text);
+  cursor: pointer;
+}
+
+.me-door svg {
+  width: 28px;
+  height: 28px;
+  color: var(--lantern);
+}
+
+.me-door[aria-expanded="true"] {
+  border-color: var(--lantern);
+  box-shadow: 0 0 0 2px rgba(var(--lantern-rgb), .35);
+}
+
+/* The creature beside the hero, looking at what comes next. */
+.spot-pet {
+  position: absolute;
+  left: calc(50% + 24px);
+  top: 4px;
+  width: 30px;
+  height: 30px;
+  transform: scaleX(-1);
+}
+
+.spot-pet .creature {
+  width: 30px;
+  height: 30px;
+}
+
+/* Near the left edge of what a phone shows, the hero and the creature change sides. */
+.spot.flip .spot-hero {
+  left: calc(50% + 24px);
+}
+
+.spot.flip .spot-pet {
+  left: calc(50% + 62px);
+}
+
+/* The creature in the header, beside the counters. */
+.res .r.pet {
+  padding: 0 6px;
+}
+
+.res .r.pet .creature {
+  width: 30px;
+  height: 30px;
+}
+
+/* What a counter is, said next to it the first time it goes up. */
+.res-callout {
+  position: fixed;
+  z-index: 20;
+  max-width: min(320px, calc(100vw - 16px));
+  padding: 12px 14px;
+  border-radius: var(--r-s);
+  border: 1px solid var(--lantern);
+  background: rgb(var(--night-rgb));
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
+  animation: callout-in .25s ease both;
+}
+
+.res-callout::before {
+  content: "";
+  position: absolute;
+  top: -7px;
+  left: calc(var(--arrow, 50%) - 7px);
+  width: 12px;
+  height: 12px;
+  transform: rotate(45deg);
+  border-left: 1px solid var(--lantern);
+  border-top: 1px solid var(--lantern);
+  background: rgb(var(--night-rgb));
+}
+
+.res-callout p {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+
+.res-callout b {
+  color: var(--lantern);
+}
+
+@keyframes callout-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .res-callout {
+    animation: none;
+  }
+}
+
+/* The creatures of the class dozing by the lanterns on the board: they breathe slowly. */
+.board-map .doze .creature {
+  width: 26px;
+  height: 26px;
+}
+
+.board-map .doze {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: doze 4s ease-in-out infinite;
+}
+
+@keyframes doze {
+  50% {
+    transform: scale(1.06, .94);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .board-map .doze {
+    animation: none;
+  }
+}
+
+/* «Next time…»: what waits in the next place, under the letter of the Embrollo. */
+.teaser {
+  margin: 10px 0 0;
+  padding-left: 12px;
+  border-left: 3px solid var(--lantern);
+  color: var(--text-soft);
+  font-style: italic;
+}
+
+.teaser b {
+  color: var(--lantern);
+  font-style: normal;
+}
+
+/* What happened here: the place remembers what the student did in it. */
+.memory {
+  margin: 10px 0;
+  padding: 10px 12px;
+  border-radius: var(--r-s);
+  background: rgba(var(--lantern-rgb), .08);
+}
+
+.memory small {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--lantern);
+  font-weight: 700;
+}
+
+.memory p {
+  margin: 0;
+  font-style: italic;
+}
+
+.memory p + p {
+  margin-top: 4px;
 }

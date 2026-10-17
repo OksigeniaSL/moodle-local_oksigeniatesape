@@ -130,11 +130,23 @@ final class structures {
                 'y' => new external_value(PARAM_INT, 'Place on the map'),
                 'landmark' => new external_value(PARAM_ALPHANUMEXT, 'Landmark on a map in layers', VALUE_DEFAULT, ''),
                 'art' => new external_value(PARAM_ALPHANUMEXT, 'Landscape of the place', VALUE_DEFAULT, ''),
+                'spots' => new external_multiple_structure(new external_single_structure([
+                    'target' => new external_value(PARAM_ALPHANUMEXT, 'Scene, minigame or activity'),
+                    'x' => new external_value(PARAM_INT, 'Percent from the left of the painting'),
+                    'y' => new external_value(PARAM_INT, 'Percent from the top of the painting'),
+                ]), 'Where each thing of the place is on its painting', VALUE_DEFAULT, []),
                 'lit' => new external_value(PARAM_BOOL, 'Lantern of the class lit'),
                 'mine' => new external_value(PARAM_BOOL, 'Lantern of the student lit'),
                 'done' => new external_value(PARAM_BOOL, 'Scenes of the student done'),
                 'challengeid' => new external_value(PARAM_INT, 'Classroom challenge of the chapter (0: none)'),
                 'letter' => new external_value(PARAM_TEXT, 'Letter the Embrollo left once the class lit it', VALUE_DEFAULT, ''),
+                'teaser' => new external_value(PARAM_TEXT, 'What waits in the next place, once the class lit it', VALUE_DEFAULT, ''),
+                'memory' => new external_multiple_structure(
+                    new external_value(PARAM_TEXT, 'A line of what happened here'),
+                    'What the student did in this place, remembered',
+                    VALUE_DEFAULT,
+                    []
+                ),
                 'games' => new external_multiple_structure(new external_single_structure([
                     'code' => new external_value(PARAM_ALPHANUMEXT, 'Minigame'),
                     'title' => new external_value(PARAM_TEXT, 'Title'),
@@ -198,6 +210,7 @@ final class structures {
             'letter' => new external_single_structure([
                 'chapter' => new external_value(PARAM_TEXT, 'Place where the Embrollo left it'),
                 'text' => new external_value(PARAM_TEXT, 'The letter'),
+                'teaser' => new external_value(PARAM_TEXT, 'What waits in the next place', VALUE_DEFAULT, ''),
             ], 'The last letter of the Embrollo', VALUE_OPTIONAL),
             'mixup' => new external_single_structure([
                 'question' => new external_value(PARAM_TEXT, 'Question or game'),

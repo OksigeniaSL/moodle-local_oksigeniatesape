@@ -87,6 +87,7 @@ final class results {
         $objectives = [];
         $players = [];
         $counts = [];
+        $decided = [];
         $games = [];
         foreach ($attempts as $attempt) {
             $players[$attempt->charid] = true;
@@ -109,7 +110,12 @@ final class results {
                 if (!$node) {
                     continue;
                 }
-                if (isset($event['pick'])) {
+                if (isset($event['pick']) && !empty($node['dilemma'])) {
+                    // A dilemma: what the class decided, without right or wrong.
+                    foreach ((array) $event['pick'] as $id) {
+                        $decided[$event['n']][$id] = ($decided[$event['n']][$id] ?? 0) + 1;
+                    }
+                } else if (isset($event['pick'])) {
                     foreach ($node['options'] ?? [] as $option) {
                         if (in_array($option['id'], (array) $event['pick'], true) && ($option['correct'] ?? null) === false) {
                             $key = $event['n'] . '|' . $option['id'];
@@ -134,6 +140,17 @@ final class results {
             [$question, $text] = self::describe($def, $key, $mission->skin, $mission->variant);
             $confusions[] = ['question' => $question, 'text' => $text, 'count' => $count];
         }
+        $dilemmas = [];
+        foreach ($decided as $node => $picks) {
+            arsort($picks);
+            $options = [];
+            foreach ($picks as $id => $count) {
+                $options[] = ['text' => self::describe($def, $node . '|' . $id, $mission->skin, $mission->variant)[1],
+                    'count' => $count];
+            }
+            [$question] = self::describe($def, $node . '|' . array_key_first($picks), $mission->skin, $mission->variant);
+            $dilemmas[] = ['question' => $question, 'options' => $options];
+        }
         $list = [];
         foreach ($objectives as $code => $o) {
             $list[] = ['code' => $code, 'name' => (string) ($names[$code] ?? $code), 'ok' => $o['ok'], 'total' => $o['total']];
@@ -148,6 +165,7 @@ final class results {
             'attempts' => count($attempts),
             'objectives' => $list,
             'confusions' => $confusions,
+            'dilemmas' => $dilemmas,
         ];
     }
 

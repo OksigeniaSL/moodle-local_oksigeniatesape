@@ -344,9 +344,12 @@ final class scene_runner {
             $option = $options[$id];
             $this->points += (int) ($option['points'] ?? 0);
             $correct = $option['correct'] ?? null;
-            // The objective of the option, or that of the question when the options do not say.
+            // The objective of the option, or that of the question when the options do not say. A dilemma has no right
+            // answer: it is a decision of the story, not evidence of any objective.
             $objective = $option['objective'] ?? $n['objective'] ?? null;
-            $this->tally($objective, $correct !== false && ($correct === true || ($option['points'] ?? 0) > 0));
+            if (empty($n['dilemma'])) {
+                $this->tally($objective, $correct !== false && ($correct === true || ($option['points'] ?? 0) > 0));
+            }
             foreach ($option['effects'] ?? [] as $effect) {
                 if (isset($effect['extraquestion'])) {
                     $this->extra += (int) $effect['extraquestion'];

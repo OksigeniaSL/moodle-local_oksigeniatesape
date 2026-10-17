@@ -1143,7 +1143,8 @@
         box.innerHTML = opened.map(function(i) {
           return '<p class="hint">' + T.icon('log') + ' ' + esc(tx(n.hints[i])) + '</p>';
         }).join('') + (opened.length < n.hints.length ? '<button class="btn btn-soft" type="button" data-hint>' +
-          T.icon('log') + ' ' + esc(cost ? t('app_hint_cost', cost) : t('app_hint_free')) + '</button>' : '');
+          T.icon('log') + ' ' + esc(cost ? t('app_hint_cost', {cost: cost, left: Math.max(0, (data.breath || 0) - run.spent)}) :
+          t('app_hint_free')) + '</button>' : '');
         var b = box.querySelector('[data-hint]');
         if (b) {
           b.onclick = function() {

@@ -1,12 +1,24 @@
 {
  "code": "livingthings",
- "version": 25,
+ "version": 27,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 27,
+   "kind": "improvement",
+   "date": "2026-10-17",
+   "text": "Un adelanto de lo que espera en el lugar siguiente, bajo la carta del Embrollo de cada lugar"
+  },
+  {
+   "version": 26,
+   "kind": "improvement",
+   "date": "2026-10-17",
+   "text": "Cada lugar con sus cosas en su pintura: el nido en las ramas del claro, el búho en el árbol del bosque, la gota entre las flores del jardín"
+  },
   {
    "version": 25,
    "kind": "improvement",
@@ -614,6 +626,32 @@
    "azara": "Nota suelta, de letra enredada: «Ya lo sé: estoy hecho de lo que se da por cierto sin mirar. Pues que miren menos y así crezco. ¿No? Está bien. Que suban, que espero con los nudos buenos»."
   }
  },
+ "teasers": {
+  "claro": {
+   "valley": "En la Biblioteca de los Reinos crujen los estantes. Alguien ha puesto una seta con las lechugas, y la bibliotecaria no levanta la vista de sus páginas.",
+   "azara": "Las cajas de la expedición, sin etiquetas. Una seta viaja con las lechugas, y nadie sabe quién copió las notas."
+  },
+  "biblioteca": {
+   "valley": "En el Bosque de las Huellas los animales han perdido su nombre. Quedan huellas en el barro, plumas en las ramas y un búho que tarda en contestar.",
+   "azara": "El monte. En el cuaderno hay animales descritos sin nombre, huellas en el barro y un baqueano que no tiene prisa por contestar."
+  },
+  "bosque": {
+   "valley": "El Jardín de la Luz se apaga. Sus plantas están pálidas, alguien les ha dado leche y las etiquetas tienen una letra que ya han visto antes.",
+   "azara": "El huerto. Las plantas que viajaron a oscuras han salido pálidas, y alguien les ha echado leche."
+  },
+  "jardin": {
+   "valley": "Cae la tarde en el Gran Lago y hay que pasar allí la noche. En la orilla todo depende de todo, hasta el ratón que nadie quiere ver.",
+   "azara": "La orilla del río, al caer la tarde. Toca pasar allí la noche, y en el río todo depende de todo."
+  },
+  "lago": {
+   "valley": "Las huellas de tinta acaban en la puerta de la Torre. Arriba, el Embrollo ensaya sus mejores nudos.",
+   "azara": "El cuaderno. Antes de entregarlo hay que corregir lo que se mezcló, y la letra enredada sigue apareciendo en los márgenes."
+  },
+  "torre": {
+   "valley": "El Embrollo sale de la torre con todos sus nudos a la vez. Hará falta la expedición entera, cada equipo con su papel.",
+   "azara": "Todas las notas enredadas a la vez. Hará falta la expedición entera, cada equipo con lo suyo."
+  }
+ },
  "ending": {
   "valley": "Sin enredos que lanzar, el Embrollo se encoge hasta quedarse en una madeja pequeña, que todavía rebulle. La druida mayor la guarda en un frasco y lo mira al trasluz. «No lo hemos destruido. Lo hemos ordenado. Y los nudos, ya se sabe, vuelven a hacerse solos: siempre habrá algo que demos por cierto sin mirar. Por eso existen los naturalistas.» La linterna de la torre se enciende y el Gran Libro queda completo, con las páginas de esta expedición dentro. Las criaturas se estiran, crecen un poco… y se quedan mirando el frasco: del tapón sale un hilo finísimo que se pierde ventana afuera, montaña arriba.",
   "azara": "Las últimas notas mezcladas quedan en su sitio. El naturalista cierra el cuaderno y lo mira al trasluz: entre las páginas asoma un hilo de tinta que sigue más allá de la última, hacia tierras que todavía no están dibujadas. «Un cuaderno nunca se acaba», dice. «Siempre hay una página que comprobar.» Como hizo Azara con sus Apuntamientos, la expedición va a compartir lo que ha descubierto. Las criaturas crecen un poco y se quedan mirando el hilo."
@@ -655,6 +693,32 @@
     "quienestavivo",
     "enredoclaro"
    ],
+   "spots": {
+    "C1-1": [
+     68,
+     56
+    ],
+    "C1-2": [
+     50,
+     76
+    ],
+    "C1-3": [
+     66,
+     34
+    ],
+    "C1-4": [
+     45,
+     20
+    ],
+    "quienestavivo": [
+     33,
+     52
+    ],
+    "enredoclaro": [
+     66,
+     78
+    ]
+   },
    "activities": [
     {
      "code": "estavivo",
@@ -714,7 +778,33 @@
    "games": [
     "circulosbiblioteca",
     "enredobiblioteca"
-   ]
+   ],
+   "spots": {
+    "C2-1": [
+     38,
+     66
+    ],
+    "C2-2": [
+     33,
+     28
+    ],
+    "C2-3": [
+     58,
+     32
+    ],
+    "C2-4": [
+     68,
+     56
+    ],
+    "circulosbiblioteca": [
+     46,
+     82
+    ],
+    "enredobiblioteca": [
+     68,
+     80
+    ]
+   }
   },
   {
    "code": "bosque",
@@ -752,7 +842,41 @@
     "nestdefence",
     "circulosbosque",
     "enredobosque"
-   ]
+   ],
+   "spots": {
+    "C3-1": [
+     46,
+     60
+    ],
+    "C3-2": [
+     68,
+     20
+    ],
+    "C3-3": [
+     46,
+     60
+    ],
+    "C3-4": [
+     33,
+     40
+    ],
+    "C3-5": [
+     50,
+     30
+    ],
+    "nestdefence": [
+     66,
+     46
+    ],
+    "circulosbosque": [
+     34,
+     74
+    ],
+    "enredobosque": [
+     64,
+     76
+    ]
+   }
   },
   {
    "code": "jardin",
@@ -790,6 +914,36 @@
     "sombrasjardin",
     "enredojardin"
    ],
+   "spots": {
+    "C4-1": [
+     33,
+     62
+    ],
+    "C4-2": [
+     48,
+     38
+    ],
+    "C4-3": [
+     66,
+     56
+    ],
+    "C4-4": [
+     32,
+     30
+    ],
+    "C4-5": [
+     68,
+     32
+    ],
+    "sombrasjardin": [
+     50,
+     80
+    ],
+    "enredojardin": [
+     68,
+     80
+    ]
+   },
    "activities": [
     {
      "code": "experimento",
@@ -840,6 +994,36 @@
     "circuloslago",
     "enredolago"
    ],
+   "spots": {
+    "C5-1": [
+     50,
+     44
+    ],
+    "C5-2": [
+     50,
+     16
+    ],
+    "C5-3": [
+     50,
+     44
+    ],
+    "C5-4": [
+     33,
+     60
+    ],
+    "C5-5": [
+     68,
+     30
+    ],
+    "circuloslago": [
+     36,
+     82
+    ],
+    "enredolago": [
+     64,
+     72
+    ]
+   },
    "activities": [
     {
      "code": "eslabon",
@@ -889,6 +1073,32 @@
     "sombrastorre",
     "enredotorre"
    ],
+   "spots": {
+    "C6-1": [
+     68,
+     70
+    ],
+    "C6-2": [
+     50,
+     22
+    ],
+    "C6-3": [
+     33,
+     36
+    ],
+    "C6-4": [
+     67,
+     34
+    ],
+    "sombrastorre": [
+     54,
+     48
+    ],
+    "enredotorre": [
+     40,
+     78
+    ]
+   },
    "activities": [
     {
      "code": "guia",

@@ -1,5 +1,43 @@
 # Changelog
 
+## 0.66.0 (2026-10-17)
+
+Block 1.6 of the plan: the place and the map.
+
+- **A place is a place**: its panel opens with its painting, and what there is to do in it as spots to touch (the
+  scenes, the minigames and the quests) where the mission puts them on the painting (`spots`, mission v26: the nest in
+  the twigs of the clearing, the owl in the tree of the forest), each with its lantern once done; what comes next
+  glows, with the hero and the creature beside it. The list stays under it, for the keyboard and the screen reader.
+- **The map with lanterns, not rings**: the lanterns painted for the art pack, off or lit by the student, lighting in
+  front of them when they come back; and fog over the places the class has not opened yet.
+- **The hero walks to the place touched**, with the creature, and stays there; on a phone the map comes close to the
+  place and the place comes up as a sheet over it (it closes with its grip, its cross or Escape).
+- **The team on the map, without names**: small silhouettes beside the lantern of the place where each one last
+  played, and «3 of your team here» in the place.
+- **The market and the album are places of the map**, two landmarks in its corner (painted by Gaudí, art pack v20)
+  with the way back to the map; «Me» keeps the sheet and two rows of big buttons (look, how you see it, names, its
+  coat, ideas).
+
+From block 1.11 (content): **«Next time…»** under the letter of the Embrollo of each place, on the class screen and
+in the panel of the place: what waits in the next place, in both skins (mission v27); the one of the tower announces
+the final battle. **The places remember**: a mission can say, for each place, a line of what happened there for each
+mark the student left in it (`memory`), and the panel shows it under «What happened here». **Dilemmas**
+(`dilemma: true` on a choice without right answers): a decision of the story that is not evidence of any objective;
+the teacher sees in the results what the class decided, not how many got it right.
+
+And the end of block 1.10: on the class screen, the painted lanterns too, and **the creatures of the class dozing by
+the lanterns it lit**, without names, breathing slowly.
+
+Block 1.7 of the plan, its two «if there is time»:
+
+- **A smaller header**: the level ring (a button to «Me»), saber, gems and the creature; energy and breath, where they
+  are used (breath in the button of the notebook, «2 left», and in the powers; energy in the team). The counters are
+  as tall as a finger, and each one says what it is next to it the first time it goes up, once on each device, and
+  whenever it is touched.
+- **Straight into the valley**: the first mission installed in a course takes the students straight into the game
+  from the course page (the cover «Straight into the valley»), unless the teacher had chosen another cover; the
+  teacher sees the course with the cover and can change it in the settings.
+
 ## 0.65.0 (2026-10-17)
 
 Block 1.10 of the plan: the sheet of a hero.

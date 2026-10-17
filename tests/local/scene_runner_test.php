@@ -255,6 +255,27 @@ final class scene_runner_test extends \advanced_testcase {
         (new scene_runner($scene, [], ['scout']))->run([['n' => 'q', 'pick' => ['trail']]]);
     }
 
+    public function test_a_dilemma_is_a_decision_and_not_evidence_of_an_objective(): void {
+        $scene = [
+            'id' => 'T-2', 'start' => 'd', 'nodes' => [
+                'd' => ['type' => 'choice', 'prompt' => 'The frog?', 'dilemma' => true, 'objective' => 'O', 'next' => 'q',
+                    'options' => [
+                        ['id' => 'nest', 'label' => 'To the nest', 'points' => 1, 'effects' => [['flag' => 'frog-nest']]],
+                        ['id' => 'pond', 'label' => 'To the pond', 'points' => 1],
+                    ]],
+                'q' => ['type' => 'choice', 'prompt' => 'Alive?', 'objective' => 'O', 'next' => 'end', 'options' => [
+                    ['id' => 'yes', 'label' => 'Yes', 'correct' => true, 'points' => 2],
+                    ['id' => 'no', 'label' => 'No', 'correct' => false],
+                ]],
+                'end' => ['type' => 'ending', 'outcome' => 'success'],
+            ],
+        ];
+        $result = (new scene_runner($scene))->run([['n' => 'd', 'pick' => ['pond']], ['n' => 'q', 'pick' => ['yes']]]);
+        // Only the question counts for the objective; the dilemma, whatever was decided, does not.
+        $this->assertSame(['O' => ['ok' => 1, 'total' => 1]], $result['objectives']);
+        $this->assertSame('end', $result['ending']);
+    }
+
     public function test_hints_are_counted_once_each(): void {
         $scene = self::memory_scene();
         $events = [['n' => 'q', 'pick' => ['brave']], ['n' => 'sort', 'hint' => 0], ['n' => 'sort', 'hint' => 1],

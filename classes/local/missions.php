@@ -270,6 +270,12 @@ final class missions {
         }
         $now = $now ?? time();
         $transaction = $DB->start_delegated_transaction();
+        // The first mission of a course takes the students straight into the valley, unless the teacher chose a cover.
+        $first = !$DB->record_exists(self::T . 'mission', ['courseid' => $courseid]);
+        $region = $first ? regions::get($courseid) : null;
+        if ($region && $region->portal === 'door') {
+            regions::save($courseid, ['portal' => 'direct']);
+        }
         $mission = $DB->get_record(self::T . 'mission', ['courseid' => $courseid, 'code' => $code]);
         $definition = $package;
         unset($definition['scenes']);

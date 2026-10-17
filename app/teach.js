@@ -1581,9 +1581,17 @@
               sc.confusions.map(function(c) {
                 return (c.question ? '<small>' + esc(c.question) + '</small><br>' : '') + esc(c.text) + ' (' + c.count + ')';
               }).join('<br>') + '</div>' : '';
+            // The decisions without a right answer: what the class chose, not how many got it right.
+            var dilemmas = (sc.dilemmas || []).map(function(d) {
+              return '<div class="note"><b>' + esc(t('teach_dilemma')) + '</b><br><small>' + esc(d.question) + '</small><br>' +
+                d.options.map(function(o) {
+                  return esc(o.text) + ' (' + o.count + ')';
+                }).join(' · ') + '</div>';
+            }).join('');
             return '<div class="item" style="display:block"><b>' + esc(sc.title) + '</b><small style="display:block;color:' +
               'var(--text-soft)">' + esc(t('teach_scene_stats', sc.players + ' · ' + sc.done + ' · ' + sc.attempts)) +
-              '</small>' + (sc.attempts ? objectives + confusions : '<small style="display:block;color:var(--text-soft)">' +
+              '</small>' + (sc.attempts ? objectives + confusions + dilemmas :
+              '<small style="display:block;color:var(--text-soft)">' +
               esc(t('teach_results_none')) + '</small>') + '</div>';
           }).join('') + '</div>';
       }).join('') + '</section>';
