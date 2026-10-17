@@ -43,7 +43,7 @@ final class knots {
      * the teacher left without competency takes its questions out) and its lanes, one for each team, with their engine.
      *
      * @param \stdClass $mission With data.
-     * @param string[] $engines The engines that can be played (all of them: null).
+     * @param string[]|null $engines The engines that can be played (all of them: null).
      * @return array List of knots: code, name, claim, laugh, chapter, objective, weakness, why, questions (ids), lanes.
      */
     public static function usable(\stdClass $mission, ?array $engines = self::ENGINES): array {
