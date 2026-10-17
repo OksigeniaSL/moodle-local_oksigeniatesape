@@ -118,8 +118,8 @@
         lane: 0
       };
       var body = show('<div class="nest-hud"><span class="nest-shield" data-shield></span><span class="nest-count" ' +
-        'data-count></span>' + (calm ? '' : '<button class="btn btn-soft" data-pause>' + esc(t('app_nest_pause')) +
-        '</button>') + '</div><div class="nest-arena" data-arena><div class="nest-home" aria-hidden="true">' + creature() +
+        'data-count></span>' + (calm ? '' : '<button class="btn btn-soft icon-btn game-pause" data-pause aria-pressed="false" aria-label="' +
+        esc(t('app_nest_pause')) + '" title="' + esc(t('app_nest_pause')) + '">' + T.pauseIcon(false) + '</button>') + '</div><div class="nest-arena" data-arena><div class="nest-home" aria-hidden="true">' + creature() +
         '</div><div class="nest-say" data-say aria-live="polite"></div></div><div class="nest-nets" role="group" ' +
         'aria-label="' + esc(t('app_nest_nets')) + '">' + game.nets.map(function(n, i) {
           return '<button class="btn nest-net" type="button" data-net="' + esc(n.id) + '"><small>' + (i + 1) + '</small>' +
@@ -158,7 +158,11 @@
       run.paused = !run.paused;
       var b = layer.querySelector('[data-pause]');
       if (b) {
-        b.textContent = run.paused ? t('app_nest_resume') : t('app_nest_pause');
+        // An icon, so that the counters fit on a phone; its name says what it does.
+        b.innerHTML = T.pauseIcon(run.paused);
+        b.setAttribute('aria-pressed', run.paused ? 'true' : 'false');
+        b.setAttribute('aria-label', run.paused ? t('app_nest_resume') : t('app_nest_pause'));
+        b.title = b.getAttribute('aria-label');
       }
       layer.querySelector('[data-arena]').classList.toggle('paused', run.paused);
       if (!run.paused) {
@@ -216,7 +220,8 @@
       el.innerHTML = '<span class="paw" aria-hidden="true"></span>' + esc(animal.label);
       var lanes = calm ? [1] : [0, 1, 2];
       var lane = lanes[run.lane++ % lanes.length];
-      el.style.left = (calm ? 50 : 18 + lane * 32) + '%';
+      // Lanes far enough from the edges that a long name stays inside the field.
+      el.style.left = (calm ? 50 : 24 + lane * 26) + '%';
       arena.appendChild(el);
       var live = {animal: animal, el: el, y: 0, done: false};
       el.onclick = function() {

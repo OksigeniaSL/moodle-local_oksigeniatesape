@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.53.2 (2026-10-17)
+
+- **Defensa del nido on a phone**: the nets go three to a row from about 360 px wide, with the number in a corner and
+  long names in two lines («Invertebrado» went out of its button); the counters fit in one line, with the pause as an
+  icon (also in Who is alive?); the animals of the side lanes stay inside the field; and the field is a little lower,
+  so that every net shows without scrolling.
+
 ## 0.53.1 (2026-10-17)
 
 - **Names that read as they show** (WCAG 2.1, 2.5.3, with axe 4.14): the button of the character at the top reads its

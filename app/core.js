@@ -185,6 +185,19 @@
     }).join('') + '</text>';
   };
 
+  /**
+   * The icon of the pause of a game: two bars, or the triangle to go on.
+   *
+   * @param {boolean} paused
+   * @return {string} SVG.
+   */
+  T.pauseIcon = function(paused) {
+    return '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">' + (paused ?
+      '<path d="M7 4l13 8-13 8z" fill="currentColor"/>' :
+      '<rect x="6" y="4" width="4.5" height="16" rx="1" fill="currentColor"/><rect x="13.5" y="4" width="4.5" height="16" ' +
+      'rx="1" fill="currentColor"/>') + '</svg>';
+  };
+
   T.mapWalk = function(key, chapters, here) {
     var store = 'tesape-here-' + key;
     var now = Date.now();

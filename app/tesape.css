@@ -2213,9 +2213,10 @@ body.in-scene {
 
 .nest-hud {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 8px;
   margin-bottom: 10px;
 }
 
@@ -2237,11 +2238,17 @@ body.in-scene {
 
 .nest-count {
   font-weight: 600;
+  font-size: clamp(14px, 4vw, 16px);
+  white-space: nowrap;
+}
+
+.game-pause svg {
+  display: block;
 }
 
 .nest-arena {
   position: relative;
-  height: min(58vh, 460px);
+  height: clamp(240px, 50vh, 440px);
   border-radius: var(--r);
   overflow: hidden;
   background:
@@ -2267,7 +2274,7 @@ body.in-scene {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  max-width: 44%;
+  max-width: 46%;
   padding: 8px 12px;
   border-radius: 999px;
   border: 2px solid rgba(255, 255, 255, .25);
@@ -2366,21 +2373,33 @@ body.in-scene {
 
 .nest-nets {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
   gap: 8px;
   margin-top: 10px;
 }
 
+/* Three nets in a row on a phone: the number in a corner and long names in two lines (Inverte-brado), never out. */
 .nest-net {
+  position: relative;
+  min-width: 0;
   min-height: 52px;
+  padding: .45em .5em;
   background: var(--night-2);
   border: 1px solid var(--line);
   color: var(--text);
+  font-size: 15px;
   font-weight: 600;
-  gap: 8px;
+  line-height: 1.15;
+  text-align: center;
+  hyphens: auto;
+  overflow-wrap: break-word;
 }
 
 .nest-net small {
+  position: absolute;
+  top: 3px;
+  left: 8px;
+  font-size: 11px;
   opacity: .6;
   font-weight: 400;
 }

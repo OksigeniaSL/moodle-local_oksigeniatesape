@@ -136,8 +136,8 @@
         holes += '<div class="whack-hole" data-hole="' + i + '"><small aria-hidden="true">' + (i + 1) + '</small></div>';
       }
       var body = show('<div class="nest-hud"><span class="whack-slips" data-slips></span><span class="nest-count" ' +
-        'data-count></span>' + (calm ? '' : '<button class="btn btn-soft" data-pause>' + esc(t('app_nest_pause')) +
-        '</button>') + '</div><div class="whack-arena' + (calm ? ' calm' : '') + '" data-arena role="group" aria-label="' +
+        'data-count></span>' + (calm ? '' : '<button class="btn btn-soft icon-btn game-pause" data-pause aria-pressed="false" aria-label="' +
+        esc(t('app_nest_pause')) + '" title="' + esc(t('app_nest_pause')) + '">' + T.pauseIcon(false) + '</button>') + '</div><div class="whack-arena' + (calm ? ' calm' : '') + '" data-arena role="group" aria-label="' +
         esc(t('app_whack_holes')) + '">' + (calm ? '<div class="whack-one" data-one></div>' : holes) +
         '<div class="nest-say" data-say aria-live="polite"></div></div>');
       var pause = body.querySelector('[data-pause]');
@@ -168,7 +168,11 @@
       run.paused = !run.paused;
       var b = layer.querySelector('[data-pause]');
       if (b) {
-        b.textContent = run.paused ? t('app_nest_resume') : t('app_nest_pause');
+        // An icon, so that the counters fit on a phone; its name says what it does.
+        b.innerHTML = T.pauseIcon(run.paused);
+        b.setAttribute('aria-pressed', run.paused ? 'true' : 'false');
+        b.setAttribute('aria-label', run.paused ? t('app_nest_resume') : t('app_nest_pause'));
+        b.title = b.getAttribute('aria-label');
       }
       layer.querySelector('[data-arena]').classList.toggle('paused', run.paused);
       if (!run.paused) {
