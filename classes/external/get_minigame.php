@@ -76,7 +76,7 @@ final class get_minigame extends external_api {
             throw new \moodle_exception('nominigame', 'local_oksigeniatesape');
         }
         $member = engine::member($char, $params['courseid']);
-        $config = minigames::config($mission, $params['game'], (int) $member->step);
+        $config = minigames::config($mission, $params['game'], (int) $member->step, (string) $char->role);
         if (!$config) {
             throw new \moodle_exception('nominigame', 'local_oksigeniatesape');
         }
@@ -150,6 +150,8 @@ final class get_minigame extends external_api {
             'goal' => new external_value(PARAM_INT, 'Animals to catch, or mistakes to find'),
             'shield' => new external_value(PARAM_INT, 'What the shield of the nest holds'),
             'speed' => new external_value(PARAM_INT, 'Speed, 1 to 4'),
+            'passive' => new external_value(PARAM_ALPHA, 'Role whose passive the student has, or empty'),
+            'streak' => new external_value(PARAM_INT, 'Right answers in a row for the healer to get a slip back'),
         ]);
     }
 }

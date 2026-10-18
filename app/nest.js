@@ -66,7 +66,7 @@
         '<p class="lead">' + esc(game.intro) + '</p><ul class="nest-legend">' + game.nets.map(function(n) {
           return '<li><b>' + esc(n.label) + '</b><span>' + esc(n.hint) + '</span></li>';
         }).join('') + '</ul><p class="help">' + esc(t('app_nest_goal', {goal: game.goal, total: game.animals.length})) + '</p>' +
-        '<label class="chip nest-calm"><input type="checkbox" data-calm' + (calm ? ' checked' : '') + '> ' +
+        m.passiveNote() + '<label class="chip nest-calm"><input type="checkbox" data-calm' + (calm ? ' checked' : '') + '> ' +
         esc(t('app_nest_calm')) + '</label><div class="actions"><button class="btn btn-main" data-go>' +
         esc(t('app_nest_start')) + '</button></div></div>');
       body.querySelector('[data-calm]').onchange = function() {
@@ -92,8 +92,10 @@
         over: false,
         lane: 0
       };
+      m.begin();
       var body = show('<div class="nest-hud"><span class="nest-shield" data-shield></span><span class="nest-count" ' +
-        'data-count></span>' + (calm ? '' : m.pauseButton()) + '</div><div class="nest-arena" data-arena><div class="nest-home" aria-hidden="true">' + creature() +
+        'data-count></span>' + m.lookButton() + (calm ? '' : m.pauseButton()) + '</div>' + m.aheadSlot() +
+        '<div class="nest-arena" data-arena><div class="nest-home" aria-hidden="true">' + creature() +
         '</div><div class="nest-say" data-say aria-live="polite"></div></div><div class="nest-nets" role="group" ' +
         'aria-label="' + esc(t('app_nest_nets')) + '">' + game.nets.map(function(n, i) {
           return '<button class="btn nest-net" type="button" data-net="' + esc(n.id) + '"><small>' + (i + 1) + '</small>' +
@@ -103,6 +105,16 @@
         b.onclick = function() {
           throwNet(b.dataset.net);
         };
+      });
+      // The look of the sage: the net of the animal aimed at shines until it is thrown.
+      m.bindLook(body, function() {
+        var l = run.aim && !run.aim.done ? run.aim : lowest();
+        var net = l ? layer.querySelector('[data-net="' + l.animal.net + '"]') : null;
+        if (!net) {
+          return false;
+        }
+        net.classList.add('hinted');
+        return true;
       });
       var pause = body.querySelector('[data-pause]');
       if (pause) {
@@ -166,11 +178,20 @@
     function hud() {
       // The warmth of the nest of the creature: each animal that gets in takes some of it.
       var shield = layer.querySelector('[data-shield]');
-      var left = Math.max(0, game.shield - run.missed);
+      var left = Math.max(0, game.shield - missed());
       shield.innerHTML = '<small aria-hidden="true">' + esc(t('app_nest_warmth')) + '</small><span class="meter warmth" ' +
         'role="img" aria-label="' + esc(t('app_nest_warmth_left', {left: left, all: game.shield})) + '"><i style="width:' +
         Math.round(100 * left / game.shield) + '%"></i></span>';
-      layer.querySelector('[data-count]').textContent = t('app_nest_count', run.caught + ' / ' + game.goal);
+      layer.querySelector('[data-count]').textContent = t('app_nest_count', (run.caught + m.flow.forgiven) + ' / ' + game.goal);
+    }
+
+    /**
+     * The animals that got in, but the one the healer took out.
+     *
+     * @return {number}
+     */
+    function missed() {
+      return run.missed - m.flow.forgiven;
     }
 
     function spawn() {
@@ -178,6 +199,7 @@
       if (!animal) {
         return null;
       }
+      m.ahead(run.queue.length ? t('app_passive_coming', run.queue[0].label) : '');
       var arena = layer.querySelector('[data-arena]');
       var el = document.createElement('button');
       el.type = 'button';
@@ -232,7 +254,7 @@
       var dt = Math.min(0.1, (now - run.last) / 1000);
       run.last = now;
       // With «no hurry», the animals come down more slowly.
-      var fall = FALL[Math.max(0, Math.min(3, game.speed - 1))] * (T.adapted.notime ? 1.6 : 1);
+      var fall = FALL[m.notch(Math.min(3, game.speed - 1))] * (T.adapted.notime ? 1.6 : 1);
       run.spawnIn -= dt;
       if (run.spawnIn <= 0 && run.live.length < AT_ONCE && run.queue.length) {
         spawn();
@@ -309,8 +331,13 @@
       }
       var right = l.animal.net;
       run.events.push({a: l.animal.id, net: net});
+      layer.querySelectorAll('.nest-net.hinted').forEach(function(b) {
+        b.classList.remove('hinted');
+      });
       if (net === right) {
         run.caught++;
+        m.sound('right');
+        m.answer(true);
         l.el.classList.add('caught');
         say('<b>' + esc(t('app_nest_caught', l.animal.label)) + '</b> ' + esc(netLabel(right)) + '.', true);
         remove(l);
@@ -337,6 +364,8 @@
         run.events.push({a: l.animal.id, net: ''});
       }
       run.missed++;
+      m.sound('near');
+      m.answer(false);
       l.el.classList.add('slipped');
       var why = l.animal.why || netHint(l.animal.net);
       say('<b>' + esc(t(net ? 'app_nest_wrong' : 'app_nest_escaped', {animal: l.animal.label,
@@ -352,7 +381,7 @@
     }
 
     function after() {
-      if (run.missed >= game.shield) {
+      if (missed() >= game.shield) {
         finish();
         return;
       }

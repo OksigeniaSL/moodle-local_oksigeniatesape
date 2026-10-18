@@ -7879,3 +7879,97 @@ body.adapt-still .mission-grid .chapter.as-sheet {
 .badge-moment > .badge-card {
   margin-block: auto;
 }
+
+/* ---------- Inside a minigame: the streak and the passive of the role ---------- */
+
+.scene-layer.streak .scene-title::after {
+  content: " ✦";
+  color: var(--accent);
+  animation: tesape-spark 1.2s ease-in-out infinite;
+}
+
+.scene-layer.streak .nest-arena,
+.scene-layer.streak .whack-arena {
+  box-shadow: 0 0 0 2px rgba(255, 200, 87, .55), 0 0 24px rgba(255, 200, 87, .25);
+}
+
+@keyframes tesape-spark {
+  50% {
+    opacity: .35;
+  }
+}
+
+.game-passive {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+}
+
+.game-passive .icon,
+.game-passive svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+}
+
+.game-look.spent {
+  opacity: .4;
+}
+
+.game-ahead {
+  min-height: 1.4em;
+  margin: 4px 0;
+  font-size: 14px;
+  color: var(--text-soft);
+  text-align: center;
+}
+
+.game-ahead svg,
+.game-ahead .icon {
+  width: 16px;
+  height: 16px;
+  margin-inline-end: 4px;
+  vertical-align: -3px;
+}
+
+.hinted,
+.nest-net.hinted,
+.whack-thing.hinted,
+.errors-text .word.hinted {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+  box-shadow: 0 0 16px rgba(255, 200, 87, .5);
+}
+
+.errors-trail svg,
+.errors-trail .icon {
+  width: 16px;
+  height: 16px;
+  color: var(--accent);
+  vertical-align: -3px;
+}
+
+.whoami-clues li.trail {
+  opacity: .7;
+  font-style: italic;
+}
+
+.whoami-clues li.trail svg,
+.whoami-clues li.trail .icon {
+  width: 16px;
+  height: 16px;
+  margin-inline-end: 4px;
+  vertical-align: -3px;
+}
+
+.whoami-options .dimmed {
+  opacity: .35;
+  text-decoration: line-through;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene-layer.streak .scene-title::after {
+    animation: none;
+  }
+}

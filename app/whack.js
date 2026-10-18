@@ -62,7 +62,7 @@
     function intro() {
       var body = show('<div class="whack-intro"><span class="battle-mini" aria-hidden="true">' + T.embrollo(1) + '</span>' +
         '<p class="lead">' + esc(game.intro) + '</p><p class="help">' + esc(t('app_whack_goal', {goal: game.goal,
-        alive: alive(), misses: game.misses})) + '</p><label class="chip nest-calm"><input type="checkbox" data-calm' +
+        alive: alive(), misses: game.misses})) + '</p>' + m.passiveNote() + '<label class="chip nest-calm"><input type="checkbox" data-calm' +
         (calm ? ' checked' : '') + '> ' + esc(t('app_whack_calm')) + '</label><div class="actions">' +
         '<button class="btn btn-main" data-go>' + esc(t('app_whack_start')) + '</button></div></div>');
       body.querySelector('[data-calm]').onchange = function() {
@@ -85,20 +85,41 @@
         last: 0,
         spawnIn: 0.6,
         frame: 0,
-        over: false
+        over: false,
+        current: null
       };
+      m.begin();
       var holes = '';
       for (var i = 0; i < HOLES; i++) {
         holes += '<div class="whack-hole" data-hole="' + i + '"><small aria-hidden="true">' + (i + 1) + '</small></div>';
       }
       var body = show('<div class="nest-hud"><span class="whack-slips" data-slips></span><span class="nest-count" ' +
-        'data-count></span>' + (calm ? '' : m.pauseButton()) + '</div><div class="whack-arena' + (calm ? ' calm' : '') + '" data-arena role="group" aria-label="' +
+        'data-count></span>' + m.lookButton() + (calm ? '' : m.pauseButton()) + '</div>' + m.aheadSlot() + '<div class="whack-arena' +
+        (calm ? ' calm' : '') + '" data-arena role="group" aria-label="' +
         esc(t('app_whack_holes')) + '">' + (calm ? '<div class="whack-one" data-one></div>' : holes) +
         '<div class="nest-say" data-say aria-live="polite"></div></div>');
       var pause = body.querySelector('[data-pause]');
       if (pause) {
         pause.onclick = togglePause;
       }
+      // The look of the sage: what is alive shines for a moment (without hurry, the right answer).
+      m.bindLook(body, function() {
+        if (calm) {
+          var o = run.current;
+          var b = o && !o.done ? layer.querySelector(o.thing.alive ? '[data-yes]' : '[data-no]') : null;
+          if (b) {
+            b.classList.add('hinted');
+          }
+          return !!b;
+        }
+        var living = run.out.filter(function(x) {
+          return x.thing.alive && !x.done;
+        });
+        living.forEach(function(x) {
+          x.el.classList.add('hinted');
+        });
+        return living.length > 0;
+      });
       document.addEventListener('keydown', onKey);
       hud();
       if (calm) {
@@ -155,12 +176,21 @@
     function hud() {
       var drops = '';
       for (var i = 0; i < game.misses; i++) {
-        drops += '<i class="' + (i < run.slips ? 'slip' : '') + '" aria-hidden="true"></i>';
+        drops += '<i class="' + (i < slipped() ? 'slip' : '') + '" aria-hidden="true"></i>';
       }
-      var slips = t('app_whack_slips', {slips: run.slips, misses: game.misses});
+      var slips = t('app_whack_slips', {slips: slipped(), misses: game.misses});
       layer.querySelector('[data-slips]').innerHTML = '<span class="sr-only">' + esc(slips) + '</span>' + drops;
       layer.querySelector('[data-slips]').title = slips;
       layer.querySelector('[data-count]').textContent = t('app_whack_count', run.caught + ' / ' + game.goal);
+    }
+
+    /**
+     * The slips, but the one the healer got back.
+     *
+     * @return {number}
+     */
+    function slipped() {
+      return run.slips - m.flow.forgiven;
     }
 
     function say(html, good) {
@@ -178,6 +208,7 @@
     /** A thing comes out of a free hole. */
     function spawn() {
       var thing = run.queue.shift();
+      m.ahead(run.queue.length ? t('app_passive_coming', run.queue[0].label) : '');
       var taken = run.out.map(function(o) {
         return o.hole;
       });
@@ -207,7 +238,7 @@
 
     function stay() {
       // With «no hurry», the things stay out longer.
-      return STAY[Math.max(0, Math.min(3, game.speed - 1))] * (T.adapted.notime ? 1.6 : 1);
+      return STAY[m.notch(Math.min(3, game.speed - 1))] * (T.adapted.notime ? 1.6 : 1);
     }
 
     function tick(now) {
@@ -217,7 +248,7 @@
       var dt = Math.min(0.1, (now - run.last) / 1000);
       run.last = now;
       run.spawnIn -= dt;
-      var most = game.speed >= 3 ? 3 : 2;
+      var most = m.notch(Math.min(3, game.speed - 1)) >= 2 ? 3 : 2;
       if (run.spawnIn <= 0 && run.out.length < most && run.queue.length) {
         spawn();
         run.spawnIn = stay() * 0.55;
@@ -260,6 +291,7 @@
         return;
       }
       run.events.push({i: o.thing.id});
+      m.answer(o.thing.alive);
       if (o.thing.alive) {
         run.caught++;
         sound('right');
@@ -269,12 +301,12 @@
       } else {
         run.slips++;
         run.mixed.push(o.thing);
-        sound('wrong');
+        sound('giggle');
         say('<b>' + esc(T.cap(t('app_whack_notalive', o.thing.label))) + '</b> ' + esc(why(o.thing)), false);
         away(o, 'slipped');
       }
       hud();
-      if (run.slips >= game.misses) {
+      if (slipped() >= game.misses) {
         finish();
       }
     }
@@ -303,6 +335,7 @@
         return;
       }
       var thing = run.queue.shift();
+      m.ahead(run.queue.length ? t('app_passive_coming', run.queue[0].label) : '');
       var reads = T.adapted.readaloud && T.readAloud && window.speechSynthesis;
       var box = layer.querySelector('[data-one]');
       box.innerHTML = '<div class="whack-thing up" data-thing>' + esc(thing.label) + '</div><p class="sr-only" ' +
@@ -311,6 +344,7 @@
         '">' + T.icon('speak') + '</button>' : '') + '<button class="btn btn-main" data-yes>' + esc(t('app_whack_yes')) + '</button>' +
         '<button class="btn btn-soft" data-no>' + esc(t('app_whack_no')) + '</button></div>';
       var o = {thing: thing, el: box.querySelector('[data-thing]'), hole: -1, left: 0, done: false};
+      run.current = o;
       box.querySelector('[data-yes]').onclick = function() {
         answer(o, true);
       };
@@ -340,6 +374,7 @@
       var right = yes === o.thing.alive;
       if (yes) {
         run.events.push({i: o.thing.id});
+        m.answer(o.thing.alive);
         if (o.thing.alive) {
           run.caught++;
         } else {
@@ -353,7 +388,7 @@
       var key = o.thing.alive ? (yes ? 'app_whack_alive' : 'app_whack_wasalive') : 'app_whack_notalive';
       say('<b>' + esc(T.cap(t(key, o.thing.label))) + '</b> ' + esc(why(o.thing)), right);
       hud();
-      if (run.slips >= game.misses) {
+      if (slipped() >= game.misses) {
         finish();
         return;
       }

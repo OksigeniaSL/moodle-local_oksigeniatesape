@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.86.0 (2026-10-18)
+
+- **The streak tightens the game**: a minigame starts gently and goes a notch faster every three right answers in a
+  row, up to the speed of the step; two slips in a row, a notch back. The streak shows as sparks, never as a count.
+- **A passive for each role in the minigames**, without asking and without a cost: the protector holds one slip more
+  (in the nest, the goal comes down with it); the healer gets the first slip back after five right in a row; the sage
+  has one look a game (the net that shines, a marked word, the circle of the card, two names out); the scout sees what
+  is coming (the next animal, thing or card, the next clue, the trail of the next mistake). The server counts the
+  protector's slip and the healer's the same way.
+- **Sounds of their own**: the little laugh of the Embrollo at a slip, the rush and the bump of an animal that gets
+  into the nest, a catch that sounds, and the creature that chirps when a streak starts. An art pack can bring its own
+  (`sound.giggle`, `sound.near`, `sound.chirp`).
+
 ## 0.85.0 (2026-10-18)
 
 - **The defence of the nest by traits at the first step**: the nets are what the body is covered with (fur, feathers,

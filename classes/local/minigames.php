@@ -53,16 +53,48 @@ final class minigames {
     /** @var int Mix-ups shown to the teacher per game. */
     public const CONFUSIONS = 3;
 
+    /** @var int Right answers in a row after which the healer gets back the first slip of a play. */
+    public const STREAK = 5;
+
     /**
-     * A minigame of the mission of a course, as a student of a step plays it: texts in the skin and the local
-     * examples, the nets and the animals with their right net.
+     * A minigame of the mission of a course, as a student of a step and a role plays it: texts in the skin and the
+     * local examples, what there is to play, and the passive of the role (the protector holds one slip more).
+     *
+     * @param \stdClass $mission With data.
+     * @param string $code
+     * @param int $step
+     * @param string $role Of the student: protector, healer, sage or scout.
+     * @return array|null
+     */
+    public static function config(\stdClass $mission, string $code, int $step, string $role = ''): ?array {
+        $config = self::config_step($mission, $code, $step);
+        if (!$config) {
+            return null;
+        }
+        $config['passive'] = in_array($role, characters::ROLES, true) ? $role : '';
+        $config['streak'] = self::STREAK;
+        if ($config['passive'] === 'protector') {
+            if (isset($config['misses'])) {
+                $config['misses']++;
+            }
+            if (!empty($config['shield'])) {
+                // In the nest, each animal that gets in is one not caught: the goal comes down with the shield.
+                $config['shield']++;
+                $config['goal'] = max(1, $config['goal'] - 1);
+            }
+        }
+        return $config;
+    }
+
+    /**
+     * A minigame as a student of a step plays it, before the passive of their role.
      *
      * @param \stdClass $mission With data.
      * @param string $code
      * @param int $step
      * @return array|null
      */
-    public static function config(\stdClass $mission, string $code, int $step): ?array {
+    private static function config_step(\stdClass $mission, string $code, int $step): ?array {
         $game = $mission->data['games'][$code] ?? null;
         if (!$game) {
             return null;
@@ -448,7 +480,7 @@ final class minigames {
             }
         }
         $mission = missions::get($courseid);
-        $game = $mission ? self::config($mission, $code, (int) $member->step) : null;
+        $game = $mission ? self::config($mission, $code, (int) $member->step, (string) $char->role) : null;
         if (!$game) {
             throw new \moodle_exception('nominigame', 'local_oksigeniatesape');
         }
@@ -517,6 +549,7 @@ final class minigames {
         $caught = 0;
         $missed = 0;
         $wrong = [];
+        $answers = [];
         foreach ($events as $event) {
             $animal = (string) ($event['a'] ?? '');
             $net = (string) ($event['net'] ?? '');
@@ -524,6 +557,7 @@ final class minigames {
                 throw new \moodle_exception('invalidgameplay', 'local_oksigeniatesape');
             }
             $seen[$animal] = true;
+            $answers[] = $net === $right[$animal];
             if ($net === $right[$animal]) {
                 $caught++;
             } else {
@@ -533,7 +567,9 @@ final class minigames {
                 }
             }
         }
-        return [$caught, $missed, $wrong, $caught >= $game['goal'] && $missed < $game['shield']];
+        // The healer takes out of the nest the animal that got in: one more caught, one less missed.
+        $forgiven = self::forgiven($game, $answers);
+        return [$caught, $missed, $wrong, $caught + $forgiven >= $game['goal'] && $missed - $forgiven < $game['shield']];
     }
 
     /**
@@ -547,12 +583,14 @@ final class minigames {
     private static function count_whack(array $game, array $events): array {
         $alive = array_column($game['things'], 'alive', 'id');
         $touched = [];
+        $answers = [];
         foreach ($events as $event) {
             $id = (string) ($event['i'] ?? '');
             if (!isset($alive[$id]) || isset($touched[$id])) {
                 throw new \moodle_exception('invalidgameplay', 'local_oksigeniatesape');
             }
             $touched[$id] = true;
+            $answers[] = (bool) $alive[$id];
         }
         $caught = 0;
         $slips = 0;
@@ -567,7 +605,7 @@ final class minigames {
                 $wrong[$id] = 'touched';
             }
         }
-        return [$caught, $slips, $wrong, $caught >= $game['goal'] && $slips < $game['misses']];
+        return [$caught, $slips, $wrong, $caught >= $game['goal'] && $slips - self::forgiven($game, $answers) < $game['misses']];
     }
 
     /**
@@ -588,6 +626,7 @@ final class minigames {
         $seen = [];
         $right = 0;
         $wrong = [];
+        $answers = [];
         foreach ($events as $event) {
             $key = ($event['s'] ?? '') . ':' . ($event['i'] ?? '');
             $zone = (string) ($event['z'] ?? '');
@@ -595,6 +634,7 @@ final class minigames {
                 throw new \moodle_exception('invalidgameplay', 'local_oksigeniatesape');
             }
             $seen[$key] = true;
+            $answers[] = $zone === $zones[$key];
             if ($zone === $zones[$key]) {
                 $right++;
             } else {
@@ -602,7 +642,7 @@ final class minigames {
             }
         }
         $done = count($seen) === count($zones);
-        return [$right, count($wrong), $wrong, $done && count($wrong) < $game['misses']];
+        return [$right, count($wrong), $wrong, $done && count($wrong) - self::forgiven($game, $answers) < $game['misses']];
     }
 
     /**
@@ -620,6 +660,7 @@ final class minigames {
         $found = 0;
         $guesses = 0;
         $wrong = [];
+        $answers = [];
         foreach ($events as $event) {
             $id = (string) ($event['r'] ?? '');
             $riddle = $riddles[$id] ?? null;
@@ -635,6 +676,7 @@ final class minigames {
                 $st['shown']++;
             } else {
                 $guess = \core_text::strtolower(trim((string) ($event['g'] ?? '')));
+                $answers[] = $guess === \core_text::strtolower($riddle['answer']);
                 if ($guess === \core_text::strtolower($riddle['answer'])) {
                     $found++;
                     $st['over'] = true;
@@ -650,7 +692,7 @@ final class minigames {
             }
             $state[$id] = $st;
         }
-        return [$found, $guesses, $wrong, $found === count($riddles) && $guesses < $game['misses']];
+        return [$found, $guesses, $wrong, $found === count($riddles) && $guesses - self::forgiven($game, $answers) < $game['misses']];
     }
 
     /**
@@ -672,6 +714,7 @@ final class minigames {
         }
         $found = [];
         $blots = 0;
+        $answers = [];
         $sheets = array_column($game['sheets'], 'id');
         foreach ($events as $event) {
             $sheet = (string) ($event['s'] ?? '');
@@ -684,12 +727,39 @@ final class minigames {
                     throw new \moodle_exception('invalidgameplay', 'local_oksigeniatesape');
                 }
                 $found[$key] = true;
+                $answers[] = true;
             } else {
                 $blots++;
+                $answers[] = false;
             }
         }
         $missed = array_map(fn() => 0, array_diff_key($marks, $found));
-        return [count($found), $blots, $missed, count($found) >= $game['goal'] && $blots < $game['misses']];
+        return [count($found), $blots, $missed, count($found) >= $game['goal'] && $blots - self::forgiven($game, $answers) < $game['misses']];
+    }
+
+    /**
+     * The slip the healer gets back: after a streak of right answers, the first slip of the play, once. The client
+     * counts it the same way, answer by answer.
+     *
+     * @param array $game As the student plays it, with its passive.
+     * @param bool[] $answers Right or not, in the order they were given.
+     * @return int 1 or 0.
+     */
+    private static function forgiven(array $game, array $answers): int {
+        if (($game['passive'] ?? '') !== 'healer') {
+            return 0;
+        }
+        $slipped = false;
+        $streak = 0;
+        foreach ($answers as $right) {
+            if (!$right) {
+                $slipped = true;
+                $streak = 0;
+            } else if (++$streak >= $game['streak'] && $slipped) {
+                return 1;
+            }
+        }
+        return 0;
     }
 
     /**

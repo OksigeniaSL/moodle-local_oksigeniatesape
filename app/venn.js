@@ -55,13 +55,14 @@
     function intro() {
       var body = show('<div class="venn-intro"><span class="battle-mini" aria-hidden="true">' + T.embrollo(1) + '</span>' +
         '<p class="lead">' + esc(game.intro) + '</p><p class="help">' + esc(t('app_venn_goal', {misses: game.misses})) +
-        '</p><div class="actions"><button class="btn btn-main" data-go>' + esc(t('app_venn_start')) + '</button></div></div>');
+        '</p>' + m.passiveNote() + '<div class="actions"><button class="btn btn-main" data-go>' + esc(t('app_venn_start')) + '</button></div></div>');
       body.querySelector('[data-go]').onclick = start;
       body.querySelector('[data-go]').focus();
     }
 
     function start() {
-      run = {sheet: 0, events: [], slips: 0, right: 0, mixed: [], over: false, say: null};
+      run = {sheet: 0, events: [], slips: 0, right: 0, mixed: [], over: false, say: null, hinted: null};
+      m.begin();
       document.addEventListener('keydown', onKey);
       sheet();
     }
@@ -102,10 +103,11 @@
       var thing = done ? null : s.items[run.order[run.item]];
       var last = run.sheet === game.sheets.length - 1;
       var drops = '';
+      var slipped = run.slips - m.flow.forgiven;
       for (var i = 0; i < game.misses; i++) {
-        drops += '<i class="' + (i < run.slips ? 'slip' : '') + '" aria-hidden="true"></i>';
+        drops += '<i class="' + (i < slipped ? 'slip' : '') + '" aria-hidden="true"></i>';
       }
-      var slips = t('app_venn_slips', {slips: run.slips, misses: game.misses});
+      var slips = t('app_venn_slips', {slips: slipped, misses: game.misses});
       var board = '<div class="venn-names"><span class="a">' + esc(s.groups[0]) + '</span><span class="b">' +
         esc(s.groups[1]) + '</span></div><div class="venn-board"><div class="circle a"></div><div class="circle b"></div>' +
         ZONES.map(function(z) {
@@ -117,16 +119,18 @@
         }).join('') + '</div>';
       var html = '<div class="nest-hud"><span class="whack-slips" title="' + esc(slips) + '"><span class="sr-only">' +
         esc(slips) + '</span>' + drops + '</span><span class="kicker">' + esc(t('app_venn_sheet', {n: run.sheet + 1,
-        total: game.sheets.length})) + '</span></div>' + (s.title ? '<h2 class="venn-title">' + esc(s.title) + '</h2>' : '') +
+        total: game.sheets.length})) + '</span>' + m.lookButton() + '</div>' + (s.title ? '<h2 class="venn-title">' + esc(s.title) +
+        '</h2>' : '') +
         board + '<div class="venn-say' + (run.say ? ' ' + run.say.kind : '') + '" aria-live="polite">' +
         (run.say ? run.say.html : '') + '</div>';
       if (thing) {
         html += '<div class="venn-card"><span class="kicker">' + esc(t('app_venn_where')) + '</span><b>' +
           esc(thing.label) + '</b><small>' + esc(t('app_venn_left', run.order.length - run.item)) + '</small></div>' +
           '<div class="venn-answers">' + ZONES.map(function(z, n) {
-            return '<button type="button" class="btn btn-soft" data-zone="' + z + '"><small aria-hidden="true">' + (n + 1) +
-              '</small>' + esc(answer(s, z)) + '</button>';
-          }).join('') + '</div>';
+            var hinted = run.hinted === run.sheet + ':' + run.item && z === thing.zone;
+            return '<button type="button" class="btn btn-soft' + (hinted ? ' hinted' : '') + '" data-zone="' + z + '"><small ' +
+              'aria-hidden="true">' + (n + 1) + '</small>' + esc(answer(s, z)) + '</button>';
+          }).join('') + '</div>' + m.aheadSlot();
       } else {
         html += '<div class="actions"><button class="btn btn-main" data-next>' + esc(last ? t('app_errors_finish') :
           t('app_venn_next')) + '</button></div>';
@@ -141,6 +145,21 @@
         b.onclick = function() {
           put(b.dataset.zone);
         };
+      });
+      // What the scout sees coming; the look of the sage, the place of this card.
+      m.ahead(thing && run.item + 1 < run.order.length ? t('app_passive_coming', s.items[run.order[run.item + 1]].label) : '');
+      var spent = body.querySelector('[data-look]');
+      if (spent && m.flow.looked) {
+        spent.disabled = true;
+        spent.classList.add('spent');
+      }
+      m.bindLook(body, function() {
+        if (!thing) {
+          return false;
+        }
+        run.hinted = run.sheet + ':' + run.item;
+        body.querySelector('.venn-answers [data-zone="' + thing.zone + '"]').classList.add('hinted');
+        return true;
       });
       var next = body.querySelector('[data-next]');
       if (next) {
@@ -175,6 +194,7 @@
       var thing = s.items[i];
       run.events.push({s: s.id, i: i, z: zone});
       run.item++;
+      m.answer(zone === thing.zone);
       if (zone === thing.zone) {
         run.right++;
         run.placed[zone].push({label: thing.label});
@@ -185,11 +205,11 @@
         run.slips++;
         run.mixed.push({label: thing.label, place: place(s, thing.zone), why: thing.why});
         run.placed[thing.zone].push({label: thing.label, wrong: true});
-        sound('wrong');
+        sound('giggle');
         run.say = {kind: 'bad', html: '<b>' + esc(T.cap(t('app_venn_goes', {thing: thing.label,
           place: place(s, thing.zone)}))) + '</b>' + (thing.why ? ' ' + esc(T.cap(thing.why)) : '')};
       }
-      if (run.slips >= game.misses) {
+      if (run.slips - m.flow.forgiven >= game.misses) {
         finish();
         return;
       }

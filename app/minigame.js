@@ -2,7 +2,10 @@
  * Tesapé: what every minigame shares, so that each one keeps only its mechanics. Its layer over the map, the frame with
  * its title and the close button, the loading, the pause button, the saving (kept on the device without a connection,
  * or sent again from here) and the end, where the world answers: what the mission says, what was given and what was
- * mixed up, with its why; never a count of right answers.
+ * mixed up, with its why; never a count of right answers. And inside the play, the streak (sparks, and a game that
+ * goes a notch faster every three right answers in a row, up to the ceiling of the step) and the passive of the role:
+ * the protector holds one slip more (the server gives it), the healer gets the first slip back after a streak (the
+ * server counts it the same way), the sage has one look and the scout sees what comes next.
  *
  * @copyright  2026 Oksigenia <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -59,7 +62,7 @@
     document.body.appendChild(layer);
     document.body.classList.add('in-scene');
 
-    var m = {layer: layer, world: opts.world, game: null, onclose: null};
+    var m = {layer: layer, world: opts.world, game: null, onclose: null, flow: null};
 
     m.close = function() {
       if (m.onclose) {
@@ -109,6 +112,141 @@
       var arena = layer.querySelector('[data-arena]');
       if (arena) {
         arena.classList.toggle('paused', paused);
+      }
+    };
+
+    /* ---------- Inside the play: the streak and the passive of the role ---------- */
+
+    /** A new play: no streak, no notch, the look of the sage unused. */
+    m.begin = function() {
+      m.flow = {streak: 0, misses: 0, heat: 0, slipped: false, forgiven: 0, looked: false};
+      layer.classList.remove('streak');
+    };
+
+    /**
+     * How fast the game goes now, from 0: a notch more every three right answers in a row, one less after two slips
+     * in a row, never above the ceiling of the step.
+     *
+     * @param {number} top
+     * @return {number}
+     */
+    m.notch = function(top) {
+      return Math.max(0, Math.min(top, m.flow ? m.flow.heat : 0));
+    };
+
+    /**
+     * One answer, in the order the server counts them. The healer gets the first slip of the play back after a streak,
+     * once: the game takes it off its slips.
+     *
+     * @param {boolean} right
+     * @return {boolean} Whether the healer got a slip back just now.
+     */
+    m.answer = function(right) {
+      var f = m.flow;
+      var back = false;
+      if (!right) {
+        f.slipped = true;
+        f.streak = 0;
+        if (++f.misses >= 2) {
+          f.heat = Math.max(0, f.heat - 1);
+          f.misses = 0;
+        }
+      } else {
+        f.misses = 0;
+        if (++f.streak % 3 === 0) {
+          f.heat++;
+        }
+        if (f.streak === 3) {
+          m.sound('chirp');
+        }
+        if (m.game.passive === 'healer' && f.slipped && !f.forgiven && f.streak >= m.game.streak) {
+          f.forgiven = 1;
+          back = true;
+        }
+      }
+      layer.classList.toggle('streak', f.streak >= 3);
+      if (back) {
+        m.sound('heart');
+        T.toast(esc(t('app_passive_back')));
+      }
+      return back;
+    };
+
+    /**
+     * What the role of the student does in this minigame, for the start.
+     *
+     * @return {string} A paragraph, or nothing.
+     */
+    m.passiveNote = function() {
+      var c = m.world.character || {};
+      var role = m.game.passive;
+      if (!role || !T.roleName) {
+        return '';
+      }
+      var name = T.roleName(m.world.family, role, c.nameform);
+      name = name.charAt(0).toLocaleLowerCase(cfg.lang || 'es') + name.slice(1);
+      return '<p class="help game-passive">' + T.icon(role === 'sage' ? 'lens' : role === 'scout' ? 'trail' :
+        role === 'protector' ? 'shield' : 'energy') + esc(t('app_passive_' + role, {name: name, streak: m.game.streak})) +
+        '</p>';
+    };
+
+    /**
+     * The look of the sage, for the counters: once a play.
+     *
+     * @return {string}
+     */
+    m.lookButton = function() {
+      return m.game.passive === 'sage' ? '<button class="btn btn-soft icon-btn game-look" type="button" data-look ' +
+        'aria-label="' + esc(t('app_passive_look')) + '" title="' + esc(t('app_passive_look')) + '">' + T.icon('lens') +
+        '</button>' : '';
+    };
+
+    /**
+     * What the look does, given by the game; it is spent when it shows something.
+     *
+     * @param {Element} body
+     * @param {function} look Returns false if there was nothing to look at yet.
+     */
+    m.bindLook = function(body, look) {
+      var b = body.querySelector('[data-look]');
+      if (!b) {
+        return;
+      }
+      b.onclick = function() {
+        if (m.flow.looked) {
+          return;
+        }
+        // Spent before it looks: a game may draw itself again to show it.
+        m.flow.looked = true;
+        if (look() === false) {
+          m.flow.looked = false;
+          return;
+        }
+        m.sound('choose');
+        var now = layer.querySelector('[data-look]') || b;
+        now.disabled = true;
+        now.classList.add('spent');
+      };
+    };
+
+    /**
+     * Where the scout sees what comes next.
+     *
+     * @return {string}
+     */
+    m.aheadSlot = function() {
+      return m.game.passive === 'scout' ? '<p class="game-ahead" data-ahead aria-live="polite"></p>' : '';
+    };
+
+    /**
+     * What the scout sees coming.
+     *
+     * @param {string} text Empty when nothing more comes.
+     */
+    m.ahead = function(text) {
+      var box = layer.querySelector('[data-ahead]');
+      if (box) {
+        box.innerHTML = text ? T.icon('trail') + esc(text) : '';
       }
     };
 

@@ -43,14 +43,15 @@
     function intro() {
       var body = show('<div class="whoami-intro"><span class="whoami-shadow big" aria-hidden="true">?</span>' +
         '<p class="lead">' + esc(game.intro) + '</p><p class="help">' + esc(t('app_whoami_goal', {misses: game.misses})) +
-        '</p><div class="actions"><button class="btn btn-main" data-go>' + esc(t('app_whoami_start')) + '</button></div>' +
+        '</p>' + m.passiveNote() + '<div class="actions"><button class="btn btn-main" data-go>' + esc(t('app_whoami_start')) + '</button></div>' +
         '</div>');
       body.querySelector('[data-go]').onclick = start;
       body.querySelector('[data-go]').focus();
     }
 
     function start() {
-      run = {riddle: 0, events: [], wrong: 0, found: 0, stars: 0, over: false, lost: []};
+      run = {riddle: 0, events: [], wrong: 0, found: 0, stars: 0, over: false, lost: [], dimmed: {}};
+      m.begin();
       riddle(true);
     }
 
@@ -77,20 +78,23 @@
       var reads = T.adapted.readaloud && T.readAloud && window.speechSynthesis;
       var html = '<div class="nest-hud"><span class="kicker">' + esc(t('app_whoami_count', {n: run.riddle + 1,
         total: game.riddles.length})) + '</span><span class="whoami-stars" title="' + esc(t('app_whoami_stars',
-        run.stars)) + '"><span aria-hidden="true">★ </span>' + run.stars + '</span></div>' +
+        run.stars)) + '"><span aria-hidden="true">★ </span>' + run.stars + '</span>' + m.lookButton() + '</div>' +
         '<section class="card whoami-card">' + (reads ? '<button type="button" class="btn btn-soft read-card" ' +
         'data-readcard aria-label="' + esc(t('app_read_aloud')) + '">' + T.icon('speak') + '</button>' : '') + '<div class="whoami-head">' +
         '<span class="whoami-shadow' + (run.done === 'found' ? ' found' : '') + '" aria-hidden="true">' +
         (run.done === 'found' ? '✓' : '?') + '</span><h2>' + esc(run.done ? T.cap(r.answer) : t('app_whoami_who')) + '</h2>' +
         '</div><ol class="whoami-clues">' + r.clues.slice(0, run.done ? r.clues.length : run.shown).map(function(c, i) {
           return '<li class="' + (i >= run.shown ? 'late' : '') + '">' + esc(c) + '</li>';
-        }).join('') + '</ol></section><div class="whoami-say' + (run.say ? ' ' + run.say.kind : '') + '" aria-live="polite">' +
+        }).join('') + (scouted(r) ? '<li class="trail">' + T.icon('trail') + '<span class="sr-only">' +
+          esc(t('app_passive_seen')) + ' </span>' + esc(r.clues[run.shown]) + '</li>' : '') + '</ol></section><div class="whoami-say' + (run.say ? ' ' + run.say.kind : '') + '" aria-live="polite">' +
         (run.say ? run.say.html : '') + '</div>';
       if (!run.done) {
+        var dimmed = run.dimmed[r.id] || [];
         html += '<div class="whoami-options">' + r.options.map(function(o) {
           var tried = run.tried.indexOf(o) >= 0;
-          return '<button type="button" class="btn btn-soft' + (tried ? ' tried' : '') + '" data-guess="' + esc(o) + '"' +
-            (tried ? ' disabled' : '') + '>' + esc(T.cap(o)) + '</button>';
+          var dim = dimmed.indexOf(o) >= 0;
+          return '<button type="button" class="btn btn-soft' + (tried ? ' tried' : '') + (dim ? ' dimmed' : '') + '" data-guess="' +
+            esc(o) + '"' + (tried || dim ? ' disabled' : '') + '>' + esc(T.cap(o)) + '</button>';
         }).join('') + '</div><div class="actions">' + (left > 0 ? '<button class="btn btn-soft" data-clue>' +
           esc(t('app_whoami_clue', left)) + '</button>' : '') + '</div>';
       } else {
@@ -107,6 +111,22 @@
         b.onclick = function() {
           guess(b.dataset.guess);
         };
+      });
+      // The look of the sage: two names that are not this one go out.
+      var spent = body.querySelector('[data-look]');
+      if (spent && m.flow.looked) {
+        spent.disabled = true;
+        spent.classList.add('spent');
+      }
+      m.bindLook(body, function() {
+        if (run.done) {
+          return false;
+        }
+        run.dimmed[r.id] = r.options.filter(function(o) {
+          return o.toLowerCase() !== r.answer.toLowerCase() && run.tried.indexOf(o) < 0;
+        }).slice(0, 2);
+        riddle(false);
+        return true;
       });
       var clue = body.querySelector('[data-clue]');
       if (clue) {
@@ -149,6 +169,7 @@
     function guess(name) {
       var r = game.riddles[run.riddle];
       run.events.push({r: r.id, g: name});
+      m.answer(name.toLowerCase() === r.answer.toLowerCase());
       if (name.toLowerCase() === r.answer.toLowerCase()) {
         var won = r.clues.length - run.shown + 1;
         run.found++;
@@ -172,7 +193,7 @@
             esc(t('app_whoami_another'))};
         }
       }
-      if (run.wrong >= game.misses) {
+      if (run.wrong - m.flow.forgiven >= game.misses) {
         finish();
         return;
       }
@@ -183,6 +204,16 @@
           first.focus();
         }
       }
+    }
+
+    /**
+     * Whether the scout sees the next clue already, without it counting as asked for.
+     *
+     * @param {Object} r
+     * @return {boolean}
+     */
+    function scouted(r) {
+      return game.passive === 'scout' && !run.done && run.shown < r.clues.length;
     }
 
     /* ---------- The end ---------- */

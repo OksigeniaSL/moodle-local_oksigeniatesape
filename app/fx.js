@@ -250,6 +250,23 @@
     wrong: function() {
       tone(260, 0, 0.22, 'sine', 0.16, 190);
     },
+    // The little laugh of the Embrollo when it catches a slip in a minigame.
+    giggle: function() {
+      tone(260, 0, 0.18, 'sine', 0.12, 200);
+      [620, 560, 640, 540].forEach(function(freq, i) {
+        tone(freq, 0.16 + i * 0.075, 0.06, 'triangle', 0.08, freq - 60);
+      });
+    },
+    // An animal that gets into the nest: a rush of leaves and a soft bump.
+    near: function() {
+      noise(0, 0.22, 0.1, 700, 1.2);
+      tone(150, 0.16, 0.2, 'sine', 0.16, 90);
+    },
+    // The creature chirps: the streak has started.
+    chirp: function() {
+      tone(1800, 0, 0.06, 'sine', 0.07, 2400);
+      tone(2000, 0.09, 0.07, 'sine', 0.07, 2700);
+    },
     heart: function() {
       tone(440, 0, 0.16, 'sine', 0.18);
       tone(554, 0.13, 0.3, 'sine', 0.18);

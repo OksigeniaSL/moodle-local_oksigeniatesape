@@ -90,6 +90,52 @@ final class minigames_test extends \advanced_testcase {
         $this->assertNull(minigames::config($w->mission, 'nogame', 2));
     }
 
+    public function test_the_protector_holds_one_slip_more(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $w = $this->make_class();
+        $step = (int) $w->member->step;
+        $plain = minigames::config($w->mission, 'nestdefence', $step, 'scout');
+        $this->assertSame('scout', $plain['passive']);
+        $this->assertSame(minigames::STREAK, $plain['streak']);
+        $guard = minigames::config($w->mission, 'nestdefence', $step, 'protector');
+        $this->assertSame($plain['shield'] + 1, $guard['shield']);
+        $this->assertSame($plain['goal'] - 1, $guard['goal']);
+        $misses = minigames::config($w->mission, 'quienestavivo', $step)['misses'];
+        $this->assertSame($misses + 1, minigames::config($w->mission, 'quienestavivo', $step, 'protector')['misses']);
+        // As many animals in as the shield holds: lost as a scout, won as a protector.
+        $wrong = [];
+        foreach (array_slice($plain['animals'], 0, $plain['shield']) as $a) {
+            $wrong[$a['id']] = '';
+        }
+        $this->assertFalse(minigames::play($w->course->id, $w->user->id, 'nestdefence', $this->events($plain, $wrong))['success']);
+        $DB->set_field(self::T . 'char', 'role', 'protector', ['userid' => $w->user->id]);
+        $this->assertTrue(minigames::play($w->course->id, $w->user->id, 'nestdefence', $this->events($plain, $wrong))['success']);
+    }
+
+    public function test_the_healer_gets_the_first_slip_back_after_a_streak(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $w = $this->make_class();
+        $game = minigames::config($w->mission, 'nestdefence', (int) $w->member->step, 'healer');
+        $ids = array_column($game['animals'], 'id');
+        // Three in at the start, a streak, and one more at the end: four in all, as many as the shield holds.
+        $wrong = [];
+        foreach ([0, 1, 2, count($ids) - 1] as $i) {
+            $wrong[$ids[$i]] = '';
+        }
+        $events = $this->events($game, $wrong);
+        $this->assertFalse(minigames::play($w->course->id, $w->user->id, 'nestdefence', $events)['success']);
+        $DB->set_field(self::T . 'char', 'role', 'healer', ['userid' => $w->user->id]);
+        $this->assertTrue(minigames::play($w->course->id, $w->user->id, 'nestdefence', $events)['success']);
+        // With the four at the end, no streak comes after a slip: nothing to get back.
+        $late = [];
+        foreach (array_slice($ids, -4) as $id) {
+            $late[$id] = '';
+        }
+        $this->assertFalse(minigames::play($w->course->id, $w->user->id, 'nestdefence', $this->events($game, $late))['success']);
+    }
+
     public function test_winning_gives_the_net_once(): void {
         global $DB;
         $this->resetAfterTest();

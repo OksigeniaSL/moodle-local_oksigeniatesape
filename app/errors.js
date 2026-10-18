@@ -33,11 +33,20 @@
     function blots() {
       var html = '';
       for (var i = 0; i < game.misses; i++) {
-        html += '<i class="' + (i < run.blots ? 'blot' : '') + '" aria-hidden="true"></i>';
+        html += '<i class="' + (i < blotted() ? 'blot' : '') + '" aria-hidden="true"></i>';
       }
-      return '<div class="errors-blots" title="' + esc(t('app_errors_blots', {blots: run.blots, misses: game.misses})) +
-        '"><span class="sr-only">' + esc(t('app_errors_blots', {blots: run.blots, misses: game.misses})) + '</span>' +
+      return '<div class="errors-blots" title="' + esc(t('app_errors_blots', {blots: blotted(), misses: game.misses})) +
+        '"><span class="sr-only">' + esc(t('app_errors_blots', {blots: blotted(), misses: game.misses})) + '</span>' +
         html + '</div>';
+    }
+
+    /**
+     * The blots, but the one the healer got back.
+     *
+     * @return {number}
+     */
+    function blotted() {
+      return run.blots - m.flow.forgiven;
     }
 
     /* ---------- Start ---------- */
@@ -45,13 +54,14 @@
     function intro() {
       var body = show('<div class="errors-intro"><span class="battle-mini" aria-hidden="true">' + T.embrollo(1) + '</span>' +
         '<p class="lead">' + esc(game.intro) + '</p><p class="help">' + esc(t('app_errors_goal', {goal: game.goal,
-        misses: game.misses})) + '</p><div class="actions"><button class="btn btn-main" data-go>' +
+        misses: game.misses})) + '</p>' + m.passiveNote() + '<div class="actions"><button class="btn btn-main" data-go>' +
         esc(t('app_errors_start')) + '</button></div></div>');
       body.querySelector('[data-go]').onclick = start;
     }
 
     function start() {
       run = {sheet: 0, events: [], found: {}, blots: 0, over: false, sent: false};
+      m.begin();
       sheet();
     }
 
@@ -103,7 +113,7 @@
       var last = run.sheet === game.sheets.length - 1;
       var reads = T.adapted.readaloud && T.readAloud && window.speechSynthesis;
       var html = '<div class="errors-head"><span class="kicker">' + esc(t('app_errors_sheet', {n: run.sheet + 1,
-        total: game.sheets.length})) + '</span>' + blots() + '</div><section class="card errors-sheet">' +
+        total: game.sheets.length})) + '</span>' + m.lookButton() + blots() + '</div><section class="card errors-sheet">' +
         (reads ? '<button type="button" class="btn btn-soft read-card" data-readcard aria-label="' +
         esc(t('app_read_aloud')) + '">' + T.icon('speak') + '</button>' : '') + '<h2>' + esc(s.title) + '</h2><p class="errors-text">' + text +
         '</p></section>' + (why ? '<ul class="errors-why">' + why + '</ul>' : '') + '<p class="help" aria-live="polite">' +
@@ -125,10 +135,25 @@
           blot(s, b);
         };
       });
+      trail(body);
+      // The look of the sage: a word with a mistake is marked.
+      var spent = body.querySelector('[data-look]');
+      if (spent && m.flow.looked) {
+        spent.disabled = true;
+        spent.classList.add('spent');
+      }
+      m.bindLook(body, function() {
+        var b = body.querySelector('.errors-text [data-m]');
+        if (b) {
+          b.classList.add('hinted');
+        }
+        return !!b;
+      });
       body.querySelectorAll('[data-m]').forEach(function(b) {
         b.onclick = function() {
           run.found[s.id + ':' + b.dataset.m] = true;
           run.events.push({s: s.id, m: Number(b.dataset.m)});
+          m.answer(true);
           sound('right');
           sheet(true, b === document.activeElement ?
             Array.prototype.indexOf.call(body.querySelectorAll('.errors-text button'), b) : -1);
@@ -163,7 +188,8 @@
     function blot(s, b) {
       run.blots++;
       run.events.push({s: s.id, x: 1});
-      sound('wrong');
+      m.answer(false);
+      sound('giggle');
       b.disabled = true;
       b.classList.add('ok');
       T.toast(esc(t('app_errors_ok')), true);
@@ -171,9 +197,34 @@
       if (drops) {
         drops.outerHTML = blots();
       }
-      if (run.blots >= game.misses) {
+      if (blotted() >= game.misses) {
         finish();
       }
+    }
+
+    /**
+     * What the scout sees: the footprint at the start of the sentence where the next mistake is hiding.
+     *
+     * @param {Element} body
+     */
+    function trail(body) {
+      if (game.passive !== 'scout') {
+        return;
+      }
+      var all = Array.prototype.slice.call(body.querySelectorAll('.errors-text button'));
+      var k = all.findIndex(function(b) {
+        return b.hasAttribute('data-m');
+      });
+      if (k < 0) {
+        return;
+      }
+      var start = k;
+      while (start > 0 && !/[.!?:;]$/.test(all[start - 1].textContent.trim())) {
+        start--;
+      }
+      all[start].classList.add('trail');
+      all[start].insertAdjacentHTML('beforebegin', '<span class="errors-trail">' + T.icon('trail') + '<span class="sr-only">' +
+        esc(t('app_passive_trail')) + '</span></span>');
     }
 
     /* ---------- The end ---------- */
