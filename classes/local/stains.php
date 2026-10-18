@@ -207,6 +207,35 @@ final class stains {
     }
 
     /**
+     * The footprints of the Embrollo on the way to the next place: one for each school day (Monday to Friday) since the
+     * class lit its last lantern (or since the mission came, before the first), up to five. They go when the lantern of
+     * the place of today is lit.
+     *
+     * @param \stdClass $mission
+     * @param int|null $now
+     * @return int
+     */
+    public static function prints(\stdClass $mission, ?int $now = null): int {
+        global $DB;
+        $now = $now ?? time();
+        $region = regions::get((int) $mission->courseid);
+        if (($region->mischief ?? 'calm') === 'off') {
+            return 0;
+        }
+        $since = (int) $DB->get_field_select(self::T . 'chapter', 'MAX(litat)', 'missionid = ?', [$mission->id]);
+        $since = $since ?: (int) $mission->timecreated;
+        $zone = engine::timezone((int) $mission->courseid);
+        $day = (new \DateTimeImmutable('@' . $since))->setTimezone($zone)->setTime(0, 0);
+        $today = (new \DateTimeImmutable('@' . $now))->setTimezone($zone)->setTime(0, 0);
+        $prints = 0;
+        while ($day < $today && $prints < 5) {
+            $day = $day->modify('+1 day');
+            $prints += (int) $day->format('N') <= 5 ? 1 : 0;
+        }
+        return $prints;
+    }
+
+    /**
      * The teacher takes a stain as cleaned by the class (aloud, on the class screen) or rubs it out: nobody gets a gem.
      *
      * @param int $courseid

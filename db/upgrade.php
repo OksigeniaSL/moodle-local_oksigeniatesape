@@ -680,9 +680,9 @@ function xmldb_local_oksigeniatesape_upgrade($oldversion) {
         $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
         $table->add_field('courseid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
         $table->add_field('day', XMLDB_TYPE_INTEGER, '8', null, XMLDB_NOTNULL, null, null);
-        $table->add_field('chapter', XMLDB_TYPE_CHAR, '40', null, XMLDB_NOTNULL, null, '');
-        $table->add_field('game', XMLDB_TYPE_CHAR, '40', null, XMLDB_NOTNULL, null, '');
-        $table->add_field('sheet', XMLDB_TYPE_CHAR, '40', null, XMLDB_NOTNULL, null, '');
+        $table->add_field('chapter', XMLDB_TYPE_CHAR, '40', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('game', XMLDB_TYPE_CHAR, '40', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('sheet', XMLDB_TYPE_CHAR, '40', null, XMLDB_NOTNULL, null, null);
         $table->add_field('cleanedat', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
         $table->add_field('erased', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0');
         $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);

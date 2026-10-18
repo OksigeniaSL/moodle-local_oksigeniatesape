@@ -122,6 +122,7 @@ final class structures {
             'mapworld' => new external_value(PARAM_ALPHANUMEXT, 'World of a map in layers', VALUE_DEFAULT, ''),
             'mapheight' => new external_value(PARAM_INT, 'Height of a map in layers', VALUE_DEFAULT, 0),
             'today' => new external_value(PARAM_ALPHANUMEXT, 'Place where the class is today', VALUE_DEFAULT, ''),
+            'prints' => new external_value(PARAM_INT, 'Footprints of the Embrollo towards the next place', VALUE_DEFAULT, 0),
             'chapters' => new external_multiple_structure(new external_single_structure([
                 'id' => new external_value(PARAM_INT, 'Chapter'),
                 'code' => new external_value(PARAM_ALPHANUMEXT, 'Code'),

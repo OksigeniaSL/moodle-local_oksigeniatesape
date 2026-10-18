@@ -1127,6 +1127,24 @@
     var crowd = m.chapters.map(function(ch) {
       return silhouettes(ch, mates[ch.id] || 0);
     }).join('');
+    // The footprints of the Embrollo on the way from the place of today to the next one: it is getting there first.
+    var prints = '';
+    var at = m.chapters.map(function(ch) {
+      return ch.code;
+    }).indexOf(m.today);
+    if (!state.visit && m.prints > 0 && at >= 0 && at + 1 < m.chapters.length) {
+      var a = m.chapters[at];
+      var b = m.chapters[at + 1];
+      var angle = Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI + 90;
+      for (var k = 1; k <= m.prints; k++) {
+        var f = 0.25 + 0.5 * k / 6;
+        var side = k % 2 ? -5 : 5;
+        prints += '<g class="print" transform="translate(' + Math.round(a.x + f * (b.x - a.x)) + ' ' + Math.round(a.y + f *
+          (b.y - a.y)) + ') rotate(' + Math.round(angle) + ') translate(' + side + ' 0)"><ellipse rx="3.4" ry="5.2"/>' +
+          '<circle cx="-2.6" cy="-7.4" r="1.3"/><circle cx="0" cy="-8.2" r="1.3"/><circle cx="2.6" cy="-7.4" r="1.3"/></g>';
+      }
+      prints = '<g class="prints" aria-hidden="true">' + prints + '</g>';
+    }
     // What the Embrollo stained: a blot of ink beside the lantern of the place, to clean it.
     var blots = state.visit ? '' : (state.world.stains || []).map(function(s, i) {
       var ch = m.chapters.filter(function(x) {
@@ -1185,7 +1203,7 @@
       '" role="group" aria-label="' + esc(m.title) + '"><defs>' + T.MAPGLOW + '</defs>' + T.mapGround(m) +
       T.mapLandmarks(m) + T.mapNight(m) + '<polyline points="' + pts + '" class="road"/>' +
       (walked ? '<polyline points="' + walked + '" class="road walked"/>' : '') + roadDrawing(fresh) +
-      (T.critters ? T.critters.fireflies(m) : '') + places + crowd + blots + me + pet + hungry + '</svg></div>';
+      (T.critters ? T.critters.fireflies(m) : '') + prints + places + crowd + blots + me + pet + hungry + '</svg></div>';
   }
 
   /**

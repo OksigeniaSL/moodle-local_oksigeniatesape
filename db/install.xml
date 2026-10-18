@@ -615,9 +615,9 @@
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="day" TYPE="int" LENGTH="8" NOTNULL="true" SEQUENCE="false" COMMENT="The day, as yyyymmdd in the time zone of the course"/>
-        <FIELD NAME="chapter" TYPE="char" LENGTH="40" NOTNULL="true" DEFAULT="" SEQUENCE="false" COMMENT="The place stained (empty: no stain that day)"/>
-        <FIELD NAME="game" TYPE="char" LENGTH="40" NOTNULL="true" DEFAULT="" SEQUENCE="false" COMMENT="The hunt for mistakes the sheet is from"/>
-        <FIELD NAME="sheet" TYPE="char" LENGTH="40" NOTNULL="true" DEFAULT="" SEQUENCE="false" COMMENT="The sheet of mistakes to clean"/>
+        <FIELD NAME="chapter" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false" COMMENT="The place stained (empty: no stain that day)"/>
+        <FIELD NAME="game" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false" COMMENT="The hunt for mistakes the sheet is from"/>
+        <FIELD NAME="sheet" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false" COMMENT="The sheet of mistakes to clean"/>
         <FIELD NAME="cleanedat" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="When it was cleaned (0: it is there)"/>
         <FIELD NAME="erased" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The teacher took it as cleaned by the class or rubbed it out"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>

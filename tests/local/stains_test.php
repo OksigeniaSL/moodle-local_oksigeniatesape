@@ -114,6 +114,25 @@ final class stains_test extends \advanced_testcase {
         stains::clean($course->id, (int) $stain->id, $member, $done, $this->monday + 60);
     }
 
+    public function test_the_footprints_come_one_each_school_day_since_the_last_lantern(): void {
+        global $DB;
+        [$course] = $this->make_class();
+        $mission = missions::get($course->id);
+        $DB->set_field(self::T . 'mission', 'timecreated', $this->monday, ['id' => $mission->id]);
+        $mission = missions::get($course->id);
+        $mission->timecreated = $this->monday;
+        // Tuesday, Wednesday and Thursday.
+        $this->assertSame(3, stains::prints($mission, $this->monday + 3 * DAYSECS));
+        // The weekend does not count: from Monday to the next Monday, five.
+        $this->assertSame(5, stains::prints($mission, $this->monday + 7 * DAYSECS));
+        $this->assertSame(5, stains::prints($mission, $this->monday + 14 * DAYSECS));
+        // The class lit a lantern on Wednesday: on Thursday, one.
+        $DB->set_field(self::T . 'chapter', 'litat', $this->monday + 2 * DAYSECS, ['missionid' => $mission->id, 'code' => 'claro']);
+        $this->assertSame(1, stains::prints($mission, $this->monday + 3 * DAYSECS));
+        regions::save($course->id, ['mischief' => 'off']);
+        $this->assertSame(0, stains::prints($mission, $this->monday + 3 * DAYSECS));
+    }
+
     public function test_the_teacher_takes_it_as_cleaned_by_the_class(): void {
         global $DB;
         [$course, $member] = $this->make_class();

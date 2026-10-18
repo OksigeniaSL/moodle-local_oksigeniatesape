@@ -7750,3 +7750,15 @@ body.adapt-still .mission-grid .chapter.as-sheet {
   background: #2b1d4a;
   box-shadow: 0 0 0 2px #b9a6ff;
 }
+
+/* The footprints of the Embrollo on the way to the next place. */
+.map .prints {
+  pointer-events: none;
+}
+
+.map .print ellipse,
+.map .print circle {
+  fill: rgba(43, 29, 74, .78);
+  stroke: rgba(185, 166, 255, .7);
+  stroke-width: .8;
+}

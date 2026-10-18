@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.82.0 (2026-10-18)
+
+- **Fixed**: the table of the stains (0.81.0, which was not installed anywhere) declared three text columns not null with
+  an empty default, which Moodle does not take on a fresh install; now without a default.
+- **The footprints of the Embrollo** on the map, on the way from the place of today to the next one: one each school day
+  since the class lit its last lantern, up to five; they go when the class lights the lantern of the place of today
+  (none with the Embrollo off).
+
 ## 0.81.0 (2026-10-18)
 
 Block 3.2 of the plan: the Embrollo does something every day.

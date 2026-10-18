@@ -360,6 +360,9 @@ final class view {
             'pages' => $pages,
             // Where the class is today, the place of «Today in the valley» (none on a past expedition).
             'today' => $current ? (string) (pacts::chapter($mission)->code ?? '') : '',
+            // The footprints of the Embrollo towards the next place: one each school day since the class lit its last
+            // lantern, up to five.
+            'prints' => $current ? stains::prints($mission) : 0,
         ];
     }
 
