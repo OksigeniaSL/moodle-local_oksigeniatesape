@@ -26,6 +26,7 @@ namespace local_oksigeniatesape\local;
  * - {"n": node, "step": step id} for each step put in an order;
  * - {"n": node, "hint": index} for each hint opened, before answering that node.
  * - {"n": node, "look": id} for each option, item or step looked at with its tool, before answering that node.
+ * - {"n": node, "sniff": 1} when the creature of the student sniffs a choice before it is answered (see sniffs()).
  *
  * What a character brings changes what can be done: the items they carry, the roles of their team, the flags other
  * scenes of the mission left (what they did there) and their own role. The protector's shield stops the points lost to
@@ -69,6 +70,9 @@ final class scene_runner {
 
     /** @var array Node => [option, item or step looked at => true]. */
     private array $looks = [];
+
+    /** @var array Node => the option the creature struck out sniffing: once a play. */
+    private array $sniffed = [];
 
     /** @var array Nodes already answered once, for the evidence of method. */
     private array $methods = [];
@@ -254,6 +258,8 @@ final class scene_runner {
                         // Looking with a tool costs as a hint does.
                         'hints' => array_sum(array_map('count', $this->hints)) + array_sum(array_map('count', $this->looks)),
                         'shielded' => $this->shielded,
+                        // The creature sniffing is free: it is not a hint.
+                        'sniffed' => count($this->sniffed),
                     ];
                 default:
                     $this->fail('unknown type ' . $n['type']);
@@ -341,6 +347,9 @@ final class scene_runner {
             if (!isset($options[$id]) || !$this->has($options[$id]['requires'] ?? null)) {
                 $this->fail('option not available: ' . $id);
             }
+            if (($this->sniffed[$node] ?? null) === $id) {
+                $this->fail('the creature struck out ' . $id);
+            }
             $option = $options[$id];
             $this->points += (int) ($option['points'] ?? 0);
             $correct = $option['correct'] ?? null;
@@ -349,6 +358,10 @@ final class scene_runner {
             $objective = $option['objective'] ?? $n['objective'] ?? null;
             if (empty($n['dilemma'])) {
                 $this->tally($objective, $correct !== false && ($correct === true || ($option['points'] ?? 0) > 0));
+                if ($objective && isset($this->sniffed[$node])) {
+                    // Answered after the creature sniffed: the evidence says so, so that it is not read as a first try.
+                    $this->objectives[$objective]['sniffed'] = ($this->objectives[$objective]['sniffed'] ?? 0) + 1;
+                }
             }
             foreach ($option['effects'] ?? [] as $effect) {
                 if (isset($effect['extraquestion'])) {
@@ -485,9 +498,14 @@ final class scene_runner {
     private function take(string $node): array {
         $event = array_shift($this->events);
         // The hints opened and what was looked at before answering: each one of the node, once.
-        while (is_array($event) && (isset($event['hint']) || isset($event['look']))) {
+        while (is_array($event) && (isset($event['hint']) || isset($event['look']) || isset($event['sniff']))) {
             if (isset($event['look'])) {
                 $this->look($node, $event);
+                $event = array_shift($this->events);
+                continue;
+            }
+            if (isset($event['sniff'])) {
+                $this->sniff($node, $event);
                 $event = array_shift($this->events);
                 continue;
             }
@@ -528,6 +546,43 @@ final class scene_runner {
             $this->fail('nothing to look at in ' . $node);
         }
         $this->looks[$node][$id] = true;
+    }
+
+    /**
+     * The creature of the student sniffs a choice before it is answered: it strikes out one option that is clearly not
+     * it. Once a play, only with the creature hatched, and only where the scene lets it.
+     *
+     * @param string $node
+     * @param array $event
+     */
+    private function sniff(string $node, array $event): void {
+        $struck = ($this->scene['sniff'] ?? true) ? self::sniffs($this->scene['nodes'][$node]) : null;
+        if (($event['n'] ?? null) !== $node || $struck === null || $this->sniffed || !$this->has(['item' => 'creature'])) {
+            $this->fail('nothing to sniff in ' . $node);
+        }
+        $this->sniffed[$node] = $struck;
+    }
+
+    /**
+     * The option the creature strikes out in a choice: the first one the scene marks as clearly not it (obvious), or
+     * else the last that is not right. Only in a question of one answer with three options or more that has a right one;
+     * never in a decision without a right answer. The client strikes out the same one.
+     *
+     * @param array $n The node.
+     * @return string|null The option, or null if the creature cannot sniff here.
+     */
+    public static function sniffs(array $n): ?string {
+        $options = $n['options'] ?? [];
+        $one = ($n['type'] ?? '') === 'choice' && empty($n['dilemma']) && (int) ($n['select']['max'] ?? 1) === 1;
+        if (!$one || count($options) < 3) {
+            return null;
+        }
+        $wrong = array_values(array_filter($options, fn($o) => ($o['correct'] ?? null) === false && empty($o['requires'])));
+        if (!$wrong) {
+            return null;
+        }
+        $obvious = array_values(array_filter($wrong, fn($o) => !empty($o['obvious'])));
+        return (string) ($obvious ? $obvious[0]['id'] : end($wrong)['id']);
     }
 
     /**

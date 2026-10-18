@@ -582,10 +582,12 @@
           return '<span class="tag">' + esc(x) + '</span>';
         }).join(' ') + '</span></li>';
       }).join('') + '</ul>' : '';
+      // As on the class screen: with tablets, the first turn waits until somebody is in.
+      var empty = l && !l.round && l.mode === 'phones' && !l.joined;
       box.innerHTML = '<p>' + esc(line) + '</p>' + how + marks + '<div class="actions" style="justify-content:flex-start">' +
         buttons.map(function(b, i) {
-          return '<button type="button" class="btn ' + (i ? 'btn-soft' : 'btn-main') + '" data-remote="' + b[0] + '">' +
-            esc(t(b[1])) + '</button>';
+          return '<button type="button" class="btn ' + (i ? 'btn-soft' : 'btn-main') + '" data-remote="' + b[0] + '"' +
+            (empty && b[0] === 'next' ? ' disabled' : '') + '>' + esc(t(b[1])) + '</button>';
         }).join('') + '</div>';
       box.querySelectorAll('[data-remotemark]').forEach(function(b) {
         b.onclick = function() {

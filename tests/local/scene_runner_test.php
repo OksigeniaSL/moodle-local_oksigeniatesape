@@ -45,6 +45,62 @@ final class scene_runner_test extends \advanced_testcase {
     }
 
     /**
+     * The creature sniffs a choice: it strikes out the option marked as clearly not it, once a play, with the creature
+     * hatched; the evidence says the answer came after it.
+     */
+    public function test_the_creature_sniffs_out_one_option_once_a_play(): void {
+        $scene = ['id' => 'T', 'start' => 'q', 'nodes' => [
+            'q' => ['type' => 'choice', 'prompt' => '?', 'objective' => 'SV-01', 'options' => [
+                ['id' => 'a', 'label' => 'A', 'correct' => true, 'points' => 2],
+                ['id' => 'b', 'label' => 'B', 'correct' => false],
+                ['id' => 'c', 'label' => 'C', 'correct' => false, 'obvious' => true],
+            ], 'next' => 'r'],
+            'r' => ['type' => 'choice', 'prompt' => '?', 'objective' => 'SV-01', 'options' => [
+                ['id' => 'x', 'label' => 'X', 'correct' => true, 'points' => 2],
+                ['id' => 'y', 'label' => 'Y', 'correct' => false],
+                ['id' => 'z', 'label' => 'Z', 'correct' => false],
+            ], 'next' => 'fin'],
+            'fin' => ['type' => 'ending', 'outcome' => 'success', 'effects' => [['gems' => 1]]],
+        ]];
+        $this->assertSame('c', scene_runner::sniffs($scene['nodes']['q']));
+        // Without an obvious one, the last that is not right.
+        $this->assertSame('z', scene_runner::sniffs($scene['nodes']['r']));
+        $sniffed = [['n' => 'q', 'sniff' => 1], ['n' => 'q', 'pick' => ['a']], ['n' => 'r', 'pick' => ['x']]];
+        $result = (new scene_runner($scene, ['creature']))->run($sniffed);
+        $this->assertSame(1, $result['sniffed']);
+        $this->assertSame(0, $result['hints']);
+        $this->assertSame(['ok' => 2, 'total' => 2, 'sniffed' => 1], $result['objectives']['SV-01']);
+        $fails = [
+            'without the creature' => [[], $sniffed],
+            'twice in a play' => [['creature'], [['n' => 'q', 'sniff' => 1], ['n' => 'q', 'pick' => ['a']],
+                ['n' => 'r', 'sniff' => 1], ['n' => 'r', 'pick' => ['x']]]],
+            'the option it struck out' => [['creature'], [['n' => 'q', 'sniff' => 1], ['n' => 'q', 'pick' => ['c']],
+                ['n' => 'r', 'pick' => ['x']]]],
+        ];
+        foreach ($fails as $why => [$items, $events]) {
+            try {
+                (new scene_runner($scene, $items))->run($events);
+                $this->fail('Sniffed ' . $why);
+            } catch (\moodle_exception $e) {
+                $this->assertSame('invalidscenepath', $e->errorcode, $why);
+            }
+        }
+        // Not where the scene does not let it, nor in a decision without a right answer, nor with two options.
+        $this->expectException(\moodle_exception::class);
+        (new scene_runner(['sniff' => false] + $scene, ['creature']))->run($sniffed);
+    }
+
+    public function test_the_creature_does_not_sniff_a_dilemma_or_two_options(): void {
+        $dilemma = ['type' => 'choice', 'dilemma' => true, 'options' => [['id' => 'a'], ['id' => 'b'], ['id' => 'c']]];
+        $this->assertNull(scene_runner::sniffs($dilemma));
+        $two = ['type' => 'choice', 'options' => [['id' => 'a', 'correct' => true], ['id' => 'b', 'correct' => false]]];
+        $this->assertNull(scene_runner::sniffs($two));
+        $many = ['type' => 'choice', 'select' => ['max' => 2], 'options' => [['id' => 'a', 'correct' => true],
+            ['id' => 'b', 'correct' => false], ['id' => 'c', 'correct' => false]]];
+        $this->assertNull(scene_runner::sniffs($many));
+    }
+
+    /**
      * Every scene of the mission can be played to a good ending.
      *
      * @param string $code

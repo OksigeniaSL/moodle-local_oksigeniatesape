@@ -62,6 +62,42 @@ final class scenes_test extends \advanced_testcase {
         return $w;
     }
 
+    public function test_the_creature_grows_once_in_the_middle_of_the_mission(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $w = $this->make_class(1);
+        $char = characters::get($w->users[0]->id);
+        $member = engine::member($char, $w->course->id);
+        // Not before it hatches, and that does not use up its growing.
+        $this->assertFalse(scenes::grow_mid($char, $member, $w->mission, time()));
+        $DB->set_field(self::T . 'char', 'creaturestage', 1, ['id' => $char->id]);
+        $this->assertTrue(scenes::grow_mid($char, $member, $w->mission, time()));
+        $this->assertEquals(2, $DB->get_field(self::T . 'char', 'creaturestage', ['id' => $char->id]));
+        // Once a mission: the third lantern and the first minigame won do not add up.
+        $this->assertFalse(scenes::grow_mid($char, $member, $w->mission, time()));
+        $this->assertEquals(2, $DB->get_field(self::T . 'char', 'creaturestage', ['id' => $char->id]));
+        // Never past its last stage.
+        $DB->delete_records(self::T . 'found', ['charid' => $char->id, 'kind' => 'grow']);
+        $DB->set_field(self::T . 'char', 'creaturestage', scenes::CREATURE_MAX_STAGE, ['id' => $char->id]);
+        $this->assertFalse(scenes::grow_mid($char, $member, $w->mission, time()));
+    }
+
+    public function test_the_third_lantern_makes_the_creature_grow(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $w = $this->make_class(1);
+        $user = $w->users[0];
+        // The clearing hatches it; with the library and the forest, three lanterns: it grows.
+        $grew = [];
+        foreach (['C1-1', 'C1-2', 'C2-1', 'C2-2', 'C3-1', 'C3-2', 'C3-3'] as $code) {
+            $grew[$code] = !empty($this->play($w, $user, $code)['rewards']['grew']);
+        }
+        $char = characters::get($user->id);
+        $this->assertEquals(3, $DB->count_records(self::T . 'found', ['charid' => $char->id, 'kind' => 'lantern']));
+        $this->assertSame(['C3-3'], array_keys(array_filter($grew)));
+        $this->assertEquals(2, $char->creaturestage);
+    }
+
     /**
      * Plays a scene of the mission well.
      *

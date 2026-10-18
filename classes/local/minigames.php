@@ -479,7 +479,7 @@ final class minigames {
         ];
         $playrecord->id = $DB->insert_record(self::T . 'minigame', $playrecord);
         $result = ['success' => $success, 'caught' => $caught, 'missed' => $missed, 'goal' => $game['goal'],
-            'tries' => $tries, 'first' => false, 'items' => [], 'coat' => false, 'gems' => 0];
+            'tries' => $tries, 'first' => false, 'items' => [], 'coat' => false, 'gems' => 0, 'grew' => false];
         $key = ['charid' => $char->id, 'missionid' => $mission->id, 'kind' => 'game', 'code' => $code];
         if ($success && !$DB->record_exists(self::T . 'found', $key)) {
             $DB->insert_record(self::T . 'found', (object) ($key + ['courseid' => $courseid, 'timecreated' => $now]));
@@ -493,6 +493,8 @@ final class minigames {
             if (!empty($reward['gems']) && engine::gems($member, (int) $reward['gems'], 'minigame', 0, 0, 0, $now)) {
                 $result['gems'] = (int) $reward['gems'];
             }
+            // The first minigame won makes the creature grow in the middle of the mission (unless the lanterns did).
+            $result['grew'] = scenes::grow_mid($char, $member, $mission, $now);
         }
         if ($playid !== '') {
             $DB->set_field(self::T . 'minigame', 'detail', json_encode($detail + ['result' => $result]), ['id' => $playrecord->id]);

@@ -970,8 +970,11 @@
     }
     var paint = PAINTS[c.paint];
     var h = paint ? paint.hue : Number(c.hue) || 0;
-    var st = Math.max(1, Math.min(4, stage || 1));
-    var art = T.artUrl(['creature.' + st + '.' + (c.coat || 'none'), 'creature.' + st, 'creature']);
+    // Up to five stages; a pack that paints four shows the fourth for the fifth.
+    var st = Math.max(1, Math.min(5, stage || 1));
+    var low = Math.min(4, st);
+    var art = T.artUrl(['creature.' + st + '.' + (c.coat || 'none'), 'creature.' + st, 'creature.' + low + '.' +
+      (c.coat || 'none'), 'creature.' + low, 'creature']);
     if (art) {
       // One image for every creature: its own hue makes it unique, or the paint bought in the market.
       return '<img class="creature art' + (big ? ' born' : '') + '" src="' + T.esc(art) + '" alt="' + T.esc(c.name || '') +

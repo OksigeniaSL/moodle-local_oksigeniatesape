@@ -289,12 +289,14 @@ final class competencies {
                 continue;
             }
             $a = ['scene' => $title, 'ok' => (int) $o['ok'], 'total' => (int) $o['total'], 'attempt' => $attempt];
+            // After the creature sniffed, the evidence says so: those right answers were not quite alone.
+            $sniffed = empty($o['sniffed']) ? '' : '_sniffed';
             api::add_evidence(
                 $userid,
                 $links[$code],
                 $context,
                 evidence::ACTION_LOG,
-                $team ? 'evidence_scene_team' : 'evidence_scene',
+                ($team ? 'evidence_scene_team' : 'evidence_scene') . $sniffed,
                 'local_oksigeniatesape',
                 $a,
                 false,

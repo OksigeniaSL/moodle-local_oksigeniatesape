@@ -36,7 +36,10 @@ final class scenes {
     public const CLASS_LANTERN_SHARE = 0.5;
 
     /** @var int Last stage of the creature. */
-    public const CREATURE_MAX_STAGE = 4;
+    public const CREATURE_MAX_STAGE = 5;
+
+    /** @var int The lanterns of a student with which the creature grows in the middle of the mission. */
+    public const GROW_LANTERNS = 3;
 
     /** @var int Step whose scenes everybody sees where there are none for their own step. */
     public const CORE_STEP = 2;
@@ -232,6 +235,10 @@ final class scenes {
         if ($mission) {
             $where = "charid = ? AND missionid = ? AND kind = 'flag'";
             $flags = $DB->get_fieldset_select(self::T . 'found', 'code', $where, [$char->id, $mission->id]);
+        }
+        // The creature, once hatched, goes with the hero as one more thing they carry: it can sniff in the scenes.
+        if ((int) ($char->creaturestage ?? 0) >= 1) {
+            $items[] = 'creature';
         }
         return [$items, array_values(array_unique($roles)), array_values($flags), (string) $char->role];
     }
@@ -757,6 +764,12 @@ final class scenes {
             }
         }
         $rewards['lanterns'] = array_values(array_unique($rewards['lanterns']));
+        // With their third lantern, the creature grows in the middle of the mission (unless a minigame did it first).
+        $lanterns = $rewards['lanterns'] ? $DB->count_records(self::T . 'found', ['charid' => $char->id,
+            'missionid' => $mission->id, 'kind' => 'lantern']) : 0;
+        if ($lanterns >= self::GROW_LANTERNS && self::grow_mid($char, $member, $mission, $now)) {
+            $rewards['grew'] = true;
+        }
         if ($rewards['lanterns']) {
             // The last lantern may give the badge of the mission.
             badges::check((int) $member->courseid, (int) $char->userid);
@@ -816,6 +829,27 @@ final class scenes {
             return false;
         }
         $DB->insert_record(self::T . 'found', (object) ($key + ['courseid' => $member->courseid, 'timecreated' => $now]));
+        return true;
+    }
+
+    /**
+     * The creature grows once in the middle of the mission: with the third lantern of the student or the first minigame
+     * they win, whichever comes first. Not before it hatches, and never past its last stage.
+     *
+     * @param \stdClass $char
+     * @param \stdClass $member
+     * @param \stdClass $mission
+     * @param int $now
+     * @return bool Whether it grew now.
+     */
+    public static function grow_mid(\stdClass $char, \stdClass $member, \stdClass $mission, int $now): bool {
+        global $DB;
+        $stage = (int) $DB->get_field(self::T . 'char', 'creaturestage', ['id' => $char->id]);
+        if ($stage < 1 || $stage >= self::CREATURE_MAX_STAGE || !self::found($char, $member, $mission, 'grow', 'mid', $now)) {
+            return false;
+        }
+        $DB->set_field(self::T . 'char', 'creaturestage', $stage + 1, ['id' => $char->id]);
+        $char->creaturestage = $stage + 1;
         return true;
     }
 

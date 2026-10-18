@@ -646,5 +646,28 @@ function xmldb_local_oksigeniatesape_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026101727, 'local', 'oksigeniatesape');
     }
 
+    if ($oldversion < 2026101802) {
+        // The creature grows in the middle of the mission (0.79.0): whoever already had three lanterns of a mission gets
+        // it now, once, as they would have.
+        $sql = "SELECT charid, missionid, MAX(courseid) AS courseid
+                  FROM {local_oksigeniatesape_found}
+                 WHERE kind = 'lantern'
+              GROUP BY charid, missionid
+                HAVING COUNT(1) >= 3";
+        $rs = $DB->get_recordset_sql($sql);
+        foreach ($rs as $row) {
+            $key = ['charid' => $row->charid, 'missionid' => $row->missionid, 'kind' => 'grow', 'code' => 'mid'];
+            $stage = (int) $DB->get_field('local_oksigeniatesape_char', 'creaturestage', ['id' => $row->charid]);
+            if ($stage < 1 || $stage >= 5 || $DB->record_exists('local_oksigeniatesape_found', $key)) {
+                continue;
+            }
+            $DB->insert_record('local_oksigeniatesape_found', (object) ($key + ['courseid' => $row->courseid,
+                'timecreated' => time()]));
+            $DB->set_field('local_oksigeniatesape_char', 'creaturestage', $stage + 1, ['id' => $row->charid]);
+        }
+        $rs->close();
+        upgrade_plugin_savepoint(true, 2026101802, 'local', 'oksigeniatesape');
+    }
+
     return true;
 }

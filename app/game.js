@@ -1141,16 +1141,25 @@
     }
     var walk = step.from ? ' walking" style="--walk-x:' + (step.from.x - current.x) + 'px;--walk-y:' +
       (step.from.y - current.y) + 'px;animation-delay:' + (0.3 + step.delay) + 's' : '';
-    // The creature goes with the hero, at their feet.
-    var pet = c.creature ? '<foreignObject x="' + (current.x - 106) + '" y="' + (current.y - 6) + '" width="34" height="34" ' +
-      'class="me-creature' + walk + '"><div xmlns="http://www.w3.org/1999/xhtml">' +
+    // The creature goes with the hero, at their feet; if today's place is another one, a little ahead on the way to it.
+    var today = m.today && m.today !== current.code ? m.chapters.filter(function(ch) {
+      return ch.code === m.today;
+    })[0] : null;
+    var ahead = today && !step.from ? {x: Math.round(0.28 * (today.x - current.x)), y: Math.round(0.28 * (today.y - current.y))} :
+      {x: 0, y: 0};
+    var pet = c.creature ? '<foreignObject x="' + (current.x - 106 + ahead.x) + '" y="' + (current.y - 6 + ahead.y) + '" ' +
+      'width="34" height="34" class="me-creature' + (today && !step.from ? ' ahead' : '') + walk + '"><div ' +
+      'xmlns="http://www.w3.org/1999/xhtml">' +
       T.creature(c.creature, c.creaturestage) + '</div></foreignObject>' : '';
     // The page of the day: the creature is hungry, over the hero.
     var p = state.world.page;
-    // Above the hero and clear of the «Today» over the place.
-    var hungry = p && !p.answered && c.creature && !state.visit ? '<foreignObject x="' + Math.max(4, current.x - 140) + '" y="' +
-      (current.y - 96) + '" width="140" height="40" class="hunger"><div xmlns="http://www.w3.org/1999/xhtml"><button type="button" ' +
-      'class="hunger-bubble" data-feed>' + esc(t('app_feed_bubble')) + '<span class="sr-only"> ' +
+    // Near the hero, where it covers no place nor its name: a touch on a place always opens the place.
+    var spot = hungerSpot(m.chapters, current);
+    var hungry = p && !p.answered && c.creature && !state.visit ? '<foreignObject x="' + spot.x + '" y="' +
+      spot.y + '" width="' + spot.w + '" height="40" class="hunger' + (spot.small ? ' small' : '') + '"><div ' +
+      'xmlns="http://www.w3.org/1999/xhtml"><button type="button" class="hunger-bubble" data-feed title="' +
+      esc(t('app_feed_bubble')) + '">' + (spot.small ? '<span aria-hidden="true">!</span>' : esc(t('app_feed_bubble'))) +
+      '<span class="sr-only"> ' + (spot.small ? esc(t('app_feed_bubble')) + ' ' : '') +
       esc(t('app_page_hungry', creatureName(c))) + '</span></button></div></foreignObject>' : '';
     var me = '<foreignObject x="' + (current.x - 74) + '" y="' + (current.y - 22) + '" width="44" height="44" class="me-marker' +
       walk + '">' +
@@ -1242,6 +1251,41 @@
    * @param {Element} g The place.
    * @param {Object} ch
    */
+  /**
+   * Where the bubble of the hungry creature goes on the map: around the hero (over it, to its left, under it, to its
+   * right), the first place that covers no place of the map nor its name; over the hero if none is free.
+   *
+   * @param {Object[]} chapters
+   * @param {Object} at The place the hero is in.
+   * @return {Object} x, y of the bubble (140 × 40).
+   */
+  function hungerSpot(chapters, at) {
+    // The market and the album sit in the corner at the top on the left.
+    var corner = state.world.market && state.world.market.length || state.world.album;
+    var free = function(x, y, w) {
+      return x >= 4 && x + w <= 396 && y >= 4 && !(corner && x < 184 && y < 112) && chapters.every(function(ch) {
+        // What a touch on a place takes: its lantern and, under it, its name (as the map draws them).
+        return x + w < ch.x - 84 || x > ch.x + 84 || y + 40 < ch.y - 56 || y > ch.y + 68;
+      });
+    };
+    var big = [[at.x - 140, at.y - 100], [at.x - 228, at.y - 40], [at.x - 140, at.y + 72], [at.x + 88, at.y - 100],
+      [at.x + 88, at.y + 72], [at.x - 228, at.y + 20], [at.x + 88, at.y - 20]];
+    for (var i = 0; i < big.length; i++) {
+      if (free(big[i][0], big[i][1], 140)) {
+        return {x: big[i][0], y: big[i][1], w: 140, small: false};
+      }
+    }
+    // No room for the bubble: a small round one beside the creature.
+    var small = [[at.x - 132, at.y - 50], [at.x - 132, at.y + 10], [at.x - 132, at.y - 110], [at.x + 90, at.y - 50],
+      [at.x + 90, at.y + 10]];
+    for (var j = 0; j < small.length; j++) {
+      if (free(small[j][0], small[j][1], 40)) {
+        return {x: small[j][0], y: small[j][1], w: 40, small: true};
+      }
+    }
+    return {x: Math.max(4, at.x - 132), y: at.y - 50, w: 40, small: true};
+  }
+
   function walkTo(g, ch) {
     var wrap = app.querySelector('.map-wrap');
     if (!wrap) {

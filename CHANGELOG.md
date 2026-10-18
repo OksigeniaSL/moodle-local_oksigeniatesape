@@ -1,5 +1,39 @@
 # Changelog
 
+## 0.79.0 (2026-10-18)
+
+What Campus saw trying the battle from the teacher's phone, and the version of 0.78.0, which went out without it (its
+commit kept 0.77.0 in `version.php`, so sites would not have upgraded: it was not installed anywhere).
+
+- From the phone, «First turn» waits until somebody is in, with tablets, as on the class screen.
+- Lost, the Embrollo rolls away up the tower and stays there, small and faded, laughing from far: the class screen is
+  not left with an empty place.
+
+Block 3.3 of the plan: the creature acts and grows.
+
+- **The creature sniffs**: in a scene, once a play and for free, the student can let their creature sniff a question of
+  one answer with three options or more; it strikes out one that is clearly not it (the one the scene marks as
+  `obvious`, or else the last that is not right). Never in a decision without a right answer, and not in a scene that
+  says `sniff: false`. The server plays it again the same way, and the evidence of the competencies says «with the
+  creature sniffing», so that the teacher does not read it as a right answer at the first try.
+- **It grows in the middle of the mission**: once, with the third lantern of the student or the first minigame they win,
+  whichever comes first; and again in the final battle. Up to five stages (a pack that paints four shows the fourth for
+  the fifth). Whoever already had three lanterns of a mission sees it grow with the upgrade.
+- **It reacts**: at the end of a scene it jumps with joy when it went well, and gets ink on its nose when it is to be
+  tried again; on the map, when today's place is another one, it waits a little ahead on the way there.
+- **The bubble of the hungry creature** on the map goes where it covers no place nor its name (with no room, a small
+  round one beside the creature): a touch on a place always opens the place.
+
+## 0.78.0 (2026-10-18)
+
+The rest of block 2.2 of the plan: losing opens story.
+
+- **«The night after»**, a scene of the pilot mission (version 33) in the clearing that is there only while the
+  Embrollo is out after a battle lost, until the class wins the rematch: the druid tells something nobody knew about
+  the Embrollo, and the class decides what to do that night (a decision without a right answer). The class screen
+  offers it under «Today in the valley», beside the letter that boasts; each student finds it in the clearing, out of
+  the fold. A scene says so with `after: lost`, and the mission names it in `battle.lost.scene`.
+
 ## 0.77.0 (2026-10-17)
 
 The rest of block 2.3 of the plan: more ways to undo a knot, and the hero in the battle.

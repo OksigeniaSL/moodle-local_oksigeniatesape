@@ -635,7 +635,7 @@
     function start(from) {
       run = {node: from || sc.start, from: from || '', events: [], extra: 0, extraused: {}, hints: 0, shield: false,
         flags: (data.flags || []).slice(), opened: {}, spent: 0, trailed: {}, turn: 0, handfor: {}, looks: {}, tried: {},
-        keep: '', clues: []};
+        keep: '', clues: [], sniffed: {}};
       // Back from an ending that sent here: what it left written in pencil shows over the question.
       if (from) {
         Object.keys(sc.nodes).some(function(id) {
@@ -1187,6 +1187,50 @@
       draw();
     }
 
+    /**
+     * The option the creature strikes out sniffing a choice, as the server decides it: the first the scene marks as
+     * clearly not it (obvious), or else the last that is not right; only in a question of one answer with three options
+     * or more, never in a decision without a right answer. Null where it cannot sniff.
+     *
+     * @param {Object} n
+     * @return {string|null}
+     */
+    function sniffs(n) {
+      var one = !n.dilemma && ((n.select && n.select.max) || 1) === 1;
+      if (!one || (n.options || []).length < 3) {
+        return null;
+      }
+      var wrong = n.options.filter(function(o) {
+        return o.correct === false && !o.requires;
+      });
+      var obvious = wrong.filter(function(o) {
+        return o.obvious;
+      });
+      return obvious.length ? obvious[0].id : wrong.length ? wrong[wrong.length - 1].id : null;
+    }
+
+    /**
+     * The creature can sniff here: hatched, in a scene that lets it, not used yet in this play, and with something to
+     * strike out that is still there.
+     *
+     * @param {Object} n
+     * @param {string[]} tried
+     * @return {string|null} The option it would strike out.
+     */
+    function canSniff(n, tried) {
+      var c = !cm && world && world.character;
+      if (!c || !(c.creaturestage >= 1) || sc.sniff === false || Object.keys(run.sniffed).length) {
+        return null;
+      }
+      var struck = sniffs(n);
+      return struck && tried.indexOf(struck) < 0 ? struck : null;
+    }
+
+    function sniffedOption(o) {
+      return '<button class="opt sniffed" type="button" disabled><s>' + esc(tx(o.label)) + '</s><small>' +
+        esc(t('app_sniffed', creatureName())) + '</small></button>';
+    }
+
     function choice(n) {
       var max = (n.select && n.select.max) || 1;
       var min = (n.select && n.select.min) || max;
@@ -1218,6 +1262,9 @@
           return '<button class="opt crossed" type="button" disabled><s>' + esc(tx(o.label)) + '</s><small>' +
             esc(t('app_clue_crossed')) + '</small></button>';
         }
+        if (run.sniffed[run.node] === o.id) {
+          return sniffedOption(o);
+        }
         var letter = cm ? '<span class="opt-letter">' + LETTERS[open.indexOf(o)] + '</span>' : '';
         // What only the scout sees is there to be found: it shows when they follow the trail.
         var trail = !cm && o.requires && o.requires.role === 'scout' && !run.trailed[run.node];
@@ -1229,7 +1276,11 @@
         '</p>' +
         (voting ? '<div class="class-vote" data-vote><button class="btn btn-soft" data-voteopen>' +
         esc(t('board_scene_voteopen')) + '</button></div>' : '') +
-        '<div class="opts">' + opts + '</div>' + (multi ? '<div class="counter" data-count>' + esc(t('app_chosen', '0/' + max)) +
+        '<div class="opts">' + opts + '</div>' + (canSniff(n, tried) ? '<div class="sniff-row"><button type="button" ' +
+        'class="btn btn-soft sniff-btn" data-sniff>' + '<span class="sniff-pet" aria-hidden="true">' +
+        T.creature(world.character.creature, world.character.creaturestage) + '</span>' +
+        esc(t('app_sniff', creatureName())) + '</button></div>' : '') +
+        (multi ? '<div class="counter" data-count>' + esc(t('app_chosen', '0/' + max)) +
         '</div><div class="actions"><button class="btn btn-main" data-confirm disabled>' + esc(t('app_confirm')) +
         '</button></div>' : '') + '<div data-out></div>');
       hintArea(n, body);
@@ -1243,6 +1294,28 @@
         })[0];
       }
       lookTools(n.options, body);
+      var sniff = body.querySelector('[data-sniff]');
+      if (sniff) {
+        sniff.onclick = function() {
+          // Free, once a play: it strikes out one option that is clearly not it, and the evidence says so.
+          var struck = canSniff(n, tried);
+          if (!struck) {
+            return;
+          }
+          run.events.push({n: run.node, sniff: 1});
+          run.sniffed[run.node] = struck;
+          var b = body.querySelector('.opt[data-id="' + struck + '"]');
+          if (b) {
+            b.outerHTML = sniffedOption(pick(struck));
+          }
+          sniff.closest('.sniff-row').classList.add('done');
+          sniff.disabled = true;
+          if (T.fx) {
+            T.fx.sound('tap');
+          }
+          T.toast(esc(t('app_sniffed', creatureName())));
+        };
+      }
       body.querySelectorAll('.opt[data-id]').forEach(function(b) {
         b.onclick = function() {
           var id = b.dataset.id;
@@ -1839,7 +1912,11 @@
           // What this play left (memory between scenes) counts for the next one.
           data.flags = run.flags.slice();
         }
-        var body = show(picture(n.image || sceneImage(), data) + '<p class="scene-text">' + esc(tx(n.text)) + '</p>' + hatch + levelup +
+        // The creature reacts: it jumps when it went well; when it is to be tried again, it got ink on its nose.
+        var pet = before.creature && !r.hatched ? '<div class="end-creature ' + (success ? 'happy' : 'smudged') + '">' +
+          '<span class="end-pet" aria-hidden="true">' + T.creature(before.creature, world.character.creaturestage) +
+          '</span><small>' + esc(t(success ? 'app_creature_happy' : 'app_creature_smudged', creatureName())) + '</small></div>' : '';
+        var body = show(picture(n.image || sceneImage(), data) + '<p class="scene-text">' + esc(tx(n.text)) + '</p>' + pet + hatch + levelup +
           (lines.length ? '<div class="conseq good"><span class="what">' + esc(t('app_forcharacter')) + '</span>' +
           lines.map(esc).join('<br>') + '</div>' : '') + done + better(result) + whatif(success) + '<div class="actions">' +
           (success ?
