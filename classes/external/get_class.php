@@ -154,6 +154,11 @@ final class get_class extends external_api {
             'pacts' => structures::teacher_pacts(),
             'pactspending' => new external_value(PARAM_INT, 'Commitments still to mark'),
             'namespending' => structures::names_pending(),
+            'powersqueue' => new external_multiple_structure(
+                structures::power_request(),
+                'Requests of powers waiting, for who approves them',
+                VALUE_OPTIONAL
+            ),
             'today' => structures::today(),
         ]);
     }

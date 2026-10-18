@@ -794,6 +794,23 @@ body.tesape {
   margin: 6px 2px 12px;
 }
 
+/* The tray of what waits for the teacher: one group after another. */
+.inbox-group + .inbox-group {
+  margin-top: 18px;
+}
+
+.inbox-group .section-title {
+  margin: 0 2px 6px;
+}
+
+.inbox-group h3 {
+  margin: 0;
+}
+
+.inbox-card > .chips {
+  margin-top: 14px;
+}
+
 .banner {
   display: flex;
   gap: 14px;

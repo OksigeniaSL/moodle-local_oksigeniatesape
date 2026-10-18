@@ -522,7 +522,7 @@ final class powers {
      * The requests of a course for its teachers: those waiting, and the latest decided.
      *
      * @param int $courseid
-     * @param int $limit Decided requests to show.
+     * @param int $limit Decided requests to show (0: only those waiting).
      * @return array
      */
     public static function requests(int $courseid, int $limit = 20): array {
@@ -536,12 +536,12 @@ final class powers {
                   JOIN {user} u ON u.id = c.userid
                  WHERE m.courseid = ? AND ';
         $pending = $DB->get_records_sql($sql . "r.status = 'pending' ORDER BY r.timecreated, r.id", [$courseid]);
-        $decided = $DB->get_records_sql(
+        $decided = $limit ? $DB->get_records_sql(
             $sql . "r.status <> 'pending' ORDER BY r.timedecided DESC, r.id DESC",
             [$courseid],
             0,
             $limit
-        );
+        ) : [];
         $targets = self::target_names(array_merge($pending, $decided), $courseid);
         $out = function ($request) use ($catalog, $targets) {
             $power = $catalog[$request->powerid] ?? null;

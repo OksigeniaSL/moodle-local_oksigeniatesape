@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.97.0 (2026-10-18)
+
+- **One tray of what waits** at the top of the class tab of the panel: the own names of heroes and creatures, the
+  powers asked (with who asks and for whom), the team plays of today, and links to the commitments to mark, the ideas
+  not read and a classroom challenge validated by halves. Each one is answered there, and «Approve all» takes several
+  names or powers at once.
+- **The panel answers at once**: the answers of the tray change only the tray, and saber, gems, breath or energy given
+  to students are drawn from the answer of the server (level, energy, breath and state of each one, now in what
+  `award` returns), without reading the whole class again; only the card of the teams is read again, quietly.
+- `decide_name` takes several names (one that a classmate already has stays waiting) and `decide_power` several
+  requests (those already answered stay as they are).
+
 ## 0.96.0 (2026-10-18)
 
 - **A battle rehearsal**: on the class screen, «Battle rehearsal» plays three test questions («What colour is the sky

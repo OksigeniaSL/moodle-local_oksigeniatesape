@@ -16,6 +16,9 @@
 
 namespace local_oksigeniatesape\local;
 
+use core_external\external_api;
+use local_oksigeniatesape\external\decide_power;
+
 /**
  * Tests for powers: asking with breath, the teacher's answer and what each power does in the game.
  *
@@ -119,6 +122,32 @@ final class powers_test extends \advanced_testcase {
         $this->assertSame(0, powers::pending_count($w->course->id));
         $this->expectException(\moodle_exception::class);
         powers::decide((int) $request->id, true, $w->teacher->id);
+    }
+
+    public function test_the_teacher_approves_several_requests_at_once(): void {
+        $this->resetAfterTest();
+        $w = $this->make_team();
+        $hint = powers::request($w->course->id, $w->users['sage']->id, $this->power($w, 'hint')->id);
+        $breather = powers::request(
+            $w->course->id,
+            $w->users['healer']->id,
+            $this->power($w, 'breather')->id,
+            $w->users['scout']->id
+        );
+        $this->setUser($w->teacher);
+        // One of them was answered already, by another teacher: it stays as it was.
+        powers::decide((int) $hint->id, false, $w->teacher->id);
+        // The class view lists those waiting for who approves them.
+        $this->assertSame([(int) $breather->id], array_column(view::teacher($w->course->id)['powersqueue'], 'id'));
+        $result = external_api::clean_returnvalue(
+            decide_power::execute_returns(),
+            decide_power::execute($w->course->id, 0, true, [(int) $hint->id, (int) $breather->id])
+        );
+        $this->assertSame([], $result['pending']);
+        $status = array_column($result['decided'], 'status', 'id');
+        $this->assertSame('rejected', $status[(int) $hint->id]);
+        $this->assertContains($status[(int) $breather->id], ['approved', 'used']);
+        $this->assertArrayNotHasKey('powersqueue', view::teacher($w->course->id));
     }
 
     public function test_cheap_powers_go_through_by_themselves_and_can_be_taken_back(): void {

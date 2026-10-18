@@ -377,16 +377,6 @@
     if (!today) {
       return '';
     }
-    var waiting = [];
-    if (d.powerspending) {
-      waiting.push(['powers', t('teach_today_powers', d.powerspending)]);
-    }
-    if (d.pactspending) {
-      waiting.push(['challenges', t('teach_today_pacts', d.pactspending)]);
-    }
-    if (d.ideasunread) {
-      waiting.push(['ideas', t('teach_today_ideas', d.ideasunread)]);
-    }
     var sessions = today.sessions.map(function(x) {
       return '<li><b>' + esc(t('board_today_session', x.n)) + '</b>' + (x.minutes ? ' · ' + esc(t('app_minutes', x.minutes)) :
         '') + '<p>' + esc(x.do) + '</p>' + (x.materials ? '<small>' + esc(t('board_today_materials', x.materials)) +
@@ -402,34 +392,228 @@
       '</b> ' + esc(t('teach_today_night_help', today.lostscene.title)) + '</p>' : '') +
       (sessions ? '<ol class="today-sessions">' + sessions + '</ol>' : '') +
       (today.offscreen ? '<p class="help-soft">' + esc(t('board_today_offscreen', today.offscreen)) + '</p>' : '') +
-      (waiting.length ? '<div class="chips">' + waiting.map(function(x) {
-        return '<button type="button" class="chip" data-goto="' + x[0] + '">' + esc(x[1]) + '</button>';
-      }).join('') + '</div>' : '') + '</section>';
+      '</section>';
   }
 
   /**
-   * Own names the students wrote for their hero or their creature: nobody else sees them until a teacher takes them.
+   * What waits for the teacher, in one tray: the own names the students wrote (nobody else sees them until a teacher
+   * takes them), the powers asked, the team plays of today, and where the rest waits. Each thing, with its answer here.
    *
    * @return {string}
    */
-  function namesCard() {
+  function inboxCard() {
     var d = state.data;
-    if (!d.namespending || !d.namespending.length) {
-      return '';
-    }
+    var marks = can('award');
     var names = {};
     d.students.forEach(function(s) {
       names[s.userid] = s.fullname;
     });
-    var marks = can('award');
-    return '<section class="card" style="margin-bottom:16px"><h2>' + esc(t('teach_names')) + '</h2><p style="color:' +
-      'var(--text-soft)">' + esc(t('teach_names_help')) + '</p><ul class="list">' + d.namespending.map(function(x) {
-        var key = x.userid + ':' + x.what;
-        return '<li class="item"><span class="grow"><b>' + esc(x.name) + '</b><small>' + esc(names[x.userid] || '') + ' · ' +
-          esc(t('teach_name_' + x.what)) + '</small></span>' + (marks ? '<span class="row-actions"><button class="chip" ' +
-          'type="button" data-namedecide="' + key + ':1">' + esc(t('teach_name_ok')) + '</button><button class="chip" ' +
-          'type="button" data-namedecide="' + key + ':0">' + esc(t('teach_name_no')) + '</button></span>' : '') + '</li>';
-      }).join('') + '</ul></section>';
+    var group = function(title, help, all, items) {
+      return '<div class="inbox-group"><div class="section-title"><h3>' + esc(title) + '</h3>' + all + '</div>' +
+        (help ? '<p class="help-soft">' + esc(help) + '</p>' : '') + '<ul class="list">' + items.join('') + '</ul></div>';
+    };
+    var groups = [];
+    var waiting = d.namespending || [];
+    if (waiting.length) {
+      groups.push(group(t('teach_inbox_names', waiting.length), t('teach_names_help'), marks && waiting.length > 1 ?
+        '<button class="btn btn-soft" type="button" data-inboxnames>' + esc(t('teach_inbox_names_all', waiting.length)) +
+        '</button>' : '', waiting.map(function(x) {
+          var key = x.userid + ':' + x.what;
+          return '<li class="item"><span class="grow"><b>' + esc(x.name) + '</b><small>' + esc(names[x.userid] || '') + ' · ' +
+            esc(t('teach_name_' + x.what)) + '</small></span>' + (marks ? '<span class="row-actions"><button class="chip" ' +
+            'type="button" data-inboxname="' + key + ':1">' + esc(t('teach_name_ok')) + '</button><button class="chip" ' +
+            'type="button" data-inboxname="' + key + ':0">' + esc(t('teach_name_no')) + '</button></span>' : '') + '</li>';
+        })));
+    }
+    var queue = d.powersqueue || [];
+    if (queue.length) {
+      groups.push(group(t('teach_inbox_powers', queue.length), '', queue.length > 1 ? '<button class="btn btn-soft" ' +
+        'type="button" data-inboxpowers>' + esc(t('teach_inbox_powers_all', queue.length)) + '</button>' : '',
+        queue.map(function(q) {
+          return '<li class="item"><span class="grow"><b>' + esc(q.fullname) + '</b><small>' + esc(q.power) + (q.target ?
+            ' → ' + esc(q.target) : '') + ' · ' + esc(t('teach_power_cost', q.cost)) + ' · ' + esc(when(q.time)) +
+            '</small></span><span class="row-actions"><button class="chip" type="button" data-inboxpower="' + q.id +
+            ':1">' + esc(t('teach_power_yes')) + '</button><button class="chip" type="button" data-inboxpower="' + q.id +
+            ':0">' + esc(t('teach_power_no')) + '</button></span></li>';
+        })));
+    }
+    // The team plays of today: a classmate marked them as there; if they were not, the teacher takes it back.
+    var day = new Date();
+    day.setHours(0, 0, 0, 0);
+    var plays = [];
+    d.students.forEach(function(s) {
+      (s.teamplays || []).forEach(function(p) {
+        if (p.time * 1000 >= day.getTime()) {
+          plays.push('<li class="item"><span class="grow"><b>' + esc(s.fullname) + '</b><small>' + esc(p.scene) + ' · ' +
+            esc(t('teach_teamplay_by', {by: p.by || '—', time: when(p.time)})) + '</small></span><button class="chip" ' +
+            'type="button" data-inboxundo="' + p.id + '">' + esc(t('teach_teamplay_undo')) + '</button></li>');
+        }
+      });
+    });
+    if (plays.length && can('undo')) {
+      groups.push(group(t('teach_inbox_teamplays', plays.length), t('teach_teamplays_help'), '', plays));
+    }
+    // Where the rest waits: a tap goes there.
+    var links = [];
+    if (d.powerspending && !queue.length) {
+      links.push('<button type="button" class="chip" data-goto="powers">' + esc(t('teach_today_powers', d.powerspending)) +
+        '</button>');
+    }
+    if (d.pactspending) {
+      links.push('<button type="button" class="chip" data-goto="challenges">' + esc(t('teach_today_pacts', d.pactspending)) +
+        '</button>');
+    }
+    if (d.ideasunread) {
+      links.push('<button type="button" class="chip" data-goto="ideas">' + esc(t('teach_today_ideas', d.ideasunread)) +
+        '</button>');
+    }
+    // A classroom challenge validated by halves: the teacher started and did not finish.
+    d.challenges.forEach(function(ch) {
+      var done = ch.validations.filter(function(v) {
+        return v.status !== 'notyet';
+      }).length;
+      if (done && done < d.students.length) {
+        links.push('<button type="button" class="chip" data-inboxchallenge="' + ch.id + '">' + esc(t('teach_inbox_challenge',
+          {name: ch.name, done: done, total: d.students.length})) + '</button>');
+      }
+    });
+    if (!groups.length && !links.length) {
+      return '';
+    }
+    return '<section class="card inbox-card" data-inbox style="margin-bottom:16px"><div class="kicker">' +
+      esc(t('teach_inbox')) + '</div>' + groups.join('') + (links.length ? '<div class="chips">' + links.join('') +
+      '</div>' : '') + '</section>';
+  }
+
+  /**
+   * Draws the tray again with what the server answered, without asking for the whole class: and the counter of the
+   * powers on its tab.
+   */
+  function refreshInbox() {
+    var old = app.querySelector('[data-inbox]');
+    var html = inboxCard();
+    if (old && html) {
+      old.outerHTML = html;
+      bindInbox(app.querySelector('[data-inbox]'));
+    } else if (old) {
+      old.remove();
+    }
+    var tab = app.querySelector('.tabs [data-tab="powers"]');
+    if (tab) {
+      var badge = tab.querySelector('.badge');
+      if (badge) {
+        badge.remove();
+      }
+      if (state.data.powerspending) {
+        tab.lastElementChild.insertAdjacentHTML('beforebegin', '<span class="badge">' + state.data.powerspending + '</span>');
+      }
+    }
+  }
+
+  /**
+   * The answers of the tray.
+   *
+   * @param {Element} el The tray.
+   */
+  function bindInbox(el) {
+    if (!el) {
+      return;
+    }
+    var d = state.data;
+    var busy = function() {
+      el.querySelectorAll('button').forEach(function(b) {
+        b.disabled = true;
+      });
+    };
+    var failed = function(e) {
+      T.toast(esc(e.message), true);
+      refreshInbox();
+    };
+    var names = function(args, many) {
+      busy();
+      T.api('decide_name', Object.assign({courseid: cfg.courseid, approve: true}, args)).then(function(res) {
+        var left = many ? res.names.length : 0;
+        var still = {};
+        res.names.forEach(function(x) {
+          still[x.userid + ':' + x.what] = true;
+        });
+        if (args.approve !== false) {
+          d.namespending.forEach(function(x) {
+            var s = studentOf(x.userid);
+            var asked = many || (x.userid === args.userid && x.what === args.what);
+            if (asked && x.what === 'hero' && !still[x.userid + ':hero'] && s && s.character) {
+              s.character.nickname = x.name;
+            }
+          });
+        }
+        d.namespending = res.names;
+        render();
+        T.toast(esc(t(left ? 'teach_inbox_names_left' : 'app_saved')));
+      }).catch(failed);
+    };
+    el.querySelectorAll('[data-inboxname]').forEach(function(b) {
+      b.onclick = function() {
+        var parts = b.dataset.inboxname.split(':');
+        names({userid: Number(parts[0]), what: parts[1], approve: parts[2] === '1'}, false);
+      };
+    });
+    var all = el.querySelector('[data-inboxnames]');
+    if (all) {
+      all.onclick = function() {
+        names({names: d.namespending.map(function(x) {
+          return {userid: x.userid, what: x.what};
+        })}, true);
+      };
+    }
+    var powers = function(args) {
+      busy();
+      T.api('decide_power', Object.assign({courseid: cfg.courseid}, args)).then(function(res) {
+        state.powers = res;
+        d.powersqueue = res.pending;
+        d.powerspending = res.pending.length;
+        refreshInbox();
+        T.toast(esc(t('app_saved')));
+      }).catch(failed);
+    };
+    el.querySelectorAll('[data-inboxpower]').forEach(function(b) {
+      b.onclick = function() {
+        var parts = b.dataset.inboxpower.split(':');
+        powers({requestid: Number(parts[0]), approve: parts[1] === '1'});
+      };
+    });
+    var approve = el.querySelector('[data-inboxpowers]');
+    if (approve) {
+      approve.onclick = function() {
+        powers({approve: true, requestids: (d.powersqueue || []).map(function(q) {
+          return q.id;
+        })});
+      };
+    }
+    el.querySelectorAll('[data-inboxundo]').forEach(function(b) {
+      b.onclick = function() {
+        busy();
+        // It takes saber and gems back: the class is read again.
+        T.api('undo_teamplay', {courseid: cfg.courseid, attemptid: Number(b.dataset.inboxundo)}).then(function() {
+          T.toast(esc(t('teach_teamplay_undone')));
+          return load(true);
+        }).catch(failed);
+      };
+    });
+    el.querySelectorAll('[data-goto]').forEach(function(b) {
+      b.onclick = function() {
+        state.tab = b.dataset.goto;
+        state.open = 0;
+        render();
+      };
+    });
+    el.querySelectorAll('[data-inboxchallenge]').forEach(function(b) {
+      b.onclick = function() {
+        state.tab = 'challenges';
+        state.challenge = Number(b.dataset.inboxchallenge);
+        render();
+        window.scrollTo(0, 0);
+      };
+    });
   }
 
   /**
@@ -541,6 +725,7 @@
     var run = function(action, extra) {
       return T.api('run_session', Object.assign({courseid: cfg.courseid, action: action}, extra || {})).then(function(r) {
         state.session = JSON.parse(r.json);
+        state.sessionat = Date.now();
         draw();
       }).catch(function(e) {
         T.toast(esc(e.message), true);
@@ -729,13 +914,16 @@
     if (state.session) {
       draw();
     }
-    T.api('run_session', {courseid: cfg.courseid, action: 'view'}).then(function(r) {
-      state.session = JSON.parse(r.json);
-      state.sessionat = Date.now();
-      draw();
-    }).catch(function() {
-      box.remove();
-    });
+    // Asked again only when it is old: drawing the panel again after a tap does not ask for it.
+    if (!state.session || Date.now() - (state.sessionat || 0) > 30000) {
+      T.api('run_session', {courseid: cfg.courseid, action: 'view'}).then(function(r) {
+        state.session = JSON.parse(r.json);
+        state.sessionat = Date.now();
+        draw();
+      }).catch(function() {
+        box.remove();
+      });
+    }
     // The clock of the session, discreet: once a minute.
     clearInterval(state.sessiontimer);
     state.sessiontimer = setInterval(function() {
@@ -879,7 +1067,7 @@
           '" aria-label="' + esc(t('app_teamstate_' + g.state)) + '"></span>' : '') + '</button>';
       }).join('') + '</div>';
     var shown = studentsShown();
-    var el = content(sessionCard() + remoteCard() + todayCard() + namesCard() + teamsCard() + farCard() + '<section class="card"><div class="section-title"><h2>' +
+    var el = content(sessionCard() + remoteCard() + inboxCard() + todayCard() + teamsCard() + farCard() + '<section class="card"><div class="section-title"><h2>' +
       esc(t('teach_tab_class')) +
       '</h2><span class="section-tools"><label class="chip"><input type="checkbox" data-showres' + (state.showres ? ' checked' :
       '') + '> ' + esc(t('teach_showres')) + '</label><button class="btn btn-soft" data-all>' + esc(t('teach_selectall')) +
@@ -916,21 +1104,7 @@
         render();
       };
     });
-    el.querySelectorAll('[data-namedecide]').forEach(function(b) {
-      b.onclick = function() {
-        var parts = b.dataset.namedecide.split(':');
-        el.querySelectorAll('[data-namedecide]').forEach(function(o) {
-          o.disabled = true;
-        });
-        T.api('decide_name', {courseid: cfg.courseid, userid: Number(parts[0]), what: parts[1],
-          approve: parts[2] === '1'}).then(function() {
-          return load(true);
-        }).catch(function(e) {
-          T.toast(esc(e.message), true);
-          render();
-        });
-      };
-    });
+    bindInbox(el.querySelector('[data-inbox]'));
     el.querySelectorAll('[data-team]').forEach(function(b) {
       b.onclick = function() {
         state.team = Number(b.dataset.team);
@@ -969,6 +1143,33 @@
   }
 
   /**
+   * A student of the class by their user.
+   *
+   * @param {number} userid
+   * @return {Object|undefined}
+   */
+  function studentOf(userid) {
+    return state.data.students.filter(function(s) {
+      return s.userid === userid;
+    })[0];
+  }
+
+  /**
+   * The saber of the teams this week, after some was given: only the card of the teams is drawn again, and quietly.
+   */
+  function refreshStandings() {
+    T.api('get_class', {courseid: cfg.courseid}).then(function(data) {
+      state.data.standings = data.standings;
+      var old = app.querySelector('[data-teamscard]');
+      if (old && data.standings.length) {
+        old.outerHTML = teamsCard();
+      }
+    }).catch(function() {
+      // The next visit reads it.
+    });
+  }
+
+  /**
    * The teams this week, or the way to make them in one go.
    *
    * @return {string}
@@ -980,7 +1181,8 @@
         esc(t('teach_teams_none')) + '</h2><p style="color:var(--text-soft)">' + esc(t('teach_teams_help')) + '</p>' +
         makeTeamsForm() + '</section>' : '';
     }
-    return '<section class="card" style="margin-bottom:16px"><div class="section-title"><h2>' + esc(t('teach_teams_week')) +
+    return '<section class="card" data-teamscard style="margin-bottom:16px"><div class="section-title"><h2>' +
+      esc(t('teach_teams_week')) +
       '</h2>' + (d.region.leaderboard ? '' : '<span class="tag todo">' + esc(t('teach_teams_hidden')) + '</span>') +
       '</div><ul class="list">' + d.standings.map(function(x) {
         var pct = x.needed ? Math.min(100, Math.round(100 * x.done / x.needed)) : 0;
@@ -1061,8 +1263,24 @@
       }).length;
       var other = results.length - given;
       T.toast(esc(t('teach_given', given)) + (other ? ' · ' + esc(t('teach_notgiven', other)) : ''), given === 0);
+      // What changed, drawn at once from the answer: the class is not read again.
+      results.forEach(function(r) {
+        var s = studentOf(r.userid);
+        if (r.status !== 'given' || r.level === undefined || !s || !s.character) {
+          return;
+        }
+        s.character.level = r.level;
+        if (s.character.member) {
+          s.character.member.energy = r.energy;
+          s.character.member.breath = r.breath;
+          s.character.member.status = r.state;
+        }
+      });
       state.selected = {};
-      load(true);
+      render();
+      if (resource === 'saber' && state.data.standings.length) {
+        refreshStandings();
+      }
     }).catch(function(e) {
       T.toast(esc(e.message), true);
     });

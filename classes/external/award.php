@@ -64,7 +64,7 @@ final class award extends external_api {
         string $resource,
         int $amount
     ): array {
-        global $USER;
+        global $DB, $USER;
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
             'userids' => $userids,
@@ -96,10 +96,16 @@ final class award extends external_api {
                 $results[] = ['userid' => $userid, 'status' => $member->status === 'paused' ? 'paused' : 'capped'];
                 continue;
             }
+            // How the student is left, so that the panel draws it at once without reading the whole class again.
+            $fresh = $DB->get_record('local_oksigeniatesape_member', ['id' => $member->id], 'energy, breath, status');
             $results[] = [
                 'userid' => $userid,
                 'status' => $entry->capped && !$entry->amount ? 'capped' : 'given',
                 'amount' => (int) $entry->amount,
+                'level' => (int) $DB->get_field('local_oksigeniatesape_char', 'level', ['id' => $char->id]),
+                'energy' => (int) $fresh->energy,
+                'breath' => (int) $fresh->breath,
+                'state' => (string) $fresh->status,
             ];
         }
         return $results;

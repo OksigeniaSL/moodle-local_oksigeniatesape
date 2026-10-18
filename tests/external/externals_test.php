@@ -149,6 +149,10 @@ final class externals_test extends \advanced_testcase {
         $results = $this->call('award', $w->teacher, [$w->course->id, [$w->ana->id, $w->leo->id, $w->noa->id], 'saber', 15]);
         $this->assertEquals(['given', 'given', 'nocharacter'], array_column($results, 'status'));
         $this->assertEquals(15, characters::get($w->ana->id)->saber);
+        // How each one is left, for the panel to draw it at once.
+        $this->assertEquals((int) characters::get($w->ana->id)->level, $results[0]['level']);
+        $this->assertEquals('active', $results[0]['state']);
+        $this->assertArrayNotHasKey('level', $results[2]);
 
         // A classroom challenge, done by the team.
         $challenge = $this->call('save_challenge', $w->teacher, [$w->course->id, 0, 'Model of a plant cell', 'With plasticine',

@@ -408,12 +408,12 @@ final class structures {
     }
 
     /**
-     * The powers of a course, and the requests, for its teachers.
+     * A request to use a power, for the teachers.
      *
      * @return external_single_structure
      */
-    public static function powers(): external_single_structure {
-        $request = new external_single_structure([
+    public static function power_request(): external_single_structure {
+        return new external_single_structure([
             'id' => new external_value(PARAM_INT, 'Request'),
             'userid' => new external_value(PARAM_INT, 'Student'),
             'fullname' => new external_value(PARAM_TEXT, 'Student'),
@@ -424,6 +424,15 @@ final class structures {
             'status' => new external_value(PARAM_ALPHA, 'pending, approved, rejected or used'),
             'time' => new external_value(PARAM_INT, 'When it was asked'),
         ]);
+    }
+
+    /**
+     * The powers of a course, and the requests, for its teachers.
+     *
+     * @return external_single_structure
+     */
+    public static function powers(): external_single_structure {
+        $request = self::power_request();
         return new external_single_structure([
             'powers' => new external_multiple_structure(new external_single_structure([
                 'id' => new external_value(PARAM_INT, 'Power'),
@@ -696,6 +705,10 @@ final class structures {
             'userid' => new external_value(PARAM_INT, 'Student'),
             'status' => new external_value(PARAM_ALPHA, 'What happened: done, merit, notyet, given, capped, paused or nocharacter'),
             'amount' => new external_value(PARAM_INT, 'What was given or taken', VALUE_DEFAULT, 0),
+            'level' => new external_value(PARAM_INT, 'Level of the student afterwards', VALUE_OPTIONAL),
+            'energy' => new external_value(PARAM_INT, 'Energy afterwards', VALUE_OPTIONAL),
+            'breath' => new external_value(PARAM_INT, 'Breath afterwards', VALUE_OPTIONAL),
+            'state' => new external_value(PARAM_ALPHA, 'How the student is afterwards: active, paused or fallen', VALUE_OPTIONAL),
         ]));
     }
 }

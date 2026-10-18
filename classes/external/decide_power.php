@@ -47,8 +47,14 @@ final class decide_power extends external_api {
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
             'courseid' => new external_value(PARAM_INT, 'Course'),
-            'requestid' => new external_value(PARAM_INT, 'Request'),
+            'requestid' => new external_value(PARAM_INT, 'Request (0: those of requestids)', VALUE_DEFAULT, 0),
             'approve' => new external_value(PARAM_BOOL, 'Yes or no'),
+            'requestids' => new external_multiple_structure(
+                new external_value(PARAM_INT, 'Request'),
+                'Several requests decided at once: those already decided are left as they are',
+                VALUE_DEFAULT,
+                []
+            ),
         ]);
     }
 
@@ -58,26 +64,46 @@ final class decide_power extends external_api {
      * @param int $courseid
      * @param int $requestid
      * @param bool $approve
+     * @param int[] $requestids
      * @return array
      */
     public static function execute(
         int $courseid,
         int $requestid,
-        bool $approve
+        bool $approve,
+        array $requestids = []
     ): array {
-        global $USER;
+        global $DB, $USER;
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
             'requestid' => $requestid,
             'approve' => $approve,
+            'requestids' => $requestids,
         ]);
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
         require_capability('local/oksigeniatesape:approvepowers', $context);
-        if (powers::course_of($params['requestid']) !== $params['courseid']) {
-            throw new \invalid_parameter_exception('The request belongs to another course');
+        $ids = array_values(array_unique(array_map('intval', $params['requestids'] ?: [$params['requestid']])));
+        if (!$ids || count($ids) > 100) {
+            throw new \invalid_parameter_exception('Between 1 and 100 requests');
         }
-        powers::decide($params['requestid'], $params['approve'], (int) $USER->id);
+        foreach ($ids as $id) {
+            if (powers::course_of($id) !== $params['courseid']) {
+                throw new \invalid_parameter_exception('The request belongs to another course');
+            }
+        }
+        if (count($ids) === 1) {
+            powers::decide($ids[0], $params['approve'], (int) $USER->id);
+        } else {
+            // All of them or none; one that another teacher decided meanwhile stays as it is.
+            $transaction = $DB->start_delegated_transaction();
+            foreach ($ids as $id) {
+                if ($DB->get_field('local_oksigeniatesape_powerreq', 'status', ['id' => $id]) === 'pending') {
+                    powers::decide($id, $params['approve'], (int) $USER->id);
+                }
+            }
+            $transaction->allow_commit();
+        }
         return ['powers' => powers::for_teacher($params['courseid'])] + powers::requests($params['courseid']);
     }
 

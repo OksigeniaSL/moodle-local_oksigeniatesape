@@ -152,6 +152,26 @@ final class names_test extends \advanced_testcase {
         external_api::clean_returnvalue(get_world::execute_returns(), view::world($w->course->id, $w->users[0]->id));
     }
 
+    public function test_a_teacher_takes_several_own_names_at_once_and_a_taken_one_waits(): void {
+        $this->resetAfterTest();
+        $w = $this->make_class(2);
+        names::choose($w->course->id, $w->users[0]->id, 'hero', -1, 'Rayo');
+        names::choose($w->course->id, $w->users[0]->id, 'creature', -1, 'Trufa');
+        names::choose($w->course->id, $w->users[1]->id, 'hero', -1, 'Rayo');
+        $this->setUser($w->teacher);
+        $all = array_map(fn($x) => ['userid' => $x['userid'], 'what' => $x['what']], names::pending($w->course->id));
+        usort($all, fn($a, $b) => [$a['userid'], $a['what']] <=> [$b['userid'], $b['what']]);
+        $result = external_api::clean_returnvalue(
+            decide_name::execute_returns(),
+            decide_name::execute($w->course->id, 0, '', true, $all)
+        );
+        // The first «Rayo» is taken; the second one waits, for the teacher to see it alone.
+        $this->assertSame([['userid' => (int) $w->users[1]->id, 'what' => 'hero', 'name' => 'Rayo']], $result['names']);
+        $this->assertSame('Rayo', characters::get($w->users[0]->id)->nickname);
+        $this->assertSame('Trufa', json_decode(characters::get($w->users[0]->id)->creature, true)['name']);
+        $this->assertSame('', (string) characters::get($w->users[1]->id)->nickname);
+    }
+
     public function test_own_names_are_letters_only(): void {
         $this->assertSame("Ñandú O'Neill", names::clean("  Ñandú   O'Neill "));
         foreach (['A', 'R2D2', 'Hola!', str_repeat('a', names::MAX + 1), '<b>x</b>'] as $bad) {
