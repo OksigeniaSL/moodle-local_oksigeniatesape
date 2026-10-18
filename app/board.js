@@ -299,6 +299,22 @@
   /* ---------- The battle against the Embrollo ---------- */
 
   var SEEN = 'tesape-board-seen-' + cfg.courseid;
+
+  /** The settings of the last battle of the course, on this class screen. */
+  var BATTLE = 'tesape-board-battle-' + cfg.courseid;
+  try {
+    var last = JSON.parse(window.localStorage.getItem(BATTLE) || 'null');
+    if (last && live0(last.count, [4, 6, 8, 10]) && live0(last.secs, [0, 20, 30, 45, 60])) {
+      state.battle.count = last.count;
+      state.battle.secs = last.secs;
+    }
+  } catch (e) {
+    // The usual ones.
+  }
+
+  function live0(v, list) {
+    return list.indexOf(v) >= 0;
+  }
   try {
     // The battle the teacher already closed stays closed after reloading the page of the class screen.
     state.seen = Number(window.sessionStorage.getItem(SEEN)) || 0;
@@ -385,7 +401,8 @@
         return v ? t('board_battle_final') : t('board_battle');
       }) + (b.final ? '<small class="help-soft">' + esc(t('board_battle_final_help')) + '</small>' : '') + '</div>' : '') +
       '<div class="actions"><button class="btn btn-main" data-battlestart>' + esc(t('board_battle_start')) +
-      '</button></div></section>';
+      '</button><button class="btn btn-soft" data-battlerehearsal title="' + esc(t('board_battle_rehearsal_help')) + '">' +
+      esc(t('board_battle_rehearsal')) + '</button></div></section>';
   }
 
   /**
@@ -534,7 +551,7 @@
         esc(t('board_battle_cancel')) + '</button>' : '');
     } else if (l.stage === 'intent' || l.stage === 'prep') {
       // By turns: the Embrollo lets a knot go, says what it claims and which team it goes for; the roles get ready.
-      main = '<p class="battle-qround">' + esc(t(l.stage ? 'board_turn_round' : 'board_battle_round', l)) + '</p><div class="knot-call"><p class="knot-name">' +
+      main = '<p class="battle-qround">' + esc((l.rehearsal ? t('board_battle_rehearsal_tag') + ' · ' : '') + t(l.stage ? 'board_turn_round' : 'board_battle_round', l)) + '</p><div class="knot-call"><p class="knot-name">' +
         esc(l.knot.name) + '</p><p class="knot-claim">«' + esc(l.knot.claim.replace(/^«|»$/g, '')) + '»</p>' +
         intentLine(l) + '</div>' +
         (l.stage === 'prep' ? '<p class="battle-count" data-stageleft="board_turn_prep" aria-live="off">' +
@@ -569,7 +586,7 @@
       }
     } else {
       var q = l.question;
-      main = '<p class="battle-qround">' + esc(t(l.stage ? 'board_turn_round' : 'board_battle_round', l)) + (l.stage === 'strike' ? ' · ' +
+      main = '<p class="battle-qround">' + esc((l.rehearsal ? t('board_battle_rehearsal_tag') + ' · ' : '') + t(l.stage ? 'board_turn_round' : 'board_battle_round', l)) + (l.stage === 'strike' ? ' · ' +
         esc(t('board_turn_strike', l.knot.name)) : '') + '</p><p class="battle-q">' + esc(q.text) +
         '</p><ol class="battle-board-options">' + q.options.map(function(o, i) {
           return '<li class="' + (l.revealed && q.correct === i ? 'right' : '') + '"><b>' + LETTERS[i] + '</b>' + esc(o) + '</li>';
@@ -1417,6 +1434,12 @@
     on('[data-battle]', function(el) {
       var p = el.dataset.battle.split(':');
       state.battle[p[0]] = p[0] === 'mode' ? p[1] : +p[1];
+      // The questions and the time of the last battle, the next time: one button to launch it.
+      try {
+        window.localStorage.setItem(BATTLE, JSON.stringify({count: state.battle.count, secs: state.battle.secs}));
+      } catch (e) {
+        // Without storage, the usual ones.
+      }
       render();
     });
     on('[data-devices]', function(el) {
@@ -1450,6 +1473,11 @@
     on('[data-battlestart]', function() {
       var b = state.battle;
       host('start', {mode: b.mode, count: b.count, secs: b.secs, final: !!b.final, turns: true});
+    });
+    // Three test questions to check the phones, without prizes nor the questions of the mission.
+    on('[data-battlerehearsal]', function() {
+      var b = state.battle;
+      host('start', {mode: b.mode, count: 4, secs: b.secs || 30, rehearsal: true});
     });
     on('[data-draw]', function() {
       state.reveal = false;

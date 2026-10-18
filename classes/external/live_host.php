@@ -57,6 +57,12 @@ final class live_host extends external_api {
             'round' => new external_value(PARAM_INT, 'next and reveal: round on the class screen (-1: any)', VALUE_DEFAULT, -1),
             'final' => new external_value(PARAM_BOOL, 'start: the final battle of the mission', VALUE_DEFAULT, false),
             'turns' => new external_value(PARAM_BOOL, 'start: by turns, with the knots of the mission', VALUE_DEFAULT, false),
+            'rehearsal' => new external_value(
+                PARAM_BOOL,
+                'start: a rehearsal, three test questions without prizes',
+                VALUE_DEFAULT,
+                false
+            ),
         ]);
     }
 
@@ -76,6 +82,7 @@ final class live_host extends external_api {
      * @param int $round
      * @param bool $final
      * @param bool $turns
+     * @param bool $rehearsal
      * @return array
      */
     public static function execute(
@@ -91,7 +98,8 @@ final class live_host extends external_api {
         string $options = '[]',
         int $round = -1,
         bool $final = false,
-        bool $turns = false
+        bool $turns = false,
+        bool $rehearsal = false
     ): array {
         global $USER;
         $params = self::validate_parameters(self::execute_parameters(), [
@@ -108,6 +116,7 @@ final class live_host extends external_api {
             'round' => $round,
             'final' => $final,
             'turns' => $turns,
+            'rehearsal' => $rehearsal,
         ]);
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
@@ -160,7 +169,8 @@ final class live_host extends external_api {
                 $params['secs'],
                 $now,
                 $params['final'],
-                $params['turns']
+                $params['turns'],
+                $params['rehearsal']
             );
             return ['live' => live::board_view($live, $now)];
         }

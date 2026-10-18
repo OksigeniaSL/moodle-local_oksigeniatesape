@@ -58,6 +58,9 @@ final class live {
     /** @var int[] Questions a battle can have. */
     public const COUNTS = [4, 6, 8, 10];
 
+    /** @var string[] The test questions of a rehearsal, from the language strings of the plugin. */
+    public const REHEARSAL = ['rehearsal1', 'rehearsal2', 'rehearsal3'];
+
     /** @var int[] Seconds a question can last (0: until the teacher reveals it). */
     public const SECONDS = [0, 20, 30, 45, 60];
 
@@ -110,6 +113,7 @@ final class live {
      * @param int|null $now
      * @param bool $final The final battle of the mission: it gives what the mission saves for the end.
      * @param bool $turns By turns, with the knots of the mission, if it has them.
+     * @param bool $rehearsal Three test questions to check the phones, without prizes.
      * @return \stdClass The session.
      */
     public static function start(
@@ -119,21 +123,25 @@ final class live {
         int $secs,
         ?int $now = null,
         bool $final = false,
-        bool $turns = false
+        bool $turns = false,
+        bool $rehearsal = false
     ): \stdClass {
         global $DB;
         $now = $now ?? time();
         if (!in_array($mode, ['phones', 'aloud'], true) || !in_array($count, self::COUNTS) || !in_array($secs, self::SECONDS)) {
             throw new \invalid_parameter_exception('Not a battle that can be played');
         }
-        $plan = $turns ? knots::plan($courseid, $count, $final) : [];
-        $questions = $plan ? array_column($plan, 1) : questions::pick_many($courseid, $count);
+        // A rehearsal: three test questions to check the phones on the first day, without prizes nor the mission.
+        $final = $final && !$rehearsal;
+        $plan = $turns && !$rehearsal ? knots::plan($courseid, $count, $final) : [];
+        $questions = $rehearsal ? self::REHEARSAL : ($plan ? array_column($plan, 1) : questions::pick_many($courseid, $count));
         if (!$questions) {
             throw new \moodle_exception('noquestions', 'local_oksigeniatesape');
         }
         $DB->set_field_select(self::T . 'live', 'timeend', $now, 'courseid = ? AND timeend = 0', [$courseid]);
         $state = ['mode' => $mode, 'secs' => $secs, 'questions' => $questions, 'rounds' => [], 'open' => false,
-            'closesat' => 0, 'hp' => 0, 'maxhp' => 0, 'outcome' => '', 'rewarded' => [], 'final' => $final];
+            'closesat' => 0, 'hp' => 0, 'maxhp' => 0, 'outcome' => '', 'rewarded' => [], 'final' => $final,
+            'rehearsal' => $rehearsal];
         if ($plan) {
             // A rematch goes on where the last battle lost stopped: the knots broken do not come back, those left hanging
             // come first, and the Embrollo has the threads it escaped with.
@@ -463,7 +471,8 @@ final class live {
         if (!empty($state['knots'])) {
             $state = self::which_knot($live, $state, $round);
         }
-        $question = questions::get((int) $live->courseid, $state['questions'][$round - 1], self::seed($live, $round));
+        $question = !empty($state['rehearsal']) ? self::rehearsal_question($state['questions'][$round - 1], self::seed($live, $round)) :
+            questions::get((int) $live->courseid, $state['questions'][$round - 1], self::seed($live, $round));
         if (!$question) {
             // The mission changed in the middle of the battle and the question is gone.
             throw new \moodle_exception('noquestions', 'local_oksigeniatesape');
@@ -572,7 +581,7 @@ final class live {
             $state['outcome'] = $round > 0 && $state['hp'] <= 0 && ($state['candles'] ?? 1) > 0 ? 'won' : 'lost';
         }
         $transaction = $DB->start_delegated_transaction();
-        if ($state['outcome'] === 'won') {
+        if ($state['outcome'] === 'won' && empty($state['rehearsal'])) {
             $state['rewarded'] = self::reward($live, $state, $actorid, $now);
         }
         if (!empty($state['knots']) && $round > 0) {
@@ -985,7 +994,7 @@ final class live {
             $joined = ['liveid' => $live->id, 'round' => 0, 'charid' => $charid];
             $played = isset($state['joined']) ? in_array($charid, $state['joined'], true) :
                 $DB->record_exists(self::T . 'livein', $joined);
-            if (!in_array($state['outcome'] ?? '', ['won', 'lost'], true) || $played) {
+            if (!in_array($state['outcome'] ?? '', ['won', 'lost'], true) || $played || !empty($state['rehearsal'])) {
                 continue;
             }
             $lantern = '';
@@ -1026,6 +1035,7 @@ final class live {
             'outcome' => $state['outcome'],
             'phase' => self::phase($state),
             'final' => !empty($state['final']),
+            'rehearsal' => !empty($state['rehearsal']),
             'rematch' => (int) round(100 * (float) ($state['rematch'] ?? 0)),
             'counter' => $round > 0 ? (int) ($state['rounds'][$round]['counter'] ?? 0) : 0,
             'shielded' => $round > 0 && !empty($state['rounds'][$round]['shielded']),
@@ -1084,6 +1094,26 @@ final class live {
      */
     private static function phase(array $state): int {
         return $state['maxhp'] > 0 && 2 * $state['hp'] <= $state['maxhp'] ? 2 : 1;
+    }
+
+    /**
+     * A test question of a rehearsal, with its options in an order that only depends on the seed: the first one is
+     * right.
+     *
+     * @param string $id One of REHEARSAL.
+     * @param int $seed
+     * @return array As questions::get().
+     */
+    private static function rehearsal_question(string $id, int $seed): array {
+        $options = [];
+        foreach ([1, 2, 3, 4] as $i) {
+            $options[] = ['text' => get_string('live_' . $id . '_' . $i, 'local_oksigeniatesape'), 'right' => $i === 1,
+                'order' => crc32($seed . ':' . $i . ':' . $id)];
+        }
+        usort($options, fn($a, $b) => $a['order'] <=> $b['order']);
+        return ['id' => $id, 'chapter' => '', 'objective' => '', 'text' => get_string('live_' . $id, 'local_oksigeniatesape'),
+            'options' => array_column($options, 'text'), 'correct' => (int) array_search(true, array_column($options, 'right'), true),
+            'why' => ''];
     }
 
     /**

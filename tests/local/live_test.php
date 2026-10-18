@@ -146,6 +146,34 @@ final class live_test extends \advanced_testcase {
         live::answer($live, $members[0], 1, 0, self::NOW);
     }
 
+    public function test_a_rehearsal_has_three_test_questions_and_gives_nothing(): void {
+        global $DB;
+        $this->resetAfterTest();
+        [$course, $members] = $this->make_class();
+        $live = live::start($course->id, 'phones', 4, 30, self::NOW, true, true, true);
+        $this->assertTrue(live::board_view($live, self::NOW)['rehearsal']);
+        $this->assertFalse(live::board_view($live, self::NOW)['final']);
+        foreach ($members as $member) {
+            live::join($live, $member, $member->userid, self::NOW);
+        }
+        for ($round = 1; $round <= 3; $round++) {
+            $live = live::next($live, self::NOW);
+            $question = live::board_view($live, self::NOW)['question'];
+            $this->assertStringContainsString('?', $question['text']);
+            $this->assertCount(4, $question['options']);
+            foreach ($members as $member) {
+                live::answer($live, $member, $round, $this->correct($live), self::NOW);
+            }
+            $live = live::reveal($live, self::NOW);
+        }
+        $this->assertSame(3, live::board_view($live, self::NOW)['total']);
+        $live = live::finish($live, 2, self::NOW);
+        $this->assertEquals('won', live::board_view($live, self::NOW)['outcome']);
+        // No prize, and it is not a battle missed for who follows from far.
+        $this->assertEquals(0, $DB->count_records(self::T . 'ledger', ['reason' => 'battle']));
+        $this->assertSame([], live::missed($course->id, 0, 99999));
+    }
+
     public function test_winning_with_phones_rewards_the_players_and_the_best_team(): void {
         global $DB;
         $this->resetAfterTest();

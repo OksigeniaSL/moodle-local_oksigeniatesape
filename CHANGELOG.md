@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.96.0 (2026-10-18)
+
+- **A battle rehearsal**: on the class screen, «Battle rehearsal» plays three test questions («What colour is the sky
+  on a clear day?») to check the phones on the first day, without prizes, without spending questions of the mission,
+  and without counting as a battle for who follows from far. Its rounds say «Rehearsal».
+- **The battle with the settings of the last one**: the class screen remembers how many questions and how much time,
+  so that launching it is one button.
+
 ## 0.95.0 (2026-10-18)
 
 Block 4.2 of the plan.
