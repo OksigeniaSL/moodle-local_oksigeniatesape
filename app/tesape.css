@@ -841,6 +841,37 @@ body.tesape {
   background: rgba(255, 200, 87, .1);
 }
 
+/* What the hero has learnt to do: lit medals, and the ones still to learn, quiet. */
+.skill-medals {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0;
+  display: grid;
+  gap: 6px;
+}
+
+.skill-medals li {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .04);
+}
+
+.skill-medals li.lit {
+  background: rgba(255, 200, 87, .12);
+  font-weight: 600;
+}
+
+.skill-medals li.dim {
+  color: var(--text-soft);
+}
+
+.skill-mark {
+  color: var(--lantern);
+}
+
 /* Lanes drafted by the AI for a knot, in the Workshop. */
 .ws-knotdraft {
   margin: 12px 0;

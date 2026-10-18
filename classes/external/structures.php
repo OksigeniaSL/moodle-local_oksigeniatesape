@@ -62,6 +62,11 @@ final class structures {
                 VALUE_DEFAULT,
                 false
             ),
+            'skills' => new external_multiple_structure(new external_single_structure([
+                'code' => new external_value(PARAM_ALPHANUMEXT, 'Objective'),
+                'name' => new external_value(PARAM_TEXT, 'What it is to know how to do'),
+                'lit' => new external_value(PARAM_BOOL, 'Learnt'),
+            ]), 'What they have learnt to do (for the student and their teachers)', VALUE_DEFAULT, []),
             'talentpending' => new external_single_structure([
                 'level' => new external_value(PARAM_INT, 'The level that brings the choice'),
                 'options' => new external_multiple_structure(new external_single_structure([
@@ -537,6 +542,7 @@ final class structures {
             'timezone' => new external_value(PARAM_TEXT, 'Time zone of the days and weeks (99: the one of the site)'),
             'completionrule' => new external_value(PARAM_INT, 'Knowledge for an activity that is not a challenge'),
             'talentson' => new external_value(PARAM_BOOL, 'The talents act in the course', VALUE_DEFAULT, true),
+            'skillson' => new external_value(PARAM_BOOL, 'The named skills show to the students', VALUE_DEFAULT, true),
             'portal' => new external_value(PARAM_ALPHA, 'Cover: door, card, direct or menu', VALUE_DEFAULT, 'door'),
             'hideacts' => new external_value(PARAM_BOOL, 'Mission activities only inside the valley', VALUE_DEFAULT, false),
             'allowstealth' => new external_value(PARAM_BOOL, 'Site allows available but hidden activities', VALUE_DEFAULT, false),

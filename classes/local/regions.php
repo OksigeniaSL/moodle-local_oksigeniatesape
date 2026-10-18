@@ -52,6 +52,8 @@ final class regions {
         'completion' => 10,
         // The talents act in the course (0: off there, and nothing is chosen there).
         'talents' => 1,
+        // The named skills show on the sheet of the students (0: not in this course).
+        'skills' => 1,
     ];
 
     /**

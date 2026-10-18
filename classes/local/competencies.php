@@ -419,13 +419,27 @@ final class competencies {
      * @return int From 1, or 0 if there is nothing to go by.
      */
     public static function suggest(array $o, int $levels): int {
-        $total = (int) ($o['total'] ?? 0);
-        if ($total < 1 || $levels < 1) {
+        if ((int) ($o['total'] ?? 0) < 1 || $levels < 1) {
             return 0;
+        }
+        return 1 + (int) round(pow(self::score($o), 1.5) * ($levels - 1));
+    }
+
+    /**
+     * How well the answers came, from 0 to 1: right alone at the first try counts most, with help a bit less, after the
+     * consequence less; the same mistake again takes away.
+     *
+     * @param array $o total, and first, helped, after and twice.
+     * @return float
+     */
+    public static function score(array $o): float {
+        $total = (int) ($o['total'] ?? 0);
+        if ($total < 1) {
+            return 0.0;
         }
         $score = ((int) ($o['first'] ?? 0) + 0.6 * (int) ($o['helped'] ?? 0) + 0.4 * (int) ($o['after'] ?? 0) -
             0.3 * (int) ($o['twice'] ?? 0)) / $total;
-        return 1 + (int) round(pow(max(0, min(1, $score)), 1.5) * ($levels - 1));
+        return (float) max(0, min(1, $score));
     }
 
     /**

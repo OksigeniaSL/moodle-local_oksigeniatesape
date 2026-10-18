@@ -101,6 +101,13 @@ final class save_region extends external_api {
                 null,
                 NULL_ALLOWED,
             ),
+            'skillson' => new external_value(
+                PARAM_BOOL,
+                'The named skills show to the students',
+                VALUE_DEFAULT,
+                null,
+                NULL_ALLOWED,
+            ),
         ]);
     }
 
@@ -129,6 +136,7 @@ final class save_region extends external_api {
      * @param int|null $setup
      * @param string|null $reasons
      * @param bool|null $talentson
+     * @param bool|null $skillson
      * @return array
      */
     public static function execute(
@@ -153,7 +161,8 @@ final class save_region extends external_api {
         ?string $mischief = null,
         ?int $setup = null,
         ?string $reasons = null,
-        ?bool $talentson = null
+        ?bool $talentson = null,
+        ?bool $skillson = null
     ): array {
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
@@ -178,12 +187,19 @@ final class save_region extends external_api {
             'setup' => $setup,
             'reasons' => $reasons,
             'talentson' => $talentson,
+            'skillson' => $skillson,
         ]);
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
         require_capability('local/oksigeniatesape:manageregion', $context);
         $settings = array_filter($params, fn($value) => $value !== null);
-        unset($settings['courseid'], $settings['completionrule'], $settings['reasons'], $settings['talentson']);
+        unset(
+            $settings['courseid'],
+            $settings['completionrule'],
+            $settings['reasons'],
+            $settings['talentson'],
+            $settings['skillson']
+        );
         if ($params['reasons'] !== null) {
             $list = $params['reasons'] === 'default' ? null : json_decode($params['reasons'], true);
             if ($params['reasons'] !== 'default' && !is_array($list)) {
@@ -196,6 +212,9 @@ final class save_region extends external_api {
         }
         if ($params['talentson'] !== null) {
             $settings['rules'] = ($settings['rules'] ?? []) + ['talents' => $params['talentson'] ? 1 : 0];
+        }
+        if ($params['skillson'] !== null) {
+            $settings['rules'] = ($settings['rules'] ?? []) + ['skills' => $params['skillson'] ? 1 : 0];
         }
         if (!empty($settings['groupingid'])) {
             $grouping = groups_get_grouping($settings['groupingid']);

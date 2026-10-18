@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.108.0 (2026-10-18)
+
+- **Named skills**: on their sheet, each student sees «What you have learnt to do», a medal for each objective of the
+  mission («Distinguish the living from the non-living», «Follow a food chain»…). It lights when the first tries of
+  their scenes show they master it (three answers or more, and they came well) or when the teacher rates them
+  proficient in its competency. No numbers; only the student and their teachers see it. When one lights, a moment
+  tells them so on their tablet. The teacher sees the lit ones on the student's sheet, and can turn them off in the
+  course (Settings, Advanced, «Named skills»).
+- Mission «Los seres vivos» v44: the names of its skills.
+
 ## 0.107.0 (2026-10-18)
 
 - **Talents at level 9**, for the minigames and the powers; with them, each role has its three pairs:

@@ -1685,6 +1685,18 @@
         }).join('') + '</ul>' + (can('award') ? '<button type="button" class="btn btn-soft" data-resettalents>' +
         esc(t('teach_talents_reset')) + '</button>' : '');
     }
+    // What they have learnt to do, lit by their scenes or by a rating.
+    var skills = (c && c.skills) || [];
+    if (skills.some(function(s) {
+      return s.lit;
+    })) {
+      html += '<h3 style="margin-top:16px">' + esc(t('teach_skills')) + '</h3><ul class="skill-medals">' +
+        skills.filter(function(s) {
+          return s.lit;
+        }).map(function(s) {
+          return '<li class="lit"><span class="skill-mark" aria-hidden="true">✦</span><span>' + esc(s.name) + '</span></li>';
+        }).join('') + '</ul>';
+    }
     // Far from the expedition: when they came last, and whether they follow it from home or hospital.
     html += '<h3 style="margin-top:16px">' + esc(t('teach_far')) + '</h3><p class="help-soft">' + esc(lastSeen(m)) + '</p>' +
       '<label class="chip" style="display:inline-flex;gap:8px;align-items:center"><input type="checkbox" data-remote' +
@@ -3210,7 +3222,10 @@
       'align-items:flex-start;margin:4px 0"><input type="checkbox" name="talentson"' + (r.talentson !== false ?
       ' checked' : '') + (editable ? '' : ' disabled') + '> <span>' + esc(t('teach_set_talentson')) + '</span></label>' +
       '<small style="display:block;color:var(--text-soft);margin-bottom:14px">' + esc(t('teach_set_talentson_help')) +
-      '</small>' + touchesEditor(r, editable) + inside + lookCard + badgeCard + gradesCard + '</details>';
+      '</small>' + '<label class="chip" style="display:flex;gap:8px;align-items:flex-start;margin:4px 0"><input type="checkbox" ' +
+      'name="skillson"' + (r.skillson !== false ? ' checked' : '') + (editable ? '' : ' disabled') + '> <span>' +
+      esc(t('teach_set_skillson')) + '</span></label><small style="display:block;color:var(--text-soft);margin-bottom:14px">' +
+      esc(t('teach_set_skillson_help')) + '</small>' + touchesEditor(r, editable) + inside + lookCard + badgeCard + gradesCard + '</details>';
     var el = content('<section class="card"><h2>' + esc(t('teach_tab_settings')) + '</h2><form data-settings>' + daily +
       advanced + (editable ? '<div class="actions" style="justify-content:flex-start;margin-top:14px"><button ' +
       'class="btn btn-main" type="submit">' + esc(t('app_save')) + '</button></div>' : '') + '</form></section>');
@@ -3266,6 +3281,7 @@
         hideacts: f.hideacts.checked,
         gradebook: f.gradebook.checked,
         talentson: f.talentson.checked,
+        skillson: f.skillson.checked,
         look: look ? look.value : '',
         // Only when they were changed: those of the plugin follow the language of each teacher.
         reasons: touches.edited() ? JSON.stringify(touches.list()) : null

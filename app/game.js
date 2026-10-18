@@ -312,6 +312,38 @@
   }
 
   /**
+   * What the hero has learnt to do: a medal for each objective of the mission, lit when it is learnt. No numbers.
+   *
+   * @param {Object} c The character.
+   * @return {string}
+   */
+  function skillsHtml(c) {
+    var list = c.skills || [];
+    if (!list.length) {
+      return '';
+    }
+    return '<h3 class="skills-title">' + esc(t('app_skills')) + '</h3><ul class="skill-medals">' + list.map(function(s) {
+      return '<li class="' + (s.lit ? 'lit' : 'dim') + '"><span class="skill-mark" aria-hidden="true">' + (s.lit ? '✦' : '·') +
+        '</span><span>' + esc(s.name) + (s.lit ? '' : '<span class="sr-only"> (' + esc(t('app_skill_todo')) + ')</span>') +
+        '</span></li>';
+    }).join('') + '</ul><p class="help-soft">' + esc(t('app_skills_help')) + '</p>';
+  }
+
+  /**
+   * A skill lit since this device saw them: the hero has learnt to do something.
+   *
+   * @param {Object[]} list The skills newly lit.
+   * @param {Function} [then]
+   * @return {Element}
+   */
+  function skillMoment(list, then) {
+    return moment('<div class="kicker">' + esc(t('app_skill_kicker')) + '</div><h2 id="tesape-skill-title">' +
+      esc(t('app_skill_title')) + '</h2><ul class="skill-medals">' + list.map(function(s) {
+        return '<li class="lit"><span class="skill-mark" aria-hidden="true">✦</span><span>' + esc(s.name) + '</span></li>';
+      }).join('') + '</ul>', 'tesape-skill-title', then);
+  }
+
+  /**
    * A level that brings a talent: two cards of the role, one to keep. Left for later, it waits on the sheet.
    *
    * @param {Object} p level and options.
@@ -531,6 +563,32 @@
     if (c.talentpending && offered !== String(c.talentpending.level)) {
       moments.push(function(then) {
         talentMoment(c.talentpending, then);
+      });
+    }
+    // A skill lit since this device last saw them (the first time, they are only noted).
+    var skey = 'tesape-skills-' + cfg.courseid + '-' + cfg.userid;
+    var lit = (c.skills || []).filter(function(s) {
+      return s.lit;
+    });
+    var known = null;
+    try {
+      known = JSON.parse(window.localStorage.getItem(skey) || 'null');
+    } catch (e) {
+      known = null;
+    }
+    var learnt = known ? lit.filter(function(s) {
+      return known.indexOf(s.code) < 0;
+    }) : [];
+    try {
+      window.localStorage.setItem(skey, JSON.stringify(lit.map(function(s) {
+        return s.code;
+      })));
+    } catch (e) {
+      // Without storage, nothing to tell next time.
+    }
+    if (learnt.length) {
+      moments.push(function(then) {
+        skillMoment(learnt, then);
       });
     }
     if (seen && seen.creaturestage && c.creaturestage > seen.creaturestage) {
@@ -2641,7 +2699,7 @@
       esc(creatureName(c)) + '</b><small>' + esc(t('app_creaturestage', c.creaturestage)) + '</small></div>' : '';
     var unlock = nextUnlock(c);
     return '<section class="card sheet"><div class="sheet-art">' + avatarOf(c, title(c)) + creature + '</div><div class="stats"><h2>' + esc(myName()) +
-      '</h2><p style="color:var(--text-soft)">' + esc(rank(c)) + ' · ' + esc(title(c)) + '</p>' + traits(c) + talentsHtml(c) +
+      '</h2><p style="color:var(--text-soft)">' + esc(rank(c)) + ' · ' + esc(title(c)) + '</p>' + traits(c) + talentsHtml(c) + skillsHtml(c) +
       '<div class="stat"><span>' + esc(t('app_level')) + '</span><b>' + c.level + '</b></div>' +
       '<div class="meter level" style="margin:6px 0 4px"><i style="width:' + pct + '%"></i></div><small style="color:' +
       'var(--text-soft)">' + esc(c.levelneeded ? t('app_tonext', c.levelneeded - c.levelinto) : t('app_maxlevel')) +

@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 43,
+ "version": 44,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 44,
+   "kind": "improvement",
+   "date": "2026-10-18",
+   "text": "Las habilidades con nombre: lo que el héroe aprende a hacer en cada objetivo, para su ficha"
+  },
   {
    "version": 43,
    "kind": "improvement",
@@ -248,6 +254,16 @@
   "SV-06": "El ecosistema y sus cadenas alimentarias",
   "SV-07": "Trabajar como un científico",
   "SV-08": "Lo que hacen las personas en un ecosistema"
+ },
+ "skills": {
+  "SV-01": "Distinguir lo vivo de lo inerte",
+  "SV-02": "Mirar dentro de una célula",
+  "SV-03": "Poner cada ser en su reino",
+  "SV-04": "Reconocer vertebrados e invertebrados",
+  "SV-05": "Entender cómo vive una planta",
+  "SV-06": "Seguir una cadena alimentaria",
+  "SV-07": "Investigar con método",
+  "SV-08": "Cuidar un ecosistema"
  },
  "framework": {
   "idnumber": "tesape-seres-vivos",

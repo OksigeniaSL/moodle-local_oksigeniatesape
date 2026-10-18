@@ -743,6 +743,7 @@ final class view {
             'timezone' => (string) ($region->timezone ?? '99'),
             'completionrule' => $region ? regions::rule($region, 'completion') : regions::RULES['completion'],
             'talentson' => !$region || regions::rule($region, 'talents') > 0,
+            'skillson' => !$region || regions::rule($region, 'skills') > 0,
             'portal' => (string) ($region->portal ?? 'door'),
             'hideacts' => (bool) ($region->hideacts ?? false),
             'allowstealth' => !empty($GLOBALS['CFG']->allowstealth),
@@ -805,6 +806,8 @@ final class view {
             'talents' => $private ? talents::view($char) : [],
             // Where the teacher turns them off, they wait: the choice too.
             'talentsoff' => $private && $member && !talents::on_in((int) $member->courseid),
+            // What they have learnt to do in the course: for the student and their teachers only.
+            'skills' => $private && $member ? skills::of($char, (int) $member->courseid) : [],
         ];
         $pending = $private && $member && talents::on_in((int) $member->courseid) ? talents::pending($char) : null;
         if ($pending) {
