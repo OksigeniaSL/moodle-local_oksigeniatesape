@@ -27,7 +27,8 @@ namespace local_oksigeniatesape\local;
 final class page {
     /** @var array Scripts of each app, after the core. */
     private const SCRIPTS = [
-        'game' => ['fx', 'critters', 'scene', 'minigame', 'nest', 'errors', 'whack', 'venn', 'whoami', 'game', 'exercises', 'battle'],
+        'game' => ['fx', 'critters', 'scene', 'minigame', 'nest', 'errors', 'whack', 'venn', 'whoami', 'game', 'exercises', 'battle',
+            'huddle'],
         'teach' => ['fx', 'scene', 'workshop', 'author', 'teach'],
         'board' => ['fx', 'critters', 'scene', 'board'],
     ];

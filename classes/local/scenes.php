@@ -378,9 +378,10 @@ final class scenes {
      * @param int $userid The student who plays.
      * @param int[] $userids The teammates the student marked as there.
      * @param int $now
+     * @param int[] $joined Those whose own tablet was in the team session of the student: there, also from far.
      * @return array Of ['char', 'member', 'name'].
      */
-    private static function mates(int $courseid, int $userid, array $userids, int $now): array {
+    private static function mates(int $courseid, int $userid, array $userids, int $now, array $joined = []): array {
         global $DB;
         $team = teams::of($courseid, $userid);
         if (!$team) {
@@ -396,8 +397,10 @@ final class scenes {
             $char = characters::get($id);
             $user = $DB->get_record('user', ['id' => $id], '*', IGNORE_MISSING);
             $member = $char && $user ? engine::member($char, $courseid, $now) : null;
-            // Who follows the expedition from far is not at this device; who rests does not play.
-            if ($member && empty($member->remote) && $member->status !== 'paused') {
+            // Who follows the expedition from far is not at this device, unless their own tablet was in the team session;
+            // who rests does not play.
+            $here = empty($member->remote) || in_array($id, $joined, true);
+            if ($member && $here && $member->status !== 'paused') {
                 $mates[] = ['char' => $char, 'member' => $member, 'name' => view::display_name($user, $char, $region)];
             }
         }
@@ -467,7 +470,13 @@ final class scenes {
         }
         [$items, $roles, $flags] = self::context($char, $courseid);
         // A scene only for one cannot be played as a team.
-        $team = $mates && ($scene->data['mode'] ?? 'both') !== 'solo' ? self::mates($courseid, (int) $userid, $mates, $now) : [];
+        $team = $mates && ($scene->data['mode'] ?? 'both') !== 'solo' ? self::mates(
+            $courseid,
+            (int) $userid,
+            $mates,
+            $now,
+            huddles::players($courseid, $char, $now)
+        ) : [];
         foreach ($team as $mate) {
             $items = array_merge($items, self::context($mate['char'], $courseid)[0]);
         }

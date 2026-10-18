@@ -706,5 +706,46 @@
         <INDEX NAME="charid-role-level" UNIQUE="true" FIELDS="charid, role, level"/>
       </INDEXES>
     </TABLE>
+    <TABLE NAME="local_oksigeniatesape_huddle" COMMENT="A team session: the tablets of a team joined to a scene that runs on the tablet of who opened it">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="groupid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The team"/>
+        <FIELD NAME="sceneid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="charid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Who opened it: the scene runs on their tablet"/>
+        <FIELD NAME="state" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="JSON: started, the decision published, who has the hand, the choice waiting"/>
+        <FIELD NAME="status" TYPE="char" LENGTH="10" NOTNULL="true" DEFAULT="open" SEQUENCE="false" COMMENT="open or closed"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The last sign of the tablet that runs it"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="courseid" TYPE="foreign" FIELDS="courseid" REFTABLE="course" REFFIELDS="id"/>
+        <KEY NAME="sceneid" TYPE="foreign" FIELDS="sceneid" REFTABLE="local_oksigeniatesape_scene" REFFIELDS="id"/>
+        <KEY NAME="charid" TYPE="foreign" FIELDS="charid" REFTABLE="local_oksigeniatesape_char" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="courseid-groupid-status" UNIQUE="false" FIELDS="courseid, groupid, status"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_oksigeniatesape_huddlein" COMMENT="Who joined a team session, and their last sign">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="huddleid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="charid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="lastseen" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="huddleid" TYPE="foreign" FIELDS="huddleid" REFTABLE="local_oksigeniatesape_huddle" REFFIELDS="id"/>
+        <KEY NAME="courseid" TYPE="foreign" FIELDS="courseid" REFTABLE="course" REFFIELDS="id"/>
+        <KEY NAME="charid" TYPE="foreign" FIELDS="charid" REFTABLE="local_oksigeniatesape_char" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="huddleid-charid" UNIQUE="true" FIELDS="huddleid, charid"/>
+      </INDEXES>
+    </TABLE>
   </TABLES>
 </XMLDB>

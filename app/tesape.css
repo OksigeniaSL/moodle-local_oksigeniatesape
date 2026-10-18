@@ -841,6 +841,65 @@ body.tesape {
   background: rgba(255, 200, 87, .1);
 }
 
+/* The team session: the tablets of a team joined to a scene. */
+.huddle-layer:empty {
+  display: none;
+}
+
+.huddle-phone {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  overflow-y: auto;
+  padding: 20px 16px 28px;
+  background: radial-gradient(circle at 50% 0, var(--mist), var(--night));
+}
+
+.huddle-members {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0 16px;
+}
+
+.huddle-members .chip.me {
+  border-color: var(--lantern);
+}
+
+.huddle-turn {
+  font-weight: 700;
+  font-size: 1.15rem;
+}
+
+.huddle-turn.mine {
+  color: var(--lantern);
+}
+
+.huddle-offer {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.team-huddle {
+  border: 0;
+  background: none;
+  color: var(--lantern);
+  padding: 0 4px;
+  cursor: pointer;
+  animation: tesape-firefly 2.4s ease-in-out infinite;
+}
+
+@keyframes tesape-firefly {
+  50% {
+    opacity: .45;
+  }
+}
+
+body.still .team-huddle {
+  animation: none;
+}
+
 /* The way of the creature: each card with how it would look. */
 .branch-pet {
   display: block;

@@ -361,8 +361,14 @@
       'stroke-width="3" fill="none"/><path d="M50 24 Q60 10 70 14 Q60 22 50 24Z" fill="#7cc67f"/></svg>';
     // While a play is being saved there is no way out: closed then, the map would show it as not played.
     var saving = false;
+    // A team session: the scene runs here, and the hand chooses on its own tablet.
+    var huddle = null;
 
     function close() {
+      if (huddle) {
+        huddle.stop();
+        huddle = null;
+      }
       if (window.speechSynthesis) {
         window.speechSynthesis.cancel();
       }
@@ -1002,6 +1008,67 @@
           T.toast(esc(t(role === 'protector' ? 'app_role_shield_help' : 'app_role_cheer_help')));
         }
       };
+    }
+
+    /**
+     * In a team session, the decision at hand as the other tablets see it: what it asks and, if it is one to choose, the
+     * options that can be chosen now; and who decides.
+     *
+     * @return {Object|null}
+     */
+    function huddleNow() {
+      var n = sc && run ? sc.nodes[run.node] : null;
+      if (!n) {
+        return null;
+      }
+      var multi = n.type === 'choice' && n.select && n.select.max > 1;
+      var kind = n.type === 'choice' ? (multi ? 'multi' : 'choose') : n.type;
+      var options = [];
+      if (kind === 'choose') {
+        layer.querySelectorAll('.opt[data-id]').forEach(function(b) {
+          if (!b.hidden && !b.disabled) {
+            options.push({id: b.dataset.id, label: b.textContent.trim()});
+          }
+        });
+      }
+      var hand = turnOf();
+      return {node: run.node, kind: kind, prompt: n.prompt ? tx(n.prompt) : '', options: options,
+        hand: hand ? Number(hand.userid) : Number(cfg.userid)};
+    }
+
+    /**
+     * In a team session, the option the hand chose on their tablet: played here as if it were touched here.
+     *
+     * @param {string} id
+     */
+    function huddlePlay(id) {
+      var b = layer.querySelector('.opt[data-id="' + id + '"]');
+      if (b && !b.disabled && !b.hidden) {
+        b.click();
+      }
+    }
+
+    /**
+     * In a team session, who is still in: if the hand of a decision to choose went away, it passes to the next one who
+     * is there.
+     *
+     * @param {number[]} ids
+     */
+    function huddlePresent(ids) {
+      var n = sc && run ? sc.nodes[run.node] : null;
+      var hand = turnOf();
+      if (!n || n.type !== 'choice' || !hand || ids.indexOf(Number(hand.userid)) >= 0 || layer.querySelector('.opt.sel')) {
+        return;
+      }
+      var order = [cfg.userid].concat(opts.team || []);
+      for (var k = 1; k <= order.length; k++) {
+        if (ids.indexOf(Number(order[(run.turn + k) % order.length])) >= 0) {
+          run.turn += k;
+          run.handfor[run.node] = 0;
+          next();
+          return;
+        }
+      }
     }
 
     /**
@@ -2137,6 +2204,9 @@
         if (T.fx) {
           // The soft sound of the place of the scene.
           T.fx.ambient(T.fx.place(d.place));
+        }
+        if (opts.huddle && T.huddleSync) {
+          huddle = T.huddleSync(opts.huddle, huddleNow, huddlePlay, huddlePresent);
         }
         start(null);
       }).catch(function(e) {

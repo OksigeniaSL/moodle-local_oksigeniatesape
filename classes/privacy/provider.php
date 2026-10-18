@@ -46,7 +46,7 @@ class provider implements
 
     /** @var string[] Tables of a character in a course, all with charid and courseid. */
     public const COURSE_TABLES = ['member', 'ledger', 'inventory', 'sceneattempt', 'minigame', 'validation', 'found', 'idea',
-        'livein', 'livetoken', 'pact', 'daily', 'purchase'];
+        'livein', 'livetoken', 'pact', 'daily', 'purchase', 'huddle', 'huddlein'];
 
     /**
      * What is stored.
@@ -77,6 +77,8 @@ class provider implements
             'daily' => ['charid', 'courseid', 'daystart', 'question', 'answer', 'success', 'timecreated'],
             'purchase' => ['charid', 'courseid', 'groupid', 'code', 'amount', 'timecreated'],
             'talent' => ['charid', 'role', 'code', 'level', 'timecreated'],
+            'huddle' => ['courseid', 'groupid', 'sceneid', 'charid', 'state', 'status', 'timecreated', 'timemodified'],
+            'huddlein' => ['huddleid', 'courseid', 'charid', 'lastseen', 'timecreated'],
         ];
         foreach ($fields as $table => $names) {
             $described = [];
@@ -476,6 +478,16 @@ class provider implements
                     'status' => $i->status,
                     'timecreated' => transform::datetime($i->timecreated),
                 ], $ideas)),
+            ]);
+        }
+        $huddles = $DB->get_records(self::T . 'huddlein', ['charid' => $charid, 'courseid' => $courseid], 'huddleid');
+        if ($huddles) {
+            $writer->export_data(self::path('teamsessions'), (object) [
+                'sessions' => array_values(array_map(fn($h) => [
+                    'session' => (int) $h->huddleid,
+                    'joined' => transform::datetime($h->timecreated),
+                    'lastseen' => transform::datetime($h->lastseen),
+                ], $huddles)),
             ]);
         }
         $live = $DB->get_records(self::T . 'livein', ['charid' => $charid, 'courseid' => $courseid], 'liveid, round');

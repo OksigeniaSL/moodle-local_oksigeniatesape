@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.110.0 (2026-10-18)
+
+- **Team sessions: a scene with the tablets of the team.** In a team scene, «With the tablets of the team» opens a
+  waiting room; the others get a call on their tablet («Your team plays … on the tablet of Rocío») and join with a
+  touch, no codes. «Start» begins the scene with those who are in. The scene runs on the tablet of who opened it; at
+  each decision to choose, who has the hand chooses on their own tablet and the others see who decides («Rocío decides.
+  Help them.»). The rest (sorting, ordering, several options at once) is done on the tablet that runs it. The play
+  counts for those who were in, also for who follows the expedition from far: their own tablet says they are there.
+- If the tablet of the hand goes quiet for twenty seconds, the hand passes to the next one who is in; who comes back
+  goes on where the team is. A session without signs of its tablet for two minutes is gone; closing the scene closes it
+  for everybody.
+- **The class screen shows a firefly** by each team with a session open; the teacher can touch it to close it.
+
 ## 0.109.0 (2026-10-18)
 
 - **The creature chooses its way** when it reaches its second stage: land (fur), air (feathers) or water (scales), each

@@ -1857,7 +1857,8 @@
           (far ? ' disabled' : '') + '> ' + esc(m.name) + (far ? ' · ' + esc(t('app_team_far')) : '') + '</label>';
       }).join('') + '</div><div class="actions"><button class="btn btn-soft" type="button" data-cancel>' +
       esc(t('app_cancel')) + '</button><button class="btn btn-main" type="submit" disabled>' + esc(t('app_team_start')) +
-      '</button></div></form>';
+      '</button></div><div class="huddle-offer"><p class="help-soft">' + esc(t('app_huddle_tablets_help')) + '</p>' +
+      '<button class="btn btn-soft" type="button" data-tablets>' + esc(t('app_huddle_tablets')) + '</button></div></form>';
     document.body.appendChild(layer);
     var form = layer.querySelector('form');
     var go = form.querySelector('[type="submit"]');
@@ -1871,6 +1872,18 @@
     };
     layer.querySelector('[data-cancel]').onclick = function() {
       layer.remove();
+    };
+    // With the tablets of the team: each one chooses on theirs when it is their turn; the scene runs on this one.
+    layer.querySelector('[data-tablets]').onclick = function() {
+      layer.remove();
+      T.huddleLobby(sceneid, function(h, players) {
+        T.playScene({sceneid: sceneid, world: state.world, huddle: h.id, team: players.filter(function(id) {
+          return Number(id) !== Number(cfg.userid);
+        }), onclose: function(world) {
+          state.world = world;
+          route();
+        }});
+      });
     };
     form.onsubmit = function(ev) {
       ev.preventDefault();

@@ -20,6 +20,7 @@ use core_external\external_api;
 use core_external\external_function_parameters;
 use core_external\external_single_structure;
 use core_external\external_value;
+use local_oksigeniatesape\local\huddles;
 use local_oksigeniatesape\local\live;
 use local_oksigeniatesape\local\regions;
 use local_oksigeniatesape\local\sessions;
@@ -133,6 +134,8 @@ final class live_host extends external_api {
             $session = $session ? ['session' => json_encode($session)] : [];
             // How each team says it is doing today, for its lantern on the class screen.
             $session['teams'] = json_encode((object) teams::states($courseid, $now));
+            // And which teams play a scene with their tablets joined: a firefly by each.
+            $session['huddles'] = json_encode((object) huddles::open_teams($courseid, $now));
             $live = live::recent($courseid, $now, true);
             if (!$live) {
                 return $session;
@@ -239,6 +242,7 @@ final class live_host extends external_api {
             'live' => structures::live_board(),
             'session' => new external_value(PARAM_RAW, 'The session going on, as the class screen shows it (JSON)', VALUE_OPTIONAL),
             'teams' => new external_value(PARAM_RAW, 'How each team says it is doing today, by group (JSON)', VALUE_OPTIONAL),
+            'huddles' => new external_value(PARAM_RAW, 'The team sessions open, group => session (JSON)', VALUE_OPTIONAL),
         ]);
     }
 }

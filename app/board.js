@@ -51,6 +51,7 @@
       state.live = r[2].live || null;
       session(r[2].session);
       state.teamstates = r[2].teams ? JSON.parse(r[2].teams) : {};
+      state.huddles = r[2].huddles ? JSON.parse(r[2].huddles) : {};
       modes();
       T.family = r[1].region.family;
       schedule();
@@ -100,7 +101,7 @@
     }
     T.api('live_host', {courseid: cfg.courseid, action: 'state'}).then(function(r) {
       session(r.session);
-      teamStates(r.teams);
+      teamStates(r.teams, r.huddles);
       var live = r.live || null;
       var was = state.live;
       if ((live && live.id) !== (was && was.id) || (live && live.outcome) !== (was && was.outcome)) {
@@ -121,24 +122,47 @@
    * @return {string}
    */
   function teamState(id, st) {
+    // A team playing a scene with its tablets joined: a firefly, which the teacher can touch to close it.
+    var huddle = (state.huddles || {})[id];
     return '<span class="team-state-lamp' + (st ? ' state-' + st : '') + '" data-teamlamp="' + id + '">' +
-      (st ? '<i aria-hidden="true"></i>' + esc(t('board_teamstate_' + st)) : '') + '</span>';
+      (st ? '<i aria-hidden="true"></i>' + esc(t('board_teamstate_' + st)) : '') + (huddle ? '<button type="button" ' +
+      'class="team-huddle" data-huddle="' + huddle + '" title="' + esc(t('board_huddle_close')) + '">' + T.icon('cheer') +
+      '<span class="sr-only">' + esc(t('board_huddle')) + '</span></button>' : '') + '</span>';
   }
 
-  function teamStates(json) {
+  function teamStates(json, huddles) {
     var states = {};
     try {
       states = json ? JSON.parse(json) : {};
+      state.huddles = huddles ? JSON.parse(huddles) : {};
     } catch (e) {
       states = {};
     }
     state.teamstates = states;
     app.querySelectorAll('[data-teamlamp]').forEach(function(el) {
-      var st = states[el.dataset.teamlamp] || '';
+      var st = (states[el.dataset.teamlamp] || '') + '|' + ((state.huddles || {})[el.dataset.teamlamp] || '');
       if ((el.dataset.st || '') !== st) {
-        el.dataset.st = st;
-        el.outerHTML = teamState(el.dataset.teamlamp, st).replace('data-teamlamp=', 'data-st="' + st + '" data-teamlamp=');
+        el.outerHTML = teamState(el.dataset.teamlamp, states[el.dataset.teamlamp] || '').replace('data-teamlamp=',
+          'data-st="' + st + '" data-teamlamp=');
       }
+    });
+    bindHuddles();
+  }
+
+  /** The teacher closes a team session from its firefly. */
+  function bindHuddles() {
+    app.querySelectorAll('[data-huddle]').forEach(function(b) {
+      b.onclick = function(ev) {
+        ev.stopPropagation();
+        if (!window.confirm(t('board_huddle_close_confirm'))) {
+          return;
+        }
+        T.api('huddle', {courseid: cfg.courseid, action: 'close', huddleid: Number(b.dataset.huddle)}).then(function() {
+          b.remove();
+        }).catch(function(e) {
+          T.toast(esc(e.message), true);
+        });
+      };
     });
   }
 
@@ -1426,6 +1450,7 @@
       '<div class="board-grid">' + map() + '<div class="board-side">' + todayCard() + openerCard() + eventCard() + battleCard() +
       sceneCard() + teams() + printCard() + '</div></div>' + bar() + '</div>';
     bind();
+    bindHuddles();
   }
 
   function bind() {

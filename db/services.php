@@ -433,6 +433,13 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:runclassscreen',
     ],
+    'local_oksigeniatesape_huddle' => [
+        'classname' => 'local_oksigeniatesape\\external\\huddle',
+        'description' => 'The team session of a student: the tablets of a team joined to a scene.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:play',
+    ],
     'local_oksigeniatesape_choose_branch' => [
         'classname' => 'local_oksigeniatesape\\external\\choose_branch',
         'description' => 'A student chooses the branch of their creature when it reaches its second stage.',
