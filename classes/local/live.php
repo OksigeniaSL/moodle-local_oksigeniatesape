@@ -192,9 +192,10 @@ final class live {
      * @param string $text
      * @param string[] $options Two to six.
      * @param int|null $now
+     * @param array $meta The node of the scene and the ids of its options, for what confuses the class.
      * @return \stdClass The session.
      */
-    public static function vote(\stdClass $live, string $text, array $options, ?int $now = null): \stdClass {
+    public static function vote(\stdClass $live, string $text, array $options, ?int $now = null, array $meta = []): \stdClass {
         $now = $now ?? time();
         $state = self::state($live);
         if ($live->kind !== 'vote' || count($options) < 2 || count($options) > 6) {
@@ -209,6 +210,11 @@ final class live {
         $question = ['id' => 'v' . $round, 'text' => clean_param($text, PARAM_TEXT), 'options' => $options];
         $state['rounds'][$round] = ['q' => $question['id'], 'options' => count($options), 'correct' => -1,
             'question' => $question, 'revealed' => false, 'answered' => 0, 'right' => 0, 'teams' => [], 'tally' => []];
+        $ids = array_values(array_map(fn($id) => clean_param((string) $id, PARAM_ALPHANUMEXT), (array) ($meta['ids'] ?? [])));
+        if (!empty($meta['node']) && count($ids) === count($options)) {
+            $state['rounds'][$round]['node'] = clean_param((string) $meta['node'], PARAM_ALPHANUMEXT);
+            $state['rounds'][$round]['ids'] = $ids;
+        }
         $state['open'] = true;
         $state['closesat'] = 0;
         return self::save($live, $state, $round, $now);
@@ -598,6 +604,22 @@ final class live {
         $transaction->allow_commit();
         $live->timeend = $now;
         return $live;
+    }
+
+    /**
+     * The decisions of a class vote, with what the phones voted: node, ids of the options and votes of each, once counted.
+     *
+     * @param \stdClass $live
+     * @return array
+     */
+    public static function votes(\stdClass $live): array {
+        $out = [];
+        foreach (self::state($live)['rounds'] ?? [] as $info) {
+            if (!empty($info['node']) && !empty($info['revealed']) && isset($info['tally'])) {
+                $out[] = ['node' => $info['node'], 'ids' => $info['ids'], 'tally' => array_map('intval', $info['tally'])];
+            }
+        }
+        return $out;
     }
 
     /**

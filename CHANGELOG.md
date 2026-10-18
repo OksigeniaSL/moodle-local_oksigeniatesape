@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.100.0 (2026-10-18)
+
+- **Touches with a reason**: the bar of the selected students starts with six reasons («Helped their team · +10
+  saber», «Checked before claiming», «Good question», «Explained their idea», «A mention · +1 gem», «Take a
+  breath»), which each course changes or extends in the advanced settings; the bare amounts stay below, «No reason».
+- The student sees the reason on their tablet the next time they come in, with three soft bells, and in their diary
+  («Checked before claiming · From your teacher»). The class screen never shows it: what is individual is celebrated on
+  the device of the student.
+- `award` keeps a note; the log entries give it, and the settings of the course give its touches.
+- **What the class chooses wrong on the class screen counts in what confuses it**, as nobody's try: with phones, how
+  many voted each wrong option (the vote now carries its node and the ids of its options); without them, the choice of
+  the class, once. It is kept without names, by scene.
+- Deleting or resetting a course now also deletes its sessions, the states of its teams and what its class plays
+  showed.
+- **Evidence of gestures**: each answer in a scene says how it came (right alone at the first try, right with help —
+  the lens, a hint or the creature —, right after seeing the consequence of a mistake, the same mistake again). The
+  evidence left in the competencies of Moodle says it too.
+- **The grid of the competencies** shows, beside the share right at the first try, how the answers came, and in grey
+  the level the game suggests from them; «Confirm» (by student) and «Confirm the N suggestions» take them where the
+  teacher has not rated yet. Nothing is rated by itself. `rate_competency` takes several ratings.
+
 ## 0.99.0 (2026-10-18)
 
 - **The first week, step by step**: turning Tesapé on in a course opens five steps, each with the minutes it takes

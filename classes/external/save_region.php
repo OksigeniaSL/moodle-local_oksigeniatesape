@@ -86,6 +86,14 @@ final class save_region extends external_api {
                 null,
                 NULL_ALLOWED,
             ),
+            'reasons' => new external_value(
+                PARAM_RAW,
+                'The touches with a reason, as JSON: a list of text, resource (saber, gems or breath) and amount; ' .
+                    '«default» goes back to those of the plugin',
+                VALUE_DEFAULT,
+                null,
+                NULL_ALLOWED,
+            ),
         ]);
     }
 
@@ -112,6 +120,7 @@ final class save_region extends external_api {
      * @param int|null $devicemusic
      * @param string|null $mischief
      * @param int|null $setup
+     * @param string|null $reasons
      * @return array
      */
     public static function execute(
@@ -134,7 +143,8 @@ final class save_region extends external_api {
         ?bool $devices = null,
         ?int $devicemusic = null,
         ?string $mischief = null,
-        ?int $setup = null
+        ?int $setup = null,
+        ?string $reasons = null
     ): array {
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
@@ -157,12 +167,20 @@ final class save_region extends external_api {
             'devicemusic' => $devicemusic,
             'mischief' => $mischief,
             'setup' => $setup,
+            'reasons' => $reasons,
         ]);
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
         require_capability('local/oksigeniatesape:manageregion', $context);
         $settings = array_filter($params, fn($value) => $value !== null);
-        unset($settings['courseid'], $settings['completionrule']);
+        unset($settings['courseid'], $settings['completionrule'], $settings['reasons']);
+        if ($params['reasons'] !== null) {
+            $list = $params['reasons'] === 'default' ? null : json_decode($params['reasons'], true);
+            if ($params['reasons'] !== 'default' && !is_array($list)) {
+                throw new \invalid_parameter_exception('The touches go as a list');
+            }
+            $settings['reasons'] = $list;
+        }
         if ($params['completionrule'] !== null) {
             $settings['rules'] = ['completion' => $params['completionrule']];
         }

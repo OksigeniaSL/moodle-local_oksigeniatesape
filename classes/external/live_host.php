@@ -63,6 +63,7 @@ final class live_host extends external_api {
                 VALUE_DEFAULT,
                 false
             ),
+            'meta' => new external_value(PARAM_RAW, 'vote: the node and the ids of the options, in JSON', VALUE_DEFAULT, '{}'),
         ]);
     }
 
@@ -83,6 +84,7 @@ final class live_host extends external_api {
      * @param bool $final
      * @param bool $turns
      * @param bool $rehearsal
+     * @param string $meta
      * @return array
      */
     public static function execute(
@@ -99,7 +101,8 @@ final class live_host extends external_api {
         int $round = -1,
         bool $final = false,
         bool $turns = false,
-        bool $rehearsal = false
+        bool $rehearsal = false,
+        string $meta = '{}'
     ): array {
         global $USER;
         $params = self::validate_parameters(self::execute_parameters(), [
@@ -117,6 +120,7 @@ final class live_host extends external_api {
             'final' => $final,
             'turns' => $turns,
             'rehearsal' => $rehearsal,
+            'meta' => $meta,
         ]);
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
@@ -216,7 +220,8 @@ final class live_host extends external_api {
                 break;
             case 'vote':
                 $list = json_decode($params['options'], true);
-                $live = live::vote($live, $params['text'], is_array($list) ? $list : [], $now);
+                $meta = json_decode($params['meta'], true);
+                $live = live::vote($live, $params['text'], is_array($list) ? $list : [], $now, is_array($meta) ? $meta : []);
                 break;
             default:
                 throw new \invalid_parameter_exception('Unknown action');

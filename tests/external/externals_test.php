@@ -149,6 +149,14 @@ final class externals_test extends \advanced_testcase {
         $results = $this->call('award', $w->teacher, [$w->course->id, [$w->ana->id, $w->leo->id, $w->noa->id], 'saber', 15]);
         $this->assertEquals(['given', 'given', 'nocharacter'], array_column($results, 'status'));
         $this->assertEquals(15, characters::get($w->ana->id)->saber);
+        // A touch with a reason: the student sees why in their log.
+        $this->call('award', $w->teacher, [$w->course->id, [$w->ana->id], 'gems', 1, '  Ha comprobado antes de afirmar ']);
+        $world = $this->call('get_world', $w->ana, [$w->course->id]);
+        $touch = array_values(array_filter($world['log'], fn($e) => $e['note'] !== ''))[0];
+        $this->assertSame(
+            ['gems', 1, 'manual', 'Ha comprobado antes de afirmar'],
+            [$touch['resource'], $touch['amount'], $touch['reason'], $touch['note']]
+        );
         // How each one is left, for the panel to draw it at once.
         $this->assertEquals((int) characters::get($w->ana->id)->level, $results[0]['level']);
         $this->assertEquals('active', $results[0]['state']);
@@ -197,6 +205,19 @@ final class externals_test extends \advanced_testcase {
         $this->assertSame(6, $region['setup']);
         $this->assertSame('animals', $region['family']);
         $this->assertIsBool($region['completion']);
+        // The touches with a reason: those of the plugin, the own ones of the course (cleaned), and back.
+        $this->assertCount(6, $region['reasons']);
+        $this->assertFalse($region['reasonsown']);
+        $own = json_encode([['text' => 'Ha cuidado el material', 'resource' => 'gems', 'amount' => 9],
+            ['text' => '', 'resource' => 'saber', 'amount' => 5], ['text' => 'Magia', 'resource' => 'energy', 'amount' => 1]]);
+        $args = array_merge([$w->course->id], array_fill(0, 19, null), [$own]);
+        $region = $this->call('save_region', $w->teacher, $args);
+        $this->assertSame([['text' => 'Ha cuidado el material', 'resource' => 'gems', 'amount' => 3]], $region['reasons']);
+        $this->assertTrue($region['reasonsown']);
+        $args[20] = 'default';
+        $region = $this->call('save_region', $w->teacher, $args);
+        $this->assertCount(6, $region['reasons']);
+        $this->assertFalse($region['reasonsown']);
         $this->assertEquals(['ok' => true], $this->call('delete_challenge', $w->teacher, [$w->course->id, $challenge['id']]));
     }
 

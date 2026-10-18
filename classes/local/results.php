@@ -120,6 +120,72 @@ final class results {
     }
 
     /**
+     * The mix-ups of one play of a scene: each wrong option chosen, and each item put in a wrong group at its first try.
+     *
+     * @param array $def The scene, as it is played in the course.
+     * @param array $events Of the play.
+     * @return array Key (node|option, or node|item|group) and how many times.
+     */
+    public static function mixups(array $def, array $events): array {
+        $counts = [];
+        $seen = [];
+        foreach ($events as $event) {
+            $node = $def['nodes'][$event['n'] ?? ''] ?? null;
+            if (!$node || (isset($event['pick']) && !empty($node['dilemma']))) {
+                continue;
+            }
+            if (isset($event['pick'])) {
+                foreach ($node['options'] ?? [] as $option) {
+                    if (in_array($option['id'], (array) $event['pick'], true) && ($option['correct'] ?? null) === false) {
+                        $key = $event['n'] . '|' . $option['id'];
+                        $counts[$key] = ($counts[$key] ?? 0) + 1;
+                    }
+                }
+            } else if (isset($event['item'], $event['bin']) && empty($seen[$event['n'] . $event['item']])) {
+                // Only the first try of each item.
+                $seen[$event['n'] . $event['item']] = true;
+                foreach ($node['items'] ?? [] as $item) {
+                    if ($item['id'] === $event['item'] && $item['bin'] !== $event['bin']) {
+                        $key = $event['n'] . '|' . $item['id'] . '|' . $event['bin'];
+                        $counts[$key] = ($counts[$key] ?? 0) + 1;
+                    }
+                }
+            }
+        }
+        return $counts;
+    }
+
+    /**
+     * The mix-ups of a class vote: each wrong option, with how many phones voted it.
+     *
+     * @param array $def The scene, as it is played in the course.
+     * @param array $votes Of live::votes().
+     * @return array As mixups().
+     */
+    public static function voted(array $def, array $votes): array {
+        $counts = [];
+        foreach ($votes as $vote) {
+            $node = $def['nodes'][$vote['node']] ?? null;
+            if (!$node || !empty($node['dilemma'])) {
+                continue;
+            }
+            $wrong = [];
+            foreach ($node['options'] ?? [] as $option) {
+                if (($option['correct'] ?? null) === false) {
+                    $wrong[$option['id']] = true;
+                }
+            }
+            foreach ($vote['ids'] as $i => $id) {
+                if (isset($wrong[$id]) && !empty($vote['tally'][$i])) {
+                    $key = $vote['node'] . '|' . $id;
+                    $counts[$key] = ($counts[$key] ?? 0) + (int) $vote['tally'][$i];
+                }
+            }
+        }
+        return $counts;
+    }
+
+    /**
      * The results of one scene.
      *
      * @param \stdClass $scene
@@ -151,34 +217,23 @@ final class results {
                 $objectives[$code]['total'] += (int) $o['total'];
             }
             $path = json_decode((string) $attempt->path, true) ?: [];
-            $seen = [];
             foreach ($path['events'] ?? [] as $event) {
                 $node = $def['nodes'][$event['n'] ?? ''] ?? null;
-                if (!$node) {
-                    continue;
-                }
-                if (isset($event['pick']) && !empty($node['dilemma'])) {
+                if ($node && isset($event['pick']) && !empty($node['dilemma'])) {
                     // A dilemma: what the class decided, without right or wrong.
                     foreach ((array) $event['pick'] as $id) {
                         $decided[$event['n']][$id] = ($decided[$event['n']][$id] ?? 0) + 1;
                     }
-                } else if (isset($event['pick'])) {
-                    foreach ($node['options'] ?? [] as $option) {
-                        if (in_array($option['id'], (array) $event['pick'], true) && ($option['correct'] ?? null) === false) {
-                            $key = $event['n'] . '|' . $option['id'];
-                            $counts[$key] = ($counts[$key] ?? 0) + 1;
-                        }
-                    }
-                } else if (isset($event['item'], $event['bin']) && empty($seen[$event['n'] . $event['item']])) {
-                    // Only the first try of each item.
-                    $seen[$event['n'] . $event['item']] = true;
-                    foreach ($node['items'] ?? [] as $item) {
-                        if ($item['id'] === $event['item'] && $item['bin'] !== $event['bin']) {
-                            $key = $event['n'] . '|' . $item['id'] . '|' . $event['bin'];
-                            $counts[$key] = ($counts[$key] ?? 0) + 1;
-                        }
-                    }
                 }
+            }
+            foreach (self::mixups($def, $path['events'] ?? []) as $key => $count) {
+                $counts[$key] = ($counts[$key] ?? 0) + $count;
+            }
+        }
+        // What the whole class chose wrong on the class screen counts too, as nobody's try.
+        foreach ($DB->get_fieldset_select(self::T . 'classplay', 'counts', 'sceneid = ?', [$scene->id]) as $json) {
+            foreach (json_decode((string) $json, true) ?: [] as $key => $count) {
+                $counts[$key] = ($counts[$key] ?? 0) + (int) $count;
             }
         }
         arsort($counts);

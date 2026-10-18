@@ -235,6 +235,12 @@
     tap: function() {
       tone(660, 0, 0.06, 'sine', 0.12);
     },
+    // A touch of the teacher with a reason: three soft bells going up.
+    chime: function() {
+      tone(784, 0, 0.5, 'sine', 0.1);
+      tone(988, 0.12, 0.5, 'sine', 0.1);
+      tone(1319, 0.24, 0.7, 'sine', 0.09);
+    },
     // What was won reaching its counter: two bright notes.
     coin: function() {
       tone(988, 0, 0.07, 'triangle', 0.12);

@@ -1453,9 +1453,14 @@
       return;
     }
     var amounts = [5, 10, 20];
+    var reasons = state.data.region.reasons || [];
     bar.innerHTML = '<section class="card no-print" style="position:sticky;bottom:84px;margin-top:14px;border-color:' +
-      'var(--lantern)"><b>' + esc(t('teach_selected', ids.length)) + '</b><div class="pills" style="justify-content:' +
-      'flex-start;margin-top:10px">' + amounts.map(function(a) {
+      'var(--lantern)"><b>' + esc(t('teach_selected', ids.length)) + '</b>' + (reasons.length ? '<div class="pills ' +
+      'touch-chips" style="justify-content:flex-start;margin-top:10px">' + reasons.map(function(r, i) {
+        return '<button class="pill" data-touch="' + i + '">' + esc(r.text) + ' <small>+' + r.amount + ' ' +
+          esc(t(r.resource === 'gems' && r.amount === 1 ? 'app_gem' : 'app_' + r.resource)) + '</small></button>';
+      }).join('') + '</div>' : '') + '<div class="pills adapt-profiles" style="justify-content:flex-start;margin-top:10px">' +
+      (reasons.length ? '<span class="help-soft">' + esc(t('teach_touch_none')) + '</span>' : '') + amounts.map(function(a) {
         return '<button class="pill" data-award="saber" data-amount="' + a + '">+' + a + ' ' + esc(t('app_saber')) +
           '</button>';
       }).join('') + '<button class="pill" data-award="gems" data-amount="1">' + esc(t('app_encounter_gem')) + '</button>' +
@@ -1489,11 +1494,25 @@
     bar.querySelectorAll('[data-award]').forEach(function(b) {
       b.onclick = function() {
         // A second tap while the first is on its way would give it twice.
-        bar.querySelectorAll('[data-award]').forEach(function(x) {
+        bar.querySelectorAll('[data-award], [data-touch]').forEach(function(x) {
           x.disabled = true;
         });
         award(ids, b.dataset.award, Number(b.dataset.amount)).then(function() {
-          bar.querySelectorAll('[data-award]').forEach(function(x) {
+          bar.querySelectorAll('[data-award], [data-touch]').forEach(function(x) {
+            x.disabled = false;
+          });
+        });
+      };
+    });
+    // A touch with a reason: the student sees why on their tablet.
+    bar.querySelectorAll('[data-touch]').forEach(function(b) {
+      b.onclick = function() {
+        var r = reasons[Number(b.dataset.touch)];
+        bar.querySelectorAll('[data-award], [data-touch]').forEach(function(x) {
+          x.disabled = true;
+        });
+        award(ids, r.resource, r.amount, r.text).then(function() {
+          bar.querySelectorAll('[data-award], [data-touch]').forEach(function(x) {
             x.disabled = false;
           });
         });
@@ -1501,8 +1520,9 @@
     });
   }
 
-  function award(ids, resource, amount) {
-    return T.api('award', {courseid: cfg.courseid, userids: ids, resource: resource, amount: amount}).then(function(results) {
+  function award(ids, resource, amount, note) {
+    return T.api('award', {courseid: cfg.courseid, userids: ids, resource: resource, amount: amount,
+      note: note || ''}).then(function(results) {
       var given = results.filter(function(r) {
         return r.status === 'given';
       }).length;
@@ -2090,12 +2110,26 @@
           x.name) + '</option>';
       }).join('');
       return '<li class="item"><span class="grow"><b>' + esc(o.code) + '</b><small>' + esc(o.name) + '</small></span>' +
-        '<select data-compobj="' + esc(o.code) + '"' + (editable ? '' : ' disabled') + '>' + options + '</select></li>';
+        '<select data-compobj="' + esc(o.code) + '" aria-label="' + esc(o.code + ' · ' + o.name) + '"' + (editable ? '' :
+        ' disabled') + '>' + options + '</select></li>';
     }).join('');
+    // The suggestions of a student not rated yet: what «Confirm» sends.
+    var pending = function(st) {
+      return st.cells.filter(function(cell, i) {
+        return cell.suggested && !cell.rating && c.objectives[i].competencyid;
+      }).map(function(cell) {
+        return {userid: st.userid, objective: cell.objective, grade: cell.suggested};
+      });
+    };
+    var all = [];
+    c.students.forEach(function(st) {
+      all = all.concat(pending(st));
+    });
     var head = '<th>' + esc(t('teach_comp_student')) + '</th>' + c.objectives.map(function(o) {
       return '<th title="' + esc(o.name) + '">' + esc(o.code) + '</th>';
-    }).join('');
+    }).join('') + (all.length ? '<th>' + esc(t('teach_comp_suggestions')) + '</th>' : '');
     var rows = c.students.map(function(st) {
+      var mine = pending(st);
       return '<tr><th>' + esc(st.fullname) + '</th>' + st.cells.map(function(cell, i) {
         var o = c.objectives[i];
         if (!o.competencyid) {
@@ -2106,12 +2140,22 @@
             return '<option value="' + (n + 1) + '"' + (cell.rating === n + 1 ? ' selected' : '') + '>' + esc(level) +
               '</option>';
           }).join('');
-        return '<td><small>' + (cell.percent < 0 ? '—' : cell.percent + ' %') + '</small><select data-rate="' + st.userid +
-          ':' + esc(o.code) + '" aria-label="' + esc(st.fullname + ' · ' + o.code) + '">' + levels + '</select></td>';
-      }).join('') + '</tr>';
+        // How the answers came, beside the share: alone at the first try · with help · after the consequence.
+        var marks = cell.percent < 0 ? '' : '<span class="comp-marks" title="' + esc(t('teach_comp_marks', cell)) + '">' +
+          '<span aria-hidden="true">' + cell.first + ' · ' + cell.helped + ' · ' + cell.after + (cell.twice ? ' · ' +
+          cell.twice + '✗' : '') + '</span><span class="sr-only">' + esc(t('teach_comp_marks', cell)) + '</span></span>';
+        return '<td><small>' + (cell.percent < 0 ? '—' : cell.percent + ' %') + '</small>' + marks + '<select data-rate="' +
+          st.userid + ':' + esc(o.code) + '" aria-label="' + esc(st.fullname + ' · ' + o.code) + '">' + levels +
+          '</select>' + (cell.suggested && !cell.rating ? '<small class="comp-suggested">' + esc(t('teach_comp_suggested',
+          o.levels[cell.suggested - 1] || cell.suggested)) + '</small>' : '') + '</td>';
+      }).join('') + (all.length ? '<td>' + (mine.length ? '<button type="button" class="chip" data-confirmrow="' +
+        st.userid + '">' + esc(t('teach_comp_confirm_row')) + '</button>' : '') + '</td>' : '') + '</tr>';
     }).join('');
     var el = content('<section class="card"><h2>' + esc(t('teach_tab_competencies')) + '</h2><p style="color:' +
-      'var(--text-soft)">' + esc(t('teach_comp_help')) + '</p><div class="comp-grid"><table><thead><tr>' + head +
+      'var(--text-soft)">' + esc(t('teach_comp_help')) + '</p><p class="help-soft">' + esc(t('teach_comp_marks_help')) +
+      '</p>' + (all.length ? '<div class="actions" style="justify-content:flex-start"><button type="button" class="btn ' +
+      'btn-soft" data-confirmall>' + esc(t('teach_comp_confirm_all', all.length)) + '</button></div>' : '') +
+      '<div class="comp-grid"><table><thead><tr>' + head +
       '</tr></thead><tbody>' + rows + '</tbody></table></div></section><section class="card" style="margin-top:16px">' +
       '<h2>' + esc(t('teach_comp_links')) + '</h2><p style="color:var(--text-soft)">' + esc(t('teach_comp_links_help')) +
       '</p><ul class="list">' + mapping + '</ul></section>');
@@ -2127,12 +2171,53 @@
         });
       };
     });
+    // Confirming takes the suggestions as they are, only where the teacher has not rated yet.
+    var confirm = function(list, button) {
+      button.disabled = true;
+      T.api('rate_competency', {courseid: cfg.courseid, ratings: list}).then(function() {
+        list.forEach(function(x) {
+          c.students.forEach(function(st) {
+            st.cells.forEach(function(cell) {
+              if (st.userid === x.userid && cell.objective === x.objective) {
+                cell.rating = x.grade;
+              }
+            });
+          });
+        });
+        T.toast(esc(t('teach_comp_confirmed', list.length)));
+        tabCompetencies();
+      }).catch(function(e) {
+        button.disabled = false;
+        T.toast(esc(e.message), true);
+      });
+    };
+    var everything = el.querySelector('[data-confirmall]');
+    if (everything) {
+      everything.onclick = function() {
+        confirm(all, everything);
+      };
+    }
+    el.querySelectorAll('[data-confirmrow]').forEach(function(b) {
+      b.onclick = function() {
+        confirm(pending(c.students.filter(function(st) {
+          return st.userid === Number(b.dataset.confirmrow);
+        })[0]), b);
+      };
+    });
     el.querySelectorAll('[data-rate]').forEach(function(sel) {
       sel.onchange = function() {
         var parts = sel.dataset.rate.split(':');
         T.api('rate_competency', {courseid: cfg.courseid, userid: Number(parts[0]), objective: parts[1],
           grade: Number(sel.value)}).then(function() {
           sel.closest('td').classList.add('rated');
+          // Rated by hand: its suggestion is no longer waiting.
+          c.students.forEach(function(st) {
+            st.cells.forEach(function(cell) {
+              if (st.userid === Number(parts[0]) && cell.objective === parts[1]) {
+                cell.rating = Number(sel.value);
+              }
+            });
+          });
         }).catch(function(e) {
           T.toast(esc(e.message), true);
         });
@@ -2842,6 +2927,9 @@
     var rows = state.log.map(function(e) {
       var cls = e.undone ? 'off' : e.amount >= 0 ? 'up' : 'down';
       var reason = cfg.strings['app_reason_' + e.reason] ? t('app_reason_' + e.reason) : e.reason;
+      if (e.note) {
+        reason = e.note + ' · ' + reason;
+      }
       return '<li class="item"><span style="width:22px;height:22px;flex:none">' + T.icon(e.resource === 'item' ? 'gems' :
         e.resource) + '</span><span class="grow"><b>' + esc(e.fullname) + '</b><small>' + esc(reason) +
         (e.actor ? ' · ' + esc(e.actor) : '') + ' · ' + esc(T.date(new Date(e.time * 1000), {day: 'numeric', month: 'short',
@@ -2875,6 +2963,114 @@
   }
 
   /* ---------- Settings ---------- */
+
+  /** What a touch with a reason can give, and how much at most (as regions::REASON_MAX). */
+  var TOUCH_MAX = {saber: 50, gems: 3, breath: 2};
+
+  /** What a new touch gives when what it gives changes. */
+  var TOUCH_USUAL = {saber: 5, gems: 1, breath: 1};
+
+  /**
+   * The touches with a reason of the course, to change, add or take away.
+   *
+   * @param {Object} r The settings of the course.
+   * @param {boolean} editable
+   * @return {string}
+   */
+  function touchesEditor(r, editable) {
+    var dis = editable ? '' : ' disabled';
+    return '<h3>' + esc(t('teach_touches')) + '</h3><p class="help-soft">' + esc(t('teach_touches_help')) + '</p>' +
+      '<ul class="reason-rows" data-reasons>' + (r.reasons || []).map(function(x) {
+        return touchRow(x, dis);
+      }).join('') + '</ul>' + (editable ? '<div class="actions" style="justify-content:flex-start;margin-bottom:14px">' +
+      '<button type="button" class="btn btn-soft" data-reasonadd>' + esc(t('teach_touch_add')) + '</button>' +
+      (r.reasonsown ? '<button type="button" class="btn btn-soft" data-reasonreset>' + esc(t('teach_touch_reset')) +
+      '</button>' : '') + '</div>' : '');
+  }
+
+  function touchRow(x, dis) {
+    return '<li class="reason-row"><input type="text" maxlength="60" value="' + esc(x.text) + '" aria-label="' +
+      esc(t('teach_touch_text')) + '" data-reasontext' + dis + '><select data-reasonres aria-label="' +
+      esc(t('teach_touch_gives')) + '"' + dis + '>' + Object.keys(TOUCH_MAX).map(function(res) {
+        return '<option value="' + res + '"' + (x.resource === res ? ' selected' : '') + '>' + esc(t('app_' + res)) +
+          '</option>';
+      }).join('') + '</select><input type="number" min="1" max="' + TOUCH_MAX[x.resource] + '" value="' + x.amount + '" ' +
+      'aria-label="' + esc(t('teach_touch_amount')) + '" data-reasonamount' + dis + '>' + (dis ? '' : '<button ' +
+      'type="button" class="btn btn-soft icon-btn" data-reasondel aria-label="' + esc(t('teach_touch_remove')) + '" title="' +
+      esc(t('teach_touch_remove')) + '">×</button>') + '</li>';
+  }
+
+  /**
+   * The answers of the editor of the touches: whether they were changed, and how they are left.
+   *
+   * @param {Element} el
+   * @return {Object} edited() and list().
+   */
+  function bindTouchesEditor(el) {
+    var box = el.querySelector('[data-reasons]');
+    var edited = false;
+    var bindRow = function(row) {
+      row.querySelectorAll('input, select').forEach(function(input) {
+        input.addEventListener('input', function() {
+          edited = true;
+        });
+      });
+      var res = row.querySelector('[data-reasonres]');
+      res.addEventListener('change', function() {
+        var amount = row.querySelector('[data-reasonamount]');
+        amount.max = TOUCH_MAX[res.value];
+        amount.value = TOUCH_USUAL[res.value];
+        edited = true;
+      });
+      var del = row.querySelector('[data-reasondel]');
+      if (del) {
+        del.onclick = function() {
+          row.remove();
+          edited = true;
+        };
+      }
+    };
+    box.querySelectorAll('.reason-row').forEach(bindRow);
+    var add = el.querySelector('[data-reasonadd]');
+    if (add) {
+      add.onclick = function() {
+        if (box.children.length >= 12) {
+          return;
+        }
+        box.insertAdjacentHTML('beforeend', touchRow({text: '', resource: 'saber', amount: 5}, ''));
+        bindRow(box.lastElementChild);
+        box.lastElementChild.querySelector('[data-reasontext]').focus();
+        edited = true;
+      };
+    }
+    var reset = el.querySelector('[data-reasonreset]');
+    if (reset) {
+      reset.onclick = function() {
+        reset.disabled = true;
+        T.api('save_region', {courseid: cfg.courseid, reasons: 'default'}).then(function(region) {
+          state.data.region = region;
+          T.toast(esc(t('app_saved')));
+          tabSettings();
+        }).catch(function(e) {
+          reset.disabled = false;
+          T.toast(esc(e.message), true);
+        });
+      };
+    }
+    return {
+      edited: function() {
+        return edited;
+      },
+      list: function() {
+        return Array.prototype.map.call(box.querySelectorAll('.reason-row'), function(row) {
+          return {text: row.querySelector('[data-reasontext]').value.trim(), resource: row.querySelector('[data-reasonres]').value,
+            amount: Number(row.querySelector('[data-reasonamount]').value)};
+        }).filter(function(x) {
+          return x.text;
+        });
+      }
+    };
+  }
 
   function tabSettings() {
     var r = state.data.region;
@@ -2983,13 +3179,15 @@
       (editable ? '<div style="margin:-6px 0 14px">' + makeTeamsForm() + '</div>' : '') +
       '<div class="grid2" style="gap:10px">' + num('weeklycap', r.weeklycap, true) +
       num('dailymanualcap', r.dailymanualcap, false) + num('dailyenergylosscap', r.dailyenergylosscap, false) +
-      num('completionrule', r.completionrule, true) + '</div>' + inside + lookCard + badgeCard + gradesCard + '</details>';
+      num('completionrule', r.completionrule, true) + '</div>' + touchesEditor(r, editable) + inside + lookCard + badgeCard +
+      gradesCard + '</details>';
     var el = content('<section class="card"><h2>' + esc(t('teach_tab_settings')) + '</h2><form data-settings>' + daily +
       advanced + (editable ? '<div class="actions" style="justify-content:flex-start;margin-top:14px"><button ' +
       'class="btn btn-main" type="submit">' + esc(t('app_save')) + '</button></div>' : '') + '</form></section>');
     el.querySelector('.settings-advanced').ontoggle = function() {
       state.advanced = this.open;
     };
+    var touches = bindTouchesEditor(el);
     var family = r.family;
     bindFamilies(function(f) {
       family = f;
@@ -3037,7 +3235,9 @@
         portal: cover ? cover.value : 'door',
         hideacts: f.hideacts.checked,
         gradebook: f.gradebook.checked,
-        look: look ? look.value : ''
+        look: look ? look.value : '',
+        // Only when they were changed: those of the plugin follow the language of each teacher.
+        reasons: touches.edited() ? JSON.stringify(touches.list()) : null
       }).then(function(region) {
         T.light.follow(region.look || region.worldlook);
         T.toast(esc(t('app_saved')));

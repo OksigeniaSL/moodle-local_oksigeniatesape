@@ -96,7 +96,10 @@ final class competencies_test extends \advanced_testcase {
         $this->assertCount(1, $evidence);
         $item = reset($evidence);
         $this->assertEquals(evidence::ACTION_LOG, $item->get('action'));
-        $this->assertSame('evidence_scene', $item->get('descidentifier'));
+        // It says how the answers came, not only how many were right.
+        $this->assertSame('evidence_scene_how', $item->get('descidentifier'));
+        $a = (array) $item->get('desca');
+        $this->assertSame($a['ok'], $a['first'] + $a['helped'] + $a['after']);
         // The grid: the share right at the first try, and the rating the teacher gives.
         $this->setUser($w->teacher);
         $view = competencies::view($w->course->id);
@@ -104,9 +107,39 @@ final class competencies_test extends \advanced_testcase {
         $first = array_search('SV-01', array_column($view['objectives'], 'code'), true);
         $this->assertSame(100, $view['students'][0]['cells'][$first]['percent']);
         $this->assertSame(0, $view['students'][0]['cells'][$first]['rating']);
+        // All right alone at the first try: the game suggests the top of the scale; the teacher decides.
+        $this->assertSame(4, $view['students'][0]['cells'][$first]['suggested']);
+        $this->assertGreaterThan(0, $view['students'][0]['cells'][$first]['first']);
         competencies::rate($w->course->id, $w->student->id, 'SV-01', 3);
         $view = competencies::view($w->course->id);
         $this->assertSame(3, $view['students'][0]['cells'][$first]['rating']);
+        // Several at once, as the teacher confirms the suggestions.
+        \core_external\external_api::clean_returnvalue(
+            \local_oksigeniatesape\external\rate_competency::execute_returns(),
+            \local_oksigeniatesape\external\rate_competency::execute($w->course->id, 0, '', 0, [
+                ['userid' => $w->student->id, 'objective' => 'SV-01', 'grade' => 2],
+                ['userid' => $w->student->id, 'objective' => 'SV-02', 'grade' => 1],
+            ])
+        );
+        $view = competencies::view($w->course->id);
+        $second = array_search('SV-02', array_column($view['objectives'], 'code'), true);
+        $this->assertSame([2, 1], [$view['students'][0]['cells'][$first]['rating'],
+            $view['students'][0]['cells'][$second]['rating']]);
+    }
+
+    public function test_the_suggested_level_weighs_how_the_answers_came(): void {
+        // Four levels: alone counts most, with help a bit less, after the consequence less; repeating a mistake takes away.
+        $this->assertSame(4, competencies::suggest(['total' => 4, 'first' => 4], 4));
+        $this->assertSame(3, competencies::suggest(['total' => 4, 'first' => 2, 'helped' => 2], 4));
+        $this->assertSame(2, competencies::suggest(['total' => 4, 'after' => 4], 4));
+        $this->assertSame(1, competencies::suggest(['total' => 4, 'twice' => 2], 4));
+        // The top levels ask for more: half right alone is on the way, not there yet.
+        $this->assertSame(2, competencies::suggest(['total' => 100, 'first' => 53], 4));
+        $this->assertSame(3, competencies::suggest(['total' => 100, 'first' => 70], 4));
+        $this->assertSame(4, competencies::suggest(['total' => 100, 'first' => 90], 4));
+        $this->assertSame(0, competencies::suggest(['total' => 0], 4));
+        // A play from before this was kept: what was right counts as at the first try.
+        $this->assertSame(['first' => 3, 'helped' => 0, 'after' => 0, 'twice' => 0], competencies::how(['ok' => 3, 'total' => 4]));
     }
 
     public function test_the_school_can_use_its_own_competencies(): void {

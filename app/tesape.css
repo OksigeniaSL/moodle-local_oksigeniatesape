@@ -794,6 +794,74 @@ body.tesape {
   margin: 6px 2px 12px;
 }
 
+/* The grid of the competencies: how the answers came, and the level the game suggests. */
+.comp-marks {
+  display: block;
+  font-size: .78rem;
+  color: var(--text-soft);
+  white-space: nowrap;
+}
+
+.comp-suggested {
+  display: block;
+  color: var(--text-soft);
+  font-style: italic;
+  margin-top: 2px;
+}
+
+/* The touches with a reason: their editor in the settings, and the moment on the tablet of the student. */
+.reason-rows {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.reason-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 72px auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.touch-chips .pill small {
+  color: var(--text-soft);
+  margin-left: 4px;
+}
+
+.touch-list {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0;
+  display: grid;
+  gap: 8px;
+  text-align: left;
+}
+
+.touch-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: rgba(255, 200, 87, .12);
+}
+
+.touch-list .amount {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.touch-icon {
+  width: 22px;
+  height: 22px;
+  display: inline-block;
+}
+
 /* The first week, step by step. */
 .first-plan,
 .first-list {

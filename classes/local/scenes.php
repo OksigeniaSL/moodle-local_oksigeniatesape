@@ -597,6 +597,7 @@ final class scenes {
      * @param string|null $from Where the play started (null: the start of the scene).
      * @param int[] $charids The players; none: everybody who plays in the course.
      * @param int|null $now
+     * @param array|null $votes What the phones voted (live::votes()); null: played without phones.
      * @return array ending, outcome, retry, points, objectives, rewarded (players who got something).
      */
     public static function play_class(
@@ -605,7 +606,8 @@ final class scenes {
         array $events,
         ?string $from,
         array $charids,
-        ?int $now = null
+        ?int $now = null,
+        ?array $votes = null
     ): array {
         global $DB;
         $now = $now ?? time();
@@ -625,6 +627,13 @@ final class scenes {
         $flags = self::class_flags($courseid, (int) $scene->missionid);
         $runner = new scene_runner($scene->data, $items, $roles, $flags, '', true);
         $result = $runner->run($events, $from);
+        // What the class chose wrong goes to what confuses the class, as nobody's try: with phones, how many voted each
+        // wrong option; without them, once, the choice of the class.
+        $counts = $votes !== null ? results::voted($scene->data, $votes) : results::mixups($scene->data, $events);
+        if ($counts) {
+            $DB->insert_record(self::T . 'classplay', (object) ['courseid' => $courseid, 'sceneid' => $scene->id,
+                'counts' => json_encode($counts), 'timecreated' => $now]);
+        }
         $rewarded = 0;
         if (in_array($result['outcome'], ['success', 'partial'], true)) {
             $transaction = $DB->start_delegated_transaction();

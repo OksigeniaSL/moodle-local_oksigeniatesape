@@ -18,6 +18,7 @@ namespace local_oksigeniatesape\external;
 
 use core_external\external_api;
 use core_external\external_function_parameters;
+use core_external\external_multiple_structure;
 use core_external\external_single_structure;
 use core_external\external_value;
 use local_oksigeniatesape\local\competencies;
@@ -39,9 +40,19 @@ final class rate_competency extends external_api {
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
             'courseid' => new external_value(PARAM_INT, 'Course'),
-            'userid' => new external_value(PARAM_INT, 'Student'),
-            'objective' => new external_value(PARAM_ALPHANUMEXT, 'Code of the objective'),
-            'grade' => new external_value(PARAM_INT, 'Level of the scale, from 1'),
+            'userid' => new external_value(PARAM_INT, 'Student (0: those of ratings)', VALUE_DEFAULT, 0),
+            'objective' => new external_value(PARAM_ALPHANUMEXT, 'Code of the objective', VALUE_DEFAULT, ''),
+            'grade' => new external_value(PARAM_INT, 'Level of the scale, from 1', VALUE_DEFAULT, 0),
+            'ratings' => new external_multiple_structure(
+                new external_single_structure([
+                    'userid' => new external_value(PARAM_INT, 'Student'),
+                    'objective' => new external_value(PARAM_ALPHANUMEXT, 'Code of the objective'),
+                    'grade' => new external_value(PARAM_INT, 'Level of the scale, from 1'),
+                ]),
+                'Several ratings at once: the suggestions the teacher confirms',
+                VALUE_DEFAULT,
+                []
+            ),
         ]);
     }
 
@@ -52,20 +63,29 @@ final class rate_competency extends external_api {
      * @param int $userid
      * @param string $objective
      * @param int $grade
+     * @param array $ratings
      * @return array
      */
-    public static function execute(int $courseid, int $userid, string $objective, int $grade): array {
+    public static function execute(int $courseid, int $userid, string $objective, int $grade, array $ratings = []): array {
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
             'userid' => $userid,
             'objective' => $objective,
             'grade' => $grade,
+            'ratings' => $ratings,
         ]);
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
         require_capability('local/oksigeniatesape:award', $context);
-        view::require_students($params['courseid'], [$params['userid']]);
-        competencies::rate($params['courseid'], $params['userid'], $params['objective'], $params['grade']);
+        $list = $params['ratings'] ?: [['userid' => $params['userid'], 'objective' => $params['objective'],
+            'grade' => $params['grade']]];
+        if (count($list) > 1000) {
+            throw new \invalid_parameter_exception('At most 1000 ratings');
+        }
+        view::require_students($params['courseid'], array_unique(array_column($list, 'userid')));
+        foreach ($list as $rating) {
+            competencies::rate($params['courseid'], (int) $rating['userid'], $rating['objective'], (int) $rating['grade']);
+        }
         return ['done' => true];
     }
 

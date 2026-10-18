@@ -1251,8 +1251,8 @@
       items: m.items,
       roles: m.roles,
       vote: phones ? {
-        open: function(text, labels) {
-          return host('vote', {text: text, options: JSON.stringify(labels)});
+        open: function(text, labels, meta) {
+          return host('vote', {text: text, options: JSON.stringify(labels), meta: JSON.stringify(meta || {})});
         },
         state: function() {
           return host('state');

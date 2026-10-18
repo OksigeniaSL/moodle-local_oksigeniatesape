@@ -81,7 +81,15 @@ final class class_scene extends external_api {
             }
             $charids = live::joined($live) ?: [0];
         }
-        $result = scenes::play_class($params['courseid'], $params['sceneid'], $list, $params['start'] ?: null, $charids);
+        $result = scenes::play_class(
+            $params['courseid'],
+            $params['sceneid'],
+            $list,
+            $params['start'] ?: null,
+            $charids,
+            null,
+            $live ? live::votes($live) : null
+        );
         // The vote ends only once the scene is played: if playing it fails, the class screen can try again.
         if ($live) {
             live::finish($live, 0);

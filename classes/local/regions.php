@@ -30,6 +30,22 @@ final class regions {
     /** @var string[] Families of role names. */
     public const FAMILIES = ['animals', 'dinosaurs', 'storyheroes', 'epic', 'elements', 'nomagic'];
 
+    /** @var array The touches with a reason a course starts with: language string, what it gives and how much. */
+    public const REASONS = [
+        ['touch_team', 'saber', 10],
+        ['touch_check', 'saber', 10],
+        ['touch_question', 'saber', 5],
+        ['touch_explain', 'saber', 5],
+        ['touch_mention', 'gems', 1],
+        ['touch_breathe', 'breath', 1],
+    ];
+
+    /** @var int[] What a touch with a reason gives at most, by what it gives. */
+    public const REASON_MAX = ['saber' => 50, 'gems' => 3, 'breath' => 2];
+
+    /** @var int How many touches with a reason a course keeps. */
+    public const REASONS_MAX = 12;
+
     /** @var array Values of the automatic rules when the teacher has not changed them. */
     public const RULES = [
         // Saber for completing an activity that is not marked as a challenge (0: only challenges count).
@@ -117,6 +133,10 @@ final class regions {
         }
         if (array_key_exists('setup', $settings)) {
             $region->setup = max(0, min(6, (int) $settings['setup']));
+        }
+        if (array_key_exists('reasons', $settings)) {
+            // Null: back to those of the plugin.
+            $region->reasons = is_array($settings['reasons']) ? json_encode(self::clean_reasons($settings['reasons'])) : null;
         }
         if (array_key_exists('mischief', $settings)) {
             if (!in_array($settings['mischief'], stains::MODES, true)) {
@@ -206,5 +226,41 @@ final class regions {
     public static function rule(\stdClass $region, string $key): int {
         $rules = json_decode((string) $region->rules, true) ?: [];
         return (int) ($rules[$key] ?? self::RULES[$key]);
+    }
+
+    /**
+     * The touches with a reason of a course: its own, or those the plugin brings, in the language of the teacher.
+     *
+     * @param \stdClass|null $region
+     * @return array Each one: text, resource (saber, gems or breath) and amount.
+     */
+    public static function reasons(?\stdClass $region): array {
+        $own = $region && !empty($region->reasons) ? json_decode($region->reasons, true) : null;
+        if (is_array($own)) {
+            return self::clean_reasons($own);
+        }
+        return array_map(fn($r) => ['text' => get_string($r[0], 'local_oksigeniatesape'), 'resource' => $r[1],
+            'amount' => $r[2]], self::REASONS);
+    }
+
+    /**
+     * Only touches that make sense: with a text, something that can be given, and no more than its top.
+     *
+     * @param array $list
+     * @return array
+     */
+    public static function clean_reasons(array $list): array {
+        $clean = [];
+        foreach ($list as $reason) {
+            $text = trim(clean_param((string) ($reason['text'] ?? ''), PARAM_TEXT));
+            $resource = (string) ($reason['resource'] ?? '');
+            $amount = (int) ($reason['amount'] ?? 0);
+            if ($text === '' || !isset(self::REASON_MAX[$resource]) || $amount < 1) {
+                continue;
+            }
+            $clean[] = ['text' => \core_text::substr($text, 0, 60), 'resource' => $resource,
+                'amount' => min($amount, self::REASON_MAX[$resource])];
+        }
+        return array_slice($clean, 0, self::REASONS_MAX);
     }
 }

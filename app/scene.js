@@ -1751,9 +1751,12 @@
       }
       box.querySelector('[data-voteopen]').onclick = function() {
         this.disabled = true;
+        // The node and its options go with the vote: what the class votes wrong counts in what confuses it.
         cm.vote.open(tx(n.prompt), open.map(function(o) {
           return tx(o.label);
-        })).then(function(live) {
+        }), {node: run.node, ids: open.map(function(o) {
+          return o.id;
+        })}).then(function(live) {
           count(live);
           poll();
         }).catch(function(e) {

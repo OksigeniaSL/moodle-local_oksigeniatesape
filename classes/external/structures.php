@@ -343,6 +343,11 @@ final class structures {
                     'objective' => new external_value(PARAM_ALPHANUMEXT, 'Objective'),
                     'percent' => new external_value(PARAM_INT, 'Right at the first try (-1: no evidence yet)'),
                     'rating' => new external_value(PARAM_INT, 'Rating in the course (0: none)'),
+                    'suggested' => new external_value(PARAM_INT, 'Level the game suggests (0: nothing to go by)', VALUE_DEFAULT, 0),
+                    'first' => new external_value(PARAM_INT, 'Right alone at the first try', VALUE_DEFAULT, 0),
+                    'helped' => new external_value(PARAM_INT, 'Right with help', VALUE_DEFAULT, 0),
+                    'after' => new external_value(PARAM_INT, 'Right after the consequence of a mistake', VALUE_DEFAULT, 0),
+                    'twice' => new external_value(PARAM_INT, 'The same mistake again', VALUE_DEFAULT, 0),
                 ])),
             ])),
         ]);
@@ -481,6 +486,7 @@ final class structures {
             'amount' => new external_value(PARAM_INT, 'Amount'),
             'capped' => new external_value(PARAM_INT, 'Left out by a cap'),
             'reason' => new external_value(PARAM_ALPHANUMEXT, 'Code of the reason'),
+            'note' => new external_value(PARAM_TEXT, 'Why the teacher gave it (a touch with a reason)', VALUE_DEFAULT, ''),
             'undone' => new external_value(PARAM_BOOL, 'Undone'),
             'time' => new external_value(PARAM_INT, 'When'),
         ] + $extra);
@@ -520,6 +526,12 @@ final class structures {
             ),
             'mischief' => new external_value(PARAM_ALPHA, 'What the Embrollo does every day', VALUE_DEFAULT, 'calm'),
             'setup' => new external_value(PARAM_INT, 'Steps of the first week gone through (6: all, and the list)', VALUE_DEFAULT, 0),
+            'reasons' => new external_multiple_structure(new external_single_structure([
+                'text' => new external_value(PARAM_TEXT, 'Why'),
+                'resource' => new external_value(PARAM_ALPHA, 'saber, gems or breath'),
+                'amount' => new external_value(PARAM_INT, 'How much'),
+            ]), 'The touches with a reason of the course', VALUE_DEFAULT, []),
+            'reasonsown' => new external_value(PARAM_BOOL, 'The course changed the touches of the plugin', VALUE_DEFAULT, false),
             'completion' => new external_value(
                 PARAM_BOOL,
                 'Completion of activities on in the site and the course',

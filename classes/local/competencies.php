@@ -245,10 +245,10 @@ final class competencies {
                 'SELECT e.id, e.desca
                    FROM {competency_evidence} e
                    JOIN {competency_usercomp} uc ON uc.id = e.usercompetencyid
-                  WHERE uc.userid = ? AND e.contextid = ? AND e.desccomponent = ? AND e.descidentifier = ?
+                  WHERE uc.userid = ? AND e.contextid = ? AND e.desccomponent = ? AND e.descidentifier IN (?, ?, ?)
                     AND e.timecreated BETWEEN ? AND ?',
                 [$userid, \context_course::instance($courseid)->id, 'local_oksigeniatesape', 'evidence_scene_team',
-                    $time - MINSECS, $time + HOURSECS]
+                    'evidence_scene_team_sniffed', 'evidence_scene_team_how', $time - MINSECS, $time + HOURSECS]
             );
             foreach ($rows as $row) {
                 $a = json_decode((string) $row->desca, true);
@@ -289,14 +289,17 @@ final class competencies {
                 continue;
             }
             $a = ['scene' => $title, 'ok' => (int) $o['ok'], 'total' => (int) $o['total'], 'attempt' => $attempt];
-            // After the creature sniffed, the evidence says so: those right answers were not quite alone.
-            $sniffed = empty($o['sniffed']) ? '' : '_sniffed';
+            // Not only right or wrong: how each answer came (alone at the first try, with help, after the consequence,
+            // the same mistake again). With help includes the creature sniffing.
+            foreach (scene_runner::HOW as $how) {
+                $a[$how] = (int) ($o[$how] ?? 0);
+            }
             api::add_evidence(
                 $userid,
                 $links[$code],
                 $context,
                 evidence::ACTION_LOG,
-                ($team ? 'evidence_scene_team' : 'evidence_scene') . $sniffed,
+                $team ? 'evidence_scene_team_how' : 'evidence_scene_how',
                 'local_oksigeniatesape',
                 $a,
                 false,
@@ -367,8 +370,9 @@ final class competencies {
             if ($char) {
                 foreach (scenes::first_tries($courseid, (int) $char->id) as $attempt) {
                     foreach (json_decode((string) $attempt->objectives, true) ?: [] as $code => $o) {
-                        $tries[$code]['ok'] = ($tries[$code]['ok'] ?? 0) + (int) $o['ok'];
-                        $tries[$code]['total'] = ($tries[$code]['total'] ?? 0) + (int) $o['total'];
+                        foreach (self::how($o) + ['ok' => (int) $o['ok'], 'total' => (int) $o['total']] as $key => $count) {
+                            $tries[$code][$key] = ($tries[$code][$key] ?? 0) + $count;
+                        }
                     }
                 }
             }
@@ -377,11 +381,51 @@ final class competencies {
                 $o = $tries[$objective['code']] ?? null;
                 $cells[] = ['objective' => $objective['code'],
                     'percent' => $o && $o['total'] ? (int) round(100 * $o['ok'] / $o['total']) : -1,
-                    'rating' => (int) ($ratings[$user->id][$objective['competencyid']] ?? 0)];
+                    'rating' => (int) ($ratings[$user->id][$objective['competencyid']] ?? 0),
+                    'suggested' => $o && $objective['competencyid'] ? self::suggest($o, count($objective['levels'])) : 0,
+                ] + ($o ? self::how($o) : array_fill_keys(scene_runner::HOW, 0));
             }
             $view['students'][] = ['userid' => (int) $user->id, 'fullname' => fullname($user), 'cells' => $cells];
         }
         return $view;
+    }
+
+    /**
+     * How the answers of a play came, for one objective. The plays from before this was kept count what was right as
+     * right at the first try.
+     *
+     * @param array $o Of the objectives of a play: ok, total and, if it was kept, how they came.
+     * @return int[] first, helped, after and twice.
+     */
+    public static function how(array $o): array {
+        $how = [];
+        foreach (scene_runner::HOW as $key) {
+            $how[$key] = (int) ($o[$key] ?? 0);
+        }
+        if (!array_sum($how) && !empty($o['ok'])) {
+            $how['first'] = (int) $o['ok'];
+        }
+        return $how;
+    }
+
+    /**
+     * The level of the scale the game suggests from how the answers came: right alone at the first try counts most,
+     * with help a bit less, after the consequence less; the same mistake again takes away. The share is bent so that the
+     * top levels ask for more: on a scale of four, about 30 % for the second level, 63 % for the third and 89 % for the
+     * top. The teacher decides.
+     *
+     * @param array $o total, and first, helped, after and twice.
+     * @param int $levels Levels of the scale.
+     * @return int From 1, or 0 if there is nothing to go by.
+     */
+    public static function suggest(array $o, int $levels): int {
+        $total = (int) ($o['total'] ?? 0);
+        if ($total < 1 || $levels < 1) {
+            return 0;
+        }
+        $score = ((int) ($o['first'] ?? 0) + 0.6 * (int) ($o['helped'] ?? 0) + 0.4 * (int) ($o['after'] ?? 0) -
+            0.3 * (int) ($o['twice'] ?? 0)) / $total;
+        return 1 + (int) round(pow(max(0, min(1, $score)), 1.5) * ($levels - 1));
     }
 
     /**

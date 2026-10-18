@@ -92,8 +92,23 @@ final class scene_runner {
     /** @var int Points. */
     private int $points = 0;
 
-    /** @var array Result per objective: code => [ok, total]. */
+    /**
+     * @var array Result per objective: code => [ok, total], and how each answer came (see HOW): what the evidence tells
+     * beyond right or wrong.
+     */
     private array $objectives = [];
+
+    /**
+     * @var string[] How an answer came: right at the first try and alone, right with help (the lens, a hint or the
+     * creature), right after seeing the consequence of a mistake, and the same mistake again.
+     */
+    public const HOW = ['first', 'helped', 'after', 'twice'];
+
+    /** @var array Choices already answered once in this play: node => true. */
+    private array $answered = [];
+
+    /** @var array Wrong options already chosen in each choice: node => option ids. */
+    private array $mistaken = [];
 
     /** @var array Last answer to each choice: node => option ids. */
     private array $picks = [];
@@ -357,7 +372,13 @@ final class scene_runner {
             // answer: it is a decision of the story, not evidence of any objective.
             $objective = $option['objective'] ?? $n['objective'] ?? null;
             if (empty($n['dilemma'])) {
-                $this->tally($objective, $correct !== false && ($correct === true || ($option['points'] ?? 0) > 0));
+                $ok = $correct !== false && ($correct === true || ($option['points'] ?? 0) > 0);
+                $how = $ok ? (empty($this->answered[$node]) ? ($this->helped($node) ? 'helped' : 'first') : 'after') :
+                    (in_array($id, $this->mistaken[$node] ?? [], true) ? 'twice' : '');
+                $this->tally($objective, $ok, $how);
+                if (!$ok) {
+                    $this->mistaken[$node][] = $id;
+                }
                 if ($objective && isset($this->sniffed[$node])) {
                     // Answered after the creature sniffed: the evidence says so, so that it is not read as a first try.
                     $this->objectives[$objective]['sniffed'] = ($this->objectives[$objective]['sniffed'] ?? 0) + 1;
@@ -372,6 +393,7 @@ final class scene_runner {
             }
         }
         $this->picks[$node] = $picked;
+        $this->answered[$node] = true;
         if ($max > 1) {
             return $n['next'];
         }
@@ -429,7 +451,8 @@ final class scene_runner {
                 }
                 if ($event['bin'] === $item['bin']) {
                     $this->points += $first || $saved ? 2 : 1;
-                    $this->tally($item['objective'] ?? $n['objective'] ?? null, $first);
+                    $how = $first ? ($this->helped($node, (string) $item['id']) ? 'helped' : 'first') : 'after';
+                    $this->tally($item['objective'] ?? $n['objective'] ?? null, $first, $how);
                     if ($first) {
                         $this->placed[$node][] = $item['id'];
                     }
@@ -486,7 +509,7 @@ final class scene_runner {
             }
         }
         $this->points += $first || $saved ? 6 : 3;
-        $this->tally($n['objective'] ?? null, $first);
+        $this->tally($n['objective'] ?? null, $first, $first ? ($this->helped($node) ? 'helped' : 'first') : 'after');
     }
 
     /**
@@ -643,12 +666,13 @@ final class scene_runner {
     }
 
     /**
-     * Counts an answer for an objective.
+     * Counts an answer for an objective, and how it came.
      *
      * @param string|null $objective
      * @param bool $ok
+     * @param string $how One of HOW, or empty.
      */
-    private function tally(?string $objective, bool $ok): void {
+    private function tally(?string $objective, bool $ok, string $how = ''): void {
         if (!$objective) {
             return;
         }
@@ -657,6 +681,22 @@ final class scene_runner {
         if ($ok) {
             $this->objectives[$objective]['ok']++;
         }
+        if ($how !== '') {
+            $this->objectives[$objective][$how] = ($this->objectives[$objective][$how] ?? 0) + 1;
+        }
+    }
+
+    /**
+     * Whether the student had help in a node before answering: a hint, the creature sniffing, or a look with their
+     * tool (at that item, if one is said; at anything of the node, if not).
+     *
+     * @param string $node
+     * @param string $thing
+     * @return bool
+     */
+    private function helped(string $node, string $thing = ''): bool {
+        return !empty($this->hints[$node]) || isset($this->sniffed[$node]) ||
+            ($thing !== '' ? isset($this->looks[$node][$thing]) : !empty($this->looks[$node]));
     }
 
     /**

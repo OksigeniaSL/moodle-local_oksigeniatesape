@@ -45,6 +45,50 @@ final class scene_runner_test extends \advanced_testcase {
     }
 
     /**
+     * Only right and total of each objective, without how the answers came.
+     *
+     * @param array $objectives
+     * @return array
+     */
+    private static function scored(array $objectives): array {
+        return array_map(fn($o) => array_intersect_key($o, ['ok' => 1, 'total' => 1]), $objectives);
+    }
+
+    /**
+     * Each answer says how it came: right alone at the first try, right with help (here, the lens), right after seeing
+     * the consequence of a mistake, and the same mistake again.
+     */
+    public function test_each_answer_says_how_it_came(): void {
+        $scene = ['id' => 'T', 'start' => 'q', 'nodes' => [
+            'q' => ['type' => 'choice', 'prompt' => '?', 'objective' => 'SV-02', 'options' => [
+                ['id' => 'a', 'label' => 'A', 'correct' => true],
+                ['id' => 'b', 'label' => 'B', 'correct' => false, 'next' => 'q'],
+            ], 'next' => 'r'],
+            'r' => ['type' => 'choice', 'prompt' => '?', 'objective' => 'SV-02', 'options' => [
+                ['id' => 'x', 'label' => 'X', 'correct' => true, 'look' => 'Seen closely'],
+                ['id' => 'y', 'label' => 'Y', 'correct' => false],
+            ], 'next' => 's'],
+            's' => ['type' => 'choice', 'prompt' => '?', 'objective' => 'SV-02', 'options' => [
+                ['id' => 'm', 'label' => 'M', 'correct' => true],
+                ['id' => 'n', 'label' => 'N', 'correct' => false],
+            ], 'next' => 'k'],
+            'k' => ['type' => 'classify', 'prompt' => '?', 'objective' => 'SV-03', 'bins' => [['id' => 'p', 'label' => 'P'],
+                ['id' => 'o', 'label' => 'O']], 'items' => [['id' => 'i1', 'label' => 'I1', 'bin' => 'p'],
+                ['id' => 'i2', 'label' => 'I2', 'bin' => 'o']], 'next' => 'fin'],
+            'fin' => ['type' => 'ending', 'outcome' => 'success', 'effects' => []],
+        ]];
+        $events = [
+            ['n' => 'q', 'pick' => ['b']], ['n' => 'q', 'pick' => ['b']], ['n' => 'q', 'pick' => ['a']],
+            ['n' => 'r', 'look' => 'x'], ['n' => 'r', 'pick' => ['x']],
+            ['n' => 's', 'pick' => ['m']],
+            ['n' => 'k', 'item' => 'i1', 'bin' => 'p'], ['n' => 'k', 'item' => 'i2', 'bin' => 'p'], ['n' => 'k', 'item' => 'i2', 'bin' => 'o'],
+        ];
+        $objectives = (new scene_runner($scene))->run($events)['objectives'];
+        $this->assertEquals(['ok' => 3, 'total' => 5, 'twice' => 1, 'after' => 1, 'helped' => 1, 'first' => 1], $objectives['SV-02']);
+        $this->assertEquals(['ok' => 1, 'total' => 2, 'first' => 1, 'after' => 1], $objectives['SV-03']);
+    }
+
+    /**
      * The creature sniffs a choice: it strikes out the option marked as clearly not it, once a play, with the creature
      * hatched; the evidence says the answer came after it.
      */
@@ -69,7 +113,8 @@ final class scene_runner_test extends \advanced_testcase {
         $result = (new scene_runner($scene, ['creature']))->run($sniffed);
         $this->assertSame(1, $result['sniffed']);
         $this->assertSame(0, $result['hints']);
-        $this->assertSame(['ok' => 2, 'total' => 2, 'sniffed' => 1], $result['objectives']['SV-01']);
+        // The first answer had the creature's help; the second was alone.
+        $this->assertEquals(['ok' => 2, 'total' => 2, 'sniffed' => 1, 'helped' => 1, 'first' => 1], $result['objectives']['SV-01']);
         $fails = [
             'without the creature' => [[], $sniffed],
             'twice in a play' => [['creature'], [['n' => 'q', 'sniff' => 1], ['n' => 'q', 'pick' => ['a']],
@@ -161,7 +206,7 @@ final class scene_runner_test extends \advanced_testcase {
         $this->assertSame('duerme', $result['ending']);
         $this->assertSame('retry', $result['outcome']);
         $this->assertSame('elegir', $result['retry']);
-        $this->assertSame(['SV-01' => ['ok' => 3, 'total' => 5]], $result['objectives']);
+        $this->assertSame(['SV-01' => ['ok' => 3, 'total' => 5]], self::scored($result['objectives']));
         // Again from where the ending sent back: four of five, the creature hatches asleep.
         $events = [
             ['n' => 'elegir', 'pick' => ['seta', 'lombriz', 'musgo', 'hormiga', 'cristal']],
@@ -332,8 +377,8 @@ final class scene_runner_test extends \advanced_testcase {
         $good = (new scene_runner($scene))->run($events);
         $this->assertSame('bien', $good['ending']);
         // Asking is not scored: the guess and why it is right are.
-        $this->assertSame(['ok' => 1, 'total' => 1], $good['objectives']['SV-04']);
-        $this->assertSame(['ok' => 3, 'total' => 3], $good['objectives']['SV-07']);
+        $this->assertSame(['ok' => 1, 'total' => 1], self::scored($good['objectives'])['SV-04']);
+        $this->assertSame(['ok' => 3, 'total' => 3], self::scored($good['objectives'])['SV-07']);
         // A wrong guess does not lead back to the guess: the owl falls asleep, and the questions start again.
         $guess = array_search('adivinar', array_column($events, 'n'), true);
         $wrong = array_slice($events, 0, $guess);
@@ -360,7 +405,7 @@ final class scene_runner_test extends \advanced_testcase {
         ];
         $result = (new scene_runner($scene))->run([['n' => 'd', 'pick' => ['pond']], ['n' => 'q', 'pick' => ['yes']]]);
         // Only the question counts for the objective; the dilemma, whatever was decided, does not.
-        $this->assertSame(['O' => ['ok' => 1, 'total' => 1]], $result['objectives']);
+        $this->assertSame(['O' => ['ok' => 1, 'total' => 1]], self::scored($result['objectives']));
         $this->assertSame('end', $result['ending']);
     }
 

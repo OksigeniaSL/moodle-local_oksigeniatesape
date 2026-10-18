@@ -352,7 +352,7 @@ final class live_test extends \advanced_testcase {
         foreach ($members as $member) {
             live::join($live, $member, $member->userid, self::NOW);
         }
-        $live = live::vote($live, 'Which one?', ['North', 'South', 'East'], self::NOW);
+        $live = live::vote($live, 'Which one?', ['North', 'South', 'East'], self::NOW, ['node' => 'n1', 'ids' => ['a', 'b', 'c']]);
         $this->assertArrayNotHasKey('tally', live::board_view($live, self::NOW));
         foreach ($members as $i => $member) {
             live::answer($live, $member, 1, $i === 3 ? 2 : 0, self::NOW);
@@ -361,10 +361,53 @@ final class live_test extends \advanced_testcase {
         $this->assertEquals([3, 0, 1], live::board_view($live, self::NOW)['tally']);
         $this->assertEquals([3, 0, 1], live::device_view($live, $members[0], self::NOW)['tally']);
         $this->assertCount(4, live::joined($live));
+        // With the node and the ids of its options, for what confuses the class.
+        $this->assertEquals([['node' => 'n1', 'ids' => ['a', 'b', 'c'], 'tally' => [3, 0, 1]]], live::votes($live));
         // A vote ends without prizes.
         $live = live::finish($live, 2, self::NOW);
         $this->assertEquals('done', live::board_view($live, self::NOW)['outcome']);
         $this->assertEquals(0, $DB->count_records(self::T . 'ledger', ['courseid' => $course->id, 'reason' => 'battle']));
+    }
+
+    public function test_what_the_class_votes_wrong_counts_in_what_confuses_it_as_nobodys_try(): void {
+        global $DB;
+        $this->resetAfterTest();
+        [$course] = $this->make_class();
+        $mission = missions::get($course->id);
+        $scene = $DB->get_record('local_oksigeniatesape_scene', ['missionid' => $mission->id, 'code' => 'C3-2'], '*', MUST_EXIST);
+        $def = json_decode($scene->definition, true);
+        // A decision with a wrong option and a right one.
+        $node = null;
+        foreach ($def['nodes'] as $id => $n) {
+            $bad = array_values(array_filter($n['options'] ?? [], fn($o) => ($o['correct'] ?? null) === false));
+            $good = array_values(array_filter($n['options'] ?? [], fn($o) => ($o['correct'] ?? null) === true));
+            if (empty($n['dilemma']) && $bad && $good) {
+                [$node, $wrong, $right] = [(string) $id, $bad[0]['id'], $good[0]['id']];
+                break;
+            }
+        }
+        $this->assertNotNull($node);
+        // Without phones, the class on the right path: nothing to keep.
+        [$items, $roles] = scenes::class_context($course->id);
+        $events = autoplayer::play($def, $items, $roles);
+        scenes::play_class($course->id, (int) $scene->id, $events, null, [], self::NOW);
+        $this->assertEquals(0, $DB->count_records(self::T . 'classplay'));
+        // With phones: three voted the wrong option and one the right one; then the class chose the right one.
+        $votes = [['node' => $node, 'ids' => [$wrong, $right], 'tally' => [3, 1]]];
+        scenes::play_class($course->id, (int) $scene->id, $events, null, [], self::NOW, $votes);
+        $this->assertSame([$node . '|' . $wrong => 3], json_decode($DB->get_field(self::T . 'classplay', 'counts', []), true));
+        // It is in what confuses the class, and it is nobody's try.
+        $counts = [];
+        foreach (results::mission($course->id)['chapters'] as $chapter) {
+            foreach ($chapter['scenes'] as $s) {
+                $counts = array_merge($counts, array_column($s['confusions'], 'count'));
+            }
+        }
+        $this->assertContains(3, $counts);
+        $this->assertEquals(0, $DB->count_records(self::T . 'sceneattempt', ['courseid' => $course->id]));
+        // Without phones, a wrong choice of the class counts once.
+        $this->assertSame([$node . '|' . $wrong => 1], results::mixups($def, [['n' => $node, 'pick' => $wrong],
+            ['n' => $node, 'pick' => $right]]));
     }
 
     public function test_a_scene_played_by_the_class_rewards_its_players_once(): void {

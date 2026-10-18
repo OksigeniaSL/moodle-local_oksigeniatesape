@@ -46,6 +46,7 @@ final class award extends external_api {
             'userids' => new external_multiple_structure(new external_value(PARAM_INT, 'Student')),
             'resource' => new external_value(PARAM_ALPHA, 'saber, gems, breath or energy'),
             'amount' => new external_value(PARAM_INT, 'How much; negative only for energy'),
+            'note' => new external_value(PARAM_TEXT, 'Why, as the teacher chose it: the student sees it', VALUE_DEFAULT, ''),
         ]);
     }
 
@@ -56,13 +57,15 @@ final class award extends external_api {
      * @param int[] $userids
      * @param string $resource
      * @param int $amount
+     * @param string $note
      * @return array
      */
     public static function execute(
         int $courseid,
         array $userids,
         string $resource,
-        int $amount
+        int $amount,
+        string $note = ''
     ): array {
         global $DB, $USER;
         $params = self::validate_parameters(self::execute_parameters(), [
@@ -70,6 +73,7 @@ final class award extends external_api {
             'userids' => $userids,
             'resource' => $resource,
             'amount' => $amount,
+            'note' => $note,
         ]);
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
@@ -92,6 +96,10 @@ final class award extends external_api {
             $reason = $params['resource'] === 'energy' && $params['amount'] < 0 ? 'commitment' : 'manual';
             $method = $params['resource'];
             $entry = engine::$method($member, $params['amount'], $reason, (int) $USER->id);
+            $note = \core_text::substr(trim($params['note']), 0, 255);
+            if ($entry && !empty($entry->id) && $note !== '') {
+                $DB->set_field('local_oksigeniatesape_ledger', 'note', $note, ['id' => $entry->id]);
+            }
             if (!$entry) {
                 $results[] = ['userid' => $userid, 'status' => $member->status === 'paused' ? 'paused' : 'capped'];
                 continue;

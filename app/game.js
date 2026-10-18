@@ -433,6 +433,13 @@
         welcomeMoment(w, then);
       });
     }
+    // What the teacher noticed, with its reason, not seen yet on this device.
+    var touches = unseenTouches();
+    if (touches.length) {
+      moments.push(function(then) {
+        touchMoment(touches, then);
+      });
+    }
     if (seen && typeof seen.level === 'number' && c.level > seen.level) {
       moments.push(function(then) {
         levelMoment(seen, c, then);
@@ -509,6 +516,62 @@
     document.addEventListener('keydown', onkey);
     layer.querySelector('[data-close]').onclick = close;
     layer.querySelector('[data-close]').focus();
+    return layer;
+  }
+
+  /** Where this device remembers the last touch with a reason it showed. */
+  function touchKey() {
+    return 'tesape-touch-' + cfg.courseid + '-' + cfg.userid;
+  }
+
+  /**
+   * The touches of the teacher with a reason that this device has not shown yet; the first time, only those of the last
+   * two days.
+   *
+   * @return {Array} Newest first, three at most.
+   */
+  function unseenTouches() {
+    var seen = 0;
+    try {
+      seen = Number(window.localStorage.getItem(touchKey()) || 0);
+    } catch (e) {
+      // Without storage they would show every time: better not at all.
+      return [];
+    }
+    var now = Date.now() / 1000;
+    return (state.world.log || []).filter(function(e) {
+      return e.reason === 'manual' && e.note && !e.undone && e.amount > 0 && e.id > seen &&
+        (seen || now - e.time < 2 * 86400);
+    }).slice(0, 3);
+  }
+
+  /**
+   * What the teacher noticed: the reason and what it gave, with three bells. Only on the device of the student, never on
+   * the class screen.
+   *
+   * @param {Array} list
+   * @param {Function} [then]
+   * @return {Element}
+   */
+  function touchMoment(list, then) {
+    try {
+      window.localStorage.setItem(touchKey(), String(Math.max.apply(null, list.map(function(e) {
+        return e.id;
+      }))));
+    } catch (e) {
+      // It was shown anyway.
+    }
+    var layer = moment('<div class="kicker">' + esc(t('app_reason_manual')) + '</div><h2 id="tesape-touch-title">' +
+      esc(t('app_touch_title')) + '</h2><ul class="touch-list">' + list.map(function(e) {
+        return '<li><b>' + esc(e.note) + '</b><span class="amount up"><span class="touch-icon" aria-hidden="true">' +
+          T.icon(e.resource) + '</span>+' + e.amount + '<span class="sr-only"> ' + esc(t(e.resource === 'gems' && e.amount === 1 ? 'app_gem' :
+          'app_' + e.resource)) +
+          '</span></span></li>';
+      }).join('') + '</ul>', 'tesape-touch-title', then);
+    if (T.fx) {
+      T.fx.sound('chime');
+      T.fx.sparkles();
+    }
     return layer;
   }
 
@@ -2436,6 +2499,10 @@
       var cls = e.undone ? 'off' : e.amount >= 0 ? 'up' : 'down';
       var amount = e.resource === 'item' ? '' : (e.amount > 0 ? '+' : '') + e.amount;
       var reason = cfg.strings['app_reason_' + e.reason] ? t('app_reason_' + e.reason) : e.reason;
+      // A touch with a reason says why: «Checked before claiming · From your teacher».
+      if (e.note) {
+        reason = e.note + ' · ' + reason;
+      }
       return '<li class="item"><span style="width:22px;height:22px;flex:none">' + T.icon(e.resource === 'item' ? 'gems' :
         e.resource) + '</span><span class="grow">' + esc(reason) + '<small>' + esc(when(e.time)) +
         (e.capped ? ' · ' + esc(t('app_capped', e.capped)) : '') + '</small></span><span class="amount ' + cls + '">' +
