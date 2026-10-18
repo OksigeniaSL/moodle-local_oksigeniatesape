@@ -230,7 +230,8 @@
         '<p class="battle-left" data-left="' + live.left + '" aria-live="off">' + esc(t('app_battle_left', live.left)) + '</p>' :
         '';
       return (live.stage === 'strike' ? '<p class="knot-name">' + esc(t('app_turn_strike', live.knot.name)) + '</p>' : '') +
-        '<div class="lane-play" data-lane></div>' + laneNote + turnNote(live) + token(live);
+        '<div class="lane-play" data-lane></div>' + (live.trail && !live.revealed ? '<p class="battle-trail">' +
+        esc(t('app_token_trail_shown', live.trail)) + '</p>' : '') + laneNote + turnNote(live) + token(live);
     }
     var q = live.question;
     var answered = live.mine >= 0;
@@ -286,7 +287,8 @@
       'app_turn_lane_failed')) + '</p>' + (live.knot.broken ? '<p class="turn-outcome undone">' +
       esc(t('board_turn_broken')) + '</p>' : '') + (live.counter && !live.recovered ? '<p class="turn-outcome fell">' +
       esc(t(live.intent === 'all' ? 'board_turn_candle_all' : 'board_turn_candle', live.target)) + '</p>' : '') +
-      (live.knot.laugh ? '<p class="knot-laugh">«' + esc(live.knot.laugh.replace(/^«|»$/g, '')) + '»</p>' : '');
+      (live.shielded && live.intent === 'all' ? '<p class="turn-outcome undone">' + esc(t('board_turn_shield_all')) + '</p>' :
+      '') + (live.knot.laugh ? '<p class="knot-laugh">«' + esc(live.knot.laugh.replace(/^«|»$/g, '')) + '»</p>' : '');
   }
 
   /**
@@ -307,9 +309,15 @@
     var big = live.stage === 'intent' || live.stage === 'prep';
     // The verbs of a missing role, while the roles get ready: during the lane, the lane is what matters.
     ahead += big ? covers(live) : '';
-    // A glance a sage of another team aimed at this one.
+    // A glance or a trail another team aimed at this one, and the weak point of the knot a glance read.
     if (live.glancefrom) {
       ahead = '<p class="battle-trail">' + esc(t('app_token_glance_from', live.glancefrom)) + '</p>' + ahead;
+    }
+    if (live.trailfrom) {
+      ahead = '<p class="battle-trail">' + esc(t('app_token_trail_from', live.trailfrom)) + '</p>' + ahead;
+    }
+    if (live.weakness) {
+      ahead = '<p class="battle-trail">' + esc(t('app_token_weakness', live.weakness)) + '</p>' + ahead;
     }
     if (live.tokenused) {
       return ahead + '<p class="help-soft battle-token-used">' + esc(live.tokenrest ? t('app_token_rest', live.tokenrest) :
@@ -318,7 +326,17 @@
     if (!ready) {
       return ahead;
     }
-    if (live.targets && live.targets.length > 1) {
+    var aims = live.glancetargets || live.trailtargets || [];
+    if (aims.length) {
+      // «Wide glance» and «Wide trail»: their own team, and another one, the one they choose.
+      return ahead + '<div class="battle-token"><p class="help-soft">' + esc(t('app_token_' + live.token + '_turns')) + '</p>' +
+        aims.map(function(x) {
+          return '<button type="button" class="btn ' + (big ? 'btn-main' : 'btn-soft') + '" data-token data-target="' + x.id +
+            '">' + esc(t('app_token_glance_wide', x.name)) + '</button>';
+        }).join('') + '<button type="button" class="btn btn-soft" data-token>' + esc(t('app_token_on',
+        t('app_token_ownteam'))) + '</button></div>';
+    }
+    if ((live.token === 'shield' || live.token === 'cheer') && live.targets && live.targets.length > 1) {
       // The shield and the cheer go to a team: one big button for each, their own first.
       var mine = live.targets.filter(function(x) {
         return x.id === live.myteam;
@@ -330,15 +348,6 @@
           return '<button type="button" class="btn ' + (big ? 'btn-main' : 'btn-soft') + '" data-token data-target="' + x.id +
             '">' + esc(t('app_token_on', x.id === live.myteam ? t('app_token_ownteam') : x.name)) + '</button>';
         }).join('') + '</div>';
-    }
-    if (live.glancetargets && live.glancetargets.length) {
-      // «Wide glance»: their own team, and another one with a lane to choose, the one they choose.
-      return ahead + '<div class="battle-token"><p class="help-soft">' + esc(t('app_token_glance_turns')) + '</p>' +
-        live.glancetargets.map(function(x) {
-          return '<button type="button" class="btn ' + (big ? 'btn-main' : 'btn-soft') + '" data-token data-target="' + x.id +
-            '">' + esc(t('app_token_glance_wide', x.name)) + '</button>';
-        }).join('') + '<button type="button" class="btn btn-soft" data-token>' + esc(t('app_token_on',
-        t('app_token_ownteam'))) + '</button></div>';
     }
     return ahead + '<div class="battle-token"><button type="button" class="btn ' + (big ? 'btn-main btn-big' : 'btn-soft') +
       '" data-token>' + esc(t('app_token_' + live.token + (live.maxcandles ? '_turns' : ''))) + '</button></div>';

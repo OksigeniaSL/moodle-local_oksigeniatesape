@@ -325,6 +325,12 @@
         return '<button type="button" class="talent-card" data-talent="' + esc(o.code) + '"><b>' + esc(o.name) + '</b>' +
           '<small>' + esc(o.description) + '</small></button>';
       }).join('') + '</div>', 'tesape-talent-title', then);
+    // Offered by itself once on each device: then it waits on the sheet.
+    try {
+      window.localStorage.setItem('tesape-talent-' + cfg.courseid + '-' + cfg.userid, String(p.level));
+    } catch (e) {
+      // Without storage it is offered again next time.
+    }
     // The cards are the choice: «Later» stays quiet, and the first card has the focus.
     var later = layer.querySelector('[data-close]');
     later.textContent = t('app_talent_later');
@@ -337,7 +343,11 @@
         });
         T.api('choose_talent', {courseid: cfg.courseid, level: p.level, code: b.dataset.talent}).then(function(r) {
           state.world.character.talents = r.talents;
-          delete state.world.character.talentpending;
+          if (r.talentpending) {
+            state.world.character.talentpending = r.talentpending;
+          } else {
+            delete state.world.character.talentpending;
+          }
           if (T.fx) {
             T.fx.sound('levelup');
             T.fx.sparkles();
@@ -345,6 +355,10 @@
           T.toast(esc(t('app_talent_chosen', b.querySelector('b').textContent)));
           later.click();
           world();
+          // The next level that brought a talent, straight after.
+          if (r.talentpending) {
+            talentMoment(r.talentpending);
+          }
         }).catch(function(e) {
           layer.querySelectorAll('[data-talent]').forEach(function(x) {
             x.disabled = false;
@@ -516,11 +530,6 @@
     }
     if (c.talentpending && offered !== String(c.talentpending.level)) {
       moments.push(function(then) {
-        try {
-          window.localStorage.setItem(tkey, String(c.talentpending.level));
-        } catch (e) {
-          // Without storage it is offered again next time.
-        }
         talentMoment(c.talentpending, then);
       });
     }

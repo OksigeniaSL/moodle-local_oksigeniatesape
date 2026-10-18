@@ -68,6 +68,9 @@ final class talents_test extends \advanced_testcase {
         $this->assertSame([3 => 'teamguard'], talents::of($char));
         $this->assertNull(talents::pending($char));
         $this->assertSame('teamguard', view::world($course->id, $user->id)['character']['talents'][0]['code']);
+        // Who passed level 6 too chooses that one next.
+        $char->level = 7;
+        $this->assertSame(['level' => 6, 'options' => ['quickshield', 'candleguard']], talents::pending($char));
         // Not twice, not one of another role.
         try {
             talents::choose($char, 3, 'longshield');

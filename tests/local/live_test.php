@@ -1028,6 +1028,127 @@ final class live_test extends \advanced_testcase {
         $this->assertArrayNotHasKey('glancefrom', live::device_view($live, $members[1], self::NOW + 2));
     }
 
+    /**
+     * By turns: a class whose four roles have each a talent of level 6, in a battle of eight knots, joined and in the
+     * first turn.
+     *
+     * @param string[] $codes The talent of the healer and the sage (first team) and of the protector and the scout.
+     * @return array [course, members, groups, live]
+     */
+    private function battle_with_talents(array $codes): array {
+        global $DB;
+        [$course, $members, $groups] = $this->make_class();
+        foreach (['healer', 'sage', 'protector', 'scout'] as $i => $role) {
+            $DB->update_record(self::T . 'char', (object) ['id' => $members[$i]->charid, 'role' => $role, 'level' => 6]);
+            talents::choose($DB->get_record(self::T . 'char', ['id' => $members[$i]->charid]), 6, $codes[$i]);
+        }
+        $live = live::start($course->id, 'phones', 8, 30, self::NOW, false, true);
+        foreach ($members as $member) {
+            live::join($live, $member, $member->userid, self::NOW);
+        }
+        return [$course, $members, $groups, live::next($live, self::NOW)];
+    }
+
+    /**
+     * By turns: something of the state of the battle set by hand, for a case that takes long to reach.
+     *
+     * @param \stdClass $live
+     * @param callable $change Gets the state and returns it.
+     * @return \stdClass
+     */
+    private function set_state(\stdClass $live, callable $change): \stdClass {
+        global $DB;
+        $DB->set_field(self::T . 'live', 'state', json_encode($change(json_decode($live->state, true))), ['id' => $live->id]);
+        return $DB->get_record(self::T . 'live', ['id' => $live->id]);
+    }
+
+    public function test_level_six_strong_cheer_knot_reading_wide_trail_and_quick_shield(): void {
+        $this->resetAfterTest();
+        [$course, $members, $groups, $live] = $this->battle_with_talents(['strongcheer', 'knotreading', 'quickshield',
+            'widetrail']);
+        $first = (int) $groups[0]->id;
+        // «Quick shield»: the shield rests one turn, not two.
+        $this->assertSame('shield', live::token($live, $members[2], self::NOW + 2, $first));
+        $this->assertSame(2, live::device_view($live, $members[2], self::NOW + 3)['tokenrest']);
+        // «Knot reading»: the glance tells its team the weak point of the knot, not the other team.
+        $this->assertSame('glance', live::token($live, $members[1], self::NOW + 2));
+        $knot = knots::get(missions::get($course->id), (string) json_decode($live->state, true)['rounds'][1]['knot']);
+        if ($knot['weakness'] !== '') {
+            $this->assertSame($knot['weakness'], live::device_view($live, $members[0], self::NOW + 3)['weakness']);
+        }
+        $this->assertArrayNotHasKey('weakness', live::device_view($live, $members[3], self::NOW + 3));
+        // «Wide trail»: the scout tells the other team too where the answer is; what comes next, only to theirs.
+        $this->assertSame([$first], array_column(live::device_view($live, $members[3], self::NOW + 3)['trailtargets'], 'id'));
+        $this->assertSame('trail', live::token($live, $members[3], self::NOW + 3, $first));
+        $other = live::device_view($live, $members[0], self::NOW + 4);
+        $this->assertNotEmpty($other['trail']);
+        $this->assertSame(format_string($groups[1]->name), $other['trailfrom']);
+        $this->assertArrayNotHasKey('nextknot', $other);
+        $this->assertArrayHasKey('nextknot', live::device_view($live, $members[2], self::NOW + 4));
+        // «Strong cheer»: the team it cheers undoes its lane, and the Embrollo loses a thread more.
+        $this->assertSame('cheer', live::token($live, $members[0], self::NOW + 4));
+        $live = $this->play_turn($live, $members, $groups, [true, false], self::NOW);
+        $this->assertSame(2, live::board_view($live, self::NOW + 60)['damage']);
+        // The shield is back in the third turn.
+        $at = self::NOW;
+        foreach ([2, 3] as $round) {
+            $at += live::INTENT + live::PREP + 31 + live::RESOLVE;
+            $live = live::tick($live, 2, true, $at);
+            $this->assertSame($round, (int) $live->round);
+            if ($round === 2) {
+                try {
+                    live::token($live, $members[2], $at + 1, $first);
+                    $this->fail('The shield used again in the next turn');
+                } catch (\moodle_exception $e) {
+                    $this->assertSame('tokenused', $e->errorcode);
+                }
+                $live = $this->play_turn($live, $members, $groups, [true, true], $at);
+            }
+        }
+        $this->assertSame('shield', live::token($live, $members[2], $at + 1, $first));
+    }
+
+    public function test_level_six_spare_candle_candle_guard_and_quick_glance_and_trail(): void {
+        $this->resetAfterTest();
+        [, $members, $groups, $live] = $this->battle_with_talents(['sparecandle', 'quickglance', 'candleguard',
+            'quicktrail']);
+        // «Quick glance» and «Quick trail»: they rest one turn.
+        live::token($live, $members[1], self::NOW + 2);
+        live::token($live, $members[3], self::NOW + 2);
+        $this->assertSame(2, live::device_view($live, $members[1], self::NOW + 3)['tokenrest']);
+        $this->assertSame(2, live::device_view($live, $members[3], self::NOW + 3)['tokenrest']);
+        // «Spare candle»: with the candle of the battle lit again already, the cheer lights another one.
+        $live = $this->set_state($live, function (array $state): array {
+            $state['candles'] = 3;
+            $state['relit'] = true;
+            return $state;
+        });
+        live::token($live, $members[0], self::NOW + 3);
+        $live = $this->play_turn($live, $members, $groups, [true, true], self::NOW);
+        $this->assertSame(4, live::board_view($live, self::NOW + 60)['candles']);
+        // «Candle guard»: going for everybody, with fewer than half of the lanes undone, the shield saves the candle; once.
+        $at = self::NOW;
+        foreach ([2, 3, 4, 5] as $round) {
+            $at += live::INTENT + live::PREP + 31 + live::RESOLVE;
+            $live = live::tick($live, 2, true, $at);
+            $this->assertSame($round, (int) $live->round);
+            // The shield rests in turns 3 and 4.
+            if ($round === 3 || $round === 4) {
+                $live = $this->play_turn($live, $members, $groups, [true, true], $at);
+                continue;
+            }
+            $live = $this->set_state($live, function (array $state) use ($round): array {
+                $state['rounds'][$round]['intent'] = 'all';
+                return $state;
+            });
+            $this->assertSame('shield', live::token($live, $members[2], $at + 1));
+            $live = $this->play_turn($live, $members, $groups, [false, false], $at);
+            $view = live::board_view($live, $at + 60);
+            $this->assertSame($round === 2, $view['shielded']);
+            $this->assertSame($round === 2 ? 4 : 3, $view['candles']);
+        }
+    }
+
     public function test_the_tokens_help_the_team_of_who_uses_them_once_a_battle(): void {
         $this->resetAfterTest();
         [$course, $members] = $this->make_class();

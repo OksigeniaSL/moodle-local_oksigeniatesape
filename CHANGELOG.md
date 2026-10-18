@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.106.0 (2026-10-18)
+
+- **Talents at level 6**, for the battle by turns (the choice of level 3 and that of level 6 come one after the other
+  for who passed both):
+  - Protector: «Quick shield» (the battle shield rests one turn, not two) or «Candle guard» (once a battle, their
+    shield saves the candle when the Embrollo goes for everybody).
+  - Healer: «Spare candle» (once a battle, their cheer lights another candle even if the class already lit one; two at
+    most in a battle) or «Strong cheer» (if the team they cheer undoes its lane, a thread more).
+  - Sage: «Quick glance» (rests one turn) or «Knot reading» (their glance tells the team the weak point of the knot,
+    whatever its lane).
+  - Scout: «Quick trail» (rests one turn) or «Wide trail» (their trail also tells another team, the one they choose,
+    where the answer is; what comes next, only their own).
+- On a tablet, the buttons to put a verb on a team are only for the shield and the cheer (with a role missing in the
+  team they showed for the glance and the trail too).
+- In a lane of another engine, the trail shows where the answer is, as in one to choose.
+
 ## 0.105.0 (2026-10-18)
 
 - **Talents**: at level 3 each student chooses one of two talents of their role, and keeps it. It can wait («Later»),

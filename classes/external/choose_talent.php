@@ -66,7 +66,14 @@ final class choose_talent extends external_api {
             throw new \moodle_exception('nocharacter', 'local_oksigeniatesape');
         }
         talents::choose($char, $params['level'], $params['code']);
-        return ['talents' => talents::view($char)];
+        $result = ['talents' => talents::view($char)];
+        // Who had passed more than one level that brings a talent chooses the next one straight after.
+        $next = talents::on_in($params['courseid']) ? talents::pending($char) : null;
+        if ($next) {
+            $result['talentpending'] = ['level' => $next['level'],
+                'options' => array_map(fn($code) => talents::card($code), $next['options'])];
+        }
+        return $result;
     }
 
     /**
@@ -82,6 +89,14 @@ final class choose_talent extends external_api {
                 'name' => new external_value(PARAM_TEXT, 'Its name'),
                 'description' => new external_value(PARAM_TEXT, 'What it does'),
             ])),
+            'talentpending' => new external_single_structure([
+                'level' => new external_value(PARAM_INT, 'The level that brings the choice'),
+                'options' => new external_multiple_structure(new external_single_structure([
+                    'code' => new external_value(PARAM_ALPHANUMEXT, 'Talent'),
+                    'name' => new external_value(PARAM_TEXT, 'Its name'),
+                    'description' => new external_value(PARAM_TEXT, 'What it does'),
+                ])),
+            ], 'The next choice waiting', VALUE_OPTIONAL),
         ]);
     }
 }

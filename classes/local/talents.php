@@ -31,10 +31,10 @@ final class talents {
 
     /** @var array The talents of each role: at each level that brings a choice, the two to choose from. */
     public const CATALOG = [
-        'protector' => [3 => ['longshield', 'teamguard']],
-        'healer' => [3 => ['doublecare', 'lightbreather']],
-        'sage' => [3 => ['househints', 'wideglance']],
-        'scout' => [3 => ['freshtrack', 'sharedtrail']],
+        'protector' => [3 => ['longshield', 'teamguard'], 6 => ['quickshield', 'candleguard']],
+        'healer' => [3 => ['doublecare', 'lightbreather'], 6 => ['sparecandle', 'strongcheer']],
+        'sage' => [3 => ['househints', 'wideglance'], 6 => ['quickglance', 'knotreading']],
+        'scout' => [3 => ['freshtrack', 'sharedtrail'], 6 => ['quicktrail', 'widetrail']],
     ];
 
     /**
