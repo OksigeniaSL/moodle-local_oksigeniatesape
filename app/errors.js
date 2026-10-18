@@ -246,7 +246,7 @@
       var body = show('<div class="nest-end ' + (result.success ? 'won' : 'lost') + '"><span class="battle-mini" ' +
         'aria-hidden="true">' + T.embrollo(result.success ? 0.2 : 1) + '</span><h2>' + esc(result.success ?
         t('app_errors_won') : t('app_errors_lost')) + '</h2><p class="lead">' + esc(result.success ? game.win : game.lose) +
-        '</p><p class="help">' + esc(t('app_errors_score', {found: result.caught, goal: result.goal})) + '</p>' +
+        '</p>' +
         (gifts.length ? '<ul class="gifts">' + gifts.join('') + '</ul>' : '') + '<div class="actions">' +
         (result.success ? '' : '<button class="btn btn-main" data-again>' + esc(t('app_tryagain')) + '</button>') +
         '<button class="btn ' + (result.success ? 'btn-main' : 'btn-soft') + '" data-back>' + esc(t('app_backtomap')) +

@@ -2242,19 +2242,27 @@ body.in-scene {
 }
 
 .nest-shield {
-  display: inline-flex;
-  gap: 5px;
+  display: inline-grid;
+  gap: 2px;
+  min-width: 110px;
 }
 
-.nest-shield i {
-  width: 18px;
-  height: 22px;
-  border-radius: 4px 4px 10px 10px;
-  border: 2px solid var(--sky);
+.nest-shield small {
+  color: var(--text-soft);
+  font-size: 12px;
 }
 
-.nest-shield i.on {
-  background: var(--sky);
+.nest-shield .meter.warmth i {
+  background: linear-gradient(90deg, #e9a35a, #ffd27a);
+  transition: width .4s ease;
+}
+
+.critter-pic {
+  display: block;
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 2px;
+  object-fit: contain;
 }
 
 .nest-count {

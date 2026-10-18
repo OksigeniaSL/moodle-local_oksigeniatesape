@@ -2477,15 +2477,14 @@
    * @return {string}
    */
   /**
-   * The picture of a being: its own, from the art pack, or the card of its group, or nothing.
+   * The picture of a being: its own, from the art pack, or nothing (the card of its group would show other beings: an
+   * ant with a snail and a ladybird).
    *
    * @param {string} id
-   * @param {string} group
    * @return {string|null}
    */
-  function beingArt(id, group) {
-    var album = {insecto: 'invertebrado', aracnido: 'invertebrado', molusco: 'invertebrado', gusano: 'invertebrado'};
-    return T.artUrl(['being.' + id, 'album.' + (album[group] || group)]);
+  function beingArt(id) {
+    return T.artUrl(['being.' + id]);
   }
 
   /**
@@ -2502,7 +2501,7 @@
     layer.setAttribute('aria-modal', 'true');
     layer.setAttribute('aria-labelledby', 'tesape-encounter-title');
     var shown = 1;
-    var art = beingArt(e.picture.replace(/^being\./, ''), e.group);
+    var art = beingArt(e.picture.replace(/^being\./, ''));
     var draw = function() {
       layer.innerHTML = '<div class="badge-card"><div class="kicker" id="tesape-encounter-title">' +
         esc(t('app_encounter_title')) + '</div>' + (art ? '<img class="encounter-pic hidden-one" src="' + esc(art) + '" alt="">' :
@@ -2583,7 +2582,7 @@
         var missing = g.total - g.beings.length;
         return '<h3>' + esc(g.name) + ' <small>' + esc(missing ? t('app_guide_missing', missing) : t('app_guide_full')) +
           '</small></h3><div class="album">' + g.beings.map(function(b) {
-            var art = beingArt(b.id, b.group);
+            var art = beingArt(b.id);
             return '<div class="album-card' + (b.golden ? ' golden' : '') + '">' + (art ? '<img src="' + esc(art) + '" alt="">' :
               '') + '<b>' + esc(b.name) + '</b><small>' + esc(t('app_groupname_' + b.group)) + '</small><small>' +
               esc(b.fact) + '</small></div>';

@@ -198,14 +198,12 @@
     }
 
     function hud() {
+      // The warmth of the nest of the creature: each animal that gets in takes some of it.
       var shield = layer.querySelector('[data-shield]');
       var left = Math.max(0, game.shield - run.missed);
-      var hearts = '';
-      for (var i = 0; i < game.shield; i++) {
-        hearts += '<i class="' + (i < left ? 'on' : '') + '"></i>';
-      }
-      shield.innerHTML = '<span class="sr-only">' + esc(t('app_nest_shield')) + ' ' + left + '/' + game.shield + '</span>' +
-        hearts;
+      shield.innerHTML = '<small aria-hidden="true">' + esc(t('app_nest_warmth')) + '</small><span class="meter warmth" ' +
+        'role="img" aria-label="' + esc(t('app_nest_warmth_left', {left: left, all: game.shield})) + '"><i style="width:' +
+        Math.round(100 * left / game.shield) + '%"></i></span>';
       layer.querySelector('[data-count]').textContent = t('app_nest_count', run.caught + ' / ' + game.goal);
     }
 
@@ -218,7 +216,10 @@
       var el = document.createElement('button');
       el.type = 'button';
       el.className = 'critter';
-      el.innerHTML = '<span class="paw" aria-hidden="true"></span>' + esc(animal.label);
+      // Its own drawing, when the art pack paints it (never the card of its group: that would give the net away).
+      var pic = T.artUrl(['being.' + animal.id]);
+      el.innerHTML = (pic ? '<img class="critter-pic" src="' + esc(pic) + '" alt="">' : '<span class="paw" aria-hidden="true">' +
+        '</span>') + esc(animal.label);
       var lanes = calm ? [1] : [0, 1, 2];
       var lane = lanes[run.lane++ % lanes.length];
       // Lanes far enough from the edges that a long name stays inside the field.
@@ -450,8 +451,7 @@
       }).join('');
       var html = '<div class="nest-end ' + (result.success ? 'won' : 'lost') + '"><div class="nest-hero" aria-hidden="true">' +
         creature() + '</div><h2>' + esc(result.success ? t('app_nest_won') : t('app_nest_lost')) + '</h2><p class="lead">' +
-        esc(result.success ? game.win : game.lose) + '</p><p class="help">' + esc(t('app_nest_score',
-        {caught: result.caught, total: game.animals.length, goal: result.goal})) + '</p>' + (gifts ? '<ul class="gifts">' + gifts + '</ul>' : '');
+        esc(result.success ? game.win : game.lose) + '</p>' + (gifts ? '<ul class="gifts">' + gifts + '</ul>' : '');
       if (result.coat && world.character && world.character.creature) {
         html += coatChooser();
       }

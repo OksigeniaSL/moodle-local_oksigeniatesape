@@ -262,8 +262,7 @@
       var body = show('<div class="nest-end ' + (result.success ? 'won' : 'lost') + '"><span class="whoami-shadow big' +
         (result.success ? ' found' : '') + '" aria-hidden="true">' + (result.success ? '✓' : '?') + '</span><h2>' +
         esc(result.success ? t('app_whoami_won') : t('app_whoami_lost')) + '</h2><p class="lead">' +
-        esc(result.success ? game.win : game.lose) + '</p><p class="help">' + esc(t('app_whoami_score', {found: result.caught,
-        total: result.goal, stars: run.stars})) + '</p>' + (gifts.length ? '<ul class="gifts">' + gifts.join('') + '</ul>' :
+        esc(result.success ? game.win : game.lose) + '</p>' + (gifts.length ? '<ul class="gifts">' + gifts.join('') + '</ul>' :
         '') + (lost ? '<div class="card whack-learn"><h3>' + esc(t('app_whack_learn')) + '</h3><ul>' + lost + '</ul></div>' :
         '') + '<div class="actions">' + (result.success ? '' : '<button class="btn btn-main" data-again>' +
         esc(t('app_tryagain')) + '</button>') + '<button class="btn ' + (result.success ? 'btn-main' : 'btn-soft') +

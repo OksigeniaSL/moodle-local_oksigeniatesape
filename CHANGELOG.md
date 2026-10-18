@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.84.0 (2026-10-18)
+
+Block 3.5 of the plan: minigames that are seen, not read.
+
+- **No more «9 of 9»** at the end of the minigames: the world answers (what the mission says when it is won or lost),
+  with what was mixed up and why; never a count of right answers.
+- **The defence of the nest**: the nest of the creature has its warmth, a bar that each animal that gets in empties a
+  little, instead of four shields; the animals fall with their own drawing when the art pack paints them (never the
+  card of their group, which would give the net away).
+- **Beings with their own picture only**: until the art pack paints each being, an encounter shows its shadow and the
+  field guide its name, its group and its fact, not the card of its group (an ant with a snail and a ladybird, seen by
+  Campus).
+
 ## 0.83.0 (2026-10-18)
 
 Block 3.1 of the plan: something to find.
