@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.112.0 (2026-10-18)
+
+- **Two new verbs for scenes.** `path`: someone (a drop, an animal) waits on a picture and the student touches the
+  place it goes on to; the right one takes it there, a wrong one makes it slip back with what it says. It counts as an
+  order. `tend`: the student gives some things to a being, «three days go by» and they see how it is (the first state
+  whose condition holds); they may try another round changing something, or go on. Each round counts as an answer; the
+  things marked right that were given count for the branches. Both are played by the autoplayer and checked by the
+  server, as the other nodes.
+- Mission «Los seres vivos» v46: «El viaje de la gota» is played guiding the drop along the plant, and in «El sótano de
+  las linternas» the plants are tended and seen after three days.
+
 ## 0.111.0 (2026-10-18)
 
 - **Information shared out** (`views` in a decision of a scene: what each role sees). In a team session each tablet

@@ -24,83 +24,47 @@
    "next": "elegir"
   },
   "elegir": {
-   "type": "choice",
+   "type": "tend",
    "prompt": "¿Qué tres cosas les llevamos?",
-   "select": {
-    "min": 3,
-    "max": 3
-   },
+   "give": 3,
+   "rounds": 2,
+   "objective": "SV-05",
    "hints": [
     "Una planta no come como nosotros: fabrica su alimento. ¿Con qué?",
     "Pálida y larga: así crece una planta que busca algo y no lo encuentra."
    ],
-   "options": [
+   "items": [
     {
      "id": "luz",
      "label": "Destapar la ventana para que entre el sol",
-     "correct": true,
-     "points": 3,
-     "objective": "SV-05",
-     "say": "Las hojas se giran hacia la ventana y empiezan a ponerse verdes.",
-     "feedback": "Las plantas fabrican su alimento en las hojas, con la luz del sol. A oscuras no pueden, y por eso se quedan pálidas y débiles."
+     "correct": true
     },
     {
      "id": "agua",
      "label": "Regarlas con agua",
-     "correct": true,
-     "points": 3,
-     "objective": "SV-05",
-     "say": "La tierra se oscurece y los tallos se enderezan.",
-     "feedback": "La planta toma el agua por la raíz y la sube por el tallo hasta las hojas, donde la usa para fabricar su alimento. El agua también la mantiene firme."
+     "correct": true
     },
     {
      "id": "aire",
      "label": "Dejar la puerta abierta para que corra aire fresco",
-     "correct": true,
-     "points": 2,
-     "objective": "SV-05",
-     "say": "Entra aire fresco por la puerta y las hojas se mecen un poco.",
-     "feedback": "Por unos poros diminutos de las hojas entra el dióxido de carbono del aire, que la planta necesita para fabricar su alimento con la luz. Y, como todo ser vivo, también respira."
+     "correct": true
     },
     {
      "id": "azucar",
-     "label": "Echarles azúcar en la tierra",
-     "correct": false,
-     "objective": "SV-05",
-     "say": "Al día siguiente, la tierra tiene moho y las plantas siguen pálidas.",
-     "feedback": "Las plantas no toman azúcar de la tierra: lo fabrican ellas mismas en las hojas, con la luz. El azúcar de la maceta solo alimenta al moho, que es un hongo."
+     "label": "Echarles azúcar en la tierra"
     },
     {
      "id": "leche",
-     "label": "Regarlas con leche",
-     "correct": false,
-     "objective": "SV-05",
-     "effects": [
-      {
-       "flag": "leche-a-las-plantas"
-      }
-     ],
-     "say": "La maceta empieza a oler mal y aparece moho.",
-     "feedback": "Las plantas no comen como los animales: fabrican su alimento con la luz, el agua y el aire. La leche se estropea en la tierra y solo alimenta al moho."
+     "label": "Regarlas con leche"
     },
     {
      "id": "tierra",
      "label": "Echarles tierra con restos de hojas",
-     "look": "En las macetas ya hay tierra con restos de hojas, y aun así las plantas siguen pálidas.",
-     "correct": false,
-     "points": 1,
-     "objective": "SV-05",
-     "say": "Las plantas se enderezan un poco, pero siguen pálidas.",
-     "feedback": "De la tierra, las plantas toman agua y sales minerales, que las ayudan. Pero su alimento lo fabrican con la luz: sin luz, la tierra no basta."
+     "look": "En las macetas ya hay tierra con restos de hojas, y aun así las plantas siguen pálidas."
     },
     {
      "id": "musica",
-     "label": "Ponerles música",
-     "correct": false,
-     "points": 1,
-     "objective": "SV-05",
-     "say": "La planta no cambia… o eso parece. Queda apuntado para un experimento.",
-     "feedback": "Que hoy no se vea nada no prueba que la música no haga nada. Para saberlo habría que hacer un experimento: dos plantas iguales, una con música y otra sin ella, y comparar."
+     "label": "Ponerles música"
     },
     {
      "id": "oscuridad",
@@ -110,11 +74,84 @@
        "valley": "Las plantas del sótano están pálidas y estiradas hacia la única rendija por la que entra luz.",
        "azara": "Las plantas del almacén están pálidas y estiradas hacia la única rendija por la que entra luz."
       }
+     }
+    }
+   ],
+   "states": [
+    {
+     "id": "verdes",
+     "when": {
+      "all": [
+       "luz",
+       "agua",
+       "aire"
+      ]
      },
-     "correct": false,
-     "objective": "SV-05",
-     "say": "Al volver, la planta está aún más larga y pálida.",
+     "correct": true,
+     "points": 8,
+     "text": "Pasan tres días. Las hojas se han girado hacia la ventana y están verdes, y los tallos, firmes.",
+     "feedback": "Las plantas fabrican su alimento en las hojas, con la luz del sol, el agua que suben por la raíz y el dióxido de carbono del aire, que entra por unos poros diminutos."
+    },
+    {
+     "id": "leche",
+     "when": {
+      "any": [
+       "leche"
+      ]
+     },
+     "effects": [
+      {
+       "flag": "leche-a-las-plantas"
+      }
+     ],
+     "text": "Pasan tres días. La maceta huele mal, ha salido moho sobre la tierra y las plantas siguen pálidas.",
+     "feedback": "Las plantas no comen como los animales: fabrican su alimento con la luz, el agua y el aire. La leche se estropea en la tierra y solo alimenta al moho, que es un hongo."
+    },
+    {
+     "id": "azucar",
+     "when": {
+      "any": [
+       "azucar"
+      ]
+     },
+     "text": "Pasan tres días. Sobre la tierra ha salido moho y las plantas siguen pálidas.",
+     "feedback": "Las plantas no toman azúcar de la tierra: lo fabrican ellas mismas en las hojas, con la luz. El azúcar de la maceta solo alimenta al moho, que es un hongo."
+    },
+    {
+     "id": "oscuras",
+     "when": {
+      "any": [
+       "oscuridad"
+      ]
+     },
+     "text": "Pasan tres días. Las plantas están aún más largas y pálidas, estiradas hacia la rendija.",
      "feedback": "A oscuras, la planta no puede fabricar su alimento y gasta sus reservas en estirarse, buscando una luz que no encuentra. Por eso crece larga, pálida y débil."
+    },
+    {
+     "id": "sinluz",
+     "when": {
+      "none": [
+       "luz"
+      ]
+     },
+     "text": "Pasan tres días. Los tallos están algo más firmes, pero las hojas siguen pálidas.",
+     "feedback": "De la tierra, las plantas toman agua y sales minerales, que las ayudan. Pero su alimento lo fabrican con la luz: sin luz, lo demás no basta."
+    },
+    {
+     "id": "musica",
+     "when": {
+      "all": [
+       "luz",
+       "musica"
+      ]
+     },
+     "text": "Pasan tres días. Las hojas empiezan a verdear. ¿Ha sido la música, o la luz?",
+     "feedback": "Que hoy cambie algo no prueba que haya sido la música. Para saberlo habría que hacer un experimento: dos plantas iguales, una con música y otra sin ella, y comparar. Y a estas plantas aún les falta algo."
+    },
+    {
+     "id": "casi",
+     "text": "Pasan tres días. Las hojas empiezan a verdear, pero a las plantas todavía les falta algo.",
+     "feedback": "Con la luz, la planta fabrica su alimento, pero también necesita el agua, que sube por la raíz, y el aire, que entra por los poros de las hojas. ¿Qué cambiarías?"
     }
    ],
    "next": "etiquetas"

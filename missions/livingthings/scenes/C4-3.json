@@ -30,8 +30,14 @@
    "next": "viaje"
   },
   "viaje": {
-   "type": "order",
-   "prompt": "¿Por dónde va la gota?",
+   "type": "path",
+   "prompt": "¿Por dónde va la gota? Toca el sitio al que pasa.",
+   "traveler": "la gota",
+   "image": "gota-raiz",
+   "from": {
+    "x": 50,
+    "y": 99
+   },
    "objective": "SV-05",
    "hints": [
     "Se empieza por abajo: ¿por dónde toca la planta la tierra húmeda?",
@@ -40,28 +46,38 @@
    "steps": [
     {
      "id": "raiz",
-     "label": "Hacerla entrar por la raíz, desde la tierra húmeda"
+     "label": "La raíz, en la tierra húmeda",
+     "x": 50,
+     "y": 88
     },
     {
      "id": "tallo",
-     "label": "Subirla por dentro del tallo, como por una tubería"
+     "label": "Por dentro del tallo, como por una tubería",
+     "x": 46,
+     "y": 68
     },
     {
      "id": "hoja",
-     "label": "Llevarla hasta la hoja"
+     "label": "La hoja",
+     "x": 74,
+     "y": 49
     },
     {
      "id": "alimento",
-     "label": "Dejarla en la hoja, al sol, para que ayude a fabricar el alimento de la planta"
+     "label": "En la hoja, al sol: a fabricar el alimento de la planta",
+     "x": 30,
+     "y": 29
     },
     {
      "id": "vapor",
-     "label": "Dejar salir parte del agua al aire, como vapor, por unos poros diminutos de la hoja"
+     "label": "Al aire, como vapor, por unos poros diminutos de la hoja",
+     "x": 70,
+     "y": 9
     }
    ],
    "stuck": {
-    "default": "La gota se queda atascada: «Por aquí no puedo seguir». Volvemos al paso anterior.",
-    "hoja-antes-de-raiz": "La gota cae al suelo: «¡No puedo entrar por las hojas desde fuera! Empiezo por abajo»."
+    "default": "La gota se queda atascada: «Por aquí no puedo seguir». Vuelve al sitio de antes.",
+    "hoja-antes-de-raiz": "La gota resbala y cae al suelo: «¡No puedo entrar por las hojas desde fuera! Empiezo por abajo»."
    },
    "next": "sedienta"
   },

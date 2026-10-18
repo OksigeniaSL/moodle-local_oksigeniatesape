@@ -23,7 +23,8 @@ namespace local_oksigeniatesape\local;
  * What the student did is a list of events, in order:
  * - {"n": node, "pick": [option ids]} for each answer to a choice;
  * - {"n": node, "item": item id, "bin": bin id} for each try to put an item of a classify in a group;
- * - {"n": node, "step": step id} for each step put in an order;
+ * - {"n": node, "step": step id} for each step put in an order, or each place a path goes on to;
+ * - {"n": node, "give": [item ids]} for each round of a tend (things given to a being, and «days go by»);
  * - {"n": node, "hint": index} for each hint opened, before answering that node.
  * - {"n": node, "look": id} for each option, item or step looked at with its tool, before answering that node.
  * - {"n": node, "sniff": 1} when the creature of the student sniffs a choice before it is answered (see sniffs()).
@@ -33,8 +34,9 @@ namespace local_oksigeniatesape\local;
  * the first mistake of a play; the result per objective stays as it was, so that the teacher sees it.
  *
  * The rules are those of the client (and of the format of the scenes): an answer of one option may lead back to the
- * same question, a classify asks for each item until it is in its group (unless retry is none), an order asks for
- * each step until it is the right one.
+ * same question, a classify asks for each item until it is in its group (unless retry is none), an order or a path
+ * asks for each step until it is the right one, and a tend goes on after a good state, the last round or when the
+ * student goes on.
  *
  * @package    local_oksigeniatesape
  * @copyright  2026 Oksigenia <dev@oksigenia.cc>
@@ -292,10 +294,18 @@ final class scene_runner {
                     $node = $n['next'];
                     break;
                 case 'order':
+                case 'path':
+                    // A path is an order told as someone who goes along it on a picture.
                     $before = $this->objectives;
                     $this->order($node, $n);
                     $this->method($node, $before);
                     $node = $n['next'];
+                    break;
+                case 'tend':
+                    $before = $this->objectives;
+                    $next = $this->tend($node, $n);
+                    $this->method($node, $before);
+                    $node = $next;
                     break;
                 case 'ending':
                     if ($this->events) {
@@ -354,7 +364,7 @@ final class scene_runner {
 
     /**
      * How many right answers there were in a node: options marked correct in a choice, items placed at the first try
-     * in a classify.
+     * in a classify, things marked correct given in the last round of a tend.
      *
      * @param string $node
      * @return int
@@ -364,7 +374,8 @@ final class scene_runner {
             return count($this->placed[$node]);
         }
         $options = [];
-        foreach ($this->scene['nodes'][$node]['options'] ?? [] as $option) {
+        $n = $this->scene['nodes'][$node] ?? [];
+        foreach (($n['type'] ?? '') === 'tend' ? ($n['items'] ?? []) : ($n['options'] ?? []) as $option) {
             $options[$option['id']] = $option;
         }
         $count = 0;
@@ -516,6 +527,95 @@ final class scene_runner {
         if (array_diff_key($byitem, $known)) {
             $this->fail('an item that is not in ' . $node);
         }
+    }
+
+    /**
+     * Tending a being: the student gives it some of the things at hand and days go by; what they gave makes a state of
+     * the being, the first of its states whose condition holds. They may try another round, changing something, up to
+     * the rounds of the node; it goes on after a good state, after the last round, or when they go on. Each round counts
+     * as an answer: right the first time, or after the consequence.
+     *
+     * @param string $node
+     * @param array $n
+     * @return string Next node.
+     */
+    private function tend(string $node, array $n): string {
+        $items = [];
+        foreach ($n['items'] ?? [] as $item) {
+            $items[(string) $item['id']] = $item;
+        }
+        $give = max(1, (int) ($n['give'] ?? 1));
+        $rounds = max(1, (int) ($n['rounds'] ?? 1));
+        $seen = [];
+        for ($round = 0; $round < $rounds; $round++) {
+            if ($round > 0 && !$this->more($node)) {
+                break;
+            }
+            $event = $this->take($node);
+            $raw = (array) ($event['give'] ?? []);
+            $given = array_values(array_unique(array_map('strval', $raw)));
+            if (count($given) !== $give || count($given) !== count($raw)) {
+                $this->fail('wrong number of things given in ' . $node);
+            }
+            foreach ($given as $id) {
+                if (!isset($items[$id]) || !$this->has($items[$id]['requires'] ?? null)) {
+                    $this->fail('thing not available: ' . $id);
+                }
+            }
+            $state = self::tend_state($n, $given);
+            if (!$state) {
+                $this->fail('no state of ' . $node . ' for what was given');
+            }
+            $ok = !empty($state['correct']);
+            $this->picks[$node] = $given;
+            sort($given);
+            $again = in_array(implode(',', $given), $seen, true);
+            $seen[] = implode(',', $given);
+            $how = $ok ? ($round === 0 ? ($this->helped($node) ? 'helped' : 'first') : 'after') : ($again ? 'twice' : '');
+            $this->tally($state['objective'] ?? $n['objective'] ?? null, $ok, $how);
+            $this->points += $round === 0 ? (int) ($state['points'] ?? ($ok ? 3 : 0)) : 0;
+            foreach ($state['effects'] ?? [] as $effect) {
+                $this->effect($effect);
+            }
+            if ($ok) {
+                return $state['next'] ?? $n['next'];
+            }
+        }
+        return $n['next'];
+    }
+
+    /**
+     * The state of a being tended with some things: the first whose condition holds (all of them given, any of them
+     * given, none of them given); one without a condition holds always.
+     *
+     * @param array $n The tend node.
+     * @param string[] $given
+     * @return array|null
+     */
+    public static function tend_state(array $n, array $given): ?array {
+        foreach ($n['states'] ?? [] as $state) {
+            $when = $state['when'] ?? [];
+            $any = array_map('strval', (array) ($when['any'] ?? []));
+            if (
+                array_diff(array_map('strval', (array) ($when['all'] ?? [])), $given)
+                || ($any && !array_intersect($any, $given))
+                || array_intersect(array_map('strval', (array) ($when['none'] ?? [])), $given)
+            ) {
+                continue;
+            }
+            return $state;
+        }
+        return null;
+    }
+
+    /**
+     * Whether the next event is for this node (hints, looks and sniffs of it included).
+     *
+     * @param string $node
+     * @return bool
+     */
+    private function more(string $node): bool {
+        return isset($this->events[0]) && is_array($this->events[0]) && ($this->events[0]['n'] ?? null) === $node;
     }
 
     /**

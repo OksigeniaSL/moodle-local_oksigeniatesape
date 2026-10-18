@@ -489,6 +489,65 @@ final class scene_runner_test extends \advanced_testcase {
     }
 
     /**
+     * A scene with a path and a tend, for the verbs that tell an order as a journey and a choice as tending a being.
+     *
+     * @return array
+     */
+    private static function verbs_scene(): array {
+        return ['id' => 'V', 'start' => 'camino', 'nodes' => [
+            'camino' => ['type' => 'path', 'prompt' => '?', 'objective' => 'SV-05', 'steps' => [
+                ['id' => 'raiz', 'label' => 'R', 'x' => 50, 'y' => 80], ['id' => 'tallo', 'label' => 'T', 'x' => 50, 'y' => 50],
+                ['id' => 'hoja', 'label' => 'H', 'x' => 70, 'y' => 20]], 'next' => 'cuidar'],
+            'cuidar' => ['type' => 'tend', 'prompt' => '?', 'objective' => 'SV-05', 'give' => 2, 'rounds' => 2, 'items' => [
+                ['id' => 'luz', 'label' => 'L', 'correct' => true], ['id' => 'agua', 'label' => 'A', 'correct' => true],
+                ['id' => 'leche', 'label' => 'M'], ['id' => 'musica', 'label' => 'S']], 'states' => [
+                ['id' => 'verde', 'when' => ['all' => ['luz', 'agua']], 'correct' => true, 'points' => 5],
+                ['id' => 'moho', 'when' => ['any' => ['leche']], 'effects' => [['flag' => 'leche']]],
+                ['id' => 'casi', 'text' => 'Le falta algo']], 'next' => 'fin'],
+            'fin' => ['type' => 'branch', 'rules' => [['if' => ['correct_at_least' => 2, 'in' => 'cuidar'], 'next' => 'bien']],
+                'else' => 'medias'],
+            'bien' => ['type' => 'ending', 'outcome' => 'success'],
+            'medias' => ['type' => 'ending', 'outcome' => 'partial'],
+        ]];
+    }
+
+    public function test_a_path_is_an_order_told_as_a_journey_and_a_tend_counts_its_rounds(): void {
+        $path = [['n' => 'camino', 'step' => 'raiz'], ['n' => 'camino', 'step' => 'tallo'], ['n' => 'camino', 'step' => 'hoja']];
+        // Right at the first round: the good state, its points and the good ending.
+        $result = (new scene_runner(self::verbs_scene()))->run(array_merge($path, [['n' => 'cuidar', 'give' => ['agua', 'luz']]]));
+        $this->assertSame('bien', $result['ending']);
+        $this->assertSame(['ok' => 2, 'total' => 2], self::scored($result['objectives'])['SV-05']);
+        // A wrong round, then the right one: it counts as after the consequence, and the flag of the state stays.
+        $result = (new scene_runner(self::verbs_scene()))->run(array_merge($path, [['n' => 'cuidar', 'give' => ['leche', 'luz']],
+            ['n' => 'cuidar', 'give' => ['luz', 'agua']]]));
+        $this->assertSame('bien', $result['ending']);
+        $this->assertSame(1, $result['objectives']['SV-05']['after']);
+        // One round that is not right and going on: the scene follows with what was given (one right thing).
+        $result = (new scene_runner(self::verbs_scene()))->run(array_merge($path, [['n' => 'cuidar', 'give' => ['luz', 'musica']]]));
+        $this->assertSame('medias', $result['ending']);
+        $this->assertSame(['ok' => 1, 'total' => 2], self::scored($result['objectives'])['SV-05']);
+        // A step out of order in the path is a mistake, as in an order: right after the consequence.
+        $result = (new scene_runner(self::verbs_scene()))->run(array_merge(
+            [['n' => 'camino', 'step' => 'hoja']],
+            $path,
+            [['n' => 'cuidar', 'give' => ['agua', 'luz']]]
+        ));
+        $this->assertSame(1, $result['objectives']['SV-05']['after']);
+        // Two things, not one nor three; and only things that are there.
+        foreach ([['luz'], ['luz', 'agua', 'leche'], ['luz', 'piedra']] as $give) {
+            try {
+                (new scene_runner(self::verbs_scene()))->run(array_merge($path, [['n' => 'cuidar', 'give' => $give]]));
+                $this->fail('A round that does not fit');
+            } catch (\moodle_exception $e) {
+                $this->assertSame('invalidscenepath', $e->errorcode);
+            }
+        }
+        // The autoplayer plays them.
+        $played = (new scene_runner(self::verbs_scene()))->run(\local_oksigeniatesape\local\autoplayer::play(self::verbs_scene()));
+        $this->assertSame('bien', $played['ending']);
+    }
+
+    /**
      * Plays that do not fit the scene are refused.
      *
      * @param array $events

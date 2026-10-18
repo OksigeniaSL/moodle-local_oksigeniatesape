@@ -91,16 +91,57 @@ final class autoplayer {
                     $node = $n['next'];
                     break;
                 case 'order':
+                case 'path':
                     foreach ($n['steps'] as $step) {
                         $events[] = ['n' => $node, 'step' => $step['id']];
                     }
                     $node = $n['next'];
+                    break;
+                case 'tend':
+                    // The first things to give that make a good state of the being.
+                    $given = self::tend_give($n, $runner, true);
+                    $events[] = ['n' => $node, 'give' => $given];
+                    $state = scene_runner::tend_state($n, $given) ?? [];
+                    $node = $state['next'] ?? $n['next'];
                     break;
                 case 'ending':
                     return $events;
             }
         }
         throw new \coding_exception('The scene does not end');
+    }
+
+    /**
+     * Things to give in a tend that make a good state of the being (or one that is not good): the first combination,
+     * of those at hand, that does.
+     *
+     * @param array $n The tend node.
+     * @param scene_runner $runner To know what is at hand.
+     * @param bool $good
+     * @return string[] Empty if none does.
+     */
+    private static function tend_give(array $n, scene_runner $runner, bool $good): array {
+        $ids = [];
+        foreach ($n['items'] ?? [] as $item) {
+            if ($runner->has($item['requires'] ?? null)) {
+                $ids[] = (string) $item['id'];
+            }
+        }
+        $give = max(1, (int) ($n['give'] ?? 1));
+        $pick = function (array $chosen, int $from) use (&$pick, $ids, $give, $n, $good): array {
+            if (count($chosen) === $give) {
+                $state = scene_runner::tend_state($n, $chosen);
+                return $state && !empty($state['correct']) === $good ? $chosen : [];
+            }
+            for ($i = $from; $i < count($ids); $i++) {
+                $found = $pick(array_merge($chosen, [$ids[$i]]), $i + 1);
+                if ($found) {
+                    return $found;
+                }
+            }
+            return [];
+        };
+        return $pick([], 0);
     }
 
     /**
@@ -142,6 +183,11 @@ final class autoplayer {
                     $steps = array_column($n['steps'], 'id');
                     $later = array_slice($steps, array_search($event['step'], $steps, true) + 1);
                     $wrong = $later ? ['step' => $later[$roll % count($later)]] : null;
+                } else if (isset($event['give']) && (int) ($n['rounds'] ?? 1) > 1) {
+                    // A round that does not work before the one that does.
+                    $runner = new scene_runner($scene, $items, $roles, $flags, $role);
+                    $bad = self::tend_give($n, $runner, false);
+                    $wrong = $bad ? ['give' => $bad] : null;
                 } else if (isset($event['pick']) && count($event['pick']) === 1) {
                     // Only the wrong answers that lead back to the question: the play goes on as it was.
                     $back = array_values(array_filter($n['options'], fn($o) => ($o['correct'] ?? null) === false

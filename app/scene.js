@@ -676,7 +676,7 @@
     function next() {
       var n = sc.nodes[run.node];
       // In a play as a team, each new decision passes to the next one of the team.
-      if (/^(choice|classify|order)$/.test(n.type)) {
+      if (/^(choice|classify|order|path|tend)$/.test(n.type)) {
         if (run.decided && run.decided !== run.node) {
           run.turn++;
         }
@@ -708,6 +708,10 @@
         classify(n);
       } else if (n.type === 'order') {
         order(n);
+      } else if (n.type === 'path') {
+        path(n);
+      } else if (n.type === 'tend') {
+        tend(n);
       } else if (n.type === 'ending') {
         ending(n);
       }
@@ -857,13 +861,14 @@
         });
         return right;
       }
+      // The last answer: the options picked, or the things given in the last round of a tend.
       var picks = [];
       run.events.forEach(function(e) {
-        if (e.n === node && e.pick) {
-          picks = e.pick;
+        if (e.n === node && (e.pick || e.give)) {
+          picks = e.pick || e.give;
         }
       });
-      var opts = n.options || [];
+      var opts = n.type === 'tend' ? n.items || [] : n.options || [];
       return picks.filter(function(id) {
         return opts.some(function(o) {
           return o.id === id && o.correct === true;
@@ -1875,6 +1880,153 @@
             }
           };
         });
+      }
+      draw();
+    }
+
+    /**
+     * A path: someone (a drop, an animal) waits on a picture and the student touches the place it goes on to, one after
+     * the other; the right one takes it there, a wrong one makes it slip back with what it says. It is an order, told
+     * as a journey.
+     *
+     * @param {Object} n The node: steps with id, label, x and y (in percent of the picture), traveler, from.
+     */
+    function path(n) {
+      var done = [];
+      var from = n.from || {x: 50, y: 92};
+      function draw(said) {
+        var at = done.length ? done[done.length - 1] : from;
+        var body = show(pieces(n) + '<p class="scene-prompt">' + esc(tx(n.prompt)) + '</p><div class="path-map">' +
+          picture(n.image || sceneImage(), data) + n.steps.map(function(s, i) {
+            var visited = done.indexOf(s) >= 0;
+            return '<button type="button" class="path-stop' + (visited ? ' visited' : '') + '" data-id="' + esc(s.id) + '" ' +
+              'style="left:' + Number(s.x) + '%;top:' + Number(s.y) + '%"' + (visited ? ' disabled' : '') + '>' +
+              (visited ? '<b>' + (done.indexOf(s) + 1) + '</b>' : '') + '<span>' + esc(tx(s.label)) + '</span></button>';
+          }).join('') + '<span class="path-traveler" style="left:' + Number(at.x) + '%;top:' + Number(at.y) + '%">' +
+          esc(tx(n.traveler || '•')) + '</span></div><div data-out>' + (said || '') + '</div>');
+        hintArea(n, body);
+        roleBar(n, body);
+        body.querySelectorAll('.path-stop:not([disabled])').forEach(function(b) {
+          b.onclick = function() {
+            var s = n.steps.filter(function(x) {
+              return x.id === b.dataset.id;
+            })[0];
+            var expected = n.steps[done.length];
+            run.events.push(by({n: run.node, step: s.id}));
+            if (s === expected) {
+              done.push(s);
+              if (T.fx) {
+                T.fx.sound('tap');
+              }
+              if (done.length === n.steps.length) {
+                draw();
+                setTimeout(function() {
+                  go(n.next);
+                }, T.moves && !T.moves() ? 0 : 700);
+                return;
+              }
+              draw();
+              return;
+            }
+            var stuck = n.stuck || {};
+            var msg = stuck[s.id + '-antes-de-' + expected.id] || stuck.default || t('app_stuck');
+            mistake();
+            if (T.fx) {
+              T.fx.sound('choose');
+            }
+            draw('<div class="conseq said">' + esc(tx(msg)) + '</div>');
+            var traveler = layer.querySelector('.path-traveler');
+            if (traveler) {
+              traveler.classList.add('slip');
+            }
+          };
+        });
+      }
+      draw();
+    }
+
+    /**
+     * Tending a being: the student gives it some of the things at hand and days go by; what they gave makes a state of
+     * the being (the first whose condition holds, as the server counts it). They may try another round, changing
+     * something, up to the rounds of the node, or go on.
+     *
+     * @param {Object} n The node: items, give, rounds, states (when, correct, text, image, feedback, next).
+     */
+    function tend(n) {
+      var give = n.give || 1;
+      var rounds = n.rounds || 1;
+      var round = 0;
+      var chosen = [];
+      var last = null;
+      function state(given) {
+        return (n.states || []).filter(function(st) {
+          var w = st.when || {};
+          var all = (w.all || []).every(function(id) {
+            return given.indexOf(id) >= 0;
+          });
+          var any = !(w.any || []).length || (w.any || []).some(function(id) {
+            return given.indexOf(id) >= 0;
+          });
+          var none = !(w.none || []).some(function(id) {
+            return given.indexOf(id) >= 0;
+          });
+          return all && any && none;
+        })[0] || null;
+      }
+      function draw() {
+        var items = (n.items || []).filter(function(it) {
+          return has(it.requires);
+        });
+        var shown = last ? '<div class="tend-state' + (last.correct ? ' good' : '') + '">' + (last.image ?
+          picture(last.image, data) : '') + '<p>' + esc(tx(last.text || '')) + '</p>' + (last.feedback ? '<small>' +
+          esc(tx(last.feedback)) + '</small>' : '') + '</div>' : (n.image ? picture(n.image, data) : '');
+        var more = last && !last.correct && round < rounds;
+        var body = show(pieces(n) + shown + '<p class="scene-prompt">' + esc(tx(n.prompt)) + '</p>' + (last && (last.correct ||
+          !more) ? '' : '<div class="opts tend-items">' + items.map(function(it) {
+          var on = chosen.indexOf(it.id) >= 0;
+          return '<button type="button" class="opt' + (on ? ' sel' : '') + '" data-id="' + esc(it.id) + '" aria-pressed="' +
+            on + '">' + esc(tx(it.label)) + '</button>';
+        }).join('') + '</div><div class="counter">' + esc(t('app_chosen', chosen.length + '/' + give)) + '</div>') +
+          '<div class="actions">' + (last && (last.correct || !more) ? '<button class="btn btn-main" data-goon>' +
+          esc(t('app_next')) + '</button>' : '<button class="btn btn-main" data-days' + (chosen.length === give ? '' :
+          ' disabled') + '>' + esc(tx(n.days || t('app_tend_days'))) + '</button>' + (more ? '<button class="btn btn-soft" ' +
+          'data-goon>' + esc(t('app_tend_goon')) + '</button>' : '')) + '</div>');
+        hintArea(n, body);
+        roleBar(n, body);
+        body.querySelectorAll('.tend-items .opt').forEach(function(b) {
+          b.onclick = function() {
+            var id = b.dataset.id;
+            var at = chosen.indexOf(id);
+            if (at >= 0) {
+              chosen.splice(at, 1);
+            } else if (chosen.length < give) {
+              chosen.push(id);
+            }
+            draw();
+          };
+        });
+        var days = body.querySelector('[data-days]');
+        if (days) {
+          days.onclick = function() {
+            run.events.push(by({n: run.node, give: chosen.slice()}));
+            last = state(chosen) || {text: '', correct: false};
+            round++;
+            if (!last.correct) {
+              mistake();
+            }
+            if (T.fx) {
+              T.fx.sound(last.correct ? 'item' : 'choose');
+            }
+            chosen = [];
+            draw();
+          };
+        }
+        var goon = body.querySelector('[data-goon]');
+        if (goon) {
+          goon.onclick = function() {
+            go(last && last.correct ? last.next || n.next : n.next);
+          };
+        }
       }
       draw();
     }

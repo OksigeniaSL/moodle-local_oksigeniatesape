@@ -841,6 +841,108 @@ body.tesape {
   background: rgba(255, 200, 87, .1);
 }
 
+/* A path: someone goes along a picture, place by place. */
+.path-map {
+  position: relative;
+  height: min(420px, 62vh);
+  margin: 8px 0 12px;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.path-map .scene-pic {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  margin: 0;
+}
+
+.path-map .scene-pic img,
+.path-map .scene-pic svg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.path-stop {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 44%;
+  padding: 5px 9px;
+  border-radius: 14px;
+  border: 2px solid var(--lantern);
+  background: rgba(16, 24, 40, .86);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.2;
+  text-align: left;
+  cursor: pointer;
+}
+
+.path-stop.visited {
+  border-color: #7cc67f;
+  opacity: .85;
+}
+
+.path-stop b {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #7cc67f;
+  color: #10202c;
+}
+
+.path-traveler {
+  position: absolute;
+  transform: translate(-50%, -120%);
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--lantern);
+  color: #10202c;
+  font-weight: 700;
+  pointer-events: none;
+  transition: left .6s ease, top .6s ease;
+}
+
+.path-traveler.slip {
+  animation: tesape-slip .5s ease;
+}
+
+@keyframes tesape-slip {
+  30% {
+    transform: translate(-50%, -60%) rotate(-12deg);
+  }
+}
+
+body.still .path-traveler {
+  transition: none;
+  animation: none;
+}
+
+/* Tending a being: how it is after the days go by. */
+.tend-state {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .05);
+}
+
+.tend-state.good {
+  background: rgba(124, 198, 127, .14);
+}
+
+.tend-state small {
+  display: block;
+  margin-top: 6px;
+  color: var(--text-soft);
+}
+
 /* A team task with parts. */
 .task-parts {
   list-style: none;
