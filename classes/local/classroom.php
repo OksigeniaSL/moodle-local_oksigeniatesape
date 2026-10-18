@@ -294,6 +294,12 @@ final class classroom {
                 $DB->update_record(self::T . 'validation', $validation);
             }
             self::reward($challenge, $member, (int) $validation->id, $before, $status, $actorid, $now);
+            // The task of a place done fills the reserve of the team, once.
+            $team = (int) $challenge->chapterid && !(int) $challenge->cmid && $status !== 'notyet' ?
+                teams::of((int) $challenge->courseid, (int) $userid) : null;
+            if ($team) {
+                reserve::credit((int) $challenge->courseid, (int) $team->id, 'task-' . $challenge->id, reserve::TASK, $now);
+            }
             $transaction->allow_commit();
             $results[$userid] = $status;
         }

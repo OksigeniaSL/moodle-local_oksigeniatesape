@@ -475,6 +475,13 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:play',
     ],
+    'local_oksigeniatesape_team_reserve' => [
+        'classname' => 'local_oksigeniatesape\\external\\team_reserve',
+        'description' => 'A student proposes, confirms or takes back a spending of the reserve of their team.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:play',
+    ],
     'local_oksigeniatesape_erase_stain' => [
         'classname' => 'local_oksigeniatesape\\external\\erase_stain',
         'description' => 'The teacher takes a stain of the Embrollo as cleaned by the class.',

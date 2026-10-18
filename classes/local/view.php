@@ -958,13 +958,15 @@ final class view {
             $mates[] = $entry;
         }
         $playing = count(array_filter($mates, fn($m) => isset($m['character']['member'])));
-        // The council of the team, with a mission.
+        // The council of the team, with a mission; and its reserve, for who plays in it.
         $council = self::council($courseid, $group, $userid, $mates);
+        $reserve = $mine ? reserve::view($courseid, (int) $group->id, $mine, array_column($mates, 'name', 'userid')) : null;
         return ['id' => (int) $group->id, 'name' => format_string($group->name), 'members' => $mates,
             'energy' => $energy, 'energymax' => $playing * engine::ENERGY_MAX, 'carer' => $carers,
             'banner' => market::team_owns($courseid, (int) $group->id),
             'state' => teams::states($courseid)[(int) $group->id] ?? '',
-            'first' => teams::firsts($courseid)[(int) $group->id] ?? ''] + ($council ? ['council' => $council] : []);
+            'first' => teams::firsts($courseid)[(int) $group->id] ?? ''] + ($council ? ['council' => $council] : []) +
+            ($reserve ? ['reserve' => $reserve] : []);
     }
 
     /**

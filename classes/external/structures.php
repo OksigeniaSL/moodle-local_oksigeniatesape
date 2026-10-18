@@ -579,6 +579,29 @@ final class structures {
     }
 
     /**
+     * The reserve of breath of a team, as its members see it.
+     *
+     * @param int $required VALUE_REQUIRED or VALUE_OPTIONAL.
+     * @return external_single_structure
+     */
+    public static function reserve(int $required = VALUE_REQUIRED): external_single_structure {
+        return new external_single_structure([
+            'breath' => new external_value(PARAM_INT, 'Breath in the reserve of the team'),
+            'max' => new external_value(PARAM_INT, 'Most it holds'),
+            'costs' => new external_multiple_structure(new external_single_structure([
+                'kind' => new external_value(PARAM_ALPHA, 'refresh or rise'),
+                'cost' => new external_value(PARAM_INT, 'Breath it costs'),
+            ])),
+            'open' => new external_multiple_structure(new external_single_structure([
+                'id' => new external_value(PARAM_INT, 'Proposal'),
+                'kind' => new external_value(PARAM_ALPHA, 'refresh or rise'),
+                'mine' => new external_value(PARAM_BOOL, 'Proposed by who looks'),
+                'by' => new external_value(PARAM_TEXT, 'Who of the team proposed it'),
+            ]), 'The proposals of today waiting for a confirmation'),
+        ], 'The reserve of breath of the team', $required);
+    }
+
+    /**
      * The event of the day on the class screen.
      *
      * @param int $required VALUE_OPTIONAL where there may be none yet.

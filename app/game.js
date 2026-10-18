@@ -2545,7 +2545,7 @@
             '<span class="meter energy" ' +
             'title="' + esc(t('app_energy')) + '"><i style="width:' + Math.round(100 * m.energy / w.energymax) +
             '%"></i></span></span>' : '') + '</li>';
-        }).join('') + '</ul></section>' + councilCard(team) + pactsCard(team.pacts);
+        }).join('') + '</ul></section>' + councilCard(team) + reserveCard(team.reserve) + pactsCard(team.pacts);
     }
     html += powersCard();
     if (w.standings.length > 1) {
@@ -2604,6 +2604,47 @@
         return '<button type="button" class="chip" data-first="' + role + '" aria-pressed="' + (team.first === role) + '">' +
           esc(T.roleName(fam, role, 'm')) + '</button>';
       }).join('') + '</div></div>' : '') + '</section>';
+  }
+
+  /**
+   * The reserve of breath of the team: what it has, the proposals of today to confirm or take back, and what can be
+   * proposed (getting up, only for who is worn out).
+   *
+   * @param {Object} r breath, max, costs, open.
+   * @return {string}
+   */
+  function reserveCard(r) {
+    if (!r) {
+      return '';
+    }
+    var me = state.world.character && state.world.character.member;
+    var cost = {};
+    r.costs.forEach(function(c) {
+      cost[c.kind] = c.cost;
+    });
+    var open = r.open.map(function(o) {
+      return '<li class="item"><span class="grow">' + esc(o.mine ? t('app_reserve_' + o.kind, cost[o.kind]) + ' · ' +
+        t('app_reserve_waiting') : t('app_reserve_asks_' + o.kind, o.by)) + '</span>' + (o.mine ?
+        '<button type="button" class="btn btn-soft" data-reserve="cancel" data-spend="' + o.id + '">' +
+        esc(t('app_reserve_cancel')) + '</button>' : '<button type="button" class="btn btn-main" data-reserve="confirm" ' +
+        'data-spend="' + o.id + '"' + (r.breath < cost[o.kind] ? ' disabled' : '') + '>' + esc(t('app_reserve_confirm')) +
+        '</button>') + '</li>';
+    }).join('');
+    var asked = r.open.map(function(o) {
+      return o.kind;
+    });
+    var kinds = ['refresh'].concat(me && me.status === 'fallen' ? ['rise'] : []).filter(function(k) {
+      return asked.indexOf(k) < 0;
+    });
+    var propose = kinds.map(function(k) {
+      return '<li class="item"><span class="grow">' + esc(t('app_reserve_' + k, cost[k])) + '</span><button type="button" ' +
+        'class="btn btn-soft" data-reserve="propose" data-kind="' + k + '"' + (r.breath < cost[k] ? ' disabled' : '') + '>' +
+        esc(t('app_reserve_propose')) + '</button></li>';
+    }).join('');
+    return '<section class="card reserve-card"><div class="kicker">' + esc(t('app_reserve')) + '</div><div class="team-week">' +
+      '<span class="meter breath"><i style="width:' + Math.round(100 * r.breath / r.max) + '%"></i></span><small>' +
+      esc(t('app_reserve_amount', r)) + '</small></div><p class="help-soft">' + esc(t('app_reserve_help')) + '</p>' +
+      '<ul class="list">' + open + propose + '</ul></section>';
   }
 
   function pactsCard(p) {
@@ -2709,6 +2750,18 @@
   }
 
   function bindTeam() {
+    app.querySelectorAll('[data-reserve]').forEach(function(b) {
+      b.onclick = function() {
+        b.disabled = true;
+        T.api('team_reserve', {courseid: cfg.courseid, action: b.dataset.reserve, kind: b.dataset.kind || '',
+          spendid: Number(b.dataset.spend || 0)}).then(function() {
+          return refresh();
+        }).catch(function(e) {
+          b.disabled = false;
+          T.toast(esc(e.message), true);
+        });
+      };
+    });
     app.querySelectorAll('[data-first]').forEach(function(b) {
       b.onclick = function() {
         var role = b.getAttribute('aria-pressed') === 'true' ? '' : b.dataset.first;

@@ -100,6 +100,8 @@
         <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="books" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Books in the team library (curiosity)"/>
         <FIELD NAME="banner" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Banner and unlocked decorations (JSON)"/>
+        <FIELD NAME="breath" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The reserve of breath of the team, spent together"/>
+        <FIELD NAME="filled" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="What filled the reserve, so that it fills once (JSON: key => breath)"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>
@@ -658,6 +660,26 @@
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
         <KEY NAME="courseid" TYPE="foreign" FIELDS="courseid" REFTABLE="course" REFFIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="local_oksigeniatesape_teamspend" COMMENT="A spending of the reserve of a team, proposed by a member and confirmed by another">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="groupid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="kind" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="refresh (energy for the team) or rise (who proposes gets up)"/>
+        <FIELD NAME="charid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Who proposes it"/>
+        <FIELD NAME="confirmedby" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The character who confirmed it (0: nobody yet)"/>
+        <FIELD NAME="status" TYPE="char" LENGTH="10" NOTNULL="true" DEFAULT="open" SEQUENCE="false" COMMENT="open, done or cancelled"/>
+        <FIELD NAME="day" TYPE="int" LENGTH="8" NOTNULL="true" SEQUENCE="false" COMMENT="The day it was proposed, as yyyymmdd in the time zone of the course: it is open that day only"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="courseid" TYPE="foreign" FIELDS="courseid" REFTABLE="course" REFFIELDS="id"/>
+        <KEY NAME="groupid" TYPE="foreign" FIELDS="groupid" REFTABLE="groups" REFFIELDS="id"/>
+        <KEY NAME="charid" TYPE="foreign" FIELDS="charid" REFTABLE="local_oksigeniatesape_char" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
     <TABLE NAME="local_oksigeniatesape_teamstate" COMMENT="How each team says it is doing today: ready, working or asking for help (for the class screen, without names)">

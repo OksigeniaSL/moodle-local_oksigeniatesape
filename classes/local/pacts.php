@@ -210,6 +210,13 @@ final class pacts {
         $members = teams::members((int) $pact->courseid, (int) $pact->groupid);
         $needed = min(self::MIN, max(1, count($members)));
         $all = count($statuses) >= $needed && !array_diff($statuses, ['kept']);
+        // The commitments of a place kept by the whole team fill its reserve, once; not kept any more, it goes back.
+        $key = 'pacts-' . $pact->chapter;
+        if ($all) {
+            reserve::credit((int) $pact->courseid, (int) $pact->groupid, $key, reserve::PACTS, $now);
+        } else {
+            reserve::uncredit((int) $pact->courseid, (int) $pact->groupid, $key, $now);
+        }
         $chapterid = (int) $DB->get_field(self::T . 'chapter', 'id', ['missionid' => $pact->missionid, 'code' => $pact->chapter]);
         foreach ($members as $member) {
             $given = ['charid' => $member->charid, 'missionid' => $pact->missionid, 'kind' => 'pacts', 'code' => $pact->chapter];

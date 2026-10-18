@@ -103,6 +103,7 @@ final class get_world extends external_api {
                         'who' => new external_value(PARAM_TEXT, 'Who of the team has that role (empty: nobody)'),
                     ])),
                 ], 'The council of the team: the task of today and its parts', VALUE_OPTIONAL),
+                'reserve' => structures::reserve(VALUE_OPTIONAL),
                 'members' => new external_multiple_structure(new external_single_structure([
                     'userid' => new external_value(PARAM_INT, 'User'),
                     'name' => new external_value(PARAM_TEXT, 'Name shown to classmates'),

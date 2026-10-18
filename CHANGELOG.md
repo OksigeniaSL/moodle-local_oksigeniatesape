@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.118.0 (2026-10-18)
+
+- **The reserve of the team.** A reserve of breath for each team, apart from the breath of each one, up to 10. It fills
+  when the whole team keeps its commitments of a place (+2, taken back if they stop being kept) and when the task of a
+  place is validated for the team (+1), once each. It is spent together, in the «Team» tab: someone proposes and
+  another member confirms it from their tablet, the same day. «A breather for the team» (3): one energy for each one;
+  «Get up with the reserve» (4): only who is worn out asks it, and gets up without the healer.
+
 ## 0.117.0 (2026-10-18)
 
 - **The rescue for two.** A healer who plays a scene as a team with a worn-out teammate pays no hints in it and, if it

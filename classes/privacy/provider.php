@@ -46,7 +46,7 @@ class provider implements
 
     /** @var string[] Tables of a character in a course, all with charid and courseid. */
     public const COURSE_TABLES = ['member', 'ledger', 'inventory', 'sceneattempt', 'minigame', 'validation', 'found', 'idea',
-        'livein', 'livetoken', 'pact', 'daily', 'purchase', 'huddle', 'huddlein', 'challengepart'];
+        'livein', 'livetoken', 'pact', 'daily', 'purchase', 'huddle', 'huddlein', 'challengepart', 'teamspend'];
 
     /**
      * What is stored.
@@ -80,6 +80,7 @@ class provider implements
             'huddle' => ['courseid', 'groupid', 'sceneid', 'charid', 'state', 'status', 'timecreated', 'timemodified'],
             'huddlein' => ['huddleid', 'courseid', 'charid', 'lastseen', 'timecreated'],
             'challengepart' => ['challengeid', 'courseid', 'groupid', 'part', 'charid', 'timecreated'],
+            'teamspend' => ['courseid', 'groupid', 'kind', 'charid', 'confirmedby', 'status', 'timecreated'],
         ];
         foreach ($fields as $table => $names) {
             $described = [];
@@ -491,6 +492,23 @@ class provider implements
                 ], $parts)),
             ]);
         }
+        $spends = $DB->get_records_select(
+            self::T . 'teamspend',
+            'courseid = ? AND (charid = ? OR confirmedby = ?)',
+            [$courseid, $charid, $charid],
+            'id'
+        );
+        if ($spends) {
+            $writer->export_data(self::path('teamreserve'), (object) [
+                'spendings' => array_values(array_map(fn($s) => [
+                    'kind' => $s->kind,
+                    'proposed' => transform::yesno((int) $s->charid === $charid),
+                    'confirmed' => transform::yesno((int) $s->confirmedby === $charid),
+                    'status' => $s->status,
+                    'timecreated' => transform::datetime($s->timecreated),
+                ], $spends)),
+            ]);
+        }
         $huddles = $DB->get_records(self::T . 'huddlein', ['charid' => $charid, 'courseid' => $courseid], 'huddleid');
         if ($huddles) {
             $writer->export_data(self::path('teamsessions'), (object) [
@@ -709,6 +727,9 @@ class provider implements
             // Others' requests aimed at them stay, without the target.
             $DB->set_field_select(self::T . 'powerreq', 'targetmemberid', 0, "targetmemberid $inmember", $memberparams);
         }
+        // What others proposed to the reserve and they confirmed stays, without who confirmed it.
+        $confirmed = str_replace('charid', 'confirmedby', $where);
+        $DB->set_field_select(self::T . 'teamspend', 'confirmedby', 0, $confirmed, $params);
         foreach (self::COURSE_TABLES as $table) {
             $DB->delete_records_select(self::T . $table, $where, $params);
         }
