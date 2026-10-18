@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 42,
+ "version": 43,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 43,
+   "kind": "improvement",
+   "date": "2026-10-18",
+   "text": "Las hojas de sesión, como datos de la misión: pasos con minutos y lo que lanza cada uno, lo que se lee en voz alta, las tres preguntas clave y los dos errores que vigilar"
+  },
   {
    "version": 42,
    "kind": "improvement",
@@ -1608,12 +1614,137 @@
     {
      "do": "El rastreo del patio por equipos, con el cuaderno de campo. Se siembra el experimento de la luz.",
      "materials": "Cuaderno de campo o folios, lápices; semillas, vasos, tierra y una caja para la oscuridad",
-     "minutes": 50
+     "minutes": 50,
+     "title": "El rastreo del patio y la siembra",
+     "before": [
+      "Un cuaderno de campo por alumno (anexo A), lápices de colores, un cartón para apoyar y un papel grande. La lista de control A (anexo C), para observar el rastreo.",
+      "Para la siembra: semillas de judía o poroto (o lentejas), 6 vasos, tierra o algodón, una caja de zapatos, agua, etiquetas y una regla.",
+      "Hoy no hay escena en la pizarra: solo el mapa de la misión.",
+      "En el patio se mira sin tocar a los animales, todo vuelve a su sitio y nadie prueba semillas ni frutos. Después de tocar tierra, todos se lavan las manos."
+     ],
+     "steps": [
+      {
+       "from": 0,
+       "to": 5,
+       "do": "Lee en voz alta el prólogo de la misión (guía, 3.1) y enseña el mapa.",
+       "action": "enter"
+      },
+      {
+       "from": 5,
+       "to": 10,
+       "do": "Pregunta de partida: «¿Cómo saben que algo está vivo?». Apunta las ideas en el papel grande y guárdalo: al final del capítulo se compara con lo aprendido.",
+       "say": "¿Cómo saben que algo está vivo?",
+       "action": "none"
+      },
+      {
+       "from": 10,
+       "to": 35,
+       "do": "El rastreo del patio: cada equipo, en una zona, apunta y dibuja lo que encuentra en dos listas, seres vivos e inertes. Si aparecen restos (hojas secas, plumas, ramas caídas), abren una tercera: «estuvo vivo». Sin patio: en la clase, con las plantas del aula y lo que se ve por la ventana.",
+       "action": "challenge"
+      },
+      {
+       "from": 35,
+       "to": 47,
+       "do": "La siembra del experimento. Primero, cada uno escribe su predicción en el cuaderno (anexo A, página 2): «¿Qué le pasa a una planta que crece sin luz?». Después, tres vasos a la luz, junto a una ventana, y tres en la caja cerrada, al lado; todo lo demás, igual. Etiquetas con la fecha y «con luz» o «sin luz». Turnos de riego por equipos.",
+       "say": "¿Qué le pasa a una planta que crece sin luz?",
+       "action": "none"
+      },
+      {
+       "from": 47,
+       "to": 50,
+       "do": "Cada alumno elige su compromiso en su pestaña «Equipo». Si quieres su primer intento antes de la pizarra, pide que cada uno juegue en la tableta su escena del claro antes de la sesión 2.",
+       "action": "pacts"
+      }
+     ],
+     "questions": [
+      {
+       "ask": "¿Qué tienen en común todos los seres vivos de su lista?",
+       "expect": "Se nutren, se relacionan y se reproducen."
+      },
+      {
+       "ask": "Una semilla seca no se mueve ni come. ¿Está viva?",
+       "expect": "Sí, en reposo; el experimento lo va a comprobar."
+      },
+      {
+       "ask": "¿Y una pluma o una hoja seca?",
+       "expect": "Vienen de un ser vivo, pero ya no hacen ninguna de las tres funciones."
+      }
+     ],
+     "watch": [
+      {
+       "mistake": "«Se mueve, así que está vivo» (el humo, una nube, un juguete de cuerda)",
+       "redirect": "Una pompa de jabón y una hormiga se mueven. ¿Cuál de las dos se nutre?"
+      },
+      {
+       "mistake": "«Es verde, así que está vivo»",
+       "redirect": "En una piedra con musgo, ¿cuál de los dos se nutre?"
+      }
+     ],
+     "spare": "La siembra no se aplaza: necesita al menos diez días antes de la sesión 2 del capítulo 4. Si falta, acorta el rastreo; si sobra, cada uno empieza en la tableta su escena del claro."
     },
     {
      "do": "El nido en la pizarra, votado por la clase. Después, cada equipo pasa a limpio su inventario.",
      "scene": "C1-2",
-     "minutes": 50
+     "minutes": 50,
+     "title": "El nido en la pizarra",
+     "before": [
+      "Escena para la pizarra (sale en «Hoy en el valle»): «El Nido de la Vida», en «Una escena con toda la clase».",
+      "Votación «Con los móviles»: pulsa «Votar con los móviles» y cada uno vota en su tableta; después, «Cerrar la votación» y pulsa la opción que ha elegido la clase. Sin tabletas, con las tarjetas A, B, C y D.",
+      "Los cuadernos con el inventario, el papel de las ideas de partida y las tabletas para subir el inventario."
+     ],
+     "steps": [
+      {
+       "from": 0,
+       "to": 5,
+       "do": "«Sacar la carta del día». Con «Huella misteriosa», deja que respondan los equipos y pulsa «La clase acierta» o «Esta vez no». Con «Brisa favorable», lo que se entregue hoy en Moodle da el doble de saber.",
+       "action": "card"
+      },
+      {
+       "from": 5,
+       "to": 20,
+       "do": "«El Nido de la Vida». Detente en la pluma y en la semilla seca: son las que más discusión dan. Las criaturas que no hayan nacido nacen todas a la vez (si la clase acierta cuatro de cinco, nacen dormidas).",
+       "action": "scene",
+       "scene": "C1-2"
+      },
+      {
+       "from": 20,
+       "to": 40,
+       "do": "Cada equipo pasa a limpio su inventario y lo sube a la tarea «El inventario del equipo»: un dibujo o una foto de cada cosa y una frase que diga por qué va en cada lista. Basta con que entregue uno del equipo.",
+       "action": "timer",
+       "timer": 20
+      },
+      {
+       "from": 40,
+       "to": 50,
+       "do": "Puesta en común de los casos que engañan; compara las ideas de partida con lo aprendido. Presenta el foro «¿Está vivo?» para casa: elegir el fuego, el cristal que «crece» o la semilla seca, explicarlo con las funciones vitales y contestar a alguien. Después, en «Retos», marca «El rastreo del patio» y los compromisos.",
+       "action": "challenge"
+      }
+     ],
+     "questions": [
+      {
+       "ask": "El fuego crece, se mueve y “come” leña. ¿Está vivo?",
+       "expect": "No: no hace ninguna de las tres funciones."
+      },
+      {
+       "ask": "Un cristal que “crece” en una roca húmeda, ¿está vivo?",
+       "expect": "No: crece por capas, pero no se nutre ni se reproduce."
+      },
+      {
+       "ask": "¿Cómo comprobarían que algo está vivo?",
+       "expect": "Observándolo un tiempo: si se alimenta, crece, responde o tiene crías."
+      }
+     ],
+     "watch": [
+      {
+       "mistake": "«No se mueve, así que no está vivo» (la semilla seca, el musgo)",
+       "redirect": "¿Qué estará haciendo por dentro? Si la semilla no estuviera viva, ¿qué pasaría en nuestros vasos?"
+      },
+      {
+       "mistake": "«Viene de un ser vivo, así que está vivo» (la pluma, la madera)",
+       "redirect": "¿Hace todavía alguna de las tres funciones? ¿En qué lista va?"
+      }
+     ],
+     "spare": "Si falta, el inventario se termina y se sube en casa. Si sobra, cada uno juega en la tableta, por su cuenta, la escena de su escalón o una de las «Gestas»."
     }
    ],
    "reward": "magnifier",
@@ -1725,13 +1856,140 @@
     {
      "do": "Clasificar las tarjetas de seres vivos por equipos. Al final, las que engañan: la seta, el moho del pan, la levadura, las bacterias del yogur y la esponja de mar.",
      "materials": "Las tarjetas de seres vivos, impresas y recortadas (un juego por equipo) y, aparte, las cinco que engañan",
-     "minutes": 50
+     "minutes": 50,
+     "title": "Las tarjetas",
+     "before": [
+      "Las tarjetas de seres vivos (anexo B), recortadas: un juego por equipo (sin coste, dibujadas a mano).",
+      "Aparte, para el final, las que engañan: la seta, el moho del pan, la levadura, las bacterias del yogur y la esponja de mar.",
+      "Hoy no hay escena en la pizarra."
+     ],
+     "steps": [
+      {
+       "from": 0,
+       "to": 5,
+       "do": "Lee en voz alta la carta del Embrollo: «¿Vivo, no vivo? Qué más da. Yo prefiero las pompas: brillan y no hacen preguntas. Lo de la tinta en el barro no fui yo. Bueno, un poco.» Después, «Sacar la carta del día».",
+       "say": "¿Vivo, no vivo? Qué más da. Yo prefiero las pompas: brillan y no hacen preguntas. Lo de la tinta en el barro no fui yo. Bueno, un poco.",
+       "action": "enter",
+       "also": "card"
+      },
+      {
+       "from": 5,
+       "to": 15,
+       "do": "Cada equipo agrupa sus tarjetas como quiera y cuenta a la clase su criterio.",
+       "action": "timer",
+       "timer": 10
+      },
+      {
+       "from": 15,
+       "to": 30,
+       "do": "Ahora, en cuatro grupos: animales, plantas, hongos y microorganismos («los que solo se ven con lupa»). La pregunta que lo decide: «¿Fabrica su alimento con la luz o lo toma de otros?». Las tarjetas que engañan, al final.",
+       "say": "¿Fabrica su alimento con la luz o lo toma de otros?",
+       "action": "timer",
+       "timer": 15
+      },
+      {
+       "from": 30,
+       "to": 45,
+       "do": "Puesta en común de los cuatro grupos y de las tarjetas que engañan.",
+       "action": "none"
+      },
+      {
+       "from": 45,
+       "to": 50,
+       "do": "Cada alumno elige su compromiso. Recuerda la escena del capítulo: si quieres su primer intento, que la jueguen en la tableta antes de la sesión 2.",
+       "action": "pacts"
+      }
+     ],
+     "questions": [
+      {
+       "ask": "¿Por qué la seta no va con las plantas, si no se mueve y sale del suelo?",
+       "expect": "No fabrica su alimento con la luz: lo toma de otros seres vivos o de sus restos. Es un hongo."
+      },
+      {
+       "ask": "La esponja de mar no se mueve y parece una planta. ¿Dónde va?",
+       "expect": "Con los animales: se alimenta filtrando el agua."
+      },
+      {
+       "ask": "¿Qué decide el grupo: el aspecto o algo que se pueda comprobar?",
+       "expect": "Cómo consigue su alimento, y si tiene una célula o muchas."
+      }
+     ],
+     "watch": [
+      {
+       "mistake": "Ponen la seta o el moho con las plantas",
+       "redirect": "¿Tiene hojas verdes? ¿Fabrica su alimento con la luz?"
+      },
+      {
+       "mistake": "Agrupan por el tamaño o por si viven en el agua",
+       "redirect": "Vuelvan a la pregunta del alimento: ¿lo fabrica o lo toma de otros?"
+      }
+     ],
+     "spare": "Si la clase se atasca, empieza solo con animales y plantas, y añade la seta después. Si sobra, cada uno juega en la tableta su escena del capítulo."
     },
     {
      "do": "Los estantes en la pizarra y, en el patio, al rincón de cada reino.",
      "scene": "C2-2",
      "materials": "Una tarjeta de seres vivos por alumno y cuatro rincones del patio, uno por grupo",
-     "minutes": 50
+     "minutes": 50,
+     "title": "Los estantes y el patio",
+     "before": [
+      "Escena para la pizarra: «Los estantes que crujen», votada por la clase. Es de colocar en estantes: con tarjetas, haces tú los movimientos con lo que diga la clase.",
+      "Una tarjeta de seres vivos por alumno (anexo B) y cuatro rincones del patio, uno por grupo.",
+      "Tu móvil, para marcar el reto desde el patio (se guarda sin conexión)."
+     ],
+     "steps": [
+      {
+       "from": 0,
+       "to": 5,
+       "do": "«Sacar la carta del día».",
+       "action": "card"
+      },
+      {
+       "from": 5,
+       "to": 20,
+       "do": "«Los estantes que crujen». La pregunta final, «¿Por qué crujía la torre?», abre una pista: Doña Hebra copió páginas de memoria.",
+       "action": "scene",
+       "scene": "C2-2"
+      },
+      {
+       "from": 20,
+       "to": 45,
+       "do": "Al rincón de tu reino. Cada alumno lleva su tarjeta y cada rincón es un grupo. Dices un rasgo («¡Fabrica su alimento con la luz!») y cada uno corre a su rincón. Las tarjetas que engañan se discuten allí mismo. Sin patio, los rincones del aula.",
+       "say": "¡Fabrica su alimento con la luz!",
+       "action": "challenge"
+      },
+      {
+       "from": 45,
+       "to": 50,
+       "do": "Cierre. En «Retos», marca «Al rincón de tu reino» y, al cerrar el capítulo, los compromisos.",
+       "action": "challenge"
+      }
+     ],
+     "questions": [
+      {
+       "ask": "¿Qué hacen las plantas que no hace ningún otro grupo de sus tarjetas?",
+       "expect": "Fabrican su alimento con la luz."
+      },
+      {
+       "ask": "¿Las bacterias del yogur están vivas?",
+       "expect": "Sí: son seres de una sola célula, tan pequeños que solo se ven con microscopio."
+      },
+      {
+       "ask": "¿Y la levadura del pan?",
+       "expect": "Es un hongo de una sola célula: se alimenta de azúcar y suelta un gas que hace subir la masa."
+      }
+     ],
+     "watch": [
+      {
+       "mistake": "«Los microbios no están vivos» o «todos son malos»",
+       "redirect": "¿Qué hacen las bacterias con la leche del yogur? ¿Y la levadura con la masa del pan?"
+      },
+      {
+       "mistake": "Lo que no se mueve, con las plantas (la esponja, el coral)",
+       "redirect": "¿Fabrica su alimento o lo toma de otros?"
+      }
+     ],
+     "spare": "Si sobra, más difícil en el patio: subgrupos (vertebrados e invertebrados). Si falta, acorta el juego, pero no la discusión de las tarjetas que engañan."
     }
    ],
    "x": 300,
@@ -1826,13 +2084,133 @@
      "do": "Las preguntas al búho en la pizarra. Después, cada equipo empieza su clave del patio. Desde hoy, la guía de campo de la clase está abierta: cada equipo elige sus especies.",
      "scene": "C3-2",
      "materials": "Los cuadernos de campo",
-     "minutes": 50
+     "minutes": 50,
+     "title": "El búho y la clave",
+     "before": [
+      "Escena para la pizarra: «Las preguntas al búho», votada por la clase.",
+      "Los cuadernos de campo, para la clave de cada equipo.",
+      "Desde hoy, la base de datos «La guía de campo de la clase» abierta: cada equipo elige sus especies del entorno y prepara los borradores en el cuaderno (anexo A, página 4)."
+     ],
+     "steps": [
+      {
+       "from": 0,
+       "to": 5,
+       "do": "Lee en voz alta la carta del Embrollo: «He puesto la seta con las lechugas. Las dos son blandas por dentro, ¿no? ¿No? Bah. La bibliotecaria copiaba sin mirar y yo solo… ayudé.» Después, «Sacar la carta del día».",
+       "say": "He puesto la seta con las lechugas. Las dos son blandas por dentro, ¿no? ¿No? Bah. La bibliotecaria copiaba sin mirar y yo solo… ayudé.",
+       "action": "enter",
+       "also": "card"
+      },
+      {
+       "from": 5,
+       "to": 20,
+       "do": "«Las preguntas al búho». El búho solo responde sí o no, y hay tres preguntas. Antes de votar cada una, pide a la clase que diga cuántos animales deja fuera.",
+       "action": "scene",
+       "scene": "C3-2"
+      },
+      {
+       "from": 20,
+       "to": 45,
+       "do": "Cada equipo empieza su clave del patio: elige seis seres vivos del patio o del barrio y escribe preguntas de sí o no hasta que cada uno quede en su casilla. Después, otro equipo la prueba con un ser vivo elegido en secreto.",
+       "action": "timer",
+       "timer": 25
+      },
+      {
+       "from": 45,
+       "to": 50,
+       "do": "Compromisos; entre ellos, traer hecha una lupa o un visor de cartón para la sesión 2.",
+       "action": "pacts"
+      }
+     ],
+     "questions": [
+      {
+       "ask": "¿Qué pregunta parte a todos los animales en dos grupos grandes?",
+       "expect": "«¿Tiene huesos por dentro, con columna vertebral?»: vertebrados e invertebrados."
+      },
+      {
+       "ask": "¿Cómo reconocen cada grupo de vertebrados?",
+       "expect": "Mamíferos, pelo y crías que toman leche; aves, plumas y pico; reptiles, piel seca con escamas; anfibios, piel húmeda sin escamas; peces, branquias y aletas."
+      },
+      {
+       "ask": "¿Por qué la pregunta “¿es de color marrón?” no sirve en una clave?",
+       "expect": "El color cambia de un ejemplar a otro."
+      }
+     ],
+     "watch": [
+      {
+       "mistake": "Claves con el color o el tamaño",
+       "redirect": "Prueben su clave con dos ejemplares distintos del mismo animal: ¿acaban en la misma casilla?"
+      },
+      {
+       "mistake": "«La tortuga es invertebrada porque tiene caparazón»",
+       "redirect": "¿Qué tiene por dentro? Compárenla con el caracol."
+      }
+     ],
+     "spare": "Si sobra, cada uno juega en la tableta «La barcaza de la expedición», la otra escena del núcleo. Si falta, la prueba entre equipos se deja para otro día."
     },
     {
      "do": "Defensa del nido, cada uno en su dispositivo (o por turnos, si hay pocos), y búsqueda de invertebrados en el patio, sin dañarlos.",
      "game": "nestdefence",
      "materials": "Lupas o visores de cartón",
-     "minutes": 50
+     "minutes": 50,
+     "title": "El nido y los invertebrados del patio",
+     "before": [
+      "El minijuego «Defensa del nido», en la tableta de cada alumno: no se juega con toda la clase en la pizarra. Tiene siempre el modo «Sin prisa: un animal cada vez».",
+      "Lupas o visores de cartón (sin coste: un rollo de cartón o la cámara del móvil con el zoom), cuadernos y lápices.",
+      "En el patio se mira sin tocar a los animales y las piedras vuelven a su sitio.",
+      "Tu móvil, para marcar el reto «Lupas de cartón y caza de bichos» desde el patio."
+     ],
+     "steps": [
+      {
+       "from": 0,
+       "to": 5,
+       "do": "«Sacar la carta del día».",
+       "action": "card"
+      },
+      {
+       "from": 5,
+       "to": 15,
+       "do": "«Defensa del nido». Explícalo en la pizarra (los animales bajan hacia el nido de la criatura y hay que atraparlos con la red de su grupo) y que cada uno lo juegue en su tableta. La primera victoria da la red de captura y lo necesario para el abrigo de la criatura; no da saber.",
+       "action": "game",
+       "game": "nestdefence"
+      },
+      {
+       "from": 15,
+       "to": 40,
+       "do": "Búsqueda de invertebrados en el patio, con lupas o visores, sin tocarlos. Cada alumno dibuja uno, cuenta sus patas y decide su grupo.",
+       "action": "challenge"
+      },
+      {
+       "from": 40,
+       "to": 50,
+       "do": "Puesta en común; aprovecha los nombres de animales en otra lengua que hayan traído de casa. Marca el reto y, al cerrar el capítulo, los compromisos. En «Misión» › «Minijuegos», mira qué animales se cuelan con la red equivocada.",
+       "action": "challenge"
+      }
+     ],
+     "questions": [
+      {
+       "ask": "La araña, ¿es un insecto?",
+       "expect": "No: tiene ocho patas, es un arácnido. Los insectos tienen seis y el cuerpo en tres partes."
+      },
+      {
+       "ask": "¿Qué invertebrados han encontrado? ¿Cómo lo saben?",
+       "expect": "Por las patas y el cuerpo: insectos (seis patas), arácnidos (ocho), moluscos (cuerpo blando, a veces con concha), gusanos (sin patas)."
+      },
+      {
+       "ask": "El murciélago vuela y el delfín nada. ¿Qué son?",
+       "expect": "Mamíferos: respiran aire y sus crías toman leche."
+      }
+     ],
+     "watch": [
+      {
+       "mistake": "«Bicho» como grupo, o todos los bichos son insectos",
+       "redirect": "Antes de decir su grupo, cuenten sus patas."
+      },
+      {
+       "mistake": "«Si vuela es un ave; si nada, un pez»",
+       "redirect": "¿Qué lleva encima? ¿Cómo respira? ¿Qué toman sus crías?"
+      }
+     ],
+     "spare": "Si falta, «Defensa del nido» se juega en casa. Si sobra, cada uno juega en la tableta «La barcaza de la expedición»."
     }
    ],
    "x": 120,
@@ -1918,12 +2296,132 @@
      "do": "El sótano de las linternas en la pizarra: la clase apuesta qué habrá pasado con las semillas a oscuras antes de mirarlas. Después, las partes de la planta, y el clavel o el apio en agua con colorante, para verlo en la sesión 2.",
      "scene": "C4-2",
      "materials": "Plantas reales (raíz, tallo, hojas y flor), un clavel blanco o un tallo de apio, un vaso con agua y colorante alimentario",
-     "minutes": 50
+     "minutes": 50,
+     "title": "El sótano de las linternas y la apuesta",
+     "before": [
+      "Escena para la pizarra: «El sótano de las linternas», votada por la clase. Acaba con una apuesta.",
+      "La caja del experimento, cerrada hasta la sesión 2. Los cuadernos, con la predicción del primer día.",
+      "Plantas reales para ver la raíz, el tallo, las hojas y la flor (sin coste, hojas del patio).",
+      "Un clavel blanco o un tallo de apio, un vaso con agua y colorante alimentario."
+     ],
+     "steps": [
+      {
+       "from": 0,
+       "to": 5,
+       "do": "Lee en voz alta la carta del Embrollo: «El búho dice que la pluma no es un animal. El búho tiene plumas. Que me lo expliquen. Y lo de mis huellas: no son de ningún animal, claro. Son mías.» Después, «Sacar la carta del día».",
+       "say": "El búho dice que la pluma no es un animal. El búho tiene plumas. Que me lo expliquen. Y lo de mis huellas: no son de ningún animal, claro. Son mías.",
+       "action": "enter",
+       "also": "card"
+      },
+      {
+       "from": 5,
+       "to": 20,
+       "do": "«El sótano de las linternas». Acaba con la apuesta: «Antes de mirar el experimento de verdad: ¿qué habrá pasado con las semillas que pusimos a oscuras?». Cada uno relee su predicción del primer día. La caja sigue cerrada.",
+       "action": "scene",
+       "scene": "C4-2"
+      },
+      {
+       "from": 20,
+       "to": 40,
+       "do": "Las partes de una planta con ejemplares reales: raíz, tallo, hojas y flor, y qué hace cada una. Si quieres, empieza el herbario de la clase.",
+       "action": "none"
+      },
+      {
+       "from": 40,
+       "to": 50,
+       "do": "Pon el clavel o el apio en agua con colorante: en la sesión 2 se verá el viaje del agua. Compromisos.",
+       "action": "pacts"
+      }
+     ],
+     "questions": [
+      {
+       "ask": "¿De dónde saca la planta su alimento?",
+       "expect": "Lo fabrica en las hojas con la luz, el agua y el aire, y suelta oxígeno. De la tierra toma agua y sales minerales."
+      },
+      {
+       "ask": "¿Por dónde entra el agua y adónde va?",
+       "expect": "Entra por la raíz, sube por el tallo y llega a las hojas; parte sale al aire como vapor."
+      },
+      {
+       "ask": "¿Para qué sirve la flor?",
+       "expect": "Para reproducirse: de ella salen las semillas."
+      }
+     ],
+     "watch": [
+      {
+       "mistake": "«La planta se alimenta de la tierra»",
+       "redirect": "Los dos grupos de vasos tienen la misma tierra. Si crecen distinto, ¿qué lo habrá cambiado?"
+      },
+      {
+       "mistake": "«El agua entra por las hojas»",
+       "redirect": "Fíjense en el clavel en la próxima sesión: ¿por dónde habrá subido el color?"
+      }
+     ],
+     "spare": "El clavel tiene que quedar puesto hoy; el herbario puede esperar. Si sobra, cada uno juega en la tableta «El viaje de la gota», la otra escena del núcleo."
     },
     {
      "do": "Los resultados del experimento: qué se apostó, qué se ve y qué se concluye.",
      "materials": "Las semillas sembradas en el primer capítulo, una regla",
-     "minutes": 50
+     "minutes": 50,
+     "title": "Los resultados del experimento",
+     "before": [
+      "Los seis vasos del experimento, reglas y el clavel o el apio de la sesión anterior.",
+      "Los cuadernos de campo, con la tabla del experimento (anexo A, página 2). La lista de control B (anexo C).",
+      "Las tabletas, para subir el registro a la tarea «El registro del experimento».",
+      "Hoy no hay escena en la pizarra."
+     ],
+     "steps": [
+      {
+       "from": 0,
+       "to": 5,
+       "do": "«Sacar la carta del día». Mira con la clase el clavel o el apio: el color ha subido.",
+       "action": "card"
+      },
+      {
+       "from": 5,
+       "to": 25,
+       "do": "Se destapa la caja. Por equipos: medir con regla, mirar el color y la firmeza y completar la tabla. ¿Qué ha cambiado entre los dos grupos de vasos? ¿Acertó la apuesta del sótano?",
+       "action": "challenge"
+      },
+      {
+       "from": 25,
+       "to": 45,
+       "do": "Conclusión por equipos: qué se apostó, qué se ve y qué se concluye. La suben a la tarea con las fotos o los dibujos de cada día y la tabla.",
+       "action": "timer",
+       "timer": 20
+      },
+      {
+       "from": 45,
+       "to": 50,
+       "do": "Puesta en común. En «Retos», marca «El experimento de la luz» y, al cerrar el capítulo, los compromisos.",
+       "action": "challenge"
+      }
+     ],
+     "questions": [
+      {
+       "ask": "¿Qué ha pasado con las semillas sin luz?",
+       "expect": "Germinaron y crecieron largas, delgadas, pálidas y débiles. Las de la luz, más bajas, verdes y firmes."
+      },
+      {
+       "ask": "Las de la oscuridad son más altas. ¿Han crecido mejor?",
+       "expect": "No: se han estirado buscando la luz. Más alta no quiere decir más sana."
+      },
+      {
+       "ask": "¿Qué cambiamos en el experimento y qué dejamos igual?",
+       "expect": "Cambiamos la luz. Dejamos igual las semillas, la tierra, el agua y el sitio."
+      }
+     ],
+     "watch": [
+      {
+       "mistake": "«La más alta es la más sana»",
+       "redirect": "Comparen el color, el grosor del tallo y el tamaño de las hojas."
+      },
+      {
+       "mistake": "Mezclan en la tabla lo que ven con lo que creen",
+       "redirect": "¿Eso lo has medido o lo piensas?"
+      }
+     ],
+     "spare": "Si falta, el registro se termina y se sube en casa. Si sobra, la gesta «Nuestro experimento», en la tableta, para diseñar otro."
     }
    ],
    "reward": "lantern",
@@ -2044,12 +2542,131 @@
      "do": "La noche junto al lago en la pizarra. Después, cada equipo representa una cadena alimentaria.",
      "scene": "C5-2",
      "materials": "Tiras de papel o cartulina",
-     "minutes": 50
+     "minutes": 50,
+     "title": "La noche junto al lago",
+     "before": [
+      "Escena para la pizarra: «La noche junto al lago», votada por la clase. Quien tenga el farol (del jardín) o la red de captura (de «Defensa del nido») abre opciones nuevas.",
+      "También se puede jugar «En equipo», como está pensada: el equipo, reunido alrededor de una tableta; quien la tiene pulsa «En equipo» y marca a los compañeros que están con él.",
+      "Tiras de papel o cartulina, cinta adhesiva y un trozo de pared. La lista de control C (anexo C)."
+     ],
+     "steps": [
+      {
+       "from": 0,
+       "to": 5,
+       "do": "Lee en voz alta la carta del Embrollo: «A las plantas les he dado leche. Es blanca y sana. Pues no sé qué les pasa. Las etiquetas las escribí yo con una letra prestada. Comprobar da mucha pereza.» Después, «Sacar la carta del día».",
+       "say": "A las plantas les he dado leche. Es blanca y sana. Pues no sé qué les pasa. Las etiquetas las escribí yo con una letra prestada. Comprobar da mucha pereza.",
+       "action": "enter",
+       "also": "card"
+      },
+      {
+       "from": 5,
+       "to": 20,
+       "do": "«La noche junto al lago»: dónde acampar, qué mirar, con qué hacer el refugio y qué cadena apuntar. Cualquier lugar para acampar vale; para el refugio, lo que ya no está vivo, no ramas verdes cortadas.",
+       "action": "scene",
+       "scene": "C5-2"
+      },
+      {
+       "from": 20,
+       "to": 45,
+       "do": "Cada equipo representa con tiras de papel una cadena alimentaria del lago o de su entorno, del productor al carnívoro, con los descomponedores al final, y la pega en la pared.",
+       "action": "timer",
+       "timer": 25
+      },
+      {
+       "from": 45,
+       "to": 50,
+       "do": "Compromisos: una cadena del entorno dibujada en una tira, leer lo del lince o lo del tagua y traer una pregunta, o contestar en el foro a alguien de otro equipo.",
+       "action": "pacts"
+      }
+     ],
+     "questions": [
+      {
+       "ask": "¿Por quién empieza siempre una cadena alimentaria?",
+       "expect": "Por un productor: una planta o un alga, que fabrica su alimento con la luz."
+      },
+      {
+       "ask": "¿Hacia dónde apunta la flecha?",
+       "expect": "Del que es comido al que come: hierba → conejo → lince."
+      },
+      {
+       "ask": "¿Qué hacen los descomponedores?",
+       "expect": "Hongos, bacterias y lombrices se alimentan de restos y devuelven al suelo y al agua lo que las plantas necesitan."
+      }
+     ],
+     "watch": [
+      {
+       "mistake": "Flechas al revés («búho → ratón»)",
+       "redirect": "Lean la flecha en voz alta: ¿quién se come a quién?"
+      },
+      {
+       "mistake": "La cadena empieza por un animal",
+       "redirect": "«¿Y ese animal, qué come? ¿Y lo que come él?», hasta el principio."
+      }
+     ],
+     "spare": "Si falta, la cadena se termina en casa (es uno de los compromisos). Si sobra, cada uno juega en la tableta «Lo que forma el lago», la otra escena del núcleo."
     },
     {
      "do": "Lectura con datos del lince ibérico o del tagua. ¿Y si desapareciera un eslabón? Y, en el patio, la carrera de la cadena.",
      "materials": "La ficha de lectura, cintas o pañuelos de tres colores y un silbato",
-     "minutes": 50
+     "minutes": 50,
+     "title": "Los datos y la carrera",
+     "before": [
+      "La ficha de lectura «Los que volvieron» (guía, 3.5), sobre el lince ibérico o el tagua, impresa o en la pizarra.",
+      "Las cadenas de la pared. Hoy no hay escena en la pizarra.",
+      "Para la carrera: cintas o pañuelos de tres colores (sin coste, papeles de colores prendidos en la ropa) y un silbato. Tu móvil, para marcar el reto desde el patio."
+     ],
+     "steps": [
+      {
+       "from": 0,
+       "to": 5,
+       "do": "«Sacar la carta del día».",
+       "action": "card"
+      },
+      {
+       "from": 5,
+       "to": 20,
+       "do": "Lectura con datos: el lince ibérico o el tagua, con las preguntas de la ficha.",
+       "action": "none"
+      },
+      {
+       "from": 20,
+       "to": 30,
+       "do": "«¿Y si desapareciera un eslabón?»: quita una tira de una cadena de la pared y pregunta quién se queda sin alimento y quién aumenta. Presenta el foro «¿Y si desapareciera un eslabón?» para casa.",
+       "action": "none"
+      },
+      {
+       "from": 30,
+       "to": 50,
+       "do": "La carrera de la cadena, en el patio. Cada alumno es planta, herbívoro o carnívoro (un color de pañuelo cada papel): los herbívoros atrapan plantas y los carnívoros, herbívoros; quien es atrapado se agacha. Al silbato, dos descomponedores «devuelven» las plantas al juego tocándolas. Después: «¿Qué pasó cuando quedaban pocas plantas? ¿Y sin descomponedores?». Marca el reto y, al cerrar el capítulo, los compromisos.",
+       "say": "¿Qué pasó cuando quedaban pocas plantas? ¿Y sin descomponedores?",
+       "action": "challenge"
+      }
+     ],
+     "questions": [
+      {
+       "ask": "¿Qué hicieron las personas para que volviera el lince?",
+       "expect": "Recuperar los conejos, criar linces y soltarlos, y hacer pasos bajo las carreteras."
+      },
+      {
+       "ask": "Si desaparecieran los conejos, ¿qué le pasaría al lince? ¿Y a la hierba?",
+       "expect": "El lince se quedaría sin su alimento principal. La hierba, al principio, crecería más."
+      },
+      {
+       "ask": "¿Qué nos enseña el tagua sobre dar algo por cierto?",
+       "expect": "Todos lo daban por desaparecido, y en 1975 se encontró vivo."
+      }
+     ],
+     "watch": [
+      {
+       "mistake": "«Si quitamos al carnívoro, mejor para todos»",
+       "redirect": "Cuando unos cazadores se llevaron a los zorros de la orilla de la garza, ¿qué creen que pasó con la hierba?"
+      },
+      {
+       "mistake": "«Si falta un eslabón, solo lo nota el que se lo come»",
+       "redirect": "Sigamos la cadena hacia arriba y hacia abajo: ¿quién más lo nota?"
+      }
+     ],
+     "spare": "Si falta, la carrera pasa a la clase de Educación Física. Sin patio, con las tarjetas sobre la mesa; más fácil, solo con plantas y herbívoros."
     }
    ],
    "x": 150,
@@ -2153,13 +2770,186 @@
     {
      "do": "La guía de campo de la clase: cada uno sube al menos una ficha, el equipo termina las suyas y comprueba las de otro.",
      "materials": "Los borradores del cuaderno y fotos o dibujos de las especies (sin caras de compañeros)",
-     "minutes": 50
+     "minutes": 50,
+     "title": "La guía de campo",
+     "before": [
+      "Las tabletas, para la base de datos «La guía de campo de la clase». Cuenta para cada alumno que añade una ficha: que cada miembro del equipo suba al menos una.",
+      "Los borradores del cuaderno (anexo A, página 4) y fotos o dibujos de las especies, sin caras de compañeros.",
+      "Hoy no hay escena en la pizarra."
+     ],
+     "steps": [
+      {
+       "from": 0,
+       "to": 5,
+       "do": "Lee en voz alta la carta del Embrollo: «Si quitas al ratón, el búho come hierba. Así de fácil. ¿Qué? ¿Que no? La garza me vio beber de las páginas tachadas. Estaban riquísimas: nadie las había comprobado.» Después, «Sacar la carta del día».",
+       "say": "Si quitas al ratón, el búho come hierba. Así de fácil. ¿Qué? ¿Que no? La garza me vio beber de las páginas tachadas. Estaban riquísimas: nadie las había comprobado.",
+       "action": "enter",
+       "also": "card"
+      },
+      {
+       "from": 5,
+       "to": 35,
+       "do": "Cada equipo termina sus fichas: «Nombre», «Dibujo o foto», «Grupo», «Cómo es», «Dónde vive» y «En la cadena alimentaria». Cada ficha es un cromo del álbum del juego; sale dorado si dice su lugar en la cadena. En una clase bilingüe, el nombre puede ir en las dos lenguas.",
+       "action": "timer",
+       "timer": 30
+      },
+      {
+       "from": 35,
+       "to": 47,
+       "do": "Cada equipo comprueba una ficha de otro: un dato que confirma y de dónde sale. Si algo no cuadra, se lo dicen al otro equipo, sin señalar a nadie.",
+       "action": "timer",
+       "timer": 12
+      },
+      {
+       "from": 47,
+       "to": 50,
+       "do": "Reparto de la exposición: quién presenta qué.",
+       "action": "none"
+      }
+     ],
+     "questions": [
+      {
+       "ask": "¿Qué tiene que llevar una ficha para que alguien que nunca lo ha visto lo reconozca?",
+       "expect": "Nombre, dibujo o foto, grupo, cómo es, dónde vive, su lugar en la cadena y de dónde sale cada dato."
+      },
+      {
+       "ask": "¿Qué no debe llevar?",
+       "expect": "Opiniones («es bonito», «me gusta»): hablan de nosotros, no del ser vivo."
+      },
+      {
+       "ask": "Han leído un dato en la ficha de otro equipo. ¿Cómo lo comprueban?",
+       "expect": "Con el ser vivo delante, o en un libro con autor y año, la guía de un parque o la web de un museo. Lo que cuenta una persona mayor, como testimonio, con su nombre."
+      }
+     ],
+     "watch": [
+      {
+       "mistake": "Fichas copiadas sin decir de dónde salen",
+       "redirect": "¿Cómo lo saben? ¿Quién lo dice y cuándo?"
+      },
+      {
+       "mistake": "El grupo o el lugar en la cadena, sin justificar",
+       "redirect": "¿Qué rasgo les dice que va ahí?"
+      }
+     ],
+     "spare": "Si falta, cada uno termina su ficha en casa (es uno de los compromisos). Si sobra, los equipos ensayan la exposición."
     },
     {
      "do": "El ensayo en la pizarra y, después, la batalla final contra el Embrollo.",
      "scene": "C6-2",
      "battle": "final",
-     "minutes": 50
+     "minutes": 50,
+     "title": "El ensayo y la batalla final",
+     "before": [
+      "Escena para la pizarra: «El ensayo», con los cinco enredos viejos y la confesión de Doña Hebra.",
+      "La batalla, en «La batalla contra el Embrollo»: «Con los móviles» (las tabletas) o «En voz alta, por equipos» (tarjetas A, B, C y D); 8 preguntas; 30 s por pregunta (45 s o «Sin límite de tiempo» si leen despacio); tipo «Batalla final».",
+      "Los diplomas, impresos desde «Para imprimir» › «Diplomas», con tu firma."
+     ],
+     "steps": [
+      {
+       "from": 0,
+       "to": 5,
+       "do": "En «Hoy en el valle», pulsa «Preparar la batalla final».",
+       "action": "battle"
+      },
+      {
+       "from": 5,
+       "to": 15,
+       "do": "«El ensayo» en la pizarra. A Doña Hebra, la respuesta buena: que no pasa nada y que mañana se comprueba cada página juntos.",
+       "action": "scene",
+       "scene": "C6-2"
+      },
+      {
+       "from": 15,
+       "to": 40,
+       "do": "Lee la última carta del Embrollo: «Ya lo sé: estoy hecho de lo que se da por cierto sin mirar. Pues que se mire menos y así crezco. ¿No? Vale. A la torre, que espero con los nudos buenos.» Di a la clase: «Si fallas, no pierdes nada. Si la clase falla mucho, el Embrollo se recompone: ayuda a tu equipo a pensar.» Pulsa «Empezar la batalla»; en cada pregunta, «Ver la respuesta» (en voz alta, marca qué equipos han acertado) y «Siguiente pregunta». Con tabletas, cada papel usa una vez su ficha de batalla. Para ganar, la clase tiene que acertar alrededor de seis de cada diez.",
+       "say": "Ya lo sé: estoy hecho de lo que se da por cierto sin mirar. Pues que se mire menos y así crezco. ¿No? Vale. A la torre, que espero con los nudos buenos.\nSi fallas, no pierdes nada. Si la clase falla mucho, el Embrollo se recompone: ayuda a tu equipo a pensar.",
+       "action": "battle"
+      },
+      {
+       "from": 40,
+       "to": 50,
+       "do": "Si la clase gana, lee en voz alta el final de la historia que sale en la pizarra; las criaturas crecen. Reparte los diplomas.",
+       "action": "none"
+      }
+     ],
+     "questions": [
+      {
+       "ask": "¿De qué está hecho el Embrollo?",
+       "expect": "De lo que alguien da por cierto sin comprobarlo."
+      },
+      {
+       "ask": "¿Es culpa de Doña Hebra?",
+       "expect": "No de una persona: todos hemos copiado alguna vez sin comprobar."
+      },
+      {
+       "ask": "Antes de sacar una conclusión, ¿qué hace un buen naturalista?",
+       "expect": "Observa, anota y comprueba."
+      }
+     ],
+     "watch": [
+      {
+       "mistake": "Vuelven los enredos del principio (el murciélago, la seta, la araña)",
+       "redirect": "¿Eso lo dice lo que se ve o algo que se pueda comprobar?"
+      },
+      {
+       "mistake": "Buscar culpables cuando un dato está mal",
+       "redirect": "¿Qué le dijo la expedición a Doña Hebra?"
+      }
+     ],
+     "spare": "Si falta, la batalla con 6 preguntas (o 4). Si el Embrollo escapa, nadie pierde nada: repasa con «Hoy en el valle» lo que más confunde a la clase y juega la batalla final otro día."
+    },
+    {
+     "title": "La exposición del naturalista",
+     "minutes": 50,
+     "optional": true,
+     "before": [
+      "Quien escucha: otra clase o las familias.",
+      "Las fichas de «La guía de campo de la clase», para enseñarlas en la pizarra, y el reparto de quién presenta qué.",
+      "La rúbrica de la guía de campo (guía, sección 6), para anotar la presentación de cada alumno.",
+      "Tu móvil, para marcar el reto «La exposición del naturalista» en «Retos»."
+     ],
+     "steps": [
+      {
+       "from": 0,
+       "to": 5,
+       "do": "Presenta a quien escucha la guía de campo de la clase y el orden de los equipos.",
+       "action": "none"
+      },
+      {
+       "from": 5,
+       "to": 45,
+       "do": "Cada equipo presenta sus fichas, explica cómo consiguió los datos y responde a preguntas (con seis equipos, unos seis minutos cada uno).",
+       "action": "challenge"
+      },
+      {
+       "from": 45,
+       "to": 50,
+       "do": "Cierre. Marca el reto del aula y apunta lo observado para valorar SV-07 (Trabajar como un científico).",
+       "action": "challenge"
+      }
+     ],
+     "questions": [
+      {
+       "ask": "¿Cómo consiguieron ese dato? ¿Quién lo dice y cuándo?"
+      },
+      {
+       "ask": "¿Qué rasgo les dice en qué grupo va?"
+      },
+      {
+       "ask": "¿En qué se diferencia de otro ser vivo parecido?"
+      }
+     ],
+     "watch": [
+      {
+       "mistake": "Opiniones en lugar de datos («es bonito», «me gusta»)",
+       "redirect": "¿Eso habla del ser vivo o de nosotros?"
+      },
+      {
+       "mistake": "Inventar una respuesta en vez de reconocer que no se sabe",
+       "redirect": "¿Qué escribe un naturalista en su cuaderno cuando no lo sabe?"
+      }
+     ],
+     "spare": "Si falta, cada equipo presenta una sola ficha. Si sobra, cada equipo compara una de sus fichas con la de otro equipo."
     }
    ],
    "x": 290,
@@ -4780,6 +5570,69 @@
    "alive": false,
    "note": "La madera salió de un árbol, pero la mesa ya no se nutre ni crece."
   }
+ },
+ "entry": {
+  "title": "Personajes, nombres y equipos",
+  "minutes": 50,
+  "short": 30,
+  "before": [
+   "Tesapé activado en el curso y la misión instalada (guía, 2.2 a 2.5). Hoy no hay escena ni votación.",
+   "Una tableta por alumno, cargada; cada alumno sabe entrar con su usuario.",
+   "El panel del docente abierto en la pestaña «Clase», para aprobar nombres y hacer los equipos."
+  ],
+  "steps": [
+   {
+    "from": 0,
+    "to": 5,
+    "do": "Lee en voz alta: «En el Valle de Tesapé nunca era del todo de noche: en cada sendero brillaba una linterna. Ahora muchas se han apagado. Vas a formar parte de una expedición. Tu personaje es tuyo y te acompaña en todos los cursos que usen Tesapé. Aquí se avanza aprendiendo, y tu equipo te necesita.»",
+    "say": "En el Valle de Tesapé nunca era del todo de noche: en cada sendero brillaba una linterna. Ahora muchas se han apagado. Vas a formar parte de una expedición. Tu personaje es tuyo y te acompaña en todos los cursos que usen Tesapé. Aquí se avanza aprendiendo, y tu equipo te necesita.",
+    "action": "enter"
+   },
+   {
+    "from": 5,
+    "to": 25,
+    "do": "Cada alumno entra desde la portada del curso («Entrar en el valle»). El juego le cuenta la historia y le pregunta «¿Quién eres?»: elige su papel, la forma de su nombre (Maga o Mago), su linaje y su aspecto. Explica el papel así: «Tu papel es cómo ayudas a tu equipo. Si un día quieres cambiarlo, pídeselo a tu docente.»",
+    "say": "Tu papel es cómo ayudas a tu equipo. Si un día quieres cambiarlo, pídeselo a tu docente.",
+    "action": "none"
+   },
+   {
+    "from": 25,
+    "to": 30,
+    "do": "«Nombres por aprobar», si permites nombres propios: «Aprobar» o «Rechazar», también los de las criaturas. A quien no tenga tableta, «Crear su personaje» (toca su nombre en «Clase»).",
+    "action": "none"
+   },
+   {
+    "from": 30,
+    "to": 40,
+    "do": "Cuando casi todos tengan personaje, elige los «Alumnos por equipo» (4; de 3 a 6) y pulsa «Hacer los equipos». El juego reparte los papeles para que en cada equipo haya de todos.",
+    "action": "none"
+   }
+  ],
+  "questions": [
+   {
+    "ask": "¿Cómo ayuda a su equipo cada papel?",
+    "expect": "El protector protege; el sanador recupera y rescata; el sabio da pistas e información; el explorador explora y encuentra caminos."
+   },
+   {
+    "ask": "Si una opción de una escena solo se abre con el sabio, ¿qué hace quien no lo es?",
+    "expect": "Busca al compañero que lo es."
+   },
+   {
+    "ask": "¿Cómo se avanza en este juego?",
+    "expect": "Aprendiendo, y con el equipo."
+   }
+  ],
+  "watch": [
+   {
+    "mistake": "Elegir el linaje para ser más fuerte (solo cambia cómo se ve)",
+    "redirect": "Prueba otro linaje: ¿cambia lo que puedes hacer o solo cómo te ves?"
+   },
+   {
+    "mistake": "Querer todos el mismo papel, «el mejor»",
+    "redirect": "En un equipo de cuatro sabios, ¿quién protege y quién rescata?"
+   }
+  ],
+  "spare": "Si falta, el personaje se termina en casa y los equipos se hacen antes del capítulo 1. Si sobra, elige el escalón de quien lo necesite («Clase» › su nombre › «Escalón de la misión»)."
  },
  "scenes": [
   "C1-1",

@@ -49,6 +49,7 @@
       state.board = r[0];
       state.cls = r[1];
       state.live = r[2].live || null;
+      session(r[2].session);
       modes();
       T.family = r[1].region.family;
       schedule();
@@ -97,6 +98,7 @@
       return;
     }
     T.api('live_host', {courseid: cfg.courseid, action: 'state'}).then(function(r) {
+      session(r.session);
       var live = r.live || null;
       var was = state.live;
       if ((live && live.id) !== (was && was.id) || (live && live.outcome) !== (was && was.outcome)) {
@@ -105,6 +107,136 @@
     }).catch(function() {
       // A poll that fails is tried again at the next one.
     });
+  }
+
+  /* ---------- The session the teacher runs from their guide ---------- */
+
+  /**
+   * The session going on, as the class screen gets it: what the teacher launched shows here.
+   *
+   * @param {string} json
+   */
+  function session(json) {
+    var s = null;
+    try {
+      s = json ? JSON.parse(json) : null;
+    } catch (e) {
+      s = null;
+    }
+    var key = s ? s.id + ':' + s.shown + ':' + s.shownat : '';
+    if (key === state.sessionkey) {
+      // The same thing shown: only how many have chosen their commitment, by team, may change.
+      if (s && s.pacts && state.showEl) {
+        var list = state.showEl.querySelector('[data-steams]');
+        if (list) {
+          list.innerHTML = pactTeams(s.pacts);
+        }
+      }
+      return;
+    }
+    state.sessionkey = key;
+    // The clock of the server, to count a timer from when the teacher launched it.
+    state.sessionoffset = s ? s.now * 1000 - Date.now() : 0;
+    showSession(s);
+  }
+
+  function pactTeams(p) {
+    return p.teams.map(function(team) {
+      return '<li><b>' + esc(team.name) + '</b><span class="meter"><i style="width:' + (team.total ? Math.round(100 *
+        team.chose / team.total) : 0) + '%"></i></span><span>' + esc(t('board_session_chose', team)) + '</span></li>';
+    }).join('');
+  }
+
+  function showSession(s) {
+    clearInterval(state.showtimer);
+    if (state.showEl) {
+      state.showEl.remove();
+      state.showEl = null;
+    }
+    if (!s || !s.shown) {
+      return;
+    }
+    if (s.shown === 'card') {
+      // The card of the day, drawn from the guide: the class screen shows it at once.
+      load(false).then(function() {
+        var card = app.querySelector('.board-event');
+        if (card) {
+          card.scrollIntoView({behavior: 'smooth', block: 'center'});
+          card.classList.add('flash');
+        }
+      });
+      return;
+    }
+    if (s.shown === 'scene') {
+      playScene(s.target);
+      return;
+    }
+    var el = document.createElement('div');
+    el.className = 'session-show show-' + s.shown;
+    el.setAttribute('role', 'dialog');
+    el.setAttribute('aria-modal', 'true');
+    var html = '';
+    var end = 0;
+    if (s.shown === 'enter') {
+      var art = T.artUrl(['scene.' + s.chapter]);
+      if (art) {
+        el.style.backgroundImage = 'linear-gradient(rgba(0,0,0,.25), rgba(0,0,0,.65)), url("' + art + '")';
+      }
+      // The letter of the Embrollo, line after line.
+      var lines = String(s.letter || '').split(/(?<=[.!?…»])\s+/).filter(Boolean);
+      html = '<div class="show-card"><div class="kicker">' + esc(t('board_session_enter')) + '</div><h1>' + esc(s.place) +
+        '</h1>' + (s.intro ? '<p class="lead">' + esc(s.intro) + '</p>' : '') + (lines.length ? '<div class="show-letter">' +
+        '<span class="battle-mini" aria-hidden="true">' + T.embrollo(1) + '</span><div>' + lines.map(function(line, i) {
+          return '<p style="animation-delay:' + (1.2 + i * 2.2) + 's">' + esc(line) + '</p>';
+        }).join('') + '</div></div>' : '') + '</div>';
+      if (T.fx) {
+        T.fx.sound('path');
+      }
+    } else if (s.shown === 'timer') {
+      end = (s.shownat + s.minutes * 60) * 1000 - state.sessionoffset;
+      html = '<div class="show-card"><div class="kicker">' + esc(t('board_session_timer')) + '</div><div class="show-clock" ' +
+        'data-sclock>' + s.minutes + ':00</div><div class="meter show-sand"><i data-ssand style="width:100%"></i></div></div>';
+    } else if (s.shown === 'pacts') {
+      end = (s.shownat + 120) * 1000 - state.sessionoffset;
+      html = '<div class="show-card"><div class="kicker">' + esc(t('board_session_pacts')) + '</div><h1>' + esc(s.place) +
+        '</h1><ol class="show-pacts">' + (s.pacts ? s.pacts.options : []).map(function(o) {
+          return '<li>' + esc(o) + '</li>';
+        }).join('') + '</ol><ul class="show-teams" data-steams>' + (s.pacts ? pactTeams(s.pacts) : '') + '</ul>' +
+        '<div class="show-clock small" data-sclock>2:00</div></div>';
+    }
+    el.innerHTML = '<button type="button" class="btn btn-soft scene-close" aria-label="' + esc(t('app_close')) + '">' +
+      T.icon('close') + '</button>' + html;
+    el.querySelector('.scene-close').onclick = function() {
+      clearInterval(state.showtimer);
+      el.remove();
+      state.showEl = null;
+    };
+    document.body.appendChild(el);
+    state.showEl = el;
+    if (end) {
+      var total = end - Date.now();
+      var tick = function() {
+        var left = Math.max(0, end - Date.now());
+        var clock = el.querySelector('[data-sclock]');
+        var sand = el.querySelector('[data-ssand]');
+        var secs = Math.ceil(left / 1000);
+        if (clock) {
+          clock.textContent = left ? Math.floor(secs / 60) + ':' + ('0' + secs % 60).slice(-2) : t('board_session_timeup');
+        }
+        if (sand) {
+          sand.style.width = (total > 0 ? Math.round(100 * left / total) : 0) + '%';
+        }
+        if (!left) {
+          clearInterval(state.showtimer);
+          el.classList.add('done');
+          if (T.fx && total > 0) {
+            T.fx.sound('lantern');
+          }
+        }
+      };
+      tick();
+      state.showtimer = setInterval(tick, 1000);
+    }
   }
 
   /* ---------- The battle against the Embrollo ---------- */

@@ -8297,3 +8297,202 @@ body.adapt-still .mission-grid .chapter.as-sheet {
   text-align: start;
   white-space: normal;
 }
+
+/* ---------- The session: the guide of the teacher ---------- */
+
+.session-card h2 {
+  margin: 2px 0;
+}
+
+.session-steps {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.session-steps > li {
+  display: grid;
+  grid-template-columns: 70px 1fr;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+}
+
+.session-steps > li.now {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(255, 200, 87, .35);
+}
+
+.session-steps p {
+  margin: 0 0 6px;
+}
+
+.session-min {
+  color: var(--text-soft);
+  font-variant-numeric: tabular-nums;
+  font-size: 14px;
+}
+
+.session-say {
+  margin: 6px 0;
+  padding: 8px 12px;
+  border-inline-start: 3px solid var(--lilac);
+  background: rgba(185, 166, 255, .08);
+  font-style: italic;
+}
+
+.session-say small {
+  display: block;
+  font-style: normal;
+  color: var(--text-soft);
+}
+
+.session-review {
+  margin: 10px 0;
+  padding: 10px 12px;
+  border-radius: var(--r);
+  background: rgba(255, 200, 87, .1);
+}
+
+.session-fold {
+  margin: 8px 0;
+}
+
+.session-fold summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* ---------- The session: what the class screen shows ---------- */
+
+.session-show {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 4vh 4vw;
+  background: rgba(var(--deep-rgb), .96);
+  background-size: cover;
+  background-position: center;
+  color: var(--text);
+}
+
+.session-show .scene-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+}
+
+.show-card {
+  width: min(1100px, 100%);
+  text-align: center;
+}
+
+.show-card h1 {
+  margin: 4px 0 12px;
+  font-size: clamp(36px, 6vw, 72px);
+}
+
+.show-card .lead {
+  font-size: clamp(20px, 2.4vw, 30px);
+}
+
+.show-letter {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: 18px;
+  align-items: start;
+  margin-top: 24px;
+  text-align: start;
+}
+
+.show-letter p {
+  margin: 0 0 10px;
+  font-size: clamp(22px, 2.6vw, 34px);
+  opacity: 0;
+  animation: tesape-line .9s ease-out forwards;
+}
+
+@keyframes tesape-line {
+  to {
+    opacity: 1;
+  }
+}
+
+.show-clock {
+  margin: 12px 0;
+  font-size: clamp(80px, 16vw, 220px);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.show-clock.small {
+  font-size: clamp(36px, 6vw, 72px);
+}
+
+.show-sand {
+  height: 14px;
+}
+
+.show-pacts {
+  display: grid;
+  gap: 8px;
+  margin: 12px auto;
+  max-width: 900px;
+  text-align: start;
+  font-size: clamp(20px, 2.2vw, 28px);
+}
+
+.show-teams {
+  display: grid;
+  gap: 8px;
+  margin: 16px auto;
+  padding: 0;
+  max-width: 700px;
+  list-style: none;
+  font-size: clamp(18px, 2vw, 24px);
+}
+
+.show-teams li {
+  display: grid;
+  grid-template-columns: 1fr 2fr auto;
+  gap: 12px;
+  align-items: center;
+  text-align: start;
+}
+
+.session-show.done .show-clock {
+  color: var(--accent);
+}
+
+.board-event.flash {
+  animation: tesape-flash 1.6s ease-out 2;
+}
+
+@keyframes tesape-flash {
+  50% {
+    box-shadow: 0 0 0 4px var(--accent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .show-letter p {
+    animation: none;
+    opacity: 1;
+  }
+
+  .board-event.flash {
+    animation: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .session-steps > li {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}

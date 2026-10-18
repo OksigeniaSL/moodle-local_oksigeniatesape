@@ -520,6 +520,226 @@
    *
    * @return {string}
    */
+  /* ---------- The session, as a director ---------- */
+
+  /**
+   * The session of today: the one going on, step by step, with what each step launches on the class screen; or the
+   * one that comes next, to start it.
+   *
+   * @return {string}
+   */
+  function sessionCard() {
+    return can('runclassscreen') ? '<section class="card session-card" data-session-body><p class="help-soft">' +
+      esc(t('teach_command_loading')) + '</p></section>' : '';
+  }
+
+  function bindSession(el) {
+    var box = el.querySelector('[data-session-body]');
+    if (!box) {
+      return;
+    }
+    var run = function(action, extra) {
+      return T.api('run_session', Object.assign({courseid: cfg.courseid, action: action}, extra || {})).then(function(r) {
+        state.session = JSON.parse(r.json);
+        draw();
+      }).catch(function(e) {
+        T.toast(esc(e.message), true);
+      });
+    };
+    var name = function(v) {
+      return v.chapter === 'entrada' ? t('teach_session_entry') : t('teach_session_name', v);
+    };
+    var folded = function(title, html) {
+      return html ? '<details class="session-fold"><summary>' + esc(title) + '</summary>' + html + '</details>' : '';
+    };
+    var sheetExtras = function(v) {
+      return folded(t('teach_session_questions'), v.questions.length ? '<ol>' + v.questions.map(function(q) {
+        return '<li><b>' + esc(q.ask) + '</b>' + (q.expect ? '<br><i>' + esc(q.expect) + '</i>' : '') + '</li>';
+      }).join('') + '</ol>' : '') + folded(t('teach_session_watch'), v.watch.length ? '<ul>' + v.watch.map(function(w) {
+        return '<li><i>' + esc(w.mistake) + '</i> → ' + esc(w.redirect) + '</li>';
+      }).join('') + '</ul>' : '') + folded(t('teach_session_spare'), v.spare ? '<p>' + esc(v.spare) + '</p>' : '');
+    };
+    // The buttons of a step: what it launches on the class screen.
+    var actionButton = function(action, st) {
+      switch (action) {
+        case 'enter':
+          return '<button type="button" class="btn btn-main" data-sshow="enter">' + esc(t('teach_session_act_enter')) + '</button>';
+        case 'card':
+          return '<button type="button" class="btn btn-main" data-scard>' + esc(t('teach_session_act_card')) + '</button>';
+        case 'scene':
+          return st.sceneid ? '<button type="button" class="btn btn-main" data-sscene="' + st.sceneid + '">' +
+            esc(t('teach_session_act_scene', st.scene)) + '</button>' : '';
+        case 'battle':
+          return '<button type="button" class="btn btn-main" data-sbattle>' + esc(t('teach_session_act_battle')) + '</button>';
+        case 'timer':
+          return '<button type="button" class="btn btn-main" data-stimer="' + st.timer + '">' +
+            esc(t('teach_session_act_timer', st.timer)) + '</button>';
+        case 'pacts':
+          return '<button type="button" class="btn btn-main" data-sshow="pacts">' + esc(t('teach_session_act_pacts')) + '</button>';
+        case 'challenge':
+          return '<button type="button" class="btn btn-soft" data-sgoto="challenges">' + esc(t('teach_session_act_challenge')) +
+            '</button>';
+        case 'game':
+          return '<span class="chip">' + esc(t('teach_session_act_game', st.gametitle)) + '</span>';
+      }
+      return '';
+    };
+    var steps = function(v, live) {
+      return '<ol class="session-steps">' + v.steps.map(function(st, i) {
+        var now = live && i === v.step;
+        return '<li class="' + (now ? 'now' : '') + '"><div class="session-min">' + st.from + '–' + st.to + ' min</div><div>' +
+          '<p>' + esc(st.do) + '</p>' + (st.say ? '<blockquote class="session-say"><small>' + esc(t('teach_session_say')) +
+          '</small>' + esc(st.say).replace(/\n/g, '<br>') + '</blockquote>' : '') + (live ? '<div class="actions" ' +
+          'style="justify-content:flex-start">' + actionButton(st.action, st) + actionButton(st.also, st) + (now ? '' :
+          '<button type="button" class="btn btn-soft" data-sstep="' + i + '">' + esc(t('teach_session_here')) + '</button>') +
+          '</div>' : '') + '</div></li>';
+      }).join('') + '</ol>';
+    };
+    var review = function(v) {
+      return v.review && v.review.length ? '<div class="session-review"><b>' + esc(t('teach_session_review')) + '</b><ul>' +
+        v.review.map(function(r) {
+          return '<li>' + esc(r) + '</li>';
+        }).join('') + '</ul></div>' : '';
+    };
+    var draw = function() {
+      var s = state.session;
+      if (!s) {
+        return;
+      }
+      var v = s.open || s.next;
+      if (state.sessionclosing && s.open) {
+        box.innerHTML = closing(s.open);
+        return;
+      }
+      if (!v) {
+        box.innerHTML = '<div class="kicker">' + esc(t('teach_session_next')) + '</div><p class="empty">' +
+          esc(t('teach_session_none')) + '</p>' + other(s);
+        return;
+      }
+      if (s.open) {
+        var mins = Math.max(0, Math.floor((v.now - v.startedat) / 60) + Math.floor((Date.now() - state.sessionat) / 60000));
+        box.innerHTML = '<div class="kicker">' + esc(t('teach_session_now')) + ' · <span data-sclock>' +
+          esc(t('teach_session_clock', mins)) + '</span></div><h2>' + esc(name(v)) + '</h2><p class="lead">' + esc(v.title) +
+          '</p>' + review(v) + steps(v, true) + sheetExtras(v) + '<div class="actions" style="justify-content:flex-start">' +
+          (v.shown ? '<button type="button" class="btn btn-soft" data-sshow="">' + esc(t('teach_session_clear')) + '</button>' :
+          '') + '<button type="button" class="btn btn-main" data-sclose>' + esc(t('teach_session_close')) + '</button></div>';
+      } else {
+        box.innerHTML = '<div class="kicker">' + esc(t('teach_session_next')) + (v.optional ? ' · ' +
+          esc(t('teach_session_optional')) : '') + '</div><h2>' + esc(name(v)) + '</h2><p class="lead">' + esc(v.title) + ' · ' +
+          esc(t('teach_session_minutes', v.minutes)) + '</p>' + review(v) + folded(t('teach_session_before'), v.before.length ?
+          '<ul>' + v.before.map(function(b) {
+            return '<li>' + esc(b) + '</li>';
+          }).join('') + '</ul>' : '') + folded(t('teach_session_steps'), steps(v, false)) + sheetExtras(v) +
+          '<div class="actions" style="justify-content:flex-start"><button type="button" class="btn btn-main" data-sstart="' +
+          v.chapter + ':' + v.number + '">' + esc(t('teach_session_start')) + '</button></div>' + other(s);
+      }
+    };
+    // Another session, to start it instead.
+    var other = function(s) {
+      return can('award') ? '<details class="session-fold"><summary>' + esc(t('teach_session_other')) + '</summary><ul ' +
+        'class="list">' + s.list.map(function(x) {
+          return '<li class="item"><span class="grow"><b>' + esc(x.chapter === 'entrada' ? t('teach_session_entry') :
+            t('teach_session_name', x)) + '</b><small>' + esc(x.title) + (x.done ? ' · ' + esc(t('teach_session_done')) : '') +
+            (x.optional ? ' · ' + esc(t('teach_session_optional')) : '') + '</small></span><button type="button" ' +
+            'class="btn btn-soft" data-sstart="' + x.chapter + ':' + x.number + '">' + esc(t('teach_session_start')) +
+            '</button></li>';
+        }).join('') + '</ul></details>' : '';
+    };
+    // Closing in three steps: the challenge and the commitments (in «Challenges»), and what to review next time.
+    var closing = function(v) {
+      return '<div class="kicker">' + esc(t('teach_session_close')) + '</div><h2>' + esc(name(v)) + '</h2>' +
+        '<p><b>' + esc(t('teach_session_close_challenge')) + '</b></p><p><b>' + esc(t('teach_session_close_pacts')) +
+        '</b></p><div class="actions" style="justify-content:flex-start"><button type="button" class="btn btn-soft" ' +
+        'data-sgoto="challenges">' + esc(t('teach_session_close_go')) + '</button></div><p><b>' +
+        esc(t('teach_session_close_review')) + '</b></p><p class="help-soft">' + esc(t('teach_session_close_review_help')) +
+        '</p><ul class="list session-confusions">' + (v.confusions || []).map(function(c, i) {
+          return '<li class="item"><label><input type="checkbox" data-sreview value="' + esc(t('teach_session_confusion', c)) +
+            '"' + (i < 3 ? ' checked' : '') + '> ' + esc(t('teach_session_confusion', c)) + '</label></li>';
+        }).join('') + '</ul><label class="field"><span>' + esc(t('teach_session_close_add')) + '</span><input type="text" ' +
+        'maxlength="300" data-sreviewmore></label><div class="actions" style="justify-content:flex-start"><button ' +
+        'type="button" class="btn btn-main" data-sclosedone>' + esc(t('teach_session_close_done')) + '</button><button ' +
+        'type="button" class="btn btn-soft" data-sclosecancel>' + esc(t('teach_session_cancel')) + '</button></div>';
+    };
+    box.addEventListener('click', function(ev) {
+      var b = ev.target.closest('button');
+      if (!b || !box.contains(b)) {
+        return;
+      }
+      var d = b.dataset;
+      if (d.sstart) {
+        var p = d.sstart.split(':');
+        state.sessionclosing = false;
+        run('start', {chapter: p[0], number: Number(p[1])});
+      } else if (d.sstep) {
+        run('step', {step: Number(d.sstep)});
+      } else if (d.sshow !== undefined) {
+        run('show', {show: d.sshow});
+      } else if (d.stimer) {
+        run('show', {show: 'timer', minutes: Number(d.stimer)});
+      } else if (d.sscene) {
+        run('show', {show: 'scene', target: Number(d.sscene)});
+      } else if (d.scard !== undefined) {
+        // The card of the day, drawn here and shown on the class screen.
+        T.api('class_event', {courseid: cfg.courseid, action: 'draw'}).catch(function() {
+          return null;
+        }).then(function() {
+          return run('show', {show: 'card'});
+        });
+      } else if (d.sbattle !== undefined) {
+        // As the command starts it: with the devices the course plays with, by turns, eight knots and thirty seconds.
+        var final = !!(state.session.open && state.session.open.final);
+        T.api('live_host', {courseid: cfg.courseid, action: 'start', mode: state.data.region.devices === false ? 'aloud' :
+          'phones', count: 8, secs: 30, turns: true, final: final}).then(function() {
+          T.toast(esc(t('teach_session_act_battle')));
+        }).catch(function(e) {
+          T.toast(esc(e.message), true);
+        });
+      } else if (d.sgoto) {
+        state.tab = d.sgoto;
+        render();
+      } else if (d.sclose !== undefined) {
+        state.sessionclosing = true;
+        draw();
+      } else if (d.sclosecancel !== undefined) {
+        state.sessionclosing = false;
+        draw();
+      } else if (d.sclosedone !== undefined) {
+        var review = Array.prototype.map.call(box.querySelectorAll('[data-sreview]:checked'), function(x) {
+          return x.value;
+        });
+        var more = box.querySelector('[data-sreviewmore]').value.trim();
+        if (more) {
+          review.push(more);
+        }
+        state.sessionclosing = false;
+        run('close', {review: review}).then(function() {
+          T.toast(esc(t('teach_session_closed')));
+        });
+      }
+    });
+    if (state.session) {
+      draw();
+    }
+    T.api('run_session', {courseid: cfg.courseid, action: 'view'}).then(function(r) {
+      state.session = JSON.parse(r.json);
+      state.sessionat = Date.now();
+      draw();
+    }).catch(function() {
+      box.remove();
+    });
+    // The clock of the session, discreet: once a minute.
+    clearInterval(state.sessiontimer);
+    state.sessiontimer = setInterval(function() {
+      var clock = box.querySelector('[data-sclock]');
+      var v = state.session && state.session.open;
+      if (!clock || !v || !document.body.contains(box)) {
+        return;
+      }
+      clock.textContent = t('teach_session_clock', Math.max(0, Math.floor((v.now - v.startedat) / 60) +
+        Math.floor((Date.now() - state.sessionat) / 60000)));
+    }, 30000);
+  }
+
   function remoteCard() {
     return can('runclassscreen') ? '<section class="card remote-card"><div class="kicker">' + esc(t('teach_command')) +
       '</div><div data-remote-body><p class="help-soft">' + esc(t('teach_command_loading')) + '</p></div></section>' : '';
@@ -649,7 +869,7 @@
           '</button>';
       }).join('') + '</div>';
     var shown = studentsShown();
-    var el = content(remoteCard() + todayCard() + namesCard() + teamsCard() + farCard() + '<section class="card"><div class="section-title"><h2>' +
+    var el = content(sessionCard() + remoteCard() + todayCard() + namesCard() + teamsCard() + farCard() + '<section class="card"><div class="section-title"><h2>' +
       esc(t('teach_tab_class')) +
       '</h2><span class="section-tools"><label class="chip"><input type="checkbox" data-showres' + (state.showres ? ' checked' :
       '') + '> ' + esc(t('teach_showres')) + '</label><button class="btn btn-soft" data-all>' + esc(t('teach_selectall')) +
@@ -657,6 +877,7 @@
       (shown.length ? '<ul class="list">' + shown.map(studentCard).join('') + '</ul>' : '<p class="empty">' +
       esc(t('teach_nostudents')) + '</p>') + '</section><div id="actionbar"></div>');
     bindMakeTeams(el);
+    bindSession(el);
     bindRemote(el);
     el.querySelector('[data-showres]').onchange = function() {
       state.showres = this.checked;

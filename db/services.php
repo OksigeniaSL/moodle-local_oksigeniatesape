@@ -426,6 +426,13 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:play',
     ],
+    'local_oksigeniatesape_run_session' => [
+        'classname' => 'local_oksigeniatesape\\external\\run_session',
+        'description' => 'The teacher runs the session of their class as a director.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:runclassscreen',
+    ],
     'local_oksigeniatesape_erase_stain' => [
         'classname' => 'local_oksigeniatesape\\external\\erase_stain',
         'description' => 'The teacher takes a stain of the Embrollo as cleaned by the class.',

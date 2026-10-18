@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.92.0 (2026-10-18)
+
+Phase 4 of the plan, block 4.1: the session.
+
+- **The session is the unit for the teacher.** Each place of the mission has its sessions (two in the pilot mission, and
+  an entry before the first place), with its sheet as data of the mission: steps with their minutes, what is read
+  aloud and what each step launches, the three key questions with their answer and the two mistakes to watch with how
+  to turn them round. The pilot mission, version 43, with its fourteen sheets.
+- **The teacher runs it as a director**, from the panel or the phone: «Start the session»; the step of now, with the
+  text to read and its buttons; on the class screen, «We enter the place» (the place full screen, its name and the
+  letter of the Embrollo line by line), the card of the day, the scene with the class, the battle, a soft timer for
+  team work, and «Choose your commitment» with how many have chosen in each team; «Take it off the class screen». A
+  discreet clock of the session, only for the teacher.
+- **Closing in three steps**: the class challenge and the commitments (by team), and what confused the class today,
+  marked to review at the start of the next session. Without a session, everything goes on as before.
+
 ## 0.91.0 (2026-10-18)
 
 Block 3.2 of the plan: the Embrollo steals a page.

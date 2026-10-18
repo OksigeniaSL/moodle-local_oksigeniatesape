@@ -22,6 +22,7 @@ use core_external\external_single_structure;
 use core_external\external_value;
 use local_oksigeniatesape\local\live;
 use local_oksigeniatesape\local\regions;
+use local_oksigeniatesape\local\sessions;
 
 /**
  * The battle on the class screen: open it, the next question, show the answer, mark the teams that answered aloud,
@@ -113,9 +114,12 @@ final class live_host extends external_api {
         $courseid = $params['courseid'];
         $now = time();
         if ($params['action'] === 'state') {
+            // The session going on, for the class screen to show what the teacher launches.
+            $session = sessions::board($courseid, $now);
+            $session = $session ? ['session' => json_encode($session)] : [];
             $live = live::recent($courseid, $now, true);
             if (!$live) {
-                return [];
+                return $session;
             }
             if (!$live->timeend) {
                 live::heartbeat($live, $now);
@@ -124,7 +128,7 @@ final class live_host extends external_api {
                 $userid = (int) $USER->id;
                 $live = live::locked($courseid, fn() => live::tick(live::recent($courseid, $now, true) ?? $live, $userid, $award, $now));
             }
-            return ['live' => live::board_view($live, $now)];
+            return ['live' => live::board_view($live, $now)] + $session;
         }
         if (!regions::enabled($courseid)) {
             throw new \moodle_exception('gameoff', 'local_oksigeniatesape');
@@ -215,6 +219,7 @@ final class live_host extends external_api {
     public static function execute_returns(): \core_external\external_description {
         return new external_single_structure([
             'live' => structures::live_board(),
+            'session' => new external_value(PARAM_RAW, 'The session going on, as the class screen shows it (JSON)', VALUE_OPTIONAL),
         ]);
     }
 }
