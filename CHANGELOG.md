@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.116.0 (2026-10-18)
+
+- **The council of the teams.** From the remote, in a session, «Council of the teams» shows on the class screen the
+  place of today, two minutes and each team «in council». On the tablets, the «Team» tab has «Today's council»: the
+  task of the place of today with its parts, who of the team carries each one (by role), and the role that starts the
+  hand in the scenes of the team today; once chosen, the class screen shows it by the team. A session sheet can launch
+  it as a step (`council`). The choice is of a role, not of a student, and only counts that day.
+
 ## 0.115.0 (2026-10-18)
 
 - **Cards of the day for a team.** «A knot for a team»: the Embrollo tangles a sheet of mistakes of the place of today

@@ -958,10 +958,46 @@ final class view {
             $mates[] = $entry;
         }
         $playing = count(array_filter($mates, fn($m) => isset($m['character']['member'])));
+        // The council of the team, with a mission.
+        $council = self::council($courseid, $group, $userid, $mates);
         return ['id' => (int) $group->id, 'name' => format_string($group->name), 'members' => $mates,
             'energy' => $energy, 'energymax' => $playing * engine::ENERGY_MAX, 'carer' => $carers,
             'banner' => market::team_owns($courseid, (int) $group->id),
-            'state' => teams::states($courseid)[(int) $group->id] ?? ''];
+            'state' => teams::states($courseid)[(int) $group->id] ?? '',
+            'first' => teams::firsts($courseid)[(int) $group->id] ?? ''] + ($council ? ['council' => $council] : []);
+    }
+
+    /**
+     * The council of a team: the task of the place of today, with its parts and who of the team has the role of each.
+     *
+     * @param int $courseid
+     * @param \stdClass $group
+     * @param int $userid Who looks.
+     * @param array $mates The members of the team, as team() makes them.
+     * @return array|null place, task, parts (role, text, done, who: the names of the team with that role).
+     */
+    private static function council(int $courseid, \stdClass $group, int $userid, array $mates): ?array {
+        global $DB;
+        $mission = missions::get($courseid);
+        $chapter = $mission ? pacts::chapter($mission) : null;
+        if (!$chapter) {
+            return null;
+        }
+        $place = '';
+        foreach ($mission->data['chapters'] ?? [] as $info) {
+            if (($info['code'] ?? '') === $chapter->code) {
+                $place = missions::text($info['name'] ?? '', $mission->skin);
+            }
+        }
+        $tasks = $DB->get_records(self::T . 'challenge', ['courseid' => $courseid, 'chapterid' => $chapter->id, 'cmid' => 0], 'id');
+        $task = $tasks ? reset($tasks) : null;
+        $parts = [];
+        foreach ($task ? classroom::team_parts($task, (int) $group->id, $userid) : [] as $part) {
+            $who = array_column(array_filter($mates, fn($m) => ($m['character']['role'] ?? '') === $part['role']), 'name');
+            $parts[] = ['role' => (string) $part['role'], 'text' => (string) $part['text'], 'done' => (bool) $part['done'],
+                'who' => implode(', ', $who)];
+        }
+        return ['place' => $place, 'task' => $task ? format_string((string) $task->name) : '', 'parts' => $parts];
     }
 
     /**

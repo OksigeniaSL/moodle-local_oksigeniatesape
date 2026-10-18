@@ -92,6 +92,17 @@ final class get_world extends external_api {
                     VALUE_DEFAULT,
                     ''
                 ),
+                'first' => new external_value(PARAM_ALPHA, 'The role that starts the hand today (empty: none)', VALUE_DEFAULT, ''),
+                'council' => new external_single_structure([
+                    'place' => new external_value(PARAM_TEXT, 'The place of today'),
+                    'task' => new external_value(PARAM_TEXT, 'Its task for the team (empty: none)'),
+                    'parts' => new external_multiple_structure(new external_single_structure([
+                        'role' => new external_value(PARAM_ALPHA, 'Role'),
+                        'text' => new external_value(PARAM_TEXT, 'What the part is'),
+                        'done' => new external_value(PARAM_BOOL, 'Done'),
+                        'who' => new external_value(PARAM_TEXT, 'Who of the team has that role (empty: nobody)'),
+                    ])),
+                ], 'The council of the team: the task of today and its parts', VALUE_OPTIONAL),
                 'members' => new external_multiple_structure(new external_single_structure([
                     'userid' => new external_value(PARAM_INT, 'User'),
                     'name' => new external_value(PARAM_TEXT, 'Name shown to classmates'),

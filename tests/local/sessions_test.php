@@ -126,6 +126,21 @@ final class sessions_test extends \advanced_testcase {
         $this->assertGreaterThan(0, (int) $DB->get_field(self::T . 'chapter', 'litat', ['id' => $clearing->id]));
     }
 
+    public function test_the_council_of_a_team_shows_its_task_of_today_and_who_has_each_part(): void {
+        [$course] = $this->make_class();
+        $users = array_values(get_enrolled_users(\context_course::instance($course->id), '', 0, 'u.id', 'u.id'));
+        $students = array_values(array_filter($users, fn($u) => characters::get((int) $u->id)));
+        $council = view::world($course->id, (int) $students[0]->id)['team']['council'];
+        $this->assertSame('Claro del Despertar', $council['place']);
+        $this->assertNotSame('', $council['task']);
+        $this->assertNotEmpty($council['parts']);
+        // The parts of the roles of the team carry their names; the others, nobody.
+        $who = array_column($council['parts'], 'who', 'role');
+        $this->assertNotSame('', $who['sage'] ?? '');
+        $this->assertNotSame('', $who['healer'] ?? '');
+        $this->assertSame('', $who['protector'] ?? '');
+    }
+
     public function test_the_teacher_starts_goes_step_by_step_shows_and_closes_with_what_to_review(): void {
         [$course] = $this->make_class();
         $mission = missions::get($course->id);
@@ -148,6 +163,14 @@ final class sessions_test extends \advanced_testcase {
         $this->assertNotEmpty($pacts['options']);
         $this->assertSame('Claro del Despertar', $pacts['place']);
         $this->assertSame([['name' => 'Los Linces', 'chose' => 0, 'total' => 2]], $pacts['teams']);
+        // The council of the teams: two minutes, and each team with the role that starts the hand, once chosen.
+        sessions::show($course->id, 'council', 0, 0, $now + 240);
+        $board = sessions::board($course->id, $now + 241);
+        $this->assertSame([sessions::COUNCIL, 'Claro del Despertar'], [$board['minutes'], $board['council']['place']]);
+        $this->assertSame([['name' => 'Los Linces', 'first' => '']], $board['council']['teams']);
+        $team = groups_get_all_groups($course->id);
+        teams::set_first($course->id, (int) reset($team)->id, 'sage', $now + 250);
+        $this->assertSame('sage', sessions::board($course->id, $now + 251)['council']['teams'][0]['first']);
         try {
             sessions::show($course->id, 'fireworks', 0, 0, $now);
             $this->fail('Only what the class screen knows');

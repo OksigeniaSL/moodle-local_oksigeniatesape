@@ -921,5 +921,15 @@ function xmldb_local_oksigeniatesape_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026101843, 'local', 'oksigeniatesape');
     }
 
+    if ($oldversion < 2026101844) {
+        // The council of the team: the role that starts the hand in the scenes of the day.
+        $table = new xmldb_table('local_oksigeniatesape_teamstate');
+        $field = new xmldb_field('first', XMLDB_TYPE_CHAR, '10', null, null, null, null, 'state');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        upgrade_plugin_savepoint(true, 2026101844, 'local', 'oksigeniatesape');
+    }
+
     return true;
 }

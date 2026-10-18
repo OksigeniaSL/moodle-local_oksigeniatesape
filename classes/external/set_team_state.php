@@ -39,7 +39,14 @@ final class set_team_state extends external_api {
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
             'courseid' => new external_value(PARAM_INT, 'Course'),
-            'state' => new external_value(PARAM_ALPHA, 'ready, working or help'),
+            'state' => new external_value(PARAM_ALPHA, 'ready, working or help (empty: as it is)'),
+            'first' => new external_value(
+                PARAM_ALPHA,
+                'The council: the role that starts the hand today (empty: none)',
+                VALUE_DEFAULT,
+                null,
+                NULL_ALLOWED
+            ),
         ]);
     }
 
@@ -48,11 +55,15 @@ final class set_team_state extends external_api {
      *
      * @param int $courseid
      * @param string $state
+     * @param string|null $first
      * @return array
      */
-    public static function execute(int $courseid, string $state): array {
+    public static function execute(int $courseid, string $state, ?string $first = null): array {
         global $USER;
-        $params = self::validate_parameters(self::execute_parameters(), ['courseid' => $courseid, 'state' => $state]);
+        $params = self::validate_parameters(
+            self::execute_parameters(),
+            ['courseid' => $courseid, 'state' => $state, 'first' => $first]
+        );
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
         require_capability('local/oksigeniatesape:play', $context);
@@ -60,8 +71,14 @@ final class set_team_state extends external_api {
         if (!$team || !regions::enabled($params['courseid'])) {
             throw new \moodle_exception('noteam', 'local_oksigeniatesape');
         }
-        teams::set_state($params['courseid'], (int) $team->id, $params['state']);
-        return ['state' => $params['state']];
+        if ($params['state'] !== '') {
+            teams::set_state($params['courseid'], (int) $team->id, $params['state']);
+        }
+        if ($params['first'] !== null) {
+            teams::set_first($params['courseid'], (int) $team->id, $params['first']);
+        }
+        return ['state' => teams::states($params['courseid'])[(int) $team->id] ?? '',
+            'first' => teams::firsts($params['courseid'])[(int) $team->id] ?? ''];
     }
 
     /**
@@ -72,6 +89,7 @@ final class set_team_state extends external_api {
     public static function execute_returns(): \core_external\external_description {
         return new external_single_structure([
             'state' => new external_value(PARAM_ALPHA, 'How the team is doing now'),
+            'first' => new external_value(PARAM_ALPHA, 'The role that starts the hand today (empty: none chosen)'),
         ]);
     }
 }

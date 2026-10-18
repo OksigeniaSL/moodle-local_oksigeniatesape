@@ -1175,7 +1175,16 @@
       if (!opts.team || !opts.team.length || !world.team) {
         return null;
       }
-      var order = [cfg.userid].concat(opts.team);
+      var order = [cfg.userid].concat(opts.team).map(Number);
+      // The council of the team chose the role that starts the hand today: its first player in this scene, first.
+      var first = (world.team.members || []).filter(function(m) {
+        return world.team.first && m.character && m.character.role === world.team.first &&
+          order.indexOf(Number(m.userid)) >= 0;
+      })[0];
+      if (first) {
+        var at = order.indexOf(Number(first.userid));
+        order = order.slice(at).concat(order.slice(0, at));
+      }
       var id = run.handfor[run.node] || order[run.turn % order.length];
       return (world.team.members || []).filter(function(m) {
         return Number(m.userid) === Number(id);

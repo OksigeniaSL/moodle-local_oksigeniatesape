@@ -126,6 +126,29 @@ final class teams_test extends \advanced_testcase {
         teams::set_state($course->id, (int) $lynx->id, 'asleep', $now);
     }
 
+    public function test_the_council_chooses_the_role_that_starts_the_hand_today(): void {
+        $this->resetAfterTest();
+        $course = $this->getDataGenerator()->create_course();
+        regions::save($course->id, ['enabled' => 1]);
+        $lynx = $this->getDataGenerator()->create_group(['courseid' => $course->id]);
+        $now = time();
+        teams::set_state($course->id, (int) $lynx->id, 'working', $now);
+        teams::set_first($course->id, (int) $lynx->id, 'sage', $now + 60);
+        $this->assertSame([(int) $lynx->id => 'sage'], teams::firsts($course->id, $now + 61));
+        $this->assertSame([(int) $lynx->id => 'working'], teams::states($course->id, $now + 61));
+        // Another day, neither the state nor the role of yesterday counts, whichever is said first.
+        $tomorrow = $now + DAYSECS;
+        teams::set_first($course->id, (int) $lynx->id, 'scout', $tomorrow);
+        $this->assertSame([], teams::states($course->id, $tomorrow));
+        teams::set_state($course->id, (int) $lynx->id, 'ready', $tomorrow + 2 * DAYSECS);
+        $this->assertSame([], teams::firsts($course->id, $tomorrow + 2 * DAYSECS));
+        // None chosen; a role that does not exist, never.
+        teams::set_first($course->id, (int) $lynx->id, '', $tomorrow + 2 * DAYSECS);
+        $this->assertSame([], teams::firsts($course->id, $tomorrow + 2 * DAYSECS));
+        $this->expectException(\invalid_parameter_exception::class);
+        teams::set_first($course->id, (int) $lynx->id, 'wizard', $now);
+    }
+
     public function test_make_needs_students(): void {
         $this->resetAfterTest();
         $course = $this->getDataGenerator()->create_course();

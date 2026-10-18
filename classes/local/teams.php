@@ -67,11 +67,58 @@ final class teams {
         $day = (int) (new \DateTimeImmutable('@' . $now))->setTimezone(engine::timezone($courseid))->format('Ymd');
         $row = $DB->get_record(self::T . 'teamstate', ['courseid' => $courseid, 'groupid' => $groupid]);
         $fields = ['state' => $state, 'day' => $day, 'timemodified' => $now];
+        if ($row && (int) $row->day !== $day) {
+            // What the council chose another day does not count today.
+            $fields['first'] = null;
+        }
         if ($row) {
             $DB->update_record(self::T . 'teamstate', (object) (['id' => $row->id] + $fields));
         } else {
             $DB->insert_record(self::T . 'teamstate', (object) (['courseid' => $courseid, 'groupid' => $groupid] + $fields));
         }
+    }
+
+    /**
+     * The council of a team chooses the role that starts the hand in the scenes of today, or none.
+     *
+     * @param int $courseid
+     * @param int $groupid
+     * @param string $role One of the roles, or empty.
+     * @param int|null $now
+     */
+    public static function set_first(int $courseid, int $groupid, string $role, ?int $now = null): void {
+        global $DB;
+        if ($role !== '' && !in_array($role, characters::ROLES, true)) {
+            throw new \invalid_parameter_exception('Unknown role');
+        }
+        $now = $now ?? time();
+        $day = (int) (new \DateTimeImmutable('@' . $now))->setTimezone(engine::timezone($courseid))->format('Ymd');
+        $row = $DB->get_record(self::T . 'teamstate', ['courseid' => $courseid, 'groupid' => $groupid]);
+        $fields = ['first' => $role !== '' ? $role : null, 'day' => $day, 'timemodified' => $now];
+        if ($row && (int) $row->day !== $day) {
+            // How the team said it was doing another day does not count today.
+            $fields['state'] = '';
+        }
+        if ($row) {
+            $DB->update_record(self::T . 'teamstate', (object) (['id' => $row->id] + $fields));
+        } else {
+            $DB->insert_record(self::T . 'teamstate', (object) (['courseid' => $courseid, 'groupid' => $groupid, 'state' => ''] +
+                $fields));
+        }
+    }
+
+    /**
+     * The roles that start the hand today, by team, as their councils chose them.
+     *
+     * @param int $courseid
+     * @param int|null $now
+     * @return array Group id => role.
+     */
+    public static function firsts(int $courseid, ?int $now = null): array {
+        global $DB;
+        $day = (int) (new \DateTimeImmutable('@' . ($now ?? time())))->setTimezone(engine::timezone($courseid))->format('Ymd');
+        $where = "courseid = ? AND day = ? AND first IS NOT NULL AND first <> ''";
+        return array_map('strval', $DB->get_records_select_menu(self::T . 'teamstate', $where, [$courseid, $day], '', 'groupid, first'));
     }
 
     /**
@@ -84,7 +131,8 @@ final class teams {
     public static function states(int $courseid, ?int $now = null): array {
         global $DB;
         $day = (int) (new \DateTimeImmutable('@' . ($now ?? time())))->setTimezone(engine::timezone($courseid))->format('Ymd');
-        $states = $DB->get_records_menu(self::T . 'teamstate', ['courseid' => $courseid, 'day' => $day], '', 'groupid, state');
+        $where = "courseid = ? AND day = ? AND state <> ''";
+        $states = $DB->get_records_select_menu(self::T . 'teamstate', $where, [$courseid, $day], '', 'groupid, state');
         return array_map('strval', $states);
     }
 

@@ -2539,7 +2539,7 @@
             '<span class="meter energy" ' +
             'title="' + esc(t('app_energy')) + '"><i style="width:' + Math.round(100 * m.energy / w.energymax) +
             '%"></i></span></span>' : '') + '</li>';
-        }).join('') + '</ul></section>' + pactsCard(team.pacts);
+        }).join('') + '</ul></section>' + councilCard(team) + pactsCard(team.pacts);
     }
     html += powersCard();
     if (w.standings.length > 1) {
@@ -2565,6 +2565,41 @@
    * @param {Object} p
    * @return {string}
    */
+  /**
+   * The council of the team: the task of the place of today with who of the team has the role of each part, and the
+   * role that starts the hand in the scenes of today.
+   *
+   * @param {Object} team
+   * @return {string}
+   */
+  function councilCard(team) {
+    var cn = team.council;
+    if (!cn) {
+      return '';
+    }
+    var fam = state.world.family;
+    var roles = [];
+    team.members.forEach(function(mate) {
+      var role = mate.character && mate.character.role;
+      if (role && roles.indexOf(role) < 0) {
+        roles.push(role);
+      }
+    });
+    var parts = cn.parts.length ? '<ul class="list council-parts">' + cn.parts.map(function(p) {
+      return '<li class="item' + (p.done ? ' done' : '') + '"><span class="grow"><b>' + esc(T.roleName(fam, p.role, 'm')) +
+        (p.done ? ' ✓' : '') + '</b><small>' + esc(p.text) + '</small><small class="help-soft">' +
+        esc(p.who ? t('app_council_who', p.who) : t('app_council_nobody')) + '</small></span></li>';
+    }).join('') + '</ul>' : '';
+    return '<section class="card council-card"><div class="kicker">' + esc(t('app_council')) + '</div><h3>' +
+      esc(cn.place) + '</h3>' + (cn.task ? '<p><b>' + esc(cn.task) + '</b></p>' + parts : '<p class="help-soft">' +
+      esc(t('app_council_notask')) + '</p>') + (roles.length > 1 ? '<div class="council-first" role="group" ' +
+      'aria-label="' + esc(t('app_council_first')) + '"><small>' + esc(t('app_council_first')) + '</small><div class="pills">' +
+      roles.map(function(role) {
+        return '<button type="button" class="chip" data-first="' + role + '" aria-pressed="' + (team.first === role) + '">' +
+          esc(T.roleName(fam, role, 'm')) + '</button>';
+      }).join('') + '</div></div>' : '') + '</section>';
+  }
+
   function pactsCard(p) {
     if (!p) {
       return '';
@@ -2668,6 +2703,17 @@
   }
 
   function bindTeam() {
+    app.querySelectorAll('[data-first]').forEach(function(b) {
+      b.onclick = function() {
+        var role = b.getAttribute('aria-pressed') === 'true' ? '' : b.dataset.first;
+        T.api('set_team_state', {courseid: cfg.courseid, state: '', first: role}).then(function(r) {
+          state.world.team.first = r.first;
+          world();
+        }).catch(function(e) {
+          T.toast(esc(e.message), true);
+        });
+      };
+    });
     app.querySelectorAll('[data-teamstate]').forEach(function(b) {
       b.onclick = function() {
         T.api('set_team_state', {courseid: cfg.courseid, state: b.dataset.teamstate}).then(function(r) {

@@ -872,6 +872,29 @@ body.tesape {
   font-size: .95rem;
 }
 
+/* The council of the team: its task of today, who has each part and the role that starts the hand. */
+.council-card .council-parts .item.done b {
+  color: var(--lantern);
+}
+
+.council-first {
+  margin-top: 10px;
+}
+
+.council-first small {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.shows-council .show-teams li.ready b::after {
+  content: " ✓";
+  color: var(--lantern);
+}
+
+.show-event {
+  margin: 6px 0 12px;
+}
+
 /* A card of the day for a team: the team it goes to, and what comes of it. */
 .event-for {
   display: flex;

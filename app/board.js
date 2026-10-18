@@ -183,10 +183,10 @@
     var key = s ? s.id + ':' + s.shown + ':' + s.shownat : '';
     if (key === state.sessionkey) {
       // The same thing shown: only how many have chosen their commitment, by team, may change.
-      if (s && s.pacts && state.showEl) {
+      if (s && (s.pacts || s.council) && state.showEl) {
         var list = state.showEl.querySelector('[data-steams]');
         if (list) {
-          list.innerHTML = pactTeams(s.pacts);
+          list.innerHTML = s.pacts ? pactTeams(s.pacts) : councilTeams(s.council);
         }
       }
       return;
@@ -195,6 +195,19 @@
     // The clock of the server, to count a timer from when the teacher launched it.
     state.sessionoffset = s ? s.now * 1000 - Date.now() : 0;
     showSession(s);
+  }
+
+  /**
+   * The teams in council, on the class screen: the role that starts the hand once they chose it. No names.
+   *
+   * @param {Object} c place, teams (name, first).
+   * @return {string}
+   */
+  function councilTeams(c) {
+    return c.teams.map(function(team) {
+      return '<li class="' + (team.first ? 'ready' : '') + '"><b>' + esc(team.name) + '</b><span>' + esc(team.first ?
+        t('board_council_first', T.roleName(T.family, team.first, 'm')) : t('board_council_on')) + '</span></li>';
+    }).join('');
   }
 
   function pactTeams(p) {
@@ -284,6 +297,16 @@
           return '<li>' + esc(o) + '</li>';
         }).join('') + '</ol><ul class="show-teams" data-steams>' + (s.pacts ? pactTeams(s.pacts) : '') + '</ul>' +
         '<div class="show-clock small" data-sclock>2:00</div></div>';
+    } else if (s.shown === 'council') {
+      // The teams in council: each one, on a tablet, looks at its task and chooses who starts the hand.
+      var ev = state.board && state.board.event;
+      end = (s.shownat + s.minutes * 60) * 1000 - state.sessionoffset;
+      html = '<div class="show-card"><div class="kicker">' + esc(t('board_session_council')) + '</div><h1>' +
+        esc(s.council && s.council.place || s.place) + '</h1><p class="lead">' + esc(t('board_session_council_help')) +
+        '</p>' + (ev && ev.status === 'drawn' ? '<p class="show-event"><b>' + esc(t('board_event')) + ':</b> ' +
+        esc(ev.name || t('event_' + ev.code)) + '</p>' : '') + '<ul class="show-teams" data-steams>' +
+        (s.council ? councilTeams(s.council) : '') + '</ul><div class="show-clock small" data-sclock>' + s.minutes +
+        ':00</div></div>';
     }
     el.innerHTML = '<button type="button" class="btn btn-soft scene-close" aria-label="' + esc(t('app_close')) + '">' +
       T.icon('close') + '</button>' + html;

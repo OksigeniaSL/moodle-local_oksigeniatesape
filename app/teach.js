@@ -982,6 +982,9 @@
             esc(t('teach_session_act_timer', st.timer)) + '</button>';
         case 'pacts':
           return '<button type="button" class="btn btn-main" data-sshow="pacts">' + esc(t('teach_session_act_pacts')) + '</button>';
+        case 'council':
+          return '<button type="button" class="btn btn-main" data-sshow="council">' + esc(t('teach_session_act_council')) +
+            '</button>';
         case 'challenge':
           return '<button type="button" class="btn btn-soft" data-sgoto="challenges">' + esc(t('teach_session_act_challenge')) +
             '</button>';
@@ -1035,7 +1038,9 @@
           esc(t('teach_session_clock', mins)) + '</span></div><h2>' + esc(name(v)) + '</h2><p class="lead">' + esc(v.title) +
           '</p>' + ready + review(v) + steps(v, true) + sheetExtras(v) + '<div class="actions" style="justify-content:flex-start">' +
           (v.shown ? '<button type="button" class="btn btn-soft" data-sshow="">' + esc(t('teach_session_clear')) + '</button>' :
-          '') + '<button type="button" class="btn btn-main" data-sclose>' + esc(t('teach_session_close')) + '</button></div>';
+          '') + (v.shown === 'council' ? '' : '<button type="button" class="btn btn-soft" data-sshow="council">' +
+          esc(t('teach_session_act_council')) + '</button>') + '<button type="button" class="btn btn-main" data-sclose>' +
+          esc(t('teach_session_close')) + '</button></div>';
       } else {
         box.innerHTML = '<div class="kicker">' + esc(t('teach_session_next')) + (v.optional ? ' · ' +
           esc(t('teach_session_optional')) : '') + '</div><h2>' + esc(name(v)) + '</h2><p class="lead">' + esc(v.title) + ' · ' +

@@ -35,13 +35,17 @@ final class sessions {
     public const ENTRY = 'entrada';
 
     /** @var string[] What a step launches. */
-    public const ACTIONS = ['enter', 'card', 'scene', 'game', 'battle', 'timer', 'pacts', 'light', 'challenge', 'none'];
+    public const ACTIONS = ['enter', 'card', 'scene', 'game', 'battle', 'timer', 'pacts', 'light', 'challenge', 'council',
+        'none'];
 
     /**
      * @var string[] What the class screen shows for a session: the place entered, the card, a timer, the commitments, a
-     * scene, or the lantern lit.
+     * scene, the lantern lit, or the teams in council.
      */
-    public const SHOWS = ['enter', 'card', 'timer', 'pacts', 'scene', 'light'];
+    public const SHOWS = ['enter', 'card', 'timer', 'pacts', 'scene', 'light', 'council'];
+
+    /** @var int Minutes of the council of the teams. */
+    public const COUNCIL = 2;
 
     /** @var int Seconds a lantern waits ready before it lights by itself, if nobody lights it. */
     public const READY_WAIT = DAYSECS;
@@ -259,7 +263,7 @@ final class sessions {
         }
         $open->shown = $show !== '' ? $show : null;
         $open->shownat = $now ?? time();
-        $open->minutes = $show === 'timer' ? max(1, min(90, $minutes)) : 0;
+        $open->minutes = $show === 'timer' ? max(1, min(90, $minutes)) : ($show === 'council' ? self::COUNCIL : 0);
         $open->target = $table ? $target : 0;
         $DB->update_record(self::T . 'session', (object) ['id' => $open->id, 'shown' => $open->shown,
             'shownat' => $open->shownat, 'minutes' => $open->minutes, 'target' => $open->target]);
@@ -443,7 +447,30 @@ final class sessions {
         if ($open->shown === 'pacts') {
             $out['pacts'] = self::pacts($courseid, $mission);
         }
+        if ($open->shown === 'council') {
+            $out['council'] = self::council($courseid, $mission, $now ?? time());
+        }
         return $out;
+    }
+
+    /**
+     * The council of the teams, for the class screen: the place of today and, by team, the role its council chose to
+     * start the hand (empty: still in council). No names.
+     *
+     * @param int $courseid
+     * @param \stdClass $mission
+     * @param int $now
+     * @return array place, teams (name, first).
+     */
+    private static function council(int $courseid, \stdClass $mission, int $now): array {
+        $chapter = pacts::chapter($mission);
+        $firsts = teams::firsts($courseid, $now);
+        $teams = [];
+        $grouping = (int) (regions::get($courseid)->groupingid ?? 0);
+        foreach (groups_get_all_groups($courseid, 0, $grouping) as $group) {
+            $teams[] = ['name' => format_string($group->name), 'first' => $firsts[(int) $group->id] ?? ''];
+        }
+        return ['place' => $chapter ? self::place($mission, (string) $chapter->code) : '', 'teams' => $teams];
     }
 
     /**
