@@ -970,6 +970,66 @@ body.still .opening-lantern {
   font-size: 14px;
 }
 
+/* A card to fill in: the gaps, and the pieces to take to it. */
+.fill-card {
+  display: grid;
+  gap: 8px;
+  max-width: 420px;
+  margin: 8px auto 12px;
+  padding: 14px;
+  border-radius: 12px;
+  background: #f4ead2;
+  color: #2b2418;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .35);
+}
+
+.fill-card.over {
+  outline: 3px solid var(--lantern);
+}
+
+.fill-card-title {
+  font-family: var(--f-title);
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+.card-gap {
+  display: block;
+  min-height: 34px;
+  border-bottom: 2px dashed rgba(43, 36, 24, .45);
+}
+
+.card-gap.full {
+  width: 100%;
+  padding: 6px 8px;
+  border: 0;
+  border-bottom: 2px solid rgba(43, 36, 24, .6);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.card-pieces {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.card-piece {
+  touch-action: none;
+}
+
+.card-piece.dragging {
+  position: fixed;
+  z-index: 10000;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  opacity: .9;
+}
+
 /* A find: things to find on a picture. The spots do not show until they are found. */
 .find-map {
   position: relative;

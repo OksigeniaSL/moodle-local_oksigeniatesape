@@ -50,7 +50,7 @@ final class edits {
 
     /** @var string[] Fields with one text, in a scene, a node or an element of a list. */
     private const TEXTS = ['title', 'whatif', 'text', 'prompt', 'label', 'say', 'feedback', 'intro', 'offscreen', 'do', 'materials',
-        'name', 'claim', 'laugh', 'weakness', 'why', 'ask', 'expect', 'mistake', 'redirect', 'spare'];
+        'name', 'claim', 'laugh', 'weakness', 'why', 'ask', 'expect', 'mistake', 'redirect', 'spare', 'cardtitle'];
 
     /** @var string[] Lists of elements with an id, in a node. */
     private const ELEMENTS = ['options', 'items', 'bins', 'steps', 'spots'];
@@ -392,7 +392,7 @@ final class edits {
         self::field($texts, '', $definition, ['title', 'whatif']);
         foreach ($definition['nodes'] ?? [] as $nodeid => $node) {
             $base = 'nodes/' . $nodeid;
-            self::field($texts, $base, $node, ['text', 'prompt']);
+            self::field($texts, $base, $node, ['text', 'prompt', 'cardtitle']);
             foreach (array_values($node['hints'] ?? []) as $i => $hint) {
                 if (self::is_text($hint)) {
                     $texts[$base . '/hints/' . $i] = $hint;

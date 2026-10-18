@@ -24,10 +24,15 @@
   },
   "elegir": {
    "type": "choice",
-   "prompt": "¿Qué cinco apartados ponemos en la ficha?",
+   "prompt": "¿Qué cinco apartados ponemos en la ficha? Llévalos a la ficha en blanco.",
    "select": {
     "min": 5,
     "max": 5
+   },
+   "layout": "card",
+   "cardtitle": {
+    "valley": "Ficha de la guía de campo",
+    "azara": "Ficha del cuaderno de campo"
    },
    "hints": [
     "La ficha cuenta lo que se puede observar del ser vivo, no lo que pensamos nosotros de él.",

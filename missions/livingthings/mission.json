@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 50,
+ "version": 51,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 51,
+   "kind": "improvement",
+   "date": "2026-10-18",
+   "text": "La ficha de «La ficha de la guía» se rellena llevando cada apartado a una ficha en blanco"
+  },
   {
    "version": 50,
    "kind": "improvement",

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.120.0 (2026-10-18)
+
+- **A card to fill in.** A decision of several can be told as a blank card (`layout: card`): as many gaps as pieces go
+  in, the pieces below; each one is taken to the card by dragging it or with a touch (or Enter), and goes back with a
+  touch. Full, it is handed in, and the world answers for each piece as in any decision of several. On the class
+  screen it stays a list.
+- Mission «Los seres vivos» v51: the card of «La ficha de la guía» is filled in like that.
+
 ## 0.119.0 (2026-10-18)
 
 - **Three new verbs for scenes.** `find`: things to find on a picture, touched one by one; what is not one of them

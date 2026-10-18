@@ -1420,6 +1420,11 @@
       var min = (n.select && n.select.min) || max;
       var multi = max > 1;
       var selected = [];
+      // A card to fill in, on a device: the same choice, played by taking each piece to it.
+      if (n.layout === 'card' && multi && !cm) {
+        cardChoice(n, min, max);
+        return;
+      }
       // At the class screen the phones vote by letter: the options stay where they are.
       var tried = cm ? [] : run.tried[run.node] || [];
       // What contradicts what the answers told is crossed out by itself: who asked well arrives with one candidate.
@@ -1907,6 +1912,136 @@
             }
           };
         });
+      }
+      draw();
+    }
+
+    /**
+     * A choice told as a card to fill in (`layout: card`): a blank card with as many gaps as pieces go in, and the
+     * pieces below. A piece is taken to the card by dragging it or with a touch (or Enter); touched in the card, it goes
+     * back. With the card full, it is handed in, and the world answers for each piece as in any choice of several.
+     *
+     * @param {Object} n The node.
+     * @param {number} min
+     * @param {number} max
+     */
+    function cardChoice(n, min, max) {
+      var placed = [];
+      function pick(id) {
+        return n.options.filter(function(o) {
+          return o.id === id;
+        })[0];
+      }
+      var usable = n.options.filter(function(o) {
+        return has(o.requires);
+      });
+      function draw() {
+        var gaps = [];
+        for (var i = 0; i < max; i++) {
+          var o = placed[i] ? pick(placed[i]) : null;
+          gaps.push(o ? '<button type="button" class="card-gap full" data-back="' + esc(o.id) + '" aria-label="' +
+            esc(t('app_card_back', tx(o.label))) + '">' + esc(tx(o.label)) + '</button>' :
+            '<span class="card-gap" aria-hidden="true"></span>');
+        }
+        var body = show((n.image ? picture(n.image, data) : '') + pieces(n) + '<p class="scene-prompt">' + esc(tx(n.prompt)) +
+          '</p><div class="fill-card" data-card><div class="fill-card-title">' + esc(tx(n.cardtitle || '')) + '</div>' +
+          gaps.join('') + '</div><div class="card-pieces">' + usable.filter(function(o) {
+            return placed.indexOf(o.id) < 0;
+          }).map(function(o) {
+            return '<button type="button" class="chip card-piece" data-piece="' + esc(o.id) + '">' + esc(tx(o.label)) +
+              '</button>';
+          }).join('') + '</div><div class="actions"><button class="btn btn-main" data-confirm' +
+          (placed.length < min ? ' disabled' : '') + '>' + esc(t('app_card_hand')) + '</button></div><div data-out></div>');
+        hintArea(n, body);
+        roleBar(n, body);
+        var card = body.querySelector('[data-card]');
+        var put = function(id) {
+          if (placed.length < max && placed.indexOf(id) < 0) {
+            placed.push(id);
+            if (T.fx) {
+              T.fx.sound('tap');
+            }
+            draw();
+          }
+        };
+        body.querySelectorAll('[data-piece]').forEach(function(b) {
+          b.onclick = function() {
+            put(b.dataset.piece);
+          };
+          // Dragged with a finger or the mouse: let go over the card and it goes in.
+          b.onpointerdown = function(ev) {
+            var ghost = null;
+            var moved = false;
+            var sx = ev.clientX;
+            var sy = ev.clientY;
+            var move = function(e) {
+              if (!moved && Math.abs(e.clientX - sx) + Math.abs(e.clientY - sy) < 8) {
+                return;
+              }
+              if (!ghost) {
+                moved = true;
+                ghost = b.cloneNode(true);
+                ghost.classList.add('dragging');
+                document.body.appendChild(ghost);
+              }
+              ghost.style.left = e.clientX + 'px';
+              ghost.style.top = e.clientY + 'px';
+              var r = card.getBoundingClientRect();
+              card.classList.toggle('over', e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top &&
+                e.clientY <= r.bottom);
+            };
+            var up = function(e) {
+              document.removeEventListener('pointermove', move);
+              document.removeEventListener('pointerup', up);
+              if (ghost) {
+                ghost.remove();
+              }
+              var r = card.getBoundingClientRect();
+              card.classList.remove('over');
+              if (moved && e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) {
+                put(b.dataset.piece);
+              }
+              if (moved) {
+                // A drag is not a touch as well.
+                b.onclick = null;
+                setTimeout(function() {
+                  b.onclick = function() {
+                    put(b.dataset.piece);
+                  };
+                }, 0);
+              }
+            };
+            document.addEventListener('pointermove', move);
+            document.addEventListener('pointerup', up);
+          };
+        });
+        body.querySelectorAll('[data-back]').forEach(function(b) {
+          b.onclick = function() {
+            placed.splice(placed.indexOf(b.dataset.back), 1);
+            draw();
+          };
+        });
+        body.querySelector('[data-confirm]').onclick = function() {
+          body.querySelectorAll('button').forEach(function(x) {
+            x.disabled = true;
+          });
+          run.events.push(by({n: run.node, pick: placed.slice()}));
+          placed.forEach(function(id) {
+            (pick(id).effects || []).forEach(function(e) {
+              run.extra += e.extraquestion || 0;
+              if (e.flag) {
+                run.flags.push(e.flag);
+              }
+              clue(e);
+            });
+            if (pick(id).correct === false) {
+              mistake();
+            }
+          });
+          reveal(body, placed.map(pick), function() {
+            go(n.next);
+          });
+        };
       }
       draw();
     }
