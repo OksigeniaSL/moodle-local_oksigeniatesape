@@ -507,6 +507,12 @@ final class view {
                 'chapters' => $chapters,
                 // The final battle, if the mission saves something for the end, and the text of its end.
                 'final' => !empty($mission->data['battle']['final']),
+                // The knots of the Embrollo, for their cards on paper: what each one claims and what undoes it.
+                'knots' => array_values(array_filter(array_map(function ($k) use ($mission) {
+                    $knot = knots::get($mission, (string) $k['code']);
+                    return $knot ? ['name' => $knot['name'], 'claim' => $knot['claim'], 'weakness' => $knot['weakness'],
+                        'why' => $knot['why']] : null;
+                }, knots::usable($mission)))),
                 // How much the class weakened the Embrollo for it.
                 'expedition' => expedition::strength($courseid) + ['known' => array_column(expedition::known($courseid), 'name')],
                 'ending' => missions::text($mission->data['ending'] ?? '', $mission->skin, $mission->variant),

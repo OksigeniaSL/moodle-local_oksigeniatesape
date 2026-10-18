@@ -91,6 +91,12 @@ final class get_board extends external_api {
                     ]), 'The decisions of at least half of the class in this place', VALUE_DEFAULT, []),
                 ])),
                 'final' => new external_value(PARAM_BOOL, 'The mission saves something for a final battle', VALUE_DEFAULT, false),
+                'knots' => new external_multiple_structure(new external_single_structure([
+                    'name' => new external_value(PARAM_TEXT, 'Who carries it'),
+                    'claim' => new external_value(PARAM_TEXT, 'What the Embrollo claims'),
+                    'weakness' => new external_value(PARAM_TEXT, 'What undoes it'),
+                    'why' => new external_value(PARAM_TEXT, 'Why'),
+                ]), 'The knots of the Embrollo, for their cards on paper', VALUE_DEFAULT, []),
                 'expedition' => new external_single_structure([
                     'strength' => new external_value(PARAM_FLOAT, 'From 0 to 1'),
                     'weaker' => new external_value(PARAM_INT, 'Percentage of threads the Embrollo starts the final without'),

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.123.0 (2026-10-18)
+
+- **Two printables more, for a class without devices.** On the class screen: a hero sheet of one page for each
+  student with a character (portrait, name, role and what it does, level and team, their creature, boxes for their
+  energy and their breath, lines for their talents and for what their team carries), and the cards of the knots of the
+  Embrollo, four to a page (what it claims, what undoes it and why), for the battle with cards and for the wall.
+
 ## 0.122.0 (2026-10-18)
 
 - **The friends of the expedition.** The characters of a mission (`friends`) remember the pages of the Great Book a

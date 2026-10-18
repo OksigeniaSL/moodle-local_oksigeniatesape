@@ -1417,7 +1417,7 @@
   function printCard() {
     return '<section class="card board-print"><div class="kicker">' + esc(t('board_print')) + '</div><p class="help-soft">' +
       esc(t('board_print_help')) + '</p><div class="actions board-small">' +
-      ['votes', 'teams', 'chars', 'diplomas'].map(function(k) {
+      ['votes', 'teams', 'chars', 'heroes', 'knots', 'diplomas'].map(function(k) {
         return '<button class="btn btn-soft" data-print="' + k + '">' + esc(t('board_print_' + k)) + '</button>';
       }).join('') + '</div></section>';
   }
@@ -1459,6 +1459,67 @@
     }).join('');
   }
 
+  /**
+   * A hero sheet of one page for each student with a character: their screen when there is no tablet, and what they
+   * take home. Portrait, name, role and what it does, their creature, boxes to mark their energy and breath, and lines
+   * for their talents and what their team carries.
+   *
+   * @param {string} fam The family of names of the region.
+   * @return {string}
+   */
+  function heroSheets(fam) {
+    var boxes = function(n) {
+      return '<span class="boxes" aria-hidden="true">' + new Array(n + 1).join('<i></i>') + '</span>';
+    };
+    var lines = function(n) {
+      return new Array(n + 1).join('<span class="write-line"></span>');
+    };
+    return state.cls.students.filter(function(s) {
+      return s.character;
+    }).map(function(s) {
+      var c = s.character;
+      var team = state.cls.teams.filter(function(x) {
+        return x.id === s.teamid;
+      })[0];
+      var pet = '';
+      try {
+        pet = JSON.parse(c.creature || '{}').name || '';
+      } catch (e) {
+        pet = '';
+      }
+      return '<div class="sheet-page hero-sheet"><div class="hero-top"><span class="face">' + portrait(s) + '</span><div>' +
+        '<p class="diploma-kicker">Tesapé</p><h1>' + esc(s.fullname) + '</h1><p class="lead">' +
+        esc(T.roleName(fam, c.role, c.nameform)) + ' · ' + esc(t('app_level')) + ' ' + c.level + (team ? ' · ' +
+        esc(team.name) : '') + '</p><p><b>' + esc(t('board_hero_does')) + ':</b> ' + esc(t('app_role_does_' + c.role)) +
+        '</p></div></div>' + (c.creature ? '<div class="hero-pet"><span class="pet-art">' +
+        T.creature(c.creature, c.creaturestage) + '</span><p><b>' + esc(t('board_hero_creature')) + ':</b> ' + esc(pet) +
+        '</p></div>' : '') + '<div class="hero-boxes"><p><b>' + esc(t('app_energy')) + '</b> ' + boxes(10) + '</p><p><b>' +
+        esc(t('board_hero_breath')) + '</b> ' + boxes(5) + '</p></div><div class="hero-write"><p><b>' +
+        esc(t('board_hero_talents')) + '</b></p>' + lines(3) + '<p><b>' + esc(t('board_hero_items')) + '</b></p>' + lines(2) +
+        '</div><p class="sheet-foot">Tesapé · ' + esc(cfg.coursename) + '</p></div>';
+    }).join('');
+  }
+
+  /**
+   * The cards of the knots of the Embrollo, four to a page: what each one claims, what undoes it and why. For the
+   * battle with cards and for the wall of the class.
+   *
+   * @return {string}
+   */
+  function knotCards() {
+    var knots = (state.board.mission && state.board.mission.knots) || [];
+    var pages = '';
+    for (var i = 0; i < knots.length; i += 4) {
+      pages += '<div class="sheet-page knot-cards">' + knots.slice(i, i + 4).map(function(k) {
+        return '<div class="knot-card"><span class="battle-mini" aria-hidden="true">' + T.embrollo(1) + '</span><h2>' +
+          esc(k.name) + '</h2><p><b>' + esc(t('board_knot_says')) + '</b> «' + esc(k.claim.replace(/^«|»$/g, '')) + '»</p>' +
+          '<p><b>' + esc(t('board_knot_undo')) + '</b> ' + esc(k.weakness) + '</p><p class="knot-why">' + esc(k.why) +
+          '</p></div>';
+      }).join('') + '</div>';
+    }
+    return pages;
+  }
+
   function drawPrint() {
     var cls = state.cls;
     var fam = cls.region.family;
@@ -1480,6 +1541,10 @@
       }).join('');
     } else if (state.print === 'diplomas') {
       pages = diplomas(fam);
+    } else if (state.print === 'heroes') {
+      pages = heroSheets(fam);
+    } else if (state.print === 'knots') {
+      pages = knotCards();
     } else {
       var chars = cls.students.filter(function(s) {
         return s.character;

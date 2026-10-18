@@ -970,6 +970,84 @@ body.still .opening-lantern {
   font-size: 14px;
 }
 
+/* The hero sheet of one page and the cards of the knots, on paper. */
+.hero-sheet .hero-top {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+}
+
+.hero-sheet .hero-top .face {
+  flex: none;
+  width: 150px;
+  height: 150px;
+}
+
+.hero-sheet h1 {
+  margin: 0;
+}
+
+.hero-pet {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin: 14px 0;
+}
+
+.hero-pet .pet-art {
+  width: 90px;
+  height: 90px;
+}
+
+.hero-boxes .boxes {
+  display: inline-flex;
+  gap: 6px;
+  vertical-align: middle;
+}
+
+.hero-boxes .boxes i {
+  width: 22px;
+  height: 22px;
+  border: 2px solid #333;
+  border-radius: 4px;
+}
+
+.write-line {
+  display: block;
+  height: 28px;
+  border-bottom: 1px solid #555;
+}
+
+.knot-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.knot-card {
+  padding: 14px;
+  border: 3px solid #333;
+  border-radius: 12px;
+  break-inside: avoid;
+}
+
+.knot-card .battle-mini {
+  display: block;
+  width: 70px;
+  height: 70px;
+  margin: 0 auto;
+}
+
+.knot-card h2 {
+  margin: 6px 0;
+  text-align: center;
+}
+
+.knot-why {
+  font-size: .9em;
+  font-style: italic;
+}
+
 /* The friends of the expedition, in the book. */
 .friends-card .friend .face img {
   width: 48px;
