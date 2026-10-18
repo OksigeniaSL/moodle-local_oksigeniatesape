@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 34,
+ "version": 35,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 35,
+   "kind": "improvement",
+   "date": "2026-10-18",
+   "text": "Encuentros: en cada lugar asoma un ser al día (24 en total), que se reconoce con tres pistas y va a la guía de campo"
+  },
   {
    "version": 34,
    "kind": "improvement",
@@ -409,6 +415,362 @@
    "name": "el hilo desenredado",
    "description": "Lo que queda del Embrollo cuando la clase lo vence: un hilo limpio y bien recogido."
   }
+ },
+ "encounters": [
+  {
+   "id": "caracol",
+   "place": "claro",
+   "name": "el caracol",
+   "group": "molusco",
+   "clues": [
+    "Cuando hace demasiado frío o calor, tapo la entrada de mi casa con una capa que fabrico yo y duermo semanas.",
+    "Tengo dos pares de antenas, y en las de arriba, los ojos.",
+    "Llevo mi casa a cuestas: una concha enrollada en espiral."
+   ],
+   "fact": "Un caracol no puede salir de su concha: está unida a su cuerpo y crece con él. Si se le rompe un poco, la repara él mismo."
+  },
+  {
+   "id": "hormiga",
+   "place": "claro",
+   "name": "la hormiga",
+   "group": "insecto",
+   "clues": [
+    "Vivo con miles de hermanas, y todas somos hijas de la misma reina.",
+    "Dejo un rastro de olor en el suelo para que las demás sepan dónde hay comida.",
+    "Tengo la cintura finísima y camino en fila, cargando migas más grandes que yo."
+   ],
+   "fact": "Hay hormigas que cortan hojas y se las llevan a casa, pero no se las comen: las usan para cultivar un hongo, y se comen el hongo."
+  },
+  {
+   "id": "paloma",
+   "place": "claro",
+   "name": "la paloma",
+   "group": "ave",
+   "clues": [
+    "Si me sueltan lejos de mi casa, sé volver a ella, aunque esté a cientos de kilómetros.",
+    "Bebo sorbiendo el agua sin levantar la cabeza, algo que casi ningún ave sabe hacer.",
+    "Paseo por las plazas picoteando las migas que se te caen, y hago «currucú»."
+   ],
+   "fact": "Las palomas alimentan a sus pichones con una papilla que fabrican en el buche, la «leche de buche». Aun así, son aves: tienen plumas y nacen de huevos."
+  },
+  {
+   "id": "dientedeleon",
+   "place": "claro",
+   "name": "el diente de león",
+   "group": "planta",
+   "clues": [
+    "Crezco en cualquier rincón: en el césped, en las cunetas y hasta entre las baldosas.",
+    "Lo que parece una sola flor amarilla son muchas florecillas juntas.",
+    "Cuando acabo de florecer me convierto en una bola blanca, y si soplas, mis semillas salen volando con su paracaídas."
+   ],
+   "fact": "Abre sus flores con la luz de la mañana y las cierra al atardecer y en los días nublados, como si se despertara y se fuera a dormir."
+  },
+  {
+   "id": "raton",
+   "place": "biblioteca",
+   "name": "el ratón",
+   "group": "mamifero",
+   "clues": [
+    "Mis dientes de delante crecen sin parar, y por eso tengo que roer todo el tiempo.",
+    "Tanteo la oscuridad con mis bigotes y quepo por agujeros pequeñísimos.",
+    "Soy pequeño, de orejas redondas y cola larga y fina, y los gatos me persiguen."
+   ],
+   "fact": "A quien lee mucho se le llama «ratón de biblioteca». Los ratones de verdad no leen, pero roen el papel para hacerse el nido."
+  },
+  {
+   "id": "pececillodeplata",
+   "place": "biblioteca",
+   "name": "el pececillo de plata",
+   "group": "insecto",
+   "clues": [
+    "Vivo en los rincones oscuros y húmedos de las casas, y salgo de noche.",
+    "Tengo seis patas, dos antenas largas y tres hilos finos en la punta de la cola.",
+    "Me como el papel y el pegamento de los libros viejos, y corro tan deprisa que parece que nado."
+   ],
+   "fact": "Le pusieron nombre de pez por su brillo y por cómo se escurre, pero es un insecto: tiene seis patas. Puede pasar meses sin comer."
+  },
+  {
+   "id": "moho",
+   "place": "biblioteca",
+   "name": "el moho",
+   "group": "hongo",
+   "clues": [
+    "Nazco de esporas tan pequeñas que viajan por el aire sin que las veas.",
+    "No fabrico mi alimento: crezco encima de lo que me como, sea pan, fruta o papel húmedo.",
+    "Soy la pelusa verde, blanca o negra que sale en el pan viejo."
+   ],
+   "fact": "En 1928, Alexander Fleming vio que un moho verdoso, pariente del que sale en el pan viejo, acababa con las bacterias que tenía alrededor. Así encontró la penicilina, uno de los primeros medicamentos contra las infecciones."
+  },
+  {
+   "id": "arana",
+   "place": "biblioteca",
+   "name": "la araña",
+   "group": "aracnido",
+   "clues": [
+    "De pequeña, a veces suelto un hilo al viento y viajo por el aire colgada de él.",
+    "Tengo el cuerpo en dos partes y ocho patas, y no tengo antenas.",
+    "Tejo una red de seda en los rincones y espero a que un insecto se quede pegado."
+   ],
+   "fact": "Muchas arañas se comen su tela vieja para aprovechar la seda, y con ella tejen otra nueva."
+  },
+  {
+   "id": "ciervo",
+   "place": "bosque",
+   "name": "el ciervo",
+   "group": "mamifero",
+   "clues": [
+    "Como hierba y hojas, y rumio: vuelvo a masticar lo que ya me había tragado.",
+    "Mi huella parece un corazón partido en dos: en cada pata apoyo dos dedos con pezuña.",
+    "Llevo en la cabeza unas cuernas con muchas puntas, como si fueran ramas."
+   ],
+   "fact": "Al macho se le caen las cuernas cada año y le salen otras nuevas. Mientras crecen, las cubre una piel suave con pelo, como de terciopelo."
+  },
+  {
+   "id": "pajarocarpintero",
+   "place": "bosque",
+   "name": "el pájaro carpintero",
+   "group": "ave",
+   "clues": [
+    "Me agarro a los troncos con dos dedos hacia delante y dos hacia atrás, y me apoyo en mi cola dura.",
+    "Saco las larvas de insectos que se esconden bajo la corteza con mi lengua larga y pegajosa.",
+    "Golpeo los troncos con el pico, toc, toc, toc, para buscar comida y hacer el agujero de mi nido."
+   ],
+   "fact": "Su lengua es tan larga que, cuando la guarda, los huesecillos que la sostienen le rodean el cráneo por debajo de la piel."
+  },
+  {
+   "id": "salamandra",
+   "place": "bosque",
+   "name": "la salamandra",
+   "group": "anfibio",
+   "requires": {
+    "item": "lantern"
+   },
+   "clues": [
+    "Salgo las noches de lluvia; de día me escondo bajo piedras y troncos húmedos.",
+    "Mi piel es húmeda y sin escamas, y por ella también respiro.",
+    "Parezco una lagartija, pero mi piel es brillante, y muchas veces negra con manchas amarillas."
+   ],
+   "fact": "Si pierde una pata, puede crecerle otra entera, con sus huesos y sus dedos. Es de los pocos animales con columna vertebral capaces de hacerlo."
+  },
+  {
+   "id": "seta",
+   "place": "bosque",
+   "name": "la seta",
+   "group": "hongo",
+   "clues": [
+    "Casi todo mi cuerpo vive escondido bajo tierra, como una red de hilos finísimos.",
+    "Ayudo a deshacer las hojas caídas y la madera muerta para que vuelvan a la tierra.",
+    "Asomo en otoño, después de la lluvia, con un pie y un sombrero."
+   ],
+   "fact": "Lo que ves es solo una parte del hongo. En un bosque de América del Norte vive uno cuyos hilos ocupan bajo tierra más de mil campos de fútbol: es uno de los seres vivos más grandes del mundo."
+  },
+  {
+   "id": "girasol",
+   "place": "jardin",
+   "name": "el girasol",
+   "group": "planta",
+   "clues": [
+    "Soy una planta que, en un solo verano, puede crecer más alta que tú.",
+    "Mi flor es un gran disco hecho de cientos de florecillas, y cada una de las del centro da una semilla.",
+    "Tengo una flor enorme y amarilla, y mis semillas se comen tostadas o se usan para hacer aceite."
+   ],
+   "fact": "De joven, su cabeza sigue al sol de este a oeste a lo largo del día y por la noche se vuelve otra vez hacia el este. Cuando florece, se queda mirando siempre hacia donde sale el sol."
+  },
+  {
+   "id": "mariposa",
+   "place": "jardin",
+   "name": "la mariposa",
+   "group": "insecto",
+   "clues": [
+    "Pruebo el sabor de las hojas con las patas, para saber dónde poner mis huevos.",
+    "Para chupar el néctar, desenrollo una trompa larga que llevo enrollada como un muelle.",
+    "De pequeña fui una oruga; después me encerré en una crisálida y salí con alas de colores."
+   ],
+   "fact": "Sus alas están cubiertas de miles de escamas diminutas, puestas como las tejas de un tejado. El polvillo que queda en los dedos si las tocas son esas escamas."
+  },
+  {
+   "id": "babosa",
+   "place": "jardin",
+   "name": "la babosa",
+   "group": "molusco",
+   "clues": [
+    "En la lengua tengo miles de dientecitos con los que raspo las hojas.",
+    "Necesito estar siempre húmeda: de día me escondo y salgo de noche o cuando llueve.",
+    "Soy como un caracol sin concha, y dejo un rastro brillante y pegajoso."
+   ],
+   "fact": "Muchas babosas llevan una concha pequeñita escondida bajo la piel de la espalda: es lo que les queda de la concha de sus antepasados."
+  },
+  {
+   "id": "lombriz",
+   "place": "jardin",
+   "name": "la lombriz",
+   "group": "gusano",
+   "clues": [
+    "No tengo pulmones: respiro por la piel, y por eso la necesito siempre húmeda.",
+    "No tengo ojos, pero noto la luz y huyo de ella.",
+    "Tengo el cuerpo largo, blando y hecho de anillos, y cavo túneles en la tierra."
+   ],
+   "fact": "Charles Darwin pasó muchos años estudiando las lombrices y les dedicó su último libro. Descubrió que remueven y abonan la tierra sin parar."
+  },
+  {
+   "id": "martinpescador",
+   "place": "lago",
+   "name": "el martín pescador",
+   "group": "ave",
+   "clues": [
+    "Me paso mucho rato quieto en una rama sobre el agua, mirando hacia abajo.",
+    "Hago mi nido al final de un túnel que cavo en la tierra de la orilla.",
+    "Me lanzo de cabeza al agua como una flecha y salgo con un pez en el pico; mis plumas son de colores brillantes."
+   ],
+   "fact": "Su pico entra en el agua casi sin salpicar. Los ingenieros de un tren bala japonés copiaron su forma para que el tren hiciera menos ruido al salir de los túneles."
+  },
+  {
+   "id": "carpa",
+   "place": "lago",
+   "name": "la carpa",
+   "group": "pez",
+   "clues": [
+    "Busco comida removiendo el barro del fondo, y como de todo: plantas, larvas y caracolillos.",
+    "Junto a la boca tengo cuatro bigotes cortos que me ayudan a encontrar comida.",
+    "Mis parientes de colores, los koi, nadan en los estanques de muchos jardines."
+   ],
+   "fact": "No tiene dientes en la boca, sino al fondo de la garganta, y con ellos tritura las semillas y las conchas que se traga."
+  },
+  {
+   "id": "nenufar",
+   "place": "lago",
+   "name": "el nenúfar",
+   "group": "planta",
+   "clues": [
+    "Mis raíces están en el barro del fondo, pero mis hojas suben hasta la superficie.",
+    "Los poros de mis hojas están por encima, y no por debajo como en casi todas las plantas.",
+    "Mis hojas, grandes y redondas, flotan en el agua quieta, y mi flor se abre sobre ellas."
+   ],
+   "fact": "Sus tallos tienen por dentro canales llenos de aire, como pajitas, que llevan el aire hasta las raíces, enterradas en el barro."
+  },
+  {
+   "id": "luciernaga",
+   "place": "lago",
+   "name": "la luciérnaga",
+   "group": "insecto",
+   "clues": [
+    "De larva cazo caracoles: les echo un jugo que los deshace y luego me los bebo.",
+    "Aunque no lo parezca, soy un escarabajo: tengo seis patas y el cuerpo en tres partes.",
+    "En las noches de verano, el final de mi cuerpo brilla en la oscuridad para encontrar pareja."
+   ],
+   "fact": "Su brillo es una luz fría: casi no da calor, al contrario que una bombilla de las antiguas."
+  },
+  {
+   "id": "murcielago",
+   "place": "torre",
+   "name": "el murciélago",
+   "group": "mamifero",
+   "requires": {
+    "item": "lantern"
+   },
+   "clues": [
+    "Paso el día durmiendo en sitios oscuros y salgo al anochecer a cazar insectos.",
+    "Mis alas son de piel, estirada entre los dedos larguísimos de mis manos.",
+    "Duermo colgado de los pies, cabeza abajo, y soy el único mamífero que vuela de verdad."
+   ],
+   "fact": "En dos bibliotecas antiguas de Portugal viven murciélagos: de noche se comen los insectos que estropearían los libros."
+  },
+  {
+   "id": "lechuza",
+   "place": "torre",
+   "name": "la lechuza",
+   "group": "ave",
+   "requires": {
+    "item": "lantern"
+   },
+   "clues": [
+    "Vuelo sin hacer ningún ruido: el borde de mis plumas es suave y con flecos.",
+    "Mis ojos miran hacia delante y no puedo moverlos: para mirar a un lado, giro la cabeza.",
+    "Anido en campanarios y desvanes, y tengo la cara blanca con forma de corazón."
+   ],
+   "fact": "Oye tan bien que puede cazar un ratón en la oscuridad total, guiándose solo por el ruido que hace al moverse."
+  },
+  {
+   "id": "musgo",
+   "place": "torre",
+   "name": "el musgo",
+   "group": "planta",
+   "clues": [
+    "No tengo flores ni semillas: me reproduzco con esporas.",
+    "No tengo raíces de verdad: me sujeto a las piedras con unos pelillos finísimos.",
+    "Formo una alfombra verde y blanda sobre piedras, tejados y troncos, en los rincones húmedos y a la sombra."
+   ],
+   "fact": "Algunos musgos pueden quedarse secos del todo durante meses, como muertos. En cuanto vuelven a mojarse, se abren y se ponen verdes otra vez."
+  },
+  {
+   "id": "lagartija",
+   "place": "torre",
+   "name": "la lagartija",
+   "group": "reptil",
+   "clues": [
+    "Por la mañana me tumbo al sol en las piedras: sin su calor, me muevo despacio.",
+    "Tengo la piel seca, cubierta de escamas pequeñitas, y respiro por pulmones.",
+    "Si me agarran por la cola, la suelto y escapo, y después me crece otra."
+   ],
+   "fact": "La cola que suelta sigue moviéndose un rato para despistar al que la persigue. La que le crece después ya no tiene huesos por dentro, sino cartílago."
+  }
+ ],
+ "encounterdecoys": {
+  "mamifero": [
+   "el erizo",
+   "el conejo",
+   "el zorro"
+  ],
+  "ave": [
+   "el búho",
+   "el gorrión",
+   "la golondrina"
+  ],
+  "reptil": [
+   "la culebra",
+   "la tortuga",
+   "el camaleón"
+  ],
+  "anfibio": [
+   "la rana",
+   "el sapo",
+   "el tritón"
+  ],
+  "pez": [
+   "la trucha",
+   "el salmón",
+   "la anguila"
+  ],
+  "insecto": [
+   "la mariquita",
+   "el saltamontes",
+   "la abeja"
+  ],
+  "aracnido": [
+   "el escorpión",
+   "la garrapata",
+   "el ácaro"
+  ],
+  "molusco": [
+   "el pulpo",
+   "la almeja",
+   "el mejillón"
+  ],
+  "gusano": [
+   "la sanguijuela",
+   "la oruga",
+   "el ciempiés"
+  ],
+  "planta": [
+   "el helecho",
+   "la ortiga",
+   "el trébol"
+  ],
+  "hongo": [
+   "el champiñón",
+   "la levadura",
+   "el níscalo"
+  ]
  },
  "stains": {
   "complaints": [

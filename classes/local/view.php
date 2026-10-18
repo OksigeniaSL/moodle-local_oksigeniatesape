@@ -277,6 +277,7 @@ final class view {
                 'after' => (string) ($sum['after'] ?? ''),
             ];
         };
+        $todaycode = $current ? (string) (pacts::chapter($mission)->code ?? '') : '';
         // The Embrollo of each place: the first knot of the place, for when the student closes it.
         $codes = array_column($data['chapters'] ?? [], 'code');
         $embrollos = [];
@@ -319,6 +320,10 @@ final class view {
                 'challengeid' => (int) ($challenges[$chapter->id] ?? 0),
                 'letter' => $chapter->litat ? today::letter($mission, $chapter->code) : '',
                 'teaser' => $chapter->litat ? today::teaser($mission, $chapter->code) : '',
+                // A being that peeks out today, in a place the class has opened (lit, or the place of today).
+                'encounter' => $current && ($chapter->litat || $chapter->code === $todaycode) ?
+                    (($being = encounters::today($char, $mission, (string) $chapter->code)) ? encounters::view($being, $mission) :
+                    null) : null,
                 // The Embrollo comes out when the student lights the lantern of the place with its core scene.
                 'embrollo' => isset($embrollos[$chapter->code]) ? $embrollos[$chapter->code] + ['letter' =>
                     today::letter($mission, $chapter->code)] : null,
@@ -331,8 +336,10 @@ final class view {
                 // The quests of the place, for whoever wants more, whatever their step.
                 'quests' => array_map($sceneview, scenes::quests($here)),
             ];
-            if ($list[count($list) - 1]['embrollo'] === null) {
-                unset($list[count($list) - 1]['embrollo']);
+            foreach (['embrollo', 'encounter'] as $optional) {
+                if ($list[count($list) - 1][$optional] === null) {
+                    unset($list[count($list) - 1][$optional]);
+                }
             }
         }
         $pages = [];
@@ -358,6 +365,11 @@ final class view {
             'mapheight' => (int) ($data['maplayers']['height'] ?? 0),
             'chapters' => $list,
             'pages' => $pages,
+            // The field guide of the beings met: place by place, how many there are and which the student has.
+            'guide' => $current ? array_map(fn($g) => $g + ['name' => missions::text(
+                array_column($data['chapters'] ?? [], 'name', 'code')[$g['place']] ?? $g['place'],
+                $skin
+            )], encounters::guide($char, $mission)) : [],
             // Where the class is today, the place of «Today in the valley» (none on a past expedition).
             'today' => $current ? (string) (pacts::chapter($mission)->code ?? '') : '',
             // The footprints of the Embrollo towards the next place: one each school day since the class lit its last

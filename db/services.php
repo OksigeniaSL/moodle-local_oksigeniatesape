@@ -405,6 +405,13 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:play',
     ],
+    'local_oksigeniatesape_answer_encounter' => [
+        'classname' => 'local_oksigeniatesape\\external\\answer_encounter',
+        'description' => 'A student says who the being that peeked out in a place is.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:play',
+    ],
     'local_oksigeniatesape_clean_stain' => [
         'classname' => 'local_oksigeniatesape\\external\\clean_stain',
         'description' => 'A student cleans a stain the Embrollo left in the valley.',

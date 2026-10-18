@@ -1217,7 +1217,7 @@
     if (w.market && w.market.length) {
       list.push(['market', T.artUrl(['landmark.market', 'market.banner-lantern']), 'gems']);
     }
-    if (w.album) {
+    if (w.album || (w.mission && (w.mission.guide || []).length)) {
       list.push(['album', T.artUrl(['landmark.album', 'album.ave']), 'log']);
     }
     return list.length ? '<div class="map-landmarks">' + list.map(function(l) {
@@ -1588,6 +1588,13 @@
     var acts = past ? [] : w.activities.filter(function(a) {
       return a.chapterid === ch.id;
     });
+    // A being peeks out here today: the creature has smelt something.
+    var hero = state.world.character;
+    var peek = ch.encounter && !past ? '<div class="encounter-card"><span class="encounter-pet" aria-hidden="true">' +
+      (hero && hero.creature ? T.creature(hero.creature, hero.creaturestage) : T.icon('lens')) + '</span><div><b>' +
+      esc(t('app_encounter_peek', ch.name)) + '</b><p class="help-soft">' + esc(t('app_encounter_help')) + '</p>' +
+      '<button type="button" class="btn btn-main" data-encounter="' + ch.id + '">' + esc(t('app_encounter_go')) +
+      '</button></div></div>' : '';
     // The scene a battle lost opens, only until the rematch: out of the fold, so that it is seen.
     var night = (ch.quests || []).filter(function(q) {
       return q.after === 'lost';
@@ -1625,7 +1632,7 @@
         return '<p>' + esc(line) + '</p>';
       }).join('') + '</div>' : '') + (ch.letter ? '<blockquote class="letter"><small>' + esc(t('app_letter')) +
       '</small>' + esc(ch.letter) + '</blockquote>' : '') + (ch.teaser ? '<p class="teaser"><b>' + esc(t('app_teaser')) +
-      '</b> ' + esc(ch.teaser) + '</p>' : '') + night + (scenes ? '<ul class="list">' + scenes + '</ul>' : '') +
+      '</b> ' + esc(ch.teaser) + '</p>' : '') + peek + night + (scenes ? '<ul class="list">' + scenes + '</ul>' : '') +
       more(games, quests, acts, challenge) + '</section>';
   }
 
@@ -1854,6 +1861,16 @@
     if (feed) {
       feed.onclick = feedMoment;
     }
+    app.querySelectorAll('[data-encounter]').forEach(function(b) {
+      b.onclick = function() {
+        var ch = (state.world.mission.chapters || []).filter(function(x) {
+          return x.id === Number(b.dataset.encounter);
+        })[0];
+        if (ch && ch.encounter) {
+          encounterMoment(ch.encounter);
+        }
+      };
+    });
     app.querySelectorAll('[data-stain]').forEach(function(b) {
       b.onclick = function(ev) {
         ev.stopPropagation();
@@ -2459,10 +2476,125 @@
    *
    * @return {string}
    */
+  /**
+   * The picture of a being: its own, from the art pack, or the card of its group, or nothing.
+   *
+   * @param {string} id
+   * @param {string} group
+   * @return {string|null}
+   */
+  function beingArt(id, group) {
+    var album = {insecto: 'invertebrado', aracnido: 'invertebrado', molusco: 'invertebrado', gusano: 'invertebrado'};
+    return T.artUrl(['being.' + id, 'album.' + (album[group] || group)]);
+  }
+
+  /**
+   * A being peeks out: the creature sniffs it and says its group; it is recognised with its clues, opened one by one,
+   * choosing its name among four. With one clue, a golden card.
+   *
+   * @param {Object} e place, clues, group, options, picture.
+   */
+  function encounterMoment(e) {
+    var c = state.world.character;
+    var layer = document.createElement('div');
+    layer.className = 'badge-moment encounter-moment';
+    layer.setAttribute('role', 'dialog');
+    layer.setAttribute('aria-modal', 'true');
+    layer.setAttribute('aria-labelledby', 'tesape-encounter-title');
+    var shown = 1;
+    var art = beingArt(e.picture.replace(/^being\./, ''), e.group);
+    var draw = function() {
+      layer.innerHTML = '<div class="badge-card"><div class="kicker" id="tesape-encounter-title">' +
+        esc(t('app_encounter_title')) + '</div>' + (art ? '<img class="encounter-pic hidden-one" src="' + esc(art) + '" alt="">' :
+        '<span class="encounter-pic shadow" aria-hidden="true">?</span>') + '<p class="encounter-sniff">' +
+        (c && c.creature ? '<span class="encounter-pet" aria-hidden="true">' + T.creature(c.creature, c.creaturestage) +
+        '</span>' : '') + esc(t('app_encounter_sniff', {creature: creatureName(c), group: t('app_group_' + e.group)})) + '</p>' +
+        '<ol class="encounter-clues">' + e.clues.slice(0, shown).map(function(x) {
+          return '<li>«' + esc(x) + '»</li>';
+        }).join('') + '</ol>' + (shown < e.clues.length ? '<div class="actions" style="justify-content:flex-start">' +
+        '<button type="button" class="btn btn-soft" data-clue>' + esc(t('app_encounter_clue')) + '</button></div>' : '') +
+        '<p><b>' + esc(t('app_encounter_who')) + '</b></p><div class="encounter-options">' + e.options.map(function(o) {
+          return '<button type="button" class="btn btn-soft" data-who="' + esc(o.id) + '">' + esc(o.name) + '</button>';
+        }).join('') + '</div><div data-said></div></div>';
+      var clue = layer.querySelector('[data-clue]');
+      if (clue) {
+        clue.onclick = function() {
+          shown++;
+          draw();
+          layer.querySelector('[data-who]').focus();
+        };
+      }
+      layer.querySelectorAll('[data-who]').forEach(function(b) {
+        b.onclick = function() {
+          layer.querySelectorAll('[data-who], [data-clue]').forEach(function(x) {
+            x.disabled = true;
+          });
+          T.api('answer_encounter', {courseid: cfg.courseid, place: e.place, choice: b.dataset.who, clues: shown})
+          .then(function(r) {
+            var said = layer.querySelector('[data-said]');
+            if (r.right) {
+              b.classList.add('chosen');
+              layer.classList.add('known');
+              if (T.fx) {
+                T.fx.sound('item');
+              }
+              var name = r.name.charAt(0).toUpperCase() + r.name.slice(1);
+              said.innerHTML = '<div class="conseq good"><span class="what">' + esc(t('app_encounter_right', name)) + '</span>' +
+                (r.golden ? esc(t('app_encounter_golden')) + '<br>' : '') + esc(t(r.gems === 1 ? 'app_encounter_gem' :
+                'app_encounter_gems', r.gems)) + '</div>' +
+                '<p class="encounter-fact">' + esc(r.fact) + '</p>';
+            } else {
+              said.innerHTML = '<p class="turn-outcome fell">' + esc(t('app_encounter_hid')) + '</p>';
+            }
+            said.innerHTML += '<div class="actions"><button type="button" class="btn btn-main" data-close>' +
+              esc(t('app_embrollo_go')) + '</button></div>';
+            var close = said.querySelector('[data-close]');
+            close.onclick = function() {
+              layer.remove();
+              refresh();
+            };
+            close.focus();
+          }).catch(function(err) {
+            T.toast(esc(err.message), true);
+            layer.remove();
+            refresh();
+          });
+        };
+      });
+    };
+    document.body.appendChild(layer);
+    draw();
+    layer.querySelector('button').focus();
+  }
+
+  /**
+   * The beings met, place by place: the cards of those registered (golden with one clue) and, for those still missing,
+   * gaps; how many are missing in each place.
+   *
+   * @return {string}
+   */
+  function guideCard() {
+    var guide = (state.world.mission && state.world.mission.guide) || [];
+    if (!guide.length) {
+      return '';
+    }
+    return '<section class="card no-print album-card" style="margin-top:16px"><h2>' + esc(t('app_guide_beings')) + '</h2>' +
+      guide.map(function(g) {
+        var missing = g.total - g.beings.length;
+        return '<h3>' + esc(g.name) + ' <small>' + esc(missing ? t('app_guide_missing', missing) : t('app_guide_full')) +
+          '</small></h3><div class="album">' + g.beings.map(function(b) {
+            var art = beingArt(b.id, b.group);
+            return '<div class="album-card' + (b.golden ? ' golden' : '') + '">' + (art ? '<img src="' + esc(art) + '" alt="">' :
+              '') + '<b>' + esc(b.name) + '</b><small>' + esc(t('app_groupname_' + b.group)) + '</small><small>' +
+              esc(b.fact) + '</small></div>';
+          }).join('') + new Array(missing + 1).join('<div class="album-card gap" aria-hidden="true"><b>?</b></div>') + '</div>';
+      }).join('') + '</section>';
+  }
+
   function albumCard() {
     var a = state.world.album;
     if (!a) {
-      return '';
+      return guideCard();
     }
     var golden = a.cards.filter(function(x) {
       return x.golden;
@@ -2479,7 +2611,7 @@
           '') + '</div>';
       }).join('') + '</div>' : '<p class="empty">' + esc(t('app_album_empty')) + '</p>') + '<div class="actions" style="' +
       'justify-content:flex-start"><button class="btn btn-soft" data-activity="' + a.cmid + '">' + esc(t('app_album_open')) +
-      '</button></div></section>';
+      '</button></div></section>' + guideCard();
   }
 
   /**

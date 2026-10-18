@@ -1544,7 +1544,10 @@ body.tesape {
   inset: 0;
   z-index: 60;
   display: grid;
-  place-items: center;
+  justify-items: center;
+  align-items: start;
+  /* A moment taller than the screen scrolls: its last button is always reachable. */
+  overflow-y: auto;
   padding: 20px;
   background: rgba(var(--deep-rgb), .82);
   animation: rise .3s ease both;
@@ -7761,4 +7764,102 @@ body.adapt-still .mission-grid .chapter.as-sheet {
   fill: rgba(43, 29, 74, .78);
   stroke: rgba(185, 166, 255, .7);
   stroke-width: .8;
+}
+
+/* A being peeks out in a place: the card in the place and the moment of the encounter. */
+.encounter-card {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin: 12px 0;
+  padding: 12px 14px;
+  border-radius: var(--r-s);
+  border: 1px dashed var(--lantern);
+  background: rgba(var(--hi), .06);
+}
+
+.encounter-card p {
+  margin: 4px 0 8px;
+}
+
+.encounter-pet {
+  display: inline-block;
+  flex: none;
+  width: 48px;
+  height: 48px;
+}
+
+.encounter-pet svg,
+.encounter-pet img {
+  width: 100%;
+  height: 100%;
+}
+
+.encounter-moment .badge-card {
+  max-width: 480px;
+}
+
+.encounter-pic {
+  display: block;
+  width: 120px;
+  height: 120px;
+  margin: 6px auto;
+  object-fit: contain;
+  border-radius: 50%;
+}
+
+.encounter-pic.hidden-one {
+  filter: brightness(.15);
+  transition: filter .8s ease;
+}
+
+.encounter-moment.known .encounter-pic.hidden-one {
+  filter: none;
+}
+
+.encounter-pic.shadow {
+  display: grid;
+  place-items: center;
+  background: rgba(var(--hi), .1);
+  font: 800 48px var(--f-title);
+  color: var(--text-soft);
+}
+
+.encounter-sniff {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+}
+
+.encounter-clues {
+  text-align: left;
+  font-style: italic;
+}
+
+.encounter-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.encounter-options .btn.chosen {
+  border-color: var(--lantern);
+}
+
+.encounter-fact {
+  text-align: left;
+}
+
+.album-card.gap {
+  display: grid;
+  place-items: center;
+  min-height: 90px;
+  opacity: .45;
+  border-style: dashed;
+}
+
+/* Centred when it fits, from the top when it does not. */
+.badge-moment > .badge-card {
+  margin-block: auto;
 }

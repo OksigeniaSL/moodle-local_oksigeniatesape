@@ -123,6 +123,18 @@ final class structures {
             'mapheight' => new external_value(PARAM_INT, 'Height of a map in layers', VALUE_DEFAULT, 0),
             'today' => new external_value(PARAM_ALPHANUMEXT, 'Place where the class is today', VALUE_DEFAULT, ''),
             'prints' => new external_value(PARAM_INT, 'Footprints of the Embrollo towards the next place', VALUE_DEFAULT, 0),
+            'guide' => new external_multiple_structure(new external_single_structure([
+                'place' => new external_value(PARAM_ALPHANUMEXT, 'The place'),
+                'name' => new external_value(PARAM_TEXT, 'Its name'),
+                'total' => new external_value(PARAM_INT, 'Beings of the place'),
+                'beings' => new external_multiple_structure(new external_single_structure([
+                    'id' => new external_value(PARAM_ALPHANUMEXT, 'Being'),
+                    'name' => new external_value(PARAM_TEXT, 'Its name'),
+                    'group' => new external_value(PARAM_ALPHA, 'Its group'),
+                    'fact' => new external_value(PARAM_TEXT, 'Something curious about it'),
+                    'golden' => new external_value(PARAM_BOOL, 'Recognised with one clue'),
+                ])),
+            ]), 'The field guide of the beings met', VALUE_DEFAULT, []),
             'chapters' => new external_multiple_structure(new external_single_structure([
                 'id' => new external_value(PARAM_INT, 'Chapter'),
                 'code' => new external_value(PARAM_ALPHANUMEXT, 'Code'),
@@ -143,6 +155,16 @@ final class structures {
                 'challengeid' => new external_value(PARAM_INT, 'Classroom challenge of the chapter (0: none)'),
                 'letter' => new external_value(PARAM_TEXT, 'Letter the Embrollo left once the class lit it', VALUE_DEFAULT, ''),
                 'teaser' => new external_value(PARAM_TEXT, 'What waits in the next place, once the class lit it', VALUE_DEFAULT, ''),
+                'encounter' => new external_single_structure([
+                    'place' => new external_value(PARAM_ALPHANUMEXT, 'The place'),
+                    'clues' => new external_multiple_structure(new external_value(PARAM_TEXT, 'A clue, in the first person')),
+                    'group' => new external_value(PARAM_ALPHA, 'Its group, what the creature sniffs'),
+                    'options' => new external_multiple_structure(new external_single_structure([
+                        'id' => new external_value(PARAM_ALPHANUMEXT, 'Option'),
+                        'name' => new external_value(PARAM_TEXT, 'A name'),
+                    ])),
+                    'picture' => new external_value(PARAM_RAW, 'Key of its picture in the art'),
+                ], 'A being that peeks out here today', VALUE_OPTIONAL),
                 'embrollo' => new external_single_structure([
                     'name' => new external_value(PARAM_TEXT, 'The knot of the place'),
                     'claim' => new external_value(PARAM_TEXT, 'What it claims'),

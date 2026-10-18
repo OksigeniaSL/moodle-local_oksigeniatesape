@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.83.0 (2026-10-18)
+
+Block 3.1 of the plan: something to find.
+
+- **Encounters with beings**: in each place the class has opened, once a day for each student, a being of that place
+  they do not have yet peeks out (chosen by the day, not by chance alone). Their creature sniffs it and says its group;
+  it is recognised with three clues in the first person, opened one by one, choosing its name among four of the same
+  group (the creature already said the group). With one clue, a golden card; with more, a card; not recognised, it
+  hides until another day, without a cost. Gems, never saber. Some only peek out with the lantern.
+- **The beings of the valley** in the field guide of the student (the album): place by place, the cards of those met,
+  with their group and something curious, and the gaps of those still missing.
+- The pilot mission, version 35: 24 beings, four a place, with their clues and facts, and three decoys of each group.
+- **Fixed**: a moment over the game taller than the screen (an encounter, on a phone) scrolls, so that its last button
+  is always reachable.
+
 ## 0.82.0 (2026-10-18)
 
 - **Fixed**: the table of the stains (0.81.0, which was not installed anywhere) declared three text columns not null with
