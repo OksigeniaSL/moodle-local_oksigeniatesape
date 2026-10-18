@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.104.0 (2026-10-18)
+
+- **Lanes for a knot drafted by the AI of the site**, in the Workshop («Propose lanes with the AI»): from what the
+  Embrollo claims and why it is wrong, three questions (the right answer first, the others its mistakes) and two
+  boasts. Nothing is kept until the teacher takes it, one by one: a question taken joins the battle questions, in the
+  place and objective of the knot, and the lanes of the knot; a boast becomes its laugh. Only with the AI of the site
+  and the permission to draft with it.
+
 ## 0.103.0 (2026-10-18)
 
 - **The Workshop shows a scene as a student would play it** («See it as a student», with what was changed there) and

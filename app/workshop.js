@@ -149,6 +149,71 @@
       t('teach_ws_everybody');
   }
 
+  /**
+   * For each knot of the place, lanes drafted by the AI of the site, if the course has it: nothing is kept until the
+   * teacher takes it, one by one.
+   *
+   * @param {Object} ch
+   * @return {string}
+   */
+  function knotDrafts(ch) {
+    if (!state.data.ai || !state.data.ai.canuse) {
+      return '';
+    }
+    var codes = [];
+    ch.fields.forEach(function(f) {
+      var m = /^battle\/knots\/([^/]+)\//.exec(f.path);
+      if (m && codes.indexOf(m[1]) < 0) {
+        codes.push(m[1]);
+      }
+    });
+    return codes.map(function(code) {
+      return '<div class="ws-knotdraft"><button type="button" class="btn btn-soft" data-knotdraft="' + esc(code) + '">' +
+        esc(t('teach_ws_knotdraft')) + '</button><small>' + esc(t('teach_ws_knotdraft_help')) + '</small>' +
+        '<div data-knotbox="' + esc(code) + '"></div></div>';
+    }).join('');
+  }
+
+  /**
+   * What the AI proposed for a knot: each question with its options (the right one first) and why, and the boasts.
+   *
+   * @param {Element} box
+   * @param {string} code
+   * @param {Object} p questions and laughs.
+   */
+  function drawProposal(box, code, p) {
+    box.innerHTML = p.questions.map(function(q, i) {
+      return '<div class="ws-question"><b>' + esc(q.text) + '</b><ul>' + q.options.map(function(o, n) {
+        return '<li>' + (n === 0 ? '✓ ' : '') + esc(o) + '</li>';
+      }).join('') + '</ul>' + (q.why ? '<small>' + esc(q.why) + '</small>' : '') + '<div class="actions" ' +
+        'style="justify-content:flex-start"><button type="button" class="btn btn-soft" data-knottake="' + i + '">' +
+        esc(t('teach_ws_knottake')) + '</button></div></div>';
+    }).join('') + p.laughs.map(function(l, i) {
+      return '<div class="ws-question"><i>«' + esc(l) + '»</i><div class="actions" style="justify-content:flex-start">' +
+        '<button type="button" class="btn btn-soft" data-knotlaugh="' + i + '">' + esc(t('teach_ws_knotlaugh')) +
+        '</button></div></div>';
+    }).join('');
+    box.querySelectorAll('[data-knottake]').forEach(function(b) {
+      b.onclick = function() {
+        b.disabled = true;
+        api('knotaccept', {scene: code, value: JSON.stringify(p.questions[Number(b.dataset.knottake)])}).then(function() {
+          b.textContent = t('teach_ws_knottaken');
+          counts();
+          T.toast(esc(t('app_saved')));
+        }).catch(function(e) {
+          b.disabled = false;
+          T.toast(esc(e.message), true);
+        });
+      };
+    });
+    box.querySelectorAll('[data-knotlaugh]').forEach(function(b) {
+      b.onclick = function() {
+        b.disabled = true;
+        save(MISSION, 'battle/knots/' + code + '/laugh', p.laughs[Number(b.dataset.knotlaugh)], b.closest('.ws-scene'));
+      };
+    });
+  }
+
   function skippedTag(ch) {
     return ch.skipped ? '<span class="tag todo">' + esc(t('teach_ws_skipped')) + '</span>' : '';
   }
@@ -445,7 +510,7 @@
         }).join('') + '</select><small>' + esc(t('teach_ws_challenge_help')) + '</small></label>' +
         ch.fields.map(function(f) {
           return fieldHtml(MISSION, f);
-        }).join('');
+        }).join('') + knotDrafts(ch);
     } else {
       body.innerHTML = sceneBody(findScene(details.dataset.code));
     }
@@ -526,6 +591,23 @@
       save(area.dataset.scene, area.dataset.path, area.value.trim(), area.closest('.ws-scene'));
     });
     state.el.addEventListener('click', function(ev) {
+      var draft = ev.target.closest('[data-knotdraft]');
+      if (draft) {
+        var code = draft.dataset.knotdraft;
+        var box = state.el.querySelector('[data-knotbox="' + code + '"]');
+        draft.disabled = true;
+        box.innerHTML = '<p class="help">' + esc(t('teach_ws_knotwait')) + '</p>';
+        // Not through api(): what comes back is a proposal, not the workshop.
+        T.api('edit_mission', {courseid: cfg.courseid, action: 'knotdraft', scene: code}).then(function(r) {
+          draft.disabled = false;
+          drawProposal(box, code, JSON.parse(r.json));
+        }).catch(function(e) {
+          draft.disabled = false;
+          box.innerHTML = '';
+          T.toast(esc(e.message), true);
+        });
+        return;
+      }
       var skip = ev.target.closest('[data-skipchapter]');
       if (skip) {
         var going = skip.hasAttribute('data-skip');

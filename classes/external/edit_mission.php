@@ -33,7 +33,8 @@ use local_oksigeniatesape\local\missions;
  */
 final class edit_mission extends external_api {
     /** @var string[] What can be done. */
-    private const ACTIONS = ['view', 'save', 'questions', 'restore', 'export', 'import', 'courses', 'copy', 'skip', 'challenge'];
+    private const ACTIONS = ['view', 'save', 'questions', 'restore', 'export', 'import', 'courses', 'copy', 'skip', 'challenge',
+        'knotdraft', 'knotaccept'];
 
     /**
      * Parameters.
@@ -46,7 +47,8 @@ final class edit_mission extends external_api {
             'action' => new external_value(
                 PARAM_ALPHA,
                 'view, save, questions, restore, export, import, courses, copy, skip (a place: value on, or empty to go ' .
-                    'back) or challenge (of a place: value, the classroom challenge, 0 none)'
+                    'back), challenge (of a place: value, the classroom challenge, 0 none), knotdraft (lanes for the knot ' .
+                    'in scene, by the AI) or knotaccept (value, a question in JSON, for the knot in scene)'
             ),
             'scene' => new external_value(
                 PARAM_RAW,
@@ -84,6 +86,7 @@ final class edit_mission extends external_api {
         string $value = '',
         int $target = 0
     ): array {
+        global $USER;
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
             'action' => $action,
@@ -114,6 +117,13 @@ final class edit_mission extends external_api {
             edits::skip($params['courseid'], $scene, $params['value'] === 'on');
         } else if ($params['action'] === 'challenge') {
             edits::place_challenge($params['courseid'], $scene, (int) $params['value']);
+        } else if ($params['action'] === 'knotdraft') {
+            // A proposal of the AI of the site, kept nowhere: the teacher takes what they want.
+            require_capability('local/oksigeniatesape:aidraft', $context);
+            return ['json' => json_encode(edits::knot_proposal($params['courseid'], $scene, (int) $USER->id))];
+        } else if ($params['action'] === 'knotaccept') {
+            $question = json_decode($params['value'], true);
+            edits::knot_accept($params['courseid'], $scene, is_array($question) ? $question : []);
         } else if ($params['action'] === 'restore') {
             edits::restore($params['courseid'], $scene === '' ? null : $scene);
         } else if ($params['action'] === 'export') {
@@ -131,7 +141,12 @@ final class edit_mission extends external_api {
             $done = edits::import($params['target'], edits::export($params['courseid']));
             return ['json' => json_encode(['done' => $done] + edits::view($params['courseid']))];
         }
-        return ['json' => json_encode(edits::view($params['courseid']))];
+        $view = edits::view($params['courseid']);
+        // Whether the AI of the site can draft lanes for the knots here.
+        $ai = \local_oksigeniatesape\local\nextclass::status($params['courseid'], (int) $USER->id);
+        $view['ai'] = ['canuse' => $ai['canuse'] && has_capability('local/oksigeniatesape:aidraft', $context),
+            'policy' => $ai['policy']];
+        return ['json' => json_encode($view)];
     }
 
     /**

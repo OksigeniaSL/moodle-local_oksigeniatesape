@@ -794,6 +794,17 @@ body.tesape {
   margin: 6px 2px 12px;
 }
 
+/* Lanes drafted by the AI for a knot, in the Workshop. */
+.ws-knotdraft {
+  margin: 12px 0;
+  display: grid;
+  gap: 8px;
+}
+
+.ws-knotdraft > small {
+  color: var(--text-soft);
+}
+
 /* A place the class passes by, in the Workshop. */
 .ws-skip {
   display: flex;

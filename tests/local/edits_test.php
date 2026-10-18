@@ -205,6 +205,32 @@ final class edits_test extends \advanced_testcase {
         edits::place_challenge($course->id, $first, 99999);
     }
 
+    public function test_a_question_taken_for_a_knot_is_one_of_its_lanes(): void {
+        $this->resetAfterTest();
+        $course = $this->make_course();
+        $mission = missions::get($course->id);
+        $knot = $mission->data['battle']['knots'][0];
+        $before = count($knot['questions']);
+        $id = edits::knot_accept($course->id, $knot['code'], ['text' => '¿Está viva una semilla seca?',
+            'options' => ['Sí, aunque no lo parezca', 'No, porque no se mueve', 'Solo si crece'], 'why' => 'Con agua germina.']);
+        $mission = missions::get($course->id);
+        // In the battle questions, with the place and the objective of the knot; and one more lane of the knot.
+        $question = array_column($mission->data['questions'], null, 'id')[$id];
+        $this->assertSame($knot['objective'], $question['objective']);
+        $this->assertSame($mission->data['chapters'][(int) $knot['chapter'] - 1]['code'], $question['chapter']);
+        $this->assertCount($before + 1, array_column($mission->data['battle']['knots'], null, 'code')[$knot['code']]['questions']);
+        $usable = array_column(knots::usable($mission), null, 'code')[$knot['code']];
+        $this->assertContains($id, $usable['questions']);
+        // The proposal of the AI is cleaned as anything a teacher writes.
+        $clean = edits::clean_proposal(['questions' => [['text' => ' ¿Qué es? ', 'options' => ['A', '', 'B', 'C', 'D', 'E']],
+            ['text' => 'Sin opciones', 'options' => ['A']], 'no'], 'laughs' => ['¡Ja!', '¡Je!', '¡Ji!']]);
+        $this->assertSame([['text' => '¿Qué es?', 'options' => ['A', 'B', 'C'], 'why' => '']], $clean['questions']);
+        $this->assertSame(['¡Ja!', '¡Je!'], $clean['laughs']);
+        // Without the AI of the site, nothing to ask.
+        $this->expectException(\moodle_exception::class);
+        edits::knot_proposal($course->id, $knot['code'], (int) get_admin()->id);
+    }
+
     public function test_the_sheets_of_the_sessions_can_be_changed_and_the_guide_reads_them(): void {
         $this->resetAfterTest();
         $course = $this->make_course();

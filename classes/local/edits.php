@@ -120,6 +120,153 @@ final class edits {
     }
 
     /**
+     * Whether a change is a list kept as JSON: the questions of the battle, or the questions of a knot.
+     *
+     * @param string $path
+     * @return bool
+     */
+    private static function is_list(string $path): bool {
+        return $path === 'questions' || (bool) preg_match('#^battle/knots/[A-Za-z0-9_-]+/questions$#', $path);
+    }
+
+    /**
+     * Lanes for a knot of the battle, drafted by the AI of the site from what the Embrollo claims and why it is wrong:
+     * three questions (the right answer first, the others mistakes of the Embrollo) and two boasts of the Embrollo. Only
+     * a proposal: nothing is kept until the teacher takes it, one by one.
+     *
+     * @param int $courseid
+     * @param string $code Of the knot.
+     * @param int $userid
+     * @return array questions (text, options, why) and laughs.
+     */
+    public static function knot_proposal(int $courseid, string $code, int $userid): array {
+        $status = nextclass::status($courseid, $userid);
+        if (!$status['ai'] || !$status['canuse']) {
+            throw new \moodle_exception('authoring_noai', 'local_oksigeniatesape');
+        }
+        if (!$status['policy']) {
+            throw new \moodle_exception('authoring_aipolicy', 'local_oksigeniatesape');
+        }
+        $mission = missions::get($courseid);
+        $knot = $mission ? knots::get($mission, $code) : null;
+        if (!$knot) {
+            throw new \invalid_parameter_exception('Not a knot of the mission');
+        }
+        $skin = (string) $mission->skin;
+        $objective = (string) ($mission->data['objectives'][self::knot($mission, $code)['objective'] ?? ''] ?? '');
+        $prompt = "You write questions for the battle of an educational role-playing game for a class of students aged " .
+            ($mission->data['ages'] ?? '9-11') . ", in the language of this code: " . current_language() . ". The Embrollo is " .
+            "a funny monster made of tangled ideas; each knot is a mistaken idea it claims. The teacher will read every " .
+            "question and keep only the good ones.\n\n" .
+            "The knot: " . missions::text($knot['name'] ?? '', $skin) . "\n" .
+            "What the Embrollo claims: " . missions::text($knot['claim'] ?? '', $skin) . "\n" .
+            "Why it is wrong: " . missions::text($knot['why'] ?? '', $skin) . "\n" .
+            "Objective: " . missions::text($objective, $skin) . "\n\n" .
+            "Rules: correct and checked knowledge, without opinions, politics or agendas; short sentences for that age; " .
+            "each question has one right answer and two or three wrong ones that are the mistakes the Embrollo would make; " .
+            "the explanation says why the right one is right in one or two sentences; the boasts are one line each, in the " .
+            "voice of the Embrollo, funny and wrong, never mocking anybody; no real names of people.\n\n" .
+            "Answer with only this JSON: {\"questions\": [{\"text\": text, \"options\": [the right answer first, then 2 " .
+            "or 3 wrong ones], \"why\": text}] (exactly 3), \"laughs\": [text, text]}";
+        $manager = \core\di::get(\core_ai\manager::class);
+        $contextid = \context_course::instance($courseid)->id;
+        $again = 'Your previous answer was not valid JSON with exactly that shape. Answer again with only the JSON.';
+        foreach ([$prompt, $prompt . "\n\n" . $again] as $text) {
+            try {
+                $response = $manager->process_action(new \core_ai\aiactions\generate_text($contextid, $userid, $text));
+            } catch (\Throwable $e) {
+                throw new \moodle_exception('authoring_aifailed', 'local_oksigeniatesape', '', null, $e->getMessage());
+            }
+            if (!$response->get_success()) {
+                $why = $response->get_errormessage();
+                throw new \moodle_exception('authoring_aifailed', 'local_oksigeniatesape', '', null, $why);
+            }
+            $answer = (string) ($response->get_response_data()['generatedcontent'] ?? '');
+            $start = strpos($answer, '{');
+            $end = strrpos($answer, '}');
+            $data = $start !== false && $end !== false ? json_decode(substr($answer, $start, $end - $start + 1), true) : null;
+            $proposal = is_array($data) ? self::clean_proposal($data) : null;
+            if ($proposal && $proposal['questions']) {
+                return $proposal;
+            }
+        }
+        throw new \moodle_exception('authoring_aifailed', 'local_oksigeniatesape');
+    }
+
+    /**
+     * A proposal of the AI cleaned as anything a teacher writes: questions with a text and two to four options, and up to
+     * two boasts.
+     *
+     * @param array $data
+     * @return array questions and laughs.
+     */
+    public static function clean_proposal(array $data): array {
+        $text = fn($value, int $max) => \core_text::substr(trim(clean_param((string) $value, PARAM_TEXT)), 0, $max);
+        $questions = [];
+        foreach (array_slice((array) ($data['questions'] ?? []), 0, 3) as $q) {
+            if (!is_array($q)) {
+                continue;
+            }
+            $options = array_map(fn($o) => $text($o, 200), array_slice((array) ($q['options'] ?? []), 0, 4));
+            $options = array_values(array_filter($options, fn($o) => $o !== ''));
+            $question = $text($q['text'] ?? '', 500);
+            if ($question !== '' && count($options) >= 2) {
+                $questions[] = ['text' => $question, 'options' => $options, 'why' => $text($q['why'] ?? '', 500)];
+            }
+        }
+        $laughs = array_map(fn($l) => $text($l, 200), array_slice((array) ($data['laughs'] ?? []), 0, 2));
+        $laughs = array_values(array_filter($laughs, fn($l) => $l !== ''));
+        return ['questions' => $questions, 'laughs' => $laughs];
+    }
+
+    /**
+     * A knot of the battle as the mission of the course has it (with the changes of the teachers): its place, objective
+     * and questions too.
+     *
+     * @param \stdClass $mission With data.
+     * @param string $code
+     * @return array|null
+     */
+    private static function knot(\stdClass $mission, string $code): ?array {
+        foreach ($mission->data['battle']['knots'] ?? [] as $knot) {
+            if (($knot['code'] ?? '') === $code) {
+                return $knot;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * A question the teacher takes for a knot: it joins the questions of the battle, in the place and objective of the
+     * knot, and the lanes of the knot.
+     *
+     * @param int $courseid
+     * @param string $code Of the knot.
+     * @param array $question text, options (the right one first), why.
+     * @return string The id of the question.
+     */
+    public static function knot_accept(int $courseid, string $code, array $question): string {
+        $mission = missions::get($courseid);
+        $knot = $mission ? self::knot($mission, $code) : null;
+        if (!$knot) {
+            throw new \invalid_parameter_exception('Not a knot of the mission');
+        }
+        $clean = self::clean_proposal(['questions' => [$question]])['questions'];
+        if (!$clean) {
+            throw new \invalid_parameter_exception('A question needs its text and two options');
+        }
+        $codes = array_column($mission->data['chapters'] ?? [], 'code');
+        $list = self::view($courseid)['questions'];
+        $list[] = $clean[0] + ['id' => '', 'chapter' => (string) ($codes[(int) ($knot['chapter'] ?? 1) - 1] ?? ''),
+            'objective' => (string) ($knot['objective'] ?? '')];
+        $saved = self::save_questions($courseid, $list);
+        $id = (string) end($saved)['id'];
+        $mine = array_values(array_unique(array_merge((array) ($knot['questions'] ?? []), [$id])));
+        self::store($courseid, (string) $mission->code, self::MISSION, 'battle/knots/' . $code . '/questions', json_encode($mine));
+        return $id;
+    }
+
+    /**
      * The scenes the teachers of a course took out of the game.
      *
      * @param int $courseid
@@ -156,7 +303,7 @@ final class edits {
                 'id, scene, path, value'
             );
             foreach ($records as $record) {
-                $list[(string) $record->scene][$record->path] = $record->path === 'questions' ?
+                $list[(string) $record->scene][$record->path] = self::is_list($record->path) ?
                     (json_decode($record->value, true) ?: []) : $record->value;
             }
             self::cache()->set($key, $list);
