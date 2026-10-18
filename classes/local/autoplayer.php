@@ -58,6 +58,11 @@ final class autoplayer {
                     }
                     break;
                 case 'choice':
+                case 'use':
+                case 'justify':
+                    // What was picked in the decision a justify is about, in this play.
+                    $about = array_filter($events, fn($e) => $e['n'] === ($n['about'] ?? '') && isset($e['pick']));
+                    $n = $runner->as_choice($n, $about ? end($about)['pick'] : []);
                     $options = array_values(array_filter($n['options'], fn($o) => $runner->has($o['requires'] ?? null)
                         && ($o['correct'] ?? null) !== false));
                     usort($options, fn($a, $b) => [!empty($b['correct']), $b['points'] ?? 0]
@@ -94,6 +99,13 @@ final class autoplayer {
                 case 'path':
                     foreach ($n['steps'] as $step) {
                         $events[] = ['n' => $node, 'step' => $step['id']];
+                    }
+                    $node = $n['next'];
+                    break;
+                case 'find':
+                    $wanted = array_values(array_filter($n['spots'], fn($s) => !empty($s['correct'])));
+                    foreach (array_slice($wanted, 0, (int) ($n['find'] ?? count($wanted))) as $spot) {
+                        $events[] = ['n' => $node, 'spot' => $spot['id']];
                     }
                     $node = $n['next'];
                     break;

@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.119.0 (2026-10-18)
+
+- **Three new verbs for scenes.** `find`: things to find on a picture, touched one by one; what is not one of them
+  says why, once, and touching where there is nothing says so without counting. Each thing is also a button with its
+  name. `use`: a decision of what to take out of the backpack, where only what is carried shows (and one option
+  without anything, always). `justify`: after a decision, the reasons that support it are marked, those of the answer
+  given, with that answer recalled above; they are evidence of the objective of method. The three are checked by the
+  server, played by the autoplayer, sent in a team session like the other decisions, and their texts can be changed in
+  the Workshop.
+- Something touched in a find that is not one of the things counts in «what confuses».
+- Mission «Los seres vivos» v50: in «Lo que forma el lago» three living things are looked for on the picture of the
+  lake before writing it down; at the pond of «La noche junto al lago», what comes out of the backpack (the net, the
+  magnifier, the lantern, or nothing); and in «El caso del lince», the two facts of the report that show what was said.
+
 ## 0.118.0 (2026-10-18)
 
 - **The reserve of the team.** A reserve of breath for each team, apart from the breath of each one, up to 10. It fills

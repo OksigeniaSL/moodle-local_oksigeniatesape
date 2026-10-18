@@ -704,6 +704,10 @@
         go(target);
       } else if (n.type === 'choice') {
         choice(n);
+      } else if (n.type === 'use' || n.type === 'justify') {
+        choice(asChoice(n));
+      } else if (n.type === 'find') {
+        find(n);
       } else if (n.type === 'classify') {
         classify(n);
       } else if (n.type === 'order') {
@@ -868,7 +872,14 @@
           picks = e.pick || e.give;
         }
       });
-      var opts = n.type === 'tend' ? n.items || [] : n.options || [];
+      var opts = n.type === 'tend' ? n.items || [] : n.type === 'find' ? n.spots || [] : n.options || [];
+      if (n.type === 'find') {
+        picks = run.events.filter(function(e) {
+          return e.n === node && e.spot;
+        }).map(function(e) {
+          return e.spot;
+        });
+      }
       return picks.filter(function(id) {
         return opts.some(function(o) {
           return o.id === id && o.correct === true;
@@ -1062,8 +1073,11 @@
       if (!n) {
         return null;
       }
-      var multi = n.type === 'choice' && n.select && n.select.max > 1;
-      var kind = n.type === 'choice' ? (multi ? 'multi' : 'choose') : n.type;
+      // Using something from the backpack and saying why are choices too.
+      var chooses = ['choice', 'use', 'justify'].indexOf(n.type) >= 0;
+      var max = n.type === 'justify' ? (n.select && n.select.max) || 2 : (n.select && n.select.max) || 1;
+      var multi = chooses && max > 1;
+      var kind = chooses ? (multi ? 'multi' : 'choose') : n.type;
       var options = [];
       if (kind === 'choose') {
         layer.querySelectorAll('.opt[data-id]').forEach(function(b) {
@@ -1108,7 +1122,8 @@
       huddleIds = ids;
       var n = sc && run ? sc.nodes[run.node] : null;
       var hand = turnOf();
-      if (!n || n.type !== 'choice' || !hand || ids.indexOf(Number(hand.userid)) >= 0 || layer.querySelector('.opt.sel')) {
+      if (!n || ['choice', 'use', 'justify'].indexOf(n.type) < 0 || !hand || ids.indexOf(Number(hand.userid)) >= 0 ||
+        layer.querySelector('.opt.sel')) {
         return;
       }
       var order = [cfg.userid].concat(opts.team || []);
@@ -1420,7 +1435,8 @@
         // What other scenes left (flags) is memory, not something to get: without it, the option is not there; nor is
         // the option of another role (each role sees only its own). What was tried and led back here is not there
         // either: the world changed, it is not the same question again.
-        var hidden = o.requires && (o.requires.flag || o.requires.role) && !has(o.requires);
+        // In the backpack, only what is carried.
+        var hidden = o.requires && (o.requires.flag || o.requires.role || n.type === 'use') && !has(o.requires);
         return !hidden && tried.indexOf(o.id) < 0;
       }).map(function(o) {
         if (!has(o.requires)) {
@@ -1435,6 +1451,8 @@
           return sniffedOption(o);
         }
         var letter = cm ? '<span class="opt-letter">' + LETTERS[open.indexOf(o)] + '</span>' : '';
+        var art = o.item ? T.artUrl(['item.' + o.item]) : '';
+        letter += art ? '<img class="item-art" src="' + esc(art) + '" alt="">' : '';
         // What only the scout sees is there to be found: it shows when they follow the trail.
         var trail = !cm && o.requires && o.requires.role === 'scout' && !run.trailed[run.node];
         return '<button class="opt' + (trail ? ' trail' : '') + '" type="button" data-id="' + esc(o.id) + '"' +
@@ -1442,8 +1460,8 @@
           '<span class="opt-votes" data-votes></span></button>';
       }).join('');
       var voting = cm && cm.vote && !multi && open.length >= 2;
-      var body = show((n.image ? picture(n.image, data) : '') + clueBox() + pieces(n) + '<p class="scene-prompt">' +
-        esc(tx(n.prompt)) +
+      var body = show((n.image ? picture(n.image, data) : '') + clueBox() + pieces(n) + (n.recall ?
+        '<p class="justify-about">' + esc(n.recall) + '</p>' : '') + '<p class="scene-prompt">' + esc(tx(n.prompt)) +
         '</p>' +
         (voting ? '<div class="class-vote" data-vote><button class="btn btn-soft" data-voteopen>' +
         esc(t('board_scene_voteopen')) + '</button></div>' : '') +
@@ -1887,6 +1905,137 @@
               void b.offsetWidth;
               b.classList.add('shake');
             }
+          };
+        });
+      }
+      draw();
+    }
+
+    /**
+     * A use or a justify, as the choice it is, as the server sees it: the things of the backpack (each option with its
+     * `item`, there only if it is carried), or the reasons for what was picked in the decision it is about (those with
+     * `for`, only if one of those was picked), two to mark by default, with what was picked said above.
+     *
+     * @param {Object} n The node.
+     * @return {Object} The node, as a choice.
+     */
+    function asChoice(n) {
+      var c = Object.assign({}, n);
+      if (n.type === 'use') {
+        c.options = (n.options || []).map(function(o) {
+          return o.item && !o.requires ? Object.assign({}, o, {requires: {item: o.item}}) : o;
+        });
+        return c;
+      }
+      var picked = [];
+      run.events.forEach(function(e) {
+        if (e.n === n.about && e.pick) {
+          picked = e.pick;
+        }
+      });
+      c.options = (n.options || []).filter(function(o) {
+        return !o.for || [].concat(o.for).some(function(id) {
+          return picked.indexOf(id) >= 0;
+        });
+      });
+      c.select = n.select || {min: 2, max: 2};
+      var about = (sc.nodes[n.about] || {}).options || [];
+      var said = about.filter(function(o) {
+        return picked.indexOf(o.id) >= 0;
+      }).map(function(o) {
+        return tx(o.label);
+      });
+      c.recall = said.length ? t('app_justify_about', said.join(' · ')) : '';
+      return c;
+    }
+
+    /**
+     * A find: things to find on a picture, touched one by one. What is one of them stays marked, with what it says; what
+     * is not says why, once. Touching where there is nothing says so, without counting. For who does not see the
+     * picture, each thing is a button with its name.
+     *
+     * @param {Object} n The node: image, spots (id, label, x, y, r in percent; correct; say, feedback), find.
+     */
+    function find(n) {
+      var spots = n.spots || [];
+      var need = Math.min(spots.filter(function(s) {
+        return s.correct;
+      }).length, n.find || spots.length);
+      var found = [];
+      var wrong = [];
+      function spot(id) {
+        return spots.filter(function(s) {
+          return s.id === id;
+        })[0];
+      }
+      function draw(said, done) {
+        var body = show(pieces(n) + '<p class="scene-prompt">' + esc(tx(n.prompt)) + '</p><p class="find-count">' +
+          esc(t('app_find_count', found.length + '/' + need)) + '</p><div class="find-map">' +
+          picture(n.image || sceneImage(), data) + spots.map(function(s) {
+            var got = found.indexOf(s.id) >= 0;
+            var miss = wrong.indexOf(s.id) >= 0;
+            var r = Number(s.r || 7);
+            // The name of what was found stays inside the picture, near the edges too.
+            var edge = Number(s.x) > 70 ? ' edge-r' : Number(s.x) < 30 ? ' edge-l' : '';
+            return '<button type="button" class="find-spot' + edge + (got ? ' found' : '') + (miss ? ' miss' : '') + '" data-id="' +
+              esc(s.id) + '" style="left:' + Number(s.x) + '%;top:' + Number(s.y) + '%;width:' + 2 * r + '%" aria-label="' +
+              esc(tx(s.label)) + '"' + (got || miss || done ? ' disabled' : '') + '>' + (got ? '<span>' + esc(tx(s.label)) +
+              '</span>' : '') + '</button>';
+          }).join('') + '</div><div data-out>' + (said || '') + (done ? '<div class="actions"><button class="btn btn-main" ' +
+          'data-go>' + esc(t('app_continue')) + '</button></div>' : '') + '</div>');
+        hintArea(n, body);
+        roleBar(n, body);
+        var map = body.querySelector('.find-map');
+        var img = map.querySelector('img');
+        var fit = function() {
+          if (img.naturalWidth) {
+            map.style.aspectRatio = img.naturalWidth + ' / ' + img.naturalHeight;
+          }
+        };
+        if (img) {
+          if (img.complete) {
+            fit();
+          } else {
+            img.onload = fit;
+          }
+        }
+        if (done) {
+          body.querySelector('[data-go]').onclick = function() {
+            go(n.next);
+          };
+          return;
+        }
+        // Where there is nothing.
+        map.onclick = function(ev) {
+          if (ev.target.closest('.find-spot')) {
+            return;
+          }
+          var out = body.querySelector('[data-out]');
+          out.innerHTML = '<div class="conseq said">' + esc(t('app_find_nothing')) + '</div>';
+        };
+        body.querySelectorAll('.find-spot:not([disabled])').forEach(function(b) {
+          b.onclick = function() {
+            var s = spot(b.dataset.id);
+            run.events.push(by({n: run.node, spot: s.id}));
+            // What the world says, and why, folded, as with an option.
+            var words = '<span class="what">' + esc(tx(s.label)) + '</span>' + esc(tx(s.say || s.feedback || '') ||
+              t('app_find_not')) + (s.say && s.feedback ? '<details class="why-more"><summary>' + esc(t('app_why')) +
+              '</summary><p>' + esc(tx(s.feedback)) + '</p></details>' : '');
+            if (s.correct) {
+              found.push(s.id);
+              (s.effects || []).forEach(clue);
+              if (T.fx) {
+                T.fx.sound('tap');
+              }
+              draw('<div class="conseq said">' + words + '</div>', found.length >= need);
+              return;
+            }
+            wrong.push(s.id);
+            mistake();
+            if (T.fx) {
+              T.fx.sound('choose');
+            }
+            draw('<div class="conseq said">' + words + '</div>');
           };
         });
       }

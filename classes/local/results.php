@@ -141,6 +141,14 @@ final class results {
                         $counts[$key] = ($counts[$key] ?? 0) + 1;
                     }
                 }
+            } else if (isset($event['spot'])) {
+                // Something touched on a picture that was not one of the things to find.
+                foreach ($node['spots'] ?? [] as $spot) {
+                    if ($spot['id'] === $event['spot'] && empty($spot['correct'])) {
+                        $key = $event['n'] . '|' . $spot['id'];
+                        $counts[$key] = ($counts[$key] ?? 0) + 1;
+                    }
+                }
             } else if (isset($event['item'], $event['bin']) && empty($seen[$event['n'] . $event['item']])) {
                 // Only the first try of each item.
                 $seen[$event['n'] . $event['item']] = true;
@@ -289,7 +297,7 @@ final class results {
         };
         $question = $text($node['prompt'] ?? '');
         if (count($parts) === 2) {
-            foreach ($node['options'] as $option) {
+            foreach (array_merge($node['options'] ?? [], $node['spots'] ?? []) as $option) {
                 if ($option['id'] === $parts[1]) {
                     return [$question, $text($option['label'])];
                 }

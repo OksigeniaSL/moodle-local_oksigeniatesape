@@ -548,6 +548,89 @@ final class scene_runner_test extends \advanced_testcase {
     }
 
     /**
+     * A scene with the verbs find, use and justify.
+     *
+     * @return array
+     */
+    private static function more_verbs_scene(): array {
+        return ['id' => 'W', 'start' => 'buscar', 'method' => 'SV-07', 'nodes' => [
+            'buscar' => ['type' => 'find', 'prompt' => '?', 'objective' => 'SV-06', 'find' => 2, 'spots' => [
+                ['id' => 'nenufar', 'label' => 'N', 'x' => 20, 'y' => 90, 'correct' => true],
+                ['id' => 'arbol', 'label' => 'A', 'x' => 80, 'y' => 20, 'correct' => true],
+                ['id' => 'junco', 'label' => 'J', 'x' => 90, 'y' => 70, 'correct' => true],
+                ['id' => 'agua', 'label' => 'W', 'x' => 50, 'y' => 60]], 'next' => 'mochila'],
+            'mochila' => ['type' => 'use', 'prompt' => '?', 'options' => [
+                ['id' => 'red', 'label' => 'R', 'item' => 'net', 'correct' => true, 'objective' => 'SV-06'],
+                ['id' => 'farol', 'label' => 'F', 'item' => 'lantern', 'next' => 'mochila'],
+                ['id' => 'orilla', 'label' => 'X', 'objective' => 'SV-06', 'points' => 1]], 'next' => 'decidir'],
+            'decidir' => ['type' => 'choice', 'prompt' => '?', 'options' => [
+                ['id' => 'si', 'label' => 'S', 'correct' => true, 'objective' => 'SV-08'],
+                ['id' => 'no', 'label' => 'N', 'correct' => false, 'objective' => 'SV-08']], 'next' => 'porque'],
+            'porque' => ['type' => 'justify', 'about' => 'decidir', 'prompt' => '?', 'options' => [
+                ['id' => 'dato', 'label' => 'D', 'correct' => true, 'for' => ['si']],
+                ['id' => 'otro', 'label' => 'O', 'correct' => true, 'for' => ['si']],
+                ['id' => 'bonito', 'label' => 'B', 'correct' => false],
+                ['id' => 'contra', 'label' => 'C', 'correct' => true, 'for' => ['no']]], 'next' => 'fin'],
+            'fin' => ['type' => 'branch', 'rules' => [['if' => ['correct_at_least' => 2, 'in' => 'buscar'], 'next' => 'bien']],
+                'else' => 'medias'],
+            'bien' => ['type' => 'ending', 'outcome' => 'success'],
+            'medias' => ['type' => 'ending', 'outcome' => 'partial'],
+        ]];
+    }
+
+    public function test_find_use_and_justify(): void {
+        $find = [['n' => 'buscar', 'spot' => 'nenufar'], ['n' => 'buscar', 'spot' => 'arbol']];
+        $rest = [['n' => 'mochila', 'pick' => ['red']], ['n' => 'decidir', 'pick' => ['si']],
+            ['n' => 'porque', 'pick' => ['dato', 'otro']]];
+        // Found at the first try, the net out of the backpack, and the two reasons of what was decided.
+        $result = (new scene_runner(self::more_verbs_scene(), ['net']))->run(array_merge($find, $rest));
+        $this->assertSame('bien', $result['ending']);
+        $scored = self::scored($result['objectives']);
+        $this->assertSame(['ok' => 2, 'total' => 2], $scored['SV-06']);
+        $this->assertSame(['ok' => 2, 'total' => 2], $scored['SV-07']);
+        // Both at the first try: the find and the net.
+        $this->assertSame(2, $result['objectives']['SV-06']['first']);
+        // Something touched that is not one of them: the find counts after the consequence.
+        $result = (new scene_runner(self::more_verbs_scene(), ['net']))->run(array_merge(
+            [['n' => 'buscar', 'spot' => 'agua']],
+            $find,
+            $rest
+        ));
+        $this->assertSame(1, $result['objectives']['SV-06']['after']);
+        // The lantern out of the backpack leads back to the question, without it.
+        $result = (new scene_runner(self::more_verbs_scene(), ['net', 'lantern']))->run(array_merge(
+            $find,
+            [['n' => 'mochila', 'pick' => ['farol']]],
+            $rest
+        ));
+        $this->assertSame('bien', $result['ending']);
+        // Decided the other way, the reasons are those of that answer.
+        $result = (new scene_runner(self::more_verbs_scene()))->run(array_merge($find, [['n' => 'mochila', 'pick' => ['orilla']],
+            ['n' => 'decidir', 'pick' => ['no']], ['n' => 'porque', 'pick' => ['contra', 'bonito']]]));
+        $this->assertSame(['ok' => 1, 'total' => 2], self::scored($result['objectives'])['SV-07']);
+        // What does not fit: a spot twice, a thing not carried, a reason of the other answer.
+        $bad = [
+            array_merge([['n' => 'buscar', 'spot' => 'nenufar'], ['n' => 'buscar', 'spot' => 'nenufar']], $rest),
+            array_merge($find, [['n' => 'mochila', 'pick' => ['red']]]),
+            array_merge($find, [['n' => 'mochila', 'pick' => ['orilla']], ['n' => 'decidir', 'pick' => ['no']],
+                ['n' => 'porque', 'pick' => ['dato', 'contra']]]),
+        ];
+        foreach ($bad as $events) {
+            try {
+                (new scene_runner(self::more_verbs_scene()))->run($events);
+                $this->fail('A play that does not fit');
+            } catch (\moodle_exception $e) {
+                $this->assertSame('invalidscenepath', $e->errorcode);
+            }
+        }
+        // The autoplayer plays them, with the net and without it.
+        foreach ([['net'], []] as $items) {
+            $events = \local_oksigeniatesape\local\autoplayer::play(self::more_verbs_scene(), $items);
+            $this->assertSame('bien', (new scene_runner(self::more_verbs_scene(), $items))->run($events)['ending']);
+        }
+    }
+
+    /**
      * Plays that do not fit the scene are refused.
      *
      * @param array $events

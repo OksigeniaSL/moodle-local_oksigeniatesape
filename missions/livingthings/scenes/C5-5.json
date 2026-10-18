@@ -80,6 +80,92 @@
      "feedback": "Del recuento que se hace cada año y se publica con fecha. Un número sin fuente es una página tachada: de esas bebe el Embrollo. Una gema."
     }
    ],
+   "next": "porque"
+  },
+  "porque": {
+   "type": "justify",
+   "about": "leer",
+   "prompt": "¿Qué dice el informe que lo muestra? Marca dos cosas.",
+   "select": {
+    "min": 2,
+    "max": 2
+   },
+   "hints": [
+    "Un dato del informe dice cuántos linces hay o cómo están. Lo que no habla de eso no lo muestra."
+   ],
+   "options": [
+    {
+     "id": "cifras",
+     "label": "En 2002 quedaban menos de cien, y en 2025 se contaron 2.663",
+     "for": [
+      "cuidado",
+      "salvo",
+      "solos"
+     ],
+     "correct": true,
+     "feedback": "Es lo que lo muestra: de menos de cien a más de dos mil."
+    },
+    {
+     "id": "lista",
+     "label": "La lista mundial lo pasó de «en peligro» a «vulnerable»",
+     "for": [
+      "cuidado",
+      "salvo",
+      "solos"
+     ],
+     "correct": true,
+     "feedback": "Mejor que antes, pero todavía en la lista de especies amenazadas."
+    },
+    {
+     "id": "conejo",
+     "label": "El lince se alimenta sobre todo de conejo",
+     "for": [
+      "cuidado",
+      "salvo",
+      "solos"
+     ],
+     "correct": false,
+     "feedback": "Es verdad, y servirá para lo que viene, pero no dice cuántos linces hay ni cómo están."
+    },
+    {
+     "id": "bonito",
+     "label": "El lince es un animal muy bonito",
+     "for": [
+      "cuidado",
+      "salvo",
+      "solos"
+     ],
+     "correct": false,
+     "feedback": "Puede que lo sea, pero no es un dato del informe: no dice nada de cuántos hay."
+    },
+    {
+     "id": "fechas",
+     "label": "Cada número del informe tiene la fecha del recuento",
+     "for": [
+      "fuente"
+     ],
+     "correct": true,
+     "feedback": "Con la fecha se puede buscar el recuento y comprobarlo."
+    },
+    {
+     "id": "comprobar",
+     "label": "Un número con fuente se puede comprobar",
+     "for": [
+      "fuente"
+     ],
+     "correct": true,
+     "feedback": "Por eso se pregunta de dónde sale: lo que se puede comprobar no es una página tachada."
+    },
+    {
+     "id": "garza",
+     "label": "Si lo trae la garza, tiene que ser verdad",
+     "for": [
+      "fuente"
+     ],
+     "correct": false,
+     "feedback": "La garza es de fiar, pero lo que hace fiable un número es que se pueda comprobar, no quién lo trae."
+    }
+   ],
    "next": "medidas"
   },
   "medidas": {

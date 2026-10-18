@@ -970,6 +970,103 @@ body.still .opening-lantern {
   font-size: 14px;
 }
 
+/* A find: things to find on a picture. The spots do not show until they are found. */
+.find-map {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  margin: 8px auto 12px;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.find-map .scene-pic {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  margin: 0;
+}
+
+.find-map .vignette.scene-pic {
+  width: 100%;
+  margin: 0;
+  box-shadow: none;
+}
+
+.find-map .vignette.scene-pic img,
+.find-map .vignette.scene-pic svg {
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  aspect-ratio: auto;
+  object-fit: cover;
+}
+
+.find-spot {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  aspect-ratio: 1;
+  min-width: 36px;
+  border-radius: 50%;
+  border: 0;
+  background: transparent;
+  cursor: inherit;
+}
+
+.find-spot:focus-visible {
+  outline: 3px solid var(--lantern);
+}
+
+.find-spot.found {
+  border: 3px solid #7cc67f;
+  background: rgba(124, 198, 127, .18);
+}
+
+.find-spot.miss {
+  border: 3px dashed var(--ember);
+}
+
+.find-spot span {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(16, 24, 40, .86);
+  color: var(--text);
+  font-size: 13px;
+}
+
+.find-spot.edge-r span {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
+.find-spot.edge-l span {
+  left: 0;
+  transform: none;
+}
+
+.find-count {
+  margin: 0;
+  color: var(--text-soft);
+}
+
+.justify-about {
+  margin: 0 0 6px;
+  font-style: italic;
+}
+
+.opt .item-art {
+  width: 28px;
+  height: 28px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
 /* A path: someone goes along a picture, place by place. */
 .path-map {
   position: relative;

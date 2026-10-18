@@ -53,7 +53,7 @@ final class edits {
         'name', 'claim', 'laugh', 'weakness', 'why', 'ask', 'expect', 'mistake', 'redirect', 'spare'];
 
     /** @var string[] Lists of elements with an id, in a node. */
-    private const ELEMENTS = ['options', 'items', 'bins', 'steps'];
+    private const ELEMENTS = ['options', 'items', 'bins', 'steps', 'spots'];
 
     /**
      * The class passes a place by: its lantern is lit without playing it, and the expedition goes on in the next one.

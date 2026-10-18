@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 49,
+ "version": 50,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 50,
+   "kind": "improvement",
+   "date": "2026-10-18",
+   "text": "Tres verbos nuevos: en «Lo que forma el lago» se buscan en la imagen tres cosas vivas; en la charca de «La noche junto al lago» se elige qué sacar de la mochila; y en «El caso del lince» se marcan los dos datos del informe que muestran lo que se ha dicho"
+  },
   {
    "version": 49,
    "kind": "improvement",

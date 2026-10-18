@@ -35,7 +35,7 @@
     "valley": "Para devolver la página del lago al Gran Libro hay que apuntar todo lo que lo forma: lo vivo y lo que no está vivo pero también forma parte de él. Y quitar lo que no pinta nada aquí. La garza baja la voz: «Anoche vi al Embrollo bebiendo de las páginas tachadas, las que alguien escribió sin mirar. Se puso enorme».",
     "azara": "Para completar la página del río hay que apuntar todo lo que lo forma: lo vivo y lo que no está vivo pero también forma parte de él. Y quitar lo que no pinta nada aquí. La garza mira las notas tachadas del cuaderno, manchadas de tinta corrida, como si alguien hubiera bebido de ellas."
    },
-   "next": "anotar"
+   "next": "mirar-lago"
   },
   "intro-picados": {
    "type": "story",
@@ -45,6 +45,90 @@
     "valley": "La garza nos ve llegar rascándonos las picaduras. «La noche junto al agua, ¿eh? Las larvas de esos mosquitos también son del lago: alimento de peces y ranas. Hoy las apuntamos.» Hay que apuntar todo lo que forma el lago: lo vivo y lo que no está vivo pero forma parte de él. Y quitar lo que no pinta nada. La garza baja la voz: «Anoche vi al Embrollo bebiendo de las páginas tachadas. Se puso enorme».",
     "azara": "La garza nos ve llegar rascándonos las picaduras. «La noche junto al agua, ¿eh? Las larvas de esos mosquitos también son del río: alimento de peces y ranas. Hoy las apuntamos.» Hay que apuntar todo lo que forma el río: lo vivo y lo que no está vivo pero forma parte de él. Y quitar lo que no pinta nada."
    },
+   "next": "mirar-lago"
+  },
+  "mirar-lago": {
+   "type": "find",
+   "prompt": {
+    "valley": "Antes de apuntar, mira bien el lago. Toca tres cosas que estén vivas.",
+    "azara": "Antes de apuntar, mira bien la orilla. Toca tres cosas que estén vivas."
+   },
+   "image": "lago",
+   "find": 3,
+   "objective": "SV-06",
+   "hints": [
+    "Lo vivo nace, se alimenta y crece. ¿Qué hay en el agua y en la orilla que crezca?",
+    "Las plantas también están vivas, aunque no se muevan: busca hojas y flores."
+   ],
+   "spots": [
+    {
+     "id": "nenufares",
+     "label": "los nenúfares",
+     "x": 21,
+     "y": 91,
+     "r": 7,
+     "correct": true,
+     "say": "Las hojas redondas flotan y las flores se abren al sol.",
+     "feedback": "Son plantas: tienen raíces en el fondo y fabrican su alimento con la luz."
+    },
+    {
+     "id": "espadanas",
+     "label": "las espadañas de la orilla",
+     "x": 95,
+     "y": 72,
+     "r": 6,
+     "correct": true,
+     "say": "Las espadañas se mecen con sus mazorcas marrones.",
+     "feedback": "Son plantas de orilla: crecen con los pies en el agua y dan refugio a ranas y pájaros."
+    },
+    {
+     "id": "carrizo",
+     "label": "las hierbas altas de la orilla",
+     "x": 17,
+     "y": 60,
+     "r": 8,
+     "correct": true,
+     "say": "Entre las hierbas altas algo se esconde y se oye un chapoteo.",
+     "feedback": "Son plantas, y además casa de muchos animales pequeños: insectos, caracoles y ranas."
+    },
+    {
+     "id": "arboles",
+     "label": "los árboles del otro lado",
+     "x": 85,
+     "y": 24,
+     "r": 9,
+     "correct": true,
+     "say": "Los árboles de la otra orilla dan sombra al agua.",
+     "feedback": "Están vivos: crecen, se alimentan y dan semillas. Sus hojas caídas también alimentan el lago."
+    },
+    {
+     "id": "agua",
+     "label": "el agua",
+     "x": 52,
+     "y": 68,
+     "r": 9,
+     "say": "El agua brilla quieta.",
+     "feedback": "El agua no está viva: no nace ni crece. Pero forma parte del lago, y sin ella no viviría nada de lo que hay aquí."
+    },
+    {
+     "id": "sol",
+     "label": "el sol",
+     "x": 49,
+     "y": 19,
+     "r": 6,
+     "say": "El sol se esconde detrás de los montes.",
+     "feedback": "El sol no está vivo, pero su luz hace crecer a las plantas del lago, y con ellas a todo lo demás."
+    },
+    {
+     "id": "embarcadero",
+     "label": "el embarcadero",
+     "x": 78,
+     "y": 78,
+     "r": 9,
+     "say": "Las tablas del embarcadero crujen.",
+     "feedback": "Lo construyó alguien con madera. La madera estuvo viva, en un árbol, pero el embarcadero ni crece ni se alimenta."
+    }
+   ],
    "next": "anotar"
   },
   "anotar": {

@@ -128,18 +128,16 @@
    "next": "charca"
   },
   "charca": {
-   "type": "choice",
-   "prompt": "Al amanecer, en el agua quieta de la orilla, algo se mueve. ¿Qué hacemos?",
+   "type": "use",
+   "prompt": "Al amanecer, en el agua quieta de la orilla, algo se mueve. ¿Qué sacas de la mochila?",
    "hints": [
     "Con la red se observa de cerca y se devuelve al agua."
    ],
    "options": [
     {
      "id": "red",
-     "label": "Mirarlo de cerca con la red de captura",
-     "requires": {
-      "item": "net"
-     },
+     "label": "La red de captura, para mirarlo de cerca",
+     "item": "net",
      "points": 2,
      "objective": "SV-06",
      "effects": [
@@ -151,8 +149,25 @@
      "feedback": "Mirar de cerca dice qué vive en la charca: larvas de mosquito, que respiran por un tubito, y un renacuajo, que será rana. La red sirve para observar y soltar, sin llevarse nada."
     },
     {
+     "id": "lupa",
+     "label": "La lupa potente, desde la orilla",
+     "item": "magnifier",
+     "points": 1,
+     "objective": "SV-06",
+     "say": "Con la lupa, el agua brilla y se mueve: solo se ven puntitos que nadan.",
+     "feedback": "La lupa sirve para lo que se puede acercar a los ojos. Lo que vive en el agua hay que sacarlo un momento, con cuidado, y devolverlo."
+    },
+    {
+     "id": "farol",
+     "label": "El farol",
+     "item": "lantern",
+     "say": "Ya es de día: con el farol no se ve nada que no se viera antes. Lo guardamos.",
+     "feedback": "Cada herramienta tiene su momento: el farol, para la noche.",
+     "next": "charca"
+    },
+    {
      "id": "orilla",
-     "label": "Mirarlo desde la orilla",
+     "label": "Nada de la mochila. Mirarlo desde la orilla",
      "points": 1,
      "objective": "SV-06",
      "say": "Desde la orilla solo se ven puntitos que se mueven.",

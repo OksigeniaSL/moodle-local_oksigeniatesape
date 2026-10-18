@@ -282,10 +282,19 @@ final class scene_runner {
                     $node = $this->branch($n);
                     break;
                 case 'choice':
+                case 'use':
+                case 'justify':
+                    // Using something from the backpack and saying why are choices, told otherwise.
                     $before = $this->objectives;
-                    $next = $this->choice($node, $n);
+                    $next = $this->choice($node, $this->as_choice($n));
                     $this->method($node, $before);
                     $node = $next;
+                    break;
+                case 'find':
+                    $before = $this->objectives;
+                    $this->find($node, $n);
+                    $this->method($node, $before);
+                    $node = $n['next'];
                     break;
                 case 'classify':
                     $before = $this->objectives;
@@ -375,7 +384,8 @@ final class scene_runner {
         }
         $options = [];
         $n = $this->scene['nodes'][$node] ?? [];
-        foreach (($n['type'] ?? '') === 'tend' ? ($n['items'] ?? []) : ($n['options'] ?? []) as $option) {
+        $list = ['tend' => 'items', 'find' => 'spots'][$n['type'] ?? ''] ?? 'options';
+        foreach ($n[$list] ?? [] as $option) {
             $options[$option['id']] = $option;
         }
         $count = 0;
@@ -458,6 +468,71 @@ final class scene_runner {
             return $node;
         }
         return $target;
+    }
+
+    /**
+     * A use or a justify, as the choice it is. Using: each option is a thing of the backpack (`item`), there only if it
+     * is carried; an option without a thing is always there. Justifying: the reasons for what was decided in `about`
+     * (those with `for` only if one of those options was picked), two to mark by default, and evidence of the objective
+     * of method of the mission if the node does not name another.
+     *
+     * @param array $n
+     * @param string[]|null $picked For a justify, what was picked in `about` (null: as this play went).
+     * @return array The node, as a choice.
+     */
+    public function as_choice(array $n, ?array $picked = null): array {
+        if (($n['type'] ?? '') === 'use') {
+            $n['options'] = array_map(fn($o) => isset($o['item']) && !isset($o['requires']) ?
+                $o + ['requires' => ['item' => (string) $o['item']]] : $o, $n['options'] ?? []);
+        } else if (($n['type'] ?? '') === 'justify') {
+            $picked = $picked ?? $this->picks[$n['about'] ?? ''] ?? [];
+            $n['options'] = array_values(array_filter($n['options'] ?? [], fn($o) => empty($o['for']) ||
+                array_intersect((array) $o['for'], $picked)));
+            $n['select'] = $n['select'] ?? ['min' => 2, 'max' => 2];
+            $n['objective'] = $n['objective'] ?? $this->scene['method'] ?? null;
+        }
+        return $n;
+    }
+
+    /**
+     * A find: the things to find on a picture, touched one by one; touching something that is not one of them says
+     * why, once each. It counts as an answer: at the first try if nothing wrong was touched.
+     *
+     * @param string $node
+     * @param array $n
+     */
+    private function find(string $node, array $n): void {
+        $spots = [];
+        foreach ($n['spots'] as $spot) {
+            $spots[(string) $spot['id']] = $spot;
+        }
+        $wanted = array_keys(array_filter($spots, fn($s) => !empty($s['correct'])));
+        $need = min(count($wanted), (int) ($n['find'] ?? count($wanted)));
+        $found = [];
+        $first = true;
+        $saved = false;
+        while (count($found) < $need) {
+            $event = $this->take($node);
+            $id = (string) ($event['spot'] ?? '');
+            if (!isset($spots[$id]) || in_array($id, $found, true) || in_array($id, $this->mistaken[$node] ?? [], true)) {
+                $this->fail('spot not available: ' . $id);
+            }
+            if (!empty($spots[$id]['correct'])) {
+                $found[] = $id;
+                foreach ($spots[$id]['effects'] ?? [] as $effect) {
+                    $this->effect($effect);
+                }
+                continue;
+            }
+            $this->mistaken[$node][] = $id;
+            if ($first) {
+                $saved = $this->guard($event);
+            }
+            $first = false;
+        }
+        $this->picks[$node] = $found;
+        $this->points += $first || $saved ? 6 : 3;
+        $this->tally($n['objective'] ?? null, $first, $first ? ($this->helped($node) ? 'helped' : 'first') : 'after');
     }
 
     /**
