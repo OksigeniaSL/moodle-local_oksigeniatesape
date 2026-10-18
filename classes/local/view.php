@@ -96,7 +96,8 @@ final class view {
         $world['powerrequests'] = $powers['requests'];
         $world['activities'] = activities::for_student($courseid, $userid, $member);
         $world['ideas'] = ideas::mine($courseid, (int) $char->id);
-        $world['hascoat'] = minigames::has_coat($char, $courseid);
+        // Once the creature has its branch, its coat is the one of the branch.
+        $world['hascoat'] = minigames::has_coat($char, $courseid) && creatures::branch($char) === '';
         $world['names'] = [
             'heroes' => (bool) $region->nicknames,
             'own' => (int) $region->nicknames === 2,
@@ -808,6 +809,8 @@ final class view {
             'talentsoff' => $private && $member && !talents::on_in((int) $member->courseid),
             // What they have learnt to do in the course: for the student and their teachers only.
             'skills' => $private && $member ? skills::of($char, (int) $member->courseid) : [],
+            // Its creature reached its second stage and chooses its branch.
+            'branchpending' => $private && creatures::branch_pending($char),
         ];
         $pending = $private && $member && talents::on_in((int) $member->courseid) ? talents::pending($char) : null;
         if ($pending) {

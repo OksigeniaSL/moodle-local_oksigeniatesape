@@ -935,6 +935,13 @@ final class live {
             $wrong = array_values(array_diff(range(0, $info['options'] - 1), [(int) $info['correct']]));
             $view['struck'] = $wrong[self::seed($live, $round) % count($wrong)];
         }
+        // The scent of the creature: a knot of a place its student lit, it strikes out another wrong option by itself, on
+        // their phone only.
+        $sniffed = empty($state['knots']) ? null : self::sniffed($live, $member, $info, $round, $view['struck'] ?? null);
+        if ($sniffed !== null) {
+            $view['sniffed'] = $sniffed;
+            $view['sniffplace'] = (string) ($info['trail'] ?? self::chapter_name((int) $live->courseid, $info['chapter']));
+        }
         if ((in_array('trail', $kinds, true) || isset($from['trail'])) && $info['chapter'] !== '') {
             // Battles opened before the name was kept with the round look it up.
             $view['trail'] = $info['trail'] ?? self::chapter_name((int) $live->courseid, $info['chapter']);
@@ -1417,6 +1424,32 @@ final class live {
             }
         }
         return [$state, $info];
+    }
+
+    /**
+     * The option the creature of a student strikes out by itself, by turns, in a lane to choose whose knot is of a place
+     * the student lit: a wrong one, not the one a glance struck, and never leaving fewer than two to choose from.
+     *
+     * @param \stdClass $live
+     * @param \stdClass $member
+     * @param array $info The round, with the lane of their team.
+     * @param int $round
+     * @param int|null $struck The option a glance struck out.
+     * @return int|null
+     */
+    private static function sniffed(\stdClass $live, \stdClass $member, array $info, int $round, ?int $struck): ?int {
+        global $DB;
+        $options = (int) ($info['options'] ?? 0);
+        if (!empty($info['engine']) || ($info['chapter'] ?? '') === '' || $options - ($struck === null ? 0 : 1) - 1 < 2) {
+            return null;
+        }
+        $char = $DB->get_record(self::T . 'char', ['id' => $member->charid], 'id, creature, creaturestage');
+        $mission = missions::get((int) $live->courseid);
+        if (!$char || !$mission || !in_array((string) $info['chapter'], creatures::known($char, $mission), true)) {
+            return null;
+        }
+        $wrong = array_values(array_diff(range(0, $options - 1), [(int) $info['correct'], $struck ?? -1]));
+        return $wrong[(self::seed($live, $round) + (int) $char->id) % count($wrong)];
     }
 
     /**

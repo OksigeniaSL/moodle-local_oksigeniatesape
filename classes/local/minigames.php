@@ -65,9 +65,17 @@ final class minigames {
      * @param int $step
      * @param string $role Of the student: protector, healer, sage or scout.
      * @param string[] $talents Those of the student that act in the course.
+     * @param int $sniffs Times their creature sniffs in a play (creatures::sniffs()).
      * @return array|null
      */
-    public static function config(\stdClass $mission, string $code, int $step, string $role = '', array $talents = []): ?array {
+    public static function config(
+        \stdClass $mission,
+        string $code,
+        int $step,
+        string $role = '',
+        array $talents = [],
+        int $sniffs = 0
+    ): ?array {
         $config = self::config_step($mission, $code, $step);
         if (!$config) {
             return null;
@@ -85,6 +93,8 @@ final class minigames {
         // The looks of the sage («Keen eye»: two) and what the scout sees coming («Far sight»: two things).
         $config['looks'] = $config['passive'] === 'sage' ? ($has('keeneye') ? 2 : 1) : 0;
         $config['ahead'] = $config['passive'] === 'scout' ? ($has('farsight') ? 2 : 1) : 0;
+        // The creature, from its second stage, points out a case once a play.
+        $config['sniffs'] = $sniffs;
         if ($config['passive'] === 'protector') {
             // «Endurance»: two slips more, not one.
             $more = $has('endurance') ? 2 : 1;
@@ -515,7 +525,8 @@ final class minigames {
             $code,
             (int) $member->step,
             (string) $char->role,
-            talents::acting($char, $courseid)
+            talents::acting($char, $courseid),
+            creatures::sniffs($char)
         ) : null;
         if (!$game) {
             throw new \moodle_exception('nominigame', 'local_oksigeniatesape');
@@ -836,7 +847,9 @@ final class minigames {
         if (!$char) {
             throw new \moodle_exception('nocharacter', 'local_oksigeniatesape');
         }
-        $allowed = $coat === '' || (in_array($coat, self::COATS, true) && self::has_coat($char, $courseid));
+        // With its branch, the creature wears the coat of the branch.
+        $allowed = creatures::branch($char) === '' && ($coat === '' || (in_array($coat, self::COATS, true) &&
+            self::has_coat($char, $courseid)));
         if (empty($char->creature) || !$allowed) {
             throw new \moodle_exception('nocoat', 'local_oksigeniatesape');
         }

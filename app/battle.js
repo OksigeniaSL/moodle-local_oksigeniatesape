@@ -236,12 +236,13 @@
     var q = live.question;
     var answered = live.mine >= 0;
     var options = q.options.map(function(o, i) {
-      var struck = live.struck === i && !live.revealed;
+      var sniffed = live.sniffed === i && !live.revealed;
+      var struck = (live.struck === i || sniffed) && !live.revealed;
       var cls = 'battle-option' + (live.mine === i ? ' mine' : '') + (live.revealed && q.correct === i ? ' right' : '') +
         (struck ? ' struck' : '');
       return '<button type="button" class="' + cls + '" data-answer="' + i + '"' + (answered || !live.open || struck ?
-        ' disabled' : '') + (struck ? ' title="' + esc(t('app_battle_struck')) + '"' : '') + '><b>' + LETTERS[i] + '</b><span>' +
-        esc(o) + '</span></button>';
+        ' disabled' : '') + (struck ? ' title="' + esc(t(sniffed ? 'app_battle_sniffed' : 'app_battle_struck')) + '"' : '') +
+        '><b>' + LETTERS[i] + '</b><span>' + esc(o) + '</span></button>';
     }).join('');
     var note = '';
     if (live.revealed) {
@@ -254,8 +255,9 @@
     } else if (live.left >= 0 && !T.adapted.notime) {
       note = '<p class="battle-left" data-left="' + live.left + '" aria-live="off">' + esc(t('app_battle_left', live.left)) + '</p>';
     }
-    var trail = live.trail && !live.revealed ? '<p class="battle-trail">' + esc(t('app_token_trail_shown', live.trail)) +
-      '</p>' : '';
+    var trail = (live.trail && !live.revealed ? '<p class="battle-trail">' + esc(t('app_token_trail_shown', live.trail)) +
+      '</p>' : '') + (live.sniffed !== undefined && live.sniffed !== null && !live.revealed ? '<p class="battle-trail">' +
+      esc(t('app_battle_sniff', live.sniffplace)) + '</p>' : '');
     if (live.stage === 'resolve' && live.done !== undefined) {
       note += turnNote(live);
     } else if (live.stage === 'resolve' && live.target) {

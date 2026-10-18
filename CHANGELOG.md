@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.109.0 (2026-10-18)
+
+- **The creature chooses its way** when it reaches its second stage: land (fur), air (feathers) or water (scales), each
+  card with how it would look and why that coat is for that medium. Once; it wears the coat of its way from then on, and
+  its next stages follow it. It can wait («Later»): the sheet keeps the button.
+- **The creature knows the places its student lit**: in the battle by turns, in a lane to choose whose knot is of one of
+  them, it strikes out a wrong option by itself on that student's phone (never leaving fewer than two to choose from).
+- **In the minigames, from its second stage, the creature sniffs a case once a play**, with the same button as the look
+  of the sage.
+
 ## 0.108.0 (2026-10-18)
 
 - **Named skills**: on their sheet, each student sees «What you have learnt to do», a medal for each objective of the

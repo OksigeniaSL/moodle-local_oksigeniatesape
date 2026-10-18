@@ -1149,6 +1149,51 @@ final class live_test extends \advanced_testcase {
         }
     }
 
+    public function test_by_turns_a_creature_strikes_out_an_option_in_a_knot_of_a_place_its_student_lit(): void {
+        global $DB;
+        $this->resetAfterTest();
+        [$course, $members] = $this->make_class();
+        foreach ($members as $member) {
+            $char = $DB->get_record(self::T . 'char', ['id' => $member->charid]);
+            $DB->update_record(self::T . 'char', (object) ['id' => $char->id, 'creature' => json_encode(scenes::creature($char)),
+                'creaturestage' => 1]);
+        }
+        $live = live::start($course->id, 'phones', 4, 30, self::NOW, false, true);
+        foreach ($members as $member) {
+            live::join($live, $member, $member->userid, self::NOW);
+        }
+        $live = live::next($live, self::NOW);
+        $round = json_decode($live->state, true)['rounds'][1];
+        $lane = array_values($round['lanes'])[0];
+        // The first student lit the place of the knot; the second did not.
+        $DB->insert_record(self::T . 'found', (object) ['charid' => $members[0]->charid, 'courseid' => $course->id,
+            'missionid' => missions::get($course->id)->id, 'kind' => 'lantern', 'code' => $round['chapter'],
+            'timecreated' => self::NOW]);
+        $mine = live::device_view($live, $members[0], self::NOW + 2);
+        $this->assertArrayNotHasKey('sniffed', live::device_view($live, $members[1], self::NOW + 2));
+        if (!empty($lane['engine']) || $lane['options'] < 3) {
+            $this->assertArrayNotHasKey('sniffed', $mine);
+            return;
+        }
+        $this->assertNotEquals($this->correct_of($live, $members[0]), $mine['sniffed']);
+        $this->assertNotSame('', $mine['sniffplace']);
+        // The same option each time, on that phone only.
+        $this->assertSame($mine['sniffed'], live::device_view($live, $members[0], self::NOW + 3)['sniffed']);
+    }
+
+    /**
+     * By turns: the right option of the lane of the team of a member.
+     *
+     * @param \stdClass $live
+     * @param \stdClass $member
+     * @return int
+     */
+    private function correct_of(\stdClass $live, \stdClass $member): int {
+        global $DB;
+        $team = (int) $DB->get_field(self::T . 'livein', 'team', ['liveid' => $live->id, 'round' => 0, 'charid' => $member->charid]);
+        return $this->lane_correct($live, $team);
+    }
+
     public function test_the_tokens_help_the_team_of_who_uses_them_once_a_battle(): void {
         $this->resetAfterTest();
         [$course, $members] = $this->make_class();

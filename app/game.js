@@ -308,7 +308,67 @@
       return '<li><b>' + esc(x.name) + '</b><small>' + esc(x.description) + '</small></li>';
     }).join('') + '</ul>' + (c.talentsoff ? '<p class="help-soft">' + esc(t('app_talents_off')) + '</p>' : '') : '') +
       (c.talentpending ? '<p><button type="button" class="btn btn-main" data-choosetalent>' + esc(t('app_talent_choose')) +
-      '</button></p>' : '');
+      '</button></p>' : '') + (c.branchpending ? '<p><button type="button" class="btn btn-main" data-choosebranch>' +
+      esc(t('app_branch_choose', creatureName(c))) + '</button></p>' : '');
+  }
+
+  /**
+   * The creature reached its second stage: it chooses its way, land, air or water, with the coat that goes with each.
+   * Once; its next stages follow it.
+   *
+   * @param {Function} [then]
+   * @return {Element}
+   */
+  function branchMoment(then) {
+    var c = state.world.character;
+    var traits = {};
+    try {
+      traits = JSON.parse(c.creature || '{}') || {};
+    } catch (e) {
+      traits = {};
+    }
+    var coats = {land: 'fur', air: 'feathers', water: 'scales'};
+    var layer = moment('<div class="kicker">' + esc(t('app_branch_kicker', creatureName(c))) + '</div><h2 ' +
+      'id="tesape-branch-title">' + esc(t('app_branch_title')) + '</h2><p class="help">' + esc(t('app_branch_help')) +
+      '</p><div class="talent-cards branch-cards">' + Object.keys(coats).map(function(b) {
+        return '<button type="button" class="talent-card" data-branch="' + b + '"><span class="branch-pet" aria-hidden="true">' +
+          T.creature(Object.assign({}, traits, {coat: coats[b]}), c.creaturestage) + '</span><b>' + esc(t('app_branch_' + b)) +
+          '</b><small>' + esc(t('app_branch_' + b + '_why')) + '</small></button>';
+      }).join('') + '</div>', 'tesape-branch-title', then);
+    var later = layer.querySelector('[data-close]');
+    later.textContent = t('app_talent_later');
+    later.className = 'btn btn-soft';
+    // Offered by itself once on each device: then it waits on the sheet.
+    try {
+      window.localStorage.setItem('tesape-branch-' + cfg.courseid + '-' + cfg.userid, '1');
+    } catch (e) {
+      // Without storage it is offered again next time.
+    }
+    layer.querySelector('[data-branch]').focus();
+    layer.querySelectorAll('[data-branch]').forEach(function(b) {
+      b.onclick = function() {
+        layer.querySelectorAll('[data-branch]').forEach(function(x) {
+          x.disabled = true;
+        });
+        T.api('choose_branch', {courseid: cfg.courseid, branch: b.dataset.branch}).then(function(r) {
+          c.creature = r.creature;
+          delete c.branchpending;
+          if (T.fx) {
+            T.fx.sound('hatch');
+            T.fx.sparkles();
+          }
+          T.toast(esc(t('app_branch_done', creatureName(c))));
+          later.click();
+          world();
+        }).catch(function(e) {
+          layer.querySelectorAll('[data-branch]').forEach(function(x) {
+            x.disabled = false;
+          });
+          T.toast(esc(e.message), true);
+        });
+      };
+    });
+    return layer;
   }
 
   /**
@@ -594,6 +654,18 @@
     if (seen && seen.creaturestage && c.creaturestage > seen.creaturestage) {
       moments.push(function(then) {
         creatureMoment(seen.creaturestage, c, then);
+      });
+    }
+    // Grown to its second stage, the creature chooses its way: by itself once on each device, then on the sheet.
+    var branchOffered = null;
+    try {
+      branchOffered = window.localStorage.getItem('tesape-branch-' + cfg.courseid + '-' + cfg.userid);
+    } catch (e) {
+      branchOffered = null;
+    }
+    if (c.branchpending && !branchOffered) {
+      moments.push(function(then) {
+        branchMoment(then);
       });
     }
     // The badge of the mission, celebrated once on each device.
@@ -3196,6 +3268,12 @@
       if (choose && c.talentpending) {
         choose.onclick = function() {
           talentMoment(c.talentpending);
+        };
+      }
+      var way = app.querySelector('[data-choosebranch]');
+      if (way && c.branchpending) {
+        way.onclick = function() {
+          branchMoment();
         };
       }
       return;

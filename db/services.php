@@ -433,6 +433,13 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:runclassscreen',
     ],
+    'local_oksigeniatesape_choose_branch' => [
+        'classname' => 'local_oksigeniatesape\\external\\choose_branch',
+        'description' => 'A student chooses the branch of their creature when it reaches its second stage.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:play',
+    ],
     'local_oksigeniatesape_choose_talent' => [
         'classname' => 'local_oksigeniatesape\\external\\choose_talent',
         'description' => 'A student chooses the talent a level brought them.',

@@ -841,6 +841,21 @@ body.tesape {
   background: rgba(255, 200, 87, .1);
 }
 
+/* The way of the creature: each card with how it would look. */
+.branch-pet {
+  display: block;
+  width: 104px;
+  height: 104px;
+  margin: 0 auto 4px;
+}
+
+.branch-pet img,
+.branch-pet svg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 /* What the hero has learnt to do: lit medals, and the ones still to learn, quiet. */
 .skill-medals {
   list-style: none;

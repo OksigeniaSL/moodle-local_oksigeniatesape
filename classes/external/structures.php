@@ -62,6 +62,7 @@ final class structures {
                 VALUE_DEFAULT,
                 false
             ),
+            'branchpending' => new external_value(PARAM_BOOL, 'Its creature chooses its branch', VALUE_DEFAULT, false),
             'skills' => new external_multiple_structure(new external_single_structure([
                 'code' => new external_value(PARAM_ALPHANUMEXT, 'Objective'),
                 'name' => new external_value(PARAM_TEXT, 'What it is to know how to do'),
@@ -754,6 +755,8 @@ final class structures {
             ]), 'By turns, with «Wide trail»: the other teams their trail can go to as well', VALUE_OPTIONAL),
             'trailfrom' => new external_value(PARAM_TEXT, 'The team whose scout aimed a trail at theirs', VALUE_OPTIONAL),
             'weakness' => new external_value(PARAM_TEXT, 'By «Knot reading»: the weak point of the knot', VALUE_OPTIONAL),
+            'sniffed' => new external_value(PARAM_INT, 'By turns: an option their creature struck out by itself', VALUE_OPTIONAL),
+            'sniffplace' => new external_value(PARAM_TEXT, 'The place the creature knows the knot from', VALUE_OPTIONAL),
             'nextknot' => new external_value(PARAM_TEXT, 'By turns, by the trail of their team: the next knot', VALUE_OPTIONAL),
             'nexttarget' => new external_value(PARAM_TEXT, 'By turns, by the trail: the team it will go for', VALUE_OPTIONAL),
         ], 'Battle of the course', VALUE_OPTIONAL);

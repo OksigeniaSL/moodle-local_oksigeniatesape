@@ -22,6 +22,7 @@ use core_external\external_multiple_structure;
 use core_external\external_single_structure;
 use core_external\external_value;
 use local_oksigeniatesape\local\characters;
+use local_oksigeniatesape\local\creatures;
 use local_oksigeniatesape\local\engine;
 use local_oksigeniatesape\local\ideas;
 use local_oksigeniatesape\local\minigames;
@@ -82,7 +83,8 @@ final class get_minigame extends external_api {
             $params['game'],
             (int) $member->step,
             (string) $char->role,
-            talents::acting($char, $params['courseid'])
+            talents::acting($char, $params['courseid']),
+            creatures::sniffs($char)
         );
         if (!$config) {
             throw new \moodle_exception('nominigame', 'local_oksigeniatesape');
@@ -167,6 +169,7 @@ final class get_minigame extends external_api {
             'looks' => new external_value(PARAM_INT, 'Looks of the sage in a play', VALUE_DEFAULT, 0),
             'ahead' => new external_value(PARAM_INT, 'Things the scout sees coming', VALUE_DEFAULT, 0),
             'extra' => new external_value(PARAM_INT, 'Slips more the protector holds', VALUE_DEFAULT, 0),
+            'sniffs' => new external_value(PARAM_INT, 'Times the creature points out a case in a play', VALUE_DEFAULT, 0),
         ]);
     }
 }

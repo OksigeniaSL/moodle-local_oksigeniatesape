@@ -231,9 +231,11 @@
       // With a talent that changes it, the passive tells it so («Keen eye»: two looks; «Far sight»: two things).
       var key = 'app_passive_' + role + ((role === 'sage' && m.game.looks > 1) || (role === 'scout' && m.game.ahead > 1) ||
         (role === 'protector' && m.game.extra > 1) ? '_two' : '');
+      // And the creature, from its second stage: it sniffs a case once a play.
       return '<p class="help game-passive">' + T.icon(role === 'sage' ? 'lens' : role === 'scout' ? 'trail' :
         role === 'protector' ? 'shield' : 'energy') + esc(t(key, {name: name, streak: m.game.streak, misses: m.game.misses})) +
-        '</p>';
+        '</p>' + (m.game.sniffs ? '<p class="help game-passive">' + T.icon('trail') + esc(t('app_passive_sniff_note')) +
+        '</p>' : '');
     };
 
     /**
@@ -242,7 +244,7 @@
      * @return {boolean}
      */
     m.lookSpent = function() {
-      return m.flow.looked >= (m.game.looks || 1);
+      return m.flow.looked >= (m.game.looks || 0) + (m.game.sniffs || 0);
     };
 
     /**
@@ -251,9 +253,13 @@
      * @return {string}
      */
     m.lookButton = function() {
-      return m.game.passive === 'sage' ? '<button class="btn btn-soft icon-btn game-look" type="button" data-look ' +
-        'aria-label="' + esc(t('app_passive_look')) + '" title="' + esc(t('app_passive_look')) + '">' + T.icon('lens') +
-        '</button>' : '';
+      if (!(m.game.looks || 0) && !(m.game.sniffs || 0)) {
+        return '';
+      }
+      // The sage looks; the creature, from its second stage, sniffs: the same help, once a play each.
+      var label = t(m.game.looks ? 'app_passive_look' : 'app_passive_sniff');
+      return '<button class="btn btn-soft icon-btn game-look" type="button" data-look aria-label="' + esc(label) +
+        '" title="' + esc(label) + '">' + T.icon(m.game.looks ? 'lens' : 'trail') + '</button>';
     };
 
     /**
