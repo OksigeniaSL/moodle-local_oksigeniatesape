@@ -676,7 +676,7 @@
     function next() {
       var n = sc.nodes[run.node];
       // In a play as a team, each new decision passes to the next one of the team.
-      if (/^(choice|classify|order|path|tend)$/.test(n.type)) {
+      if (/^(choice|classify|order|path|tend|find|use|justify)$/.test(n.type)) {
         if (run.decided && run.decided !== run.node) {
           run.turn++;
         }
@@ -1541,7 +1541,7 @@
                 T.toast(esc(t('app_extraquestion')));
                 next();
               } else {
-                go(target);
+                revealAfter(n, [o], target);
               }
             });
             return;
@@ -1578,7 +1578,7 @@
             }
           });
           reveal(body, selected.map(pick), function() {
-            go(n.next);
+            revealAfter(n, selected.map(pick), n.next);
           });
         };
       }
@@ -1917,6 +1917,25 @@
     }
 
     /**
+     * What was not known when deciding, told after the consequences (`reveal_after`, with `reveal_image` and
+     * `reveal_speaker`): and how each option picked looks now (`after`). Then on to where the decision leads.
+     *
+     * @param {Object} n The node.
+     * @param {Object[]} picked The options picked.
+     * @param {string} target
+     */
+    function revealAfter(n, picked, target) {
+      if (!n.reveal_after) {
+        go(target);
+        return;
+      }
+      var text = [tx(n.reveal_after)].concat(picked.map(function(o) {
+        return o.after ? tx(o.after) : '';
+      })).filter(Boolean).join(' ');
+      story({type: 'story', text: text, image: n.reveal_image, speaker: n.reveal_speaker, next: target});
+    }
+
+    /**
      * A choice told as a card to fill in (`layout: card`): a blank card with as many gaps as pieces go in, and the
      * pieces below. A piece is taken to the card by dragging it or with a touch (or Enter); touched in the card, it goes
      * back. With the card full, it is handed in, and the world answers for each piece as in any choice of several.
@@ -2039,7 +2058,7 @@
             }
           });
           reveal(body, placed.map(pick), function() {
-            go(n.next);
+            revealAfter(n, placed.map(pick), n.next);
           });
         };
       }

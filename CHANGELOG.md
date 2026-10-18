@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.121.0 (2026-10-18)
+
+- **What was not known when deciding.** A decision can tell, after its consequences, what was missing when it was
+  taken (`reveal_after`, with its picture and who speaks) and how each option picked looks now (`after`); then the
+  scene goes on. It is told, it does not change the evidence. Its texts can be changed in the Workshop.
+- In a scene played as a team, the hand passes on the decisions of the new verbs (`find`, `use`, `justify`) too.
+- Mission «Los seres vivos» v52: in «El caso del lince», after choosing the measures, what was done for real.
+
 ## 0.120.0 (2026-10-18)
 
 - **A card to fill in.** A decision of several can be told as a blank card (`layout: card`): as many gaps as pieces go

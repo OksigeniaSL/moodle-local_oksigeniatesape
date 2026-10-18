@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 51,
+ "version": 52,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 52,
+   "kind": "improvement",
+   "date": "2026-10-18",
+   "text": "En «El caso del lince», después de elegir las medidas se cuenta lo que se hizo de verdad y cómo queda cada medida elegida"
+  },
   {
    "version": 51,
    "kind": "improvement",

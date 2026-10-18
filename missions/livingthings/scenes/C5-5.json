@@ -175,6 +175,9 @@
     "min": 3,
     "max": 3
    },
+   "reveal_after": "Años después, el informe cuenta lo que se hizo de verdad: se vacunó a los conejos y se les dieron refugios, se criaron linces en centros y se soltaron donde había conejos, y se hicieron pasos bajo las carreteras. Con las tres cosas a la vez, de menos de cien linces en 2002 se pasó a 2.663 en 2025.",
+   "reveal_speaker": "garza",
+   "reveal_image": "lago-informe",
    "hints": [
     "¿Qué come el lince? Lo primero es que tenga qué comer.",
     "Una medida que no cambia nada en la cadena no mueve la gráfica.",
@@ -187,7 +190,8 @@
      "correct": true,
      "points": 3,
      "objective": "SV-06",
-     "feedback": "La gráfica sube: con conejo, el lince cría. Sin su presa principal, nada de lo demás serviría."
+     "feedback": "La gráfica sube: con conejo, el lince cría. Sin su presa principal, nada de lo demás serviría.",
+     "after": "Recuperar los conejos fue de lo primero que se hizo."
     },
     {
      "id": "criar",
@@ -195,7 +199,8 @@
      "correct": true,
      "points": 3,
      "objective": "SV-08",
-     "feedback": "La gráfica sube, y además en más sitios: donde había uno, ahora hay varios grupos de linces."
+     "feedback": "La gráfica sube, y además en más sitios: donde había uno, ahora hay varios grupos de linces.",
+     "after": "Los centros de cría soltaron cientos de linces."
     },
     {
      "id": "pasos",
@@ -203,21 +208,24 @@
      "correct": true,
      "points": 2,
      "objective": "SV-08",
-     "feedback": "La gráfica deja de dar bajones: menos linces mueren cruzando. No sube sola con esto, pero no se hunde."
+     "feedback": "La gráfica deja de dar bajones: menos linces mueren cruzando. No sube sola con esto, pero no se hunde.",
+     "after": "Los pasos se hicieron en las carreteras donde más linces morían."
     },
     {
      "id": "pintar",
      "label": "Pintar a los linces de colores vivos para que los coches los vean",
      "correct": false,
      "objective": "SV-08",
-     "feedback": "La gráfica no se mueve. Los coches no frenan por el color, los conejos no aparecen y el lince pintado no caza nada."
+     "feedback": "La gráfica no se mueve. Los coches no frenan por el color, los conejos no aparecen y el lince pintado no caza nada.",
+     "after": "A nadie se le ocurrió pintarlos: no habría servido de nada."
     },
     {
      "id": "prohibir",
      "label": "Prohibir los conejos, que se comen los cultivos",
      "correct": false,
      "objective": "SV-06",
-     "feedback": "La gráfica cae en picado: sin conejos, el lince no tiene qué comer. La cadena, hacia atrás, siempre."
+     "feedback": "La gráfica cae en picado: sin conejos, el lince no tiene qué comer. La cadena, hacia atrás, siempre.",
+     "after": "Nadie prohibió los conejos: sin ellos, el lince habría desaparecido."
     }
    ],
    "next": "resultado"
