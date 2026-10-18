@@ -1,12 +1,24 @@
 {
  "code": "livingthings",
- "version": 39,
+ "version": 41,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 41,
+   "kind": "improvement",
+   "date": "2026-10-18",
+   "text": "El catálogo de seres y cosas de la misión (69 fichas con sus rasgos); el pájaro de «¿Quién está vivo?» es el mismo que el de Defensa del nido"
+  },
+  {
+   "version": 40,
+   "kind": "fix",
+   "date": "2026-10-18",
+   "text": "El caballito de mar de Defensa del nido es el mismo ser que el de los encuentros, con un solo dibujo"
+  },
   {
    "version": 39,
    "kind": "improvement",
@@ -2424,7 +2436,7 @@
      },
      "group": "fish"
     },
-    "caballito": {
+    "caballitodemar": {
      "label": "caballito de mar",
      "group": "fish",
      "why": "No lo parece, pero respira por branquias y tiene aletas. Es un pez."
@@ -2533,7 +2545,7 @@
       "rana",
       "salamandra",
       "pezrio",
-      "caballito",
+      "caballitodemar",
       "mariquita",
       "arana",
       "caracol",
@@ -2563,7 +2575,7 @@
       "caiman",
       "salamandra",
       "sapo",
-      "caballito",
+      "caballitodemar",
       "tiburon",
       "abeja",
       "mariposa",
@@ -2596,7 +2608,7 @@
       "caiman",
       "salamandra",
       "sapo",
-      "caballito",
+      "caballitodemar",
       "tiburon",
       "abeja",
       "mariposa",
@@ -2639,7 +2651,7 @@
      "label": "hormiga",
      "alive": true
     },
-    "pajaro": {
+    "pajarillo": {
      "label": {
       "es": "gorrión",
       "py": "benteveo",
@@ -2774,7 +2786,7 @@
      "things": [
       "caracol",
       "hormiga",
-      "pajaro",
+      "pajarillo",
       "rana",
       "arbol",
       "lechuga",
@@ -2793,7 +2805,7 @@
      "things": [
       "caracol",
       "lombriz",
-      "pajaro",
+      "pajarillo",
       "arbol",
       "seta",
       "semilla",
@@ -3908,6 +3920,853 @@
    "why": "Anotar la fecha, el lugar y lo observado permite comparar y que otros lo comprueben."
   }
  ],
+ "things": {
+  "caracol": {
+   "label": "caracol",
+   "name": "el caracol",
+   "alive": true,
+   "group": "molusco",
+   "cover": "concha",
+   "legs": 0,
+   "breath": "pulmones",
+   "born": "huevo",
+   "eats": "herbivoro",
+   "habitat": [
+    "tierra"
+   ]
+  },
+  "hormiga": {
+   "label": "hormiga",
+   "name": "la hormiga",
+   "alive": true,
+   "group": "insecto",
+   "cover": "exoesqueleto",
+   "legs": 6,
+   "breath": "traqueas",
+   "born": "huevo",
+   "eats": "omnivoro",
+   "habitat": [
+    "tierra",
+    "subsuelo"
+   ]
+  },
+  "paloma": {
+   "label": "paloma",
+   "name": "la paloma",
+   "alive": true,
+   "group": "ave",
+   "cover": "plumas",
+   "legs": 2,
+   "breath": "pulmones",
+   "born": "huevo",
+   "eats": "herbivoro",
+   "habitat": [
+    "tierra"
+   ],
+   "note": "Alimenta a sus pichones con «leche de buche», pero tiene plumas y nace de un huevo: es un ave."
+  },
+  "dientedeleon": {
+   "label": "diente de león",
+   "name": "el diente de león",
+   "alive": true,
+   "group": "planta",
+   "born": "semilla",
+   "eats": "fotosintesis",
+   "habitat": [
+    "tierra"
+   ]
+  },
+  "rana": {
+   "label": "rana",
+   "name": "la rana",
+   "alive": true,
+   "group": "anfibio",
+   "cover": "piel-humeda",
+   "legs": 4,
+   "breath": [
+    "pulmones",
+    "piel"
+   ],
+   "born": "huevo",
+   "eats": "carnivoro",
+   "habitat": [
+    "agua-dulce",
+    "tierra"
+   ],
+   "note": "De renacuajo vive en el agua y respira por branquias; de adulta, por pulmones y por la piel."
+  },
+  "galapago": {
+   "label": "galápago",
+   "name": "el galápago",
+   "alive": true,
+   "group": "reptil",
+   "cover": "escamas",
+   "legs": 4,
+   "breath": "pulmones",
+   "born": "huevo",
+   "eats": "omnivoro",
+   "habitat": [
+    "agua-dulce",
+    "tierra"
+   ],
+   "note": "Es una tortuga de agua dulce: aunque lleva caparazón, tiene escamas y respira por pulmones, como los demás reptiles."
+  },
+  "raton": {
+   "label": "ratón",
+   "name": "el ratón",
+   "alive": true,
+   "group": "mamifero",
+   "cover": "pelo",
+   "legs": 4,
+   "breath": "pulmones",
+   "born": "vivo",
+   "eats": "omnivoro",
+   "habitat": [
+    "tierra",
+    "casa"
+   ]
+  },
+  "pececillodeplata": {
+   "label": "pececillo de plata",
+   "name": "el pececillo de plata",
+   "alive": true,
+   "group": "insecto",
+   "cover": "exoesqueleto",
+   "legs": 6,
+   "breath": "traqueas",
+   "born": "huevo",
+   "habitat": [
+    "casa"
+   ],
+   "note": "Se llama pez por su brillo plateado y por cómo se escurre, pero tiene seis patas: es un insecto."
+  },
+  "moho": {
+   "label": "moho del pan",
+   "name": "el moho",
+   "alive": true,
+   "group": "hongo",
+   "born": "espora",
+   "eats": "descomponedor",
+   "habitat": [
+    "casa"
+   ],
+   "note": "Es un hongo diminuto: se alimenta del pan, crece y se reproduce."
+  },
+  "arana": {
+   "label": "araña",
+   "name": "la araña",
+   "alive": true,
+   "group": "aracnido",
+   "cover": "exoesqueleto",
+   "legs": 8,
+   "born": "huevo",
+   "eats": "carnivoro",
+   "habitat": [
+    "tierra",
+    "casa"
+   ],
+   "note": "Tiene ocho patas: no es un insecto, es un arácnido."
+  },
+  "caballitodemar": {
+   "label": "caballito de mar",
+   "name": "el caballito de mar",
+   "alive": true,
+   "group": "pez",
+   "legs": 0,
+   "breath": "branquias",
+   "born": "huevo",
+   "eats": "carnivoro",
+   "habitat": [
+    "mar"
+   ],
+   "note": "Aunque no lo parezca, es un pez: respira por branquias y tiene aletas; las crías salen de huevos que lleva el padre en una bolsa."
+  },
+  "pulpo": {
+   "label": "pulpo",
+   "name": "el pulpo",
+   "alive": true,
+   "group": "molusco",
+   "cover": "piel-blanda",
+   "legs": 0,
+   "breath": "branquias",
+   "born": "huevo",
+   "eats": "carnivoro",
+   "habitat": [
+    "mar"
+   ],
+   "note": "Tiene ocho brazos, no patas, y aunque no tiene concha, su cuerpo es blando: es un molusco."
+  },
+  "ciervo": {
+   "label": "ciervo",
+   "name": "el ciervo",
+   "alive": true,
+   "group": "mamifero",
+   "cover": "pelo",
+   "legs": 4,
+   "breath": "pulmones",
+   "born": "vivo",
+   "eats": "herbivoro",
+   "habitat": [
+    "tierra"
+   ]
+  },
+  "pajarocarpintero": {
+   "label": "pájaro carpintero",
+   "name": "el pájaro carpintero",
+   "alive": true,
+   "group": "ave",
+   "cover": "plumas",
+   "legs": 2,
+   "breath": "pulmones",
+   "born": "huevo",
+   "habitat": [
+    "tierra"
+   ]
+  },
+  "salamandra": {
+   "label": "salamandra",
+   "name": "la salamandra",
+   "alive": true,
+   "group": "anfibio",
+   "cover": "piel-humeda",
+   "legs": 4,
+   "breath": [
+    "pulmones",
+    "piel"
+   ],
+   "eats": "carnivoro",
+   "habitat": [
+    "tierra"
+   ],
+   "note": "Parece un lagarto, pero tiene la piel húmeda y sin escamas: es un anfibio."
+  },
+  "seta": {
+   "label": "seta",
+   "name": "la seta",
+   "alive": true,
+   "group": "hongo",
+   "born": "espora",
+   "eats": "descomponedor",
+   "habitat": [
+    "tierra",
+    "subsuelo"
+   ],
+   "note": "No se mueve ni tiene hojas, pero se nutre, se relaciona y se reproduce: es un hongo."
+  },
+  "culebra": {
+   "label": "culebra",
+   "name": "la culebra",
+   "alive": true,
+   "group": "reptil",
+   "cover": "escamas",
+   "legs": 0,
+   "breath": "pulmones",
+   "born": "huevo",
+   "eats": "carnivoro",
+   "habitat": [
+    "tierra"
+   ],
+   "note": "No tiene patas, pero tiene columna vertebral, escamas y pulmones: es un reptil."
+  },
+  "garrapata": {
+   "label": "garrapata",
+   "name": "la garrapata",
+   "alive": true,
+   "group": "aracnido",
+   "cover": "exoesqueleto",
+   "legs": 8,
+   "breath": "traqueas",
+   "born": "huevo",
+   "eats": "parasito",
+   "habitat": [
+    "tierra"
+   ],
+   "note": "Al salir del huevo tiene seis patas, pero de adulta tiene ocho: es un arácnido, no un insecto."
+  },
+  "girasol": {
+   "label": "girasol",
+   "name": "el girasol",
+   "alive": true,
+   "group": "planta",
+   "born": "semilla",
+   "eats": "fotosintesis",
+   "habitat": [
+    "tierra"
+   ]
+  },
+  "mariposa": {
+   "label": "mariposa",
+   "name": "la mariposa",
+   "alive": true,
+   "group": "insecto",
+   "cover": "exoesqueleto",
+   "legs": 6,
+   "breath": "traqueas",
+   "born": "huevo",
+   "eats": "herbivoro",
+   "habitat": [
+    "tierra"
+   ],
+   "note": "De pequeña es una oruga, que parece un gusano, pero es un insecto."
+  },
+  "babosa": {
+   "label": "babosa",
+   "name": "la babosa",
+   "alive": true,
+   "group": "molusco",
+   "cover": "piel-blanda",
+   "legs": 0,
+   "breath": "pulmones",
+   "born": "huevo",
+   "eats": "herbivoro",
+   "habitat": [
+    "tierra"
+   ],
+   "note": "Parece un gusano, pero es como un caracol sin concha: un molusco."
+  },
+  "lombriz": {
+   "label": "lombriz",
+   "name": "la lombriz",
+   "alive": true,
+   "group": "gusano",
+   "cover": "piel-blanda",
+   "legs": 0,
+   "breath": "piel",
+   "born": "huevo",
+   "eats": "descomponedor",
+   "habitat": [
+    "subsuelo"
+   ],
+   "note": "Tiene la piel húmeda, como la rana, pero no tiene esqueleto ni columna: es un invertebrado."
+  },
+  "sapo": {
+   "label": "sapo",
+   "name": "el sapo",
+   "alive": true,
+   "group": "anfibio",
+   "legs": 4,
+   "breath": [
+    "pulmones",
+    "piel"
+   ],
+   "born": "huevo",
+   "eats": "carnivoro",
+   "habitat": [
+    "tierra"
+   ],
+   "note": "Tiene la piel áspera y con verrugas, pero sin escamas, y de pequeño vive en el agua: es un anfibio."
+  },
+  "abeja": {
+   "label": "abeja",
+   "name": "la abeja",
+   "alive": true,
+   "group": "insecto",
+   "cover": "exoesqueleto",
+   "legs": 6,
+   "breath": "traqueas",
+   "born": "huevo",
+   "eats": "herbivoro",
+   "habitat": [
+    "tierra"
+   ]
+  },
+  "martinpescador": {
+   "label": "martín pescador",
+   "name": "el martín pescador",
+   "alive": true,
+   "group": "ave",
+   "cover": "plumas",
+   "legs": 2,
+   "breath": "pulmones",
+   "born": "huevo",
+   "eats": "carnivoro",
+   "habitat": [
+    "agua-dulce"
+   ]
+  },
+  "carpa": {
+   "label": "carpa",
+   "name": "la carpa",
+   "alive": true,
+   "group": "pez",
+   "cover": "escamas",
+   "legs": 0,
+   "breath": "branquias",
+   "born": "huevo",
+   "eats": "omnivoro",
+   "habitat": [
+    "agua-dulce"
+   ]
+  },
+  "nenufar": {
+   "label": "nenúfar",
+   "name": "el nenúfar",
+   "alive": true,
+   "group": "planta",
+   "born": "semilla",
+   "eats": "fotosintesis",
+   "habitat": [
+    "agua-dulce"
+   ]
+  },
+  "luciernaga": {
+   "label": "luciérnaga",
+   "name": "la luciérnaga",
+   "alive": true,
+   "group": "insecto",
+   "cover": "exoesqueleto",
+   "legs": 6,
+   "breath": "traqueas",
+   "born": "huevo",
+   "habitat": [
+    "tierra"
+   ],
+   "note": "Brilla en la oscuridad, pero es un escarabajo: un insecto de seis patas."
+  },
+  "trucha": {
+   "label": "trucha",
+   "name": "la trucha",
+   "alive": true,
+   "group": "pez",
+   "cover": "escamas",
+   "legs": 0,
+   "breath": "branquias",
+   "born": "huevo",
+   "eats": "carnivoro",
+   "habitat": [
+    "agua-dulce"
+   ]
+  },
+  "sanguijuela": {
+   "label": "sanguijuela",
+   "name": "la sanguijuela",
+   "alive": true,
+   "group": "gusano",
+   "cover": "piel-blanda",
+   "legs": 0,
+   "breath": "piel",
+   "born": "huevo",
+   "eats": "parasito",
+   "habitat": [
+    "agua-dulce"
+   ],
+   "note": "Vive en el agua y chupa sangre, pero es un gusano de anillos, pariente de la lombriz."
+  },
+  "murcielago": {
+   "label": "murciélago",
+   "name": "el murciélago",
+   "alive": true,
+   "group": "mamifero",
+   "cover": "pelo",
+   "legs": 2,
+   "breath": "pulmones",
+   "born": "vivo",
+   "eats": "carnivoro",
+   "habitat": [
+    "tierra"
+   ],
+   "note": "Vuela con alas de piel, que son sus manos, pero tiene pelo y de cría toma leche: es un mamífero."
+  },
+  "lechuza": {
+   "label": "lechuza",
+   "name": "la lechuza",
+   "alive": true,
+   "group": "ave",
+   "cover": "plumas",
+   "legs": 2,
+   "breath": "pulmones",
+   "born": "huevo",
+   "eats": "carnivoro",
+   "habitat": [
+    "tierra"
+   ]
+  },
+  "musgo": {
+   "label": "musgo",
+   "name": "el musgo",
+   "alive": true,
+   "group": "planta",
+   "born": "espora",
+   "eats": "fotosintesis",
+   "habitat": [
+    "tierra"
+   ],
+   "note": "Es una planta muy pequeña y sin flores, y está vivo, aunque crezca sobre una piedra."
+  },
+  "lagartija": {
+   "label": "lagartija",
+   "name": "la lagartija",
+   "alive": true,
+   "group": "reptil",
+   "cover": "escamas",
+   "legs": 4,
+   "breath": "pulmones",
+   "born": "huevo",
+   "eats": "carnivoro",
+   "habitat": [
+    "tierra"
+   ]
+  },
+  "escorpion": {
+   "label": {
+    "es": "escorpión",
+    "py": "alacrán",
+    "gen": "escorpión"
+   },
+   "name": "el escorpión",
+   "alive": true,
+   "group": "aracnido",
+   "cover": "exoesqueleto",
+   "legs": 8,
+   "born": "vivo",
+   "eats": "carnivoro",
+   "habitat": [
+    "tierra"
+   ],
+   "note": "Tiene ocho patas, sin contar las dos pinzas: es un arácnido, como las arañas."
+  },
+  "vencejo": {
+   "label": "vencejo",
+   "name": "el vencejo",
+   "alive": true,
+   "group": "ave",
+   "cover": "plumas",
+   "legs": 2,
+   "breath": "pulmones",
+   "born": "huevo",
+   "eats": "carnivoro",
+   "habitat": [
+    "aire"
+   ]
+  },
+  "felino": {
+   "label": {
+    "es": "lince ibérico",
+    "py": "yaguareté",
+    "gen": "gato montés"
+   },
+   "alive": true,
+   "group": "mamifero",
+   "cover": "pelo",
+   "legs": 4,
+   "breath": "pulmones",
+   "born": "vivo",
+   "eats": "carnivoro",
+   "habitat": [
+    "tierra"
+   ]
+  },
+  "roedor": {
+   "label": {
+    "es": "conejo",
+    "py": "carpincho",
+    "gen": "ardilla"
+   },
+   "alive": true,
+   "group": "mamifero",
+   "cover": "pelo",
+   "legs": 4,
+   "breath": "pulmones",
+   "born": "vivo"
+  },
+  "delfin": {
+   "label": "delfín",
+   "alive": true,
+   "group": "mamifero",
+   "legs": 0,
+   "breath": "pulmones",
+   "born": "vivo",
+   "eats": "carnivoro",
+   "habitat": [
+    "mar"
+   ],
+   "note": "Vive en el agua, pero respira aire y de cría toma leche: es un mamífero."
+  },
+  "zancuda": {
+   "label": {
+    "es": "cigüeña",
+    "py": "tucán",
+    "gen": "garza"
+   },
+   "alive": true,
+   "group": "ave",
+   "cover": "plumas",
+   "legs": 2,
+   "breath": "pulmones",
+   "born": "huevo"
+  },
+  "pajarillo": {
+   "label": {
+    "es": "gorrión",
+    "py": "benteveo",
+    "gen": "paloma"
+   },
+   "alive": true,
+   "group": "ave",
+   "cover": "plumas",
+   "legs": 2,
+   "breath": "pulmones",
+   "born": "huevo",
+   "habitat": [
+    "tierra"
+   ]
+  },
+  "pinguino": {
+   "label": "pingüino",
+   "alive": true,
+   "group": "ave",
+   "cover": "plumas",
+   "legs": 2,
+   "breath": "pulmones",
+   "born": "huevo",
+   "eats": "carnivoro",
+   "habitat": [
+    "mar",
+    "tierra"
+   ],
+   "note": "No vuela y nada en el mar, pero tiene plumas y pico: es un ave."
+  },
+  "corredora": {
+   "label": {
+    "es": "avestruz",
+    "py": "ñandú",
+    "gen": "avestruz"
+   },
+   "alive": true,
+   "group": "ave",
+   "cover": "plumas",
+   "legs": 2,
+   "breath": "pulmones",
+   "born": "huevo",
+   "eats": "omnivoro",
+   "habitat": [
+    "tierra"
+   ],
+   "note": "No vuela, pero tiene plumas y pico: es un ave."
+  },
+  "lagarto": {
+   "label": {
+    "es": "lagartija",
+    "py": "teyú",
+    "gen": "lagartija"
+   },
+   "alive": true,
+   "group": "reptil",
+   "cover": "escamas",
+   "legs": 4,
+   "breath": "pulmones",
+   "born": "huevo",
+   "habitat": [
+    "tierra"
+   ]
+  },
+  "tortuga": {
+   "label": "tortuga",
+   "alive": true,
+   "group": "reptil",
+   "cover": "escamas",
+   "legs": 4,
+   "breath": "pulmones",
+   "born": "huevo",
+   "note": "Lleva caparazón, pero tiene escamas y respira por pulmones: es un reptil."
+  },
+  "caiman": {
+   "label": {
+    "es": "cocodrilo",
+    "py": "yacaré",
+    "gen": "cocodrilo"
+   },
+   "alive": true,
+   "group": "reptil",
+   "cover": "escamas",
+   "legs": 4,
+   "breath": "pulmones",
+   "born": "huevo",
+   "eats": "carnivoro",
+   "habitat": [
+    "agua-dulce",
+    "tierra"
+   ]
+  },
+  "pezrio": {
+   "label": {
+    "es": "trucha",
+    "py": "dorado",
+    "gen": "trucha"
+   },
+   "alive": true,
+   "group": "pez",
+   "cover": "escamas",
+   "legs": 0,
+   "breath": "branquias",
+   "born": "huevo",
+   "eats": "carnivoro",
+   "habitat": [
+    "agua-dulce"
+   ]
+  },
+  "tiburon": {
+   "label": "tiburón",
+   "alive": true,
+   "group": "pez",
+   "cover": "escamas",
+   "legs": 0,
+   "breath": "branquias",
+   "eats": "carnivoro",
+   "habitat": [
+    "mar"
+   ],
+   "note": "Se parece al delfín, pero respira por branquias y su piel está cubierta de escamas diminutas: es un pez."
+  },
+  "mariquita": {
+   "label": {
+    "es": "mariquita",
+    "py": "vaquita de San Antonio",
+    "gen": "mariquita"
+   },
+   "alive": true,
+   "group": "insecto",
+   "cover": "exoesqueleto",
+   "legs": 6,
+   "breath": "traqueas",
+   "born": "huevo",
+   "eats": "carnivoro",
+   "habitat": [
+    "tierra"
+   ]
+  },
+  "arbol": {
+   "label": {
+    "es": "encina",
+    "py": "lapacho",
+    "gen": "árbol"
+   },
+   "alive": true,
+   "group": "planta",
+   "born": "semilla",
+   "eats": "fotosintesis",
+   "habitat": [
+    "tierra"
+   ],
+   "note": "No se mueve de sitio, pero se nutre, crece y se reproduce."
+  },
+  "lechuga": {
+   "label": "lechuga de la huerta",
+   "alive": true,
+   "group": "planta",
+   "born": "semilla",
+   "eats": "fotosintesis",
+   "habitat": [
+    "tierra"
+   ],
+   "note": "Es una planta: se nutre, crece y da semillas."
+  },
+  "semilla": {
+   "label": "semilla",
+   "alive": true,
+   "group": "planta",
+   "note": "Parece dormida, pero lleva dentro una planta viva que espera el agua para crecer."
+  },
+  "cactus": {
+   "label": "cactus",
+   "alive": true,
+   "group": "planta",
+   "born": "semilla",
+   "eats": "fotosintesis",
+   "habitat": [
+    "tierra"
+   ],
+   "note": "Tiene espinas en vez de hojas, pero es una planta: se nutre, crece y se reproduce."
+  },
+  "alga": {
+   "label": "alga",
+   "alive": true,
+   "group": "alga",
+   "eats": "fotosintesis",
+   "habitat": [
+    "agua-dulce",
+    "mar"
+   ],
+   "note": "Vive en el agua y fabrica su alimento con la luz, como las plantas."
+  },
+  "coral": {
+   "label": "coral",
+   "alive": true,
+   "group": "otroinvertebrado",
+   "legs": 0,
+   "habitat": [
+    "mar"
+   ],
+   "note": "Parece una piedra, pero es un animal que vive pegado al fondo del mar."
+  },
+  "levadura": {
+   "label": "levadura",
+   "alive": true,
+   "group": "hongo",
+   "note": "Son hongos tan pequeños que no se ven, y hinchan la masa del pan porque se alimentan y crecen."
+  },
+  "bacteria": {
+   "label": "bacteria",
+   "alive": true,
+   "group": "bacteria",
+   "born": "division",
+   "note": "No se ve sin microscopio, pero es un ser vivo de una sola célula."
+  },
+  "piedra": {
+   "label": "piedra",
+   "alive": false
+  },
+  "agua": {
+   "label": "gota de agua",
+   "alive": false,
+   "note": "Todos los seres vivos la necesitan, pero el agua no está viva."
+  },
+  "sol": {
+   "label": "sol",
+   "alive": false,
+   "note": "Da luz y calor a los seres vivos, pero no se nutre ni se reproduce."
+  },
+  "nube": {
+   "label": "nube",
+   "alive": false,
+   "note": "Se mueve y cambia de forma, pero no se nutre ni se reproduce."
+  },
+  "robot": {
+   "label": "robot de juguete",
+   "alive": false,
+   "note": "Se mueve y hace ruido, pero no se nutre, ni crece, ni se reproduce."
+  },
+  "fuego": {
+   "label": "fuego",
+   "alive": false,
+   "note": "Crece, se mueve y gasta leña, pero no se reproduce ni está hecho de células."
+  },
+  "rio": {
+   "label": "río",
+   "alive": false,
+   "note": "Se mueve y suena, pero es agua: no se nutre ni se reproduce."
+  },
+  "hojaseca": {
+   "label": "hoja seca",
+   "alive": false,
+   "note": "Fue parte de un árbol vivo, pero ya no se nutre ni crece."
+  },
+  "concha": {
+   "label": "concha vacía",
+   "alive": false,
+   "note": "Fue la casa de un animal, pero está vacía: el animal ya no está."
+  },
+  "cristal": {
+   "label": "cristal de sal",
+   "alive": false,
+   "note": "Crece en el agua salada, pero no se nutre ni se reproduce."
+  },
+  "mesa": {
+   "label": "mesa de madera",
+   "alive": false,
+   "note": "La madera salió de un árbol, pero la mesa ya no se nutre ni crece."
+  }
+ },
  "scenes": [
   "C1-1",
   "C1-2",

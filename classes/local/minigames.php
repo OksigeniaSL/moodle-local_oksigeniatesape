@@ -208,7 +208,8 @@ final class minigames {
             $things[] = ['id' => (string) $id,
                 'label' => is_array($label) ? (string) ($label[$mission->variant] ?? $label['gen'] ?? reset($label)) : (string) $label,
                 'alive' => !empty($thing['alive']),
-                'why' => is_array($why) ? (string) ($why[$mission->variant] ?? $why['gen'] ?? reset($why)) : (string) $why];
+                'why' => is_array($why) ? (string) ($why[$mission->variant] ?? $why['gen'] ?? reset($why)) : (string) $why,
+                'picture' => self::picture($mission, (string) $id, !empty($thing['alive']))];
         }
         return [
             'code' => $code,
@@ -225,6 +226,20 @@ final class minigames {
             'shield' => 0,
             'speed' => (int) ($level['speed'] ?? 1),
         ];
+    }
+
+    /**
+     * The key of the drawing of a being or a thing of the mission in the art pack: being.<id> if it is alive in the
+     * catalog of the mission (or in the game, if the catalog does not have it), thing.<id> if not.
+     *
+     * @param \stdClass $mission
+     * @param string $id
+     * @param bool $alive As the game says.
+     * @return string
+     */
+    public static function picture(\stdClass $mission, string $id, bool $alive): string {
+        $card = $mission->data['things'][$id] ?? null;
+        return ((bool) ($card['alive'] ?? $alive) ? 'being.' : 'thing.') . $id;
     }
 
     /**

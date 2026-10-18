@@ -46,6 +46,20 @@
   };
 
   /**
+   * A being or a thing of the mission, drawn: its picture from the art pack, with its name under it; without a picture,
+   * its name alone (the reserve, until the art comes).
+   *
+   * @param {string} picture Key in the art pack (being.<id> or thing.<id>).
+   * @param {string} label
+   * @return {string}
+   */
+  T.thing = function(picture, label) {
+    var art = picture ? T.artUrl([picture]) : null;
+    return (art ? '<img class="thing-pic" src="' + esc(art) + '" alt="">' : '') + '<span class="thing-name">' + esc(label) +
+      '</span>';
+  };
+
+  /**
    * Opens a minigame: its layer, and its data from the server.
    *
    * @param {Object} opts code, world, onclose(world), as the map gives them.

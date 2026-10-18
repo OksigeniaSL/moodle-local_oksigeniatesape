@@ -139,6 +139,7 @@ final class get_minigame extends external_api {
                 'label' => new external_value(PARAM_TEXT, 'Name'),
                 'alive' => new external_value(PARAM_BOOL, 'Whether it is alive'),
                 'why' => new external_value(PARAM_TEXT, 'Why, when it is tricky'),
+                'picture' => new external_value(PARAM_RAW_TRIMMED, 'Key of its drawing in the art pack', VALUE_DEFAULT, ''),
             ]), 'What comes out of the holes in Who is alive?', VALUE_DEFAULT, []),
             'riddles' => new external_multiple_structure(new external_single_structure([
                 'id' => new external_value(PARAM_ALPHANUMEXT, 'Riddle'),

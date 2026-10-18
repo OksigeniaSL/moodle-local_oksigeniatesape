@@ -8247,3 +8247,18 @@ body.adapt-still .mission-grid .chapter.as-sheet {
     animation: none;
   }
 }
+
+/* ---------- A being or a thing of the mission, drawn ---------- */
+
+.thing-pic {
+  display: block;
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 2px;
+  object-fit: contain;
+}
+
+.whack-one .thing-pic {
+  width: 96px;
+  height: 96px;
+}

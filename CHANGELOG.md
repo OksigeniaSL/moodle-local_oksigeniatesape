@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.90.0 (2026-10-18)
+
+Block 3.5 of the plan: the catalog of beings and things.
+
+- **The catalog of the mission** (`things`): one card for each being and thing of the encounters, the defence of the
+  nest and Who is alive? (68), alive or not, with its group and, when they are sure for every variant of its name, its
+  traits (what covers it, legs, how it breathes, how it is born, what it eats, where it lives). One being, one id and
+  one drawing in every game: the seahorse and the bird of the nest are the same as in the encounters and in Who is
+  alive?
+- **The things of Who is alive? with their drawings** when the art pack brings them (`being.<id>` alive, `thing.<id>`
+  not), with their names; until then, the names. `T.thing` draws a being or a thing for any game.
+- The pilot mission, version 41.
+
 ## 0.89.0 (2026-10-18)
 
 Block 3.2 of the plan: the map changes with the decisions of the class.

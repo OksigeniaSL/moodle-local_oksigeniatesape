@@ -171,7 +171,7 @@ final class minigames_test extends \advanced_testcase {
         $this->resetAfterTest();
         $w = $this->make_class();
         $game = minigames::config($w->mission, 'nestdefence', 2);
-        $wrong = ['murcielago' => 'bird', 'pinguino' => 'fish', 'salamandra' => 'reptile', 'caballito' => ''];
+        $wrong = ['murcielago' => 'bird', 'pinguino' => 'fish', 'salamandra' => 'reptile', 'caballitodemar' => ''];
         $result = minigames::play($w->course->id, $w->user->id, 'nestdefence', $this->events($game, $wrong));
         $this->assertFalse($result['success']);
         $this->assertSame(4, $result['missed']);
@@ -390,6 +390,11 @@ final class minigames_test extends \advanced_testcase {
         $inert = array_values(array_filter($game['things'], fn($x) => !$x['alive']));
         $this->assertGreaterThanOrEqual($game['goal'], count($living));
         $this->assertGreaterThanOrEqual($game['misses'], count($inert));
+        // Each one with the key of its drawing, from the catalog of the mission: being.<id> or thing.<id>.
+        foreach ($game['things'] as $thing) {
+            $this->assertSame(($thing['alive'] ? 'being.' : 'thing.') . $thing['id'], $thing['picture']);
+            $this->assertArrayHasKey($thing['id'], $w->mission->data['things']);
+        }
         // Every living thing touched, and one thing that is not: won, with a slip.
         $touch = array_map(fn($x) => ['i' => $x['id']], $living);
         $events = array_merge($touch, [['i' => $inert[0]['id']]]);

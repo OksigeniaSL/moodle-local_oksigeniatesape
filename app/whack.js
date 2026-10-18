@@ -222,7 +222,7 @@
       var el = document.createElement('button');
       el.type = 'button';
       el.className = 'whack-thing';
-      el.textContent = thing.label;
+      el.innerHTML = T.thing(thing.picture, thing.label);
       el.setAttribute('aria-label', t('app_whack_hole', hole + 1) + ': ' + thing.label);
       layer.querySelector('[data-hole="' + hole + '"]').appendChild(el);
       var o = {thing: thing, el: el, hole: hole, left: stay(), done: false};
@@ -338,7 +338,7 @@
       m.ahead(run.queue.length ? t('app_passive_coming', run.queue[0].label) : '');
       var reads = T.adapted.readaloud && T.readAloud && window.speechSynthesis;
       var box = layer.querySelector('[data-one]');
-      box.innerHTML = '<div class="whack-thing up" data-thing>' + esc(thing.label) + '</div><p class="sr-only" ' +
+      box.innerHTML = '<div class="whack-thing up" data-thing>' + T.thing(thing.picture, thing.label) + '</div><p class="sr-only" ' +
         'aria-live="polite">' + esc(t('app_whack_comes', thing.label)) + '</p><div class="actions">' +
         (reads ? '<button type="button" class="btn btn-soft" data-read aria-label="' + esc(t('app_read_aloud')) +
         '">' + T.icon('speak') + '</button>' : '') + '<button class="btn btn-main" data-yes>' + esc(t('app_whack_yes')) + '</button>' +
