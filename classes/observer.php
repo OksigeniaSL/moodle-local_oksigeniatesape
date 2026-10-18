@@ -185,6 +185,7 @@ final class observer {
         if ($missions) {
             [$insql, $params] = $DB->get_in_or_equal($missions);
             $DB->set_field_select(self::T . 'chapter', 'litat', 0, "missionid $insql", $params);
+            $DB->set_field_select(self::T . 'chapter', 'skippedat', 0, "missionid $insql", $params);
         }
     }
 

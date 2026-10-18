@@ -151,6 +151,7 @@ final class structures {
                     'y' => new external_value(PARAM_INT, 'Percent from the top of the painting'),
                 ]), 'Where each thing of the place is on its painting', VALUE_DEFAULT, []),
                 'lit' => new external_value(PARAM_BOOL, 'Lantern of the class lit'),
+                'skipped' => new external_value(PARAM_BOOL, 'The class passed it by: lit without playing it', VALUE_DEFAULT, false),
                 'mine' => new external_value(PARAM_BOOL, 'Lantern of the student lit'),
                 'done' => new external_value(PARAM_BOOL, 'Scenes of the student done'),
                 'challengeid' => new external_value(PARAM_INT, 'Classroom challenge of the chapter (0: none)'),

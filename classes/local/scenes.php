@@ -81,10 +81,31 @@ final class scenes {
     public static function playable(int $courseid, int $sceneid): \stdClass {
         $scene = self::get($courseid, $sceneid);
         $mission = missions::get($courseid);
-        if (!$mission || (int) $scene->missionid !== (int) $mission->id) {
+        $off = $mission ? edits::off($courseid, (string) $mission->code) : [];
+        if (!$mission || (int) $scene->missionid !== (int) $mission->id || in_array((string) $scene->code, $off, true)) {
             throw new \moodle_exception('invalidgameplay', 'local_oksigeniatesape');
         }
         return $scene;
+    }
+
+    /**
+     * The scenes still in the game: without those the teachers of the course took out in the workshop.
+     *
+     * @param \stdClass[] $scenes Of one mission.
+     * @return \stdClass[]
+     */
+    public static function switched_on(array $scenes): array {
+        global $DB;
+        $first = reset($scenes);
+        if (!$first || empty($first->missionid)) {
+            return $scenes;
+        }
+        $mission = $DB->get_record(self::T . 'mission', ['id' => (int) $first->missionid], 'id, courseid, code');
+        if (!$mission) {
+            return $scenes;
+        }
+        $off = edits::off((int) $mission->courseid, (string) $mission->code);
+        return $off ? array_filter($scenes, fn($s) => !in_array((string) $s->code, $off, true)) : $scenes;
     }
 
     /**
@@ -96,8 +117,8 @@ final class scenes {
      * @return \stdClass[]
      */
     public static function for_step(array $scenes, int $step): array {
-        // Quests are apart: open to everybody, they are not anybody's route.
-        $scenes = array_filter($scenes, fn($s) => empty($s->quest));
+        // Quests are apart: open to everybody, they are not anybody's route. Nor what the teacher took out of the game.
+        $scenes = array_filter(self::switched_on($scenes), fn($s) => empty($s->quest));
         $mine = array_filter($scenes, fn($s) => (int) $s->step === $step || (int) $s->step === 0);
         if (!$mine) {
             $mine = array_filter($scenes, fn($s) => (int) $s->step === self::CORE_STEP);
@@ -112,7 +133,7 @@ final class scenes {
      * @return \stdClass[]
      */
     public static function quests(array $scenes): array {
-        $quests = array_values(array_filter($scenes, fn($s) => !empty($s->quest)));
+        $quests = array_values(array_filter(self::switched_on($scenes), fn($s) => !empty($s->quest)));
         usort($quests, fn($a, $b) => [(int) $a->step, $a->code] <=> [(int) $b->step, $b->code]);
         return $quests;
     }

@@ -801,5 +801,15 @@ function xmldb_local_oksigeniatesape_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026101824, 'local', 'oksigeniatesape');
     }
 
+    if ($oldversion < 2026101828) {
+        // A place the class passes by, from the workshop.
+        $table = new xmldb_table('local_oksigeniatesape_chapter');
+        $field = new xmldb_field('skippedat', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'readyat');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        upgrade_plugin_savepoint(true, 2026101828, 'local', 'oksigeniatesape');
+    }
+
     return true;
 }

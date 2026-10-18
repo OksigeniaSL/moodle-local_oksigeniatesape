@@ -33,7 +33,7 @@ use local_oksigeniatesape\local\missions;
  */
 final class edit_mission extends external_api {
     /** @var string[] What can be done. */
-    private const ACTIONS = ['view', 'save', 'questions', 'restore', 'export', 'import', 'courses', 'copy'];
+    private const ACTIONS = ['view', 'save', 'questions', 'restore', 'export', 'import', 'courses', 'copy', 'skip', 'challenge'];
 
     /**
      * Parameters.
@@ -43,7 +43,11 @@ final class edit_mission extends external_api {
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
             'courseid' => new external_value(PARAM_INT, 'Course'),
-            'action' => new external_value(PARAM_ALPHA, 'view, save, questions, restore, export, import, courses or copy'),
+            'action' => new external_value(
+                PARAM_ALPHA,
+                'view, save, questions, restore, export, import, courses, copy, skip (a place: value on, or empty to go ' .
+                    'back) or challenge (of a place: value, the classroom challenge, 0 none)'
+            ),
             'scene' => new external_value(
                 PARAM_RAW,
                 'Code of the scene, # for the places of the mission, empty: all',
@@ -106,6 +110,10 @@ final class edit_mission extends external_api {
                 throw new \invalid_parameter_exception('The questions are not a list');
             }
             edits::save_questions($params['courseid'], $questions);
+        } else if ($params['action'] === 'skip') {
+            edits::skip($params['courseid'], $scene, $params['value'] === 'on');
+        } else if ($params['action'] === 'challenge') {
+            edits::place_challenge($params['courseid'], $scene, (int) $params['value']);
         } else if ($params['action'] === 'restore') {
             edits::restore($params['courseid'], $scene === '' ? null : $scene);
         } else if ($params['action'] === 'export') {

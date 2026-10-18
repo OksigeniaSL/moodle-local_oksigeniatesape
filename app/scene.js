@@ -338,6 +338,8 @@
 
   T.playScene = function(opts) {
     var cm = opts.classmode || null;
+    // In the preview of the Workshop: what each answer counts for, beside it.
+    var evidence = !!(opts.preview && opts.evidence);
     var LETTERS = 'ABCDEF';
     var layer = document.createElement('div');
     layer.className = 'scene-layer' + (cm ? ' class-mode' : '');
@@ -1269,7 +1271,8 @@
         // What only the scout sees is there to be found: it shows when they follow the trail.
         var trail = !cm && o.requires && o.requires.role === 'scout' && !run.trailed[run.node];
         return '<button class="opt' + (trail ? ' trail' : '') + '" type="button" data-id="' + esc(o.id) + '"' +
-          (trail ? ' data-trail hidden' : '') + '>' + letter + esc(tx(o.label)) + '<span class="opt-votes" data-votes></span></button>';
+          (trail ? ' data-trail hidden' : '') + '>' + letter + esc(tx(o.label)) + evidenceTag(n, o) +
+          '<span class="opt-votes" data-votes></span></button>';
       }).join('');
       var voting = cm && cm.vote && !multi && open.length >= 2;
       var body = show((n.image ? picture(n.image, data) : '') + clueBox() + '<p class="scene-prompt">' + esc(tx(n.prompt)) +
@@ -1459,6 +1462,33 @@
      *
      * @param {Object} n The node.
      */
+    /**
+     * With «See what evidence it leaves», in the preview of the Workshop: what an answer counts for. An option, the
+     * objective and whether it is right; a thing to put in a group, the objective and its group.
+     *
+     * @param {Object} n The node.
+     * @param {Object} o The option or the thing.
+     * @param {string} [group] For a thing: the group where it goes.
+     * @return {string}
+     */
+    function evidenceTag(n, o, group) {
+      if (!evidence) {
+        return '';
+      }
+      if (n.dilemma) {
+        return '<span class="ev-tag">' + esc(t('app_ev_dilemma')) + '</span>';
+      }
+      var objective = o.objective || n.objective;
+      if (!objective) {
+        return '<span class="ev-tag">' + esc(t('app_ev_none')) + '</span>';
+      }
+      if (group !== undefined) {
+        return '<span class="ev-tag ok">' + esc(objective + ' → ' + group) + '</span>';
+      }
+      var ok = o.correct !== false && (o.correct === true || (o.points || 0) > 0);
+      return '<span class="ev-tag ' + (ok ? 'ok' : 'no') + '">' + esc(objective) + ' ' + (ok ? '✓' : '✗') + '</span>';
+    }
+
     function classify(n) {
       var once = n.retry === 'none';
       // With the aids of the first steps, the hard things stay out of the table.
@@ -1498,7 +1528,9 @@
         box.innerHTML = '<p class="help">' + esc(trip > 1 ? t('app_classify_again') : t('app_classify_help')) + '</p>' +
           '<div class="cls-table" role="group" aria-label="' + esc(t('app_classify_table')) + '">' + left.map(function(it) {
             return '<button type="button" class="cls-thing" data-thing="' + esc(it.id) + '" aria-pressed="' +
-              (chosen === it.id) + '">' + esc(tx(it.label)) + '</button>';
+              (chosen === it.id) + '">' + esc(tx(it.label)) + evidenceTag(n, it, tx((n.bins.filter(function(b) {
+                return b.id === it.bin;
+              })[0] || {}).label || it.bin)) + '</button>';
           }).join('') + locked.map(function(it) {
             return '<button type="button" class="cls-thing locked" disabled>' + esc(tx(it.label)) + '<small>' +
               esc(it.locked ? tx(it.locked) : missing(it.requires)) + '</small></button>';

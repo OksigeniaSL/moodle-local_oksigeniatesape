@@ -1729,7 +1729,8 @@
     var challenge = w.challenges.filter(function(x) {
       return x.id === ch.challengeid;
     })[0];
-    var lantern = ch.lit ? t('app_lantern_class') : ch.mine ? t('app_lantern_mine') : t('app_lantern_off');
+    var lantern = ch.skipped ? t('app_lantern_skipped') : ch.lit ? t('app_lantern_class') : ch.mine ? t('app_lantern_mine') :
+      t('app_lantern_off');
     // With teammates, a scene that can be played as a team: on one device, deciding together, for all who are there.
     var mates = w.team ? w.team.members.filter(function(m) {
       return !m.me;

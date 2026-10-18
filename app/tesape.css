@@ -794,6 +794,41 @@ body.tesape {
   margin: 6px 2px 12px;
 }
 
+/* A place the class passes by, in the Workshop. */
+.ws-skip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.ws-skip small,
+.ws-skip p {
+  color: var(--text-soft);
+  margin: 0;
+}
+
+/* In the preview of the Workshop: what each answer counts for. */
+.ev-tag {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: .72rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, .14);
+  vertical-align: middle;
+}
+
+.ev-tag.ok {
+  background: rgba(88, 196, 128, .3);
+}
+
+.ev-tag.no {
+  background: rgba(232, 108, 94, .3);
+}
+
 /* The grid of the competencies: how the answers came, and the level the game suggests. */
 .comp-marks {
   display: block;

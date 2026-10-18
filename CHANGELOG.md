@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.103.0 (2026-10-18)
+
+- **The Workshop shows a scene as a student would play it** («See it as a student», with what was changed there) and
+  **what evidence it leaves** («See what evidence it leaves»: beside each option, its objective and whether it is
+  right; beside each thing to put in a group, its objective and its group). Nothing is kept.
+- **A scene can be taken out of the game** in the Workshop («In the game»): off, it is not on the map nor on the class
+  screen, it cannot be played, and its chapter is done without it; what was already played stays. The last scene of
+  a chapter that is not a quest always stays.
+- **A place can be skipped** in the Workshop («Skip this place»): the class passes it by, its lantern is lit without
+  playing it and the expedition goes on in the next place; the map says «The class passed it by». It can be undone,
+  and the place of the final battle cannot be skipped.
+- **The classroom challenge of a place** is chosen in the Workshop, among the classroom challenges of the course (or
+  none): the one its students see on the map.
+- **A mission of one's own gets «Decision with a consequence»**: two or three ways, none of them right, each telling
+  what happens next; it is not marked and leaves no evidence. Before publishing, advice that does not stop it: a scene
+  of only questions («Without the text, is it still a game?») and consequences that say little («a change of the world
+  or just a colour?»).
+
 ## 0.102.0 (2026-10-18)
 
 - **The report tells how the answers came**: beside the share of each objective, a column with right at the first try

@@ -163,11 +163,19 @@
 
   function momentEditor(m, i) {
     var p = 'scenes.' + st.scene + '.moments.' + i;
-    var types = ['one', 'many', 'classify', 'order'].map(function(type) {
+    var types = ['one', 'many', 'classify', 'order', 'decision'].map(function(type) {
       return {value: type, label: t('teach_au_type_' + type)};
     });
     var body = '';
-    if (m.type === 'one' || m.type === 'many') {
+    if (m.type === 'decision') {
+      // Two or three ways, none of them right: each one tells what happens next.
+      body = '<p class="help">' + esc(t('teach_au_decision_help')) + '</p>' + (m.options || []).map(function(o, n) {
+        var q = p + '.options.' + n;
+        return '<div class="ws-question">' + input(q + '.label', t('teach_au_way')) + input(q + '.feedback',
+          t('teach_au_consequence'), {area: true, rows: 2}) + '<div class="actions" style="justify-content:flex-end">' +
+          btn('del-option', t('teach_au_delete'), ' data-m="' + i + '" data-n="' + n + '"') + '</div></div>';
+      }).join('') + ((m.options || []).length < 3 ? btn('add-option', t('teach_au_add_way'), ' data-m="' + i + '"') : '');
+    } else if (m.type === 'one' || m.type === 'many') {
       body = (m.options || []).map(function(o, n) {
         var q = p + '.options.' + n;
         return '<div class="ws-question">' + input(q + '.label', t('teach_ws_k_option')) +
@@ -196,8 +204,9 @@
         input(p + '.stuck', t('teach_ws_k_stuck'));
     }
     return '<section class="card ws-chapter"><div class="kicker">' + esc(t('teach_ws_moment', i + 1)) + '</div>' +
-      '<div class="grid2" style="gap:10px">' + select(p + '.type', t('teach_au_type'), types) +
-      select(p + '.objective', t('teach_ws_q_objective'), objectives(), t('teach_ws_q_none')) + '</div>' +
+      // A decision is not evidence of any objective: it has none to choose.
+      '<div class="grid2" style="gap:10px">' + select(p + '.type', t('teach_au_type'), types) + (m.type === 'decision' ? '' :
+        select(p + '.objective', t('teach_ws_q_objective'), objectives(), t('teach_ws_q_none'))) + '</div>' +
       (m.type === 'order' ? input(p + '.prompt', t('teach_ws_k_prompt')) : input(p + '.prompt', t('teach_ws_k_prompt'),
         {area: true, rows: 2})) + body + input(p + '.hints', t('teach_au_hints'), {lines: true, rows: 2,
         help: t('teach_au_lines_help')}) + '<div class="actions" style="justify-content:flex-end">' +
@@ -259,7 +268,12 @@
 
   function stepPublish() {
     var problems = st.info.problems || [];
-    return '<section class="card">' + (problems.length ? '<h3>' + esc(t('teach_au_missing')) + '</h3><ul>' +
+    var advice = st.info.advice || [];
+    // What would make it a game and not a test: it does not stop it.
+    return (advice.length ? '<section class="card" style="margin-bottom:16px"><h3>' + esc(t('teach_au_advice')) + '</h3><ul>' +
+      advice.map(function(a) {
+        return '<li>' + esc(a) + '</li>';
+      }).join('') + '</ul></section>' : '') + '<section class="card">' + (problems.length ? '<h3>' + esc(t('teach_au_missing')) + '</h3><ul>' +
       problems.map(function(p) {
         return '<li>' + esc(p) + '</li>';
       }).join('') + '</ul>' : '<h3>' + esc(t('teach_au_ready')) + '</h3><p class="help">' +
@@ -297,6 +311,7 @@
     return api('save', {code: st.info.code, value: JSON.stringify(st.d)}).then(function(info) {
       // The draft of the screen stays as it is (with its empty rows); what is missing comes from the server.
       st.info.problems = info.problems;
+      st.info.advice = info.advice;
       var saved = st.el.querySelector('[data-saved]');
       if (saved) {
         saved.textContent = t('app_saved');

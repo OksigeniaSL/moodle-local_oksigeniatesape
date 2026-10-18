@@ -119,6 +119,92 @@ final class edits_test extends \advanced_testcase {
         edits::save($course->id, 'C1-2', edits::SNIFF, 'off');
     }
 
+    public function test_the_teacher_takes_a_scene_out_of_the_game(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $course = $this->make_course();
+        $mission = missions::get($course->id);
+        $chapter = $DB->get_record(self::T . 'chapter', ['missionid' => $mission->id, 'code' => $mission->data['chapters'][0]['code']]);
+        $here = array_values($DB->get_records(self::T . 'scene', ['chapterid' => $chapter->id], 'code'));
+        $route = array_values(array_filter($here, fn($s) => empty($s->quest)));
+        $this->assertGreaterThan(1, count($route));
+        $out = $route[0];
+        edits::save($course->id, $out->code, edits::ENABLED, 'off');
+        // Not in the workshop as in the game, not in any route, and it cannot be played.
+        $scenes = array_column(array_merge(...array_column(edits::view($course->id)['chapters'], 'scenes')), null, 'code');
+        $this->assertFalse($scenes[$out->code]['enabled']);
+        foreach ([1, 2, 3, 4] as $step) {
+            $this->assertNotContains($out->code, array_column(scenes::for_step($here, $step), 'code'));
+        }
+        try {
+            scenes::playable($course->id, (int) $out->id);
+            $this->fail('A scene out of the game was played');
+        } catch (\moodle_exception $e) {
+            $this->assertSame('invalidgameplay', $e->errorcode);
+        }
+        // Back in the game.
+        edits::save($course->id, $out->code, edits::ENABLED, '');
+        $this->assertContains($out->code, array_column(scenes::for_step($here, max(1, (int) $out->step)), 'code'));
+        // The last scene of the chapter that is not a quest always stays.
+        foreach (array_slice($route, 1) as $scene) {
+            edits::save($course->id, $scene->code, edits::ENABLED, 'off');
+        }
+        $this->expectException(\moodle_exception::class);
+        $this->expectExceptionMessage(get_string('wslastscene', 'local_oksigeniatesape'));
+        edits::save($course->id, $route[0]->code, edits::ENABLED, 'off');
+    }
+
+    public function test_the_class_passes_a_place_by_and_comes_back(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $course = $this->make_course();
+        $mission = missions::get($course->id);
+        [$first, $second] = array_column($mission->data['chapters'], 'code');
+        $this->assertSame($first, pacts::chapter($mission)->code);
+        edits::skip($course->id, $first, true);
+        // Its lantern is lit without playing it, and the expedition goes on in the next place.
+        $chapter = $DB->get_record(self::T . 'chapter', ['missionid' => $mission->id, 'code' => $first]);
+        $this->assertGreaterThan(0, (int) $chapter->litat);
+        $this->assertGreaterThan(0, (int) $chapter->skippedat);
+        $this->assertSame($second, pacts::chapter($mission)->code);
+        $places = array_column(edits::view($course->id)['chapters'], null, 'code');
+        $this->assertTrue($places[$first]['skipped']);
+        $this->assertFalse($places[$first]['skippable']);
+        // Back to it: its lantern goes off.
+        edits::skip($course->id, $first, false);
+        $this->assertSame(0, (int) $DB->get_field(self::T . 'chapter', 'litat', ['id' => $chapter->id]));
+        $this->assertSame($first, pacts::chapter($mission)->code);
+        // Not the place of the final battle.
+        $this->expectException(\moodle_exception::class);
+        edits::skip($course->id, (string) $mission->data['battle']['final']['lantern'], true);
+    }
+
+    public function test_the_teacher_chooses_the_classroom_challenge_of_a_place(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $course = $this->make_course();
+        $mission = missions::get($course->id);
+        $first = $mission->data['chapters'][0]['code'];
+        $make = fn($name) => $DB->insert_record(self::T . 'challenge', (object) ['cmid' => 0, 'courseid' => $course->id,
+            'kind' => 'classroom', 'name' => $name, 'description' => '', 'teamwork' => 0, 'saber' => 10, 'gems' => 0,
+            'steps' => '', 'itemid' => 0, 'objectives' => '', 'chapterid' => 0, 'timecreated' => 1, 'timemodified' => 1]);
+        $plant = $make('Plantar una semilla');
+        $owl = $make('Dibujar el búho');
+        edits::place_challenge($course->id, $first, $plant);
+        $view = edits::view($course->id);
+        $this->assertContains('Plantar una semilla', array_column($view['challenges'], 'name'));
+        $this->assertSame($plant, $view['chapters'][0]['challengeid']);
+        // Another one takes its place; none leaves the place without one.
+        edits::place_challenge($course->id, $first, $owl);
+        $this->assertSame($owl, edits::view($course->id)['chapters'][0]['challengeid']);
+        $this->assertSame(0, (int) $DB->get_field(self::T . 'challenge', 'chapterid', ['id' => $plant]));
+        edits::place_challenge($course->id, $first, 0);
+        $this->assertSame(0, edits::view($course->id)['chapters'][0]['challengeid']);
+        // Only a classroom challenge of this course.
+        $this->expectException(\invalid_parameter_exception::class);
+        edits::place_challenge($course->id, $first, 99999);
+    }
+
     public function test_the_sheets_of_the_sessions_can_be_changed_and_the_guide_reads_them(): void {
         $this->resetAfterTest();
         $course = $this->make_course();

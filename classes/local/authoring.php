@@ -69,7 +69,7 @@ final class authoring {
     public const MIN_QUESTIONS = 4;
 
     /** @var string[] Kinds of moment. */
-    public const MOMENTS = ['one', 'many', 'classify', 'order'];
+    public const MOMENTS = ['one', 'many', 'classify', 'order', 'decision'];
 
     /**
      * Whether a mission is one of a teacher.
@@ -129,6 +129,33 @@ final class authoring {
         $DB->update_record(self::T . 'own', (object) ['id' => $record->id, 'draft' => json_encode($clean),
             'timemodified' => time()]);
         return $clean;
+    }
+
+    /**
+     * Advice that does not stop the draft, so that it is a game and not a test: a scene of only questions, and decisions
+     * whose consequences say little.
+     *
+     * @param array $draft
+     * @return array Each: key (a string of the plugin) and a (what it is about).
+     */
+    public static function advice(array $draft): array {
+        $draft = self::tidy($draft);
+        $advice = [];
+        foreach ($draft['scenes'] as $scene) {
+            $title = $scene['title'] !== '' ? $scene['title'] : '?';
+            $types = array_column($scene['moments'], 'type');
+            if (count($types) >= 2 && !in_array('decision', $types, true)) {
+                $advice[] = ['key' => 'authoring_advice_game', 'a' => $title];
+            }
+            foreach ($scene['moments'] as $moment) {
+                $short = array_filter($moment['options'], fn($o) => $o['feedback'] !== '' && \core_text::strlen($o['feedback']) < 30);
+                if ($moment['type'] === 'decision' && $short) {
+                    $advice[] = ['key' => 'authoring_advice_world', 'a' => $title];
+                    break;
+                }
+            }
+        }
+        return $advice;
     }
 
     /**
@@ -628,6 +655,15 @@ final class authoring {
     private static function moment(array $moment, string $next): array {
         $objective = $moment['objective'];
         $base = ['prompt' => $moment['prompt'], 'hints' => $moment['hints'], 'next' => $next];
+        if ($moment['type'] === 'decision') {
+            // Two or three ways, none of them right, each telling what happens: a decision of the story, not evidence of
+            // any objective.
+            $options = [];
+            foreach ($moment['options'] as $i => $option) {
+                $options[] = ['id' => 'o' . ($i + 1), 'label' => $option['label'], 'feedback' => $option['feedback']];
+            }
+            return [['type' => 'choice', 'dilemma' => true, 'options' => $options] + $base, 0];
+        }
         if ($objective !== '') {
             $base['objective'] = $objective;
         }
@@ -688,6 +724,10 @@ final class authoring {
             return 'prompt';
         }
         switch ($moment['type']) {
+            case 'decision':
+                $told = array_filter($moment['options'], fn($o) => $o['feedback'] !== '');
+                return count($moment['options']) < 2 || count($moment['options']) > 3 || count($told) < count($moment['options']) ?
+                    'decision' : null;
             case 'one':
             case 'many':
                 $right = count(array_filter($moment['options'], fn($o) => $o['correct']));

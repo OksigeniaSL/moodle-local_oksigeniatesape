@@ -145,6 +145,10 @@ final class author_mission extends external_api {
                 fn($p) => get_string($p['key'], 'local_oksigeniatesape', $p['a']),
                 authoring::check($record->data)
             );
+            $advice = array_map(
+                fn($p) => get_string($p['key'], 'local_oksigeniatesape', $p['a']),
+                authoring::advice($record->data)
+            );
             $speakers = [];
             foreach (missions::packages()['livingthings']['speakers'] ?? [] as $speaker => $name) {
                 $speakers[] = ['code' => $speaker, 'name' => missions::text($name, authoring::WORLD)];
@@ -156,7 +160,7 @@ final class author_mission extends external_api {
             $ai['canuse'] = !empty($ai['canuse']) && has_capability('local/oksigeniatesape:aidraft', $context);
             return ['code' => $code, 'version' => (int) $record->version, 'draft' => $record->data,
                 'ai' => $ai,
-                'problems' => $problems, 'speakers' => $speakers, 'current' => $current && $current->code === $code,
+                'problems' => $problems, 'advice' => $advice, 'speakers' => $speakers, 'current' => $current && $current->code === $code,
                 'limits' => ['minplaces' => authoring::MIN_PLACES, 'maxplaces' => authoring::MAX_PLACES,
                     'maxobjectives' => authoring::MAX_OBJECTIVES, 'maxmoments' => authoring::MAX_MOMENTS,
                     'minquestions' => authoring::MIN_QUESTIONS]];

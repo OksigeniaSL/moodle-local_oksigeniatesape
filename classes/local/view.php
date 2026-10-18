@@ -328,6 +328,7 @@ final class view {
                 'spots' => array_map(fn($target, $xy) => ['target' => (string) $target, 'x' => (int) ($xy[0] ?? 50),
                     'y' => (int) ($xy[1] ?? 50)], array_keys($meta['spots'] ?? []), array_values($meta['spots'] ?? [])),
                 'lit' => (bool) $chapter->litat,
+                'skipped' => !empty($chapter->skippedat),
                 'mine' => !empty($found['lantern'][$chapter->code]),
                 'done' => !empty($found['chapter'][$chapter->code]),
                 'challengeid' => (int) ($challenges[$chapter->id] ?? 0),

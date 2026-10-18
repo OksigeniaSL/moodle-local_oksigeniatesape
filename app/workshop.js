@@ -117,8 +117,16 @@
    * @return {string}
    */
   function sceneBody(sc) {
+    // Played as a student would, with what is changed here; or with what each answer counts for beside it.
+    var html = '<div class="actions" style="justify-content:flex-start;margin-bottom:10px"><button type="button" ' +
+      'class="btn btn-soft" data-tryscene="' + sc.id + '">' + esc(t('teach_ws_try')) + '</button><button type="button" ' +
+      'class="btn btn-soft" data-tryscene="' + sc.id + '" data-evidence>' + esc(t('teach_ws_evidence')) + '</button></div>';
+    // In the game or off: off, it is not on the map nor on the class screen, and its chapter is done without it.
+    html += '<label class="ws-toggle"><input type="checkbox" data-enabledscene="' + esc(sc.code) + '"' + (sc.enabled ?
+      ' checked' : '') + '> <span><b>' + esc(t('teach_ws_enabled')) + '</b><small>' + esc(t('teach_ws_enabled_help')) +
+      '</small></span></label>';
     // The sniffing of the creature in this scene: the teacher switches it off to see the scene without that help.
-    var html = sc.sniffable ? '<label class="ws-toggle"><input type="checkbox" data-sniffscene="' + esc(sc.code) + '" ' +
+    html += sc.sniffable ? '<label class="ws-toggle"><input type="checkbox" data-sniffscene="' + esc(sc.code) + '" ' +
       'data-came="' + (sc.sniffcame ? 1 : 0) + '"' + (sc.sniff ? ' checked' : '') + '> <span><b>' + esc(t('teach_ws_sniff')) +
       '</b><small>' + esc(t('teach_ws_sniff_help')) + '</small></span></label>' : '';
     var node = null;
@@ -141,6 +149,15 @@
       t('teach_ws_everybody');
   }
 
+  function skippedTag(ch) {
+    return ch.skipped ? '<span class="tag todo">' + esc(t('teach_ws_skipped')) + '</span>' : '';
+  }
+
+  function sceneSummary(sc) {
+    return '<b>' + esc(sc.title) + '</b><small>' + esc(stepName(sc)) + '</small>' + (sc.enabled ? '' : '<span class="tag ' +
+      'todo">' + esc(t('teach_ws_off')) + '</span>') + changes(sc.changed);
+  }
+
   function changes(n) {
     return n ? '<span class="tag done">' + esc(t('teach_ws_changes', n)) + '</span>' : '';
   }
@@ -153,11 +170,11 @@
       return sum + sc.changed;
     }, 0);
     return '<details class="card ws-chapter" data-chapter="' + esc(ch.code) + '"><summary><h3>' + esc(ch.number + '. ' +
-      ch.name) + '</h3>' + changes(total) + '</summary><details class="ws-scene" data-place="' + esc(ch.code) +
+      ch.name) + '</h3>' + skippedTag(ch) + changes(total) + '</summary><details class="ws-scene" data-place="' + esc(ch.code) +
       '"><summary><b>' + esc(t('teach_ws_place')) + '</b>' + changes(placechanged) + '</summary><div class="ws-body">' +
       '</div></details>' + ch.scenes.map(function(sc) {
-        return '<details class="ws-scene" data-code="' + esc(sc.code) + '"><summary><b>' + esc(sc.title) + '</b><small>' +
-          esc(stepName(sc)) + '</small>' + changes(sc.changed) + '</summary><div class="ws-body"></div></details>';
+        return '<details class="ws-scene" data-code="' + esc(sc.code) + '"><summary>' + sceneSummary(sc) + '</summary>' +
+          '<div class="ws-body"></div></details>';
       }).join('') + '</details>';
   }
 
@@ -410,9 +427,25 @@
     var body = details.querySelector(':scope > .ws-body');
     if (details.dataset.place) {
       var ch = findChapter(details.dataset.place);
-      body.innerHTML = ch.fields.map(function(f) {
-        return fieldHtml(MISSION, f);
-      }).join('');
+      // The class passes the place by, or comes back to it.
+      body.innerHTML = (ch.skipped ? '<div class="ws-skip"><p>' + esc(t('teach_ws_skipped_help')) + '</p><button type="button" ' +
+        'class="btn btn-soft" data-skipchapter="' + esc(ch.code) + '">' + esc(t('teach_ws_unskip')) + '</button></div>' :
+        ch.skippable ? '<div class="ws-skip"><button type="button" class="btn btn-soft" data-skipchapter="' + esc(ch.code) +
+        '" data-skip>' + esc(t('teach_ws_skip')) + '</button><small>' + esc(t('teach_ws_skip_help')) + '</small></div>' : '') +
+        // The classroom challenge of the place: one of those of the course, made in «Challenges».
+        '<label class="ws-field"><span>' + esc(t('teach_ws_challenge')) + '</span><select data-placechallenge="' +
+        esc(ch.code) + '"><option value="0">' + esc(t('teach_ws_challenge_none')) + '</option>' +
+        (state.data.challenges || []).map(function(c) {
+          // One that is another place's moves here: it says so.
+          var other = c.chapterid && c.chapterid !== ch.id ? state.data.chapters.filter(function(x) {
+            return x.id === c.chapterid;
+          })[0] : null;
+          return '<option value="' + c.id + '"' + (c.id === ch.challengeid ? ' selected' : '') + '>' + esc(c.name +
+            (other ? ' · ' + t('teach_ws_challenge_elsewhere', other.name) : '')) + '</option>';
+        }).join('') + '</select><small>' + esc(t('teach_ws_challenge_help')) + '</small></label>' +
+        ch.fields.map(function(f) {
+          return fieldHtml(MISSION, f);
+        }).join('');
     } else {
       body.innerHTML = sceneBody(findScene(details.dataset.code));
     }
@@ -432,9 +465,10 @@
       ch.scenes.forEach(function(sc) {
         total += sc.changed;
         var s = box.querySelector('[data-code="' + sc.code + '"] > summary');
-        s.innerHTML = '<b>' + esc(sc.title) + '</b><small>' + esc(stepName(sc)) + '</small>' + changes(sc.changed);
+        s.innerHTML = sceneSummary(sc);
       });
-      box.querySelector(':scope > summary').innerHTML = '<h3>' + esc(ch.number + '. ' + ch.name) + '</h3>' + changes(total);
+      box.querySelector(':scope > summary').innerHTML = '<h3>' + esc(ch.number + '. ' + ch.name) + '</h3>' + skippedTag(ch) +
+        changes(total);
       box.querySelector('[data-place] > summary').innerHTML = '<b>' + esc(t('teach_ws_place')) + '</b>' +
         changes(placechanged);
     });
@@ -442,13 +476,15 @@
   }
 
   function save(scene, path, value, details) {
-    return api('save', {scene: scene, path: path, value: value}).then(function() {
+    // The last change on its way: a preview waits for it, so that it shows what was just written.
+    state.saving = api('save', {scene: scene, path: path, value: value}).then(function() {
       fill(details);
       counts();
       T.toast(esc(t('app_saved')));
     }).catch(function(e) {
       T.toast(esc(e.message), true);
     });
+    return state.saving;
   }
 
   function bind() {
@@ -460,6 +496,24 @@
     }, true);
     state.el.addEventListener('change', function(ev) {
       var box = ev.target;
+      if (box.dataset && box.dataset.placechallenge) {
+        var holder = box.closest('.ws-scene');
+        api('challenge', {scene: box.dataset.placechallenge, value: box.value}).then(function() {
+          fill(holder);
+          T.toast(esc(t('app_saved')));
+        }).catch(function(e) {
+          T.toast(esc(e.message), true);
+          fill(holder);
+        });
+        return;
+      }
+      if (box.dataset && box.dataset.enabledscene) {
+        var details = box.closest('.ws-scene');
+        save(box.dataset.enabledscene, 'enabled', box.checked ? '' : 'off', details).then(function() {
+          fill(details);
+        });
+        return;
+      }
       if (box.dataset && box.dataset.sniffscene) {
         var came = box.dataset.came === '1';
         save(box.dataset.sniffscene, 'sniff', box.checked === came ? '' : (box.checked ? 'on' : 'off'), box.closest('.ws-scene'));
@@ -472,6 +526,47 @@
       save(area.dataset.scene, area.dataset.path, area.value.trim(), area.closest('.ws-scene'));
     });
     state.el.addEventListener('click', function(ev) {
+      var skip = ev.target.closest('[data-skipchapter]');
+      if (skip) {
+        var going = skip.hasAttribute('data-skip');
+        var place = findChapter(skip.dataset.skipchapter);
+        if (!window.confirm(t(going ? 'teach_ws_skip_confirm' : 'teach_ws_unskip_confirm', place.name))) {
+          return;
+        }
+        skip.disabled = true;
+        var holder = skip.closest('.ws-scene');
+        api('skip', {scene: place.code, value: going ? 'on' : ''}).then(function() {
+          fill(holder);
+          counts();
+          T.toast(esc(t('app_saved')));
+        }).catch(function(e) {
+          skip.disabled = false;
+          T.toast(esc(e.message), true);
+        });
+        return;
+      }
+      var tryit = ev.target.closest('[data-tryscene]');
+      if (tryit) {
+        // What was being written is kept first (it is saved when the box is left).
+        if (document.activeElement && document.activeElement.tagName === 'TEXTAREA') {
+          document.activeElement.blur();
+        }
+        setTimeout(function() {
+          Promise.resolve(state.saving).then(function() {
+            return T.api('get_scene', {courseid: cfg.courseid, sceneid: Number(tryit.dataset.tryscene)});
+          }).then(function(scene) {
+            // As a student would see it, with a made-up character; nothing is kept.
+            T.playScene({preview: scene, evidence: tryit.hasAttribute('data-evidence'), world: {character: {role: '',
+              creature: '{}', stage: 1}, items: [], team: null, family: T.family || 'storyheroes', nicknames: false},
+              onclose: function() {
+                return null;
+              }});
+          }).catch(function(e) {
+            T.toast(esc(e.message), true);
+          });
+        }, 50);
+        return;
+      }
       var orig = ev.target.closest('[data-orig]');
       if (orig) {
         ev.preventDefault();

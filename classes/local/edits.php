@@ -45,12 +45,96 @@ final class edits {
     /** @var string The switch of the sniffing of the creature in a scene: on or off, not a text. */
     public const SNIFF = 'sniff';
 
+    /** @var string The switch of a scene in the game: «off» takes it out of the map, the class screen and the lanterns. */
+    public const ENABLED = 'enabled';
+
     /** @var string[] Fields with one text, in a scene, a node or an element of a list. */
     private const TEXTS = ['title', 'whatif', 'text', 'prompt', 'label', 'say', 'feedback', 'intro', 'offscreen', 'do', 'materials',
         'name', 'claim', 'laugh', 'weakness', 'why', 'ask', 'expect', 'mistake', 'redirect', 'spare'];
 
     /** @var string[] Lists of elements with an id, in a node. */
     private const ELEMENTS = ['options', 'items', 'bins', 'steps'];
+
+    /**
+     * The class passes a place by: its lantern is lit without playing it, and the expedition goes on in the next one.
+     * Not the place of the final battle, nor one whose lantern is lit already. Undone, its lantern goes off again.
+     *
+     * @param int $courseid
+     * @param string $code Of the chapter.
+     * @param bool $skip
+     * @param int|null $now
+     */
+    public static function skip(int $courseid, string $code, bool $skip, ?int $now = null): void {
+        global $DB;
+        $now = $now ?? time();
+        $mission = missions::get($courseid);
+        if (!$mission) {
+            throw new \moodle_exception('nomission', 'local_oksigeniatesape');
+        }
+        $chapter = $DB->get_record(self::T . 'chapter', ['missionid' => $mission->id, 'code' => $code], '*', MUST_EXIST);
+        if ($skip) {
+            if ($chapter->litat || $code === self::final_place($mission)) {
+                throw new \moodle_exception('wsnoskip', 'local_oksigeniatesape');
+            }
+            $DB->update_record(self::T . 'chapter', (object) ['id' => $chapter->id, 'litat' => $now, 'skippedat' => $now,
+                'readyat' => 0, 'timemodified' => $now]);
+        } else if ($chapter->skippedat) {
+            $DB->update_record(self::T . 'chapter', (object) ['id' => $chapter->id, 'litat' => 0, 'skippedat' => 0,
+                'timemodified' => $now]);
+        }
+    }
+
+    /**
+     * The classroom challenge of a place: the one its students see on the map, and the class does at the end of its
+     * sessions. One of the classroom challenges of the course, or none.
+     *
+     * @param int $courseid
+     * @param string $code Of the chapter.
+     * @param int $challengeid 0: none.
+     */
+    public static function place_challenge(int $courseid, string $code, int $challengeid): void {
+        global $DB;
+        $mission = missions::get($courseid);
+        if (!$mission) {
+            throw new \moodle_exception('nomission', 'local_oksigeniatesape');
+        }
+        $chapter = $DB->get_record(self::T . 'chapter', ['missionid' => $mission->id, 'code' => $code], '*', MUST_EXIST);
+        if ($challengeid && !$DB->record_exists(self::T . 'challenge', ['id' => $challengeid, 'courseid' => $courseid, 'cmid' => 0])) {
+            throw new \invalid_parameter_exception('Not a classroom challenge of the course');
+        }
+        $DB->set_field(self::T . 'challenge', 'chapterid', 0, ['courseid' => $courseid, 'cmid' => 0, 'chapterid' => $chapter->id]);
+        if ($challengeid) {
+            $DB->set_field(self::T . 'challenge', 'chapterid', $chapter->id, ['id' => $challengeid]);
+        }
+    }
+
+    /**
+     * The place whose lantern the final battle lights: it cannot be passed by.
+     *
+     * @param \stdClass $mission
+     * @return string
+     */
+    private static function final_place(\stdClass $mission): string {
+        $codes = array_column($mission->data['chapters'] ?? [], 'code');
+        return (string) ($mission->data['battle']['final']['lantern'] ?? end($codes));
+    }
+
+    /**
+     * The scenes the teachers of a course took out of the game.
+     *
+     * @param int $courseid
+     * @param string $mission Code of the mission.
+     * @return string[] Their codes.
+     */
+    public static function off(int $courseid, string $mission): array {
+        $off = [];
+        foreach (self::of($courseid, $mission) as $scene => $changes) {
+            if (($changes[self::ENABLED] ?? '') === 'off') {
+                $off[] = (string) $scene;
+            }
+        }
+        return $off;
+    }
 
     /**
      * The changes of the mission of a course.
@@ -102,6 +186,9 @@ final class edits {
         foreach (self::of($courseid, $mission)[$scene] ?? [] as $path => $value) {
             if ($path === self::SNIFF) {
                 $definition['sniff'] = $value === 'on';
+                continue;
+            }
+            if ($path === self::ENABLED) {
                 continue;
             }
             self::set($definition, explode('/', $path), $value);
@@ -233,6 +320,23 @@ final class edits {
         }
         $original = $scene === self::MISSION ? (json_decode((string) $mission->definition, true) ?: []) :
             self::scene_definition((int) $mission->id, $scene);
+        if ($path === self::ENABLED && $scene !== self::MISSION) {
+            // In the game, or off. Never the last scene of its chapter that is not a quest: the chapter would have no route.
+            if (!in_array($value, ['', 'off'], true)) {
+                throw new \invalid_parameter_exception('Not a switch of this scene: ' . $value);
+            }
+            if ($value === 'off') {
+                global $DB;
+                $record = $DB->get_record(self::T . 'scene', ['missionid' => $mission->id, 'code' => $scene], '*', MUST_EXIST);
+                $where = 'chapterid = ? AND quest = 0 AND code <> ?';
+                $others = $DB->get_fieldset_select(self::T . 'scene', 'code', $where, [$record->chapterid, $scene]);
+                $off = self::off($courseid, (string) $mission->code);
+                if (empty($record->quest) && !array_diff($others, $off)) {
+                    throw new \moodle_exception('wslastscene', 'local_oksigeniatesape');
+                }
+            }
+            return self::store($courseid, (string) $mission->code, $scene, $path, $value);
+        }
         if ($path === self::SNIFF && $scene !== self::MISSION) {
             // The creature may sniff in this scene or not: on, off, or as it came (empty).
             if (!in_array($value, ['', 'on', 'off'], true) || !self::sniffable($original)) {
@@ -440,10 +544,20 @@ final class edits {
         $original = json_decode((string) $mission->definition, true) ?: [];
         $places = self::fields(self::texts($original, true), $changes[self::MISSION] ?? [], $skin, $variant, []);
         $scenes = $DB->get_records(self::T . 'scene', ['missionid' => $mission->id], 'code');
+        // The classroom challenges of the course, and the one of each place.
+        $courseid = (int) $mission->courseid;
+        $classroom = $DB->get_records(self::T . 'challenge', ['courseid' => $courseid, 'cmid' => 0], 'name', 'id, name, chapterid');
+        $placechallenges = [];
+        foreach ($classroom as $challenge) {
+            if ($challenge->chapterid) {
+                $placechallenges[(int) $challenge->chapterid] = (int) $challenge->id;
+            }
+        }
         $chapters = [];
         foreach ($original['chapters'] ?? [] as $i => $chapter) {
-            $chapterid = (int) $DB->get_field(self::T . 'chapter', 'id', ['missionid' => $mission->id,
-                'code' => $chapter['code']]);
+            $where = ['missionid' => $mission->id, 'code' => $chapter['code']];
+            $record = $DB->get_record(self::T . 'chapter', $where, 'id, litat, skippedat');
+            $chapterid = (int) ($record->id ?? 0);
             $list = [];
             foreach ($scenes as $scene) {
                 if ((int) $scene->chapterid !== $chapterid) {
@@ -459,6 +573,7 @@ final class edits {
                 unset($field);
                 $came = ($def['sniff'] ?? true) !== false;
                 $list[] = [
+                    'id' => (int) $scene->id,
                     'code' => (string) $scene->code,
                     'title' => (string) ($mine['title'] ?? self::resolve($def['title'] ?? $scene->code, $skin, $variant)),
                     'step' => (int) $scene->step,
@@ -469,6 +584,7 @@ final class edits {
                     'sniffable' => self::sniffable($def),
                     'sniffcame' => $came,
                     'sniff' => isset($mine[self::SNIFF]) ? $mine[self::SNIFF] === 'on' : $came,
+                    'enabled' => ($mine[self::ENABLED] ?? '') !== 'off',
                 ];
             }
             usort($list, fn($a, $b) => [$a['quest'], $a['step'], $a['code']] <=> [$b['quest'], $b['step'], $b['code']]);
@@ -485,6 +601,11 @@ final class edits {
                 'name' => self::resolve($chapter['name'] ?? $chapter['code'], $skin, $variant),
                 'fields' => array_values(array_filter($places, $mine)),
                 'scenes' => $list,
+                // Whether the class passed it by, or can still: not lit yet, and not the place of the final battle.
+                'skipped' => !empty($record->skippedat),
+                'id' => $chapterid,
+                'challengeid' => (int) ($placechallenges[$chapterid] ?? 0),
+                'skippable' => $record && !$record->litat && (string) $chapter['code'] !== self::final_place($mission),
             ];
         }
         $questions = [];
@@ -508,6 +629,8 @@ final class edits {
             'questionschanged' => isset($changes[self::MISSION]['questions']),
             'objectives' => $objectives,
             'changed' => array_sum(array_map('count', $changes)),
+            'challenges' => array_values(array_map(fn($c) => ['id' => (int) $c->id, 'name' => format_string($c->name),
+                'chapterid' => (int) $c->chapterid], $classroom)),
         ];
     }
 

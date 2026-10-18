@@ -170,6 +170,45 @@ final class authoring_test extends \advanced_testcase {
         $this->assertCount(3, $drafts[1]->data['scenes']);
     }
 
+    public function test_a_decision_with_a_consequence_is_a_decision_of_the_story(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $dg = $this->getDataGenerator();
+        $course = $dg->create_course();
+        regions::save($course->id, ['enabled' => 1, 'weeklycap' => 0]);
+        $own = authoring::create($course->id, 'Las fracciones');
+        $draft = $this->draft($course->id, $own->code);
+        // «Los cuartos» has only questions: the advice says so, without stopping the draft.
+        $advice = array_column(authoring::advice($draft), 'a', 'key');
+        $this->assertSame('Los cuartos', $advice['authoring_advice_game']);
+        $draft['scenes'][0]['moments'][] = ['type' => 'decision', 'prompt' => '¿Qué hacemos con la otra mitad?',
+            'options' => [['label' => 'Repartirla', 'feedback' => 'Cada uno se lleva un trozo, y el frutero sonríe.'],
+                ['label' => 'Guardarla', 'feedback' => '']]];
+        $draft = authoring::save($course->id, $own->code, $draft);
+        // Each way says what happens.
+        $this->assertContains('authoring_check_decision', array_column(authoring::check($draft), 'key'));
+        $draft['scenes'][0]['moments'][1]['options'][1]['feedback'] = 'Mañana.';
+        $draft = authoring::save($course->id, $own->code, $draft);
+        $this->assertNotContains('authoring_check_decision', array_column(authoring::check($draft), 'key'));
+        // A consequence that says little: is it a change of the world or a colour?
+        $this->assertContains('authoring_advice_world', array_column(authoring::advice($draft), 'key'));
+        // Played as a decision of the story: no right answer, no objective, nothing against the ending.
+        authoring::publish($course->id, $own->code);
+        $scene = array_keys(authoring::scenes($course->id, $own->code))[0];
+        $nodes = json_decode(authoring::preview($course->id, $own->code, $scene)['definition'], true)['nodes'];
+        $this->assertTrue($nodes['m2']['dilemma']);
+        $this->assertArrayNotHasKey('objective', $nodes['m2']);
+        $user = $dg->create_and_enrol($course, 'student');
+        engine::member(characters::create($user->id, 'sage', 'f'), $course->id);
+        $mission = missions::get($course->id);
+        $first = $DB->get_records(self::T . 'scene', ['missionid' => $mission->id], 'code', '*', 0, 1);
+        $first = reset($first);
+        [$items, $roles, $flags, $role] = scenes::context(characters::get($user->id), $course->id);
+        $events = autoplayer::play(json_decode($first->definition, true), $items, $roles, $flags, $role);
+        $this->assertSame('success', scenes::play($course->id, $user->id, (int) $first->id, $events, null)['outcome']);
+    }
+
     public function test_a_mission_from_scratch_is_played_as_any_other(): void {
         global $DB;
         $this->resetAfterTest();
