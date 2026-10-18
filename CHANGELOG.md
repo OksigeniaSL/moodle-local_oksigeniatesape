@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.91.0 (2026-10-18)
+
+Block 3.2 of the plan: the Embrollo steals a page.
+
+- **A page of the Great Book stolen**: when the class left a knot hanging in the battles of the last week and that knot
+  has its page, the action of the day is the Embrollo taking it, instead of a stain (one at a time, never the same knot
+  twice in a week). It shows on the map of each student and under «Today in the valley». To bring it back, the Embrollo
+  says again what it claims and asks one of the questions of the knot, another one each day: one try a day for each
+  student; the first right answer brings it back to the whole class, with a gem, the page and the why. The teacher
+  takes it as brought back by the class with a touch. Nobody loses their page: the theft is of the story, not of the
+  album. The pilot mission, version 42, with the page of each knot.
+- One gem says «1 gem», not «1 gems», wherever gems are won.
+
 ## 0.90.0 (2026-10-18)
 
 Block 3.5 of the plan: the catalog of beings and things.

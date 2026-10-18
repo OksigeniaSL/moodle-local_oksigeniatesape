@@ -395,9 +395,9 @@
     return '<section class="card today-card" style="margin-bottom:16px"><div class="kicker">' + esc(t('board_today')) +
       '</div><h2>' + esc(today.chapter) + '</h2>' + (today.stains && today.stains.length ? '<ul class="stains">' +
       today.stains.map(function(s) {
-        return '<li><span class="stain-dot" aria-hidden="true"></span><span>' + esc(t('board_today_stain', s)) + '</span>' +
+        return '<li><span class="stain-dot" aria-hidden="true"></span><span>' + esc(t(s.kind === 'page' ? 'board_today_page' : 'board_today_stain', s)) + '</span>' +
           (can('award') ? '<button type="button" class="btn btn-soft" data-erasestain="' + s.id + '">' +
-          esc(t('board_stain_erase')) + '</button>' : '') + '</li>';
+          esc(t(s.kind === 'page' ? 'board_page_erase' : 'board_stain_erase')) + '</button>' : '') + '</li>';
       }).join('') + '</ul>' : '') + (today.lostscene ? '<p class="teaser"><b>' + esc(t('teach_today_night')) +
       '</b> ' + esc(t('teach_today_night_help', today.lostscene.title)) + '</p>' : '') +
       (sessions ? '<ol class="today-sessions">' + sessions + '</ol>' : '') +
@@ -803,7 +803,7 @@
       'flex-start;margin-top:10px">' + amounts.map(function(a) {
         return '<button class="pill" data-award="saber" data-amount="' + a + '">+' + a + ' ' + esc(t('app_saber')) +
           '</button>';
-      }).join('') + '<button class="pill" data-award="gems" data-amount="1">+1 ' + esc(t('app_gems')) + '</button>' +
+      }).join('') + '<button class="pill" data-award="gems" data-amount="1">' + esc(t('app_encounter_gem')) + '</button>' +
       '<button class="pill" data-award="breath" data-amount="1">+1 ' + esc(t('app_breath')) + '</button>' +
       // A commitment not kept costs the same here as in «Challenges» (LOSS in pacts.php).
       '<button class="pill" data-award="energy" data-amount="-2" title="' + esc(t('teach_commitment_help')) + '">−2 ' +
@@ -1905,7 +1905,7 @@
       r.push('+' + ch.saber + ' ' + t('app_saber'));
     }
     if (ch.gems) {
-      r.push('+' + ch.gems + ' ' + t('app_gems'));
+      r.push(t(ch.gems === 1 ? 'app_encounter_gem' : 'app_encounter_gems', ch.gems));
     }
     return esc(r.join(' · '));
   }

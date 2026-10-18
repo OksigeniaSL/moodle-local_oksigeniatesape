@@ -149,7 +149,12 @@ final class get_world extends external_api {
                     'mark' => new external_value(PARAM_INT, 'A mistake (-1: plain text)'),
                     'wrong' => new external_value(PARAM_TEXT, 'What it says'),
                 ])),
-            ]), 'What the Embrollo stained in the valley, to clean', VALUE_DEFAULT, []),
+                'kind' => new external_value(PARAM_ALPHA, 'stain, or page: a page of the Great Book stolen', VALUE_DEFAULT, 'stain'),
+                'claim' => new external_value(PARAM_TEXT, 'What the Embrollo claims, for a page', VALUE_DEFAULT, ''),
+                'question' => new external_value(PARAM_TEXT, 'The question of today to bring a page back', VALUE_DEFAULT, ''),
+                'options' => new external_multiple_structure(new external_value(PARAM_TEXT, 'Option'), 'Its options', VALUE_DEFAULT, []),
+                'tried' => new external_value(PARAM_BOOL, 'The student tried today to bring it back', VALUE_DEFAULT, false),
+            ]), 'What the Embrollo stained or stole in the valley', VALUE_DEFAULT, []),
             'page' => new external_single_structure([
                 'question' => new external_single_structure([
                     'text' => new external_value(PARAM_TEXT, 'Question'),

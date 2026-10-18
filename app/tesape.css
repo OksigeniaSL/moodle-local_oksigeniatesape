@@ -8262,3 +8262,38 @@ body.adapt-still .mission-grid .chapter.as-sheet {
   width: 96px;
   height: 96px;
 }
+
+/* ---------- A page of the Great Book stolen by the Embrollo ---------- */
+
+.blot.stolen .blot-btn svg {
+  transform: rotate(-8deg);
+}
+
+.book-page {
+  margin: 10px 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #f3e6c4;
+  color: #2b1d05;
+  text-align: start;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .3);
+}
+
+.book-page p {
+  margin: 6px 0 0;
+}
+
+.page-options {
+  display: grid;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.page-options .btn {
+  width: 100%;
+  min-height: 44px;
+  border-radius: 14px;
+  justify-content: flex-start;
+  text-align: start;
+  white-space: normal;
+}

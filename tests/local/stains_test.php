@@ -133,6 +133,52 @@ final class stains_test extends \advanced_testcase {
         $this->assertSame(0, stains::prints($mission, $this->monday + 3 * DAYSECS));
     }
 
+    public function test_a_knot_left_hanging_has_its_page_stolen_and_the_class_brings_it_back(): void {
+        global $DB;
+        [$course, $member] = $this->make_class();
+        $mission = missions::get($course->id);
+        // The class left the Rolling Stone hanging in a battle last week.
+        $DB->insert_record(self::T . 'live', (object) ['courseid' => $course->id, 'kind' => 'battle', 'round' => 0,
+            'state' => json_encode(['knots' => ['piedra'], 'hanging' => ['piedra']]), 'timecreated' => $this->monday - DAYSECS,
+            'timemodified' => $this->monday - DAYSECS, 'timeend' => $this->monday - DAYSECS]);
+        $open = stains::open($course->id, $this->monday);
+        $this->assertCount(1, $open);
+        $page = $open[0];
+        $this->assertSame(['page', 'piedra', 'ser-vivo', 'claro'], [$page->kind, $page->game, $page->sheet, $page->chapter]);
+        // What the students see: the page, what the Embrollo claims and today's question, without the right option.
+        $view = stains::view($page, $mission);
+        $this->assertSame('page', $view['kind']);
+        $this->assertSame('Ser vivo', $view['title']);
+        $this->assertNotSame('', $view['claim']);
+        $this->assertCount(4, $view['options']);
+        $this->assertArrayNotHasKey('correct', $view);
+        $ids = $mission->data['battle']['knots'][0]['questions'];
+        $day = (int) (new \DateTimeImmutable('@' . $this->monday))->setTimezone(engine::timezone($course->id))->format('Ymd');
+        $correct = questions::get($course->id, $ids[$day % count($ids)], (int) $page->id)['correct'];
+        // A wrong answer: the page escapes, and that student has tried for today.
+        $char = characters::get((int) $DB->get_field(self::T . 'char', 'userid', ['id' => $member->charid]));
+        $this->assertFalse(stains::recover($course->id, (int) $page->id, $char, $member, ($correct + 1) % 4, $this->monday)['right']);
+        $this->assertTrue(stains::tried($char, $page, $mission, $this->monday));
+        try {
+            stains::recover($course->id, (int) $page->id, $char, $member, $correct, $this->monday);
+            $this->fail('Two tries the same day');
+        } catch (\moodle_exception $e) {
+            $this->assertSame('pagetried', $e->errorcode);
+        }
+        // A classmate answers right: back for the whole class, with a gem, the page and the why of its knot.
+        $user = $this->getDataGenerator()->create_and_enrol($course, 'student');
+        $mate = characters::create($user->id, 'sage', 'm');
+        $result = stains::recover($course->id, (int) $page->id, $mate, engine::member($mate, $course->id), $correct, $this->monday);
+        $this->assertTrue($result['right']);
+        $this->assertSame(stains::GEMS, $result['gems']);
+        $this->assertStringContainsString('se nutre', $result['text']);
+        $this->assertNotSame('', $result['why']);
+        $this->assertSame([], stains::open($course->id, $this->monday + 60));
+        // The next day the knot is still hanging, but its page is not stolen again this week: a stain.
+        $next = stains::open($course->id, $this->monday + DAYSECS);
+        $this->assertSame(['stain'], array_column($next, 'kind'));
+    }
+
     public function test_the_teacher_takes_it_as_cleaned_by_the_class(): void {
         global $DB;
         [$course, $member] = $this->make_class();

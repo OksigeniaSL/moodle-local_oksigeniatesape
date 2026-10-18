@@ -419,6 +419,13 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:play',
     ],
+    'local_oksigeniatesape_recover_page' => [
+        'classname' => 'local_oksigeniatesape\\external\\recover_page',
+        'description' => 'A student answers the question of a page of the Great Book the Embrollo stole.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:play',
+    ],
     'local_oksigeniatesape_erase_stain' => [
         'classname' => 'local_oksigeniatesape\\external\\erase_stain',
         'description' => 'The teacher takes a stain of the Embrollo as cleaned by the class.',

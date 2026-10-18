@@ -610,7 +610,7 @@
         <KEY NAME="courseid" TYPE="foreign" FIELDS="courseid" REFTABLE="course" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="local_oksigeniatesape_stain" COMMENT="What the Embrollo did each day in a course: a stain on a place, with a sheet of its mistakes (none: the day is decided). Who cleaned it is not kept: the gem is in the ledger.">
+    <TABLE NAME="local_oksigeniatesape_stain" COMMENT="What the Embrollo did each day in a course: a stain on a place, with a sheet of its mistakes, or a page of the Great Book stolen (none: the day is decided). Who cleaned it is not kept: the gem is in the ledger.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
@@ -618,6 +618,7 @@
         <FIELD NAME="chapter" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false" COMMENT="The place stained (empty: no stain that day)"/>
         <FIELD NAME="game" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false" COMMENT="The hunt for mistakes the sheet is from"/>
         <FIELD NAME="sheet" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false" COMMENT="The sheet of mistakes to clean"/>
+        <FIELD NAME="kind" TYPE="char" LENGTH="10" NOTNULL="true" DEFAULT="stain" SEQUENCE="false" COMMENT="stain, or page: a page of the Great Book stolen (game: the knot left hanging; sheet: the page)"/>
         <FIELD NAME="cleanedat" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="When it was cleaned (0: it is there)"/>
         <FIELD NAME="erased" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The teacher took it as cleaned by the class or rubbed it out"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>

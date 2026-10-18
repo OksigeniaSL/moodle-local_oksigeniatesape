@@ -341,7 +341,7 @@
         return '<li>' + T.icon('gems') + esc(t('app_gotitem', name)) + '</li>';
       });
       if (result.gems) {
-        gifts.push('<li>' + T.icon('gems') + esc('+' + result.gems + ' ' + t('app_gems')) + '</li>');
+        gifts.push('<li>' + T.icon('gems') + esc(t(result.gems === 1 ? 'app_encounter_gem' : 'app_encounter_gems', result.gems)) + '</li>');
       }
       m.sound(result.success ? 'win' : 'wrong');
       var art = o.art || '<span class="battle-mini" aria-hidden="true">' + T.embrollo(result.success ? 0.2 : 1) + '</span>';

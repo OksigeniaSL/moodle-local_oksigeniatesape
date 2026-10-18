@@ -1145,15 +1145,18 @@
       }
       prints = '<g class="prints" aria-hidden="true">' + prints + '</g>';
     }
-    // What the Embrollo stained: a blot of ink beside the lantern of the place, to clean it.
+    // What the Embrollo stained, a blot of ink beside the lantern of the place, to clean it; or the page it stole, to bring
+    // it back.
     var blots = state.visit ? '' : (state.world.stains || []).map(function(s, i) {
       var ch = m.chapters.filter(function(x) {
         return x.code === s.chapter;
       })[0];
-      return ch ? '<foreignObject x="' + (ch.x + 28 + 14 * i) + '" y="' + (ch.y - 46) + '" width="36" height="36" class="blot">' +
-        '<div xmlns="http://www.w3.org/1999/xhtml"><button type="button" class="blot-btn" data-stain="' + s.id + '" title="' +
-        esc(t('app_stain_on', s.place)) + '"><span aria-hidden="true">' + BLOT + '</span><span class="sr-only">' +
-        esc(t('app_stain_on', s.place)) + '</span></button></div></foreignObject>' : '';
+      var page = s.kind === 'page';
+      var label = page ? t('app_page_stolen') + ': «' + s.title + '»' : t('app_stain_on', s.place);
+      return ch ? '<foreignObject x="' + (ch.x + 28 + 14 * i) + '" y="' + (ch.y - 46) + '" width="36" height="36" class="blot' +
+        (page ? ' stolen' : '') + '"><div xmlns="http://www.w3.org/1999/xhtml"><button type="button" class="blot-btn" ' +
+        'data-stain="' + s.id + '" title="' + esc(label) + '"><span aria-hidden="true">' + (page ? PAGE : BLOT) + '</span>' +
+        '<span class="sr-only">' + esc(label) + '</span></button></div></foreignObject>' : '';
     }).join('');
     var c = state.world.character;
     var reached = Math.min(lastDone + 1, m.chapters.length - 1);
@@ -1353,6 +1356,66 @@
   var BLOT = '<svg viewBox="0 0 40 40" width="100%" height="100%"><path d="M20 4c5 0 6 5 10 6s7 5 5 10-1 7-4 10-8 6-13 ' +
     '5-8-3-11-7-6-8-3-12 7-12 16-12z" fill="#2b1d4a" stroke="#b9a6ff" stroke-width="2"/><circle cx="33" cy="33" r="3" ' +
     'fill="#2b1d4a" stroke="#b9a6ff" stroke-width="1.5"/></svg>';
+
+  /** A page of the Great Book, torn out by the Embrollo, drawn. */
+  var PAGE = '<svg viewBox="0 0 40 40" width="100%" height="100%"><path d="M9 5h17l6 6v22l-3-2-3 3-3-3-3 3-3-3-3 3-3-3-2 2z" ' +
+    'fill="#f3e6c4" stroke="#b9a6ff" stroke-width="2" stroke-linejoin="round"/><path d="M26 5v6h6" fill="none" ' +
+    'stroke="#b9a6ff" stroke-width="2"/><path d="M13 15h13M13 20h13M13 25h9" stroke="#8a7a5a" stroke-width="1.6" ' +
+    'stroke-linecap="round"/></svg>';
+
+  /**
+   * A page of the Great Book the Embrollo stole: what it claims and the question of today; one try a day for each
+   * student, and the first right answer brings it back to the whole class, with a gem, the page and the why.
+   *
+   * @param {Object} stain id, title, claim, question, options, tried.
+   */
+  function pageMoment(stain) {
+    var layer = document.createElement('div');
+    layer.className = 'badge-moment stain-moment page-moment';
+    layer.setAttribute('role', 'dialog');
+    layer.setAttribute('aria-modal', 'true');
+    layer.setAttribute('aria-labelledby', 'tesape-page-title');
+    layer.innerHTML = '<div class="badge-card"><div class="kicker" id="tesape-page-title">' + esc(t('app_page_stolen')) +
+      '</div><h2>«' + esc(stain.title) + '»</h2>' + (stain.claim ? '<p class="knot-laugh">' + esc(stain.claim) + '</p>' : '') +
+      (stain.tried ? '<p class="turn-outcome fell">' + esc(t('app_page_tried')) + '</p>' : '<p class="help">' +
+      esc(t('app_page_question')) + '</p><p><b>' + esc(stain.question) + '</b></p><div class="page-options">' +
+      stain.options.map(function(o, i) {
+        return '<button type="button" class="btn btn-soft" data-opt="' + i + '">' + esc(o) + '</button>';
+      }).join('') + '</div>') + '<div data-said></div><div class="actions"><button type="button" class="btn btn-soft" ' +
+      'data-close>' + esc(t('app_close')) + '</button></div></div>';
+    document.body.appendChild(layer);
+    var close = function() {
+      layer.remove();
+      refresh();
+    };
+    layer.querySelector('[data-close]').onclick = close;
+    layer.querySelectorAll('[data-opt]').forEach(function(b) {
+      b.onclick = function() {
+        layer.querySelectorAll('[data-opt]').forEach(function(x) {
+          x.disabled = true;
+        });
+        T.api('recover_page', {courseid: cfg.courseid, stainid: stain.id, answer: Number(b.dataset.opt)}).then(function(r) {
+          var said = layer.querySelector('[data-said]');
+          if (!r.right) {
+            said.innerHTML = '<p class="turn-outcome fell">' + esc(t('app_page_escaped')) + '</p>';
+            return;
+          }
+          b.classList.add('chosen');
+          if (T.fx) {
+            T.fx.sound('coin');
+          }
+          said.innerHTML = '<div class="conseq good"><span class="what">' + esc(t('app_page_back', r.title)) + '</span>' +
+            esc(t(r.gems === 1 ? 'app_encounter_gem' : 'app_encounter_gems', r.gems)) + '</div><div class="book-page"><b>' + esc(r.title) + '</b><p>' +
+            esc(r.text) + '</p></div>' + (r.why ? '<p class="help">' + esc(r.why) + '</p>' : '');
+          layer.querySelector('[data-close]').focus();
+        }).catch(function(e) {
+          T.toast(esc(e.message), true);
+          close();
+        });
+      };
+    });
+    layer.querySelector('button').focus();
+  }
 
   /**
    * A stain of the Embrollo, to clean: its sheet with its words; the wrong ones touched, it is clean for the whole class,
@@ -1708,7 +1771,7 @@
       rewards.push('+' + a.saber + ' ' + t('app_saber'));
     }
     if (a.gems) {
-      rewards.push('+' + a.gems + ' ' + t('app_gems'));
+      rewards.push(t(a.gems === 1 ? 'app_encounter_gem' : 'app_encounter_gems', a.gems));
     }
     if (a.teamwork) {
       rewards.push(t('app_teamwork'));
@@ -1924,7 +1987,7 @@
           return s.id === Number(b.dataset.stain);
         })[0];
         if (stain) {
-          stainMoment(stain);
+          (stain.kind === 'page' ? pageMoment : stainMoment)(stain);
         }
       };
     });
@@ -2320,7 +2383,7 @@
       rewards.push('+' + ch.saber + ' ' + t('app_saber'));
     }
     if (ch.gems) {
-      rewards.push('+' + ch.gems + ' ' + t('app_gems'));
+      rewards.push(t(ch.gems === 1 ? 'app_encounter_gem' : 'app_encounter_gems', ch.gems));
     }
     return '<li class="item" style="align-items:flex-start"><span class="grow"><b>' + esc(ch.name) + '</b><small>' +
       esc(rewards.join(' · ')) + (ch.teamwork ? ' · ' + esc(t('app_teamwork')) : '') + '</small>' +

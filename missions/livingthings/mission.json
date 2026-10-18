@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 41,
+ "version": 42,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 42,
+   "kind": "improvement",
+   "date": "2026-10-18",
+   "text": "Cada nudo de la batalla tiene su página del Gran Libro, la que el Embrollo roba si la clase lo deja colgando"
+  },
   {
    "version": 41,
    "kind": "improvement",
@@ -1008,6 +1014,7 @@
      "Q1-2",
      "Q1-4"
     ],
+    "page": "ser-vivo",
     "chapter": 1,
     "objective": "SV-01",
     "weakness": "Las tres funciones vitales",
@@ -1022,6 +1029,7 @@
      "Q1-3",
      "Q2-3"
     ],
+    "page": "celulas",
     "chapter": 2,
     "objective": "SV-02",
     "weakness": "La célula",
@@ -1036,6 +1044,7 @@
      "Q2-1",
      "Q2-2"
     ],
+    "page": "grupos",
     "lanes": [
      {
       "engine": "choice",
@@ -1104,6 +1113,7 @@
     "questions": [
      "Q3-1"
     ],
+    "page": "vertebrados",
     "chapter": 3,
     "objective": "SV-04",
     "weakness": "Los mamíferos",
@@ -1118,6 +1128,7 @@
      "Q3-2",
      "Q3-3"
     ],
+    "page": "caracol",
     "chapter": 3,
     "objective": "SV-04",
     "weakness": "Insectos y arácnidos",
@@ -1133,6 +1144,7 @@
      "Q4-2",
      "Q4-3"
     ],
+    "page": "viaje-agua",
     "lanes": [
      {
       "engine": "choice",
@@ -1172,6 +1184,7 @@
      "Q5-2",
      "Q5-3"
     ],
+    "page": "cadenas",
     "lanes": [
      {
       "engine": "choice",
@@ -1248,6 +1261,7 @@
      "Q6-2",
      "Q6-3"
     ],
+    "page": "una-sola-cosa",
     "lanes": [
      {
       "engine": "choice",

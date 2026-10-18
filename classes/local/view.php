@@ -150,7 +150,13 @@ final class view {
             $world['mission'] = $mission;
             // What the Embrollo stained in the valley, to clean.
             $installed = missions::get($courseid);
-            $stained = array_map(fn($s) => stains::view($s, $installed), stains::open($courseid));
+            $stained = array_map(function ($s) use ($installed, $char) {
+                $view = stains::view($s, $installed);
+                if ($view && $view['kind'] === 'page') {
+                    $view['tried'] = stains::tried($char, $s, $installed);
+                }
+                return $view;
+            }, stains::open($courseid));
             $world['stains'] = array_values(array_filter($stained));
             if (!empty($world['team'])) {
                 // Where each one of the team is: the place where they last played, for the map (without names).

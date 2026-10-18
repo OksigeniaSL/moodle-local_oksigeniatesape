@@ -1927,7 +1927,7 @@
           lines.push(t('app_capped', r.capped));
         }
         if (r.gems) {
-          lines.push('+' + r.gems + ' ' + t('app_gems'));
+          lines.push(t(r.gems === 1 ? 'app_encounter_gem' : 'app_encounter_gems', r.gems));
         }
         r.items.forEach(function(name) {
           lines.push(t('app_gotitem', name));

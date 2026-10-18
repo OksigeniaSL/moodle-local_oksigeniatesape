@@ -868,8 +868,8 @@
    */
   function stainsList(stains, award) {
     return stains.length ? '<ul class="stains">' + stains.map(function(s) {
-      return '<li><span class="stain-dot" aria-hidden="true"></span><span>' + esc(t('board_today_stain', s)) + '</span>' +
-        (award ? '<button type="button" class="btn btn-soft" data-erasestain="' + s.id + '">' + esc(t('board_stain_erase')) +
+      return '<li><span class="stain-dot" aria-hidden="true"></span><span>' + esc(t(s.kind === 'page' ? 'board_today_page' : 'board_today_stain', s)) + '</span>' +
+        (award ? '<button type="button" class="btn btn-soft" data-erasestain="' + s.id + '">' + esc(t(s.kind === 'page' ? 'board_page_erase' : 'board_stain_erase')) +
         '</button>' : '') + '</li>';
     }).join('') + '</ul>' : '';
   }

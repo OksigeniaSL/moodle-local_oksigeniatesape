@@ -23,6 +23,10 @@ namespace local_oksigeniatesape\local;
  * teacher can take it as cleaned by the class with a touch. Calm (the default) leaves one stain at most, which never
  * grows; naughty leaves another one every day it is not cleaned, up to three. It never takes anything from anybody.
  *
+ * Or it steals a page of the Great Book: when the class left a knot hanging in the battles of the last week and that
+ * knot has its page, the action of the day is taking it (one at a time, never the same knot twice in a week). It comes
+ * back to the whole class with the first right answer to a question of the knot, one try a day for each student.
+ *
  * @package    local_oksigeniatesape
  * @copyright  2026 Oksigenia <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -37,7 +41,7 @@ final class stains {
     /** @var int Stains at the same time, at most, when it is naughty. */
     public const MAX = 3;
 
-    /** @var int Gems for cleaning a stain. */
+    /** @var int Gems for cleaning a stain, or for bringing back a page. */
     public const GEMS = 1;
 
     /**
@@ -62,23 +66,82 @@ final class stains {
         if ((int) $date->format('N') > 5 || $DB->record_exists(self::T . 'stain', ['courseid' => $courseid, 'day' => $day])) {
             return $open;
         }
-        // Today's: a new stain if there is room for it; if not, the day is noted as decided all the same.
+        // Today's: a page stolen, if the class left a knot hanging; if not, a new stain if there is room for it; if not,
+        // the day is noted as decided all the same.
+        $theft = self::to_steal($courseid, $mission, $open, $now);
+        $stains = array_filter($open, fn($s) => ($s->kind ?? 'stain') === 'stain');
         $chapter = pacts::chapter($mission);
-        $room = $mode === 'naughty' ? count($open) < self::MAX : !$open;
-        $sheet = $chapter && $room ? self::next_sheet($mission, (string) $chapter->code, $courseid) : null;
+        $room = $mode === 'naughty' ? count($stains) < self::MAX : !$stains;
+        $sheet = !$theft && $chapter && $room ? self::next_sheet($mission, (string) $chapter->code, $courseid) : null;
         $record = (object) ['courseid' => $courseid, 'day' => $day, 'chapter' => $sheet ? (string) $chapter->code : '',
-            'game' => $sheet['game'] ?? '', 'sheet' => $sheet['sheet'] ?? '', 'cleanedat' => $sheet ? 0 : $now, 'erased' => 0,
-            'timecreated' => $now];
+            'game' => $sheet['game'] ?? '', 'sheet' => $sheet['sheet'] ?? '', 'kind' => 'stain', 'cleanedat' => $sheet ? 0 : $now,
+            'erased' => 0, 'timecreated' => $now];
+        if ($theft) {
+            $record->chapter = $theft['chapter'];
+            $record->game = $theft['code'];
+            $record->sheet = $theft['page'];
+            $record->kind = 'page';
+            $record->cleanedat = 0;
+        }
         try {
             $record->id = $DB->insert_record(self::T . 'stain', $record);
         } catch (\dml_write_exception $e) {
             // Another visit decided it at the same time.
             return self::unclean($courseid);
         }
-        if ($sheet) {
+        if ($sheet || $theft) {
             $open[] = $record;
         }
         return $open;
+    }
+
+    /**
+     * The knot whose page the Embrollo steals today: the first one the class left hanging in the battles of the last
+     * week that has its page, if no page is stolen now and that one was not stolen in the last week.
+     *
+     * @param int $courseid
+     * @param \stdClass $mission
+     * @param \stdClass[] $open What is stolen or stained now.
+     * @param int $now
+     * @return array|null code (of the knot), page, chapter (code of its place).
+     */
+    private static function to_steal(int $courseid, \stdClass $mission, array $open, int $now): ?array {
+        global $DB;
+        if (array_filter($open, fn($s) => ($s->kind ?? 'stain') === 'page')) {
+            return null;
+        }
+        $since = $now - results::KNOT_DAYS * DAYSECS;
+        $chapters = array_values($mission->data['chapters'] ?? []);
+        foreach (results::knots($courseid, $mission, $now) as $hanging) {
+            $knot = self::knot($mission, (string) $hanging['code']);
+            $page = (string) ($knot['page'] ?? '');
+            if ($page === '' || !isset($mission->data['pages'][$page])) {
+                continue;
+            }
+            $where = "courseid = ? AND kind = 'page' AND game = ? AND timecreated > ?";
+            if ($DB->record_exists_select(self::T . 'stain', $where, [$courseid, $hanging['code'], $since])) {
+                continue;
+            }
+            return ['code' => (string) $hanging['code'], 'page' => $page,
+                'chapter' => (string) ($chapters[(int) ($knot['chapter'] ?? 1) - 1]['code'] ?? '')];
+        }
+        return null;
+    }
+
+    /**
+     * A knot of the battle of a mission, as in the package.
+     *
+     * @param \stdClass $mission
+     * @param string $code
+     * @return array|null
+     */
+    private static function knot(\stdClass $mission, string $code): ?array {
+        foreach ($mission->data['battle']['knots'] ?? [] as $knot) {
+            if (($knot['code'] ?? '') === $code) {
+                return $knot;
+            }
+        }
+        return null;
     }
 
     /**
@@ -126,6 +189,9 @@ final class stains {
      * @return array|null id, chapter, place, title, parts (text, mark, wrong); null if its sheet is not there any more.
      */
     public static function view(\stdClass $stain, \stdClass $mission): ?array {
+        if (($stain->kind ?? 'stain') === 'page') {
+            return self::page_view($stain, $mission);
+        }
         $sheet = self::sheet($stain, $mission);
         if (!$sheet) {
             return null;
@@ -139,7 +205,137 @@ final class stains {
         $parts = minigames::parts(missions::text($sheet['text'] ?? '', $mission->skin, $mission->variant));
         return ['id' => (int) $stain->id, 'chapter' => (string) $stain->chapter, 'place' => $place,
             'title' => missions::text($sheet['title'] ?? '', $mission->skin, $mission->variant),
-            'parts' => array_map(fn($p) => ['text' => $p['text'], 'mark' => $p['mark'], 'wrong' => $p['wrong']], $parts)];
+            'parts' => array_map(fn($p) => ['text' => $p['text'], 'mark' => $p['mark'], 'wrong' => $p['wrong']], $parts),
+            'kind' => 'stain'];
+    }
+
+    /**
+     * A page stolen as the students see it: the place of its knot, the title of the page, what the Embrollo claims and
+     * the question of today, without which option is right.
+     *
+     * @param \stdClass $stain
+     * @param \stdClass $mission
+     * @param int|null $now
+     * @return array|null
+     */
+    private static function page_view(\stdClass $stain, \stdClass $mission, ?int $now = null): ?array {
+        $knot = self::knot($mission, (string) $stain->game);
+        $page = $mission->data['pages'][$stain->sheet] ?? null;
+        $question = $knot && $page ? self::question($stain, $mission, $now) : null;
+        if (!$question) {
+            return null;
+        }
+        $place = '';
+        foreach ($mission->data['chapters'] ?? [] as $info) {
+            if (($info['code'] ?? '') === $stain->chapter) {
+                $place = missions::text($info['name'] ?? '', $mission->skin);
+            }
+        }
+        return ['id' => (int) $stain->id, 'chapter' => (string) $stain->chapter, 'place' => $place,
+            'title' => missions::text($page['title'] ?? '', $mission->skin, $mission->variant), 'parts' => [], 'kind' => 'page',
+            'claim' => missions::text($knot['claim'] ?? '', $mission->skin, $mission->variant),
+            'question' => $question['text'], 'options' => $question['options']];
+    }
+
+    /**
+     * The question of today to bring a page back: one of its knot, another one each day.
+     *
+     * @param \stdClass $stain
+     * @param \stdClass $mission
+     * @param int|null $now
+     * @return array|null As questions::get().
+     */
+    private static function question(\stdClass $stain, \stdClass $mission, ?int $now = null): ?array {
+        $ids = array_values((array) (self::knot($mission, (string) $stain->game)['questions'] ?? []));
+        if (!$ids) {
+            return null;
+        }
+        $day = self::day((int) $mission->courseid, $now ?? time());
+        return questions::get((int) $mission->courseid, (string) $ids[$day % count($ids)], (int) $stain->id);
+    }
+
+    /**
+     * Whether a student tried today to bring back a page.
+     *
+     * @param \stdClass $char
+     * @param \stdClass $stain
+     * @param \stdClass $mission
+     * @param int|null $now
+     * @return bool
+     */
+    public static function tried(\stdClass $char, \stdClass $stain, \stdClass $mission, ?int $now = null): bool {
+        global $DB;
+        return $DB->record_exists(self::T . 'found', ['charid' => $char->id, 'missionid' => $mission->id, 'kind' => 'pagetry',
+            'code' => $stain->id . '-' . self::day((int) $mission->courseid, $now ?? time())]);
+    }
+
+    /**
+     * A student answers the question of a page stolen, once a day: right, the page is back for the whole class, and who
+     * brought it gets a gem and reads it with the why of its knot.
+     *
+     * @param int $courseid
+     * @param int $stainid
+     * @param \stdClass $char
+     * @param \stdClass $member
+     * @param int $answer Index of the option chosen.
+     * @param int|null $now
+     * @return array right, gems, title, text, why (the last three, once back).
+     */
+    public static function recover(
+        int $courseid,
+        int $stainid,
+        \stdClass $char,
+        \stdClass $member,
+        int $answer,
+        ?int $now = null
+    ): array {
+        global $DB;
+        $now = $now ?? time();
+        $mission = missions::get($courseid);
+        $stain = $DB->get_record(self::T . 'stain', ['id' => $stainid, 'courseid' => $courseid]);
+        if (!$mission || !$stain || $stain->kind !== 'page' || (int) $stain->cleanedat) {
+            throw new \moodle_exception('nostain', 'local_oksigeniatesape');
+        }
+        $question = self::question($stain, $mission, $now);
+        if (!$question || self::tried($char, $stain, $mission, $now)) {
+            throw new \moodle_exception('pagetried', 'local_oksigeniatesape');
+        }
+        $DB->insert_record(self::T . 'found', (object) ['charid' => $char->id, 'courseid' => $courseid,
+            'missionid' => $mission->id, 'kind' => 'pagetry', 'code' => $stain->id . '-' . self::day($courseid, $now),
+            'timecreated' => $now]);
+        if ($answer !== (int) $question['correct']) {
+            return ['right' => false, 'gems' => 0, 'title' => '', 'text' => '', 'why' => ''];
+        }
+        // One brings it back: two at the same time do not both get the gem.
+        $lock = \core\lock\lock_config::get_lock_factory('local_oksigeniatesape')->get_lock('stain-' . $stainid, 5);
+        if (!$lock) {
+            throw new \moodle_exception('nostain', 'local_oksigeniatesape');
+        }
+        try {
+            if ((int) $DB->get_field(self::T . 'stain', 'cleanedat', ['id' => $stainid])) {
+                throw new \moodle_exception('nostain', 'local_oksigeniatesape');
+            }
+            $DB->set_field(self::T . 'stain', 'cleanedat', $now, ['id' => $stainid]);
+        } finally {
+            $lock->release();
+        }
+        $entry = engine::gems($member, self::GEMS, 'pageback', 0, 0, $stainid, $now);
+        $page = $mission->data['pages'][$stain->sheet] ?? [];
+        return ['right' => true, 'gems' => $entry ? (int) $entry->amount : 0,
+            'title' => missions::text($page['title'] ?? '', $mission->skin, $mission->variant),
+            'text' => missions::text($page['text'] ?? '', $mission->skin, $mission->variant),
+            'why' => missions::text(self::knot($mission, (string) $stain->game)['why'] ?? '', $mission->skin, $mission->variant)];
+    }
+
+    /**
+     * The day, as yyyymmdd in the time zone of the course.
+     *
+     * @param int $courseid
+     * @param int $now
+     * @return int
+     */
+    private static function day(int $courseid, int $now): int {
+        return (int) (new \DateTimeImmutable('@' . $now))->setTimezone(engine::timezone($courseid))->format('Ymd');
     }
 
     /**
