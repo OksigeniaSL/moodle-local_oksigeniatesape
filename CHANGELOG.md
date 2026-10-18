@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.117.0 (2026-10-18)
+
+- **The rescue for two.** A healer who plays a scene as a team with a worn-out teammate pays no hints in it and, if it
+  goes well, brings them back: the teammate gets up and the whole team gets the saber of a rescue, as with «Revive»,
+  which stays for the teacher to approve. The healer sees it beside the worn-out teammate, in the «Team» tab and when
+  choosing who plays; the worn-out student is told they can do their recovery challenge or play a scene with the healer.
+
 ## 0.116.0 (2026-10-18)
 
 - **The council of the teams.** From the remote, in a session, «Council of the teams» shows on the class screen the

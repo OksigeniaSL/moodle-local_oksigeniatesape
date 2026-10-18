@@ -1901,11 +1901,15 @@
     layer.setAttribute('role', 'dialog');
     layer.setAttribute('aria-modal', 'true');
     layer.setAttribute('aria-labelledby', 'tesape-team-title');
+    // The healer sees who is worn out: playing together rescues them.
+    var healer = state.world.character && state.world.character.role === 'healer';
     layer.innerHTML = '<form class="badge-card"><h2 id="tesape-team-title">' + esc(t('app_team_who')) + '</h2><p>' +
       esc(t('app_team_who_help')) + '</p><div class="team-mates">' + mates.map(function(m) {
         var far = m.character && m.character.member && m.character.member.remote;
+        var worn = healer && m.character && m.character.member && m.character.member.status === 'fallen';
         return '<label class="chip' + (far ? ' off' : '') + '"><input type="checkbox" value="' + m.userid + '"' +
-          (far ? ' disabled' : '') + '> ' + esc(m.name) + (far ? ' · ' + esc(t('app_team_far')) : '') + '</label>';
+          (far ? ' disabled' : '') + '> ' + esc(m.name) + (far ? ' · ' + esc(t('app_team_far')) : '') +
+          (worn ? ' · ' + esc(t('app_team_rescue')) : '') + '</label>';
       }).join('') + '</div><div class="actions"><button class="btn btn-soft" type="button" data-cancel>' +
       esc(t('app_cancel')) + '</button><button class="btn btn-main" type="submit" disabled>' + esc(t('app_team_start')) +
       '</button></div><div class="huddle-offer"><p class="help-soft">' + esc(t('app_huddle_tablets_help')) + '</p>' +
@@ -2534,7 +2538,9 @@
             esc(mate.name) + (mate.me ? ' (' + esc(t('app_you')) + ')' : '') + '</b><small>' +
             (c ? esc(T.roleName(fam, c.role, c.nameform)) + ' · ' + esc(rank(c)) + ' · ' + esc(t('app_level')) + ' ' + c.level +
             (c.creature ? ' · ' + esc(t('app_with_creature', creatureName(c))) : '') : esc(t('app_nocharacter'))) +
-            '</small></span>' + (c && c.creature ? '<span class="team-creature" aria-hidden="true">' +
+            '</small>' + (!mate.me && m && m.status === 'fallen' && w.character && w.character.role === 'healer' ?
+            '<small class="help-soft">' + esc(t('app_rescue_how')) + '</small>' : '') + '</span>' +
+            (c && c.creature ? '<span class="team-creature" aria-hidden="true">' +
             T.creature(c.creature, c.creaturestage) + '</span>' : '') + tag + (m && m.energy >= 0 ? '<span class="bars">' +
             '<span class="meter energy" ' +
             'title="' + esc(t('app_energy')) + '"><i style="width:' + Math.round(100 * m.energy / w.energymax) +

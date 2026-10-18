@@ -407,6 +407,42 @@ final class scenes_test extends \advanced_testcase {
         $this->assertSame(3, scenes::play($w->course->id, $w->users[0]->id, $scene->id, $events($w->users[0]), null)['rewards']['hints']);
     }
 
+    public function test_the_healer_rescues_a_worn_out_teammate_by_playing_a_scene_together(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $w = $this->make_class(2);
+        $group = $this->getDataGenerator()->create_group(['courseid' => $w->course->id]);
+        foreach ($w->users as $user) {
+            $this->getDataGenerator()->create_group_member(['groupid' => $group->id, 'userid' => $user->id]);
+        }
+        $DB->set_field(self::T . 'char', 'role', 'healer', ['userid' => $w->users[0]->id]);
+        $worn = engine::member(characters::get($w->users[1]->id), $w->course->id);
+        $DB->update_record(self::T . 'member', (object) ['id' => $worn->id, 'energy' => 0, 'status' => 'fallen']);
+        $scene = $DB->get_record(self::T . 'scene', ['missionid' => $w->mission->id, 'code' => 'C2-2']);
+        $def = json_decode($scene->definition, true);
+        $def['nodes']['colocar']['hints'] = ['Una', 'Dos'];
+        $DB->set_field(self::T . 'scene', 'definition', json_encode($def), ['id' => $scene->id]);
+        [$items, $roles, $flags, $role] = scenes::context(characters::get($w->users[0]->id), $w->course->id);
+        $events = array_merge(
+            [['n' => 'colocar', 'hint' => 0], ['n' => 'colocar', 'hint' => 1]],
+            autoplayer::play($def, $items, $roles, $flags, $role)
+        );
+        $result = scenes::play($w->course->id, $w->users[0]->id, $scene->id, $events, null, null, [$w->users[1]->id]);
+        // Played well together: the teammate gets up, the team gets the saber of a rescue, and the hints were free.
+        $this->assertContains($result['outcome'], ['success', 'partial']);
+        $this->assertCount(1, $result['rewards']['rescued']);
+        $this->assertSame(0, $result['rewards']['hints']);
+        $this->assertSame('active', engine::member(characters::get($w->users[1]->id), $w->course->id)->status);
+        $healer = characters::get($w->users[0]->id);
+        $this->assertTrue($DB->record_exists(self::T . 'ledger', ['charid' => $healer->id, 'reason' => 'rescue']));
+        // Another role playing with a worn-out teammate does not rescue them.
+        $DB->update_record(self::T . 'member', (object) ['id' => $worn->id, 'energy' => 0, 'status' => 'fallen']);
+        $DB->set_field(self::T . 'char', 'role', 'scout', ['userid' => $w->users[0]->id]);
+        $again = scenes::play($w->course->id, $w->users[0]->id, $scene->id, $events, null, null, [$w->users[1]->id]);
+        $this->assertArrayNotHasKey('rescued', $again['rewards']);
+        $this->assertSame('fallen', engine::member(characters::get($w->users[1]->id), $w->course->id)->status);
+    }
+
     public function test_a_play_sent_again_counts_once(): void {
         global $DB;
         $this->resetAfterTest();

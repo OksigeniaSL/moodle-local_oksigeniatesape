@@ -141,6 +141,7 @@ final class play_scene extends external_api {
                 'hints' => (int) ($r['hints'] ?? 0),
                 'cared' => (string) ($r['cared'] ?? ''),
                 'shielded' => !empty($r['shielded']),
+                'rescued' => array_values($r['rescued'] ?? []),
             ],
             'teamwith' => $result['teamwith'],
             'world' => view::world($params['courseid'], (int) $USER->id),
@@ -173,6 +174,12 @@ final class play_scene extends external_api {
                 'hints' => new external_value(PARAM_INT, 'Breath paid for hints', VALUE_DEFAULT, 0),
                 'cared' => new external_value(PARAM_TEXT, 'Teammate the healer gave a breath to', VALUE_DEFAULT, ''),
                 'shielded' => new external_value(PARAM_BOOL, 'The protector\'s shield stopped a mistake', VALUE_DEFAULT, false),
+                'rescued' => new external_multiple_structure(
+                    new external_value(PARAM_TEXT, 'A worn-out teammate the healer brought back'),
+                    'The rescue for two',
+                    VALUE_DEFAULT,
+                    []
+                ),
             ]),
             'teamwith' => new external_multiple_structure(
                 new external_value(PARAM_TEXT, 'Teammate'),

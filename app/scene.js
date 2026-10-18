@@ -2312,6 +2312,9 @@
         if (r.cared) {
           lines.push(t('app_cared', r.cared));
         }
+        if (r.rescued && r.rescued.length) {
+          lines.push(t('app_rescued', r.rescued.join(', ')));
+        }
         if (r.hints) {
           lines.push(t('app_hints_paid', r.hints));
         }

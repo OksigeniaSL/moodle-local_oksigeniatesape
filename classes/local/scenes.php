@@ -607,10 +607,42 @@ final class scenes {
         if (!empty($rewards['saber']) && $char->role === 'healer') {
             $rewards['cared'] = self::care($char, $member, (int) $scene->id, $now);
         }
-        $free = self::aided($member, $scene);
+        // The rescue for two: the healer who plays a scene with a worn-out teammate pays no hints and, if it goes well,
+        // brings them back.
+        $fallen = $char->role === 'healer' ? array_values(array_filter($team, fn($p) => $p['member']->status === 'fallen')) : [];
+        if ($fallen && in_array($result['outcome'], ['success', 'partial'], true)) {
+            $rewards['rescued'] = self::rescue($courseid, $char, $fallen, (int) $scene->id, $now);
+        }
+        $free = self::aided($member, $scene) || $fallen;
         $rewards['hints'] = self::pay_hints($char, $member, (int) $scene->id, (int) $result['hints'], $now, $free);
         $rewards['shielded'] = (bool) $result['shielded'];
         return [$attempt, $rewards];
+    }
+
+    /**
+     * The healer brings back the worn-out teammates who played a scene well with them, and the team gets the saber of a
+     * rescue, as with the power «Revive».
+     *
+     * @param int $courseid
+     * @param \stdClass $char The healer.
+     * @param array $fallen The worn-out teammates, with char, member and name.
+     * @param int $sceneid
+     * @param int $now
+     * @return string[] The names of those brought back.
+     */
+    private static function rescue(int $courseid, \stdClass $char, array $fallen, int $sceneid, int $now): array {
+        $names = [];
+        foreach ($fallen as $p) {
+            if (engine::recover($p['member'], 'rescue', (int) $char->userid, $now)) {
+                $names[] = $p['name'];
+            }
+        }
+        $group = $names ? teams::of($courseid, (int) $char->userid) : null;
+        foreach ($group ? teams::members($courseid, (int) $group->id) : [] as $mate) {
+            unset($mate->userid);
+            engine::saber($mate, powers::RESCUE_SABER, 'rescue', (int) $char->userid, 0, $sceneid, $now);
+        }
+        return $names;
     }
 
     /**
