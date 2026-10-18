@@ -98,6 +98,12 @@ final class get_world extends external_api {
                     'me' => new external_value(PARAM_BOOL, 'The current student'),
                     'character' => structures::character(VALUE_OPTIONAL),
                     'at' => new external_value(PARAM_INT, 'Chapter where they last played, 0 if none', VALUE_DEFAULT, 0),
+                    'gifts' => new external_multiple_structure(
+                        new external_value(PARAM_ALPHA, 'guard or trail'),
+                        'What they bring to a play as a team, by their talents',
+                        VALUE_DEFAULT,
+                        []
+                    ),
                 ])),
                 'week' => structures::week(),
                 'energy' => new external_value(PARAM_INT, 'Energy of the whole team'),

@@ -785,9 +785,12 @@ final class live {
             if (self::rest($live, (int) $joined->team, $kind, $member, $round) > 0) {
                 throw new \moodle_exception('tokenused', 'local_oksigeniatesape');
             }
-            // The shield and the cheer go to a team that plays; the rest, to their own team.
+            // The shield and the cheer go to a team that plays; the glance of a sage with «Wide glance», to their own team and
+            // to another one with a lane to choose; the rest, to their own team.
             $teams = self::playing($live, $state);
-            if (!in_array($kind, ['shield', 'cheer'], true) || !in_array($target, $teams, true)) {
+            $aimed = in_array($kind, ['shield', 'cheer'], true) || ($kind === 'glance' && $cover === ''
+                && in_array($target, array_column(self::glance_targets($live, $state, $member, (int) $joined->team), 'id'), true));
+            if (!$aimed || !in_array($target, $teams, true)) {
                 $target = (int) $joined->team;
             }
         } else if ($DB->record_exists(self::T . 'livetoken', ['liveid' => $live->id, 'charid' => $member->charid])) {
@@ -868,10 +871,10 @@ final class live {
     private static function tokens_for(\stdClass $live, array $state, \stdClass $member, int $team): array {
         global $DB;
         $round = (int) $live->round;
-        // Their own tokens and those of their team in the round, in one query.
-        $where = 'liveid = ? AND (charid = ? OR (round = ? AND team = ?))';
-        $params = [$live->id, $member->charid, $round, $team ?: -1];
-        $tokens = $DB->get_records_select(self::T . 'livetoken', $where, $params, '', 'id, charid, round, kind');
+        // Their own tokens, those of their team in the round and a glance another team aimed at theirs, in one query.
+        $where = "liveid = ? AND (charid = ? OR (round = ? AND team = ?) OR (round = ? AND target = ? AND kind = 'glance'))";
+        $params = [$live->id, $member->charid, $round, $team ?: -1, $round, $team ?: -1];
+        $tokens = $DB->get_records_select(self::T . 'livetoken', $where, $params, '', 'id, charid, round, team, kind');
         $used = (bool) array_filter($tokens, fn($t) => (int) $t->charid === (int) $member->charid);
         $kind = self::TOKENS[self::role($member)] ?? '';
         $view = ['token' => $kind, 'tokenused' => $used];
@@ -887,6 +890,9 @@ final class live {
                 $view['targets'] = array_map(fn($id) => ['id' => $id, 'name' => isset($names[$id]) ?
                     format_string($names[$id]->name) : ''], self::playing($live, $state));
             }
+            if ($kind === 'glance' && !$rest && $round > 0 && empty($state['rounds'][$round]['revealed'])) {
+                $view['glancetargets'] = self::glance_targets($live, $state, $member, $team);
+            }
         }
         if ($round < 1 || !empty($state['rounds'][$round]['revealed'])) {
             return $view;
@@ -894,8 +900,14 @@ final class live {
         // Without a team, only one's own token.
         $kinds = [];
         foreach ($tokens as $token) {
-            if ((int) $token->round === $round && ($team || (int) $token->charid === (int) $member->charid)) {
-                $kinds[] = $token->kind;
+            if ((int) $token->round !== $round || (!$team && (int) $token->charid !== (int) $member->charid)) {
+                continue;
+            }
+            $kinds[] = $token->kind;
+            if ($team && (int) $token->team !== $team) {
+                // A glance of a sage of another team, aimed at this one: it says from where it comes.
+                $names = $names ?? self::teams((int) $live->courseid);
+                $view['glancefrom'] = isset($names[(int) $token->team]) ? format_string($names[(int) $token->team]->name) : '';
             }
         }
         // By turns, what the team plays is its lane; the glance strikes out an option only in one to choose.
@@ -919,6 +931,35 @@ final class live {
             $view['nexttarget'] = isset($names[$goes]) ? format_string($names[$goes]->name) : '';
         }
         return $view;
+    }
+
+    /**
+     * By turns, the teams a sage with «Wide glance» can aim their glance at too: the others that play, with a lane to
+     * choose in the turn (the glance does nothing in the others).
+     *
+     * @param \stdClass $live
+     * @param array $state
+     * @param \stdClass $member The sage.
+     * @param int $team Their team.
+     * @return array Of id and name.
+     */
+    private static function glance_targets(\stdClass $live, array $state, \stdClass $member, int $team): array {
+        $round = (int) $live->round;
+        if (
+            empty($state['knots']) || !$team || $round < 1 || empty($state['rounds'][$round])
+            || !talents::has((int) $member->charid, 'wideglance', (int) $live->courseid)
+        ) {
+            return [];
+        }
+        $names = self::teams((int) $live->courseid);
+        $targets = [];
+        foreach (self::playing($live, $state) as $id) {
+            $info = array_merge($state['rounds'][$round], $state['rounds'][$round]['lanes'][$id] ?? []);
+            if ($id !== $team && ($info['options'] ?? 0) > 1 && empty($info['engine'])) {
+                $targets[] = ['id' => $id, 'name' => isset($names[$id]) ? format_string($names[$id]->name) : ''];
+            }
+        }
+        return $targets;
     }
 
     /**

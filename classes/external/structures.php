@@ -50,6 +50,26 @@ final class structures {
             'creaturestage' => new external_value(PARAM_INT, 'Stage of the creature (0 before it hatches)'),
             'creature' => new external_value(PARAM_RAW, 'Traits of the creature (JSON), empty before it hatches'),
             'aura' => new external_value(PARAM_ALPHANUMEXT, 'Aura it wears from the market', VALUE_DEFAULT, ''),
+            'talents' => new external_multiple_structure(new external_single_structure([
+                'level' => new external_value(PARAM_INT, 'The level that brought it'),
+                'code' => new external_value(PARAM_ALPHANUMEXT, 'Talent'),
+                'name' => new external_value(PARAM_TEXT, 'Its name'),
+                'description' => new external_value(PARAM_TEXT, 'What it does'),
+            ]), 'The talents chosen (for the student and their teachers)', VALUE_DEFAULT, []),
+            'talentsoff' => new external_value(
+                PARAM_BOOL,
+                'The teacher of the course turns the talents off',
+                VALUE_DEFAULT,
+                false
+            ),
+            'talentpending' => new external_single_structure([
+                'level' => new external_value(PARAM_INT, 'The level that brings the choice'),
+                'options' => new external_multiple_structure(new external_single_structure([
+                    'code' => new external_value(PARAM_ALPHANUMEXT, 'Talent'),
+                    'name' => new external_value(PARAM_TEXT, 'Its name'),
+                    'description' => new external_value(PARAM_TEXT, 'What it does'),
+                ])),
+            ], 'A choice of talent waiting', VALUE_OPTIONAL),
             'member' => new external_single_structure([
                 'renown' => new external_value(PARAM_INT, 'Knowledge earned in the course'),
                 'energy' => new external_value(PARAM_INT, 'Energy in the course (-1: not shown to this classmate)'),
@@ -166,6 +186,12 @@ final class structures {
                         'name' => new external_value(PARAM_TEXT, 'A name'),
                     ])),
                     'picture' => new external_value(PARAM_RAW, 'Key of its picture in the art'),
+                    'crossed' => new external_value(
+                        PARAM_ALPHANUMEXT,
+                        'A name missed today, with «Fresh track»',
+                        VALUE_DEFAULT,
+                        ''
+                    ),
                 ], 'A being that peeks out here today', VALUE_OPTIONAL),
                 'embrollo' => new external_single_structure([
                     'name' => new external_value(PARAM_TEXT, 'The knot of the place'),
@@ -510,6 +536,7 @@ final class structures {
             'nicknames' => new external_value(PARAM_INT, '0 Moodle names, 1 hero names from a list, 2 also their own'),
             'timezone' => new external_value(PARAM_TEXT, 'Time zone of the days and weeks (99: the one of the site)'),
             'completionrule' => new external_value(PARAM_INT, 'Knowledge for an activity that is not a challenge'),
+            'talentson' => new external_value(PARAM_BOOL, 'The talents act in the course', VALUE_DEFAULT, true),
             'portal' => new external_value(PARAM_ALPHA, 'Cover: door, card, direct or menu', VALUE_DEFAULT, 'door'),
             'hideacts' => new external_value(PARAM_BOOL, 'Mission activities only inside the valley', VALUE_DEFAULT, false),
             'allowstealth' => new external_value(PARAM_BOOL, 'Site allows available but hidden activities', VALUE_DEFAULT, false),
@@ -710,6 +737,11 @@ final class structures {
                 'id' => new external_value(PARAM_INT, 'Group'),
                 'name' => new external_value(PARAM_TEXT, 'Team'),
             ]), 'By turns: the teams their shield or cheer can go to', VALUE_OPTIONAL),
+            'glancetargets' => new external_multiple_structure(new external_single_structure([
+                'id' => new external_value(PARAM_INT, 'Group'),
+                'name' => new external_value(PARAM_TEXT, 'Team'),
+            ]), 'By turns, with «Wide glance»: the other teams their glance can go to as well', VALUE_OPTIONAL),
+            'glancefrom' => new external_value(PARAM_TEXT, 'The team whose sage aimed a glance at theirs', VALUE_OPTIONAL),
             'nextknot' => new external_value(PARAM_TEXT, 'By turns, by the trail of their team: the next knot', VALUE_OPTIONAL),
             'nexttarget' => new external_value(PARAM_TEXT, 'By turns, by the trail: the team it will go for', VALUE_OPTIONAL),
         ], 'Battle of the course', VALUE_OPTIONAL);

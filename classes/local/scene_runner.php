@@ -80,8 +80,14 @@ final class scene_runner {
     /** @var string[] Item that each tool needs; the lens is always at hand. */
     private const TOOLS = ['lens' => '', 'net' => 'net', 'lantern' => 'lantern'];
 
-    /** @var bool The protector's shield is still up in this play. */
-    private bool $shield;
+    /** @var int Mistakes the shield still stops in this play: one for the protector (two with «Long shield»). */
+    private int $shields;
+
+    /** @var int[] With «Team guard»: who decides in a play as a team, each with their shield for their first mistake. */
+    private array $guards = [];
+
+    /** @var string[] The roles teammates lend to the play («Shared trail»). */
+    private array $lent = [];
 
     /** @var bool The shield has stopped a mistake in this play. */
     private bool $shielded = false;
@@ -149,7 +155,40 @@ final class scene_runner {
         $this->flags = $flags;
         $this->role = $role;
         $this->wholeclass = $wholeclass;
-        $this->shield = $role === 'protector';
+        $this->shields = $role === 'protector' ? 1 : 0;
+    }
+
+    /**
+     * The shield of this play, by the talents: two mistakes with «Long shield».
+     *
+     * @param int $shields
+     * @return self
+     */
+    public function shields(int $shields): self {
+        $this->shields = max($this->shields, $shields);
+        return $this;
+    }
+
+    /**
+     * «Team guard»: a protector of the team in the play guards the first mistake of each one who decides.
+     *
+     * @param int[] $userids Who plays.
+     * @return self
+     */
+    public function team_guard(array $userids): self {
+        $this->guards = array_fill_keys(array_map('intval', $userids), 1);
+        return $this;
+    }
+
+    /**
+     * Roles that teammates in the play lend to it: their options are there, and they decide them.
+     *
+     * @param string[] $roles
+     * @return self
+     */
+    public function lend(array $roles): self {
+        $this->lent = array_values(array_unique($roles));
+        return $this;
     }
 
     /**
@@ -181,7 +220,8 @@ final class scene_runner {
         }
         if (isset($requires['role'])) {
             // The whole class, at the class screen, has the role of any of its players.
-            return $requires['role'] === $this->role || ($this->wholeclass && in_array($requires['role'], $this->teamroles, true));
+            return $requires['role'] === $this->role || in_array($requires['role'], $this->lent, true)
+                || ($this->wholeclass && in_array($requires['role'], $this->teamroles, true));
         }
         if (isset($requires['teamrole'])) {
             return in_array($requires['teamrole'], $this->teamroles, true);
@@ -467,7 +507,7 @@ final class scene_runner {
                 }
                 $wrong[] = $event['bin'];
                 if ($first) {
-                    $saved = $this->guard();
+                    $saved = $this->guard($event);
                 }
                 $first = false;
             }
@@ -503,7 +543,7 @@ final class scene_runner {
                 $built++;
             } else {
                 if ($first) {
-                    $saved = $this->guard();
+                    $saved = $this->guard($event);
                 }
                 $first = false;
             }
@@ -652,15 +692,21 @@ final class scene_runner {
     }
 
     /**
-     * A mistake: the protector's shield stops the points it would cost, once a play.
+     * A mistake: the protector's shield stops the points it would cost, once a play (twice with «Long shield»); with
+     * «Team guard», the first mistake of each one who decides.
      *
+     * @param array $event The event of the mistake.
      * @return bool The shield stopped it.
      */
-    private function guard(): bool {
-        if (!$this->shield) {
+    private function guard(array $event): bool {
+        $by = (int) ($event['by'] ?? 0);
+        if ($by && !empty($this->guards[$by])) {
+            $this->guards[$by] = 0;
+        } else if ($this->shields > 0) {
+            $this->shields--;
+        } else {
             return false;
         }
-        $this->shield = false;
         $this->shielded = true;
         return true;
     }

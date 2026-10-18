@@ -296,6 +296,66 @@
       '</span></p>';
   }
 
+  /**
+   * The talents of a student on their sheet, as medals; and the choice waiting, if they left it for later.
+   *
+   * @param {Object} c The character.
+   * @return {string}
+   */
+  function talentsHtml(c) {
+    var list = c.talents || [];
+    return (list.length ? '<ul class="talent-medals">' + list.map(function(x) {
+      return '<li><b>' + esc(x.name) + '</b><small>' + esc(x.description) + '</small></li>';
+    }).join('') + '</ul>' + (c.talentsoff ? '<p class="help-soft">' + esc(t('app_talents_off')) + '</p>' : '') : '') +
+      (c.talentpending ? '<p><button type="button" class="btn btn-main" data-choosetalent>' + esc(t('app_talent_choose')) +
+      '</button></p>' : '');
+  }
+
+  /**
+   * A level that brings a talent: two cards of the role, one to keep. Left for later, it waits on the sheet.
+   *
+   * @param {Object} p level and options.
+   * @param {Function} [then]
+   * @return {Element}
+   */
+  function talentMoment(p, then) {
+    var layer = moment('<div class="kicker">' + esc(t('app_talent_kicker')) + '</div><h2 id="tesape-talent-title">' +
+      esc(t('app_talent_title')) + '</h2><p class="help">' + esc(t('app_talent_help')) + '</p><div class="talent-cards">' +
+      p.options.map(function(o) {
+        return '<button type="button" class="talent-card" data-talent="' + esc(o.code) + '"><b>' + esc(o.name) + '</b>' +
+          '<small>' + esc(o.description) + '</small></button>';
+      }).join('') + '</div>', 'tesape-talent-title', then);
+    // The cards are the choice: «Later» stays quiet, and the first card has the focus.
+    var later = layer.querySelector('[data-close]');
+    later.textContent = t('app_talent_later');
+    later.className = 'btn btn-soft';
+    layer.querySelector('[data-talent]').focus();
+    layer.querySelectorAll('[data-talent]').forEach(function(b) {
+      b.onclick = function() {
+        layer.querySelectorAll('[data-talent]').forEach(function(x) {
+          x.disabled = true;
+        });
+        T.api('choose_talent', {courseid: cfg.courseid, level: p.level, code: b.dataset.talent}).then(function(r) {
+          state.world.character.talents = r.talents;
+          delete state.world.character.talentpending;
+          if (T.fx) {
+            T.fx.sound('levelup');
+            T.fx.sparkles();
+          }
+          T.toast(esc(t('app_talent_chosen', b.querySelector('b').textContent)));
+          later.click();
+          world();
+        }).catch(function(e) {
+          layer.querySelectorAll('[data-talent]').forEach(function(x) {
+            x.disabled = false;
+          });
+          T.toast(esc(e.message), true);
+        });
+      };
+    });
+    return layer;
+  }
+
   function title(d) {
     var name = T.roleName(state.world.family, d.role, d.nameform);
     var lineage = T.hasLineages(state.world.family) ? T.lineageName(d.lineage, d.nameform) : '';
@@ -443,6 +503,25 @@
     if (seen && typeof seen.level === 'number' && c.level > seen.level) {
       moments.push(function(then) {
         levelMoment(seen, c, then);
+      });
+    }
+    // A level that brings a talent: the choice of two, now or later. By itself once on each device; then it waits on the
+    // sheet.
+    var tkey = 'tesape-talent-' + cfg.courseid + '-' + cfg.userid;
+    var offered = null;
+    try {
+      offered = window.localStorage.getItem(tkey);
+    } catch (e) {
+      offered = null;
+    }
+    if (c.talentpending && offered !== String(c.talentpending.level)) {
+      moments.push(function(then) {
+        try {
+          window.localStorage.setItem(tkey, String(c.talentpending.level));
+        } catch (e) {
+          // Without storage it is offered again next time.
+        }
+        talentMoment(c.talentpending, then);
       });
     }
     if (seen && seen.creaturestage && c.creaturestage > seen.creaturestage) {
@@ -791,6 +870,11 @@
         // What is waiting glows; how many, only for who listens.
         var badge = tab === 'challenges' && pending ? '<span class="new-glow" aria-hidden="true"></span><span class="sr-only"> (' +
           pending + ')</span>' : '';
+        // A talent to choose waits on the sheet.
+        if (tab === 'me' && c && c.talentpending) {
+          badge = '<span class="new-glow" aria-hidden="true"></span><span class="sr-only"> (' + esc(t('app_talent_title')) +
+            ')</span>';
+        }
         var on = state.tab === tab || (tab === 'world' && (state.tab === 'market' || state.tab === 'album'));
         return '<button type="button" data-tab="' + tab + '"' + (on ? ' aria-current="page"' : '') + '>' +
           T.icon(tab) + '<span>' + esc(t('app_tab_' + tab)) + badge + '</span></button>';
@@ -2548,7 +2632,7 @@
       esc(creatureName(c)) + '</b><small>' + esc(t('app_creaturestage', c.creaturestage)) + '</small></div>' : '';
     var unlock = nextUnlock(c);
     return '<section class="card sheet"><div class="sheet-art">' + avatarOf(c, title(c)) + creature + '</div><div class="stats"><h2>' + esc(myName()) +
-      '</h2><p style="color:var(--text-soft)">' + esc(rank(c)) + ' · ' + esc(title(c)) + '</p>' + traits(c) +
+      '</h2><p style="color:var(--text-soft)">' + esc(rank(c)) + ' · ' + esc(title(c)) + '</p>' + traits(c) + talentsHtml(c) +
       '<div class="stat"><span>' + esc(t('app_level')) + '</span><b>' + c.level + '</b></div>' +
       '<div class="meter level" style="margin:6px 0 4px"><i style="width:' + pct + '%"></i></div><small style="color:' +
       'var(--text-soft)">' + esc(c.levelneeded ? t('app_tonext', c.levelneeded - c.levelinto) : t('app_maxlevel')) +
@@ -2692,7 +2776,9 @@
     layer.setAttribute('role', 'dialog');
     layer.setAttribute('aria-modal', 'true');
     layer.setAttribute('aria-labelledby', 'tesape-encounter-title');
-    var shown = 1;
+    // With «Fresh track», a name missed today is crossed out, and one more clue is open.
+    var crossed = e.crossed || '';
+    var shown = crossed ? Math.min(2, e.clues.length) : 1;
     var art = beingArt(e.picture.replace(/^being\./, ''));
     var draw = function() {
       layer.innerHTML = '<div class="badge-card"><div class="kicker" id="tesape-encounter-title">' +
@@ -2705,8 +2791,12 @@
         }).join('') + '</ol>' + (shown < e.clues.length ? '<div class="actions" style="justify-content:flex-start">' +
         '<button type="button" class="btn btn-soft" data-clue>' + esc(t('app_encounter_clue')) + '</button></div>' : '') +
         '<p><b>' + esc(t('app_encounter_who')) + '</b></p><div class="encounter-options">' + e.options.map(function(o) {
+          if (o.id === crossed) {
+            return '<button type="button" class="btn btn-soft crossed" disabled><s>' + esc(o.name) + '</s></button>';
+          }
           return '<button type="button" class="btn btn-soft" data-who="' + esc(o.id) + '">' + esc(o.name) + '</button>';
-        }).join('') + '</div><div data-said></div></div>';
+        }).join('') + '</div><div data-said>' + (crossed ? '<p class="help-soft">' + esc(t('app_encounter_again')) +
+        '</p>' : '') + '</div></div>';
       var clue = layer.querySelector('[data-clue]');
       if (clue) {
         clue.onclick = function() {
@@ -2722,6 +2812,15 @@
           });
           T.api('answer_encounter', {courseid: cfg.courseid, place: e.place, choice: b.dataset.who, clues: shown})
           .then(function(r) {
+            if (r.again) {
+              // «Fresh track»: it does not hide; another clue, and they choose again.
+              crossed = r.crossed;
+              e.crossed = crossed;
+              shown = Math.min(shown + 1, e.clues.length);
+              draw();
+              layer.querySelector('[data-who]').focus();
+              return;
+            }
             var said = layer.querySelector('[data-said]');
             var pet = layer.querySelector('.encounter-pet');
             var pose = r.right ? (REACT[r.group] || 'wiggle') : 'look';
@@ -3024,6 +3123,12 @@
       if (print) {
         print.onclick = function() {
           window.print();
+        };
+      }
+      var choose = app.querySelector('[data-choosetalent]');
+      if (choose && c.talentpending) {
+        choose.onclick = function() {
+          talentMoment(c.talentpending);
         };
       }
       return;

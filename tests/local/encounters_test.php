@@ -113,6 +113,39 @@ final class encounters_test extends \advanced_testcase {
         $this->assertSame(encounters::GEMS, $result['gems']);
     }
 
+    public function test_with_fresh_track_a_first_miss_leaves_it_there_with_the_name_crossed_out(): void {
+        global $DB;
+        [$course, $char, $member, $mission] = $this->make_class();
+        $DB->update_record(self::T . 'char', (object) ['id' => $char->id, 'role' => 'scout', 'level' => 3]);
+        $char = characters::get((int) $char->userid);
+        talents::choose($char, 3, 'freshtrack');
+        $now = time();
+        $being = encounters::today($char, $mission, 'bosque', $now);
+        $wrong = array_values(array_filter(encounters::view($being, $mission)['options'], fn($o) => $o['id'] !== $being['id']));
+        $result = encounters::answer($char, $member, $mission, 'bosque', $wrong[0]['id'], 1, $now);
+        $this->assertFalse($result['right']);
+        $this->assertTrue($result['again']);
+        // It is still there, with the name crossed out; right now, a card that is not golden.
+        $this->assertSame($being['id'], encounters::today($char, $mission, 'bosque', $now + 60)['id']);
+        $this->assertSame($wrong[0]['id'], encounters::crossed($char, $mission, 'bosque', $now + 60));
+        $result = encounters::answer($char, $member, $mission, 'bosque', (string) $being['id'], 1, $now + 60);
+        $this->assertTrue($result['right']);
+        $this->assertFalse($result['golden']);
+        $this->assertNull(encounters::today($char, $mission, 'bosque', $now + 120));
+        // Once an encounter: the second miss makes it hide, as always.
+        $other = encounters::today($char, $mission, 'claro', $now);
+        $wrong = array_values(array_filter(encounters::view($other, $mission)['options'], fn($o) => $o['id'] !== $other['id']));
+        $this->assertTrue(encounters::answer($char, $member, $mission, 'claro', $wrong[0]['id'], 1, $now)['again']);
+        $this->assertFalse(encounters::answer($char, $member, $mission, 'claro', $wrong[1]['id'], 2, $now)['again']);
+        $this->assertNull(encounters::today($char, $mission, 'claro', $now + 60));
+        // Where the course turns the talents off, no second try.
+        regions::save($course->id, ['rules' => ['talents' => 0]]);
+        $third = encounters::today($char, $mission, 'jardin', $now) ?? encounters::today($char, $mission, 'lago', $now);
+        $this->assertNotNull($third);
+        $wrong = array_values(array_filter(encounters::view($third, $mission)['options'], fn($o) => $o['id'] !== $third['id']));
+        $this->assertFalse(encounters::answer($char, $member, $mission, $third['place'], $wrong[0]['id'], 1, $now)['again']);
+    }
+
     public function test_some_beings_only_peek_out_with_the_lantern(): void {
         [$course, $char, , $mission] = $this->make_class();
         $night = array_column(array_filter($mission->data['encounters'], fn($b) => !empty($b['requires']['item'])), 'id');

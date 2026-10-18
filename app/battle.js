@@ -307,6 +307,10 @@
     var big = live.stage === 'intent' || live.stage === 'prep';
     // The verbs of a missing role, while the roles get ready: during the lane, the lane is what matters.
     ahead += big ? covers(live) : '';
+    // A glance a sage of another team aimed at this one.
+    if (live.glancefrom) {
+      ahead = '<p class="battle-trail">' + esc(t('app_token_glance_from', live.glancefrom)) + '</p>' + ahead;
+    }
     if (live.tokenused) {
       return ahead + '<p class="help-soft battle-token-used">' + esc(live.tokenrest ? t('app_token_rest', live.tokenrest) :
         t('app_token_used')) + '</p>';
@@ -326,6 +330,15 @@
           return '<button type="button" class="btn ' + (big ? 'btn-main' : 'btn-soft') + '" data-token data-target="' + x.id +
             '">' + esc(t('app_token_on', x.id === live.myteam ? t('app_token_ownteam') : x.name)) + '</button>';
         }).join('') + '</div>';
+    }
+    if (live.glancetargets && live.glancetargets.length) {
+      // «Wide glance»: their own team, and another one with a lane to choose, the one they choose.
+      return ahead + '<div class="battle-token"><p class="help-soft">' + esc(t('app_token_glance_turns')) + '</p>' +
+        live.glancetargets.map(function(x) {
+          return '<button type="button" class="btn ' + (big ? 'btn-main' : 'btn-soft') + '" data-token data-target="' + x.id +
+            '">' + esc(t('app_token_glance_wide', x.name)) + '</button>';
+        }).join('') + '<button type="button" class="btn btn-soft" data-token>' + esc(t('app_token_on',
+        t('app_token_ownteam'))) + '</button></div>';
     }
     return ahead + '<div class="battle-token"><button type="button" class="btn ' + (big ? 'btn-main btn-big' : 'btn-soft') +
       '" data-token>' + esc(t('app_token_' + live.token + (live.maxcandles ? '_turns' : ''))) + '</button></div>';

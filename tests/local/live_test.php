@@ -995,6 +995,39 @@ final class live_test extends \advanced_testcase {
         $this->assertArrayNotHasKey('rematch', $final);
     }
 
+    public function test_with_wide_glance_the_sage_aims_their_glance_at_another_team_too(): void {
+        global $DB;
+        $this->resetAfterTest();
+        [$course, $members, $groups] = $this->make_class();
+        foreach (['sage', 'scout', 'protector', 'healer'] as $i => $role) {
+            $DB->set_field(self::T . 'char', 'role', $role, ['id' => $members[$i]->charid]);
+        }
+        $DB->set_field(self::T . 'char', 'level', 3, ['id' => $members[0]->charid]);
+        talents::choose($DB->get_record(self::T . 'char', ['id' => $members[0]->charid]), 3, 'wideglance');
+        $live = live::start($course->id, 'phones', 4, 30, self::NOW, false, true);
+        foreach ($members as $member) {
+            live::join($live, $member, $member->userid, self::NOW);
+        }
+        $live = live::next($live, self::NOW);
+        // The other team, if its lane is one to choose; the sage aims at it.
+        $other = (int) $groups[1]->id;
+        $targets = live::device_view($live, $members[0], self::NOW)['glancetargets'] ?? [];
+        $lane = json_decode($live->state, true)['rounds'][1]['lanes'][$other] ?? [];
+        if (empty($lane['engine']) && ($lane['options'] ?? 2) > 1) {
+            $this->assertSame([$other], array_column($targets, 'id'));
+        } else {
+            $this->assertSame([], $targets);
+            return;
+        }
+        $this->assertSame('glance', live::token($live, $members[0], self::NOW + 2, $other));
+        // Both teams, each in its own lane, with a wrong option struck out; the other knows where it comes from.
+        $view = live::device_view($live, $members[2], self::NOW + 2);
+        $this->assertArrayHasKey('struck', $view);
+        $this->assertSame(format_string($groups[0]->name), $view['glancefrom']);
+        $this->assertArrayHasKey('struck', live::device_view($live, $members[0], self::NOW + 2));
+        $this->assertArrayNotHasKey('glancefrom', live::device_view($live, $members[1], self::NOW + 2));
+    }
+
     public function test_the_tokens_help_the_team_of_who_uses_them_once_a_battle(): void {
         $this->resetAfterTest();
         [$course, $members] = $this->make_class();

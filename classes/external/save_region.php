@@ -94,6 +94,13 @@ final class save_region extends external_api {
                 null,
                 NULL_ALLOWED,
             ),
+            'talentson' => new external_value(
+                PARAM_BOOL,
+                'The talents act in the course (no: they wait, and so does the choice)',
+                VALUE_DEFAULT,
+                null,
+                NULL_ALLOWED,
+            ),
         ]);
     }
 
@@ -121,6 +128,7 @@ final class save_region extends external_api {
      * @param string|null $mischief
      * @param int|null $setup
      * @param string|null $reasons
+     * @param bool|null $talentson
      * @return array
      */
     public static function execute(
@@ -144,7 +152,8 @@ final class save_region extends external_api {
         ?int $devicemusic = null,
         ?string $mischief = null,
         ?int $setup = null,
-        ?string $reasons = null
+        ?string $reasons = null,
+        ?bool $talentson = null
     ): array {
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
@@ -168,12 +177,13 @@ final class save_region extends external_api {
             'mischief' => $mischief,
             'setup' => $setup,
             'reasons' => $reasons,
+            'talentson' => $talentson,
         ]);
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
         require_capability('local/oksigeniatesape:manageregion', $context);
         $settings = array_filter($params, fn($value) => $value !== null);
-        unset($settings['courseid'], $settings['completionrule'], $settings['reasons']);
+        unset($settings['courseid'], $settings['completionrule'], $settings['reasons'], $settings['talentson']);
         if ($params['reasons'] !== null) {
             $list = $params['reasons'] === 'default' ? null : json_decode($params['reasons'], true);
             if ($params['reasons'] !== 'default' && !is_array($list)) {
@@ -183,6 +193,9 @@ final class save_region extends external_api {
         }
         if ($params['completionrule'] !== null) {
             $settings['rules'] = ['completion' => $params['completionrule']];
+        }
+        if ($params['talentson'] !== null) {
+            $settings['rules'] = ($settings['rules'] ?? []) + ['talents' => $params['talentson'] ? 1 : 0];
         }
         if (!empty($settings['groupingid'])) {
             $grouping = groups_get_grouping($settings['groupingid']);

@@ -50,6 +50,8 @@ final class regions {
     public const RULES = [
         // Saber for completing an activity that is not marked as a challenge (0: only challenges count).
         'completion' => 10,
+        // The talents act in the course (0: off there, and nothing is chosen there).
+        'talents' => 1,
     ];
 
     /**
@@ -189,9 +191,11 @@ final class regions {
             $grades = (bool) $settings['gradebook'];
         }
         if (array_key_exists('rules', $settings)) {
+            // A rule not given keeps what the course had.
+            $had = json_decode((string) ($region->rules ?? ''), true) ?: [];
             $rules = [];
             foreach (self::RULES as $key => $default) {
-                $rules[$key] = max(0, (int) ($settings['rules'][$key] ?? $default));
+                $rules[$key] = max(0, (int) ($settings['rules'][$key] ?? $had[$key] ?? $default));
             }
             $region->rules = json_encode($rules);
         }

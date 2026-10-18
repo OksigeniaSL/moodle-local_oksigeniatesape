@@ -244,14 +244,15 @@ final class powers {
             throw new \moodle_exception('powerlocked', 'local_oksigeniatesape', '', $power->minlevel);
         }
         $target = self::check_target($courseid, $userid, self::target($power), $targetuserid);
+        $cost = self::cost($power, $char);
         // One request at a time for a character: what is pending and the breath are read again inside.
-        $request = engine::one_at_a_time((int) $char->id, function () use ($DB, $power, $member, $target, $userid, $now) {
+        $request = engine::one_at_a_time((int) $char->id, function () use ($DB, $power, $member, $target, $userid, $now, $cost) {
             $member = $DB->get_record(self::T . 'member', ['id' => $member->id], '*', MUST_EXIST);
             $pending = ['powerid' => $power->id, 'memberid' => $member->id, 'status' => 'pending'];
             if ($DB->record_exists(self::T . 'powerreq', $pending)) {
                 throw new \moodle_exception('powerpending', 'local_oksigeniatesape');
             }
-            if ((int) $member->breath < (int) $power->cost) {
+            if ((int) $member->breath < $cost) {
                 throw new \moodle_exception('notenoughbreath', 'local_oksigeniatesape');
             }
             $transaction = $DB->start_delegated_transaction();
@@ -265,8 +266,8 @@ final class powers {
                 'timedecided' => 0,
             ];
             $request->id = $DB->insert_record(self::T . 'powerreq', $request);
-            if ($power->cost > 0) {
-                engine::breath($member, -(int) $power->cost, 'power', $userid, (int) $request->id, $now);
+            if ($cost > 0) {
+                engine::breath($member, -$cost, 'power', $userid, (int) $request->id, $now);
             }
             $transaction->allow_commit();
             return $request;
@@ -275,6 +276,22 @@ final class powers {
             return self::decide((int) $request->id, true, 0, $now);
         }
         return $request;
+    }
+
+    /**
+     * What a power costs a character: its breath, one less for Breather with «Light breather» (never under one if it
+     * costs one or more).
+     *
+     * @param \stdClass $power
+     * @param \stdClass $char
+     * @return int
+     */
+    public static function cost(\stdClass $power, \stdClass $char): int {
+        $cost = (int) $power->cost;
+        if ($power->code === 'breather' && talents::has((int) $char->id, 'lightbreather', (int) $power->courseid)) {
+            $cost = max(min($cost, 1), $cost - 1);
+        }
+        return $cost;
     }
 
     /**
@@ -357,7 +374,13 @@ final class powers {
         $target = $request->targetmemberid ? $DB->get_record(self::T . 'member', ['id' => $request->targetmemberid]) : null;
         switch ($power->code) {
             case 'breather':
-                if ($target) {
+                if (
+                    $target && $target->energy >= engine::ENERGY_MAX
+                        && talents::has((int) $member->charid, 'lightbreather', (int) $member->courseid)
+                ) {
+                    // «Light breather»: to a teammate who lacks no energy, breath.
+                    engine::breath($target, 1, 'power', $userid, (int) $request->id, $now);
+                } else if ($target) {
                     engine::energy($target, self::BREATHER_ENERGY, 'power', $userid, (int) $request->id, $now);
                 }
                 break;
@@ -495,7 +518,7 @@ final class powers {
                 'role' => $power->role,
                 'name' => self::name($power),
                 'description' => self::description($power),
-                'cost' => (int) $power->cost,
+                'cost' => self::cost($power, $char),
                 'minlevel' => (int) $power->minlevel,
                 'target' => self::target($power),
                 'locked' => (int) $char->level < (int) $power->minlevel,

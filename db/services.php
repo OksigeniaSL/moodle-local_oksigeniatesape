@@ -433,6 +433,20 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:runclassscreen',
     ],
+    'local_oksigeniatesape_choose_talent' => [
+        'classname' => 'local_oksigeniatesape\\external\\choose_talent',
+        'description' => 'A student chooses the talent a level brought them.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:play',
+    ],
+    'local_oksigeniatesape_reset_talents' => [
+        'classname' => 'local_oksigeniatesape\\external\\reset_talents',
+        'description' => 'A teacher resets the talents of a student, who chooses them again.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:award',
+    ],
     'local_oksigeniatesape_set_team_state' => [
         'classname' => 'local_oksigeniatesape\\external\\set_team_state',
         'description' => 'A student says how their team is doing today.',

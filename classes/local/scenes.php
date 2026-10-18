@@ -277,6 +277,37 @@ final class scenes {
     }
 
     /**
+     * The shield of the protector in a play: two mistakes with «Long shield».
+     *
+     * @param \stdClass $char Who plays.
+     * @param int $courseid
+     * @return int
+     */
+    public static function shields(\stdClass $char, int $courseid): int {
+        if ($char->role !== 'protector') {
+            return 0;
+        }
+        return talents::has((int) $char->id, 'longshield', $courseid) ? 2 : 1;
+    }
+
+    /**
+     * Whether someone of those who play has a talent for the team, which acts in the course.
+     *
+     * @param \stdClass[] $chars
+     * @param string $code
+     * @param int $courseid
+     * @return bool
+     */
+    public static function gift(array $chars, string $code, int $courseid): bool {
+        foreach ($chars as $char) {
+            if (talents::has((int) $char->id, $code, $courseid)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * The hints opened in a play cost breath: one each; the sage gets the first free and pays half for the rest.
      *
      * @param \stdClass $char
@@ -297,7 +328,9 @@ final class scenes {
     ): int {
         // With «more help» or the aids of the first steps, the hints are free.
         $free = $free || adapt::has($member, 'hints');
-        $cost = $free ? 0 : ($char->role === 'sage' ? (int) ceil(max(0, $hints - 1) / 2) : $hints);
+        // The sage: the first free (the first two with «Hints of the house») and half for the rest.
+        $gift = talents::has((int) $char->id, 'househints', (int) $member->courseid) ? 2 : 1;
+        $cost = $free ? 0 : ($char->role === 'sage' ? (int) ceil(max(0, $hints - $gift) / 2) : $hints);
         $fresh = engine::member($char, (int) $member->courseid, $now);
         $cost = min($cost, (int) $fresh->breath);
         if ($cost > 0) {
@@ -329,7 +362,9 @@ final class scenes {
         }
         $userid = (int) $least->userid;
         unset($least->userid);
-        engine::breath($least, 1, 'care', (int) $char->userid, $sceneid, $now);
+        // «Double care»: two.
+        $care = talents::has((int) $char->id, 'doublecare', (int) $member->courseid) ? 2 : 1;
+        engine::breath($least, $care, 'care', (int) $char->userid, $sceneid, $now);
         $user = \core_user::get_user($userid);
         $region = regions::get((int) $member->courseid);
         return $user && $region ? view::display_name($user, characters::get($userid), $region) : '';
@@ -438,7 +473,16 @@ final class scenes {
         }
         $items = array_values(array_unique($items));
         $runner = new scene_runner($scene->data, $items, $roles, $flags, $char->role);
-        $result = $runner->aided(self::aided($member, $scene))->run($events, $from);
+        $runner->aided(self::aided($member, $scene))->shields(self::shields($char, $courseid));
+        // What teammates with a talent for the team bring to a play as a team: their guard, and their trail.
+        $players = array_merge([$char], array_map(fn($p) => $p['char'], $team));
+        if ($team && self::gift($players, 'teamguard', $courseid)) {
+            $runner->team_guard(array_map(fn($c) => (int) $c->userid, $players));
+        }
+        if ($team && self::gift(array_map(fn($p) => $p['char'], $team), 'sharedtrail', $courseid)) {
+            $runner->lend(['scout']);
+        }
+        $result = $runner->run($events, $from);
 
         $transaction = $DB->start_delegated_transaction();
         try {

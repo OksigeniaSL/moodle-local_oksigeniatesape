@@ -336,8 +336,11 @@ final class view {
                 'teaser' => $chapter->litat ? today::teaser($mission, $chapter->code) : '',
                 // A being that peeks out today, in a place the class has opened (lit, or the place of today).
                 'encounter' => $current && ($chapter->litat || $chapter->code === $todaycode) ?
-                    (($being = encounters::today($char, $mission, (string) $chapter->code)) ? encounters::view($being, $mission) :
-                    null) : null,
+                    (($being = encounters::today($char, $mission, (string) $chapter->code)) ? encounters::view(
+                        $being,
+                        $mission,
+                        encounters::crossed($char, $mission, (string) $chapter->code)
+                    ) : null) : null,
                 // The Embrollo comes out when the student lights the lantern of the place with its core scene.
                 'embrollo' => isset($embrollos[$chapter->code]) ? $embrollos[$chapter->code] + ['letter' =>
                     today::letter($mission, $chapter->code)] : null,
@@ -739,6 +742,7 @@ final class view {
             'nicknames' => (int) ($region->nicknames ?? 0),
             'timezone' => (string) ($region->timezone ?? '99'),
             'completionrule' => $region ? regions::rule($region, 'completion') : regions::RULES['completion'],
+            'talentson' => !$region || regions::rule($region, 'talents') > 0,
             'portal' => (string) ($region->portal ?? 'door'),
             'hideacts' => (bool) ($region->hideacts ?? false),
             'allowstealth' => !empty($GLOBALS['CFG']->allowstealth),
@@ -797,7 +801,16 @@ final class view {
             'creaturestage' => (int) $char->creaturestage,
             'creature' => $creature,
             'aura' => (string) ($worn['aura'] ?? ''),
+            // The talents chosen, and the choice waiting: for the student and their teachers only.
+            'talents' => $private ? talents::view($char) : [],
+            // Where the teacher turns them off, they wait: the choice too.
+            'talentsoff' => $private && $member && !talents::on_in((int) $member->courseid),
         ];
+        $pending = $private && $member && talents::on_in((int) $member->courseid) ? talents::pending($char) : null;
+        if ($pending) {
+            $character['talentpending'] = ['level' => $pending['level'],
+                'options' => array_map(fn($code) => talents::card($code), $pending['options'])];
+        }
         if ($member) {
             $remote = (int) ($member->remote ?? 0);
             $character['member'] = [
@@ -903,6 +916,10 @@ final class view {
             ];
             if ($char) {
                 $entry['character'] = self::character($char, $member ?: null, $mate->id == $userid);
+                $entry['gifts'] = array_keys(array_filter(
+                    ['guard' => 'teamguard', 'trail' => 'sharedtrail'],
+                    fn($code) => talents::has((int) $char->id, $code, $courseid)
+                ));
                 $energy += $member ? (int) $member->energy : 0;
                 if ($member && !$carers && $mate->id != $userid) {
                     $entry['character']['member']['energy'] = -1;

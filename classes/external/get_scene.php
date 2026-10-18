@@ -27,6 +27,7 @@ use local_oksigeniatesape\local\engine;
 use local_oksigeniatesape\local\missions;
 use local_oksigeniatesape\local\results;
 use local_oksigeniatesape\local\scenes;
+use local_oksigeniatesape\local\talents;
 use local_oksigeniatesape\local\view;
 
 /**
@@ -115,6 +116,10 @@ final class get_scene extends external_api {
             'role' => $role,
             'breath' => $breath,
             'aided' => $aided,
+            // «Hints of the house»: the first two hints free, for the sage who has it.
+            'househints' => $char && $role === 'sage' && talents::has((int) $char->id, 'househints', $params['courseid']),
+            // The mistakes the shield of the protector stops in a play: two with «Long shield».
+            'shields' => $char ? scenes::shields($char, $params['courseid']) : 0,
         ];
     }
 
@@ -152,6 +157,8 @@ final class get_scene extends external_api {
             'role' => new external_value(PARAM_ALPHA, 'Role of the student (empty on the class screen)', VALUE_DEFAULT, ''),
             'breath' => new external_value(PARAM_INT, 'Breath of the student, for the hints', VALUE_DEFAULT, 0),
             'aided' => new external_value(PARAM_BOOL, 'With the aids of the first steps', VALUE_DEFAULT, false),
+            'househints' => new external_value(PARAM_BOOL, 'The first two hints free, by a talent', VALUE_DEFAULT, false),
+            'shields' => new external_value(PARAM_INT, 'Mistakes the shield of the protector stops in a play', VALUE_DEFAULT, 0),
         ]);
     }
 }

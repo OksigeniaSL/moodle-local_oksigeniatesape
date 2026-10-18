@@ -689,5 +689,22 @@
         <KEY NAME="sceneid" TYPE="foreign" FIELDS="sceneid" REFTABLE="local_oksigeniatesape_scene" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
+    <TABLE NAME="local_oksigeniatesape_talent" COMMENT="The talents a character chose, one at each of the levels that bring a choice of two, kept by role">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="charid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="role" TYPE="char" LENGTH="15" NOTNULL="true" SEQUENCE="false" COMMENT="The role it is a talent of: kept if the character changes role and comes back"/>
+        <FIELD NAME="code" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false" COMMENT="Of the catalog of its role"/>
+        <FIELD NAME="level" TYPE="int" LENGTH="3" NOTNULL="true" SEQUENCE="false" COMMENT="The level that brought the choice"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="charid" TYPE="foreign" FIELDS="charid" REFTABLE="local_oksigeniatesape_char" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="charid-role-level" UNIQUE="true" FIELDS="charid, role, level"/>
+      </INDEXES>
+    </TABLE>
   </TABLES>
 </XMLDB>

@@ -1676,6 +1676,15 @@
       }).join('') + '</div>' + (own.length ? '<p class="help-soft">' + esc(t('teach_adapt_own', own.map(function(code) {
         return t('teach_adapt_' + code);
       }).join(', '))) + '</p>' : '');
+    // Their talents, chosen as they grew: a teacher lets them choose again if they regret it.
+    var talents = (c && c.talents) || [];
+    if (talents.length) {
+      html += '<h3 style="margin-top:16px">' + esc(t('teach_talents')) + '</h3><ul class="talent-medals">' +
+        talents.map(function(x) {
+          return '<li><b>' + esc(x.name) + '</b><small>' + esc(x.description) + '</small></li>';
+        }).join('') + '</ul>' + (can('award') ? '<button type="button" class="btn btn-soft" data-resettalents>' +
+        esc(t('teach_talents_reset')) + '</button>' : '');
+    }
     // Far from the expedition: when they came last, and whether they follow it from home or hospital.
     html += '<h3 style="margin-top:16px">' + esc(t('teach_far')) + '</h3><p class="help-soft">' + esc(lastSeen(m)) + '</p>' +
       '<label class="chip" style="display:inline-flex;gap:8px;align-items:center"><input type="checkbox" data-remote' +
@@ -1730,6 +1739,24 @@
         });
       };
     });
+    var resetTalents = el.querySelector('[data-resettalents]');
+    if (resetTalents) {
+      resetTalents.onclick = function() {
+        if (!window.confirm(t('teach_talents_reset_confirm'))) {
+          return;
+        }
+        resetTalents.disabled = true;
+        T.api('reset_talents', {courseid: cfg.courseid, userid: userid}).then(function() {
+          T.toast(esc(t('app_saved')));
+          return load(true);
+        }).then(function() {
+          openStudent(userid);
+        }).catch(function(e) {
+          resetTalents.disabled = false;
+          T.toast(esc(e.message), true);
+        });
+      };
+    }
     el.querySelectorAll('[data-adaptprofile]').forEach(function(b) {
       b.onclick = function() {
         b.disabled = true;
@@ -3179,8 +3206,11 @@
       (editable ? '<div style="margin:-6px 0 14px">' + makeTeamsForm() + '</div>' : '') +
       '<div class="grid2" style="gap:10px">' + num('weeklycap', r.weeklycap, true) +
       num('dailymanualcap', r.dailymanualcap, false) + num('dailyenergylosscap', r.dailyenergylosscap, false) +
-      num('completionrule', r.completionrule, true) + '</div>' + touchesEditor(r, editable) + inside + lookCard + badgeCard +
-      gradesCard + '</details>';
+      num('completionrule', r.completionrule, true) + '</div>' + '<label class="chip" style="display:flex;gap:8px;' +
+      'align-items:flex-start;margin:4px 0"><input type="checkbox" name="talentson"' + (r.talentson !== false ?
+      ' checked' : '') + (editable ? '' : ' disabled') + '> <span>' + esc(t('teach_set_talentson')) + '</span></label>' +
+      '<small style="display:block;color:var(--text-soft);margin-bottom:14px">' + esc(t('teach_set_talentson_help')) +
+      '</small>' + touchesEditor(r, editable) + inside + lookCard + badgeCard + gradesCard + '</details>';
     var el = content('<section class="card"><h2>' + esc(t('teach_tab_settings')) + '</h2><form data-settings>' + daily +
       advanced + (editable ? '<div class="actions" style="justify-content:flex-start;margin-top:14px"><button ' +
       'class="btn btn-main" type="submit">' + esc(t('app_save')) + '</button></div>' : '') + '</form></section>');
@@ -3235,6 +3265,7 @@
         portal: cover ? cover.value : 'door',
         hideacts: f.hideacts.checked,
         gradebook: f.gradebook.checked,
+        talentson: f.talentson.checked,
         look: look ? look.value : '',
         // Only when they were changed: those of the plugin follow the language of each teacher.
         reasons: touches.edited() ? JSON.stringify(touches.list()) : null

@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.105.0 (2026-10-18)
+
+- **Talents**: at level 3 each student chooses one of two talents of their role, and keeps it. It can wait («Later»),
+  and their teacher can let them choose again (the student's sheet, «Choose again»). Talents help to play, never to get
+  it right: they do not touch the answers at the first try, the evidence, the saber of the scenes nor the class
+  screen. They are kept by role: with another role, its own; back to the old one, the old ones.
+  - Protector: «Long shield» (the shield stops two mistakes in each scene, not one) or «Team guard» (in team scenes,
+    the first mistake of each one who decides).
+  - Healer: «Double care» (2 breath, not 1, for whoever has least after a scene finished well) or «Light breather»
+    (Breather costs 1 breath less, and to a teammate who lacks no energy it gives breath).
+  - Sage: «Hints of the house» (the first two hints of each scene cost no breath) or «Wide glance» (in the battle by
+    turns, the glance strikes out an option for another team too, the one they choose among those with a lane to
+    choose; that team sees where it comes from).
+  - Scout: «Fresh track» (missed, a being does not hide: its name is crossed out, one more clue, and they choose again;
+    the card is not golden) or «Shared trail» (in team scenes, the options of the scout are there even if the tablet
+    is not theirs, and the scout decides them).
+- **A course can turn the talents off** (Settings, Advanced, «Talents»): there they neither act nor are chosen, and the
+  sheet says so; the character keeps them for their other courses.
+- The choice of talent opens by itself once on each device; left for later, it waits on the sheet, with a mark on «Me».
+- The moments of coming in (a new level, a talent, the badge…) wait for the end of a battle on the tablet.
+
 ## 0.104.1 (2026-10-18)
 
 - The README tells what the game does today; a Behat scenario goes through the workshop (a scene seen as a student,

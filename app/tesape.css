@@ -794,6 +794,53 @@ body.tesape {
   margin: 6px 2px 12px;
 }
 
+/* Talents: the two cards to choose from, and the medals on the sheet. */
+.talent-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.talent-card {
+  display: grid;
+  gap: 6px;
+  text-align: left;
+  padding: 16px;
+  border-radius: 16px;
+  border: 2px solid var(--line);
+  background: rgba(255, 200, 87, .08);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.talent-card:hover,
+.talent-card:focus-visible {
+  border-color: var(--lantern);
+}
+
+.talent-card small,
+.talent-medals small {
+  color: var(--text-soft);
+}
+
+.talent-medals {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0;
+  display: grid;
+  gap: 6px;
+}
+
+.talent-medals li {
+  display: grid;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border-left: 4px solid var(--lantern);
+  background: rgba(255, 200, 87, .1);
+}
+
 /* Lanes drafted by the AI for a knot, in the Workshop. */
 .ws-knotdraft {
   margin: 12px 0;
@@ -3305,6 +3352,11 @@ a.chip {
 
 body.in-battle {
   overflow: hidden;
+}
+
+/* The moments of coming in wait for the end of the battle. */
+body.in-battle .badge-moment {
+  display: none;
 }
 
 .battle-phone {

@@ -567,7 +567,7 @@
       }
       if (req.role) {
         // The whole class, at the class screen, has the role of any of its players.
-        return cm ? cm.roles.indexOf(req.role) >= 0 : data.role === req.role;
+        return cm ? cm.roles.indexOf(req.role) >= 0 : hasRole(req.role);
       }
       if (cm && req.item) {
         return cm.items.indexOf(req.item) >= 0;
@@ -635,7 +635,7 @@
     }
 
     function start(from) {
-      run = {node: from || sc.start, from: from || '', events: [], extra: 0, extraused: {}, hints: 0, shield: false,
+      run = {node: from || sc.start, from: from || '', events: [], extra: 0, extraused: {}, hints: 0, shield: 0, guarded: {},
         flags: (data.flags || []).slice(), opened: {}, spent: 0, trailed: {}, turn: 0, handfor: {}, looks: {}, tried: {},
         keep: '', clues: [], sniffed: {}};
       // Back from an ending that sent here: what it left written in pencil shows over the question.
@@ -865,13 +865,49 @@
     }
 
     /**
-     * A mistake: the protector's shield stops the points it costs, once a play.
+     * A mistake: the protector's shield stops the points it costs, once a play (twice with «Long shield»); with «Team
+     * guard» in the play, the first mistake of each one who decides. As the server counts it.
      */
     function mistake() {
-      if (!cm && data.role === 'protector' && !run.shield) {
-        run.shield = true;
+      if (cm) {
+        return;
+      }
+      var hand = turnOf();
+      if (hand && gifted('guard') && !run.guarded[hand.userid]) {
+        run.guarded[hand.userid] = true;
+        T.toast(esc(t('app_shield_team')));
+      } else if (data.role === 'protector' && run.shield < (data.shields || 1)) {
+        run.shield++;
         T.toast(esc(t('app_shield_stops')));
       }
+    }
+
+    /**
+     * Whether someone in a play as a team brings a gift of their talents: «guard» (the guard of the team) or «trail»
+     * (the trail of the scout, for the team).
+     *
+     * @param {string} gift
+     * @return {boolean}
+     */
+    function gifted(gift) {
+      if (cm || !opts.team || !opts.team.length || !world.team) {
+        return false;
+      }
+      var players = [cfg.userid].concat(opts.team).map(Number);
+      return (world.team.members || []).some(function(m) {
+        return players.indexOf(Number(m.userid)) >= 0 && (m.gifts || []).indexOf(gift) >= 0 &&
+          (gift !== 'trail' || !m.me);
+      });
+    }
+
+    /**
+     * Whether the play has a role: the student's own, or the scout's lent by a teammate with «Shared trail».
+     *
+     * @param {string} role
+     * @return {boolean}
+     */
+    function hasRole(role) {
+      return data.role === role || (role === 'scout' && gifted('trail'));
     }
 
     /**
@@ -885,7 +921,9 @@
         return 0;
       }
       if (data.role === 'sage') {
-        return run.hints % 2;
+        // The first free (the first two with «Hints of the house»), and half for the rest: as the server charges.
+        var gift = data.househints ? 2 : 1;
+        return run.hints < gift ? 0 : (run.hints - gift + 1) % 2;
       }
       return 1;
     }
@@ -902,12 +940,14 @@
       if (cm || !data.role) {
         return;
       }
-      var mine = true;
+      var role = data.role;
       var hand = turnOf();
       if (hand && Number(hand.userid) !== Number(cfg.userid)) {
-        // The role at hand is the one of the student on whose device it is: the others decide with their words.
-        mine = false;
+        // The role at hand is the one of the student on whose device it is: the others decide with their words. A scout
+        // with «Shared trail» brings theirs.
+        role = hand.character && hand.character.role === 'scout' && (hand.gifts || []).indexOf('trail') >= 0 ? 'scout' : '';
       }
+      var spent = run.shield >= (data.shields || 1);
       if (hand) {
         var who = document.createElement('div');
         who.className = 'hand';
@@ -920,29 +960,29 @@
         body.insertBefore(who, body.firstChild);
       }
       var verbs = {
-        protector: {icon: 'shield', label: run.shield ? t('app_role_shield_used') : t('app_role_shield_ready')},
+        protector: {icon: 'shield', label: spent ? t('app_role_shield_used') : t('app_role_shield_ready')},
         sage: {icon: 'log', label: t('app_role_notebook')},
         healer: {icon: 'cheer', label: t('app_role_cheer')},
         scout: {icon: 'trail', label: t('app_role_trail')}
       };
-      var verb = verbs[data.role];
-      if (!verb || !mine) {
+      var verb = verbs[role];
+      if (!verb) {
         return;
       }
       var bar = document.createElement('div');
       bar.className = 'role-bar';
-      bar.innerHTML = '<button type="button" class="role-verb ' + esc(data.role) + (data.role === 'protector' && run.shield ?
-        ' used' : '') + '" data-role>' + T.icon(verb.icon) + '<span>' + esc(verb.label) + '</span></button>';
+      bar.innerHTML = '<button type="button" class="role-verb ' + esc(role) + (role === 'protector' && spent ? ' used' : '') +
+        '" data-role>' + T.icon(verb.icon) + '<span>' + esc(verb.label) + '</span></button>';
       body.appendChild(bar);
       bar.querySelector('[data-role]').onclick = function() {
-        if (data.role === 'sage') {
+        if (role === 'sage') {
           var lens = body.querySelector('[data-hint]');
           if (lens) {
             lens.click();
           } else {
             T.toast(esc(t('app_role_notebook_none')));
           }
-        } else if (data.role === 'scout') {
+        } else if (role === 'scout') {
           var found = body.querySelectorAll('[data-trail]');
           run.trailed[run.node] = true;
           if (found.length) {
@@ -959,7 +999,7 @@
             T.toast(esc(t('app_role_trail_none')));
           }
         } else {
-          T.toast(esc(t(data.role === 'protector' ? 'app_role_shield_help' : 'app_role_cheer_help')));
+          T.toast(esc(t(role === 'protector' ? 'app_role_shield_help' : 'app_role_cheer_help')));
         }
       };
     }
@@ -991,7 +1031,7 @@
       // An option of the role of whoever plays it (teamrole), or of the role of the student on whose device it is.
       var need = (n.options || []).map(function(o) {
         var req = o.requires || {};
-        return req.teamrole || (req.role && req.role === data.role ? req.role : '');
+        return req.teamrole || (req.role && hasRole(req.role) ? req.role : '');
       }).filter(Boolean)[0];
       var who = 0;
       if (need) {

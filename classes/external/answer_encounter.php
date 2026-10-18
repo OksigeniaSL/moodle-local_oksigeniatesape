@@ -88,6 +88,13 @@ final class answer_encounter extends external_api {
             'name' => new external_value(PARAM_TEXT, 'Its name, once recognised'),
             'group' => new external_value(PARAM_ALPHA, 'Its group, once recognised'),
             'fact' => new external_value(PARAM_TEXT, 'Something curious about it, once recognised'),
+            'again' => new external_value(
+                PARAM_BOOL,
+                'Missed with «Fresh track»: it stays, and they choose again',
+                VALUE_DEFAULT,
+                false
+            ),
+            'crossed' => new external_value(PARAM_ALPHANUMEXT, 'The name missed, crossed out', VALUE_DEFAULT, ''),
         ]);
     }
 }

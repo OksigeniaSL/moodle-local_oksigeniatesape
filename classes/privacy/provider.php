@@ -76,6 +76,7 @@ class provider implements
                 'timedecided'],
             'daily' => ['charid', 'courseid', 'daystart', 'question', 'answer', 'success', 'timecreated'],
             'purchase' => ['charid', 'courseid', 'groupid', 'code', 'amount', 'timecreated'],
+            'talent' => ['charid', 'role', 'code', 'level', 'timecreated'],
         ];
         foreach ($fields as $table => $names) {
             $described = [];
@@ -258,6 +259,13 @@ class provider implements
                     'rolechangedat' => $char->rolechangedat ? transform::datetime($char->rolechangedat) : null,
                     'timecreated' => transform::datetime($char->timecreated),
                 ]);
+                $talents = $DB->get_records(self::T . 'talent', ['charid' => $char->id], 'level');
+                if ($talents) {
+                    writer::with_context($context)->export_data(self::path('talents'), (object) [
+                        'talents' => array_values(array_map(fn($t) => ['role' => $t->role, 'code' => $t->code, 'level' => (int) $t->level,
+                            'timecreated' => transform::datetime($t->timecreated)], $talents)),
+                    ]);
+                }
                 self::export_ledger($context, $char->id, 0);
             } else if ($context->contextlevel == CONTEXT_COURSE) {
                 self::export_course($context, $char->id);
@@ -728,6 +736,7 @@ class provider implements
         foreach (array_unique($courseids) as $courseid) {
             self::delete_in_course((int) $courseid, [$charid]);
         }
+        $DB->delete_records(self::T . 'talent', ['charid' => $charid]);
         $DB->delete_records(self::T . 'char', ['id' => $charid]);
     }
 }
