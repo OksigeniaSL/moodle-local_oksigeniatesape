@@ -66,6 +66,32 @@ final class view_test extends \advanced_testcase {
         $this->assertSame('la Nube de arena', $world['mission']['chapters'][1]['embrollo']['name']);
     }
 
+    public function test_the_creature_is_happy_after_three_good_endings_and_asleep_after_a_week_away(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $dg = $this->getDataGenerator();
+        $course = $dg->create_course();
+        regions::save($course->id, ['enabled' => 1, 'weeklycap' => 0]);
+        $mission = missions::install($course->id, 'livingthings', 'valley', 'es');
+        $user = $dg->create_and_enrol($course, 'student');
+        $char = characters::create($user->id, 'scout', 'f');
+        $DB->set_field(self::T . 'char', 'creature', json_encode(scenes::creature($char)), ['id' => $char->id]);
+        $DB->set_field(self::T . 'char', 'creaturestage', 1, ['id' => $char->id]);
+        engine::member(characters::get($user->id), $course->id);
+        $this->assertSame('', view::world($course->id, $user->id)['character']['member']['mood']);
+        foreach (['C1-2', 'C2-2', 'C3-3'] as $code) {
+            $scene = $DB->get_record(self::T . 'scene', ['missionid' => $mission->id, 'code' => $code]);
+            [$carried, $roles, $flags, $role] = scenes::context(characters::get($user->id), $course->id);
+            $events = autoplayer::play(json_decode($scene->definition, true), $carried, $roles, $flags, $role);
+            $this->assertSame('success', scenes::play($course->id, $user->id, $scene->id, $events, null)['outcome'], $code);
+        }
+        $this->assertSame('happy', view::world($course->id, $user->id)['character']['member']['mood']);
+        // A week away: asleep (it wakes on the device, with a touch); the visit is noted, and the next time it is awake.
+        $DB->set_field(self::T . 'member', 'lastseen', time() - 8 * DAYSECS, ['charid' => $char->id]);
+        $this->assertSame('asleep', view::world($course->id, $user->id)['character']['member']['mood']);
+        $this->assertSame('happy', view::world($course->id, $user->id)['character']['member']['mood']);
+    }
+
     public function test_the_class_carries_the_marks_of_at_least_half_of_it(): void {
         global $DB;
         $this->resetAfterTest();

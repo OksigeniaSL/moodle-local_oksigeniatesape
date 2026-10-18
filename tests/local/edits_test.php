@@ -99,6 +99,26 @@ final class edits_test extends \advanced_testcase {
         $this->assertEquals($original, $this->scene($course->id, 'C1-2')->data);
     }
 
+    public function test_the_teacher_switches_the_sniffing_of_the_creature_in_a_scene(): void {
+        $this->resetAfterTest();
+        $course = $this->make_course();
+        $scenes = array_column(array_merge(...array_column(edits::view($course->id)['chapters'], 'scenes')), null, 'code');
+        // The nest has no question to sniff; the clue of the C2-2, one.
+        $this->assertFalse($scenes['C1-2']['sniffable']);
+        $this->assertTrue($scenes['C2-2']['sniffable']);
+        $this->assertTrue($scenes['C2-2']['sniff']);
+        $this->assertTrue(edits::save($course->id, 'C2-2', edits::SNIFF, 'off'));
+        $this->assertFalse($this->scene($course->id, 'C2-2')->data['sniff']);
+        $scenes = array_column(array_merge(...array_column(edits::view($course->id)['chapters'], 'scenes')), null, 'code');
+        $this->assertFalse($scenes['C2-2']['sniff']);
+        $this->assertTrue($scenes['C2-2']['sniffcame']);
+        // Back as it came; and nothing but on, off or empty, nor in a scene without a question to sniff.
+        $this->assertFalse(edits::save($course->id, 'C2-2', edits::SNIFF, ''));
+        $this->assertArrayNotHasKey('sniff', $this->scene($course->id, 'C2-2')->data);
+        $this->expectException(\invalid_parameter_exception::class);
+        edits::save($course->id, 'C1-2', edits::SNIFF, 'off');
+    }
+
     public function test_only_texts_can_be_changed(): void {
         $this->resetAfterTest();
         $course = $this->make_course();

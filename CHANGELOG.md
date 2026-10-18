@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.88.0 (2026-10-18)
+
+Block 3.3 of the plan: the creature acts.
+
+- **The creature takes each being in its own way**: in an encounter, recognised, it hops after an insect or a frog,
+  steps back from a spider, sniffs a mammal nose to nose, keeps away from a mushroom (better just to look); if the being
+  hides, it looks for where it went.
+- **Its mood**: asleep on the map after a week away, until a touch wakes it up (never ill, never gone); happy, with a
+  little hop, after three good endings in a row.
+- **The teacher switches its sniffing per scene** in the workshop (on, off, or as it came), to see how the class does a
+  scene without that help; it goes with the other changes of the course, and to another course with them.
+- The sniffing line of the encounter, without a word that gives the creature a gender.
+- The start of the minigames does not say the rule twice: the mission tells what to do, the line below only the limits
+  (seen by Campus); and the nest runs out of warmth, not of shield.
+
 ## 0.87.0 (2026-10-18)
 
 - **Each minigame opens with two lines of scene**: what the Embrollo did, in its own voice, and how the creature of

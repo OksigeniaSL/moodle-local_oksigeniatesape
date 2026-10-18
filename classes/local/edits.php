@@ -42,6 +42,9 @@ final class edits {
     /** @var string In place of a scene, the changes of the mission itself (its places and questions). */
     public const MISSION = '#';
 
+    /** @var string The switch of the sniffing of the creature in a scene: on or off, not a text. */
+    public const SNIFF = 'sniff';
+
     /** @var string[] Fields with one text, in a scene, a node or an element of a list. */
     private const TEXTS = ['title', 'whatif', 'text', 'prompt', 'label', 'say', 'feedback', 'intro', 'offscreen', 'do', 'materials',
         'name', 'claim', 'laugh', 'weakness', 'why'];
@@ -97,6 +100,10 @@ final class edits {
      */
     public static function apply(array $definition, int $courseid, string $mission, string $scene = self::MISSION): array {
         foreach (self::of($courseid, $mission)[$scene] ?? [] as $path => $value) {
+            if ($path === self::SNIFF) {
+                $definition['sniff'] = $value === 'on';
+                continue;
+            }
             self::set($definition, explode('/', $path), $value);
         }
         return $definition;
@@ -198,6 +205,13 @@ final class edits {
         }
         $original = $scene === self::MISSION ? (json_decode((string) $mission->definition, true) ?: []) :
             self::scene_definition((int) $mission->id, $scene);
+        if ($path === self::SNIFF && $scene !== self::MISSION) {
+            // The creature may sniff in this scene or not: on, off, or as it came (empty).
+            if (!in_array($value, ['', 'on', 'off'], true) || !self::sniffable($original)) {
+                throw new \invalid_parameter_exception('Not a switch of this scene: ' . $value);
+            }
+            return self::store($courseid, (string) $mission->code, $scene, $path, $value);
+        }
         if (!array_key_exists($path, self::texts($original, $scene === self::MISSION))) {
             throw new \invalid_parameter_exception('Not a text that can be changed: ' . $path);
         }
@@ -364,6 +378,21 @@ final class edits {
     }
 
     /**
+     * Whether the creature could sniff some question of a scene (a choice of one answer among three or more).
+     *
+     * @param array $definition
+     * @return bool
+     */
+    private static function sniffable(array $definition): bool {
+        foreach ($definition['nodes'] ?? [] as $node) {
+            if (scene_runner::sniffs($node) !== null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * What the teacher sees to change the mission of a course: its places and scenes, chapter by chapter, with each
      * text as it is now and as it came, in the story and place of the course; and the questions of the battle.
      *
@@ -400,6 +429,7 @@ final class edits {
                     $field['type'] = (string) ($def['nodes'][$field['node']]['type'] ?? '');
                 }
                 unset($field);
+                $came = ($def['sniff'] ?? true) !== false;
                 $list[] = [
                     'code' => (string) $scene->code,
                     'title' => (string) ($mine['title'] ?? self::resolve($def['title'] ?? $scene->code, $skin, $variant)),
@@ -407,6 +437,10 @@ final class edits {
                     'quest' => !empty($scene->quest),
                     'changed' => count($mine),
                     'fields' => $fields,
+                    // Whether the creature can sniff a question of the scene, and whether it does, as it came and now.
+                    'sniffable' => self::sniffable($def),
+                    'sniffcame' => $came,
+                    'sniff' => isset($mine[self::SNIFF]) ? $mine[self::SNIFF] === 'on' : $came,
                 ];
             }
             usort($list, fn($a, $b) => [$a['quest'], $a['step'], $a['code']] <=> [$b['quest'], $b['step'], $b['code']]);

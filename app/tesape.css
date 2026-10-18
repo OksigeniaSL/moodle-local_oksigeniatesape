@@ -8018,3 +8018,173 @@ body.adapt-still .mission-grid .chapter.as-sheet {
   max-width: 56px;
   max-height: 56px;
 }
+
+/* ---------- The mood of the creature, and how it takes a being ---------- */
+
+.pet-asleep {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  margin: 0 0 8px;
+  padding: 8px 12px;
+  border: 1px dashed rgba(185, 166, 255, .5);
+  border-radius: var(--r);
+  background: rgba(var(--night-rgb), .75);
+  color: var(--text);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.pet-zzz {
+  position: relative;
+  flex: none;
+  width: 52px;
+  height: 52px;
+}
+
+.pet-zzz .creature,
+.pet-zzz svg {
+  width: 52px;
+  height: 52px;
+  filter: saturate(.7) brightness(.85);
+  transform: rotate(-8deg);
+}
+
+.pet-zzz i {
+  position: absolute;
+  top: -2px;
+  right: -4px;
+  color: var(--lilac-text);
+  font-style: normal;
+  font-weight: 700;
+  animation: tesape-zzz 2.4s ease-in-out infinite;
+}
+
+.pet-zzz i + i {
+  top: -12px;
+  right: -12px;
+  font-size: 12px;
+  animation-delay: 1.2s;
+}
+
+@keyframes tesape-zzz {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  40% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+.me-creature.mood-asleep > div,
+.r.pet.mood-asleep svg {
+  filter: saturate(.7) brightness(.85);
+  transform: rotate(-8deg);
+}
+
+.me-creature.mood-happy > div,
+.r.pet.mood-happy svg {
+  animation: tesape-hop 1.8s ease-in-out infinite;
+}
+
+@keyframes tesape-hop {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+  }
+
+  70% {
+    transform: translateY(-5px);
+  }
+
+  80% {
+    transform: translateY(0);
+  }
+
+  88% {
+    transform: translateY(-2px);
+  }
+}
+
+.encounter-react {
+  margin: 8px 0 0;
+  color: var(--leaf-text);
+  font-style: italic;
+}
+
+.encounter-pet.react-hop {
+  animation: tesape-hop 1s ease-in-out 2;
+}
+
+.encounter-pet.react-back {
+  animation: tesape-back .9s ease-in-out;
+}
+
+.encounter-pet.react-wiggle,
+.encounter-pet.react-look {
+  animation: tesape-wiggle .8s ease-in-out 2;
+}
+
+@keyframes tesape-back {
+  30% {
+    transform: translateX(-8px) rotate(-6deg);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes tesape-wiggle {
+  25% {
+    transform: rotate(-6deg);
+  }
+
+  75% {
+    transform: rotate(6deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pet-zzz i,
+  .me-creature.mood-happy > div,
+  .r.pet.mood-happy svg,
+  .encounter-pet[class*="react-"] {
+    animation: none;
+  }
+}
+
+/* ---------- The workshop: a switch of a scene ---------- */
+
+.ws-toggle {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+}
+
+.ws-toggle input {
+  margin-top: 4px;
+}
+
+.ws-toggle span {
+  display: grid;
+  gap: 2px;
+}
+
+.ws-toggle small {
+  color: var(--text-soft);
+}

@@ -721,7 +721,7 @@
       '</div></details><div class="res">' +
       res('saber', c.saber, t('app_saber')) + res('gems', c.gems, t('app_gems')) +
       // The creature goes with the hero also up here; touching it, «Me».
-      (c.creature ? '<button type="button" class="r pet" data-tab="me" title="' + esc(creatureName(c)) + '">' +
+      (c.creature ? '<button type="button" class="r pet' + moodClass() + '" data-tab="me" title="' + esc(creatureName(c)) + '">' +
       T.creature(c.creature, c.creaturestage) + '<span class="sr-only">' + esc(creatureName(c)) + ' · ' + esc(t('app_tab_me')) +
       '</span></button>' : '') + '</div></header>' +
       '<nav class="tabs" aria-label="Tesapé">' + TABS.map(function(tab) {
@@ -1176,7 +1176,7 @@
     var ahead = today && !step.from ? {x: Math.round(0.28 * (today.x - current.x)), y: Math.round(0.28 * (today.y - current.y))} :
       {x: 0, y: 0};
     var pet = c.creature ? '<foreignObject x="' + (current.x - 106 + ahead.x) + '" y="' + (current.y - 6 + ahead.y) + '" ' +
-      'width="34" height="34" class="me-creature' + (today && !step.from ? ' ahead' : '') + walk + '"><div ' +
+      'width="34" height="34" class="me-creature' + moodClass() + (today && !step.from ? ' ahead' : '') + walk + '"><div ' +
       'xmlns="http://www.w3.org/1999/xhtml">' +
       T.creature(c.creature, c.creaturestage) + '</div></foreignObject>' : '';
     // The page of the day: the creature is hungry, over the hero.
@@ -1199,11 +1199,46 @@
       T.fx.ambient(T.fx.place(current.art || current.code));
     }
     return '<div class="map-wrap' + (height > 640 ? ' tall' : '') + '" data-herox="' + current.x + '" data-heroy="' + current.y +
-      '">' + (state.visit ? '' : landmarks()) + '<svg class="map" viewBox="0 0 400 ' + height +
+      '">' + (state.visit ? '' : landmarks() + asleep()) + '<svg class="map" viewBox="0 0 400 ' + height +
       '" role="group" aria-label="' + esc(m.title) + '"><defs>' + T.MAPGLOW + '</defs>' + T.mapGround(m) +
       T.mapLandmarks(m) + T.mapNight(m) + '<polyline points="' + pts + '" class="road"/>' +
       (walked ? '<polyline points="' + walked + '" class="road walked"/>' : '') + roadDrawing(fresh) +
       (T.critters ? T.critters.fireflies(m) : '') + prints + places + crowd + blots + me + pet + hungry + '</svg></div>';
+  }
+
+  /**
+   * How the creature is now: asleep after a week away, until it is woken; happy after three good endings in a row.
+   *
+   * @return {string} asleep, happy or empty.
+   */
+  function mood() {
+    var c = state.world.character || {};
+    var m = (c.member && c.member.mood) || '';
+    return m === 'asleep' && state.woke ? '' : m;
+  }
+
+  /**
+   * The mood as a class for the drawings of the creature.
+   *
+   * @return {string}
+   */
+  function moodClass() {
+    return mood() ? ' mood-' + mood() : '';
+  }
+
+  /**
+   * The creature, asleep after a week away: on the map, it waits for a touch to wake up (never ill, never gone).
+   *
+   * @return {string}
+   */
+  function asleep() {
+    var c = state.world.character || {};
+    if (mood() !== 'asleep' || !c.creature) {
+      return '';
+    }
+    return '<button type="button" class="pet-asleep" data-wake><span class="pet-zzz" aria-hidden="true">' +
+      T.creature(c.creature, c.creaturestage) + '<i>z</i><i>z</i></span><span>' + esc(t('app_pet_asleep', creatureName(c))) +
+      '</span></button>';
   }
 
   /**
@@ -1798,6 +1833,17 @@
    */
   function bindWorld(stay) {
     bindListen(app);
+    var wake = app.querySelector('[data-wake]');
+    if (wake) {
+      wake.onclick = function() {
+        state.woke = true;
+        if (T.fx) {
+          T.fx.sound('chirp');
+        }
+        T.toast(esc(t('app_pet_woke', creatureName(state.world.character))));
+        world();
+      };
+    }
     var seen = app.querySelector('[data-battlesseen]');
     if (seen) {
       seen.onclick = function() {
@@ -2472,11 +2518,6 @@
   }
 
   /**
-   * The album of the field guide: a card for each entry of the student or their team, golden with its food chain.
-   *
-   * @return {string}
-   */
-  /**
    * The picture of a being: its own, from the art pack, or nothing (the card of its group would show other beings: an
    * ant with a snail and a ladybird).
    *
@@ -2486,6 +2527,10 @@
   function beingArt(id) {
     return T.artUrl(['being.' + id]);
   }
+
+  /** How the creature takes a being of each group when it is recognised: it hops, steps back or wiggles. */
+  var REACT = {insecto: 'hop', anfibio: 'hop', ave: 'hop', aracnido: 'back', reptil: 'back', mamifero: 'wiggle',
+    pez: 'wiggle', molusco: 'wiggle', gusano: 'wiggle', planta: 'wiggle', hongo: 'back'};
 
   /**
    * A being peeks out: the creature sniffs it and says its group; it is recognised with its clues, opened one by one,
@@ -2531,6 +2576,13 @@
           T.api('answer_encounter', {courseid: cfg.courseid, place: e.place, choice: b.dataset.who, clues: shown})
           .then(function(r) {
             var said = layer.querySelector('[data-said]');
+            var pet = layer.querySelector('.encounter-pet');
+            var pose = r.right ? (REACT[r.group] || 'wiggle') : 'look';
+            if (pet) {
+              pet.classList.add('react-' + pose);
+            }
+            var react = c && c.creature ? '<p class="encounter-react">' + esc(t(r.right ? 'app_encounter_react_' +
+              (REACT[r.group] ? r.group : 'other') : 'app_encounter_react_hid', creatureName(c))) + '</p>' : '';
             if (r.right) {
               b.classList.add('chosen');
               layer.classList.add('known');
@@ -2541,9 +2593,9 @@
               said.innerHTML = '<div class="conseq good"><span class="what">' + esc(t('app_encounter_right', name)) + '</span>' +
                 (r.golden ? esc(t('app_encounter_golden')) + '<br>' : '') + esc(t(r.gems === 1 ? 'app_encounter_gem' :
                 'app_encounter_gems', r.gems)) + '</div>' +
-                '<p class="encounter-fact">' + esc(r.fact) + '</p>';
+                '<p class="encounter-fact">' + esc(r.fact) + '</p>' + react;
             } else {
-              said.innerHTML = '<p class="turn-outcome fell">' + esc(t('app_encounter_hid')) + '</p>';
+              said.innerHTML = '<p class="turn-outcome fell">' + esc(t('app_encounter_hid')) + '</p>' + react;
             }
             said.innerHTML += '<div class="actions"><button type="button" class="btn btn-main" data-close>' +
               esc(t('app_embrollo_go')) + '</button></div>';
@@ -2590,6 +2642,11 @@
       }).join('') + '</section>';
   }
 
+  /**
+   * The album of the field guide: a card for each entry of the student or their team, golden with its food chain.
+   *
+   * @return {string}
+   */
   function albumCard() {
     var a = state.world.album;
     if (!a) {

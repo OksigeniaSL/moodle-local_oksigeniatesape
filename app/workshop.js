@@ -91,7 +91,10 @@
    * @return {string}
    */
   function sceneBody(sc) {
-    var html = '';
+    // The sniffing of the creature in this scene: the teacher switches it off to see the scene without that help.
+    var html = sc.sniffable ? '<label class="ws-toggle"><input type="checkbox" data-sniffscene="' + esc(sc.code) + '" ' +
+      'data-came="' + (sc.sniffcame ? 1 : 0) + '"' + (sc.sniff ? ' checked' : '') + '> <span><b>' + esc(t('teach_ws_sniff')) +
+      '</b><small>' + esc(t('teach_ws_sniff_help')) + '</small></span></label>' : '';
     var node = null;
     var moment = 0;
     sc.fields.forEach(function(f) {
@@ -430,6 +433,12 @@
       }
     }, true);
     state.el.addEventListener('change', function(ev) {
+      var box = ev.target;
+      if (box.dataset && box.dataset.sniffscene) {
+        var came = box.dataset.came === '1';
+        save(box.dataset.sniffscene, 'sniff', box.checked === came ? '' : (box.checked ? 'on' : 'off'), box.closest('.ws-scene'));
+        return;
+      }
       var area = ev.target;
       if (area.tagName !== 'TEXTAREA' || !area.dataset.path) {
         return;

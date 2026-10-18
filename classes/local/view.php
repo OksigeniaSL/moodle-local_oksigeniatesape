@@ -30,6 +30,9 @@ final class view {
     /** @var string Prefix of the plugin tables. */
     private const T = 'local_oksigeniatesape_';
 
+    /** @var int Days away after which the creature is asleep when the student comes back (it wakes when touched). */
+    private const ASLEEP_DAYS = 7;
+
     /** @var string[] Roles that see which teammates are low on energy, because they can help them. */
     public const CARERS = ['healer', 'protector'];
 
@@ -773,6 +776,7 @@ final class view {
                 'statusreason' => $private ? (string) $member->statusreason : '',
                 'step' => $private ? (int) $member->step : 0,
                 'lastseen' => $private ? (int) ($member->lastseen ?? 0) : 0,
+                'mood' => $private ? self::mood($char, $member) : '',
                 'remote' => ($private && $remote > 0) || $remote === 2,
                 'remoteshown' => $private && $remote === 2,
                 'adapt' => $private ? adapt::of($member) : [],
@@ -781,6 +785,38 @@ final class view {
             ];
         }
         return $character;
+    }
+
+    /**
+     * How the creature of a student is: asleep after a week away (it wakes when touched; never ill, never gone), happy
+     * after three good endings in a row, or nothing to say.
+     *
+     * @param \stdClass $char
+     * @param \stdClass $member With lastseen as it was before this visit.
+     * @return string asleep, happy or empty.
+     */
+    private static function mood(\stdClass $char, \stdClass $member): string {
+        global $DB;
+        if ((int) $char->creaturestage < 1) {
+            return '';
+        }
+        $since = (int) ($member->lastseen ?? 0);
+        if ($since && time() - $since >= self::ASLEEP_DAYS * DAYSECS) {
+            return 'asleep';
+        }
+        $where = 'charid = ? AND courseid = ? AND ending IS NOT NULL';
+        $params = [$char->id, $member->courseid];
+        $last = $DB->get_records_select(self::T . 'sceneattempt', $where, $params, 'timefinished DESC, id DESC', 'id, sceneid, ending', 0, 3);
+        if (count($last) < 3) {
+            return '';
+        }
+        foreach ($last as $attempt) {
+            $definition = json_decode((string) $DB->get_field(self::T . 'scene', 'definition', ['id' => $attempt->sceneid]), true);
+            if (($definition['nodes'][$attempt->ending]['outcome'] ?? 'success') !== 'success') {
+                return '';
+            }
+        }
+        return 'happy';
     }
 
     /**

@@ -58,6 +58,7 @@ final class structures {
                 'statusreason' => new external_value(PARAM_TEXT, 'Why, only for the student and the teachers'),
                 'step' => new external_value(PARAM_INT, 'Step of the mission, 1 to 4'),
                 'lastseen' => new external_value(PARAM_INT, 'Last time they opened the game (0: not known)', VALUE_DEFAULT, 0),
+                'mood' => new external_value(PARAM_ALPHA, 'How their creature is: asleep, happy or empty', VALUE_DEFAULT, ''),
                 'remote' => new external_value(PARAM_BOOL, 'They follow the expedition from far', VALUE_DEFAULT, false),
                 'remoteshown' => new external_value(PARAM_BOOL, 'Their team sees it (for the teachers)', VALUE_DEFAULT, false),
                 'adapt' => new external_multiple_structure(
