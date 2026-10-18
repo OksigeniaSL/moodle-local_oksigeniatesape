@@ -59,6 +59,11 @@ final class view_test extends \advanced_testcase {
         $clearing = $world['mission']['chapters'][0];
         $spots = array_column($clearing['spots'], null, 'target');
         $this->assertSame(['target' => 'C1-2', 'x' => 50, 'y' => 76], $spots['C1-2']);
+        // The Embrollo of each place, for when the student lights its lantern: the first knot of the place and its letter.
+        $this->assertSame('la Piedra que rueda', $clearing['embrollo']['name']);
+        $this->assertSame('Las tres funciones vitales', $clearing['embrollo']['weakness']);
+        $this->assertNotSame('', $clearing['embrollo']['letter']);
+        $this->assertSame('la Nube de arena', $world['mission']['chapters'][1]['embrollo']['name']);
     }
 
     public function test_the_class_carries_the_marks_of_at_least_half_of_it(): void {

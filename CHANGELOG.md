@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.80.0 (2026-10-18)
+
+Block 3.2 of the plan: the Embrollo does something.
+
+- **The Embrollo of each place comes out** when the student lights the lantern of the place with its core scene: the
+  screen trembles, it says its letter and its claim, and the student answers it, with the idea that undoes its knot or
+  agreeing; it runs off leaving a blot of ink either way, laughing if they agreed. It counts for nothing: it is the
+  villain in person, once a place. In the story of Azara, a note in tangled writing that flies out of the window.
+
+What Campus saw trying «The night after»:
+
+- The call to a battle says «Join the battle» (and to a vote, «Join the vote»), not the «Enter» of the scenes.
+- At the end of a battle by turns, the tablet says «Turn 1 of 8», not «Question».
+- The teacher panel tells, under «Today in the valley», that «The night after» is open until the rematch.
+
 ## 0.79.0 (2026-10-18)
 
 What Campus saw trying the battle from the teacher's phone, and the version of 0.78.0, which went out without it (its

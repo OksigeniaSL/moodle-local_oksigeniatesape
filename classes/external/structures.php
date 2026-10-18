@@ -142,6 +142,13 @@ final class structures {
                 'challengeid' => new external_value(PARAM_INT, 'Classroom challenge of the chapter (0: none)'),
                 'letter' => new external_value(PARAM_TEXT, 'Letter the Embrollo left once the class lit it', VALUE_DEFAULT, ''),
                 'teaser' => new external_value(PARAM_TEXT, 'What waits in the next place, once the class lit it', VALUE_DEFAULT, ''),
+                'embrollo' => new external_single_structure([
+                    'name' => new external_value(PARAM_TEXT, 'The knot of the place'),
+                    'claim' => new external_value(PARAM_TEXT, 'What it claims'),
+                    'laugh' => new external_value(PARAM_TEXT, 'Its laugh'),
+                    'weakness' => new external_value(PARAM_TEXT, 'The idea that undoes it'),
+                    'letter' => new external_value(PARAM_TEXT, 'Its letter in this place'),
+                ], 'The Embrollo that comes out when the student closes the place', VALUE_OPTIONAL),
                 'memory' => new external_multiple_structure(
                     new external_value(PARAM_TEXT, 'A line of what happened here'),
                     'What the student did in this place, remembered',

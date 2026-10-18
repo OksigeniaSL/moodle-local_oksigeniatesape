@@ -273,6 +273,17 @@ final class view {
                 'after' => (string) ($sum['after'] ?? ''),
             ];
         };
+        // The Embrollo of each place: the first knot of the place, for when the student closes it.
+        $codes = array_column($data['chapters'] ?? [], 'code');
+        $embrollos = [];
+        foreach ($data['battle']['knots'] ?? [] as $knot) {
+            $code = $codes[(int) ($knot['chapter'] ?? 0) - 1] ?? '';
+            if ($code !== '' && !isset($embrollos[$code])) {
+                $embrollos[$code] = ['name' => missions::text($knot['name'] ?? '', $skin),
+                    'claim' => missions::text($knot['claim'] ?? '', $skin), 'laugh' => missions::text($knot['laugh'] ?? '', $skin),
+                    'weakness' => missions::text($knot['weakness'] ?? '', $skin)];
+            }
+        }
         $list = [];
         foreach ($chapters as $chapter) {
             $meta = $info[$chapter->code] ?? [];
@@ -304,6 +315,9 @@ final class view {
                 'challengeid' => (int) ($challenges[$chapter->id] ?? 0),
                 'letter' => $chapter->litat ? today::letter($mission, $chapter->code) : '',
                 'teaser' => $chapter->litat ? today::teaser($mission, $chapter->code) : '',
+                // The Embrollo comes out when the student lights the lantern of the place with its core scene.
+                'embrollo' => isset($embrollos[$chapter->code]) ? $embrollos[$chapter->code] + ['letter' =>
+                    today::letter($mission, $chapter->code)] : null,
                 // What happened here: a line for each mark the student left in this place.
                 'memory' => array_values(array_map(
                     fn($m) => missions::text($m['text'] ?? '', $skin, $mission->variant),
@@ -313,6 +327,9 @@ final class view {
                 // The quests of the place, for whoever wants more, whatever their step.
                 'quests' => array_map($sceneview, scenes::quests($here)),
             ];
+            if ($list[count($list) - 1]['embrollo'] === null) {
+                unset($list[count($list) - 1]['embrollo']);
+            }
         }
         $pages = [];
         foreach ($data['pages'] ?? [] as $code => $page) {

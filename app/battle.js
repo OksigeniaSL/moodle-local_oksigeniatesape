@@ -103,7 +103,7 @@
     if (!live.joined) {
       layer.innerHTML = '<div class="battle-call"><span class="battle-mini">' + (vote ? T.icon('world') : T.embrollo(1)) +
         '</span><p>' + esc(t(vote ? 'app_vote_call' : 'app_battle_call')) + '</p><button class="btn btn-main" data-join>' +
-        esc(t('app_battle_join')) + '</button></div>';
+        esc(t(vote ? 'app_vote_join' : 'app_battle_join')) + '</button></div>';
       layer.querySelector('[data-join]').onclick = function(e) {
         e.target.disabled = true;
         api('join').then(function(r) {
@@ -177,7 +177,8 @@
     }
     var life = live.maxhp ? live.hp / live.maxhp : 1;
     return '<div class="battle-head"><span class="battle-mini">' + T.embrollo(life) + '</span><div class="grow"><b>' +
-      esc(t('app_battle_title')) + '</b>' + (live.round ? '<small>' + esc(t(live.stage ? 'board_turn_round' : 'app_battle_round', live)) + '</small>' : '') +
+      esc(t('app_battle_title')) + '</b>' + (live.round ? '<small>' + esc(t(live.stage || live.maxcandles ? 'board_turn_round' :
+      'app_battle_round', live)) + '</small>' : '') +
       '<span class="meter boss"><i style="width:' + Math.round(100 * life) + '%"></i></span>' + (live.maxcandles ?
       '<small class="candles-left">' + T.icon('lantern') + ' ' + esc(t('board_turn_candles', {lit: live.candles,
       all: live.maxcandles})) + '</small>' : '') + '</div>' + (T.fx && !live.outcome && T.fx.musicAllowed() ?

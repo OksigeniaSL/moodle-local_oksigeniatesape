@@ -393,7 +393,9 @@
         '</small>' : '') + (x.scene ? '<small>' + esc(t('teach_today_scene', x.scene)) + '</small>' : '') + '</li>';
     }).join('');
     return '<section class="card today-card" style="margin-bottom:16px"><div class="kicker">' + esc(t('board_today')) +
-      '</div><h2>' + esc(today.chapter) + '</h2>' + (sessions ? '<ol class="today-sessions">' + sessions + '</ol>' : '') +
+      '</div><h2>' + esc(today.chapter) + '</h2>' + (today.lostscene ? '<p class="teaser"><b>' + esc(t('teach_today_night')) +
+      '</b> ' + esc(t('teach_today_night_help', today.lostscene.title)) + '</p>' : '') +
+      (sessions ? '<ol class="today-sessions">' + sessions + '</ol>' : '') +
       (today.offscreen ? '<p class="help-soft">' + esc(t('board_today_offscreen', today.offscreen)) + '</p>' : '') +
       (waiting.length ? '<div class="chips">' + waiting.map(function(x) {
         return '<button type="button" class="chip" data-goto="' + x[0] + '">' + esc(x[1]) + '</button>';

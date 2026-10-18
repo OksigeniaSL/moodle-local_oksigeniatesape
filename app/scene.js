@@ -1831,6 +1831,63 @@
       }
     }
 
+    /**
+     * The Embrollo of a place comes out when the student lights its lantern: the screen trembles, it says its letter,
+     * the student answers it with the idea that undoes its knot (or agrees), and it runs off leaving ink either way. It
+     * counts for nothing: it is the villain, in person, once a place. In the story of Azara, a note in tangled writing.
+     *
+     * @param {Object} e name, claim, laugh, weakness, letter.
+     * @param {string} skin
+     */
+    function embrolloMoment(e, skin) {
+      var note = skin === 'azara';
+      var layer = document.createElement('div');
+      layer.className = 'badge-moment embrollo-moment' + (note ? ' note' : '') + (T.moves() ? '' : ' still');
+      layer.setAttribute('role', 'dialog');
+      layer.setAttribute('aria-modal', 'true');
+      layer.setAttribute('aria-labelledby', 'tesape-embrollo-title');
+      var face = note ? '<span class="embrollo-note" aria-hidden="true">' + T.icon('log') + '</span>' :
+        '<span class="embrollo-face" aria-hidden="true">' + T.embrollo(1) + '</span>';
+      var replies = [['right', e.weakness], ['agree', t(note ? 'app_note_agree' : 'app_embrollo_agree')]];
+      if (Math.random() < 0.5) {
+        replies.reverse();
+      }
+      layer.innerHTML = '<div class="badge-card">' + face + '<div class="kicker" id="tesape-embrollo-title">' +
+        esc(t(note ? 'app_note_kicker' : 'app_embrollo_kicker')) + '</div>' + (e.letter ? '<blockquote class="letter">' +
+        esc(e.letter) + '</blockquote>' : '') + '<p class="embrollo-claim">«' + esc(e.claim.replace(/^«|»$/g, '')) + '»</p>' +
+        '<p><b>' + esc(t('app_embrollo_reply')) + '</b></p><div class="actions embrollo-replies">' + replies.map(function(r) {
+          return '<button type="button" class="btn btn-soft" data-reply="' + r[0] + '">' + esc(r[1]) + '</button>';
+        }).join('') + '</div><div data-fled></div></div>';
+      document.body.appendChild(layer);
+      if (T.fx) {
+        T.fx.sound('wrong');
+      }
+      layer.querySelector('[data-reply]').focus();
+      layer.querySelectorAll('[data-reply]').forEach(function(b) {
+        b.onclick = function() {
+          var right = b.dataset.reply === 'right';
+          layer.querySelectorAll('[data-reply]').forEach(function(x) {
+            x.disabled = true;
+          });
+          b.classList.add('chosen');
+          layer.classList.add('fled');
+          if (T.fx) {
+            T.fx.sound(right ? 'right' : 'tap');
+          }
+          var fled = layer.querySelector('[data-fled]');
+          fled.innerHTML = (right || !e.laugh ? '' : '<p class="knot-laugh">«' + esc(e.laugh.replace(/^«|»$/g, '')) + '»</p>') +
+            '<p class="embrollo-ink">' + esc(t(note ? (right ? 'app_note_fled_right' : 'app_note_fled') :
+            (right ? 'app_embrollo_fled_right' : 'app_embrollo_fled'))) + '</p><div class="actions"><button type="button" ' +
+            'class="btn btn-main" data-close>' + esc(t('app_embrollo_go')) + '</button></div>';
+          var close = fled.querySelector('[data-close]');
+          close.onclick = function() {
+            layer.remove();
+          };
+          close.focus();
+        };
+      });
+    }
+
     function ending(n) {
       if (cm) {
         classEnding(n);
@@ -1925,6 +1982,17 @@
         onReplay(body);
         celebrate(result.outcome, r);
         hatching(body, n);
+        // The lantern of the place lit with this scene: the Embrollo of the place comes out.
+        var place = (world.mission.chapters || []).filter(function(ch) {
+          return (ch.scenes || []).some(function(x) {
+            return x.id === data.id;
+          });
+        })[0];
+        if (place && place.embrollo && r.lanterns.indexOf(place.name) >= 0 && !r.hatched) {
+          setTimeout(function() {
+            embrolloMoment(place.embrollo, world.mission.skin);
+          }, T.moves() ? 1400 : 300);
+        }
         var map = body.querySelector('[data-map]');
         if (map) {
           map.onclick = close;

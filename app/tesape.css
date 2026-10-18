@@ -7610,3 +7610,75 @@ body.adapt-still .mission-grid .chapter.as-sheet {
     animation: none;
   }
 }
+
+/* The Embrollo of a place, in person, when the student lights its lantern. */
+.embrollo-moment .badge-card {
+  max-width: 460px;
+}
+
+.embrollo-face {
+  display: block;
+  width: 150px;
+  margin: 0 auto 6px;
+  animation: embrollo-in .9s ease-out both, tangle-hit .6s ease .9s 2;
+}
+
+.embrollo-face svg,
+.embrollo-face img {
+  width: 100%;
+  height: auto;
+}
+
+.embrollo-note {
+  display: block;
+  width: 60px;
+  margin: 0 auto 6px;
+  color: var(--lilac, #b9a6ff);
+  transform: rotate(-6deg);
+}
+
+.embrollo-note svg {
+  width: 100%;
+  height: auto;
+}
+
+.embrollo-claim {
+  font-family: var(--f-title);
+  font-size: 1.15em;
+  color: var(--lilac-text, #e1d8ff);
+}
+
+.embrollo-replies {
+  flex-wrap: wrap;
+}
+
+.embrollo-replies .btn.chosen {
+  border-color: var(--lantern);
+}
+
+.embrollo-moment.fled .embrollo-face {
+  animation: roll-away 1.6s ease-in both;
+}
+
+.embrollo-ink {
+  font-style: italic;
+}
+
+@keyframes embrollo-in {
+  from {
+    opacity: 0;
+    transform: scale(.4) rotate(-20deg);
+  }
+}
+
+.embrollo-moment.still .embrollo-face,
+.embrollo-moment.still.fled .embrollo-face {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .embrollo-face,
+  .embrollo-moment.fled .embrollo-face {
+    animation: none;
+  }
+}
