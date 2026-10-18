@@ -1489,9 +1489,9 @@
         return x.code === s.chapter;
       })[0];
       var page = s.kind === 'page';
-      var label = page ? t('app_page_stolen') + ': «' + s.title + '»' : t('app_stain_on', s.place);
+      var label = page ? t('app_page_stolen') + ': «' + s.title + '»' : t(s.forteam ? 'app_stain_team' : 'app_stain_on', s.place);
       return ch ? '<foreignObject x="' + (ch.x + 28 + 14 * i) + '" y="' + (ch.y - 46) + '" width="36" height="36" class="blot' +
-        (page ? ' stolen' : '') + '"><div xmlns="http://www.w3.org/1999/xhtml"><button type="button" class="blot-btn" ' +
+        (page ? ' stolen' : '') + (s.forteam ? ' team-knot' : '') + '"><div xmlns="http://www.w3.org/1999/xhtml"><button type="button" class="blot-btn" ' +
         'data-stain="' + s.id + '" title="' + esc(label) + '"><span aria-hidden="true">' + (page ? PAGE : BLOT) + '</span>' +
         '<span class="sr-only">' + esc(label) + '</span></button></div></foreignObject>' : '';
     }).join('');
@@ -1767,7 +1767,7 @@
     layer.setAttribute('aria-modal', 'true');
     layer.setAttribute('aria-labelledby', 'tesape-stain-title');
     layer.innerHTML = '<div class="badge-card"><div class="kicker" id="tesape-stain-title">' +
-      esc(t('app_stain_on', stain.place)) + '</div><h2>' + esc(stain.title) + '</h2><div data-sheet></div><div data-said></div><div class="actions">' +
+      esc(t(stain.forteam ? 'app_stain_team' : 'app_stain_on', stain.place)) + '</div><h2>' + esc(stain.title) + '</h2><div data-sheet></div><div data-said></div><div class="actions">' +
       '<button type="button" class="btn btn-soft" data-close>' + esc(t('app_close')) + '</button></div></div>';
     document.body.appendChild(layer);
     var sheet = layer.querySelector('[data-sheet]');

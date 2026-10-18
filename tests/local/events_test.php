@@ -158,4 +158,94 @@ final class events_test extends \advanced_testcase {
         $this->expectException(\invalid_parameter_exception::class);
         events::gift($course->id, (int) $groups[1]->id, (int) $groups[1]->id, 2, self::NOW);
     }
+
+    public function test_a_knot_for_a_team_is_cleaned_only_by_that_team_and_counts_for_the_expedition(): void {
+        global $DB;
+        $this->resetAfterTest();
+        [$course, $members, $groups] = $this->make_class(true);
+        $data = events::export(events::draw($course->id, 'knot', self::NOW));
+        $this->assertContains($data['target'], [(int) $groups[0]->id, (int) $groups[1]->id]);
+        // The teacher sends it to the second team: the knot goes with it, on the place of today.
+        $data = events::export(events::aim($course->id, (int) $groups[1]->id, self::NOW));
+        $this->assertSame((int) $groups[1]->id, $data['target']);
+        $this->assertFalse($data['cleaned']);
+        $stain = $DB->get_record(self::T . 'stain', ['courseid' => $course->id, 'groupid' => $groups[1]->id], '*', MUST_EXIST);
+        $this->assertSame('claro', $stain->chapter);
+        $view = stains::view($stain, missions::get($course->id));
+        $done = ['marks' => array_values(array_filter(array_column($view['parts'], 'mark'), fn($m) => $m >= 0)), 'misses' => 0];
+        // Somebody of the other team cannot clean it; somebody of the team can.
+        try {
+            stains::clean($course->id, (int) $stain->id, $members[0], $done, self::NOW);
+            $this->fail('Cleaned by another team');
+        } catch (\moodle_exception $e) {
+            $this->assertSame('nostain', $e->errorcode);
+        }
+        $this->assertTrue(stains::clean($course->id, (int) $stain->id, $members[2], $done, self::NOW)['clean']);
+        $this->assertTrue(events::export(events::today($course->id, self::NOW))['cleaned']);
+        $this->assertSame(1, expedition::strength($course->id)['stains']);
+        // Once cleaned, the card stays.
+        $this->expectException(\moodle_exception::class);
+        events::draw($course->id, '', self::NOW);
+    }
+
+    public function test_a_knot_changed_or_skipped_goes_away_and_ends_with_the_day(): void {
+        global $DB;
+        $this->resetAfterTest();
+        [$course] = $this->make_class(true);
+        $teamknots = fn() => $DB->count_records_select(self::T . 'stain', 'groupid <> 0');
+        events::draw($course->id, 'knot', self::NOW);
+        $this->assertSame(1, $teamknots());
+        events::draw($course->id, 'calm', self::NOW);
+        $this->assertSame(0, $teamknots());
+        events::draw($course->id, 'knot', self::NOW);
+        events::skip($course->id, self::NOW);
+        $this->assertSame(0, $teamknots());
+        // Not cleaned, it is there until the day ends.
+        events::draw($course->id, 'knot', self::NOW);
+        $id = (int) $DB->get_field_select(self::T . 'stain', 'id', 'groupid <> 0');
+        $this->assertContains($id, array_map('intval', array_column(stains::open($course->id, self::NOW), 'id')));
+        $this->assertNotContains($id, array_map('intval', array_column(stains::open($course->id, self::NOW + DAYSECS), 'id')));
+    }
+
+    public function test_the_messengers_take_a_hint_to_another_team_once(): void {
+        $this->resetAfterTest();
+        [$course, , $groups] = $this->make_class();
+        events::draw($course->id, 'messengers', self::NOW);
+        events::aim($course->id, (int) $groups[0]->id, self::NOW);
+        $this->assertFalse(events::brought($course->id, (int) $groups[1]->id, self::NOW));
+        try {
+            events::deliver($course->id, (int) $groups[0]->id, self::NOW);
+            $this->fail('A hint to their own team');
+        } catch (\invalid_parameter_exception $e) {
+            $this->assertStringContainsString('another team', $e->getMessage());
+        }
+        $data = events::export(events::deliver($course->id, (int) $groups[1]->id, self::NOW));
+        $this->assertSame((int) $groups[1]->id, $data['to']);
+        $this->assertTrue(events::brought($course->id, (int) $groups[1]->id, self::NOW));
+        $this->assertFalse(events::brought($course->id, (int) $groups[0]->id, self::NOW));
+        $this->assertFalse(events::brought($course->id, (int) $groups[1]->id, self::NOW + DAYSECS));
+        // Once taken, the card stays.
+        $this->expectException(\moodle_exception::class);
+        events::aim($course->id, (int) $groups[1]->id, self::NOW);
+    }
+
+    public function test_the_cards_for_a_team_need_teams(): void {
+        $this->resetAfterTest();
+        $course = $this->getDataGenerator()->create_course();
+        regions::save($course->id, ['enabled' => 1]);
+        for ($i = 0; $i < 20; $i++) {
+            $this->assertNotContains(events::draw($course->id, '', self::NOW)->code, events::TARGETED);
+        }
+        $this->expectException(\moodle_exception::class);
+        events::draw($course->id, 'messengers', self::NOW);
+    }
+
+    public function test_a_mission_gives_the_cards_its_own_names(): void {
+        $this->resetAfterTest();
+        [$course] = $this->make_class(true);
+        $calm = events::export(events::draw($course->id, 'calm', self::NOW));
+        $this->assertSame('La primera luz', $calm['name']);
+        $this->assertStringContainsString('energía', $calm['text']);
+        $this->assertSame('', events::export(events::draw($course->id, 'exchange', self::NOW))['name']);
+    }
 }

@@ -380,6 +380,33 @@ final class scenes_test extends \advanced_testcase {
         $this->assertSame(3, $scout['rewards']['hints']);
     }
 
+    public function test_the_messengers_bring_the_first_hint_of_each_scene_of_the_day(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $w = $this->make_class(2);
+        $gen = $this->getDataGenerator();
+        $groups = [$gen->create_group(['courseid' => $w->course->id]), $gen->create_group(['courseid' => $w->course->id])];
+        foreach ([0, 1] as $i) {
+            $gen->create_group_member(['groupid' => $groups[$i]->id, 'userid' => $w->users[$i]->id]);
+            $DB->set_field(self::T . 'char', 'role', 'scout', ['userid' => $w->users[$i]->id]);
+        }
+        $scene = $DB->get_record(self::T . 'scene', ['missionid' => $w->mission->id, 'code' => 'C2-2']);
+        $def = json_decode($scene->definition, true);
+        $def['nodes']['colocar']['hints'] = ['Una', 'Dos', 'Tres'];
+        $DB->set_field(self::T . 'scene', 'definition', json_encode($def), ['id' => $scene->id]);
+        $hints = [['n' => 'colocar', 'hint' => 0], ['n' => 'colocar', 'hint' => 1], ['n' => 'colocar', 'hint' => 2]];
+        $events = function (\stdClass $user) use ($w, $def, $hints): array {
+            [$items, $roles, $flags, $role] = scenes::context(characters::get($user->id), $w->course->id);
+            return array_merge($hints, autoplayer::play($def, $items, $roles, $flags, $role));
+        };
+        // The messengers of the first team take a hint to the second one.
+        events::draw($w->course->id, 'messengers');
+        events::aim($w->course->id, (int) $groups[0]->id);
+        events::deliver($w->course->id, (int) $groups[1]->id);
+        $this->assertSame(2, scenes::play($w->course->id, $w->users[1]->id, $scene->id, $events($w->users[1]), null)['rewards']['hints']);
+        $this->assertSame(3, scenes::play($w->course->id, $w->users[0]->id, $scene->id, $events($w->users[0]), null)['rewards']['hints']);
+    }
+
     public function test_a_play_sent_again_counts_once(): void {
         global $DB;
         $this->resetAfterTest();

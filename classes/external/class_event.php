@@ -38,11 +38,16 @@ final class class_event extends external_api {
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
             'courseid' => new external_value(PARAM_INT, 'Course'),
-            'action' => new external_value(PARAM_ALPHA, 'draw, skip, solve or gift'),
+            'action' => new external_value(PARAM_ALPHA, 'draw, skip, solve, gift, aim or deliver'),
             'code' => new external_value(PARAM_ALPHA, 'draw: this card instead of a random one', VALUE_DEFAULT, ''),
             'right' => new external_value(PARAM_BOOL, 'solve: the class got it right', VALUE_DEFAULT, false),
             'from' => new external_value(PARAM_INT, 'gift: group of the team that gives', VALUE_DEFAULT, 0),
-            'to' => new external_value(PARAM_INT, 'gift: group of the team that receives', VALUE_DEFAULT, 0),
+            'to' => new external_value(
+                PARAM_INT,
+                'gift, deliver: group of the team that receives; aim: the team the card goes to',
+                VALUE_DEFAULT,
+                0
+            ),
         ]);
     }
 
@@ -92,6 +97,13 @@ final class class_event extends external_api {
             case 'gift':
                 require_capability('local/oksigeniatesape:award', $context);
                 $event = events::gift($courseid, $params['from'], $params['to'], (int) $USER->id);
+                break;
+            case 'aim':
+                $event = events::aim($courseid, $params['to']);
+                break;
+            case 'deliver':
+                require_capability('local/oksigeniatesape:award', $context);
+                $event = events::deliver($courseid, $params['to']);
                 break;
             default:
                 throw new \invalid_parameter_exception('Unknown action');

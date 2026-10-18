@@ -23,8 +23,12 @@ namespace local_oksigeniatesape\local;
  * - Breeze: activities completed today give double saber (within the weekly cap).
  * - Footprint: a quick question for the whole class; if the class gets it right, saber for everybody.
  * - Exchange: each team gives breath to another team of its choice.
+ * - A knot for a team: the Embrollo tangles a sheet of mistakes for one team, which has until the day ends to clean it;
+ *   cleaned, it counts for the strength of the expedition.
+ * - Messengers: one team takes a hint to another of its choice: today the first hint of each scene is free for it.
  *
- * The battle of the boss joins the deck when the battles arrive.
+ * The last two go to a team (drawn at random; the teacher can change it before anything comes of the card). A mission
+ * can give the cards its own names and texts (`cards`).
  *
  * @package    local_oksigeniatesape
  * @copyright  2026 Oksigenia <dev@oksigenia.cc>
@@ -35,7 +39,10 @@ final class events {
     private const T = 'local_oksigeniatesape_';
 
     /** @var string[] The cards of the deck. */
-    public const CARDS = ['calm', 'breeze', 'footprint', 'exchange'];
+    public const CARDS = ['calm', 'breeze', 'footprint', 'exchange', 'knot', 'messengers'];
+
+    /** @var string[] The cards that go to a team. */
+    public const TARGETED = ['knot', 'messengers'];
 
     /** @var int Saber for each player when the class solves the footprint. */
     public const FOOTPRINT_SABER = 5;
@@ -88,6 +95,7 @@ final class events {
         if ($event && self::acted($event)) {
             throw new \moodle_exception('eventdone', 'local_oksigeniatesape');
         }
+        $teams = array_map('intval', array_keys(self::teams($courseid)));
         if ($code === '') {
             $yesterday = self::today($courseid, engine::day_start($now, $courseid) - 1);
             $avoid = array_filter([$event->code ?? null, $yesterday->code ?? null]);
@@ -96,9 +104,27 @@ final class events {
                 // Without questions in the mission there is no footprint to follow.
                 $cards = array_values(array_diff($cards, ['footprint'])) ?: ['calm'];
             }
+            // The cards for a team, only with teams (two, for the messengers) and a sheet to tangle.
+            $out = count($teams) < 2 ? self::TARGETED : (stains::can_tangle($courseid) ? [] : ['knot']);
+            $cards = array_values(array_diff($cards, $out)) ?: ['calm'];
             $code = $cards[random_int(0, count($cards) - 1)];
         }
+        if (in_array($code, self::TARGETED, true) && count($teams) < ($code === 'messengers' ? 2 : 1)) {
+            throw new \moodle_exception('cardnotplayable', 'local_oksigeniatesape');
+        }
+        // What the card it replaces left, out: the knot of a team.
+        self::undo($event);
         $data = [];
+        if (in_array($code, self::TARGETED, true)) {
+            $data['target'] = $teams[random_int(0, count($teams) - 1)];
+        }
+        if ($code === 'knot') {
+            $stain = stains::for_team($courseid, $data['target'], $now);
+            if (!$stain) {
+                throw new \moodle_exception('cardnotplayable', 'local_oksigeniatesape');
+            }
+            $data['stain'] = (int) $stain->id;
+        }
         if ($code === 'footprint') {
             $previous = json_decode($event->data ?? '', true) ?: [];
             $data['question'] = questions::pick($courseid, array_filter([$previous['question'] ?? null]));
@@ -141,6 +167,7 @@ final class events {
         if (!$event) {
             $event = self::draw($courseid, 'calm', $now);
         }
+        self::undo($event);
         $DB->update_record(self::T . 'event', (object) ['id' => $event->id, 'status' => 'skipped', 'timemodified' => $now]);
         return $DB->get_record(self::T . 'event', ['id' => $event->id], '*', MUST_EXIST);
     }
@@ -214,11 +241,82 @@ final class events {
     }
 
     /**
+     * The team a card goes to, chosen by the teacher instead of the one drawn, before anything comes of it.
+     *
+     * @param int $courseid
+     * @param int $groupid
+     * @param int|null $now
+     * @return \stdClass The event.
+     */
+    public static function aim(int $courseid, int $groupid, ?int $now = null): \stdClass {
+        global $DB;
+        $now = $now ?? time();
+        $event = self::today($courseid, $now);
+        if (!$event || $event->status !== 'drawn' || !in_array($event->code, self::TARGETED, true)) {
+            throw new \moodle_exception('noevent', 'local_oksigeniatesape');
+        }
+        if (self::acted($event)) {
+            throw new \moodle_exception('eventdone', 'local_oksigeniatesape');
+        }
+        if (!in_array($groupid, array_keys(self::teams($courseid)))) {
+            throw new \invalid_parameter_exception('Not a team of the course');
+        }
+        $data = json_decode($event->data, true) ?: [];
+        $data['target'] = $groupid;
+        if (!empty($data['stain'])) {
+            stains::move_team($courseid, (int) $data['stain'], $groupid);
+        }
+        $DB->update_record(self::T . 'event', (object) ['id' => $event->id, 'data' => json_encode($data), 'timemodified' => $now]);
+        return $DB->get_record(self::T . 'event', ['id' => $event->id], '*', MUST_EXIST);
+    }
+
+    /**
+     * The messengers take their hint to another team: today the first hint of each scene is free for it. Once.
+     *
+     * @param int $courseid
+     * @param int $to Group of the team that receives it.
+     * @param int|null $now
+     * @return \stdClass The event.
+     */
+    public static function deliver(int $courseid, int $to, ?int $now = null): \stdClass {
+        global $DB;
+        $now = $now ?? time();
+        $event = self::active($courseid, 'messengers', $now);
+        if (!$event) {
+            throw new \moodle_exception('noevent', 'local_oksigeniatesape');
+        }
+        $data = json_decode($event->data, true) ?: [];
+        if (!empty($data['to'])) {
+            return $event;
+        }
+        if ($to === (int) ($data['target'] ?? 0) || !in_array($to, array_keys(self::teams($courseid)))) {
+            throw new \invalid_parameter_exception('Not another team of the course');
+        }
+        $data['to'] = $to;
+        $DB->update_record(self::T . 'event', (object) ['id' => $event->id, 'data' => json_encode($data), 'timemodified' => $now]);
+        return $DB->get_record(self::T . 'event', ['id' => $event->id], '*', MUST_EXIST);
+    }
+
+    /**
+     * Whether the messengers brought a hint to a team today.
+     *
+     * @param int $courseid
+     * @param int $groupid
+     * @param int|null $now
+     * @return bool
+     */
+    public static function brought(int $courseid, int $groupid, ?int $now = null): bool {
+        $event = $groupid ? self::active($courseid, 'messengers', $now) : null;
+        return $event && (int) ((json_decode($event->data, true) ?: [])['to'] ?? 0) === $groupid;
+    }
+
+    /**
      * The event as the class screen shows it.
      *
      * @param \stdClass|null $event
      * @return array|null code, status, question (with the right option, for the teacher; none if not a footprint), solved,
-     *     gifts.
+     *     gifts, target (the team of a card for a team), to (the team the messengers went to), cleaned (the knot of the
+     *     team), name and text (those of the mission, if it has them).
      */
     public static function export(?\stdClass $event): ?array {
         if (!$event) {
@@ -233,6 +331,8 @@ final class events {
         foreach ($data['gifts'] ?? [] as $from => $to) {
             $gifts[] = ['from' => (int) $from, 'to' => (int) $to];
         }
+        $mission = missions::get((int) $event->courseid);
+        $card = $mission ? ($mission->data['cards'][$event->code] ?? []) : [];
         return array_filter([
             'id' => (int) $event->id,
             'code' => $event->code,
@@ -240,6 +340,11 @@ final class events {
             'question' => $question,
             'solved' => array_key_exists('solved', $data) ? ($data['solved'] ? 'right' : 'wrong') : '',
             'gifts' => $gifts,
+            'target' => (int) ($data['target'] ?? 0),
+            'to' => (int) ($data['to'] ?? 0),
+            'cleaned' => self::cleaned($data),
+            'name' => $mission ? missions::text($card['name'] ?? '', $mission->skin, $mission->variant) : '',
+            'text' => $mission ? missions::text($card['text'] ?? '', $mission->skin, $mission->variant) : '',
         ], fn($value) => $value !== null);
     }
 
@@ -251,7 +356,31 @@ final class events {
      */
     private static function acted(\stdClass $event): bool {
         $data = json_decode($event->data ?? '', true) ?: [];
-        return isset($data['solved']) || !empty($data['gifts']);
+        return isset($data['solved']) || !empty($data['gifts']) || !empty($data['to']) || self::cleaned($data);
+    }
+
+    /**
+     * Whether the team cleaned the knot of its card.
+     *
+     * @param array $data Of the event.
+     * @return bool
+     */
+    private static function cleaned(array $data): bool {
+        global $DB;
+        return !empty($data['stain']) &&
+            (int) $DB->get_field(self::T . 'stain', 'cleanedat', ['id' => (int) $data['stain']]) > 0;
+    }
+
+    /**
+     * What a card left that has to go with it when it is changed or skipped: the knot of a team, if not cleaned.
+     *
+     * @param \stdClass|null $event
+     */
+    private static function undo(?\stdClass $event): void {
+        $data = $event ? (json_decode($event->data ?? '', true) ?: []) : [];
+        if (!empty($data['stain'])) {
+            stains::move_team((int) $event->courseid, (int) $data['stain'], 0);
+        }
     }
 
     /**

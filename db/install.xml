@@ -628,6 +628,7 @@
         <FIELD NAME="kind" TYPE="char" LENGTH="10" NOTNULL="true" DEFAULT="stain" SEQUENCE="false" COMMENT="stain, or page: a page of the Great Book stolen (game: the knot left hanging; sheet: the page)"/>
         <FIELD NAME="cleanedat" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="When it was cleaned (0: it is there)"/>
         <FIELD NAME="erased" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The teacher took it as cleaned by the class or rubbed it out"/>
+        <FIELD NAME="groupid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The team it is for, from a card of the day (0: the whole class)"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
@@ -635,7 +636,7 @@
         <KEY NAME="courseid" TYPE="foreign" FIELDS="courseid" REFTABLE="course" REFFIELDS="id"/>
       </KEYS>
       <INDEXES>
-        <INDEX NAME="courseid-day" UNIQUE="true" FIELDS="courseid, day"/>
+        <INDEX NAME="courseid-day-groupid" UNIQUE="true" FIELDS="courseid, day, groupid"/>
       </INDEXES>
     </TABLE>
     <TABLE NAME="local_oksigeniatesape_session" COMMENT="The sessions of a class: each one of a place of the mission (or the entry), started and closed by a teacher (who, it is not kept), with the step it is at and what the class screen shows">

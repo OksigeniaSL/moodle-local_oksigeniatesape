@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.115.0 (2026-10-18)
+
+- **Cards of the day for a team.** «A knot for a team»: the Embrollo tangles a sheet of mistakes of the place of today
+  for one team alone; only its members see it on the map and can undo it, until the day ends, and undone it counts for
+  the strength of the expedition. «Messengers»: one team takes a hint to another team of its choice, and today the first
+  hint of each scene is free for that team. The team of the card is drawn at random, and the class screen can send it
+  to another one before anything comes of it. Without teams (two, for the messengers) or without a hunt for mistakes in
+  the place of today, they do not come out of the deck.
+- A mission can give the cards of the day its own names and texts (`cards`).
+- Mission «Los seres vivos» v49: «La primera luz», «Lluvia en el bosque» and the mysterious footprint, in both skins.
+
 ## 0.114.0 (2026-10-18)
 
 - **The strength of the expedition.** On the class screen, next to the battle, a bar grows with what the class has

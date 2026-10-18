@@ -308,7 +308,8 @@ final class scenes {
     }
 
     /**
-     * The hints opened in a play cost breath: one each; the sage gets the first free and pays half for the rest.
+     * The hints opened in a play cost breath: one each; the sage gets the first free and pays half for the rest. The day
+     * the messengers of another team bring one, the first is free too.
      *
      * @param \stdClass $char
      * @param \stdClass $member
@@ -330,7 +331,10 @@ final class scenes {
         $free = $free || adapt::has($member, 'hints');
         // The sage: the first free (the first two with «Hints of the house») and half for the rest.
         $gift = talents::has((int) $char->id, 'househints', (int) $member->courseid) ? 2 : 1;
-        $cost = $free ? 0 : ($char->role === 'sage' ? (int) ceil(max(0, $hints - $gift) / 2) : $hints);
+        $team = teams::of((int) $member->courseid, (int) $char->userid);
+        $brought = $team && events::brought((int) $member->courseid, (int) $team->id, $now) ? 1 : 0;
+        $cost = $free ? 0 : ($char->role === 'sage' ? (int) ceil(max(0, $hints - $gift - $brought) / 2) :
+            max(0, $hints - $brought));
         $fresh = engine::member($char, (int) $member->courseid, $now);
         $cost = min($cost, (int) $fresh->breath);
         if ($cost > 0) {

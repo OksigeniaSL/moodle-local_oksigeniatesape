@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 48,
+ "version": 49,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 49,
+   "kind": "improvement",
+   "date": "2026-10-18",
+   "text": "Las cartas del día con nombre de la misión: «La primera luz», «Lluvia en el bosque» y la huella misteriosa, en el valle y en el campamento de Azara"
+  },
   {
    "version": 48,
    "kind": "improvement",
@@ -1057,6 +1063,38 @@
     "azara": "Las letras torcidas se ponen derechas, una a una, como si les diera vergüenza."
    }
   ]
+ },
+ "cards": {
+  "calm": {
+   "name": {
+    "valley": "La primera luz",
+    "azara": "Alba en el campamento"
+   },
+   "text": {
+    "valley": "Con la primera luz, el valle amanece en calma. Hoy nadie pierde energía. Un buen día para atreverse.",
+    "azara": "Amanece sin prisa en el campamento. Hoy nadie de la expedición pierde energía. Un buen día para atreverse."
+   }
+  },
+  "breeze": {
+   "name": {
+    "valley": "Lluvia en el bosque",
+    "azara": "Lluvia sobre el monte"
+   },
+   "text": {
+    "valley": "Llueve en el bosque y todo crece. Lo que la clase entregue hoy en Moodle da el doble de saber.",
+    "azara": "Llueve sobre el monte y el cuaderno se llena de notas. Lo que la clase entregue hoy en Moodle da el doble de saber."
+   }
+  },
+  "footprint": {
+   "name": {
+    "valley": "Huella misteriosa",
+    "azara": "Un rastro en el barro"
+   },
+   "text": {
+    "valley": "Una huella que no es de ningún animal conocido trae una pregunta para toda la clase. Si la clase acierta, saber para todos.",
+    "azara": "El baqueano señala un rastro en el barro y hace una pregunta para toda la clase. Si la clase acierta, saber para todos."
+   }
+  }
  },
  "battle": {
   "reward": "thread",

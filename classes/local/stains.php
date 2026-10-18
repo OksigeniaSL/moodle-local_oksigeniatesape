@@ -27,6 +27,9 @@ namespace local_oksigeniatesape\local;
  * knot has its page, the action of the day is taking it (one at a time, never the same knot twice in a week). It comes
  * back to the whole class with the first right answer to a question of the knot, one try a day for each student.
  *
+ * A card of the day can tangle a sheet for a team alone («A knot for a team»): only its members see it and clean it,
+ * until the day ends; cleaned, it counts for the expedition as any other stain.
+ *
  * @package    local_oksigeniatesape
  * @copyright  2026 Oksigenia <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -60,22 +63,23 @@ final class stains {
         if (!$region || !$region->enabled || $mode === 'off' || !$mission) {
             return [];
         }
-        $open = self::unclean($courseid);
         $date = (new \DateTimeImmutable('@' . $now))->setTimezone(engine::timezone($courseid));
         $day = (int) $date->format('Ymd');
-        if ((int) $date->format('N') > 5 || $DB->record_exists(self::T . 'stain', ['courseid' => $courseid, 'day' => $day])) {
+        $open = self::unclean($courseid, $day);
+        $decided = $DB->record_exists(self::T . 'stain', ['courseid' => $courseid, 'day' => $day, 'groupid' => 0]);
+        if ((int) $date->format('N') > 5 || $decided) {
             return $open;
         }
         // Today's: a page stolen, if the class left a knot hanging; if not, a new stain if there is room for it; if not,
         // the day is noted as decided all the same.
         $theft = self::to_steal($courseid, $mission, $open, $now);
-        $stains = array_filter($open, fn($s) => ($s->kind ?? 'stain') === 'stain');
+        $stains = array_filter($open, fn($s) => ($s->kind ?? 'stain') === 'stain' && empty($s->groupid));
         $chapter = pacts::chapter($mission);
         $room = $mode === 'naughty' ? count($stains) < self::MAX : !$stains;
         $sheet = !$theft && $chapter && $room ? self::next_sheet($mission, (string) $chapter->code, $courseid) : null;
         $record = (object) ['courseid' => $courseid, 'day' => $day, 'chapter' => $sheet ? (string) $chapter->code : '',
             'game' => $sheet['game'] ?? '', 'sheet' => $sheet['sheet'] ?? '', 'kind' => 'stain', 'cleanedat' => $sheet ? 0 : $now,
-            'erased' => 0, 'timecreated' => $now];
+            'erased' => 0, 'groupid' => 0, 'timecreated' => $now];
         if ($theft) {
             $record->chapter = $theft['chapter'];
             $record->game = $theft['code'];
@@ -87,7 +91,7 @@ final class stains {
             $record->id = $DB->insert_record(self::T . 'stain', $record);
         } catch (\dml_write_exception $e) {
             // Another visit decided it at the same time.
-            return self::unclean($courseid);
+            return self::unclean($courseid, $day);
         }
         if ($sheet || $theft) {
             $open[] = $record;
@@ -145,15 +149,72 @@ final class stains {
     }
 
     /**
-     * The stains of a class not cleaned yet, oldest first.
+     * The stains of a class not cleaned yet, oldest first: those of a team, only on their day.
      *
      * @param int $courseid
+     * @param int $day Today, as yyyymmdd.
      * @return \stdClass[]
      */
-    private static function unclean(int $courseid): array {
+    private static function unclean(int $courseid, int $day): array {
         global $DB;
-        $where = "courseid = ? AND cleanedat = 0 AND chapter <> ''";
-        return array_values($DB->get_records_select(self::T . 'stain', $where, [$courseid], 'id'));
+        $where = "courseid = ? AND cleanedat = 0 AND chapter <> '' AND (groupid = 0 OR day = ?)";
+        return array_values($DB->get_records_select(self::T . 'stain', $where, [$courseid, $day], 'id'));
+    }
+
+    /**
+     * A knot for a team, from a card of the day: the next sheet of the hunt for mistakes of the place of today, for that
+     * team alone, until the day ends. It takes the place of a knot of today not cleaned yet.
+     *
+     * @param int $courseid
+     * @param int $groupid
+     * @param int|null $now
+     * @return \stdClass|null The stain; null if the place of today has no hunt for mistakes.
+     */
+    public static function for_team(int $courseid, int $groupid, ?int $now = null): ?\stdClass {
+        global $DB;
+        $now = $now ?? time();
+        $mission = missions::get($courseid);
+        $chapter = $mission ? pacts::chapter($mission) : null;
+        $sheet = $chapter ? self::next_sheet($mission, (string) $chapter->code, $courseid) : null;
+        if (!$sheet || $groupid <= 0) {
+            return null;
+        }
+        $day = self::day($courseid, $now);
+        $where = 'courseid = ? AND day = ? AND groupid <> 0 AND cleanedat = 0';
+        $DB->delete_records_select(self::T . 'stain', $where, [$courseid, $day]);
+        $id = $DB->insert_record(self::T . 'stain', (object) ['courseid' => $courseid, 'day' => $day,
+            'chapter' => (string) $chapter->code, 'game' => $sheet['game'], 'sheet' => $sheet['sheet'], 'kind' => 'stain',
+            'cleanedat' => 0, 'erased' => 0, 'groupid' => $groupid, 'timecreated' => $now]);
+        return $DB->get_record(self::T . 'stain', ['id' => $id], '*', MUST_EXIST);
+    }
+
+    /**
+     * Whether a card can tangle a sheet for a team today: the place of today has a hunt for mistakes.
+     *
+     * @param int $courseid
+     * @return bool
+     */
+    public static function can_tangle(int $courseid): bool {
+        $mission = missions::get($courseid);
+        $chapter = $mission ? pacts::chapter($mission) : null;
+        return $chapter && self::next_sheet($mission, (string) $chapter->code, $courseid) !== null;
+    }
+
+    /**
+     * The knot of a team goes to another team, or away, if it was not cleaned yet.
+     *
+     * @param int $courseid
+     * @param int $stainid
+     * @param int $groupid The team it goes to (0: it goes away).
+     */
+    public static function move_team(int $courseid, int $stainid, int $groupid): void {
+        global $DB;
+        $where = 'id = ? AND courseid = ? AND groupid <> 0 AND cleanedat = 0';
+        if ($groupid > 0) {
+            $DB->set_field_select(self::T . 'stain', 'groupid', $groupid, $where, [$stainid, $courseid]);
+        } else {
+            $DB->delete_records_select(self::T . 'stain', $where, [$stainid, $courseid]);
+        }
     }
 
     /**
@@ -206,7 +267,7 @@ final class stains {
         return ['id' => (int) $stain->id, 'chapter' => (string) $stain->chapter, 'place' => $place,
             'title' => missions::text($sheet['title'] ?? '', $mission->skin, $mission->variant),
             'parts' => array_map(fn($p) => ['text' => $p['text'], 'mark' => $p['mark'], 'wrong' => $p['wrong']], $parts),
-            'kind' => 'stain'];
+            'kind' => 'stain', 'groupid' => (int) ($stain->groupid ?? 0)];
     }
 
     /**
@@ -373,6 +434,13 @@ final class stains {
         $sheet = $stain && $mission ? self::sheet($stain, $mission) : null;
         if (!$sheet || (int) $stain->cleanedat) {
             throw new \moodle_exception('nostain', 'local_oksigeniatesape');
+        }
+        // The knot of a team, only for its members.
+        if ((int) $stain->groupid) {
+            $userid = (int) $DB->get_field(self::T . 'char', 'userid', ['id' => $member->charid]);
+            if ((int) (teams::of($courseid, $userid)->id ?? 0) !== (int) $stain->groupid) {
+                throw new \moodle_exception('nostain', 'local_oksigeniatesape');
+            }
         }
         $parts = minigames::parts(missions::text($sheet['text'] ?? '', $mission->skin, $mission->variant));
         $marks = array_values(array_filter($parts, fn($p) => $p['mark'] >= 0));

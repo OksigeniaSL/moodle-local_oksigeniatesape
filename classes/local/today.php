@@ -94,7 +94,7 @@ final class today {
         }
         // What the Embrollo stained, for the class to clean it (or for the teacher to take it as cleaned).
         $today['stains'] = array_values(array_filter(array_map(function ($stain) use ($mission) {
-            $view = stains::view($stain, $mission);
+            $view = empty($stain->groupid) ? stains::view($stain, $mission) : null;
             return $view ? ['id' => $view['id'], 'place' => $view['place'], 'title' => $view['title'], 'kind' => $view['kind']] :
                 null;
         }, stains::open($courseid))));

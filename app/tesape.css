@@ -872,6 +872,20 @@ body.tesape {
   font-size: .95rem;
 }
 
+/* A card of the day for a team: the team it goes to, and what comes of it. */
+.event-for {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin: 10px 0 4px;
+}
+
+.blot.team-knot .blot-btn {
+  outline: 2px dashed var(--lantern);
+  outline-offset: 2px;
+}
+
 /* The prologue: the vignettes before choosing who to be. */
 .story.opening .lead {
   font-size: 1.15rem;

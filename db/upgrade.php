@@ -903,5 +903,23 @@ function xmldb_local_oksigeniatesape_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026101842, 'local', 'oksigeniatesape');
     }
 
+    if ($oldversion < 2026101843) {
+        // A knot for a team, from a card of the day: one a day for each team, besides the stain of the class.
+        $table = new xmldb_table('local_oksigeniatesape_stain');
+        $field = new xmldb_field('groupid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'erased');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        $index = new xmldb_index('courseid-day', XMLDB_INDEX_UNIQUE, ['courseid', 'day']);
+        if ($dbman->index_exists($table, $index)) {
+            $dbman->drop_index($table, $index);
+        }
+        $index = new xmldb_index('courseid-day-groupid', XMLDB_INDEX_UNIQUE, ['courseid', 'day', 'groupid']);
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+        upgrade_plugin_savepoint(true, 2026101843, 'local', 'oksigeniatesape');
+    }
+
     return true;
 }

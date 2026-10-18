@@ -162,11 +162,19 @@ final class view {
         $mission = self::mission($courseid, $char, $member);
         if ($mission) {
             $world['mission'] = $mission;
-            // What the Embrollo stained in the valley, to clean.
-            $stained = array_map(function ($s) use ($installed, $char) {
+            // What the Embrollo stained in the valley, to clean; the knot of a team, only for its members.
+            $myteam = (int) (teams::of($courseid, (int) $char->userid)->id ?? 0);
+            $stained = array_map(function ($s) use ($installed, $char, $myteam) {
+                if ((int) $s->groupid && (int) $s->groupid !== $myteam) {
+                    return null;
+                }
                 $view = stains::view($s, $installed);
                 if ($view && $view['kind'] === 'page') {
                     $view['tried'] = stains::tried($char, $s, $installed);
+                }
+                if ($view) {
+                    $view['forteam'] = !empty($view['groupid']);
+                    unset($view['groupid']);
                 }
                 return $view;
             }, stains::open($courseid));

@@ -20,7 +20,7 @@
   var FULL = 60000;
   var LIVE = 1500;
   var LETTERS = 'ABCD';
-  var CARD_ICON = {calm: 'energy', breeze: 'saber', footprint: 'world', exchange: 'breath'};
+  var CARD_ICON = {calm: 'energy', breeze: 'saber', footprint: 'world', exchange: 'breath', knot: 'net', messengers: 'idea'};
   var state = {board: null, cls: null, sel: {}, reveal: false, busy: false, sig: '', live: null, seen: 0, timer: 0,
     battle: {mode: 'phones', count: 6, secs: 30}, auto: 0, print: '', scene: {chapter: 0, mode: 'phones'}};
   var VOTES = [
@@ -1157,16 +1157,19 @@
       return '<section class="card board-event">' + head + '<p class="help-soft">' + esc(t('board_skipped')) + '</p>' +
         '<div class="actions"><button class="btn btn-soft" data-draw>' + esc(t('board_draw')) + '</button></div></section>';
     }
-    var acted = e.solved || e.gifts.length;
+    var acted = e.solved || e.gifts.length || e.to || e.cleaned;
     var body = '';
     if (e.code === 'footprint' && e.question) {
       body = footprint(e);
     } else if (e.code === 'exchange') {
       body = exchange(e);
+    } else if (e.code === 'knot' || e.code === 'messengers') {
+      body = forTeam(e, acted);
     }
+    // The mission may give the card its own name and text.
     return '<section class="card board-event card-' + esc(e.code) + '">' + head + '<div class="event-head"><span ' +
-      'class="event-icon">' + T.icon(CARD_ICON[e.code] || 'saber') + '</span><div><h2>' + esc(t('event_' + e.code)) +
-      '</h2><p>' + esc(t('event_' + e.code + '_text')) + '</p></div></div>' + body + (acted ? '' :
+      'class="event-icon">' + T.icon(CARD_ICON[e.code] || 'saber') + '</span><div><h2>' + esc(e.name || t('event_' + e.code)) +
+      '</h2><p>' + esc(e.text || t('event_' + e.code + '_text')) + '</p></div></div>' + body + (acted ? '' :
       '<div class="actions board-small"><button class="btn btn-soft" data-draw>' + esc(t('board_change')) + '</button>' +
       '<button class="btn btn-soft" data-skip>' + esc(t('board_skip')) + '</button></div>') + '</section>';
   }
@@ -1191,6 +1194,37 @@
     return html + (can('award') ? '<div class="actions"><button class="btn btn-main" data-solve="1">' +
       esc(t('board_classright')) + '</button><button class="btn btn-soft" data-solve="0">' + esc(t('board_classwrong')) +
       '</button></div>' : '');
+  }
+
+  /**
+   * A card for a team: the team it goes to (another one can be chosen before anything comes of it) and how it goes: the
+   * knot of the team, cleaned or not; the team the messengers take their hint to.
+   *
+   * @param {Object} e The event.
+   * @param {boolean} acted Something came of it.
+   * @return {string}
+   */
+  function forTeam(e, acted) {
+    var who = teamName(e.target);
+    var html = acted ? '<p class="event-for">' + esc(t('board_event_for', who)) + '</p>' :
+      '<div class="event-for"><span>' + esc(t('board_event_for', '')) + '</span><span class="pills">' +
+      state.cls.teams.map(function(team) {
+        return '<button class="chip" data-aim="' + team.id + '" aria-pressed="' + (team.id === e.target) + '">' +
+          esc(team.name) + '</button>';
+      }).join('') + '</span></div>';
+    if (e.code === 'knot') {
+      return html + '<p class="help-soft">' + esc(t(e.cleaned ? 'board_knot_done' : 'board_knot_open', who)) + '</p>';
+    }
+    if (e.to) {
+      return html + '<p class="help-soft">' + esc(t('board_messengers_done', {from: who, to: teamName(e.to)})) + '</p>';
+    }
+    return html + '<div class="event-for"><b>' + esc(t('board_messengers_to', who)) + '</b><span class="pills">' +
+      state.cls.teams.filter(function(team) {
+        return team.id !== e.target;
+      }).map(function(team) {
+        return '<button class="chip" data-deliver="' + team.id + '"' + (can('award') ? '' : ' disabled') + '>' +
+          esc(team.name) + '</button>';
+      }).join('') + '</span></div>';
   }
 
   function exchange(e) {
@@ -1554,6 +1588,12 @@
     on('[data-gift]', function(el) {
       var p = el.dataset.gift.split(':');
       act(T.api('class_event', {courseid: cfg.courseid, action: 'gift', from: +p[0], to: +p[1]}));
+    });
+    on('[data-aim]', function(el) {
+      act(T.api('class_event', {courseid: cfg.courseid, action: 'aim', to: +el.dataset.aim}));
+    });
+    on('[data-deliver]', function(el) {
+      act(T.api('class_event', {courseid: cfg.courseid, action: 'deliver', to: +el.dataset.deliver}));
     });
     on('[data-student]', function(el) {
       var id = el.dataset.student;

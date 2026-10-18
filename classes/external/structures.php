@@ -587,7 +587,7 @@ final class structures {
     public static function event(int $required = VALUE_OPTIONAL): external_single_structure {
         return new external_single_structure([
             'id' => new external_value(PARAM_INT, 'Event'),
-            'code' => new external_value(PARAM_ALPHA, 'Card: calm, breeze, footprint or exchange'),
+            'code' => new external_value(PARAM_ALPHA, 'Card: calm, breeze, footprint, exchange, knot or messengers'),
             'status' => new external_value(PARAM_ALPHA, 'drawn or skipped'),
             'question' => new external_single_structure([
                 'id' => new external_value(PARAM_RAW, 'Question'),
@@ -603,6 +603,11 @@ final class structures {
                 'from' => new external_value(PARAM_INT, 'Group that gives'),
                 'to' => new external_value(PARAM_INT, 'Group that receives'),
             ])),
+            'target' => new external_value(PARAM_INT, 'A card for a team: its group', VALUE_DEFAULT, 0),
+            'to' => new external_value(PARAM_INT, 'Messengers: the group they took the hint to', VALUE_DEFAULT, 0),
+            'cleaned' => new external_value(PARAM_BOOL, 'A knot for a team: the team cleaned it', VALUE_DEFAULT, false),
+            'name' => new external_value(PARAM_TEXT, 'Its name in the mission (empty: the one of the plugin)', VALUE_DEFAULT, ''),
+            'text' => new external_value(PARAM_TEXT, 'Its text in the mission (empty: the one of the plugin)', VALUE_DEFAULT, ''),
         ], 'Event of the day', $required);
     }
 
