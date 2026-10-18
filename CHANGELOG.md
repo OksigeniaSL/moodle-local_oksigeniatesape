@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.93.0 (2026-10-18)
+
+- **The lantern lit with a rite.** During a session, when half of the class has the lantern of a place, it waits ready
+  instead of lighting by itself: the guide of the teacher says so, and «Light the lantern» shows its rite on the class
+  screen (the place, its lantern lighting up, the sound; then the map with its new road). Closing the session lights
+  what waited ready, and nothing waits more than a day. Without a session, the lantern lights at once, as always.
+- The layers the session shows on the class screen have their own colours (they were see-through: they hang outside
+  the theme of the page); the commitments, as wide as the screen and under the name of the place they belong to.
+
 ## 0.92.0 (2026-10-18)
 
 Phase 4 of the plan, block 4.1: the session.

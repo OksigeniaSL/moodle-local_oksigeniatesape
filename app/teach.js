@@ -579,6 +579,9 @@
         case 'challenge':
           return '<button type="button" class="btn btn-soft" data-sgoto="challenges">' + esc(t('teach_session_act_challenge')) +
             '</button>';
+        case 'light':
+          return state.session.open && state.session.open.ready && state.session.open.ready.length ? '<button type="button" ' +
+            'class="btn btn-main" data-slight>' + esc(t('teach_session_act_light')) + '</button>' : '';
         case 'game':
           return '<span class="chip">' + esc(t('teach_session_act_game', st.gametitle)) + '</span>';
       }
@@ -618,9 +621,13 @@
       }
       if (s.open) {
         var mins = Math.max(0, Math.floor((v.now - v.startedat) / 60) + Math.floor((Date.now() - state.sessionat) / 60000));
+        // A lantern the class has: it waits for the teacher to light it with the class, whatever the step.
+        var ready = v.ready && v.ready.length ? '<div class="session-ready"><span>' + esc(t('teach_session_ready',
+          v.ready.join(', '))) + '</span><button type="button" class="btn btn-main" data-slight>' +
+          esc(t('teach_session_act_light')) + '</button></div>' : '';
         box.innerHTML = '<div class="kicker">' + esc(t('teach_session_now')) + ' · <span data-sclock>' +
           esc(t('teach_session_clock', mins)) + '</span></div><h2>' + esc(name(v)) + '</h2><p class="lead">' + esc(v.title) +
-          '</p>' + review(v) + steps(v, true) + sheetExtras(v) + '<div class="actions" style="justify-content:flex-start">' +
+          '</p>' + ready + review(v) + steps(v, true) + sheetExtras(v) + '<div class="actions" style="justify-content:flex-start">' +
           (v.shown ? '<button type="button" class="btn btn-soft" data-sshow="">' + esc(t('teach_session_clear')) + '</button>' :
           '') + '<button type="button" class="btn btn-main" data-sclose>' + esc(t('teach_session_close')) + '</button></div>';
       } else {
@@ -676,6 +683,8 @@
         run('show', {show: d.sshow});
       } else if (d.stimer) {
         run('show', {show: 'timer', minutes: Number(d.stimer)});
+      } else if (d.slight !== undefined) {
+        run('light');
       } else if (d.sscene) {
         run('show', {show: 'scene', target: Number(d.sscene)});
       } else if (d.scard !== undefined) {

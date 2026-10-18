@@ -729,5 +729,15 @@ function xmldb_local_oksigeniatesape_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026101815, 'local', 'oksigeniatesape');
     }
 
+    if ($oldversion < 2026101816) {
+        // During a session, the lantern of the class waits ready for the teacher to light it.
+        $table = new xmldb_table('local_oksigeniatesape_chapter');
+        $field = new xmldb_field('readyat', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'litat');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        upgrade_plugin_savepoint(true, 2026101816, 'local', 'oksigeniatesape');
+    }
+
     return true;
 }

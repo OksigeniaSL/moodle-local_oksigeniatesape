@@ -854,7 +854,8 @@ final class scenes {
     }
 
     /**
-     * Lights the lantern of a chapter for the class when half of those who play have it.
+     * Lights the lantern of a chapter for the class when half of those who play have it. During a session it waits
+     * ready instead, for the teacher to light it with the class (sessions::light()).
      *
      * @param \stdClass $mission
      * @param string $code
@@ -871,6 +872,12 @@ final class scenes {
         $players = $DB->count_records_select(self::T . 'member', $where, [$mission->courseid]);
         $lit = $DB->count_records(self::T . 'found', ['missionid' => $mission->id, 'kind' => 'lantern', 'code' => $code]);
         if (!$players || $lit < $players * self::CLASS_LANTERN_SHARE) {
+            return false;
+        }
+        if (sessions::open((int) $mission->courseid)) {
+            if (!$chapter->readyat) {
+                $DB->update_record(self::T . 'chapter', (object) ['id' => $chapter->id, 'readyat' => $now, 'timemodified' => $now]);
+            }
             return false;
         }
         $DB->update_record(self::T . 'chapter', (object) ['id' => $chapter->id, 'litat' => $now, 'timemodified' => $now]);

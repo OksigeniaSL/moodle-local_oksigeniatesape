@@ -34,7 +34,7 @@ use local_oksigeniatesape\local\sessions;
  */
 final class run_session extends external_api {
     /** @var string[] What can be done. */
-    private const ACTIONS = ['view', 'start', 'step', 'show', 'close'];
+    private const ACTIONS = ['view', 'start', 'step', 'show', 'light', 'close'];
 
     /**
      * Parameters.
@@ -44,7 +44,7 @@ final class run_session extends external_api {
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
             'courseid' => new external_value(PARAM_INT, 'Course'),
-            'action' => new external_value(PARAM_ALPHA, 'view, start, step, show or close'),
+            'action' => new external_value(PARAM_ALPHA, 'view, start, step, show, light or close'),
             'chapter' => new external_value(PARAM_ALPHANUMEXT, 'To start: the place, or entrada', VALUE_DEFAULT, ''),
             'number' => new external_value(PARAM_INT, 'To start: which session of the place', VALUE_DEFAULT, 0),
             'step' => new external_value(PARAM_INT, 'The step to go to', VALUE_DEFAULT, 0),
@@ -110,7 +110,13 @@ final class run_session extends external_api {
                 sessions::step($params['courseid'], $params['step']);
                 break;
             case 'show':
+                if ($params['show'] === 'light') {
+                    throw new \invalid_parameter_exception('The lantern is lit with light');
+                }
                 sessions::show($params['courseid'], $params['show'], $params['minutes'], $params['target']);
+                break;
+            case 'light':
+                sessions::light($params['courseid']);
                 break;
             case 'close':
                 sessions::close($params['courseid'], $params['review']);

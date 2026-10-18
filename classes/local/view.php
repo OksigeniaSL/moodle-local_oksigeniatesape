@@ -145,11 +145,15 @@ final class view {
            ORDER BY v.timecreated',
                 [$char->id, $courseid]
             )));
+        // A lantern that waited ready for the teacher too long lights by itself.
+        $installed = missions::get($courseid);
+        if ($installed) {
+            sessions::light_ready((int) $installed->id, time(), true);
+        }
         $mission = self::mission($courseid, $char, $member);
         if ($mission) {
             $world['mission'] = $mission;
             // What the Embrollo stained in the valley, to clean.
-            $installed = missions::get($courseid);
             $stained = array_map(function ($s) use ($installed, $char) {
                 $view = stains::view($s, $installed);
                 if ($view && $view['kind'] === 'page') {

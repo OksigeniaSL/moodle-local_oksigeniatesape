@@ -37,8 +37,14 @@ final class sessions {
     /** @var string[] What a step launches. */
     public const ACTIONS = ['enter', 'card', 'scene', 'game', 'battle', 'timer', 'pacts', 'light', 'challenge', 'none'];
 
-    /** @var string[] What the class screen shows for a session: the place entered, the card, a timer, the commitments, a scene. */
-    public const SHOWS = ['enter', 'card', 'timer', 'pacts', 'scene'];
+    /**
+     * @var string[] What the class screen shows for a session: the place entered, the card, a timer, the commitments, a
+     * scene, or the lantern lit.
+     */
+    public const SHOWS = ['enter', 'card', 'timer', 'pacts', 'scene', 'light'];
+
+    /** @var int Seconds a lantern waits ready before it lights by itself, if nobody lights it. */
+    public const READY_WAIT = DAYSECS;
 
     /** @var int Things to review the next session, at most. */
     public const REVIEW = 5;
@@ -247,13 +253,14 @@ final class sessions {
         if (!$open || ($show !== '' && !in_array($show, self::SHOWS, true))) {
             throw new \moodle_exception('nosession', 'local_oksigeniatesape');
         }
-        if ($show === 'scene' && !$DB->record_exists(self::T . 'scene', ['id' => $target, 'missionid' => $open->missionid])) {
+        $table = ['scene' => 'scene', 'light' => 'chapter'][$show] ?? '';
+        if ($table && !$DB->record_exists(self::T . $table, ['id' => $target, 'missionid' => $open->missionid])) {
             throw new \moodle_exception('nosession', 'local_oksigeniatesape');
         }
         $open->shown = $show !== '' ? $show : null;
         $open->shownat = $now ?? time();
         $open->minutes = $show === 'timer' ? max(1, min(90, $minutes)) : 0;
-        $open->target = $show === 'scene' ? $target : 0;
+        $open->target = $table ? $target : 0;
         $DB->update_record(self::T . 'session', (object) ['id' => $open->id, 'shown' => $open->shown,
             'shownat' => $open->shownat, 'minutes' => $open->minutes, 'target' => $open->target]);
         return $open;
@@ -283,9 +290,66 @@ final class sessions {
         $review = $kept;
         $open->closedat = $now ?? time();
         $open->review = $review ? json_encode($review) : null;
+        // What waited ready, lit: no lantern stays waiting once the session is over.
+        self::light_ready($open->missionid, $open->closedat);
         $DB->update_record(self::T . 'session', (object) ['id' => $open->id, 'closedat' => $open->closedat,
             'review' => $open->review, 'shown' => null]);
         return $open;
+    }
+
+    /**
+     * The teacher lights with the class the lantern that waits ready: on the class screen, its rite.
+     *
+     * @param int $courseid
+     * @param int|null $now
+     * @return \stdClass The session.
+     */
+    public static function light(int $courseid, ?int $now = null): \stdClass {
+        global $DB;
+        $now = $now ?? time();
+        $open = self::open($courseid);
+        $ready = $open ? self::ready((int) $open->missionid) : [];
+        if (!$ready) {
+            throw new \moodle_exception('nosession', 'local_oksigeniatesape');
+        }
+        $chapter = reset($ready);
+        $DB->update_record(self::T . 'chapter', (object) ['id' => $chapter->id, 'litat' => $now, 'readyat' => 0,
+            'timemodified' => $now]);
+        return self::show($courseid, 'light', 0, (int) $chapter->id, $now);
+    }
+
+    /**
+     * The lanterns of a mission that wait ready for the teacher, oldest first.
+     *
+     * @param int $missionid
+     * @return \stdClass[]
+     */
+    public static function ready(int $missionid): array {
+        global $DB;
+        return array_values($DB->get_records_select(
+            self::T . 'chapter',
+            'missionid = ? AND readyat > 0 AND litat = 0',
+            [$missionid],
+            'readyat, sortorder',
+            'id, code, readyat'
+        ));
+    }
+
+    /**
+     * Lights the lanterns that wait ready: all of them, or those that waited longer than READY_WAIT.
+     *
+     * @param int $missionid
+     * @param int $now
+     * @param bool $late Only those that waited too long.
+     */
+    public static function light_ready(int $missionid, int $now, bool $late = false): void {
+        global $DB;
+        foreach (self::ready($missionid) as $chapter) {
+            if (!$late || $chapter->readyat <= $now - self::READY_WAIT) {
+                $DB->update_record(self::T . 'chapter', (object) ['id' => $chapter->id, 'litat' => $now, 'readyat' => 0,
+                    'timemodified' => $now]);
+            }
+        }
     }
 
     /**
@@ -303,6 +367,7 @@ final class sessions {
         if (!$mission) {
             return null;
         }
+        self::light_ready((int) $mission->id, $now ?? time(), true);
         $open = self::open($courseid);
         $closed = [];
         foreach (
@@ -331,6 +396,8 @@ final class sessions {
                 'now' => $now ?? time()];
             // What confused the class most, to mark it for the next session when this one is closed.
             $context = nextclass::context($courseid);
+            // The lanterns the class has, waiting for the teacher to light them with the class.
+            $out['open']['ready'] = array_map(fn($c) => self::place($mission, (string) $c->code), self::ready((int) $mission->id));
             $out['open']['confusions'] = array_values(array_map(fn($m) => ['question' => (string) $m['question'],
                 'answer' => (string) $m['answer']], array_slice((array) ($context['mixups'] ?? []), 0, self::REVIEW)));
         } else {
@@ -368,6 +435,11 @@ final class sessions {
                 $mission->variant
             );
         }
+        if ($open->shown === 'light') {
+            $code = (string) $DB->get_field(self::T . 'chapter', 'code', ['id' => $open->target]);
+            $out['lit'] = self::place($mission, $code);
+            $out['litcode'] = $code;
+        }
         if ($open->shown === 'pacts') {
             $out['pacts'] = self::pacts($courseid, $mission);
         }
@@ -395,13 +467,13 @@ final class sessions {
      *
      * @param int $courseid
      * @param \stdClass $mission
-     * @return array options (texts), teams (name, chose, total).
+     * @return array place, options (texts), teams (name, chose, total).
      */
     private static function pacts(int $courseid, \stdClass $mission): array {
         global $DB;
         $chapter = pacts::chapter($mission);
         if (!$chapter) {
-            return ['options' => [], 'teams' => []];
+            return ['place' => '', 'options' => [], 'teams' => []];
         }
         $chose = $DB->get_fieldset_select(
             self::T . 'pact',
@@ -416,6 +488,8 @@ final class sessions {
             $teams[] = ['name' => format_string($group->name), 'chose' => (int) ($count[(int) $group->id] ?? 0),
                 'total' => count(groups_get_members($group->id, 'u.id'))];
         }
-        return ['options' => array_values(pacts::options($mission, (string) $chapter->code)), 'teams' => $teams];
+        // The commitments are those of the place the class is in, which may not be the one of the session.
+        return ['place' => self::place($mission, (string) $chapter->code),
+            'options' => array_values(pacts::options($mission, (string) $chapter->code)), 'teams' => $teams];
     }
 }

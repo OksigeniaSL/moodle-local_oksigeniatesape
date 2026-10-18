@@ -171,8 +171,32 @@
       playScene(s.target);
       return;
     }
+    if (s.shown === 'light') {
+      // The rite of the lantern: the place, its lantern lighting up; then the map, with its new road.
+      var lamp = T.artUrl(['map.lantern.on']);
+      var rite = document.createElement('div');
+      rite.className = 'session-show shows-light';
+      rite.setAttribute('role', 'dialog');
+      rite.setAttribute('aria-modal', 'true');
+      rite.innerHTML = '<div class="show-card"><div class="kicker">' + esc(t('board_session_light')) + '</div><div ' +
+        'class="show-lantern" aria-hidden="true">' + (lamp ? '<img src="' + esc(lamp) + '" alt="">' : '<span class="flame">' +
+        '</span>') + '</div><h1>' + esc(s.lit || '') + '</h1></div>';
+      document.body.appendChild(rite);
+      state.showEl = rite;
+      if (T.fx) {
+        T.fx.sound('lantern');
+      }
+      setTimeout(function() {
+        if (state.showEl === rite) {
+          rite.remove();
+          state.showEl = null;
+        }
+        load(false);
+      }, 6500);
+      return;
+    }
     var el = document.createElement('div');
-    el.className = 'session-show show-' + s.shown;
+    el.className = 'session-show shows-' + s.shown;
     el.setAttribute('role', 'dialog');
     el.setAttribute('aria-modal', 'true');
     var html = '';
@@ -198,8 +222,8 @@
         'data-sclock>' + s.minutes + ':00</div><div class="meter show-sand"><i data-ssand style="width:100%"></i></div></div>';
     } else if (s.shown === 'pacts') {
       end = (s.shownat + 120) * 1000 - state.sessionoffset;
-      html = '<div class="show-card"><div class="kicker">' + esc(t('board_session_pacts')) + '</div><h1>' + esc(s.place) +
-        '</h1><ol class="show-pacts">' + (s.pacts ? s.pacts.options : []).map(function(o) {
+      html = '<div class="show-card"><div class="kicker">' + esc(t('board_session_pacts')) + '</div><h1>' +
+        esc(s.pacts && s.pacts.place || s.place) + '</h1><ol class="show-pacts">' + (s.pacts ? s.pacts.options : []).map(function(o) {
           return '<li>' + esc(o) + '</li>';
         }).join('') + '</ol><ul class="show-teams" data-steams>' + (s.pacts ? pactTeams(s.pacts) : '') + '</ul>' +
         '<div class="show-clock small" data-sclock>2:00</div></div>';

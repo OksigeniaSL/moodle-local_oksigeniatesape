@@ -27,6 +27,24 @@ namespace local_oksigeniatesape\local;
  */
 #[\PHPUnit\Framework\Attributes\CoversClass(sessions::class)]
 final class sessions_test extends \advanced_testcase {
+    /** @var string Prefix of the plugin tables. */
+    private const T = 'local_oksigeniatesape_';
+
+    /**
+     * A student plays the core scene of the clearing, which gives its lantern.
+     *
+     * @param int $courseid
+     * @param int $userid
+     */
+    private function play_the_nest(int $courseid, int $userid): void {
+        global $DB;
+        $mission = missions::get($courseid);
+        $scene = $DB->get_record('local_oksigeniatesape_scene', ['missionid' => $mission->id, 'code' => 'C1-2']);
+        [$items, $roles, $flags, $role] = scenes::context(characters::get($userid), $courseid);
+        $events = autoplayer::play(json_decode($scene->definition, true), $items, $roles, $flags, $role);
+        scenes::play($courseid, $userid, (int) $scene->id, $events, null);
+    }
+
     /**
      * A class with the pilot mission, a teacher and a team of two.
      *
@@ -68,6 +86,46 @@ final class sessions_test extends \advanced_testcase {
         $this->assertNull(sessions::view($course->id, $mission, 'claro', 9));
     }
 
+    public function test_during_a_session_the_lantern_waits_ready_for_its_rite(): void {
+        global $DB;
+        [$course] = $this->make_class();
+        $mission = missions::get($course->id);
+        $students = array_values(get_enrolled_users(\context_course::instance($course->id), 'local/oksigeniatesape:play'));
+        $now = time();
+        sessions::start($course->id, 'claro', 1, $now);
+        // Half of the class has the lantern of the clearing: it waits ready, not lit.
+        $this->play_the_nest($course->id, (int) $students[0]->id);
+        $clearing = $DB->get_record(self::T . 'chapter', ['missionid' => $mission->id, 'code' => 'claro']);
+        $this->assertSame(0, (int) $clearing->litat);
+        $this->assertGreaterThan(0, (int) $clearing->readyat);
+        $this->assertSame(['Claro del Despertar'], sessions::teacher($course->id)['open']['ready']);
+        // The teacher lights it with the class: the class screen shows its rite.
+        sessions::light($course->id, $now + 60);
+        $this->assertSame($now + 60, (int) $DB->get_field(self::T . 'chapter', 'litat', ['id' => $clearing->id]));
+        $board = sessions::board($course->id, $now + 61);
+        $this->assertSame(['light', 'Claro del Despertar'], [$board['shown'], $board['lit']]);
+        $this->assertSame([], sessions::ready((int) $mission->id));
+        // Ready and not lit by the teacher: closing the session lights it.
+        $DB->set_field(self::T . 'chapter', 'litat', 0, ['id' => $clearing->id]);
+        $DB->set_field(self::T . 'chapter', 'readyat', $now, ['id' => $clearing->id]);
+        sessions::close($course->id, [], $now + 3000);
+        $this->assertSame($now + 3000, (int) $DB->get_field(self::T . 'chapter', 'litat', ['id' => $clearing->id]));
+        // And left ready with a session open, it lights by itself after a day.
+        sessions::start($course->id, 'claro', 2, $now + 4000);
+        $DB->set_field(self::T . 'chapter', 'litat', 0, ['id' => $clearing->id]);
+        $DB->set_field(self::T . 'chapter', 'readyat', $now + 4000, ['id' => $clearing->id]);
+        sessions::teacher($course->id, $now + 5000);
+        $this->assertSame(0, (int) $DB->get_field(self::T . 'chapter', 'litat', ['id' => $clearing->id]));
+        sessions::teacher($course->id, $now + 4000 + sessions::READY_WAIT);
+        $this->assertGreaterThan(0, (int) $DB->get_field(self::T . 'chapter', 'litat', ['id' => $clearing->id]));
+        // Without a session, the lantern lights at once, as always.
+        sessions::close($course->id, [], $now + 90000);
+        $DB->set_field(self::T . 'chapter', 'litat', 0, ['id' => $clearing->id]);
+        $DB->delete_records(self::T . 'found', ['kind' => 'lantern']);
+        $this->play_the_nest($course->id, (int) $students[1]->id);
+        $this->assertGreaterThan(0, (int) $DB->get_field(self::T . 'chapter', 'litat', ['id' => $clearing->id]));
+    }
+
     public function test_the_teacher_starts_goes_step_by_step_shows_and_closes_with_what_to_review(): void {
         [$course] = $this->make_class();
         $mission = missions::get($course->id);
@@ -88,6 +146,7 @@ final class sessions_test extends \advanced_testcase {
         sessions::show($course->id, 'pacts', 0, 0, $now + 180);
         $pacts = sessions::board($course->id, $now + 181)['pacts'];
         $this->assertNotEmpty($pacts['options']);
+        $this->assertSame('Claro del Despertar', $pacts['place']);
         $this->assertSame([['name' => 'Los Linces', 'chose' => 0, 'total' => 2]], $pacts['teams']);
         try {
             sessions::show($course->id, 'fireworks', 0, 0, $now);

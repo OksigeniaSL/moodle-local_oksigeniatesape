@@ -8369,16 +8369,29 @@ body.adapt-still .mission-grid .chapter.as-sheet {
 /* ---------- The session: what the class screen shows ---------- */
 
 .session-show {
+  /* Hung from the body, outside the theme of the page: its own colours, the night ones, for a projector. */
   position: fixed;
   inset: 0;
   z-index: 60;
   display: grid;
   place-items: center;
   padding: 4vh 4vw;
-  background: rgba(var(--deep-rgb), .96);
+  background-color: #0a1824;
   background-size: cover;
   background-position: center;
-  color: var(--text);
+  color: #eef3f6;
+}
+
+.session-show .kicker {
+  color: #ffc857;
+}
+
+.session-show .meter {
+  background: rgba(255, 255, 255, .15);
+}
+
+.session-show .meter i {
+  background: #ffc857;
 }
 
 .session-show .scene-close {
@@ -8466,7 +8479,7 @@ body.adapt-still .mission-grid .chapter.as-sheet {
 }
 
 .session-show.done .show-clock {
-  color: var(--accent);
+  color: #ffc857;
 }
 
 .board-event.flash {
@@ -8494,5 +8507,60 @@ body.adapt-still .mission-grid .chapter.as-sheet {
   .session-steps > li {
     grid-template-columns: 1fr;
     gap: 4px;
+  }
+}
+
+.session-ready {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin: 10px 0;
+  padding: 10px 12px;
+  border-radius: var(--r);
+  background: rgba(255, 200, 87, .14);
+  border: 1px solid rgba(255, 200, 87, .5);
+}
+
+.shows-light {
+  background: radial-gradient(circle at 50% 40%, rgba(255, 200, 87, .35), transparent 60%), #0a1824;
+}
+
+.show-lantern {
+  display: grid;
+  place-items: center;
+  height: clamp(160px, 30vh, 320px);
+  animation: tesape-lantern 2.4s ease-out both;
+}
+
+.show-lantern img {
+  height: 100%;
+  filter: drop-shadow(0 0 40px rgba(255, 200, 87, .9));
+}
+
+.show-lantern .flame {
+  width: 90px;
+  height: 120px;
+  border-radius: 50% 50% 45% 45%;
+  background: radial-gradient(circle at 50% 70%, #fff6c9, #ffc857 45%, rgba(255, 140, 40, 0) 70%);
+  filter: blur(1px) drop-shadow(0 0 40px rgba(255, 200, 87, .9));
+}
+
+@keyframes tesape-lantern {
+  from {
+    opacity: 0;
+    transform: scale(.6);
+    filter: brightness(.3);
+  }
+
+  60% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .show-lantern {
+    animation: none;
   }
 }
