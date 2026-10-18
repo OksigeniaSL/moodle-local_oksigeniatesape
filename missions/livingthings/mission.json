@@ -1,12 +1,24 @@
 {
  "code": "livingthings",
- "version": 37,
+ "version": 39,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 39,
+   "kind": "improvement",
+   "date": "2026-10-18",
+   "text": "Doce seres más en los encuentros, dos por lugar (36 en total), y los nombres señuelo de cada grupo revisados"
+  },
+  {
+   "version": 38,
+   "kind": "improvement",
+   "date": "2026-10-18",
+   "text": "Las decisiones de la clase en los dilemas, como pegatinas en el mapa de la pizarra"
+  },
   {
    "version": 37,
    "kind": "improvement",
@@ -478,6 +490,30 @@
    "fact": "Abre sus flores con la luz de la mañana y las cierra al atardecer y en los días nublados, como si se despertara y se fuera a dormir."
   },
   {
+   "id": "rana",
+   "place": "claro",
+   "name": "la rana",
+   "group": "anfibio",
+   "clues": [
+    "Cazo insectos lanzando la lengua, que tengo pegada por la parte de delante de la boca.",
+    "De pequeña fui un renacuajo: vivía en el agua, tenía cola y no tenía patas.",
+    "Tengo la piel lisa y húmeda, salto con mis largas patas de atrás y croo en la charca al atardecer."
+   ],
+   "fact": "Cuando traga, cierra los ojos y los hunde hacia dentro: así le ayudan a empujar la comida hacia la garganta."
+  },
+  {
+   "id": "galapago",
+   "place": "claro",
+   "name": "el galápago",
+   "group": "reptil",
+   "clues": [
+    "Paso el invierno quieto en el fondo de la charca, enterrado en el barro.",
+    "No tengo dientes: corto la comida con el borde duro de la boca, como si fuera un pico.",
+    "Soy una tortuga de agua dulce: tomo el sol en las piedras de la orilla y, si me asustas, me tiro al agua de un chapuzón."
+   ],
+   "fact": "En muchas tortugas, como el galápago, que de un huevo salga macho o hembra depende del calor: si la tierra donde están enterrados los huevos está más caliente, nacen más hembras."
+  },
+  {
    "id": "raton",
    "place": "biblioteca",
    "name": "el ratón",
@@ -524,6 +560,30 @@
     "Tejo una red de seda en los rincones y espero a que un insecto se quede pegado."
    ],
    "fact": "Muchas arañas se comen su tela vieja para aprovechar la seda, y con ella tejen otra nueva."
+  },
+  {
+   "id": "caballitodemar",
+   "place": "biblioteca",
+   "name": "el caballito de mar",
+   "group": "pez",
+   "clues": [
+    "Nado de pie y muy despacio, moviendo deprisa una aleta pequeña que tengo en la espalda.",
+    "Me agarro a las algas enrollando la cola, para que la corriente no me arrastre.",
+    "Vivo en el mar, y mi cabeza se parece a la de un caballo de ajedrez."
+   ],
+   "fact": "Los huevos no los lleva la madre, sino el padre, en una bolsa de la barriga, hasta que nacen las crías. Y aunque no lo parezca, es un pez: respira por branquias y nada con aletas."
+  },
+  {
+   "id": "pulpo",
+   "place": "biblioteca",
+   "name": "el pulpo",
+   "group": "molusco",
+   "clues": [
+    "No tengo ni un hueso: me cuelo por cualquier agujero en el que quepa mi pico, duro como el de un loro.",
+    "Cambio de color en un momento para esconderme, y si me asusto, suelto una nube de tinta.",
+    "Vivo en el mar y tengo ocho brazos llenos de ventosas."
+   ],
+   "fact": "Tiene tres corazones y la sangre azul. Y aunque no lo parezca, es pariente del caracol y de la almeja."
   },
   {
    "id": "ciervo",
@@ -577,6 +637,30 @@
    "fact": "Lo que ves es solo una parte del hongo. En un bosque de América del Norte vive uno cuyos hilos ocupan bajo tierra más de mil campos de fútbol: es uno de los seres vivos más grandes del mundo."
   },
   {
+   "id": "culebra",
+   "place": "bosque",
+   "name": "la culebra",
+   "group": "reptil",
+   "clues": [
+    "Saco y meto la lengua sin parar: con ella atrapo los olores del aire.",
+    "Al crecer, me quito la piel entera de una vez y la dejo tirada, vuelta del revés como un calcetín.",
+    "No tengo patas: me muevo arrastrándome y ondulando el cuerpo, largo y cubierto de escamas."
+   ],
+   "fact": "Cuando muda, suelta hasta la escama transparente que le tapa cada ojo: las culebras no tienen párpados, y esa escama les hace de gafas. Si ves una, mírala de lejos y déjala seguir su camino."
+  },
+  {
+   "id": "garrapata",
+   "place": "bosque",
+   "name": "la garrapata",
+   "group": "aracnido",
+   "clues": [
+    "Al salir del huevo tengo seis patas; las otras dos me salen después, al crecer.",
+    "Espero en la punta de las hierbas altas con las patas de delante abiertas, y me agarro a quien pasa rozando: un ciervo, un perro o una persona.",
+    "Me pego a la piel, bebo sangre durante días y me hincho como una bolita."
+   ],
+   "fact": "Huele con las patas: en las de delante tiene un órgano que nota el olor y el aliento de los animales que se acercan. Después de andar entre hierba alta, conviene mirarse la piel, y si hay una, que la quite un adulto."
+  },
+  {
    "id": "girasol",
    "place": "jardin",
    "name": "el girasol",
@@ -625,6 +709,33 @@
    "fact": "Charles Darwin pasó muchos años estudiando las lombrices y les dedicó su último libro. Descubrió que remueven y abonan la tierra sin parar."
   },
   {
+   "id": "sapo",
+   "place": "jardin",
+   "name": "el sapo",
+   "group": "anfibio",
+   "requires": {
+    "item": "lantern"
+   },
+   "clues": [
+    "Cada año vuelvo a la charca donde nací para poner allí los huevos, aunque tenga que caminar mucho.",
+    "De noche salgo a comerme las babosas, los caracoles y los insectos del huerto, y los hortelanos me lo agradecen.",
+    "Tengo la piel áspera y llena de verrugas, y ando a pasitos más que a saltos."
+   ],
+   "fact": "Tocar un sapo no da verrugas: eso es un cuento. Lo que sí tiene, detrás de los ojos, son dos bultos que sueltan un líquido que irrita, así que mejor mirarlo sin tocarlo."
+  },
+  {
+   "id": "abeja",
+   "place": "jardin",
+   "name": "la abeja",
+   "group": "insecto",
+   "clues": [
+    "Cuando encuentro flores, vuelvo a casa y bailo para contar a las demás hacia dónde están y a qué distancia.",
+    "Llevo el polen en unas cestitas de mis patas de atrás, y al ir de flor en flor ayudo a las plantas a dar fruto.",
+    "Vivo en una colmena y fabrico miel y cera."
+   ],
+   "fact": "En toda su vida, una abeja obrera fabrica menos de una cucharadita de miel: un tarro entero es el trabajo de muchísimas. Si una se te acerca, no la espantes a manotazos: solo pica si se siente en peligro."
+  },
+  {
    "id": "martinpescador",
    "place": "lago",
    "name": "el martín pescador",
@@ -671,6 +782,30 @@
     "En las noches de verano, el final de mi cuerpo brilla en la oscuridad para encontrar pareja."
    ],
    "fact": "Su brillo es una luz fría: casi no da calor, al contrario que una bombilla de las antiguas."
+  },
+  {
+   "id": "trucha",
+   "place": "lago",
+   "name": "la trucha",
+   "group": "pez",
+   "clues": [
+    "Cuando hace frío, pongo los huevos en un hoyo que hago entre las piedrecitas del fondo de un arroyo, y los tapo con la cola.",
+    "Nado contra la corriente, y salto fuera del agua para cazar los insectos que vuelan sobre ella.",
+    "Vivo en ríos y lagos de agua fría, y tengo el cuerpo lleno de puntitos negros y rojos."
+   ],
+   "fact": "Solo vive en aguas frías, limpias y con mucho oxígeno. Por eso, si en un río hay truchas, es buena señal: el agua está sana."
+  },
+  {
+   "id": "sanguijuela",
+   "place": "lago",
+   "name": "la sanguijuela",
+   "group": "gusano",
+   "clues": [
+    "Vivo en charcas, lagos y ríos de agua tranquila, y nado ondulando el cuerpo, blando y aplastado como una cinta.",
+    "Tengo una ventosa en cada punta del cuerpo; para avanzar, pego una, estiro el cuerpo y pego la otra.",
+    "Me sujeto a la piel de otros animales con mis ventosas y les chupo la sangre."
+   ],
+   "fact": "Su saliva lleva una sustancia que impide que la sangre se cuaje. Por eso algunos hospitales aún usan sanguijuelas: ayudan a que la sangre circule bien en un dedo o una oreja que se ha vuelto a coser."
   },
   {
    "id": "murcielago",
@@ -725,6 +860,33 @@
     "Si me agarran por la cola, la suelto y escapo, y después me crece otra."
    ],
    "fact": "La cola que suelta sigue moviéndose un rato para despistar al que la persigue. La que le crece después ya no tiene huesos por dentro, sino cartílago."
+  },
+  {
+   "id": "escorpion",
+   "place": "torre",
+   "name": "el escorpión",
+   "group": "aracnido",
+   "requires": {
+    "item": "lantern"
+   },
+   "clues": [
+    "De día me escondo bajo las piedras y en las grietas de los muros viejos, y salgo de noche a cazar.",
+    "Mis crías nacen ya formadas y viajan subidas a mi espalda hasta que saben valerse solas.",
+    "Llevo dos pinzas delante y una cola que se curva hacia arriba, con un aguijón en la punta."
+   ],
+   "fact": "Con luz ultravioleta, su cuerpo brilla de color verde azulado: así lo buscan de noche los científicos que lo estudian. Se mira de lejos y sin tocarlo, porque su picadura duele mucho."
+  },
+  {
+   "id": "vencejo",
+   "place": "torre",
+   "name": "el vencejo",
+   "group": "ave",
+   "clues": [
+    "Como y bebo sin dejar de volar: atrapo insectos en el aire y bebo rozando el agua con el pico.",
+    "Tengo las patas tan cortas que apenas sé andar: no me poso en el suelo, sino que me agarro a las paredes.",
+    "En verano vuelo en bandadas alrededor de las torres y los tejados, chillando, y anido en sus huecos."
+   ],
+   "fact": "Algunos vencejos pasan diez meses seguidos en el aire, sin posarse ni una vez: desde que se van, al final del verano, hasta que vuelven a su nido en primavera."
   }
  ],
  "encounterdecoys": {
@@ -736,42 +898,37 @@
   "ave": [
    "el búho",
    "el gorrión",
-   "la golondrina"
+   "la gaviota"
   ],
   "reptil": [
-   "la culebra",
-   "la tortuga",
-   "el camaleón"
+   "el camaleón",
+   "el cocodrilo",
+   "la iguana"
   ],
   "anfibio": [
-   "la rana",
-   "el sapo",
    "el tritón"
   ],
   "pez": [
-   "la trucha",
-   "el salmón",
-   "la anguila"
+   "la anguila",
+   "el tiburón",
+   "el salmón"
   ],
   "insecto": [
    "la mariquita",
    "el saltamontes",
-   "la abeja"
+   "la libélula"
   ],
   "aracnido": [
-   "el escorpión",
-   "la garrapata",
-   "el ácaro"
+   "el opilión"
   ],
   "molusco": [
-   "el pulpo",
    "la almeja",
-   "el mejillón"
+   "el mejillón",
+   "el calamar"
   ],
   "gusano": [
-   "la sanguijuela",
-   "la oruga",
-   "el ciempiés"
+   "la planaria",
+   "la tenia"
   ],
   "planta": [
    "el helecho",
@@ -779,9 +936,8 @@
    "el trébol"
   ],
   "hongo": [
-   "el champiñón",
    "la levadura",
-   "el níscalo"
+   "la trufa"
   ]
  },
  "stains": {
@@ -1391,6 +1547,10 @@
      "text": {
       "valley": "Una rana saltó al borde del nido y la dejamos quedarse: cazó un mosquito.",
       "azara": "Una rana saltó al borde del cajón y la dejamos quedarse: cazó un mosquito."
+     },
+     "sticker": {
+      "valley": "La rana, en el nido",
+      "azara": "La rana, junto al cajón"
      }
     },
     {
@@ -1398,6 +1558,10 @@
      "text": {
       "valley": "Una rana saltó al nido y la devolvimos a la charca, con las manos mojadas. Croó toda la tarde.",
       "azara": "Una rana saltó al cajón y la devolvimos a la charca, con las manos mojadas. Croó toda la tarde."
+     },
+     "sticker": {
+      "valley": "La rana, en su charca",
+      "azara": "La rana, en su charca"
      }
     },
     {
@@ -1508,6 +1672,10 @@
      "text": {
       "valley": "Dentro de cada estante, pusimos a los seres del más pequeño al más grande.",
       "azara": "Dentro de cada caja, pusimos las muestras de la más pequeña a la más grande."
+     },
+     "sticker": {
+      "valley": "Estantes por tamaños",
+      "azara": "Cajas por tamaños"
      }
     },
     {
@@ -1515,6 +1683,10 @@
      "text": {
       "valley": "Dentro de cada estante, pusimos a los seres por orden alfabético.",
       "azara": "Dentro de cada caja, pusimos las muestras por orden alfabético."
+     },
+     "sticker": {
+      "valley": "Estantes por abecedario",
+      "azara": "Cajas por abecedario"
      }
     }
    ],
@@ -1600,6 +1772,10 @@
      "text": {
       "valley": "Cruzamos el lago despacio, entre los juncos, y vimos nidos escondidos.",
       "azara": "Cruzamos el río despacio, entre los juncos, y vimos nidos escondidos."
+     },
+     "sticker": {
+      "valley": "Por los juncos",
+      "azara": "Por los juncos"
      }
     },
     {
@@ -1607,6 +1783,10 @@
      "text": {
       "valley": "Cruzamos el lago por el centro, deprisa, y un pez saltó junto a la barcaza.",
       "azara": "Cruzamos el río por el centro, deprisa, y un pez saltó junto a la barcaza."
+     },
+     "sticker": {
+      "valley": "Por el centro del lago",
+      "azara": "Por el centro del río"
      }
     }
    ],
@@ -1695,6 +1875,10 @@
      "text": {
       "valley": "Le preguntamos a Doña Hebra de quién era la letra de las etiquetas. Cambió de tema y se fue escaleras arriba.",
       "azara": "Le preguntamos a la archivera de quién era la letra de las notas. Cambió de tema y se fue a toda prisa."
+     },
+     "sticker": {
+      "valley": "Doña Hebra se fue escalera arriba",
+      "azara": "La archivera cambió de tema"
      }
     }
    ],
@@ -1806,6 +1990,10 @@
      "text": {
       "valley": "Encontramos una lata en la orilla, y la garza la llevó a la papelera.",
       "azara": "Encontramos una lata en la orilla, y la garza la llevó a la papelera."
+     },
+     "sticker": {
+      "valley": "La lata, a la papelera",
+      "azara": "La lata, a la papelera"
      }
     },
     {
@@ -1813,6 +2001,10 @@
      "text": {
       "valley": "Guardamos la lata de la orilla con una nota de dónde estaba, para enseñarla.",
       "azara": "Guardamos la lata de la orilla con una nota de dónde estaba, para enseñarla."
+     },
+     "sticker": {
+      "valley": "La lata, con su nota",
+      "azara": "La lata, con su nota"
      }
     }
    ],
@@ -1908,6 +2100,10 @@
      "text": {
       "valley": "Le pedimos a Doña Hebra que subiera con nosotros a la torre, y dijo que sí.",
       "azara": "Le pedimos a la archivera que hiciera la revisión con nosotros, y dijo que sí."
+     },
+     "sticker": {
+      "valley": "Doña Hebra sube a la torre",
+      "azara": "La archivera revisa con nosotros"
      }
     },
     {
@@ -1915,6 +2111,10 @@
      "text": {
       "valley": "Doña Hebra se quedó abajo, guardando el Gran Libro hasta que volviéramos.",
       "azara": "La archivera se quedó guardando las cajas de muestras mientras revisábamos el cuaderno."
+     },
+     "sticker": {
+      "valley": "Doña Hebra guarda el Gran Libro",
+      "azara": "La archivera guarda las cajas"
      }
     }
    ],

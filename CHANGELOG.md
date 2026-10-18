@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.89.0 (2026-10-18)
+
+Block 3.2 of the plan: the map changes with the decisions of the class.
+
+- **The decisions of the class as stickers on the map of the class screen**: when at least half of the class takes the
+  same way in a dilemma (the frog back to its pond, the crossing among the reeds, Doña Hebra up to the tower), a sticker
+  with a few words shows by that place, with its drawing if the art pack brings it (`sticker.<mark>`).
+- **Thirty-six beings in the encounters**, six in each place: twelve more, mostly of the groups that had few (spiders and
+  their kin, amphibians, fish, reptiles, molluscs, worms); the toad of the garden and the scorpion of the tower only with
+  the lantern. The decoy names of each group, checked: never another name for a being of the mission (out, the
+  mushroom and the tortoise) nor of another group (out, the caterpillar and the centipede among the worms).
+- The pilot mission, version 39, with the stickers of its eleven decisions and the new beings.
+
 ## 0.88.0 (2026-10-18)
 
 Block 3.3 of the plan: the creature acts.

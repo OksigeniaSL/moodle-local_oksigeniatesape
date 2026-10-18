@@ -85,6 +85,10 @@ final class get_board extends external_api {
                         'id' => new external_value(PARAM_INT, 'Scene'),
                         'title' => new external_value(PARAM_TEXT, 'Title'),
                     ])),
+                    'stickers' => new external_multiple_structure(new external_single_structure([
+                        'flag' => new external_value(PARAM_ALPHANUMEXT, 'The mark, for its drawing'),
+                        'text' => new external_value(PARAM_TEXT, 'What the class decided, in a few words'),
+                    ]), 'The decisions of at least half of the class in this place', VALUE_DEFAULT, []),
                 ])),
                 'final' => new external_value(PARAM_BOOL, 'The mission saves something for a final battle', VALUE_DEFAULT, false),
                 'ending' => new external_value(PARAM_TEXT, 'Text of the end of the mission', VALUE_DEFAULT, ''),

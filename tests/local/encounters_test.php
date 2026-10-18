@@ -84,7 +84,7 @@ final class encounters_test extends \advanced_testcase {
         $this->assertNull(encounters::today($char, $mission, 'claro', $now + 60));
         // In the guide, golden; the others of the place, gaps.
         $guide = array_column(encounters::guide($char, $mission), null, 'place');
-        $this->assertSame(4, $guide['claro']['total']);
+        $this->assertSame(6, $guide['claro']['total']);
         $this->assertSame([(string) $being['id']], array_column($guide['claro']['beings'], 'id'));
         $this->assertTrue($guide['claro']['beings'][0]['golden']);
         // Never saber.
@@ -120,7 +120,7 @@ final class encounters_test extends \advanced_testcase {
         // Without the lantern, over many days, none of them peeks out.
         $seen = [];
         for ($day = 0; $day < 20; $day++) {
-            foreach (['bosque', 'torre'] as $place) {
+            foreach (['bosque', 'jardin', 'torre'] as $place) {
                 $b = encounters::today($char, $mission, $place, time() + $day * DAYSECS);
                 if ($b) {
                     $seen[] = $b['id'];

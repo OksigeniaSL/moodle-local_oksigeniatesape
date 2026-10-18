@@ -449,6 +449,18 @@ final class view {
                         'title' => (string) ($summaries[$sc->id]['title'] ?? $sc->code)], $mine),
                 ];
             }
+            // The decisions of at least half of the class, as stickers by their places.
+            $marks = scenes::class_flags($courseid, (int) $mission->id);
+            foreach ($chapters as &$chapter) {
+                $chapter['stickers'] = [];
+                foreach ($info[$chapter['code']]['memory'] ?? [] as $memory) {
+                    if (!empty($memory['sticker']) && in_array($memory['flag'] ?? '', $marks, true)) {
+                        $chapter['stickers'][] = ['flag' => (string) $memory['flag'],
+                            'text' => missions::text($memory['sticker'], $mission->skin, $mission->variant)];
+                    }
+                }
+            }
+            unset($chapter);
             [$items, $roles] = scenes::class_context($courseid);
             $board['mission'] = [
                 'items' => $items,

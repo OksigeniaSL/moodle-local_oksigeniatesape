@@ -737,7 +737,7 @@
         '<rect x="' + (ch.x - 2) + '" y="' + (ch.y - 4) + '" width="4" height="17" rx="1" fill="#2b2219"/>' +
         '<circle cx="' + ch.x + '" cy="' + (ch.y - 7) + '" r="7" class="flame"/>') +
         T.mapLabel(ch.x, ch.y + 44, ch.name) + '</g>';
-    }).join('') + dozing(m);
+    }).join('') + dozing(m) + stickers(m);
     var height = T.mapHeight(m);
     var fresh = T.mapNewRoad('board-' + cfg.courseid + '-' + m.code, m.chapters, Math.min(lit, m.chapters.length - 1));
     var drawn = fresh.road ? fresh.road.replace('/>', ' style="animation-delay:' + (0.3 + fresh.delay) + 's,' +
@@ -747,6 +747,26 @@
       '</defs>' + T.mapGround(m) + T.mapLandmarks(m) + T.mapNight(m) +
       '<polyline points="' + pts + '" class="road"/>' + (lit ? '<polyline points="' + walked + '" class="road walked"/>' : '') +
       drawn + (T.critters ? T.critters.fireflies(m) : '') + places + '</svg></div>' + pastExpeditions() + '</section>';
+  }
+
+  /**
+   * The decisions of the class by their places: a sticker for each one that at least half of it took (the frog in its
+   * pond, the lantern of the tower), with its drawing if the art pack has it.
+   *
+   * @param {Object} m The mission of the board.
+   * @return {string}
+   */
+  function stickers(m) {
+    return m.chapters.map(function(ch) {
+      // Over the lantern of the place, one above the other: the name of the place is under it.
+      return (ch.stickers || []).slice(0, 3).map(function(st, i) {
+        var art = T.artUrl(['sticker.' + st.flag]);
+        return '<foreignObject x="' + (ch.x - 90) + '" y="' + (ch.y - 64 - i * 24) + '" width="180" height="22" ' +
+          'class="sticker-fo"><div xmlns="http://www.w3.org/1999/xhtml" class="sticker-row"><span class="sticker' +
+          (i % 2 ? ' tilt' : '') + '">' + (art ? '<img src="' + esc(art) + '" alt="">' : '<span class="sticker-dot" ' +
+          'aria-hidden="true"></span>') + '<span>' + esc(st.text) + '</span></span></div></foreignObject>';
+      }).join('');
+    }).join('');
   }
 
   /** Where the creatures doze around a lantern, in units of the map, nearest first. */

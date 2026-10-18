@@ -92,6 +92,32 @@ final class view_test extends \advanced_testcase {
         $this->assertSame('happy', view::world($course->id, $user->id)['character']['member']['mood']);
     }
 
+    public function test_the_decisions_of_the_class_are_stickers_on_the_map_of_the_board(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $dg = $this->getDataGenerator();
+        $course = $dg->create_course();
+        regions::save($course->id, ['enabled' => 1, 'weeklycap' => 0]);
+        $mission = missions::install($course->id, 'livingthings', 'valley', 'es');
+        $chars = [];
+        foreach ([0, 1, 2] as $i) {
+            $user = $dg->create_and_enrol($course, 'student');
+            characters::create($user->id, 'healer', 'f');
+            $chars[$i] = characters::get($user->id);
+            engine::member($chars[$i], $course->id);
+        }
+        $mark = fn(int $i, string $code) => $DB->insert_record(self::T . 'found', ['charid' => $chars[$i]->id,
+            'courseid' => $course->id, 'missionid' => $mission->id, 'kind' => 'flag', 'code' => $code, 'timecreated' => time()]);
+        $stickers = fn() => array_column(view::board($course->id)['mission']['chapters'], 'stickers', 'code');
+        $this->assertSame([], $stickers()['claro']);
+        // Two of three took the frog back to its pond; one let it stay: the pond, by the clearing.
+        $mark(0, 'rana-en-la-charca');
+        $mark(1, 'rana-en-la-charca');
+        $mark(2, 'rana-en-el-nido');
+        $this->assertSame([['flag' => 'rana-en-la-charca', 'text' => 'La rana, en su charca']], $stickers()['claro']);
+        $this->assertSame([], $stickers()['lago']);
+    }
+
     public function test_the_class_carries_the_marks_of_at_least_half_of_it(): void {
         global $DB;
         $this->resetAfterTest();
