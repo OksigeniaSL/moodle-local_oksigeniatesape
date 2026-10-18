@@ -16,6 +16,9 @@
 
 namespace local_oksigeniatesape\local;
 
+use core_external\external_api;
+use local_oksigeniatesape\external\set_adapt;
+
 /**
  * Tests for the adaptations of a student: only those that exist, seen by the student and not by their classmates.
  *
@@ -64,6 +67,41 @@ final class adapt_test extends \advanced_testcase {
         // None: nothing kept.
         $this->assertSame([], adapt::save($member, []));
         $this->assertSame([], adapt::of(engine::member(characters::get($users[0]->id), $course->id)));
+    }
+
+    public function test_a_profile_of_one_touch_adds_to_what_each_student_has(): void {
+        $this->resetAfterTest();
+        $dg = $this->getDataGenerator();
+        $course = $dg->create_course();
+        regions::save($course->id, ['enabled' => 1]);
+        $teacher = $dg->create_and_enrol($course, 'editingteacher');
+        $users = [];
+        foreach (['sage', 'scout'] as $role) {
+            $user = $dg->create_and_enrol($course, 'student');
+            characters::create($user->id, $role, 'f');
+            engine::member(characters::get($user->id), $course->id);
+            $users[] = $user;
+        }
+        $nochar = $dg->create_and_enrol($course, 'student');
+        adapt::save(engine::member(characters::get($users[0]->id), $course->id), ['colours']);
+        $this->setUser($teacher);
+        $result = external_api::clean_returnvalue(
+            set_adapt::execute_returns(),
+            set_adapt::execute($course->id, 0, [], [$users[0]->id, $users[1]->id, $nochar->id], 'reading')
+        );
+        // What it marks is added to what was marked; who has no character yet is left out.
+        $this->assertSame([
+            ['userid' => (int) $users[0]->id, 'adapt' => ['bigtext', 'readaloud', 'colours', 'hints']],
+            ['userid' => (int) $users[1]->id, 'adapt' => ['bigtext', 'readaloud', 'hints']],
+        ], $result['students']);
+        // One student, from their sheet.
+        $result = external_api::clean_returnvalue(
+            set_adapt::execute_returns(),
+            set_adapt::execute($course->id, $users[1]->id, [], [], 'calm')
+        );
+        $this->assertSame(['bigtext', 'readaloud', 'notime', 'still', 'quiet', 'hints'], $result['adapt']);
+        $this->expectException(\invalid_parameter_exception::class);
+        set_adapt::execute($course->id, $users[1]->id, [], [], 'magic');
     }
 
     public function test_the_student_turns_on_those_of_comfort_and_the_team_sees_only_what_it_may(): void {

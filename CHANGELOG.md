@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.98.0 (2026-10-18)
+
+- **Adaptations in one touch**: «Reading support» (read aloud, big text, more hints), «No hurry, no noise» (no hurry,
+  no sounds, no movement) and «Sight» (big text, high contrast), in the sheet of a student and in the bar of those
+  selected, so that a whole class is adapted without opening each sheet. What a profile marks is added to what each
+  one had; `set_adapt` takes a profile and several students.
+- The sheet of a student shows at once the adaptations just marked when it is opened again.
+
 ## 0.97.0 (2026-10-18)
 
 - **One tray of what waits** at the top of the class tab of the panel: the own names of heroes and creatures, the

@@ -38,6 +38,13 @@ final class adapt {
     /** @var string[] Those of comfort, which the student can turn on: they do not change the game. */
     public const COMFORT = ['bigtext', 'readaloud', 'still', 'contrast', 'colours', 'quiet'];
 
+    /** @var array Profiles of one touch for the teacher, and what each one marks (added to what was marked). */
+    public const PROFILES = [
+        'reading' => ['readaloud', 'bigtext', 'hints'],
+        'calm' => ['notime', 'quiet', 'still'],
+        'sight' => ['bigtext', 'contrast'],
+    ];
+
     /**
      * Only the adaptations that exist, in their order, once each.
      *

@@ -154,6 +154,25 @@
   /** What the game can adapt for a student (as adapt::ALL on the server). */
   var ADAPT = ['bigtext', 'readaloud', 'notime', 'still', 'contrast', 'colours', 'quiet', 'hints'];
 
+  /** The profiles of one touch, and what each one marks (as adapt::PROFILES on the server). */
+  var PROFILES = {reading: ['readaloud', 'bigtext', 'hints'], calm: ['notime', 'quiet', 'still'], sight: ['bigtext', 'contrast']};
+
+  /**
+   * The buttons of the profiles of one touch.
+   *
+   * @param {string} attr The attribute that says which one was touched.
+   * @return {string}
+   */
+  function profileChips(attr) {
+    return Object.keys(PROFILES).map(function(code) {
+      var what = PROFILES[code].map(function(a) {
+        return t('teach_adapt_' + a);
+      }).join(', ');
+      return '<button type="button" class="chip" ' + attr + '="' + code + '" title="' + esc(what) + '">' +
+        esc(t('teach_adapt_profile_' + code)) + '<span class="sr-only">: ' + esc(what) + '</span></button>';
+    }).join('');
+  }
+
   // The light this device remembers for the screens of the teacher.
   T.light.restore();
 
@@ -1240,7 +1259,30 @@
       '<button class="pill" data-award="breath" data-amount="1">+1 ' + esc(t('app_breath')) + '</button>' +
       // A commitment not kept costs the same here as in «Challenges» (LOSS in pacts.php).
       '<button class="pill" data-award="energy" data-amount="-2" title="' + esc(t('teach_commitment_help')) + '">−2 ' +
-      esc(t('app_energy')) + '</button></div></section>';
+      esc(t('app_energy')) + '</button></div><div class="pills adapt-profiles" style="justify-content:flex-start;margin-top:8px">' +
+      '<span class="help-soft">' + esc(t('teach_adapt_profiles_many')) + '</span>' + profileChips('data-adaptmany') +
+      '</div></section>';
+    // A profile of one touch for all those selected: what it marks is added to what each one has.
+    bar.querySelectorAll('[data-adaptmany]').forEach(function(b) {
+      b.onclick = function() {
+        b.disabled = true;
+        T.api('set_adapt', {courseid: cfg.courseid, userids: ids, profile: b.dataset.adaptmany}).then(function(r) {
+          b.disabled = false;
+          (r.students || []).forEach(function(x) {
+            var s = studentOf(x.userid);
+            if (s && s.character && s.character.member) {
+              s.character.member.adaptteacher = x.adapt;
+            }
+          });
+          var none = ids.length - (r.students || []).length;
+          T.toast(esc(t('teach_adapt_done', (r.students || []).length)) + (none ? ' · ' + esc(t('teach_adapt_nochar', none)) :
+            ''));
+        }).catch(function(e) {
+          b.disabled = false;
+          T.toast(esc(e.message), true);
+        });
+      };
+    });
     bar.querySelectorAll('[data-award]').forEach(function(b) {
       b.onclick = function() {
         // A second tap while the first is on its way would give it twice.
@@ -1403,7 +1445,8 @@
     var adapted = (m && (m.adaptteacher || m.adapt)) || [];
     var own = (m && m.adaptown) || [];
     html += '<h3 style="margin-top:16px">' + esc(t('teach_adapt')) + '</h3><p class="help-soft">' + esc(t('teach_adapt_help')) +
-      '</p><div class="adapt-options">' + ADAPT.map(function(code) {
+      '</p>' + (can('award') && m ? '<div class="pills adapt-profiles"><span class="help-soft">' + esc(t('teach_adapt_profiles')) +
+      '</span>' + profileChips('data-adaptprofile') + '</div>' : '') + '<div class="adapt-options">' + ADAPT.map(function(code) {
         return '<label class="chip"><input type="checkbox" data-adapt="' + code + '"' + (adapted.indexOf(code) >= 0 ?
           ' checked' : '') + (can('award') ? '' : ' disabled') + '> <span><b>' + esc(t('teach_adapt_' + code)) + '</b><small>' +
           esc(t('teach_adapt_' + code + '_help')) + '</small></span></label>';
@@ -1457,9 +1500,25 @@
           T.toast(esc(t('app_saved')));
           // The sheet stays open, to mark the next one.
           if (m) {
-            m.adapt = r && r.adapt ? r.adapt : list;
+            m.adaptteacher = r && r.adapt ? r.adapt : list;
           }
         }).catch(function(e) {
+          T.toast(esc(e.message), true);
+        });
+      };
+    });
+    el.querySelectorAll('[data-adaptprofile]').forEach(function(b) {
+      b.onclick = function() {
+        b.disabled = true;
+        T.api('set_adapt', {courseid: cfg.courseid, userid: userid, profile: b.dataset.adaptprofile}).then(function(r) {
+          b.disabled = false;
+          T.toast(esc(t('app_saved')));
+          m.adaptteacher = r.adapt;
+          el.querySelectorAll('[data-adapt]').forEach(function(box) {
+            box.checked = r.adapt.indexOf(box.dataset.adapt) >= 0;
+          });
+        }).catch(function(e) {
+          b.disabled = false;
           T.toast(esc(e.message), true);
         });
       };

@@ -794,6 +794,17 @@ body.tesape {
   margin: 6px 2px 12px;
 }
 
+/* The profiles of adaptation in one touch, with their label in line. */
+.adapt-profiles {
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 10px;
+}
+
+.adapt-profiles .help-soft {
+  margin: 0;
+}
+
 /* The tray of what waits for the teacher: one group after another. */
 .inbox-group + .inbox-group {
   margin-top: 18px;
