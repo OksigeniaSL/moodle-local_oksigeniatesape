@@ -68,6 +68,10 @@ final class report_test extends \advanced_testcase {
         $this->assertSame(['Alba', 'Bosque', 'Ríos'], array_column($rows, 0));
         $this->assertSame(100, $byname['Ana'][$objective]);
         $this->assertSame(60, $byname['Leo'][$objective]);
+        // Beside the share, how the answers came: Leo got three of five alone at the first try.
+        $how = array_search('how:SV-01', array_keys($columns), true);
+        $this->assertSame($objective + 1, $how);
+        $this->assertStringStartsWith('3 · 0 · ', $byname['Leo'][$how]);
         $this->assertSame(1, $byname['Leo'][array_search('scenes', array_keys($columns), true)]);
         // Who has not made a character yet has a row with their name and nothing else.
         $this->assertSame('', $byname['Eva'][$objective]);

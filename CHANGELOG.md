@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.102.0 (2026-10-18)
+
+- **The report tells how the answers came**: beside the share of each objective, a column with right at the first try
+  and alone · with help · after the consequence (and ✗ for the same mistake twice); in the PDF, under the share.
+- **The PDF of the report tells the class**: after the table, what confuses the class most, and the knots it left
+  hanging this week with why they are wrong.
+
 ## 0.101.0 (2026-10-18)
 
 - **The lobby of a battle** says how many of the class have joined («18 of 24 have joined»: those with a character

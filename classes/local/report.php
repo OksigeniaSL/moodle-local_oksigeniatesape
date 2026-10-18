@@ -44,6 +44,8 @@ final class report {
         foreach ($mission->data['objectives'] ?? [] as $code => $name) {
             $a = ['code' => $code, 'name' => missions::text($name, $mission->skin)];
             $columns['objective:' . $code] = get_string('report_objective', 'local_oksigeniatesape', $a);
+            // How the answers came, beside the share: a column of its own, so that the share stays a number.
+            $columns['how:' . $code] = get_string('report_objective_how', 'local_oksigeniatesape', $a);
         }
         return $columns + ['challenges' => $s('challenges'), 'activities' => $s('activities'), 'pages' => $s('pages'),
             'cards' => $s('cards')];
@@ -58,7 +60,8 @@ final class report {
     public static function pdf(\stdClass $course): string {
         global $CFG;
         require_once($CFG->libdir . '/pdflib.php');
-        $columns = self::columns((int) $course->id);
+        $all = self::columns((int) $course->id);
+        $columns = array_filter($all, fn($key) => strpos($key, 'how:') !== 0, ARRAY_FILTER_USE_KEY);
         $mission = missions::get((int) $course->id);
         $heads = [];
         $legend = [];
@@ -72,10 +75,12 @@ final class report {
                 $heads[] = get_string('report_short_' . $key, 'local_oksigeniatesape');
             }
         }
+        $how = get_string('report_pdf_how', 'local_oksigeniatesape');
         $html = '<h1>' . s(get_string('teach_report', 'local_oksigeniatesape')) . ' · ' . s(format_string($course->fullname)) .
             '</h1><p>' . s(userdate(time(), get_string('strftimedate', 'langconfig'))) . ($mission ? ' · ' .
             s(missions::text($mission->data['title'] ?? $mission->code, $mission->skin)) : '') . '</p><p style="font-size:8pt">' .
-            s(get_string('report_pdf_legend', 'local_oksigeniatesape')) . '<br>' . implode(' · ', $legend) . '</p>' .
+            s(get_string('report_pdf_legend', 'local_oksigeniatesape')) . ' ' . s($how) . '<br>' . implode(' · ', $legend) .
+            '</p>' .
             '<table border="1" cellpadding="3" style="font-size:8pt"><thead><tr style="background-color:#e8edf2;font-weight:bold">';
         // Names and teams wider; numbers narrow, sharing what is left.
         $wide = ['lastname' => 10, 'firstname' => 8, 'team' => 10];
@@ -84,15 +89,19 @@ final class report {
             $html .= '<th width="' . round($wide[$key] ?? $narrow, 2) . '%">' . s($heads[$i]) . '</th>';
         }
         $html .= '</tr></thead><tbody>';
-        foreach (self::rows((int) $course->id) as $row) {
+        foreach (self::rows((int) $course->id) as $values) {
+            $row = array_combine(array_keys($all), $values);
             $html .= '<tr>';
-            foreach (array_values($row) as $i => $cell) {
-                $key = array_keys($columns)[$i];
-                $html .= '<td width="' . round($wide[$key] ?? $narrow, 2) . '%">' . s((string) $cell) . '</td>';
+            foreach (array_keys($columns) as $key) {
+                $cell = s((string) $row[$key]);
+                if (strpos($key, 'objective:') === 0 && $row['how:' . substr($key, strlen('objective:'))] !== '') {
+                    $cell .= '<br><font size="6">' . s($row['how:' . substr($key, strlen('objective:'))]) . '</font>';
+                }
+                $html .= '<td width="' . round($wide[$key] ?? $narrow, 2) . '%">' . $cell . '</td>';
             }
             $html .= '</tr>';
         }
-        $html .= '</tbody></table>';
+        $html .= '</tbody></table>' . self::class_notes((int) $course->id);
         $pdf = new \pdf('L', 'mm', 'A4');
         $pdf->setPrintHeader(false);
         $pdf->setPrintFooter(false);
@@ -141,17 +150,20 @@ final class report {
             $row['step'] = (int) $member->step;
             $row['level'] = (int) $char->level;
             $row['renown'] = (int) $member->renown;
-            // The first try of each scene: what the student knew before the scene told them.
+            // The first try of each scene: what the student knew before the scene told them, and how the answers came.
             $objectives = [];
             foreach (scenes::first_tries($courseid, (int) $char->id) as $attempt) {
                 foreach (json_decode((string) $attempt->objectives, true) ?: [] as $code => $o) {
-                    $objectives[$code]['ok'] = ($objectives[$code]['ok'] ?? 0) + (int) $o['ok'];
-                    $objectives[$code]['total'] = ($objectives[$code]['total'] ?? 0) + (int) $o['total'];
+                    foreach (competencies::how($o) + ['ok' => (int) $o['ok'], 'total' => (int) $o['total']] as $key => $count) {
+                        $objectives[$code][$key] = ($objectives[$code][$key] ?? 0) + $count;
+                    }
                 }
             }
             foreach ($objectives as $code => $o) {
                 if (array_key_exists('objective:' . $code, $row) && $o['total'] > 0) {
                     $row['objective:' . $code] = (int) round(100 * $o['ok'] / $o['total']);
+                    $row['how:' . $code] = $o['first'] . ' · ' . $o['helped'] . ' · ' . $o['after'] .
+                        ($o['twice'] ? ' · ✗' . $o['twice'] : '');
                 }
             }
             $done = $mission ? $DB->get_fieldset_select(
@@ -182,5 +194,47 @@ final class report {
             $rows[] = array_values($row);
         }
         return $rows;
+    }
+
+    /**
+     * What the report tells of the class, after the table: what confuses it most, and the knots it left hanging this
+     * week with why they are wrong (what to say to set it right).
+     *
+     * @param int $courseid
+     * @return string HTML for the PDF.
+     */
+    private static function class_notes(int $courseid): string {
+        $results = results::mission($courseid);
+        if (!$results) {
+            return '';
+        }
+        $confusions = [];
+        foreach ($results['chapters'] as $chapter) {
+            foreach ($chapter['scenes'] as $scene) {
+                foreach ($scene['confusions'] as $c) {
+                    $confusions[] = $c;
+                }
+            }
+        }
+        usort($confusions, fn($a, $b) => $b['count'] <=> $a['count']);
+        $html = '';
+        if ($confusions) {
+            $html .= '<h3>' . s(get_string('report_confuses', 'local_oksigeniatesape')) . '</h3><ul style="font-size:9pt">';
+            foreach (array_slice($confusions, 0, 6) as $c) {
+                $html .= '<li>' . s(get_string('report_confusion', 'local_oksigeniatesape', $c)) . '</li>';
+            }
+            $html .= '</ul>';
+        }
+        if ($results['knots']) {
+            $html .= '<h3>' . s(get_string('report_knots', 'local_oksigeniatesape')) . '</h3><ul style="font-size:9pt">';
+            foreach (array_slice($results['knots'], 0, 6) as $k) {
+                // «…crece», not «…crece.».: the full stop goes after the quotes; and the name starts the line.
+                $k['claim'] = rtrim($k['claim'], '.');
+                $k['name'] = \core_text::strtoupper(\core_text::substr($k['name'], 0, 1)) . \core_text::substr($k['name'], 1);
+                $html .= '<li>' . s(get_string('report_knot', 'local_oksigeniatesape', $k)) . '</li>';
+            }
+            $html .= '</ul>';
+        }
+        return $html;
     }
 }
