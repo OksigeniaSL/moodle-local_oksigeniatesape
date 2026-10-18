@@ -361,6 +361,8 @@ final class view {
                 // The Embrollo comes out when the student lights the lantern of the place with its core scene.
                 'embrollo' => isset($embrollos[$chapter->code]) ? $embrollos[$chapter->code] + ['letter' =>
                     today::letter($mission, $chapter->code)] : null,
+                // The place, to walk it: its ground, its traces and its hideouts, if the mission has them.
+                'stage' => isset($data['stages'][$chapter->code]) ? json_encode($data['stages'][$chapter->code]) : '',
                 // What happened here: a line for each mark the student left in this place.
                 'memory' => array_values(array_map(
                     fn($m) => missions::text($m['text'] ?? '', $skin, $mission->variant),

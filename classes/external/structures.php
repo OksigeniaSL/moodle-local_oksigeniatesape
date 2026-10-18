@@ -183,6 +183,12 @@ final class structures {
                 'challengeid' => new external_value(PARAM_INT, 'Classroom challenge of the chapter (0: none)'),
                 'letter' => new external_value(PARAM_TEXT, 'Letter the Embrollo left once the class lit it', VALUE_DEFAULT, ''),
                 'teaser' => new external_value(PARAM_TEXT, 'What waits in the next place, once the class lit it', VALUE_DEFAULT, ''),
+                'stage' => new external_value(
+                    PARAM_RAW,
+                    'The place to walk it, as JSON: walk, start, traces, hides, light, front (empty: it is not walked)',
+                    VALUE_DEFAULT,
+                    ''
+                ),
                 'encounter' => new external_single_structure([
                     'place' => new external_value(PARAM_ALPHANUMEXT, 'The place'),
                     'clues' => new external_multiple_structure(new external_value(PARAM_TEXT, 'A clue, in the first person')),
@@ -192,11 +198,11 @@ final class structures {
                         'name' => new external_value(PARAM_TEXT, 'A name'),
                     ])),
                     'picture' => new external_value(PARAM_RAW, 'Key of its picture in the art'),
-                    'crossed' => new external_value(
-                        PARAM_ALPHANUMEXT,
-                        'A name missed today, with «Fresh track»',
+                    'crossed' => new external_multiple_structure(
+                        new external_value(PARAM_ALPHANUMEXT, 'A name missed today, crossed out'),
+                        'The names missed today',
                         VALUE_DEFAULT,
-                        ''
+                        []
                     ),
                 ], 'A being that peeks out here today', VALUE_OPTIONAL),
                 'embrollo' => new external_single_structure([

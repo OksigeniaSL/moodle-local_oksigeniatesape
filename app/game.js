@@ -2339,7 +2339,7 @@
           return x.id === Number(b.dataset.encounter);
         })[0];
         if (ch && ch.encounter) {
-          encounterMoment(ch.encounter);
+          meet(ch);
         }
       };
     });
@@ -3225,21 +3225,42 @@
     pez: 'wiggle', molusco: 'wiggle', gusano: 'wiggle', planta: 'wiggle', hongo: 'back'};
 
   /**
-   * A being peeks out: the creature sniffs it and says its group; it is recognised with its clues, opened one by one,
-   * choosing its name among four. With one clue, a golden card.
+   * The being of the day of a place: walking the place, where it can be walked here; as a list, if not.
    *
-   * @param {Object} e place, clues, group, options, picture.
+   * @param {Object} ch The place, with its encounter.
    */
-  function encounterMoment(e) {
+  function meet(ch) {
+    if (!T.walk || !T.walk.can(ch)) {
+      encounterMoment(ch.encounter, 0, ch);
+      return;
+    }
+    T.walk.encounter(state.world, ch, function(e, opened) {
+      encounterMoment(e, opened, ch);
+    }, refresh).catch(function() {
+      // Without the engine, as a list.
+      encounterMoment(ch.encounter, 0, ch);
+    });
+  }
+
+  /**
+   * A being peeks out, as a list: the creature sniffs it and says its group; it is recognised with its clues, opened
+   * one by one, choosing its name among four. With one clue and no miss, a golden card. Who chose the list on this
+   * device can go back to walking the place.
+   *
+   * @param {Object} e place, clues, group, options, picture, crossed.
+   * @param {number} opened Clues opened already, walking.
+   * @param {Object} ch The place.
+   */
+  function encounterMoment(e, opened, ch) {
     var c = state.world.character;
     var layer = document.createElement('div');
     layer.className = 'badge-moment encounter-moment';
     layer.setAttribute('role', 'dialog');
     layer.setAttribute('aria-modal', 'true');
     layer.setAttribute('aria-labelledby', 'tesape-encounter-title');
-    // With «Fresh track», a name missed today is crossed out, and one more clue is open.
-    var crossed = e.crossed || '';
-    var shown = crossed ? Math.min(2, e.clues.length) : 1;
+    // The names missed today are crossed out, and each miss opened one more clue.
+    var crossed = e.crossed || [];
+    var shown = Math.min(Math.max(1 + crossed.length, opened || 0), e.clues.length);
     var art = beingArt(e.picture.replace(/^being\./, ''));
     var draw = function() {
       layer.innerHTML = '<div class="badge-card"><div class="kicker" id="tesape-encounter-title">' +
@@ -3252,12 +3273,22 @@
         }).join('') + '</ol>' + (shown < e.clues.length ? '<div class="actions" style="justify-content:flex-start">' +
         '<button type="button" class="btn btn-soft" data-clue>' + esc(t('app_encounter_clue')) + '</button></div>' : '') +
         '<p><b>' + esc(t('app_encounter_who')) + '</b></p><div class="encounter-options">' + e.options.map(function(o) {
-          if (o.id === crossed) {
+          if (crossed.indexOf(o.id) >= 0) {
             return '<button type="button" class="btn btn-soft crossed" disabled><s>' + esc(o.name) + '</s></button>';
           }
           return '<button type="button" class="btn btn-soft" data-who="' + esc(o.id) + '">' + esc(o.name) + '</button>';
-        }).join('') + '</div><div data-said>' + (crossed ? '<p class="help-soft">' + esc(t('app_encounter_again')) +
-        '</p>' : '') + '</div></div>';
+        }).join('') + '</div><div data-said>' + (crossed.length ? '<p class="help-soft">' + esc(t('app_encounter_again',
+          creatureName(c))) + '</p>' : '') + '</div>' + (ch && T.stage && T.stage.asList() && T.moves() ? '<div class="actions" ' +
+          'style="justify-content:flex-start"><button type="button" class="btn btn-soft" data-walkagain>' +
+          esc(t('app_stage_walk')) + '</button></div>' : '') + '</div>';
+      var again = layer.querySelector('[data-walkagain]');
+      if (again) {
+        again.onclick = function() {
+          T.stage.setList(false);
+          layer.remove();
+          meet(ch);
+        };
+      }
       var clue = layer.querySelector('[data-clue]');
       if (clue) {
         clue.onclick = function() {
@@ -3274,7 +3305,7 @@
           T.api('answer_encounter', {courseid: cfg.courseid, place: e.place, choice: b.dataset.who, clues: shown})
           .then(function(r) {
             if (r.again) {
-              // «Fresh track»: it does not hide; another clue, and they choose again.
+              // Not that one: it flees to another bush; another clue, and they look for it again.
               crossed = r.crossed;
               e.crossed = crossed;
               shown = Math.min(shown + 1, e.clues.length);

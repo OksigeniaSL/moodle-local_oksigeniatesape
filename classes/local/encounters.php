@@ -19,9 +19,11 @@ namespace local_oksigeniatesape\local;
 /**
  * Encounters with the beings of the valley: in each place, once a day for each student, a being of that place they do
  * not have yet peeks out (chosen by the day, not by chance alone). Their creature sniffs it and tells its group; it is
- * recognised with three clues in the first person, choosing its name among four. With one clue, a golden card; with
- * more, a card; not recognised, it hides (another day) without a cost. Each being is registered once, in the field
- * guide of the student, with gems, never saber. Some only peek out with an item or a role in the team.
+ * recognised with three clues in the first person, choosing its name among four. The encounter is never lost: a wrong
+ * name is crossed out and the being flees to another bush, to be looked for again the same day, until only its own name
+ * is left. With one clue and no miss, a golden card and twice the gems; with no miss, a card and its gems; after a miss,
+ * a card (with «Fresh track», the first miss keeps the gems). Each being is registered once, in the field guide of the
+ * student, never with saber. Some only peek out with an item or a role in the team.
  *
  * @package    local_oksigeniatesape
  * @copyright  2026 Oksigenia <dev@oksigenia.cc>
@@ -78,10 +80,10 @@ final class encounters {
      *
      * @param array $being
      * @param \stdClass $mission
-     * @param string $crossed The name they missed today, with «Fresh track»: crossed out, with one more clue.
+     * @param string[] $crossed The names they missed today: crossed out.
      * @return array place, clues, group, options (id, name), picture, crossed.
      */
-    public static function view(array $being, \stdClass $mission, string $crossed = ''): array {
+    public static function view(array $being, \stdClass $mission, array $crossed = []): array {
         $text = fn($t) => missions::text($t ?? '', $mission->skin, $mission->variant);
         $group = (string) ($being['group'] ?? '');
         $same = array_values(array_filter($mission->data['encounters'] ?? [], fn($b) => ($b['id'] ?? '') !== $being['id']
@@ -102,30 +104,37 @@ final class encounters {
     }
 
     /**
-     * The name a student missed today in a place, with «Fresh track»: they choose again (empty: none).
+     * The names a student missed today in a place, crossed out: they look for it again.
      *
      * @param \stdClass $char
      * @param \stdClass $mission
      * @param string $place
      * @param int|null $now
-     * @return string
+     * @return string[] Ids of the options.
      */
-    public static function crossed(\stdClass $char, \stdClass $mission, string $place, ?int $now = null): string {
+    public static function crossed(\stdClass $char, \stdClass $mission, string $place, ?int $now = null): array {
         global $DB;
         $key = $place . '-' . self::day((int) $mission->courseid, $now) . ':';
         $where = 'charid = ? AND missionid = ? AND kind = ? AND ' . $DB->sql_like('code', '?');
         $codes = $DB->get_fieldset_select(self::T . 'found', 'code', $where, [$char->id, $mission->id, 'miss',
             $DB->sql_like_escape($key) . '%']);
-        // The miss keeps the place of the name among the four (a name may not fit).
+        // A miss keeps the place of the name among the four (a name may not fit).
         $being = $codes ? self::today($char, $mission, $place, $now) : null;
         $options = $being ? self::view($being, $mission)['options'] : [];
-        return $codes ? (string) ($options[(int) substr((string) reset($codes), strlen($key))]['id'] ?? '') : '';
+        $crossed = [];
+        foreach ($codes as $code) {
+            $id = (string) ($options[(int) substr((string) $code, strlen($key))]['id'] ?? '');
+            if ($id !== '') {
+                $crossed[] = $id;
+            }
+        }
+        return $crossed;
     }
 
     /**
-     * The student says who it is, with the clues they opened: right, it goes to their field guide (golden with one
-     * clue) with its gems; wrong, it hides until another day. Either way, the place has had its encounter today. With
-     * «Fresh track», the first miss does not make it hide: the name is crossed out and they choose again.
+     * The student says who it is, with the clues they opened. Right, it goes to their field guide: golden with one clue
+     * and no miss, with twice the gems; with no miss, its gems; after a miss, none (with «Fresh track», the first miss
+     * keeps them). Wrong, the name is crossed out and it flees to another bush: they look for it again.
      *
      * @param \stdClass $char
      * @param \stdClass $member
@@ -134,7 +143,7 @@ final class encounters {
      * @param string $choice Id of the being chosen.
      * @param int $clues Clues opened (1 to 3).
      * @param int|null $now
-     * @return array right, golden, gems, name, group, fact, again (they choose again), crossed.
+     * @return array right, golden, gems, name, group, fact, again (they look for it again), crossed (the names missed).
      */
     public static function answer(
         \stdClass $char,
@@ -152,32 +161,29 @@ final class encounters {
         }
         $day = $place . '-' . self::day((int) $mission->courseid, $now);
         $crossed = self::crossed($char, $mission, $place, $now);
-        $wrong = ['right' => false, 'golden' => false, 'gems' => 0, 'name' => '', 'group' => '', 'fact' => '',
-            'again' => false, 'crossed' => ''];
         $at = array_search($choice, array_column(self::view($being, $mission)['options'], 'id'), true);
-        if (
-            $choice !== (string) $being['id'] && $crossed === '' && $at !== false
-            && talents::has((int) $char->id, 'freshtrack', (int) $mission->courseid)
-        ) {
+        if ($at === false || in_array($choice, $crossed, true)) {
+            throw new \invalid_parameter_exception('Not a name to choose');
+        }
+        if ($choice !== (string) $being['id']) {
             self::note($char, $mission, 'miss', $day . ':' . $at, $now);
-            return ['again' => true, 'crossed' => $choice] + $wrong;
+            return ['right' => false, 'golden' => false, 'gems' => 0, 'name' => '', 'group' => '', 'fact' => '',
+                'again' => true, 'crossed' => array_merge($crossed, [$choice])];
         }
         self::note($char, $mission, 'met', $day, $now);
-        if ($choice !== (string) $being['id']) {
-            return $wrong;
-        }
         self::note($char, $mission, 'being', (string) $being['id'], $now);
-        // Never golden after a miss.
-        $golden = $clues <= 1 && $crossed === '';
+        $golden = $clues <= 1 && !$crossed;
         if ($golden) {
             self::note($char, $mission, 'beinggold', (string) $being['id'], $now);
         }
-        $entry = engine::gems($member, $golden ? 2 * self::GEMS : self::GEMS, 'encounter', 0, 0, 0, $now);
+        $fresh = count($crossed) === 1 && talents::has((int) $char->id, 'freshtrack', (int) $mission->courseid);
+        $gems = $golden ? 2 * self::GEMS : (!$crossed || $fresh ? self::GEMS : 0);
+        $entry = $gems ? engine::gems($member, $gems, 'encounter', 0, 0, 0, $now) : null;
         return ['right' => true, 'golden' => $golden, 'gems' => $entry ? (int) $entry->amount : 0,
             'name' => missions::text($being['name'] ?? '', $mission->skin, $mission->variant),
             'group' => (string) ($being['group'] ?? ''),
             'fact' => missions::text($being['fact'] ?? '', $mission->skin, $mission->variant), 'again' => false,
-            'crossed' => ''];
+            'crossed' => $crossed];
     }
 
     /**

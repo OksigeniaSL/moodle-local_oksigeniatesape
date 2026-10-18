@@ -970,6 +970,144 @@ body.still .opening-lantern {
   font-size: 14px;
 }
 
+/* The stage of the moments that are played with movement: the world at full screen, and over it what is read and
+   touched. */
+body.stage-open {
+  overflow: hidden;
+}
+
+.stage-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  background: #0f2131;
+}
+
+.stage-world,
+.stage-world canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+.stage-ui {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.stage-ui > * {
+  pointer-events: auto;
+}
+
+.stage-top {
+  position: absolute;
+  top: max(10px, env(safe-area-inset-top));
+  left: 12px;
+  right: 12px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  pointer-events: none;
+}
+
+.stage-top > * {
+  pointer-events: auto;
+}
+
+.stage-top h2 {
+  flex: 1;
+  margin: 0;
+  font-size: 1rem;
+  color: #fff1bd;
+  text-shadow: 0 1px 3px #000;
+  pointer-events: none;
+}
+
+.stage-top .btn {
+  border: 2px solid #ffc857;
+  background: rgba(15, 33, 49, .85);
+  color: #fff1bd;
+}
+
+.stage-top .btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.stage-prints {
+  display: inline-flex;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(15, 33, 49, .8);
+}
+
+.stage-prints i {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #fff1bd;
+  border-radius: 50%;
+}
+
+.stage-prints i.on {
+  background: #ffc857;
+}
+
+.stage-say {
+  position: absolute;
+  left: 50%;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  width: min(640px, calc(100% - 24px));
+  transform: translateX(-50%);
+  padding: 12px 16px;
+  border: 2px solid #ffc857;
+  border-radius: 14px;
+  background: rgba(15, 33, 49, .92);
+  color: #fff7e2;
+  font-size: 1.05rem;
+}
+
+.stage-who {
+  display: block;
+  margin-bottom: 2px;
+  color: #ffc857;
+  font-size: .8rem;
+  font-weight: 700;
+}
+
+.stage-panel {
+  position: absolute;
+  left: 50%;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  width: min(560px, calc(100% - 24px));
+  max-height: 70vh;
+  overflow: auto;
+  transform: translateX(-50%);
+  padding: 16px;
+  border: 2px solid #ffc857;
+  border-radius: 16px;
+  background: rgba(15, 33, 49, .95);
+  color: #fff7e2;
+}
+
+.stage-panel[data-where="top"] {
+  top: calc(max(10px, env(safe-area-inset-top)) + 56px);
+  bottom: auto;
+}
+
+.stage-panel h3 {
+  margin: 0 0 6px;
+  color: #ffc857;
+}
+
+.stage-panel .encounter-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+  margin: 10px 0;
+}
+
 /* The hero sheet of one page and the cards of the knots, on paper. */
 .hero-sheet .hero-top {
   display: flex;

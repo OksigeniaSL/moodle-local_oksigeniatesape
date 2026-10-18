@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.124.0 (2026-10-18)
+
+- **The encounter of the day, walked.** Where the device draws with WebGL, the encounter of a place opens the place at
+  full screen: the hero walks it (touching the ground or with the arrows), the creature runs ahead to each trace and
+  sniffs, a hidden voice says the clue, the bush rustles, and next to it the student says who it is. A wrong name is
+  crossed out and the being flees to the other bush; the creature finds another clue if there is one left. Found, it
+  comes out to meet the creature, with its card. What is read and touched goes in the page over the world; «See as a
+  list» plays the same encounter as before, and the device remembers it; who has «no movement» plays it as a list. The
+  six places of the mission can be walked (`stages` in the mission: ground, start, traces and hideouts).
+- **The stage of the moments that are played with movement** (`app/stage.js`): the engine (Phaser 4.2.1, MIT, in
+  `app/engine/`, declared in `thirdpartylibs.xml`) is loaded only when one of these moments opens, and goes with it.
+- **The encounter is never lost.** A wrong name is crossed out and the being stays to be found the same day, until only
+  its own name is left. With one clue and no miss, a golden card and twice the gems; with no miss, its gems; after a
+  miss, no gems. With «Fresh track», the first miss keeps the gems.
+- Mission «Los seres vivos» v54: the six places to walk.
+
 ## 0.123.0 (2026-10-18)
 
 - **Two printables more, for a class without devices.** On the class screen: a hero sheet of one page for each

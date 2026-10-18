@@ -18,6 +18,7 @@ namespace local_oksigeniatesape\external;
 
 use core_external\external_api;
 use core_external\external_function_parameters;
+use core_external\external_multiple_structure;
 use core_external\external_single_structure;
 use core_external\external_value;
 use local_oksigeniatesape\local\characters;
@@ -90,11 +91,16 @@ final class answer_encounter extends external_api {
             'fact' => new external_value(PARAM_TEXT, 'Something curious about it, once recognised'),
             'again' => new external_value(
                 PARAM_BOOL,
-                'Missed with «Fresh track»: it stays, and they choose again',
+                'Missed: the being flees to another bush, and they look for it again',
                 VALUE_DEFAULT,
                 false
             ),
-            'crossed' => new external_value(PARAM_ALPHANUMEXT, 'The name missed, crossed out', VALUE_DEFAULT, ''),
+            'crossed' => new external_multiple_structure(
+                new external_value(PARAM_ALPHANUMEXT, 'A name missed today, crossed out'),
+                'The names missed today',
+                VALUE_DEFAULT,
+                []
+            ),
         ]);
     }
 }

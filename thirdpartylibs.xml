@@ -32,4 +32,12 @@
         <license>OFL</license>
         <licenseversion>1.1</licenseversion>
     </library>
+    <library>
+        <location>app/engine/phaser.min.js</location>
+        <name>Phaser</name>
+        <description>HTML5 game framework by Phaser Studio Inc., for the moments of the game that are played with movement. Loaded only when one of them opens. License text in app/engine/phaser-LICENSE.md.</description>
+        <version>4.2.1</version>
+        <license>MIT</license>
+        <licenseversion></licenseversion>
+    </library>
 </libraries>

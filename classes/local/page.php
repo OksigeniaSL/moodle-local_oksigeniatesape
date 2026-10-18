@@ -27,8 +27,8 @@ namespace local_oksigeniatesape\local;
 final class page {
     /** @var array Scripts of each app, after the core. */
     private const SCRIPTS = [
-        'game' => ['fx', 'critters', 'scene', 'minigame', 'nest', 'errors', 'whack', 'venn', 'whoami', 'game', 'exercises', 'battle',
-            'huddle'],
+        'game' => ['fx', 'critters', 'scene', 'minigame', 'nest', 'errors', 'whack', 'venn', 'whoami', 'stage', 'walk', 'game',
+            'exercises', 'battle', 'huddle'],
         'teach' => ['fx', 'scene', 'workshop', 'author', 'teach'],
         'board' => ['fx', 'critters', 'scene', 'board'],
     ];
@@ -76,8 +76,10 @@ final class page {
         $theme = themes::current($look, $config['art']);
         $config['theme'] = ['current' => $theme, 'world' => themes::current('', $config['art'])];
         $worldcolours = themes::style($config['art']);
-        $json = json_encode($config, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE);
         $version = (int) get_config('local_oksigeniatesape', 'version');
+        // The version, for what the client loads later (the engine of the moments that are played).
+        $config['version'] = $version;
+        $json = json_encode($config, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE);
         $base = $CFG->wwwroot . '/local/oksigeniatesape/app/';
         $title = s(get_string('pluginname', 'local_oksigeniatesape'));
         $scripts = '';
