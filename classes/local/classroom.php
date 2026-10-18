@@ -38,8 +38,8 @@ final class classroom {
      * Makes or changes a classroom challenge.
      *
      * @param int $courseid
-     * @param array $data name, and any of description, saber, gems, steps, teamwork, itemid, objectives, chapterid;
-     *     id to change an existing one.
+     * @param array $data name, and any of description, saber, gems, steps, teamwork, itemid, objectives, chapterid,
+     *     parts (role and text of each, up to four); id to change an existing one.
      * @param int|null $now
      * @return \stdClass
      */
@@ -79,6 +79,12 @@ final class classroom {
         if (array_key_exists('objectives', $data)) {
             $challenge->objectives = \core_text::substr((string) $data['objectives'], 0, 255);
         }
+        if (array_key_exists('parts', $data)) {
+            $parts = self::clean_parts((array) $data['parts']);
+            $challenge->parts = $parts ? json_encode($parts) : null;
+            // A task with parts is done by the team.
+            $challenge->teamwork = $parts ? 1 : ($challenge->teamwork ?? 0);
+        }
         $challenge->timemodified = $now;
         if (empty($challenge->id)) {
             $challenge->id = $DB->insert_record(self::T . 'challenge', $challenge);
@@ -86,6 +92,110 @@ final class classroom {
             $DB->update_record(self::T . 'challenge', $challenge);
         }
         return self::get((int) $challenge->id);
+    }
+
+    /**
+     * The parts of a team task, as they can be kept: up to four, each with a role or none and a text.
+     *
+     * @param array $parts
+     * @return array Of role and text.
+     */
+    public static function clean_parts(array $parts): array {
+        $clean = [];
+        foreach ($parts as $part) {
+            $text = trim(clean_param((string) ($part['text'] ?? ''), PARAM_TEXT));
+            $role = (string) ($part['role'] ?? '');
+            if ($text !== '' && count($clean) < 4) {
+                $clean[] = ['role' => in_array($role, characters::ROLES, true) ? $role : '',
+                    'text' => \core_text::substr($text, 0, 200)];
+            }
+        }
+        return $clean;
+    }
+
+    /**
+     * The parts of a team task.
+     *
+     * @param \stdClass $challenge
+     * @return array Of role and text.
+     */
+    public static function parts(\stdClass $challenge): array {
+        return json_decode((string) ($challenge->parts ?? ''), true) ?: [];
+    }
+
+    /**
+     * A member of a team marks a part of a team task as done, or takes it back: theirs, or the one of a role missing
+     * that day, which anyone can cover. Once done, only who marked it takes it back.
+     *
+     * @param int $challengeid
+     * @param int $userid
+     * @param int $part From 0.
+     * @param bool $done
+     * @param int|null $now
+     */
+    public static function mark_part(int $challengeid, int $userid, int $part, bool $done, ?int $now = null): void {
+        global $DB;
+        $challenge = self::get($challengeid);
+        $char = characters::get($userid);
+        $team = $char ? teams::of((int) $challenge->courseid, $userid) : null;
+        if (!$char || !$team || !isset(self::parts($challenge)[$part])) {
+            throw new \moodle_exception('partnotyours', 'local_oksigeniatesape');
+        }
+        $key = ['challengeid' => $challenge->id, 'groupid' => $team->id, 'part' => $part];
+        $marked = $DB->get_record(self::T . 'challengepart', $key);
+        if ($done && !$marked) {
+            $DB->insert_record(self::T . 'challengepart', (object) ($key + ['courseid' => $challenge->courseid,
+                'charid' => $char->id, 'timecreated' => $now ?? time()]));
+        } else if (!$done && $marked) {
+            if ((int) $marked->charid !== (int) $char->id) {
+                throw new \moodle_exception('partnotyours', 'local_oksigeniatesape');
+            }
+            $DB->delete_records(self::T . 'challengepart', ['id' => $marked->id]);
+        }
+    }
+
+    /**
+     * The parts of a team task as a team sees them: each with its role, its text, whether it is done and by whom.
+     *
+     * @param \stdClass $challenge
+     * @param int $groupid
+     * @param int $userid Who looks.
+     * @return array Of role, text, done, by (the name) and mine (they marked it).
+     */
+    public static function team_parts(\stdClass $challenge, int $groupid, int $userid): array {
+        global $DB;
+        $marked = $DB->get_records(
+            self::T . 'challengepart',
+            ['challengeid' => $challenge->id, 'groupid' => $groupid],
+            '',
+            'part, charid'
+        );
+        $char = characters::get($userid);
+        $region = regions::get((int) $challenge->courseid);
+        $list = [];
+        foreach (self::parts($challenge) as $i => $part) {
+            $by = isset($marked[$i]) ? (int) $DB->get_field(self::T . 'char', 'userid', ['id' => $marked[$i]->charid]) : 0;
+            $user = $by ? \core_user::get_user($by) : null;
+            $list[] = $part + ['done' => isset($marked[$i]),
+                'by' => $user && $region ? view::display_name($user, characters::get($by), $region) : '',
+                'mine' => $char && isset($marked[$i]) && (int) $marked[$i]->charid === (int) $char->id];
+        }
+        return $list;
+    }
+
+    /**
+     * Which parts of a team task each team has done, for the teacher.
+     *
+     * @param \stdClass $challenge
+     * @return array groupid => indexes of the parts done.
+     */
+    public static function parts_done(\stdClass $challenge): array {
+        global $DB;
+        $done = [];
+        foreach ($DB->get_records(self::T . 'challengepart', ['challengeid' => $challenge->id], 'part') as $row) {
+            $done[(int) $row->groupid][] = (int) $row->part;
+        }
+        return $done;
     }
 
     /**
@@ -120,6 +230,7 @@ final class classroom {
         $challenge = self::get($challengeid);
         $transaction = $DB->start_delegated_transaction();
         $DB->delete_records(self::T . 'validation', ['challengeid' => $challenge->id]);
+        $DB->delete_records(self::T . 'challengepart', ['challengeid' => $challenge->id]);
         $DB->delete_records(self::T . 'challenge', ['id' => $challenge->id]);
         $transaction->allow_commit();
     }

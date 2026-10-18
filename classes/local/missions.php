@@ -303,6 +303,14 @@ final class missions {
                 $DB->update_record(self::T . 'chapter', (object) ['id' => $existing->id, 'sortorder' => $i,
                     'timemodified' => $now]);
                 $chapterids[$chapter['code']] = (int) $existing->id;
+                // The task of the place gets its parts if it had none (the teacher may have written their own).
+                if (!empty($chapter['offscreenparts'])) {
+                    $task = $DB->get_record(self::T . 'challenge', ['courseid' => $courseid, 'chapterid' => $existing->id,
+                        'cmid' => 0], '*', IGNORE_MULTIPLE);
+                    if ($task && !classroom::parts($task)) {
+                        classroom::save($courseid, ['id' => $task->id, 'parts' => $chapter['offscreenparts']], $now);
+                    }
+                }
             } else {
                 $chapterids[$chapter['code']] = (int) $DB->insert_record(self::T . 'chapter', (object) [
                     'missionid' => $record->id,
@@ -316,6 +324,7 @@ final class missions {
                         'name' => $chapter['offscreen'],
                         'saber' => self::CHAPTER_CHALLENGE_SABER,
                         'chapterid' => $chapterids[$chapter['code']],
+                        'parts' => $chapter['offscreenparts'] ?? [],
                     ], $now);
                 }
             }

@@ -190,6 +190,13 @@ final class get_world extends external_api {
                 'teamwork' => new external_value(PARAM_BOOL, 'Done by the team'),
                 'status' => new external_value(PARAM_ALPHA, 'done, merit, notyet or empty'),
                 'note' => new external_value(PARAM_TEXT, 'What the teacher said'),
+                'parts' => new external_multiple_structure(new external_single_structure([
+                    'role' => new external_value(PARAM_ALPHA, 'The role it is meant for (empty: anyone)'),
+                    'text' => new external_value(PARAM_TEXT, 'What it is'),
+                    'done' => new external_value(PARAM_BOOL, 'Done in their team'),
+                    'by' => new external_value(PARAM_TEXT, 'Who marked it'),
+                    'mine' => new external_value(PARAM_BOOL, 'They marked it'),
+                ]), 'A team task: its parts', VALUE_DEFAULT, []),
             ])),
             'items' => new external_multiple_structure(new external_single_structure([
                 'code' => new external_value(PARAM_ALPHANUMEXT, 'Code'),

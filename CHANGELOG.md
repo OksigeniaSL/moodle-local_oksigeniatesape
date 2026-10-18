@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.111.0 (2026-10-18)
+
+- **Information shared out** (`views` in a decision of a scene: what each role sees). In a team session each tablet
+  shows only the piece of its role («Only you see this»), and the team has to say them aloud; the pieces of a role
+  nobody in the session has go to the tablet that runs the scene. On one tablet, alone or as a team, all of them show
+  together, each with its role. What the answers told so far («What we know») reaches every tablet of the session.
+- **Team tasks with parts**: a classroom challenge can have up to four parts, each for a role. Each student sees theirs
+  in «Challenges» and marks «My part is done»; the part of a role missing that day, anyone covers («I cover it»); only
+  who marked a part takes it back. The teacher writes the parts in the challenge and sees, by team, how many are done
+  when validating it. A challenge with parts is for the team.
+- Mission «Los seres vivos» v45: the task of each place with a part for each role; what each role sees in «Las
+  preguntas al búho», «La clave del patio» and «La barcaza de la expedición»; two facts of their consequences, made
+  exact (not every reptile lays eggs; a kitten and a cat are both cats).
+
 ## 0.110.0 (2026-10-18)
 
 - **Team sessions: a scene with the tablets of the team.** In a team scene, «With the tablets of the team» opens a

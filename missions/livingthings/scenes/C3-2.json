@@ -65,6 +65,11 @@
     "La mejor pregunta es la que deja fuera a más animales de golpe.",
     "Hay una pregunta que parte a todos los animales en dos grupos grandes."
    ],
+   "views": {
+    "protector": "Solo los mamíferos tienen pelo, y solo las aves, plumas: preguntar por el pelo o por las plumas separa un solo grupo del resto.",
+    "healer": "Ponen huevos todas las aves y la mayoría de los reptiles, los peces, los anfibios y los insectos: preguntar por los huevos separa a muy pocos del resto.",
+    "sage": "En una buena clave, la primera pregunta deja muchos grupos de animales en el «sí» y muchos en el «no»."
+   },
    "options": [
     {
      "id": "huesos",
@@ -90,7 +95,7 @@
      "id": "huevos",
      "label": "¿Pone huevos?",
      "say": "«Sí.» Y espera, sin moverse, la pregunta siguiente.",
-     "feedback": "Ponen huevos las aves, los reptiles, casi todos los peces y los insectos, y muchos anfibios: con ese sí casi nadie queda fuera. Cuanto más separa una pregunta, más dice su respuesta.",
+     "feedback": "Ponen huevos las aves, la mayoría de los reptiles, casi todos los peces y los insectos, y muchos anfibios: con ese sí casi nadie queda fuera. Cuanto más separa una pregunta, más dice su respuesta.",
      "effects": [
       {
        "clue": "huevos"
@@ -128,6 +133,15 @@
    "hints": [
     "Si no tiene huesos, ¿qué invertebrados conocemos y en qué se diferencian unos de otros?"
    ],
+   "views": {
+    "scout": "Visto de cerca, el rastro no tiene pisadas: es una sola franja, lisa y seguida.",
+    "protector": "Junto al rastro, medio tapado por las hojas, asoma algo duro y curvo. Desde aquí no se distingue qué es.",
+    "healer": "El rastro va de hoja mojada en hoja mojada y rodea las piedras secas al sol.",
+    "sage": {
+     "valley": "Clave del Gran Libro, para los que van sin patas. ¿Tiene huesos? Sí: una serpiente u otro vertebrado. No: ¿lleva concha? Sí: un caracol. No: un gusano, como la lombriz, o una babosa.",
+     "azara": "Clave del cuaderno, para los que van sin patas. ¿Tiene huesos? Sí: una serpiente u otro vertebrado. No: ¿lleva concha? Sí: un caracol. No: un gusano, como la lombriz, o una babosa."
+    }
+   },
    "options": [
     {
      "id": "patas6",

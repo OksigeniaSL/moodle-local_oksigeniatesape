@@ -1065,6 +1065,9 @@
     if (state.tab === 'world' || state.tab === 'challenges') {
       bindWorld();
     }
+    if (state.tab === 'challenges') {
+      bindParts();
+    }
     if (state.tab === 'team') {
       bindTeam();
     }
@@ -2705,8 +2708,63 @@
       esc(rewards.join(' · ')) + (ch.teamwork ? ' · ' + esc(t('app_teamwork')) : '') + '</small>' +
       (ch.description ? '<div style="margin-top:6px;font-size:15px">' + ch.description + '</div>' : '') +
       (ch.note ? '<div class="note"><b>' + esc(t('app_teachersays')) + ':</b> ' + esc(ch.note) + '</div>' : '') +
-      '</span>' + listen() + (status === 'done' ? done({done: true}) : '<span class="tag ' + status + '">' + esc(t(label)) +
-      '</span>') + '</li>';
+      partsHtml(ch) + '</span>' + listen() + (status === 'done' ? done({done: true}) : '<span class="tag ' + status + '">' +
+      esc(t(label)) + '</span>') + '</li>';
+  }
+
+  /**
+   * A team task with parts: each with its role, whether it is done in the team and by whom; the part of their role is
+   * theirs to mark, and one of a role missing that day can be covered by anyone.
+   *
+   * @param {Object} ch
+   * @return {string}
+   */
+  function partsHtml(ch) {
+    var parts = ch.parts || [];
+    if (!parts.length) {
+      return '';
+    }
+    var c = state.world.character || {};
+    var open = ch.status !== 'done' && ch.status !== 'merit';
+    var count = parts.filter(function(p) {
+      return p.done;
+    }).length;
+    return '<ul class="task-parts">' + parts.map(function(p, i) {
+      var mine = p.role && p.role === c.role;
+      var who = p.role ? T.roleName(state.world.family, p.role, c.role === p.role ? c.nameform : 'm') : t('app_part_anyone');
+      var action = !open ? '' : p.done ? (p.mine ? '<button type="button" class="btn btn-soft" data-partch="' + ch.id +
+        '" data-part="' + i + '" data-undo>' + esc(t('app_part_undo')) + '</button>' : '') : '<button type="button" ' +
+        'class="btn ' + (mine ? 'btn-main' : 'btn-soft') + '" data-partch="' + ch.id + '" data-part="' + i + '">' +
+        esc(t(mine ? 'app_part_mine' : 'app_part_cover')) + '</button>';
+      return '<li class="' + (p.done ? 'done' : '') + (mine ? ' mine' : '') + '"><span class="grow"><b>' + esc(who) +
+        (p.done ? ' ✓' : '') + '</b><small>' + esc(p.text) + '</small>' + (p.done && p.by ? '<small class="help-soft">' +
+        esc(t('app_part_done_by', p.by)) + '</small>' : '') + '</span>' + action + '</li>';
+    }).join('') + '</ul><small class="help-soft">' + esc(t('app_parts_help', count + '/' + parts.length)) + '</small>';
+  }
+
+  /** «My part is done» and the rest: marked, and the task drawn again. */
+  function bindParts() {
+    app.querySelectorAll('[data-part]').forEach(function(b) {
+      b.onclick = function() {
+        b.disabled = true;
+        var id = Number(b.dataset.partch);
+        T.api('mark_part', {courseid: cfg.courseid, challengeid: id, part: Number(b.dataset.part),
+          done: !b.hasAttribute('data-undo')}).then(function(r) {
+          state.world.challenges.forEach(function(ch) {
+            if (ch.id === id) {
+              ch.parts = r.parts;
+            }
+          });
+          if (T.fx && !b.hasAttribute('data-undo')) {
+            T.fx.sound('item');
+          }
+          world();
+        }).catch(function(e) {
+          b.disabled = false;
+          T.toast(esc(e.message), true);
+        });
+      };
+    });
   }
 
   function tabChallenges() {

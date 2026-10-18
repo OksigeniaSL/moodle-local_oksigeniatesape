@@ -153,4 +153,70 @@ final class classroom_test extends \advanced_testcase {
         $this->expectException(\invalid_parameter_exception::class);
         classroom::validate($w->challenge->id, [$w->ana->id], 'great', null, $w->teacher->id);
     }
+
+    public function test_a_team_task_with_parts_marked_by_each_one(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $w = $this->make_class();
+        $dg = $this->getDataGenerator();
+        $group = $dg->create_group(['courseid' => $w->course->id]);
+        foreach ([$w->ana, $w->leo, $w->noa] as $user) {
+            $dg->enrol_user($user->id, $w->course->id, 'student');
+            $dg->create_group_member(['groupid' => $group->id, 'userid' => $user->id]);
+        }
+        characters::create($w->noa->id, 'sage', 'f');
+        // The parts: up to four, each with a role or none; with parts, it is for the team.
+        $task = classroom::save($w->course->id, ['id' => $w->challenge->id, 'parts' => [
+            ['role' => 'scout', 'text' => 'Choose the place and lead'],
+            ['role' => 'sage', 'text' => 'Write the two lists'],
+            ['role' => 'robot', 'text' => 'Check the material'],
+            ['role' => 'healer', 'text' => ''],
+            ['role' => 'healer', 'text' => 'Draw it'], ['role' => 'healer', 'text' => 'One too many'],
+        ]]);
+        $parts = classroom::parts($task);
+        $this->assertCount(4, $parts);
+        $this->assertSame('', $parts[2]['role']);
+        $this->assertEquals(1, $task->teamwork);
+        // Leo marks his part; Ana covers the one of the sage, missing today.
+        classroom::mark_part($task->id, $w->leo->id, 0, true);
+        classroom::mark_part($task->id, $w->ana->id, 1, true);
+        $seen = classroom::team_parts($task, (int) $group->id, $w->ana->id);
+        $this->assertSame([true, true, false, false], array_column($seen, 'done'));
+        $this->assertSame([false, true, false, false], array_column($seen, 'mine'));
+        $this->assertNotSame('', $seen[0]['by']);
+        // Only who marked it takes it back; marking it again does nothing.
+        try {
+            classroom::mark_part($task->id, $w->noa->id, 1, false);
+            $this->fail('Taken back by someone else');
+        } catch (\moodle_exception $e) {
+            $this->assertSame('partnotyours', $e->errorcode);
+        }
+        classroom::mark_part($task->id, $w->noa->id, 1, true);
+        $this->assertEquals(1, $DB->count_records(self::T . 'challengepart', ['challengeid' => $task->id, 'part' => 1]));
+        classroom::mark_part($task->id, $w->ana->id, 1, false);
+        $this->assertSame([(int) $group->id => [0]], classroom::parts_done($task));
+        // A part that does not exist, or someone without a team.
+        $this->expectException(\moodle_exception::class);
+        classroom::mark_part($task->id, $w->leo->id, 7, true);
+    }
+
+    public function test_the_mission_brings_the_parts_of_the_task_of_each_place(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $course = $this->getDataGenerator()->create_course();
+        regions::save($course->id, ['enabled' => 1]);
+        $mission = missions::install($course->id, 'livingthings', 'valley', 'es');
+        $chapter = $DB->get_record(self::T . 'chapter', ['missionid' => $mission->id, 'code' => 'claro']);
+        $task = $DB->get_record(self::T . 'challenge', ['courseid' => $course->id, 'chapterid' => $chapter->id]);
+        $this->assertSame(['scout', 'sage', 'protector', 'healer'], array_column(classroom::parts($task), 'role'));
+        $this->assertEquals(1, $task->teamwork);
+        // A course whose task had no parts gets them when the mission comes again; one with its own keeps them.
+        $DB->set_field(self::T . 'challenge', 'parts', null, ['id' => $task->id]);
+        $chapter2 = $DB->get_record(self::T . 'chapter', ['missionid' => $mission->id, 'code' => 'bosque']);
+        $own = $DB->get_record(self::T . 'challenge', ['courseid' => $course->id, 'chapterid' => $chapter2->id]);
+        classroom::save($course->id, ['id' => $own->id, 'parts' => [['role' => 'sage', 'text' => 'Our own part']]]);
+        missions::install($course->id, 'livingthings', 'valley', 'es');
+        $this->assertCount(4, classroom::parts(classroom::get((int) $task->id)));
+        $this->assertSame('Our own part', classroom::parts(classroom::get((int) $own->id))[0]['text']);
+    }
 }

@@ -2759,7 +2759,11 @@
   }
 
   function challengeForm(ch) {
-    var c = ch || {id: 0, name: '', description: '', saber: 20, gems: 0, steps: '1,2,3,4', teamwork: false};
+    var c = ch || {id: 0, name: '', description: '', saber: 20, gems: 0, steps: '1,2,3,4', teamwork: false, parts: []};
+    var parts = (c.parts || []).slice();
+    while (parts.length < 4) {
+      parts.push({role: ['scout', 'sage', 'protector', 'healer'][parts.length], text: ''});
+    }
     var steps = String(c.steps).split(',');
     var form = document.getElementById('form');
     form.innerHTML = '<section class="card" style="margin-top:16px"><h3>' + esc(ch ? t('teach_editchallenge') :
@@ -2774,6 +2778,17 @@
           (steps.indexOf(String(st)) >= 0 ? ' checked' : '') + '> ' + esc(t('teach_step_' + st)) + '</label>';
       }).join('') + '</div>') + '<label class="chip" style="display:inline-flex;gap:8px;align-items:center"><input ' +
       'type="checkbox" name="teamwork"' + (c.teamwork ? ' checked' : '') + '> ' + esc(t('teach_teamwork')) + '</label>' +
+      // A team task with parts: one for each role, which each one marks done on their tablet.
+      '<fieldset class="task-parts-edit" style="margin-top:12px;border:0;padding:0"><legend><b>' + esc(t('teach_parts')) +
+      '</b></legend><small style="display:block;color:var(--text-soft);margin-bottom:6px">' + esc(t('teach_parts_help')) +
+      '</small>' + parts.map(function(p, i) {
+        return '<div class="grid2" style="gap:8px;grid-template-columns:150px 1fr;margin-bottom:6px"><select name="partrole' + i +
+          '" aria-label="' + esc(t('teach_part_role', i + 1)) + '">' + ['', 'scout', 'sage', 'protector', 'healer'].map(function(r) {
+            return '<option value="' + r + '"' + (p.role === r ? ' selected' : '') + '>' + esc(r ? T.roleName(state.data.region.family,
+              r, 'm') : t('app_part_anyone')) + '</option>';
+          }).join('') + '</select><input name="parttext' + i + '" maxlength="200" value="' + esc(p.text) + '" aria-label="' +
+          esc(t('teach_part_text', i + 1)) + '"></div>';
+      }).join('') + '</fieldset>' +
       '<div class="actions" style="justify-content:flex-start;margin-top:14px"><button class="btn btn-main" type="submit">' +
       esc(t('app_save')) + '</button>' + (ch && can('manageregion') ? '<button class="btn btn-soft" type="button" ' +
       'data-delete>' + esc(t('teach_delete')) + '</button>' : '') + '</div></form></section>';
@@ -2783,9 +2798,14 @@
       var picked = Array.prototype.map.call(f.querySelectorAll('[name="step"]:checked'), function(i) {
         return i.value;
       }).join(',');
+      var made = [0, 1, 2, 3].map(function(i) {
+        return {role: f['partrole' + i].value, text: f['parttext' + i].value.trim()};
+      }).filter(function(p) {
+        return p.text;
+      });
       T.api('save_challenge', {courseid: cfg.courseid, id: c.id, name: f.name.value, description: f.description.value,
         saber: Number(f.saber.value) || 0, gems: Number(f.gems.value) || 0, steps: picked || '1,2,3,4',
-        teamwork: f.teamwork.checked}).then(function(r) {
+        teamwork: f.teamwork.checked || made.length > 0, parts: JSON.stringify(made)}).then(function(r) {
         T.toast(esc(t('app_saved')));
         state.challenge = r.id;
         load(true);
@@ -2853,7 +2873,16 @@
         if (!list.length) {
           return '';
         }
-        return '<div class="section-title" style="flex-wrap:wrap"><h3>' + esc(g.name) + '</h3><span class="pills" ' +
+        // A team task with parts: which the team has marked.
+        var marked = ((ch.teamparts || []).filter(function(x) {
+          return x.groupid === g.id;
+        })[0] || {done: []}).done;
+        var partsline = (ch.parts || []).length ? '<small class="team-parts" style="display:block;color:var(--text-soft)">' +
+          esc(t('teach_parts_done', marked.length + '/' + ch.parts.length)) + ': ' + ch.parts.map(function(p, i) {
+            return (marked.indexOf(i) >= 0 ? '✓ ' : '○ ') + esc(p.role ? T.roleName(d.region.family, p.role, 'm') :
+              t('app_part_anyone'));
+          }).join(', ') + '</small>' : '';
+        return '<div class="section-title" style="flex-wrap:wrap"><h3>' + esc(g.name) + partsline + '</h3><span class="pills" ' +
           'style="justify-content:flex-end"><small style="align-self:center;color:var(--text-soft)">' +
           esc(t('teach_wholeteam')) + '</small>' + STATUSES.map(function(st) {
             return '<button class="chip" data-team-val="' + st + '" data-team="' + g.id + '">' +

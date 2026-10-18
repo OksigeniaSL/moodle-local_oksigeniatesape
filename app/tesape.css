@@ -841,6 +841,64 @@ body.tesape {
   background: rgba(255, 200, 87, .1);
 }
 
+/* A team task with parts. */
+.task-parts {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 4px;
+  display: grid;
+  gap: 6px;
+}
+
+.task-parts li {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .04);
+}
+
+.task-parts li.mine {
+  border-left: 4px solid var(--lantern);
+}
+
+.task-parts li.done {
+  background: rgba(124, 198, 127, .12);
+}
+
+.task-parts small {
+  display: block;
+}
+
+/* What each role sees of a decision. */
+.pieces {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
+.piece {
+  padding: 10px 14px;
+  border-radius: 12px;
+  border-left: 4px solid var(--lantern);
+  background: rgba(255, 200, 87, .1);
+}
+
+.piece p {
+  margin: 4px 0 0;
+}
+
+.piece small {
+  display: block;
+  margin-top: 6px;
+  color: var(--text-soft);
+}
+
+.piece.mine {
+  margin: 0 0 12px;
+}
+
 /* The team session: the tablets of a team joined to a scene. */
 .huddle-layer:empty {
   display: none;

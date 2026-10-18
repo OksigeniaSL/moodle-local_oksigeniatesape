@@ -281,11 +281,17 @@
     }
     follow.joined = true;
     document.body.classList.add('in-huddle');
-    var sig = JSON.stringify([h.seq, h.started, h.members, h.waiting, h.hand, h.myturn]);
+    var sig = JSON.stringify([h.seq, h.started, h.members, h.waiting, h.hand, h.myturn, h.piece, h.known]);
     if (follow.sig === sig) {
       return;
     }
     follow.sig = sig;
+    // What only their role sees: the others need it, so it is to be said aloud.
+    var piece = (h.started && h.known && h.known.length ? '<div class="clues"><small>' + esc(t('app_clues')) + '</small><ul>' +
+      h.known.map(function(k) {
+        return '<li>' + esc(k) + '</li>';
+      }).join('') + '</ul></div>' : '') + (h.started && h.piece ? '<div class="piece mine"><b>' + esc(t('app_piece_mine')) +
+      '</b><p>' + esc(h.piece) + '</p><small>' + esc(t('app_piece_tell')) + '</small></div>' : '');
     var body = '';
     if (!h.started) {
       body = '<p class="help">' + esc(t('app_huddle_notyet', h.guidename)) + '</p>';
@@ -307,7 +313,7 @@
     }
     layer.innerHTML = '<div class="huddle-phone" role="dialog" aria-modal="true" aria-labelledby="tesape-huddle-scene">' +
       '<div class="kicker">' + esc(t('app_huddle_in', h.guidename)) + '</div><h2 id="tesape-huddle-scene">' + esc(h.scene) +
-      '</h2>' + chips(h) + body + '<div class="actions"><button type="button" class="btn btn-soft" data-leave>' +
+      '</h2>' + chips(h) + piece + body + '<div class="actions"><button type="button" class="btn btn-soft" data-leave>' +
       esc(t('app_huddle_leave')) + '</button></div></div>';
     layer.querySelectorAll('[data-pick]').forEach(function(b) {
       b.onclick = function() {

@@ -122,6 +122,14 @@ final class get_class extends external_api {
                     'status' => new external_value(PARAM_ALPHA, 'done, merit or notyet'),
                     'note' => new external_value(PARAM_TEXT, 'Note'),
                 ])),
+                'parts' => new external_multiple_structure(new external_single_structure([
+                    'role' => new external_value(PARAM_ALPHA, 'The role it is meant for (empty: anyone)'),
+                    'text' => new external_value(PARAM_TEXT, 'What it is'),
+                ]), 'A team task: its parts', VALUE_DEFAULT, []),
+                'teamparts' => new external_multiple_structure(new external_single_structure([
+                    'groupid' => new external_value(PARAM_INT, 'Team'),
+                    'done' => new external_multiple_structure(new external_value(PARAM_INT, 'Part, from 0')),
+                ]), 'The parts each team marked', VALUE_DEFAULT, []),
             ])),
             'energymax' => new external_value(PARAM_INT, 'Most energy'),
             'breathmax' => new external_value(PARAM_INT, 'Most breath'),

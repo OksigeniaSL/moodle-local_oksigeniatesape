@@ -361,8 +361,9 @@
       'stroke-width="3" fill="none"/><path d="M50 24 Q60 10 70 14 Q60 22 50 24Z" fill="#7cc67f"/></svg>';
     // While a play is being saved there is no way out: closed then, the map would show it as not played.
     var saving = false;
-    // A team session: the scene runs here, and the hand chooses on its own tablet.
+    // A team session: the scene runs here, and the hand chooses on its own tablet; who is in it now.
     var huddle = null;
+    var huddleIds = [];
 
     function close() {
       if (huddle) {
@@ -1011,6 +1012,41 @@
     }
 
     /**
+     * What each role sees of a decision (views): in a team session, only the piece of the role of this tablet, the others
+     * are on theirs; on one tablet, alone or as a team, all of them, each with its role.
+     *
+     * @param {Object} n The node.
+     * @return {string}
+     */
+    function pieces(n) {
+      var views = n.views || {};
+      var roles = Object.keys(views).filter(function(r) {
+        return views[r];
+      });
+      if (!roles.length) {
+        return '';
+      }
+      if (huddle) {
+        // Its own piece, and those of the roles nobody in the session has: they would be lost otherwise.
+        var held = (world.team ? world.team.members : []).filter(function(m) {
+          return Number(m.userid) !== Number(cfg.userid) && huddleIds.indexOf(Number(m.userid)) >= 0 && m.character;
+        }).map(function(m) {
+          return m.character.role;
+        });
+        return roles.filter(function(r) {
+          return r === data.role || held.indexOf(r) < 0;
+        }).map(function(r) {
+          return '<div class="piece mine"><b>' + esc(r === data.role ? t('app_piece_mine') : t('app_piece_of',
+            T.roleName(world ? world.family : '', r, 'm'))) + '</b><p>' + esc(tx(views[r])) + '</p></div>';
+        }).join('');
+      }
+      return '<div class="pieces">' + roles.map(function(r) {
+        return '<div class="piece"><b>' + esc(t('app_piece_of', T.roleName(world ? world.family : '', r, 'm'))) + '</b><p>' +
+          esc(tx(views[r])) + '</p></div>';
+      }).join('') + '</div>';
+    }
+
+    /**
      * In a team session, the decision at hand as the other tablets see it: what it asks and, if it is one to choose, the
      * options that can be chosen now; and who decides.
      *
@@ -1032,7 +1068,16 @@
         });
       }
       var hand = turnOf();
-      return {node: run.node, kind: kind, prompt: n.prompt ? tx(n.prompt) : '', options: options,
+      // What each role sees: each tablet gets only its own piece.
+      var views = {};
+      Object.keys(n.views || {}).forEach(function(r) {
+        views[r] = tx(n.views[r]);
+      });
+      // What the answers told so far, for every tablet.
+      var known = run.clues.map(function(c) {
+        return tx(sc.clues[c]);
+      });
+      return {node: run.node, kind: kind, prompt: n.prompt ? tx(n.prompt) : '', options: options, views: views, known: known,
         hand: hand ? Number(hand.userid) : Number(cfg.userid)};
     }
 
@@ -1055,6 +1100,7 @@
      * @param {number[]} ids
      */
     function huddlePresent(ids) {
+      huddleIds = ids;
       var n = sc && run ? sc.nodes[run.node] : null;
       var hand = turnOf();
       if (!n || n.type !== 'choice' || !hand || ids.indexOf(Number(hand.userid)) >= 0 || layer.querySelector('.opt.sel')) {
@@ -1382,7 +1428,8 @@
           '<span class="opt-votes" data-votes></span></button>';
       }).join('');
       var voting = cm && cm.vote && !multi && open.length >= 2;
-      var body = show((n.image ? picture(n.image, data) : '') + clueBox() + '<p class="scene-prompt">' + esc(tx(n.prompt)) +
+      var body = show((n.image ? picture(n.image, data) : '') + clueBox() + pieces(n) + '<p class="scene-prompt">' +
+        esc(tx(n.prompt)) +
         '</p>' +
         (voting ? '<div class="class-vote" data-vote><button class="btn btn-soft" data-voteopen>' +
         esc(t('board_scene_voteopen')) + '</button></div>' : '') +
@@ -1609,7 +1656,7 @@
       var right = {};
       var chosen = null;
       var trip = 1;
-      var body = show((n.image ? stage(n.image, n.speaker) : '') + '<p class="scene-prompt">' + esc(tx(n.prompt)) +
+      var body = show((n.image ? stage(n.image, n.speaker) : '') + pieces(n) + '<p class="scene-prompt">' + esc(tx(n.prompt)) +
         '</p><div data-cls></div><div data-out></div>');
       var box = body.querySelector('[data-cls]');
       hintArea(n, body);
@@ -1792,7 +1839,8 @@
           go(n.next);
           return;
         }
-        var body = show('<p class="scene-prompt">' + esc(tx(n.prompt)) + '</p><ol class="built">' + built.map(function(s) {
+        var body = show(pieces(n) + '<p class="scene-prompt">' + esc(tx(n.prompt)) + '</p><ol class="built">' +
+          built.map(function(s) {
           return '<li>' + esc(tx(s.label)) + '</li>';
         }).join('') + '</ol><div class="opts">' + pool.filter(function(s) {
           return built.indexOf(s) < 0;
@@ -2206,6 +2254,8 @@
           T.fx.ambient(T.fx.place(d.place));
         }
         if (opts.huddle && T.huddleSync) {
+          // Those who start are in until the session says otherwise.
+          huddleIds = (opts.team || []).map(Number);
           huddle = T.huddleSync(opts.huddle, huddleNow, huddlePlay, huddlePresent);
         }
         start(null);

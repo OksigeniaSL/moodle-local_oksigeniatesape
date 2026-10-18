@@ -31,6 +31,12 @@
     "Vivir en el agua no hace pez a nadie: ¿cómo respira?",
     "Volar no hace ave a nadie: ¿plumas o pelo?"
    ],
+   "views": {
+    "scout": "Desde la orilla se los vio llegar nadando: el pingüino, el delfín y la tortuga marina.",
+    "protector": "Vistos de cerca al subir a bordo, el pingüino tiene plumas por todo el cuerpo, y la tortuga marina, la piel cubierta de escamas duras.",
+    "healer": "La salamandra tiene la piel húmeda, fina y sin escamas. La araña no tiene ni un hueso por dentro.",
+    "sage": "Para elegir compartimento, da igual cómo llegue el pasajero o dónde viva: cuentan lo que le cubre el cuerpo, cómo respira y si tiene huesos."
+   },
    "bins": [
     {
      "id": "mamiferos",

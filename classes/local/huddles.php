@@ -178,7 +178,7 @@ final class huddles {
      *
      * @param \stdClass $huddle
      * @param \stdClass $char
-     * @param array $node node, kind, prompt, options (id, label), hand (a user).
+     * @param array $node node, kind, prompt, options (id, label), views (what each role sees), hand (a user).
      * @param int $now
      * @return int The number of the decision.
      */
@@ -190,8 +190,18 @@ final class huddles {
             $options[] = ['id' => clean_param((string) ($option['id'] ?? ''), PARAM_ALPHANUMEXT),
                 'label' => clean_param((string) ($option['label'] ?? ''), PARAM_TEXT)];
         }
+        // What each role sees of the decision: each tablet gets only the piece of its role.
+        $views = [];
+        foreach ((array) ($node['views'] ?? []) as $role => $text) {
+            if (in_array($role, characters::ROLES, true)) {
+                $views[$role] = clean_param((string) $text, PARAM_TEXT);
+            }
+        }
+        // What the answers told so far, for every tablet.
+        $known = array_slice(array_map(fn($k) => clean_param((string) $k, PARAM_TEXT), (array) ($node['known'] ?? [])), 0, 12);
         $state['seq']++;
-        $state['node'] = ['node' => clean_param((string) ($node['node'] ?? ''), PARAM_ALPHANUMEXT),
+        $state['node'] = ['views' => $views, 'known' => $known,
+            'node' => clean_param((string) ($node['node'] ?? ''), PARAM_ALPHANUMEXT),
             'kind' => clean_param((string) ($node['kind'] ?? ''), PARAM_ALPHA),
             'prompt' => clean_param((string) ($node['prompt'] ?? ''), PARAM_TEXT),
             'options' => $options, 'hand' => (int) ($node['hand'] ?? 0)];
@@ -322,6 +332,8 @@ final class huddles {
             'hand' => $hand,
             'handname' => $names[$hand] ?? ($hand ? self::user_name($hand, (int) $huddle->courseid) : ''),
             'myturn' => $hand === (int) $char->userid,
+            'piece' => $node ? (string) ($node['views'][$char->role] ?? '') : '',
+            'known' => $node ? array_values($node['known'] ?? []) : [],
             'waiting' => !empty($state['pending']),
         ];
         // The choice waiting is for the guide to play.

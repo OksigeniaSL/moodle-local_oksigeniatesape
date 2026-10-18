@@ -121,6 +121,7 @@ final class view {
         }
         $fields = 'challengeid, status, note';
         $validations = $DB->get_records(self::T . 'validation', ['charid' => $char->id, 'courseid' => $courseid], '', $fields);
+        $group = teams::of($courseid, $userid);
         foreach (classroom::list($courseid) as $challenge) {
             if (!in_array((string) $member->step, explode(',', $challenge->steps), true)) {
                 continue;
@@ -135,6 +136,8 @@ final class view {
                 'teamwork' => (bool) $challenge->teamwork,
                 'status' => $validation->status ?? '',
                 'note' => $validation ? (string) $validation->note : '',
+                // A team task with parts: each with its role, and whether it is done in their team.
+                'parts' => $group ? classroom::team_parts($challenge, (int) $group->id, $userid) : [],
             ];
         }
         $world['items'] = array_values(array_map(fn($i) => ['code' => $i->code, 'name' => format_string($i->name),
@@ -581,6 +584,7 @@ final class view {
                         'note' => (string) $validation->note];
                 }
             }
+            $done = classroom::parts_done($challenge);
             $challenges[] = [
                 'id' => (int) $challenge->id,
                 'name' => format_string($challenge->name),
@@ -590,6 +594,8 @@ final class view {
                 'steps' => $challenge->steps,
                 'teamwork' => (bool) $challenge->teamwork,
                 'validations' => $validations,
+                'parts' => classroom::parts($challenge),
+                'teamparts' => array_map(fn($g) => ['groupid' => $g, 'done' => $done[$g]], array_keys($done)),
             ];
         }
         // How each team says it is doing today.

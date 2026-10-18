@@ -50,6 +50,13 @@ final class save_challenge extends external_api {
             'gems' => new external_value(PARAM_INT, 'Gems', VALUE_DEFAULT, 0),
             'steps' => new external_value(PARAM_SEQUENCE, 'Steps it counts for', VALUE_DEFAULT, '1,2,3,4'),
             'teamwork' => new external_value(PARAM_BOOL, 'Done by the team', VALUE_DEFAULT, false),
+            'parts' => new external_value(
+                PARAM_RAW,
+                'A team task: its parts, role and text of each (JSON; empty: none, null: as it was)',
+                VALUE_DEFAULT,
+                null,
+                NULL_ALLOWED
+            ),
         ]);
     }
 
@@ -64,6 +71,7 @@ final class save_challenge extends external_api {
      * @param int $gems
      * @param string $steps
      * @param bool $teamwork
+     * @param string|null $parts
      * @return array
      */
     public static function execute(
@@ -74,7 +82,8 @@ final class save_challenge extends external_api {
         int $saber = 0,
         int $gems = 0,
         string $steps = '1,2,3,4',
-        bool $teamwork = false
+        bool $teamwork = false,
+        ?string $parts = null
     ): array {
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
@@ -85,12 +94,16 @@ final class save_challenge extends external_api {
             'gems' => $gems,
             'steps' => $steps,
             'teamwork' => $teamwork,
+            'parts' => $parts,
         ]);
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
         require_capability('local/oksigeniatesape:manageregion', $context);
         $data = $params;
-        unset($data['courseid']);
+        unset($data['courseid'], $data['parts']);
+        if ($params['parts'] !== null) {
+            $data['parts'] = (array) (json_decode($params['parts'], true) ?: []);
+        }
         $challenge = classroom::save($params['courseid'], $data);
         return ['id' => (int) $challenge->id];
     }

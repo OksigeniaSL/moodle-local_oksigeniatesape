@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 44,
+ "version": 45,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 45,
+   "kind": "improvement",
+   "date": "2026-10-18",
+   "text": "El encargo de cada lugar con una parte por papel, y lo que ve cada papel en tres escenas del bosque: hay que contárselo al equipo"
+  },
   {
    "version": 44,
    "kind": "improvement",
@@ -1575,6 +1581,24 @@
     "azara": "La primera noche de la expedición. El cuaderno pide distinguir lo que vive de lo que no."
    },
    "offscreen": "El rastreo del patio, inventario de seres vivos e inertes",
+   "offscreenparts": [
+    {
+     "role": "scout",
+     "text": "Elige la zona del patio y guía a tu equipo en el rastreo."
+    },
+    {
+     "role": "sage",
+     "text": "Apunta cada hallazgo en su lista (vivo, inerte o estuvo vivo) y escribe por qué va ahí."
+    },
+    {
+     "role": "protector",
+     "text": "Comprueba que ningún ser vivo sale dañado y que todo vuelve a su sitio."
+    },
+    {
+     "role": "healer",
+     "text": "Dibuja o fotografía cada hallazgo y sube el inventario del equipo."
+    }
+   ],
    "memory": [
     {
      "flag": "semilla-en-el-nido",
@@ -1832,6 +1856,24 @@
     "azara": "Las muestras viajan en cajas por grupos, pero se han caído las etiquetas."
    },
    "offscreen": "Al rincón de tu reino, juego en el patio",
+   "offscreenparts": [
+    {
+     "role": "scout",
+     "text": "Antes de empezar, enseña a tu equipo el rincón de cada reino."
+    },
+    {
+     "role": "sage",
+     "text": "Explica en el rincón por qué una tarjeta que engaña va en ese reino."
+    },
+    {
+     "role": "protector",
+     "text": "Reparte las tarjetas de tu equipo y recógelas todas al acabar."
+    },
+    {
+     "role": "healer",
+     "text": "Comprueba que cada compañero de tu equipo llega al rincón de su tarjeta."
+    }
+   ],
    "memory": [
     {
      "flag": "bacterias-con-lupa",
@@ -2052,6 +2094,24 @@
     "azara": "En el cuaderno hay descripciones de animales sin nombre."
    },
    "offscreen": "Lupas de cartón y caza de bichos, sin dañarlos",
+   "offscreenparts": [
+    {
+     "role": "scout",
+     "text": "Busca con la lupa dónde se esconden los bichos y guía allí a tu equipo."
+    },
+    {
+     "role": "sage",
+     "text": "Anota cada invertebrado que encuentre tu equipo, con sus patas y su grupo."
+    },
+    {
+     "role": "protector",
+     "text": "Comprueba que nadie toca a los bichos y que las piedras vuelven a su sitio."
+    },
+    {
+     "role": "healer",
+     "text": "Presenta a la clase el dibujo de un invertebrado del equipo."
+    }
+   ],
    "memory": [
     {
      "flag": "pregunta-buena",
@@ -2282,6 +2342,24 @@
     "azara": "Las plantas que viajaron a oscuras han salido pálidas."
    },
    "offscreen": "El experimento de la luz, semillas con luz y sin luz",
+   "offscreenparts": [
+    {
+     "role": "scout",
+     "text": "Mide cada planta con la regla y mira su color y si está firme."
+    },
+    {
+     "role": "sage",
+     "text": "Apunta cada medida en la tabla, con su fecha, y escribe la conclusión del equipo."
+    },
+    {
+     "role": "protector",
+     "text": "Riega los vasos en el turno de tu equipo y deja la caja bien cerrada."
+    },
+    {
+     "role": "healer",
+     "text": "Dibuja o fotografía los vasos en cada turno y sube el registro del experimento."
+    }
+   ],
    "memory": [
     {
      "flag": "leche-a-las-plantas",
@@ -2503,6 +2581,24 @@
     "azara": "La expedición llega a la orilla de un gran río al caer la tarde."
    },
    "offscreen": "La carrera de la cadena, un juego de atrapar entre productores y consumidores",
+   "offscreenparts": [
+    {
+     "role": "scout",
+     "text": "Cuenta las plantas que quedan en pie justo antes del silbato."
+    },
+    {
+     "role": "sage",
+     "text": "Apunta qué pasó cuando quedaban pocas plantas y al llegar los descomponedores."
+    },
+    {
+     "role": "protector",
+     "text": "Comprueba que tu equipo atrapa sin empujar y, al acabar, recoge sus pañuelos."
+    },
+    {
+     "role": "healer",
+     "text": "Cuenta a la clase lo que apuntó tu equipo después de la carrera."
+    }
+   ],
    "memory": [
     {
      "flag": "mosquitos",
@@ -2746,6 +2842,24 @@
     "azara": "Antes de entregar el cuaderno hay que corregir lo que se mezcló."
    },
    "offscreen": "La exposición del naturalista, la guía de campo de la clase",
+   "offscreenparts": [
+    {
+     "role": "scout",
+     "text": "Elige un dato de una ficha de otro equipo y busca de dónde sale."
+    },
+    {
+     "role": "sage",
+     "text": "Repasa que cada ficha del equipo está completa y dice de dónde sale cada dato."
+    },
+    {
+     "role": "protector",
+     "text": "Comprueba que en las fotos y los dibujos de las fichas no sale ningún compañero."
+    },
+    {
+     "role": "healer",
+     "text": "Reparte con tu equipo quién presenta cada ficha y empieza tú la exposición."
+    }
+   ],
    "memory": [
     {
      "flag": "junto-a-hebra",

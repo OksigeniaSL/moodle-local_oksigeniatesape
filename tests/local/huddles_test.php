@@ -85,10 +85,23 @@ final class huddles_test extends \advanced_testcase {
             self::NOW + 6
         ));
         // A decision to choose, with the hand on Leo.
-        $seq = huddles::publish($session, $char, ['node' => 'n1', 'kind' => 'choose', 'prompt' => '¿Cuál?',
-            'options' => [['id' => 'a', 'label' => 'A'], ['id' => 'b', 'label' => 'B']], 'hand' => (int) $leo->id], self::NOW + 6);
+        $seq = huddles::publish(
+            $session,
+            $char,
+            ['node' => 'n1', 'kind' => 'choose', 'prompt' => '¿Cuál?',
+            'options' => [['id' => 'a', 'label' => 'A'], ['id' => 'b', 'label' => 'B']], 'hand' => (int) $leo->id,
+            'views' => ['scout' => 'Un rastro fino y brillante', 'sage' => 'La clave del Gran Libro', 'robot' => 'x'],
+            'known' => ['No tiene huesos']],
+            self::NOW + 6
+        );
         $view = huddles::mine($course->id, $leo->id, self::NOW + 7);
         $this->assertTrue($view['myturn']);
+        // Each tablet, the piece of its role only.
+        $this->assertSame('Un rastro fino y brillante', $view['piece']);
+        $this->assertSame('La clave del Gran Libro', huddles::mine($course->id, $ana->id, self::NOW + 7)['piece']);
+        $this->assertSame('', huddles::mine($course->id, $eva->id, self::NOW + 7)['piece']);
+        // What the answers told, for every tablet.
+        $this->assertSame(['No tiene huesos'], huddles::mine($course->id, $eva->id, self::NOW + 7)['known']);
         $this->assertSame(['a', 'b'], array_column($view['options'], 'id'));
         $this->assertArrayNotHasKey('pending', $view);
         // Not someone else, nor a decision already gone, nor an option that is not there.

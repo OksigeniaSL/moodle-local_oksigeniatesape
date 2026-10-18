@@ -46,7 +46,7 @@ class provider implements
 
     /** @var string[] Tables of a character in a course, all with charid and courseid. */
     public const COURSE_TABLES = ['member', 'ledger', 'inventory', 'sceneattempt', 'minigame', 'validation', 'found', 'idea',
-        'livein', 'livetoken', 'pact', 'daily', 'purchase', 'huddle', 'huddlein'];
+        'livein', 'livetoken', 'pact', 'daily', 'purchase', 'huddle', 'huddlein', 'challengepart'];
 
     /**
      * What is stored.
@@ -79,6 +79,7 @@ class provider implements
             'talent' => ['charid', 'role', 'code', 'level', 'timecreated'],
             'huddle' => ['courseid', 'groupid', 'sceneid', 'charid', 'state', 'status', 'timecreated', 'timemodified'],
             'huddlein' => ['huddleid', 'courseid', 'charid', 'lastseen', 'timecreated'],
+            'challengepart' => ['challengeid', 'courseid', 'groupid', 'part', 'charid', 'timecreated'],
         ];
         foreach ($fields as $table => $names) {
             $described = [];
@@ -478,6 +479,16 @@ class provider implements
                     'status' => $i->status,
                     'timecreated' => transform::datetime($i->timecreated),
                 ], $ideas)),
+            ]);
+        }
+        $parts = $DB->get_records(self::T . 'challengepart', ['charid' => $charid, 'courseid' => $courseid], 'challengeid');
+        if ($parts) {
+            $writer->export_data(self::path('taskparts'), (object) [
+                'parts' => array_values(array_map(fn($p) => [
+                    'challenge' => (int) $p->challengeid,
+                    'part' => (int) $p->part + 1,
+                    'timecreated' => transform::datetime($p->timecreated),
+                ], $parts)),
             ]);
         }
         $huddles = $DB->get_records(self::T . 'huddlein', ['charid' => $charid, 'courseid' => $courseid], 'huddleid');

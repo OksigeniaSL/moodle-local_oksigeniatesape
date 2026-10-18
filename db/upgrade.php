@@ -867,5 +867,31 @@ function xmldb_local_oksigeniatesape_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026101836, 'local', 'oksigeniatesape');
     }
 
+    if ($oldversion < 2026101838) {
+        // Team tasks with parts: the parts of a classroom challenge, and who of a team marked each.
+        $table = new xmldb_table('local_oksigeniatesape_challenge');
+        $field = new xmldb_field('parts', XMLDB_TYPE_TEXT, null, null, null, null, null, 'objectives');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        $table = new xmldb_table('local_oksigeniatesape_challengepart');
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('challengeid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('courseid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('groupid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('part', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('charid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('challengeid', XMLDB_KEY_FOREIGN, ['challengeid'], 'local_oksigeniatesape_challenge', ['id']);
+        $table->add_key('courseid', XMLDB_KEY_FOREIGN, ['courseid'], 'course', ['id']);
+        $table->add_key('charid', XMLDB_KEY_FOREIGN, ['charid'], 'local_oksigeniatesape_char', ['id']);
+        $table->add_index('challengeid-groupid-part', XMLDB_INDEX_UNIQUE, ['challengeid', 'groupid', 'part']);
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+        upgrade_plugin_savepoint(true, 2026101838, 'local', 'oksigeniatesape');
+    }
+
     return true;
 }

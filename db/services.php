@@ -433,6 +433,13 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:runclassscreen',
     ],
+    'local_oksigeniatesape_mark_part' => [
+        'classname' => 'local_oksigeniatesape\\external\\mark_part',
+        'description' => 'A member of a team marks a part of a team task as done, or takes it back.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:play',
+    ],
     'local_oksigeniatesape_huddle' => [
         'classname' => 'local_oksigeniatesape\\external\\huddle',
         'description' => 'The team session of a student: the tablets of a team joined to a scene.',

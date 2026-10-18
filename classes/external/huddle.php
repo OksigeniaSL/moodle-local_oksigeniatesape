@@ -155,6 +155,13 @@ final class huddle extends external_api {
                 'hand' => new external_value(PARAM_INT, 'Who decides'),
                 'handname' => new external_value(PARAM_TEXT, 'Their name'),
                 'myturn' => new external_value(PARAM_BOOL, 'This student decides'),
+                'piece' => new external_value(PARAM_TEXT, 'What only their role sees of the decision', VALUE_DEFAULT, ''),
+                'known' => new external_multiple_structure(
+                    new external_value(PARAM_TEXT, 'Something the answers told'),
+                    'What the answers told so far',
+                    VALUE_DEFAULT,
+                    []
+                ),
                 'waiting' => new external_value(PARAM_BOOL, 'A choice waits for the guide'),
                 'pending' => new external_single_structure([
                     'by' => new external_value(PARAM_INT, 'Who chose'),

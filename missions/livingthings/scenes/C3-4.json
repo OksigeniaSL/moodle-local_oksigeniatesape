@@ -70,6 +70,12 @@
     "El color y el tamaño cambian: dos caracoles del mismo muro no son iguales.",
     "La mejor primera pregunta parte a los seis en dos grupos grandes."
    ],
+   "views": {
+    "scout": "En el muro del patio hay dos caracoles: uno marrón y otro amarillo.",
+    "protector": "En el patio hay un gatito y un gato adulto, mucho más grande.",
+    "healer": "El equipo que probará la clave vendrá otro día: no sabe qué vimos ni cuándo.",
+    "sage": "Para empezar una clave, conviene una pregunta que reparta a los seis en dos grupos de tres."
+   },
    "options": [
     {
      "id": "huesos",
@@ -123,7 +129,7 @@
      "label": "¿Es grande?",
      "correct": false,
      "objective": "SV-04",
-     "feedback": "«¿Grande según quién?» Una cría de gato es más pequeña que un caracol gordo. El tamaño cambia y, además, cada uno lo mide a su manera."
+     "feedback": "«¿Grande según quién?» Un gatito es pequeño y su madre, grande, y los dos son gatos. El tamaño cambia y, además, cada uno lo mide a su manera."
     },
     {
      "id": "martes",
@@ -142,6 +148,10 @@
     "¿Qué tiene uno que no tenga el otro, y que no se le pueda quitar?",
     "Lo que hace un animal cambia según el día; lo que lleva encima, no."
    ],
+   "views": {
+    "protector": "En el barrio hay gatos grises, negros, blancos y naranjas.",
+    "healer": "El pingüino y el avestruz son aves, y ninguno de los dos vuela."
+   },
    "options": [
     {
      "id": "plumas",
