@@ -40,8 +40,8 @@ final class page_test extends \advanced_testcase {
         ob_start();
         page::output('game', $course);
         $html = ob_get_clean();
-        // The configuration and the sixteen scripts of the game: nothing in a name closes a script early.
-        $this->assertSame(17, substr_count($html, '</script>'));
+        // The configuration and the seventeen scripts of the game: nothing in a name closes a script early.
+        $this->assertSame(18, substr_count($html, '</script>'));
         preg_match('/window\.TESAPE_CONFIG = (\{.*?\});<\/script>/s', $html, $m);
         $config = json_decode($m[1], true);
         $this->assertSame('</script><b>x', $config['firstname']);

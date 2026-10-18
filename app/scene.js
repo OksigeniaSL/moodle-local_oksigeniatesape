@@ -2732,7 +2732,7 @@
         sc = JSON.parse(d.definition);
         if (T.fx) {
           // The soft sound of the place of the scene.
-          T.fx.ambient(T.fx.place(d.place));
+          T.fx.ambient(T.fx.place(d.place), d.place);
         }
         if (opts.huddle && T.huddleSync) {
           // Those who start are in until the session says otherwise.

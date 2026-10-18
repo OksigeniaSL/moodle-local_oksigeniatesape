@@ -92,8 +92,10 @@ is today:
   exported as a package and loaded in another course or site. The AI of the site can draft a scene, if the site
   allows it.
 - **A game that sounds and moves**: night and day themes (each world can bring its colours), sounds, the sound of each
-  kind of place and the music of the class screen from the art pack, a road that draws itself, little living things
-  that visit the screens and say what they are when touched.
+  place and the music of the class screen from the art pack, a road that draws itself, little living things that visit
+  the screens and say what they are when touched. **The encounter of the day is walked** in each place, with the hero
+  and the creature as puppets that move by pieces, the voices of the clues and the music of the moment; as a list, for
+  who prefers it or has «no movement».
 - **Scenes as a team** on one device, with the teammates who are there (the teacher can take one back if someone was
   not); **without connection**, a scene opened stays on the device and a play finished without connection goes by
   itself later, once; and **a «What if…?»** at the end of every scene, to think about.
@@ -149,7 +151,11 @@ php local/oksigeniatesape/cli/demo.php --run --weeks=3
 ```
 
 An art pack is a zip with `pack.json` (code, name, version, and `files`: keys such as `character.storyheroes.healer`,
-`creature.2.feathers`, `icon.saber` or `map.livingthings`, each with an image of the zip in PNG, WebP or JPEG):
+`creature.2.feathers`, `icon.saber` or `map.livingthings`, each with an image of the zip in PNG, WebP or JPEG). Under
+`sound.` and `voice.` it may bring sounds and what the characters say (MP3, Ogg or M4A), and under `rig.` and `anim.`
+the puppets of the moments that are played: the pieces of a figure in a WebP with its atlas in JSON
+(`rig.<key of the picture it was cut from>` and `….atlas`), the skeleton of each kind of body (`rig.hero`,
+`rig.creature`) and its animations (`anim.rig.hero`, `anim.rig.creature`):
 
 ```bash
 php local/oksigeniatesape/cli/art.php --install=/path/to/pack.zip

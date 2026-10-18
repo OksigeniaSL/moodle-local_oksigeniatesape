@@ -26,8 +26,7 @@
   var SPEED = 270;
   /** @var {Object} The beings that have a picture among the critters of the valley, until they have their own. */
   var CRITTER = {caracol: 'critter.snail', hormiga: 'critter.ant.1', rana: 'critter.frog', mariposa: 'critter.butterfly.1',
-    abeja: 'critter.bee', lombriz: 'critter.worm', luciernaga: 'critter.firefly', murcielago: 'critter.bat.1',
-    arana: 'critter.spider', babosa: 'critter.snail'};
+    luciernaga: 'critter.firefly', murcielago: 'critter.bat.1', arana: 'critter.spider'};
 
   /**
    * Whether a point is on the ground of the place.
@@ -98,18 +97,27 @@
    * @param {string} fallback
    */
   function sound(name, fallback) {
-    if (!T.fx) {
-      return;
-    }
-    if (T.artUrl(['sound.' + name])) {
-      T.fx.sound(name);
-    } else if (fallback) {
+    if (T.fx && !T.fx.sound(name) && fallback) {
       T.fx.sound(fallback);
     }
   }
 
   /**
-   * The picture of the hero of the student, as the game draws them.
+   * A line said aloud, if the pack has its voice; the text goes in the box all the same.
+   *
+   * @param {string} key voice.<…>
+   * @param {Function} [end] When it has been said, or at once without it.
+   */
+  function voice(key, end) {
+    if (!T.fx || !T.fx.voice(key, end)) {
+      if (end) {
+        end();
+      }
+    }
+  }
+
+  /**
+   * The picture of the hero of the student, as the game draws them: its key in the pack.
    *
    * @param {Object} c The character.
    * @return {string|null}
@@ -121,7 +129,7 @@
     } catch (e) {
       look = {};
     }
-    return T.artUrl(T.characterKeys(T.family || 'storyheroes', c.role, c.lineage, c.nameform === 'f' ? 'f' : 'm',
+    return T.artKey(T.characterKeys(T.family || 'storyheroes', c.role, c.lineage, c.nameform === 'f' ? 'f' : 'm',
       c.stage || 1, T.SKINS.indexOf(look.skin), false));
   }
 
@@ -129,7 +137,7 @@
    * The picture of the creature of the student, and its hue.
    *
    * @param {Object} c The character.
-   * @return {Object} url, hue, name.
+   * @return {Object} key, url, hue, name.
    */
   function creatureArt(c) {
     var traits = {};
@@ -141,8 +149,9 @@
     var st = Math.max(1, Math.min(5, c.creaturestage || 1));
     var low = Math.min(4, st);
     var coat = traits.coat || 'none';
-    return {url: T.artUrl(['creature.' + st + '.' + coat, 'creature.' + st, 'creature.' + low + '.' + coat,
-      'creature.' + low, 'creature']), hue: Number(traits.hue) || 0, name: traits.name || ''};
+    var key = T.artKey(['creature.' + st + '.' + coat, 'creature.' + st, 'creature.' + low + '.' + coat, 'creature.' + low,
+      'creature']);
+    return {key: key, url: key ? T.artUrl([key]) : null, hue: Number(traits.hue) || 0, name: traits.name || ''};
   }
 
   T.walk = {
@@ -170,6 +179,20 @@
       var place = JSON.parse(ch.stage);
       var c = world.character;
       var pet = creatureArt(c);
+      var hero = heroArt(c);
+      // The puppets cut from those same pictures, if the pack brings them: then they move by pieces.
+      var rigs = T.puppet ? {hero: T.puppet.find(hero, 'hero'), pet: T.puppet.find(pet.key, 'creature')} : {};
+      var being = e.picture.replace(/^being\./, '');
+      var skin = world.mission && world.mission.skin && world.mission.skin !== 'valley' ? '.' + world.mission.skin : '';
+      // What the hidden being says at each trace, in the voice of the pack (the one of its skin, if it has one).
+      var clueVoice = function(i) {
+        return 'voice.encounter.' + being + '.' + (i + 1) + skin;
+      };
+      var step = place.ground === 'wood' ? 'step.wood' : 'step.grass';
+      // Where it hides: the bush, or the hideout of the place (books, ferns, reeds, rocks) if the pack brings it.
+      var hideout = place.hide && T.artUrl(['stage.hide.' + place.hide + '.still']) ? 'stage.hide.' + place.hide : 'stage.bush';
+      var bits = {books: [0xf3ead2, 0xd8c79f, 0xb98b5e], rocks: [0x8a8478, 0xa59d8c, 0x6f6a60]}[place.hide] ||
+        [0x2f5b46, 0x3f7454, 0x6f8f5a, 0xe8508f];
       var petname = pet.name || t('app_stage_creature');
       var hides = place.hides.map(point);
       var traces = place.traces.map(point);
@@ -181,8 +204,8 @@
         if (!moment) {
           return;
         }
-        moment.hud('<span class="stage-prints" role="img" aria-label="' + esc(t('app_stage_found', state.found + '/' + traces.length)) +
-          '">' + traces.map(function(tr, i) {
+        moment.hud('<span class="stage-prints" role="img" aria-label="' +
+          esc(t('app_stage_found', state.found + '/' + traces.length)) + '">' + traces.map(function(tr, i) {
             return '<i class="' + (i < state.found ? 'on' : '') + '"></i>';
           }).join('') + '</span>');
       };
@@ -198,7 +221,7 @@
         var panel = moment.panel('<h3>' + esc(t('app_encounter_who')) + '</h3><p class="help-soft">' +
           esc(t('app_stage_clues', state.found + '/' + traces.length)) + '</p><div class="encounter-options">' + opts +
           '</div><div class="actions"><button type="button" class="btn btn-soft" data-keep>' +
-          esc(t('app_stage_keep')) + '</button></div>');
+          esc(t('app_stage_keep')) + '</button></div>', 'top');
         panel.querySelector('[data-keep]').onclick = function() {
           moment.hidePanel();
         };
@@ -234,30 +257,38 @@
           e.crossed = state.crossed;
           aslist(e, state.found);
         },
-        onclose: done,
+        onclose: function() {
+          if (T.fx) {
+            T.fx.hush();
+            T.fx.moment('');
+          }
+          done();
+        },
         scene: {
           preload: function() {
             this.load.image('bg', T.artUrl(['scene.' + ch.code]));
             if (place.front && T.artUrl([place.front])) {
               this.load.image('front', T.artUrl([place.front]));
             }
-            var hero = heroArt(c);
-            if (hero) {
-              this.load.image('hero', hero);
+            if (rigs.hero) {
+              T.puppet.load(this, 'puppet.hero', rigs.hero);
+            } else if (hero) {
+              this.load.image('hero', T.artUrl([hero]));
             }
-            if (pet.url) {
+            if (rigs.pet) {
+              T.puppet.load(this, 'puppet.pet', rigs.pet);
+            } else if (pet.url) {
               this.load.image('pet', pet.url);
             }
-            var being = T.artUrl(['being.' + e.picture.replace(/^being\./, ''), CRITTER[e.picture.replace(/^being\./, '')] ||
-              'none']);
-            if (being) {
-              this.load.image('being', being);
+            var picture = T.artUrl(['being.' + being, CRITTER[being] || 'none']);
+            if (picture) {
+              this.load.image('being', picture);
             }
             if (T.artUrl(['critter.firefly'])) {
               this.load.image('firefly', T.artUrl(['critter.firefly']));
             }
             ['still', 'rustle', 'open', 'flat'].forEach(function(look) {
-              var url = T.artUrl(['stage.bush.' + look]);
+              var url = T.artUrl([hideout + '.' + look]);
               if (url) {
                 this.load.image('bush.' + look, url);
               }
@@ -269,25 +300,28 @@
             var S = this;
             var still = moment.still;
             // Without a picture, a shape: the moment is still played.
-            [['hero', 0xffc857], ['pet', 0x7cc67f], ['being', 0x2b2418]].forEach(function(f) {
-              if (!S.textures.exists(f[0])) {
-                makeFigure(S, f[0], f[1]);
-              }
-            });
+            if (!S.textures.exists('being')) {
+              makeFigure(S, 'being', 0x2b2418);
+            }
             makeTextures(S);
             S.add.image(0, 0, 'bg').setOrigin(0).setDepth(0);
             if (S.textures.exists('front')) {
               S.add.image(0, 0, 'front').setOrigin(0).setDepth(5000);
             }
-            var actor = function(key, x, y, height) {
-              var sprite = S.add.image(x, y, key).setOrigin(0.5, 1);
+            // A figure: a puppet that moves by pieces, or its picture; the size, that of the figure it was cut from.
+            var actor = function(key, x, y, height, rig) {
+              var puppet = rig && T.puppet.make(S, rig, still);
+              if (!puppet && !S.textures.exists(key)) {
+                makeFigure(S, key, key === 'hero' ? 0xffc857 : 0x7cc67f);
+              }
+              var sprite = puppet ? puppet.container.setPosition(x, y) : S.add.image(x, y, key).setOrigin(0.5, 1);
               var shadow = S.add.ellipse(x, y, 10, 10, 0x0b1a10, 0.32);
-              return {x: x, y: y, sprite: sprite, shadow: shadow, base: height / sprite.height, walk: 0, moving: false,
-                facing: 1, lift: 0, tilt: 0};
+              return {x: x, y: y, sprite: sprite, puppet: puppet, shadow: shadow, base: height / sprite.height, walk: 0,
+                moving: false, facing: 1, lift: 0, tilt: 0, pose: null};
             };
             var start = point(place.start);
-            S.hero = actor('hero', start.x, start.y, 250);
-            S.pet = actor('pet', start.x - 85, start.y + 12, 124);
+            S.hero = actor('hero', start.x, start.y, 250, rigs.hero && 'puppet.hero');
+            S.pet = actor('pet', start.x - 85, start.y + 12, 124, rigs.pet && 'puppet.pet');
             S.pet.mode = 'follow';
             if (pet.hue) {
               try {
@@ -318,8 +352,8 @@
             S.burst = S.add.particles(0, 0, 'spark', {lifespan: 900, speed: {min: 80, max: 260}, scale: {start: 0.9, end: 0},
               alpha: {start: 1, end: 0}, tint: [0xfff1bd, 0xffc857, 0xe8508f], gravityY: 160, emitting: false}).setDepth(4500);
             S.leaves = S.add.particles(0, 0, 'leaf', {lifespan: 1100, speed: {min: 50, max: 150}, angle: {min: 220, max: 320},
-              rotate: {min: 0, max: 360}, alpha: {start: 1, end: 0}, gravityY: 260,
-              tint: [0x2f5b46, 0x3f7454, 0x6f8f5a, 0xe8508f], emitting: false}).setDepth(4300);
+              rotate: {min: 0, max: 360}, alpha: {start: 1, end: 0}, gravityY: 260, tint: bits, emitting: false})
+              .setDepth(4300);
             S.hearts = S.add.particles(0, 0, 'heart', {lifespan: 1300, speed: {min: 30, max: 90}, angle: {min: 240, max: 300},
               scale: {start: 0.9, end: 0.3}, alpha: {start: 1, end: 0}, tint: [0xe8508f, 0xff8fbf], gravityY: -40,
               emitting: false}).setDepth(4700);
@@ -346,9 +380,27 @@
             S.scale.on('resize', S.fit);
             S.cameras.main.startFollow(S.camTarget, false, 0.06, 0.06);
             if (T.fx) {
-              T.fx.ambient(T.fx.place(ch.code));
+              T.fx.ambient(T.fx.place(ch.code), ch.code);
+              T.fx.moment(state.found ? 'find' : 'explore');
+              // What will be said here, ahead: the clues of this being and the lines of the creature.
+              T.fx.fetch(e.clues.map(function(clue, i) {
+                return clueVoice(i);
+              }).concat(['voice.creature.smell', 'voice.creature.here', 'voice.creature.another',
+                hideout === 'stage.bush' ? 'voice.creature.bush' : 'voice.creature.hideout', 'voice.creature.hello',
+                'voice.hidden.giggle', 'voice.hidden.found']));
             }
             hud();
+
+            /**
+             * A figure does something once (surprise, point, sniff…), if it is a puppet.
+             *
+             * @param {Object} who
+             * @param {string} clip
+             * @return {boolean} Whether it did.
+             */
+            S.act = function(who, clip) {
+              return !!who.puppet && who.puppet.play(clip, true);
+            };
 
             /** The bush shakes. */
             S.rustle = function() {
@@ -357,7 +409,7 @@
                 bush.setTexture('bush.rustle');
               }
               S.leaves.explode(still ? 2 : 5, bush.x, bush.y - 60);
-              sound('bush.rustle', 'tap');
+              sound(place.hide === 'books' ? 'page' : 'bush.rustle', 'tap');
               if (still) {
                 return;
               }
@@ -413,7 +465,13 @@
                 });
               }});
             };
-            S.hop = function(who) {
+            S.hop = function(who, loud) {
+              if (loud) {
+                sound('hop', '');
+              }
+              if (S.act(who, who === S.pet ? 'hop' : 'surprise')) {
+                return;
+              }
               if (!still) {
                 S.tweens.add({targets: who, lift: -22, duration: 160, yoyo: true, ease: 'Sine.easeOut'});
               }
@@ -460,8 +518,17 @@
               S.pet.goal = {x: spot.x - 30, y: spot.y + 10};
               S.time.delayedCall(still ? 0 : 450, function() {
                 S.pet.mode = 'still';
+                S.pet.pose = 'sniff';
                 sound('sniff', 'near');
-                S.time.delayedCall(still ? 0 : 1150, function() {
+                // The first time, the creature says it has found something; the clue comes when it has said it.
+                var waited = false;
+                var said = !i ? false : true;
+                var clue = function() {
+                  if (!waited || !said) {
+                    return;
+                  }
+                  waited = false;
+                  S.pet.pose = null;
                   S.pool.setVisible(false);
                   S.ring.setVisible(false);
                   S.burst.explode(still ? 6 : 22, spot.x, spot.y - 10);
@@ -469,7 +536,11 @@
                   state.found++;
                   state.last = S.time.now;
                   hud();
+                  if (state.found === 1) {
+                    T.fx.moment('find');
+                  }
                   moment.say(t('app_stage_grass'), e.clues[i], true);
+                  voice(clueVoice(i));
                   S.rustle();
                   S.hop(S.hero);
                   S.emote(S.hero, '!');
@@ -480,9 +551,22 @@
                     state.busy = false;
                     S.next();
                     if (state.found >= traces.length) {
-                      moment.say(petname, t('app_stage_bush', petname));
+                      var bush = hideout === 'stage.bush';
+                      moment.say(petname, t(bush ? 'app_stage_bush' : 'app_stage_hideout'), true);
+                      voice(bush ? 'voice.creature.bush' : 'voice.creature.hideout');
                     }
                   });
+                };
+                if (!i) {
+                  moment.say(petname, t('app_stage_here'), true);
+                  voice('voice.creature.here', function() {
+                    said = true;
+                    clue();
+                  });
+                }
+                S.time.delayedCall(still ? 0 : 1150, function() {
+                  waited = true;
+                  clue();
                 });
               });
             };
@@ -500,6 +584,7 @@
               sound('peek', '');
               S.rustle();
               S.emote(S.pet, '?');
+              S.act(S.pet, 'alert');
               S.tweens.add({targets: hidden, y: hide.y - 92, duration: 260, yoyo: true, hold: 650, ease: 'Sine.easeOut',
                 onComplete: function() {
                   hidden.setVisible(false).clearTint().setAlpha(1).setPosition(hide.x, hide.y);
@@ -510,7 +595,10 @@
             /** The hero calls the chosen one towards the bush. */
             S.callOut = function(name) {
               var short = name.replace(/^(el|la|los|las) /, '');
-              S.hero.facing = Math.sign(hides[state.hide].x - S.hero.x) || 1;
+              // A figure with its tool in the left hand points to the left of its picture: it turns the other way.
+              var side = Math.sign(hides[state.hide].x - S.hero.x) || 1;
+              S.hero.facing = S.hero.puppet && S.hero.puppet.mirror ? -side : side;
+              S.act(S.hero, 'point');
               S.emote(S.hero, t('app_stage_call', short.charAt(0).toUpperCase() + short.slice(1)));
             };
 
@@ -521,10 +609,14 @@
               var to = hides[state.hide];
               state.prompted = false;
               S.rustle();
-              sound('escape', 'giggle');
               S.emote(S.pet, '?');
+              S.act(S.pet, 'alert');
               moment.hush();
               moment.say(t('app_stage_grass'), t('app_stage_fled', name), false);
+              voice('voice.hidden.giggle');
+              if (!T.fx || !T.artUrl(['voice.hidden.giggle'])) {
+                sound('escape', 'giggle');
+              }
               for (var i = 0; i <= 5; i++) {
                 (function(k) {
                   S.time.delayedCall(k * 110, function() {
@@ -540,15 +632,19 @@
                 move();
               } else {
                 var scale = S.bush.scaleY;
-                S.tweens.add({targets: S.bush, scaleY: 0.02, duration: 200, delay: 450, ease: 'Sine.easeIn', onComplete: function() {
-                  move();
-                  S.tweens.add({targets: S.bush, scaleY: scale, duration: 380, ease: 'Back.easeOut'});
-                }});
+                S.tweens.add({targets: S.bush, scaleY: 0.02, duration: 200, delay: 450, ease: 'Sine.easeIn',
+                  onComplete: function() {
+                    move();
+                    S.tweens.add({targets: S.bush, scaleY: scale, duration: 380, ease: 'Back.easeOut'});
+                  }});
               }
               // The creature finds one more clue, if there is one left.
               if (state.found < traces.length) {
-                moment.say(petname, t('app_stage_another', petname));
-                S.time.delayedCall(still ? 0 : 1200, S.trace);
+                S.time.delayedCall(still ? 0 : 1300, function() {
+                  moment.say(petname, t('app_stage_another'), true);
+                  voice('voice.creature.another');
+                });
+                S.time.delayedCall(still ? 0 : 2600, S.trace);
               } else {
                 S.next();
               }
@@ -562,7 +658,14 @@
               S.pool.setVisible(false);
               S.ring.setVisible(false);
               moment.hush();
-              sound('sting.win', 'win');
+              if (T.fx) {
+                T.fx.hush();
+                T.fx.moment('');
+              }
+              // The music of the moment the being comes out, where music plays; if not, its short sound.
+              if (!T.fx || !T.fx.musicOn() || !T.fx.musicAllowed() || !T.fx.later('music.victory')) {
+                sound('sting.win', 'win');
+              }
               if (S.textures.exists('bush.open')) {
                 S.bush.setTexture('bush.open');
                 S.time.delayedCall(320, function() {
@@ -581,8 +684,12 @@
                 S.cameras.main.shake(160, 0.0025);
               }
               S.burst.explode(still ? 8 : 30, hide.x, hide.y - 60);
-              S.hop(S.hero);
+              S.act(S.hero, 'surprise');
               S.emote(S.hero, '!');
+              S.time.delayedCall(still ? 0 : 600, function() {
+                moment.say(t('app_stage_grass'), t('app_stage_gotme'), true);
+                voice('voice.hidden.found');
+              });
               S.walkTo(onGround(place, hide.x + side * 200, hide.y + 34), null);
               S.pet.mode = 'lead';
               S.pet.goal = {x: hide.x + side * 118, y: hide.y + 16};
@@ -593,17 +700,24 @@
               S.time.delayedCall(still ? 0 : 1500, function() {
                 S.pet.mode = 'still';
                 S.pet.facing = -side;
-                S.hop(S.pet);
+                S.hop(S.pet, true);
+                S.pet.pose = 'happy';
+                S.act(S.hero, 'celebrate');
                 S.hearts.explode(still ? 2 : 8, hide.x + side * 70, hide.y - 70);
                 sound('joy', 'heart');
                 S.emote(S.pet, '♥');
+                S.time.delayedCall(still ? 0 : 1300, function() {
+                  moment.say(petname, t('app_stage_hello'), true);
+                  voice('voice.creature.hello');
+                });
                 for (var g = 0; g < r.gems; g++) {
                   S.time.delayedCall(g * 180, function() {
                     sound('gem', 'coin');
                   });
                 }
               });
-              S.time.delayedCall(still ? 0 : 2800, function() {
+              S.time.delayedCall(still ? 0 : 4200, function() {
+                sound('card', 'chime');
                 var name = r.name.charAt(0).toUpperCase() + r.name.slice(1);
                 var panel = moment.panel('<h3>' + esc(t('app_encounter_right', name)) + '</h3>' + (r.golden ? '<p>' +
                   esc(t('app_encounter_golden')) + '</p>' : '') + (r.gems ? '<p class="conseq good"><span class="what">' +
@@ -618,14 +732,16 @@
             state.phase = 'explore';
             state.last = S.time.now;
             S.rustle();
-            moment.say(petname, t('app_stage_smell', petname));
+            moment.say(petname, t('app_stage_smell'), true);
+            voice('voice.creature.smell');
             S.next();
             // For the tests of the browser: where things are, and what the student can do.
             moment.debug = {
               state: function() {
-                return {place: e.place, found: state.found, crossed: state.crossed.slice(), hide: hides[state.hide],
-                  solved: state.solved,
-                  busy: state.busy, hero: {x: S.hero.x, y: S.hero.y}, traces: traces, phase: state.phase};
+                return {place: e.place, being: being, found: state.found, crossed: state.crossed.slice(), hide: hides[state.hide],
+                  solved: state.solved, busy: state.busy, hero: {x: S.hero.x, y: S.hero.y}, traces: traces,
+                  phase: state.phase, pictures: {hero: hero, pet: pet.key, rigs: {hero: !!rigs.hero, pet: !!rigs.pet}},
+                  puppets: {hero: S.hero.puppet ? S.hero.puppet.clipName : '', pet: S.pet.puppet ? S.pet.puppet.clipName : ''}};
               },
               walkTo: function(x, y) {
                 S.walkTo(onGround(place, x, y), null);
@@ -652,8 +768,8 @@
               S.camTarget.x = S.hero.x * 0.72 + S.pet.x * 0.28;
               S.camTarget.y = S.hero.y * 0.85 + S.pet.y * 0.15 - 110;
             }
-            animate(S, S.hero, place, time, dt, 7, moment.still);
-            animate(S, S.pet, place, time, dt, 12, moment.still);
+            animate(S, S.hero, place, time, dt, 7, moment.still, step);
+            animate(S, S.pet, place, time, dt, 12, moment.still, step);
             S.emotes.forEach(function(em) {
               em.bubble.setPosition(em.who.sprite.x, em.who.sprite.y - em.who.sprite.displayHeight - 30 - em.rise);
             });
@@ -675,8 +791,9 @@
             // If nothing happens for a while, the creature reminds without giving orders.
             if (next && time - state.last > 12000 && state.hinted !== state.found) {
               state.hinted = state.found;
-              S.hop(S.pet);
-              moment.say(petname, t('app_stage_waits', petname));
+              S.hop(S.pet, true);
+              moment.say(petname, t('app_stage_waits'), true);
+              voice('voice.creature.waits');
             }
           }
         }
@@ -814,8 +931,9 @@
    * @param {number} dt
    * @param {number} rate
    * @param {boolean} still
+   * @param {string} ground The sound of a step there.
    */
-  function animate(S, who, place, time, dt, rate, still) {
+  function animate(S, who, place, time, dt, rate, still, ground) {
     var top = Math.min.apply(null, place.walk.map(function(p) {
       return p[1];
     }));
@@ -840,12 +958,22 @@
         if (who === S.hero) {
           who.steps = (who.steps || 0) + 1;
           if (who.steps % 2 === 0) {
-            sound('step.grass', '');
+            sound(ground, '');
           }
         }
       }
     } else {
       squash = 1 + Math.sin(time / 520 + who.x) * 0.012;
+    }
+    if (who.puppet) {
+      // A puppet walks and breathes by itself, or does what it is doing, unless it is in the middle of something.
+      if (!who.puppet.busy()) {
+        who.puppet.play(who.moving ? 'walk' : who.pose || 'idle');
+      }
+      who.puppet.draw(dt);
+      bob = 0;
+      sway = 0;
+      squash = 1;
     }
     who.sprite.setPosition(who.x, who.y - bob + who.lift);
     who.sprite.setScale(scale * who.facing, scale * squash);

@@ -47,6 +47,11 @@ final class art_test extends \advanced_testcase {
             if (str_ends_with($path, '.ogg') || str_ends_with($path, '.mp3')) {
                 $content = str_contains($path, 'fake') ? 'not a sound' : 'OggS' . str_repeat("\0", 40);
             }
+            // The data of a puppet: an atlas, or something that is not JSON.
+            if (str_ends_with($path, '.json')) {
+                $content = str_contains($path, 'fake') ? '<script>alert(1)</script>' :
+                    '{"frames": {"head": {"frame": {"x": 0, "y": 0, "w": 1, "h": 1}}}, "meta": {"note": "<b>"}}';
+            }
             file_put_contents($local, $content);
             $list[$path] = $local;
         }
@@ -219,5 +224,40 @@ final class art_test extends \advanced_testcase {
         // Sounds only under «sound.», only of their kinds, and only if they start as a sound does.
         $this->assertSame(['map.livingthings', 'sound.right', 'sound.ambient.meadow'], array_keys($manifest['files']));
         $this->assertStringEndsWith('/art/2/valley/sounds/right.ogg', art::manifest()['files']['sound.right']);
+    }
+
+    public function test_a_world_brings_its_puppets_and_voices(): void {
+        $this->resetAfterTest();
+        $manifest = art::install($this->make_zip([
+            'code' => 'valley',
+            'name' => 'The valley',
+            'version' => 4,
+            'files' => [
+                'rig.creature.2.fur' => 'rig/creature.webp',
+                'rig.creature.2.fur.atlas' => 'rig/creature.atlas.json',
+                'anim.rig.creature' => 'anim/creature.json',
+                'rig.hero' => 'rig/fake.json',
+                'map.livingthings' => 'rig/creature.atlas.json',
+                'voice.creature.smell' => 'voices/smell.mp3',
+                'voice.hidden.giggle' => 'voices/fake.mp3',
+            ],
+        ], [
+            'rig/creature.webp',
+            'rig/creature.atlas.json',
+            'anim/creature.json',
+            'rig/fake.json',
+            'voices/smell.mp3',
+            'voices/fake.mp3',
+        ]));
+        // Data only under «rig.» and «anim.», and only if it is JSON; voices as sounds.
+        $this->assertSame(
+            ['rig.creature.2.fur', 'rig.creature.2.fur.atlas', 'anim.rig.creature', 'voice.creature.smell'],
+            array_keys($manifest['files'])
+        );
+        // Kept as it was read, with nothing that could close a tag.
+        $context = \context_system::instance();
+        $file = get_file_storage()->get_file($context->id, 'local_oksigeniatesape', 'art', 0, '/valley/rig/', 'creature.atlas.json');
+        $this->assertStringNotContainsString('<', $file->get_content());
+        $this->assertSame('<b>', json_decode($file->get_content(), true)['meta']['note']);
     }
 }

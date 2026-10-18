@@ -611,6 +611,22 @@
     return null;
   };
 
+  /**
+   * Which of some keys the art pack of the site has first, from the most precise to the most general; or null.
+   *
+   * @param {string[]} keys
+   * @return {string|null}
+   */
+  T.artKey = function(keys) {
+    var files = cfg.art && cfg.art.files;
+    for (var i = 0; files && i < keys.length; i++) {
+      if (files[keys[i]]) {
+        return keys[i];
+      }
+    }
+    return null;
+  };
+
   /* ---------- The map of a mission ---------- */
 
   /** @var {string[]} The zones of a map in layers, from the bottom up. */

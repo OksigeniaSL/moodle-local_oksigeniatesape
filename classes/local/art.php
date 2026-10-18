@@ -44,8 +44,20 @@ final class art {
     /** @var string[] Images a pack can have (raster only: nothing that can run code). */
     public const EXTENSIONS = ['png', 'webp', 'jpg', 'jpeg'];
 
-    /** @var string[] Sounds a pack can have, under keys that start with «sound.»: the sounds, places and music of a world. */
+    /**
+     * @var string[] Sounds a pack can have, under keys that start with «sound.» (the sounds, places and music of a world)
+     *     or «voice.» (what the characters say).
+     */
     public const SOUNDS = ['mp3', 'ogg', 'm4a'];
+
+    /**
+     * @var string[] Data a pack can have, under keys that start with «rig.» or «anim.»: the puppets (the pieces of each
+     *     figure in its atlas, the skeleton of each kind of body and its animations). Read as JSON and written again.
+     */
+    public const DATA = ['json'];
+
+    /** @var int The most a file of data can weigh, in bytes. */
+    private const DATAMAX = 262144;
 
     /** @var string[] The layers of a pack, from the one under to the one on top. */
     public const KINDS = ['world', 'style', 'mission'];
@@ -79,11 +91,13 @@ final class art {
         foreach ($info['files'] as $key => $path) {
             $path = ltrim(clean_param((string) $path, PARAM_PATH), '/');
             $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-            $sound = strpos((string) $key, 'sound.') === 0;
+            $sound = preg_match('/^(sound|voice)\./', (string) $key) === 1;
+            $data = $extension === 'json' && preg_match('/^(rig|anim)\./', (string) $key) === 1;
             if (
                 !preg_match('/^[a-z0-9_.-]{1,80}$/', (string) $key) || $path === '' || !is_file($tmp . '/' . $path)
-                || !in_array($extension, $sound ? self::SOUNDS : self::EXTENSIONS, true)
+                || !in_array($extension, $sound ? self::SOUNDS : ($data ? self::DATA : self::EXTENSIONS), true)
                 || ($sound && !self::is_sound($tmp . '/' . $path))
+                || ($data && !self::clean_data($tmp . '/' . $path))
             ) {
                 continue;
             }
@@ -294,10 +308,32 @@ final class art {
         $context = \context_system::instance();
         $file = get_file_storage()->get_file($context->id, self::COMPONENT, self::FILEAREA, 0, $filepath, $filename);
         $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-        if (!$file || $file->is_directory() || !in_array($extension, array_merge(self::EXTENSIONS, self::SOUNDS), true)) {
+        if (
+            !$file || $file->is_directory()
+            || !in_array($extension, array_merge(self::EXTENSIONS, self::SOUNDS, self::DATA), true)
+        ) {
             return false;
         }
         send_stored_file($file, YEARSECS, 0, false, $options);
+        return true;
+    }
+
+    /**
+     * Whether a file is data that can be kept: JSON, an object or a list, small. It is written again from what was read,
+     * so nothing else stays in it.
+     *
+     * @param string $path
+     * @return bool
+     */
+    private static function clean_data(string $path): bool {
+        if (filesize($path) > self::DATAMAX) {
+            return false;
+        }
+        $data = json_decode((string) file_get_contents($path), true);
+        if (!is_array($data)) {
+            return false;
+        }
+        file_put_contents($path, json_encode($data, JSON_HEX_TAG | JSON_HEX_AMP));
         return true;
     }
 

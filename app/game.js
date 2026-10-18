@@ -1544,7 +1544,7 @@
     // The painted map of the art pack, the bands of a long map in layers, or a drawing of the valley.
     var height = T.mapHeight(m);
     if (T.fx) {
-      T.fx.ambient(T.fx.place(current.art || current.code));
+      T.fx.ambient(T.fx.place(current.art || current.code), current.code);
     }
     return '<div class="map-wrap' + (height > 640 ? ' tall' : '') + '" data-herox="' + current.x + '" data-heroy="' + current.y +
       '">' + (state.visit ? '' : landmarks() + asleep()) + '<svg class="map" viewBox="0 0 400 ' + height +
@@ -3261,15 +3261,23 @@
     // The names missed today are crossed out, and each miss opened one more clue.
     var crossed = e.crossed || [];
     var shown = Math.min(Math.max(1 + crossed.length, opened || 0), e.clues.length);
-    var art = beingArt(e.picture.replace(/^being\./, ''));
+    var being = e.picture.replace(/^being\./, '');
+    var art = beingArt(being);
+    var skin = state.world.mission && state.world.mission.skin;
+    // Each clue can be heard, said by the hidden being, if the pack brings its voice (that of the skin, if it has one).
+    var hear = function(i) {
+      var key = 'voice.encounter.' + being + '.' + (i + 1) + (skin && skin !== 'valley' ? '.' + skin : '');
+      return T.fx && T.artUrl([key]) ? key : null;
+    };
     var draw = function() {
       layer.innerHTML = '<div class="badge-card"><div class="kicker" id="tesape-encounter-title">' +
         esc(t('app_encounter_title')) + '</div>' + (art ? '<img class="encounter-pic hidden-one" src="' + esc(art) + '" alt="">' :
         '<span class="encounter-pic shadow" aria-hidden="true">?</span>') + '<p class="encounter-sniff">' +
         (c && c.creature ? '<span class="encounter-pet" aria-hidden="true">' + T.creature(c.creature, c.creaturestage) +
         '</span>' : '') + esc(t('app_encounter_sniff', {creature: creatureName(c), group: t('app_group_' + e.group)})) + '</p>' +
-        '<ol class="encounter-clues">' + e.clues.slice(0, shown).map(function(x) {
-          return '<li>«' + esc(x) + '»</li>';
+        '<ol class="encounter-clues">' + e.clues.slice(0, shown).map(function(x, i) {
+          return '<li>«' + esc(x) + '»' + (hear(i) ? ' <button type="button" class="btn btn-soft icon-btn hear-btn" data-hear="' +
+            i + '" aria-label="' + esc(t('app_encounter_hear', i + 1)) + '">' + T.icon('sound') + '</button>' : '') + '</li>';
         }).join('') + '</ol>' + (shown < e.clues.length ? '<div class="actions" style="justify-content:flex-start">' +
         '<button type="button" class="btn btn-soft" data-clue>' + esc(t('app_encounter_clue')) + '</button></div>' : '') +
         '<p><b>' + esc(t('app_encounter_who')) + '</b></p><div class="encounter-options">' + e.options.map(function(o) {
@@ -3289,6 +3297,11 @@
           meet(ch);
         };
       }
+      layer.querySelectorAll('[data-hear]').forEach(function(b) {
+        b.onclick = function() {
+          T.fx.voice(hear(Number(b.dataset.hear)));
+        };
+      });
       var clue = layer.querySelector('[data-clue]');
       if (clue) {
         clue.onclick = function() {
@@ -3339,6 +3352,9 @@
               esc(t('app_embrollo_go')) + '</button></div>';
             var close = said.querySelector('[data-close]');
             close.onclick = function() {
+              if (T.fx) {
+                T.fx.hush();
+              }
               layer.remove();
               refresh();
             };

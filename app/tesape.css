@@ -8976,6 +8976,18 @@ body.adapt-still .mission-grid .chapter.as-sheet {
   font-style: italic;
 }
 
+.encounter-clues .hear-btn {
+  width: 34px;
+  min-height: 34px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+.encounter-clues .hear-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
 .encounter-options {
   display: grid;
   grid-template-columns: 1fr 1fr;

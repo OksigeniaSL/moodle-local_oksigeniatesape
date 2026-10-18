@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.125.0 (2026-10-18)
+
+- **Puppets in the walked encounter.** The hero and the creature move by pieces when the art pack brings the puppet cut
+  from their picture: they walk, breathe, sniff at the traces, point at the hideout, jump in surprise and celebrate. Arms
+  and tools take the same posture in every figure, a figure with its tool in the left hand points with its free hand,
+  and a shield goes strapped to the forearm. Without a puppet for that picture (another stage or tone of skin), its
+  picture, as before (`app/puppet.js`).
+- **Voices and the music of the moment.** The hidden being says each clue aloud and the creature speaks (what it says
+  is in the box too, in its own words); the music of exploring and of following the traces plays where music may play
+  now, with a short piece when the being comes out; the music and the sound of the place step back while someone
+  speaks. Only the voices of the being of the day are fetched. As a list, each clue has a button to hear it (nothing
+  plays by itself there, so as not to talk over a screen reader).
+- **Each place hides and sounds its own way**: books in the Library, ferns in the forest, reeds at the lake and stones
+  in the Tower (`stages.<place>.hide`), steps on wood where the floor is wood (`ground`), and the sound of each place
+  itself (`sound.ambient.<place>`) on the map, in scenes and in the encounter.
+- **Art packs** may bring voices (`voice.*`, as sounds) and puppets (`rig.*` and `anim.*`, JSON read and written again,
+  up to 256 KB each).
+- The choice of who it is opens at the top, with the hero and the hideout in view.
+- Mission «Los seres vivos» v55: the hideout and the floor of each place.
+
 ## 0.124.0 (2026-10-18)
 
 - **The encounter of the day, walked.** Where the device draws with WebGL, the encounter of a place opens the place at

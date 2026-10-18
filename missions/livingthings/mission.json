@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 54,
+ "version": 55,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 55,
+   "kind": "improvement",
+   "date": "2026-10-18",
+   "text": "Cada lugar esconde a su manera (libros en la Biblioteca, helechos en el bosque, juncos en el lago, piedras en la Torre) y suena su suelo"
+  },
   {
    "version": 54,
    "kind": "improvement",
@@ -700,7 +706,9 @@
      600,
      765
     ]
-   ]
+   ],
+   "hide": "books",
+   "ground": "wood"
   },
   "bosque": {
    "walk": [
@@ -764,7 +772,8 @@
      930,
      640
     ]
-   ]
+   ],
+   "hide": "ferns"
   },
   "jardin": {
    "walk": [
@@ -884,7 +893,8 @@
      760,
      700
     ]
-   ]
+   ],
+   "hide": "reeds"
   },
   "torre": {
    "walk": [
@@ -940,7 +950,9 @@
      1000,
      650
     ]
-   ]
+   ],
+   "hide": "rocks",
+   "ground": "wood"
   }
  },
  "friends": {

@@ -17,6 +17,8 @@
   var sampleOut = null;
   var ambient = null;
   var wanted = null;
+  /** The place whose own sound is wanted (sound.ambient.<place>), if the pack has one. */
+  var wantedPlace = null;
   var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   // The teacher took the sound away from the devices of the class.
   var quiet = false;
@@ -351,14 +353,15 @@
       return;
     }
     stopAmbient();
-    var key = 'sound.ambient.' + kind;
+    var own = wantedPlace && 'sound.ambient.' + wantedPlace;
+    var key = own && T.artUrl && T.artUrl([own]) ? own : 'sound.ambient.' + kind;
     var recorded = samples[key];
     if (recorded && typeof recorded !== 'string') {
       var level = c.createGain();
       level.gain.value = 0.0001;
       level.gain.setTargetAtTime(0.7, c.currentTime, 1.5);
       level.connect(sampleOut);
-      ambient = {kind: kind, source: playSample(key, level, true), gain: level, timer: 0};
+      ambient = {kind: kind, place: wantedPlace, source: playSample(key, level, true), gain: level, timer: 0, level: 0.7};
       return;
     }
     // The sound of the place comes now: meanwhile, the one made here; when it is ready, if the student is still there,
@@ -392,8 +395,128 @@
         tone(f * 1.1, 0.12, 0.07, 'sine', 0.02);
       }
     }, 1400) : 0;
-    ambient = {kind: kind, source: source, gain: gain, timer: timer, lfo: lfo};
+    ambient = {kind: kind, place: wantedPlace, source: source, gain: gain, timer: timer, lfo: lfo, level: place.volume};
   }
+
+  /* ---------- What the characters say ---------- */
+
+  /** @var {Object|null} The voice that speaks now (source, finish): one at a time. */
+  var speaking = null;
+
+  /**
+   * The music and the sound of the place step back while someone speaks, and come back after.
+   *
+   * @param {boolean} down
+   */
+  function duck(down) {
+    var c = ctx;
+    if (!c) {
+      return;
+    }
+    if (music && music.out) {
+      music.out.gain.setTargetAtTime(down ? 0.35 : 1, c.currentTime, 0.25);
+    }
+    if (ambient && ambient.gain && ambient.level) {
+      ambient.gain.gain.setTargetAtTime(ambient.level * (down ? 0.45 : 1), c.currentTime, 0.25);
+    }
+  }
+
+  /** The voice that speaks stops. */
+  function hush() {
+    if (speaking) {
+      var cut = speaking;
+      speaking = null;
+      try {
+        cut.source.onended = null;
+        cut.source.stop();
+      } catch (e) {
+        // Already over.
+      }
+      duck(false);
+      cut.finish();
+    }
+  }
+
+  /**
+   * Says a line of a character, from the pack: now if it is here, or as soon as it comes if that is soon; a line that
+   * comes late is not said. A line that starts stops the one before.
+   *
+   * @param {string} key voice.<…>
+   * @param {Function} [end] When it has been said (or will not be).
+   * @return {boolean} Whether the pack has it and the page may sound.
+   */
+  function voice(key, end) {
+    var finish = function() {
+      if (end) {
+        var e = end;
+        end = null;
+        e();
+      }
+    };
+    if (!T.artUrl || !T.artUrl([key]) || !audio()) {
+      finish();
+      return false;
+    }
+    var asked = Date.now();
+    var play = function() {
+      if (Date.now() - asked > 2500) {
+        finish();
+        return;
+      }
+      hush();
+      var source = playSample(key);
+      if (!source) {
+        finish();
+        return;
+      }
+      var now = {source: source, finish: finish};
+      speaking = now;
+      duck(true);
+      source.onended = function() {
+        if (speaking === now) {
+          speaking = null;
+          duck(false);
+        }
+        finish();
+      };
+    };
+    if (samples[key] && typeof samples[key] !== 'string') {
+      play();
+    } else if (samples[key] === 'none') {
+      finish();
+    } else {
+      waitFor(key, play, finish);
+    }
+    return true;
+  }
+
+  /**
+   * Calls `ready` when a sound of the pack is loaded, loading it if it is not yet; `fail` if it does not come.
+   *
+   * @param {string} key
+   * @param {Function} ready
+   * @param {Function} fail
+   */
+  function waitFor(key, ready, fail) {
+    var tries = 0;
+    loadSample(key);
+    var check = function() {
+      var s = samples[key];
+      if (s && typeof s !== 'string') {
+        ready();
+      } else if (s === 'none' || tries++ > 30) {
+        fail();
+      } else {
+        setTimeout(check, 100);
+      }
+    };
+    check();
+  }
+
+  /* ---------- The music of a moment that is played ---------- */
+
+  /** @var {Object|null} What played before the moment: its piece, and whether it was on. */
+  var before = null;
 
   /* ---------- Soft music, for the class screen ---------- */
 
@@ -621,22 +744,98 @@
      * A sound, by name: tap, choose, right, wrong, heart, lantern, levelup, hatch, hit, win, applause, drumroll, path.
      *
      * @param {string} name
+     * @return {boolean} Whether something sounded (or would, without the silence).
      */
     sound: function(name) {
-      if (!playSample('sound.' + name) && SOUNDS[name]) {
+      if (playSample('sound.' + name)) {
+        return true;
+      }
+      if (SOUNDS[name]) {
         SOUNDS[name]();
+        return true;
+      }
+      return false;
+    },
+    /**
+     * A sound of the pack that is not loaded ahead (music.victory…): played as soon as it comes, if that is soon.
+     *
+     * @param {string} name
+     * @return {boolean} Whether the pack has it and the page may sound.
+     */
+    later: function(name) {
+      var key = 'sound.' + name;
+      if (!T.artUrl || !T.artUrl([key]) || !audio()) {
+        return false;
+      }
+      var asked = Date.now();
+      waitFor(key, function() {
+        if (Date.now() - asked < 2500) {
+          playSample(key);
+        }
+      }, function() {
+        // Without it.
+      });
+      return true;
+    },
+    voice: voice,
+    hush: hush,
+    /**
+     * Brings some sounds or voices of the pack ahead, those a moment is going to use.
+     *
+     * @param {string[]} keys
+     */
+    fetch: function(keys) {
+      if (audio()) {
+        keys.forEach(function(key) {
+          loadSample(key);
+        });
       }
     },
     /**
-     * The soft sound of a kind of place (meadow, forest, lake, mountain, night), or none. It waits for the first touch.
+     * The music of a moment that is played (explore, find), while it lasts, over the one of the page; '' when it is
+     * over, and the one before comes back. It plays where music may play now and the device has it on.
+     *
+     * @param {string} kind
+     */
+    moment: function(kind) {
+      var may = !quiet && musicWanted() && !muted() && (device.mode < 0 || device.mode === 2);
+      if (kind) {
+        var key = 'sound.music.' + kind;
+        if (!before) {
+          before = {key: musicKey, on: !!music};
+        }
+        if (!may || !T.artUrl || !T.artUrl([key]) || (music && music.key === key)) {
+          return;
+        }
+        musicKey = key;
+        stopMusic();
+        startMusic();
+      } else if (before) {
+        var back = before;
+        before = null;
+        if (musicKey !== back.key) {
+          musicKey = back.key;
+          stopMusic();
+          if (back.on && may) {
+            startMusic();
+          }
+        }
+      }
+    },
+    /**
+     * The soft sound of a kind of place (meadow, forest, lake, mountain, night), or none; the sound of the place itself
+     * (sound.ambient.<place>) if the pack has it. It waits for the first touch.
      *
      * @param {string|null} kind
+     * @param {string} [place] The code of the place.
      */
-    ambient: function(kind) {
+    ambient: function(kind, place) {
+      var moved = (place || null) !== wantedPlace;
       wanted = kind || null;
+      wantedPlace = place || null;
       if (!wanted) {
         stopAmbient();
-      } else if (!ambient || ambient.kind !== wanted) {
+      } else if (!ambient || ambient.kind !== wanted || (moved && T.artUrl && T.artUrl(['sound.ambient.' + wantedPlace]))) {
         startAmbient(wanted);
       }
     },
