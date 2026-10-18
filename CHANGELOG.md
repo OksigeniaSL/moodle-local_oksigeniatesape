@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.104.1 (2026-10-18)
+
+- The README tells what the game does today; a Behat scenario goes through the workshop (a scene seen as a student,
+  with its evidence, and taken out of the game and back).
+
 ## 0.104.0 (2026-10-18)
 
 - **Lanes for a knot drafted by the AI of the site**, in the Workshop («Propose lanes with the AI»): from what the

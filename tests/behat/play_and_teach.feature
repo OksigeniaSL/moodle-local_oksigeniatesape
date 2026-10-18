@@ -71,3 +71,22 @@ Feature: A teacher runs the game from the panel and a student plays the mission
     When I click on "[data-battlepause='resume']" "css_element"
     Then I should not see "The battle is paused"
     And I should see "Turn 1 of"
+
+  @javascript
+  Scenario: The teacher sees a scene of the mission as a student in the workshop and takes it out of the game
+    Given I log in as "teacher1"
+    When I open the Tesapé teacher panel of course "C1"
+    And I close how Tesapé works if it shows
+    And I click on "nav.tabs [data-tab='mission']" "css_element"
+    And I click on "[data-workshop]" "css_element"
+    And I click on ".ws-chapter > summary" "css_element"
+    And I click on ".ws-chapter .ws-scene[data-code] > summary" "css_element"
+    Then I should see "See it as a student"
+    And I should see "See what evidence it leaves"
+    When I click on ".ws-scene[open] [data-tryscene][data-evidence]" "css_element"
+    Then ".scene-layer" "css_element" should exist
+    When I click on ".scene-layer .scene-close" "css_element"
+    And I click on ".ws-scene[open] [data-enabledscene]" "css_element"
+    Then I should see "Out of the game"
+    When I click on ".ws-scene[open] [data-enabledscene]" "css_element"
+    Then I should not see "Out of the game"

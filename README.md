@@ -38,28 +38,39 @@ is today:
   classmates see, and the team buys the lantern of its banner together; each entry of the field guide made by the
   student or their team is a card in the album.
 - **Expeditions**: a mission the course made before stays lit, and its map can be visited.
-- **The teacher panel**, made for the phone: «Today in the valley» (what the mission proposes for each session of the
-  chapter and what is waiting for the teacher), the class with names, photos and characters, touches of knowledge,
-  gems and breath, the commitments of the teams to mark, own names to approve, the mission of the course and how the
-  class is doing in each scene and objective, classroom challenges (also validated without connection), pause and
-  recovery, the log with undo and the settings of the course.
+- **A living valley**: in each place a living thing peeks out each day, recognised with clues and kept in the field
+  guide of each student; the Embrollo stains the place of the day with a sheet of its mistakes, which a student cleans
+  for a gem, and some days it takes a page of the Great Book, which the class recovers with a question (one try a day
+  each).
+- **The teacher panel**, made for the phone: the first week step by step (mission, role names, how the class plays,
+  teams, a rehearsal) and a list for the first day; the session as the unit of work, with its sheet (steps with
+  minutes, what to say, what each step launches on the class screen, questions and mistakes to watch); «To review»,
+  one tray with what waits (own names, powers, team plays of the day) and «Approve all»; «Today in the valley», the
+  class with names, photos and characters; touches with a reason («Helped their team · +10 knowledge»), which the
+  student sees on their tablet, editable by course; adaptations in one touch for one student or many; the mission of
+  the course and how the class is doing in each scene and objective; classroom challenges (also validated without
+  connection), pause and recovery, the log with undo and the settings of the course, in two layers.
 - **Teams and powers**: teams made in one go with the roles spread, a weekly goal that three of every four members
   reach, and an optional ranking, hidden by default; commitments chosen by each member in each chapter (one not kept
   costs energy, all kept give breath); powers that cost breath, the cheap ones approved by themselves, some of which
   act in the game (shield, wall, breather, revive, cheer).
 - **Moodle activities in the game**: any activity can be a challenge from its settings; the pilot mission brings its
   forums, assignments and field guide, which open inside the game.
-- **Minigames** by steps, each with a mode without hurry: **Who is alive?** in the clearing, **Defensa del nido** in
-  the forest and, in every place, **the hunt for mistakes of the Embrollo**; and **the box of ideas** from students to
-  their teachers.
+- **Minigames** by steps, each with a mode without hurry: **Who is alive?** in the clearing, **The two circles**,
+  **Who am I?**, **Defensa del nido** in the forest and, in every place, **the hunt for mistakes of the Embrollo**;
+  each role has a passive of its own in them. And **the box of ideas** from students to their teachers.
 - **The class screen**, for the projector: «Today in the valley», the map of the mission with the lanterns of the
   class and the last letter of the Embrollo, the teams with their portraits and quick touches of knowledge and gems,
   and **the event of the day** (calm, fair breeze, mysterious footprint with a question for the whole class, exchange
-  of breath between teams). It refreshes itself, so what the teacher does from the phone shows up on the board.
-- **The battle against the Embrollo**: questions of the mission for the whole class, with the students' phones or
-  aloud by teams. Each role has a token once a battle (the sage strikes out a wrong option for their team, the scout
-  tells where the answer is, the protector stops the counterattack, the healer doubles the team's right answers); it
-  can be lost, and nobody loses anything. The final battle of the mission gives what the mission saves for the end.
+  of breath between teams). It refreshes itself, so what the teacher does from the phone shows up on the board. In a
+  session it is the stage: the letter of the entry, a timer, the commitments, the lantern lit with the class; beside
+  each team, a lantern when it says it is ready, working or needs help (never a name).
+- **The battle against the Embrollo**: by turns against its knots (each knot, a mistaken idea), each team untying its
+  lane (choose, put in order, sort, find the mistakes), with the students' phones or aloud by teams. Each role has a
+  token once a battle (the sage strikes out a wrong option for their team, the scout tells where the answer is, the
+  protector stops the counterattack, the healer doubles the team's right answers); it can be lost, and nobody loses
+  anything. The knots left hanging show up in the review of the week, and a lost battle leaves them for the rematch. The final battle of the mission gives what
+  the mission saves for the end; a rehearsal with three test questions checks the phones without prizes.
 - **Scenes with the whole class**: a scene on the class screen where the class decides at each step, with phones or
   with A, B, C, D cards, and printable material for classes without devices: vote cards, team cards, the characters
   of the class and a diploma for each student.
@@ -68,11 +79,18 @@ is today:
   completed Moodle activities turned into progress. Privacy provider from the first day.
 - **Moodle competencies, badge and gradebook**: the mission brings its own framework of competencies (optional and
   replaceable by any of the site); the scenes leave evidence and the teacher rates; a badge of the course when the
-  class lights every lantern; the rating can go to the gradebook, if the teacher wants. A report of the class for the
-  teacher (Excel, ODS, CSV or PDF), with what each student did and, by objective, the share right at the first try.
-- **The workshop**: the teacher changes the texts and questions of a mission (kept apart, as a layer), or makes a new
-  one from scratch in six steps with guided scenes, a checker and «Try this scene»; a mission is exported as a package
-  and loaded in another course or site. The AI of the site can draft a scene, if the site allows it.
+  class lights every lantern; the rating can go to the gradebook, if the teacher wants. Each answer records how it came
+  (alone at the first try, with help, after the consequence, the same mistake again), and the grid suggests a level
+  that the teacher confirms or changes. A report of the class for the teacher (Excel, ODS, CSV or PDF), with what each
+  student did and, by objective, the share right at the first try and how the answers came; its PDF adds what confuses
+  the class (also what it voted on the class screen, as nobody's try) and the knots left hanging.
+- **The workshop**: the teacher changes the texts and questions of a mission (kept apart, as a layer), sees each scene
+  as a student and with the evidence each answer leaves, takes a scene out of the game, skips a place, chooses the
+  classroom challenge of each place and, with the AI of the site, gets lanes proposed for each knot, taken one by
+  one. Or makes a new mission from scratch in six steps with guided scenes (questions, things to sort, steps to order
+  and decisions with a consequence), a checker, advice so that it is a game and «Try this scene»; a mission is
+  exported as a package and loaded in another course or site. The AI of the site can draft a scene, if the site
+  allows it.
 - **A game that sounds and moves**: night and day themes (each world can bring its colours), sounds, the sound of each
   kind of place and the music of the class screen from the art pack, a road that draws itself, little living things
   that visit the screens and say what they are when touched.
