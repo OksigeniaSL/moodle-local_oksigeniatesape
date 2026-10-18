@@ -841,6 +841,37 @@ body.tesape {
   background: rgba(255, 200, 87, .1);
 }
 
+/* The strength of the expedition, on the class screen. */
+.expedition {
+  margin: 10px 0;
+}
+
+.expedition-head {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.expedition .meter {
+  display: block;
+}
+
+.expedition small {
+  display: block;
+  margin-top: 4px;
+}
+
+.expedition-known {
+  margin: 8px 0 0;
+  font-size: .9rem;
+}
+
+.knot-known {
+  margin: 2px 0 6px;
+  color: var(--ember);
+  font-size: .95rem;
+}
+
 /* The prologue: the vignettes before choosing who to be. */
 .story.opening .lead {
   font-size: 1.15rem;

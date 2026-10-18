@@ -115,9 +115,10 @@ final class knots {
      * @param int $courseid
      * @param int $count Turns.
      * @param bool $final The final battle: the knots of the whole mission.
+     * @param string[] $known Knots the Embrollo keeps for the end, after the others (half of the turns at most).
      * @return array List of [knot code, question id]; empty if the mission has no knots.
      */
-    public static function plan(int $courseid, int $count, bool $final = false): array {
+    public static function plan(int $courseid, int $count, bool $final = false, array $known = []): array {
         global $DB;
         $mission = missions::get($courseid);
         $knots = $mission ? self::usable($mission) : [];
@@ -135,10 +136,16 @@ final class knots {
             $near = array_values(array_filter($knots, fn($k) => !$k['chapter'] || $k['chapter'] <= $reached));
             $knots = $near ?: $knots;
         }
+        $last = array_slice(array_values(array_filter($knots, fn($k) => in_array($k['code'], $known, true))), 0, intdiv($count, 2));
+        $first = array_values(array_filter($knots, fn($k) => !in_array($k['code'], array_column($last, 'code'), true)));
+        if (!$first) {
+            [$first, $last] = [$knots, []];
+        }
+        $turns = $count - count($last);
         $plan = [];
         $seen = [];
         for ($turn = 0; $turn < $count; $turn++) {
-            $knot = $knots[intdiv($turn * count($knots), $count)];
+            $knot = $turn < $turns ? $first[intdiv($turn * count($first), $turns)] : $last[$turn - $turns];
             $again = $seen[$knot['code']] ?? 0;
             $seen[$knot['code']] = $again + 1;
             $plan[] = [$knot['code'], $knot['questions'][$again % count($knot['questions'])]];

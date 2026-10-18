@@ -54,6 +54,7 @@
         <FIELD NAME="mischief" TYPE="char" LENGTH="10" NOTNULL="true" DEFAULT="calm" SEQUENCE="false" COMMENT="What the Embrollo does every day in the valley: off, calm or naughty"/>
         <FIELD NAME="setup" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Steps of the first week the teachers went through, of five (6: the list of the first day closed too)"/>
         <FIELD NAME="reasons" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="The touches with a reason of the course, as JSON (null: those of the plugin)"/>
+        <FIELD NAME="reviewed" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Knots the class broke in a practice battle, and when (JSON): the Embrollo does not keep them for the final"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>

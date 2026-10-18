@@ -404,6 +404,26 @@
     }).then(schedule);
   }
 
+  /**
+   * The strength of the expedition: what the class did weakens the Embrollo before the final battle.
+   *
+   * @param {Object} m The mission.
+   * @return {string}
+   */
+  function expeditionBar(m) {
+    var x = m.final && m.expedition;
+    if (!x) {
+      return '';
+    }
+    return '<div class="expedition"><div class="expedition-head"><b>' + esc(t('board_expedition')) + '</b><span>' +
+      Math.round(100 * x.strength) + ' %</span></div><span class="meter level"><i style="width:' +
+      Math.round(100 * x.strength) + '%"></i></span><small class="help-soft">' + esc(t('board_expedition_help', {
+        lanterns: x.lanterns[0] + '/' + x.lanterns[1], stains: x.stains, tasks: x.tasks[0] + '/' + x.tasks[1],
+        weaker: x.weaker})) + '</small>' + (x.known && x.known.length ? '<p class="expedition-known"><b>' +
+      esc(t('board_expedition_known', x.known.join(' · '))) + '</b> ' + esc(t('board_expedition_known_help')) + '</p>' : '') +
+      '</div>';
+  }
+
   function battleCard() {
     if (!state.board.mission || !can('award')) {
       return '';
@@ -424,6 +444,7 @@
       }) + '</div>' + (state.board.mission.final ? '<div class="battle-options-row">' + pills('final', [0, 1], function(v) {
         return v ? t('board_battle_final') : t('board_battle');
       }) + (b.final ? '<small class="help-soft">' + esc(t('board_battle_final_help')) + '</small>' : '') + '</div>' : '') +
+      expeditionBar(state.board.mission) +
       '<div class="actions"><button class="btn btn-main" data-battlestart>' + esc(t('board_battle_start')) +
       '</button><button class="btn btn-soft" data-battlerehearsal title="' + esc(t('board_battle_rehearsal_help')) + '">' +
       esc(t('board_battle_rehearsal')) + '</button></div></section>';
@@ -588,8 +609,8 @@
     } else if (l.stage === 'intent' || l.stage === 'prep') {
       // By turns: the Embrollo lets a knot go, says what it claims and which team it goes for; the roles get ready.
       main = '<p class="battle-qround">' + esc((l.rehearsal ? t('board_battle_rehearsal_tag') + ' · ' : '') + t(l.stage ? 'board_turn_round' : 'board_battle_round', l)) + '</p><div class="knot-call"><p class="knot-name">' +
-        esc(l.knot.name) + '</p><p class="knot-claim">«' + esc(l.knot.claim.replace(/^«|»$/g, '')) + '»</p>' +
-        intentLine(l) + '</div>' +
+        esc(l.knot.name) + '</p>' + (l.knot.known ? '<p class="knot-known">' + esc(t('board_turn_known')) + '</p>' : '') +
+        '<p class="knot-claim">«' + esc(l.knot.claim.replace(/^«|»$/g, '')) + '»</p>' + intentLine(l) + '</div>' +
         (l.stage === 'prep' ? '<p class="battle-count" data-stageleft="board_turn_prep" aria-live="off">' +
         esc(t('board_turn_prep', l.stageleft)) + '</p>' : '');
       main += (l.tokens || []).map(function(k) {

@@ -91,6 +91,19 @@ final class get_board extends external_api {
                     ]), 'The decisions of at least half of the class in this place', VALUE_DEFAULT, []),
                 ])),
                 'final' => new external_value(PARAM_BOOL, 'The mission saves something for a final battle', VALUE_DEFAULT, false),
+                'expedition' => new external_single_structure([
+                    'strength' => new external_value(PARAM_FLOAT, 'From 0 to 1'),
+                    'weaker' => new external_value(PARAM_INT, 'Percentage of threads the Embrollo starts the final without'),
+                    'lanterns' => new external_multiple_structure(new external_value(PARAM_INT, 'Lit, of how many')),
+                    'stains' => new external_value(PARAM_INT, 'Stains cleaned and pages recovered'),
+                    'tasks' => new external_multiple_structure(new external_value(PARAM_INT, 'Done, of how many')),
+                    'known' => new external_multiple_structure(
+                        new external_value(PARAM_TEXT, 'Name of a knot the class still mixes up'),
+                        'Knots the Embrollo keeps for the end of the final battle',
+                        VALUE_DEFAULT,
+                        []
+                    ),
+                ], 'The strength of the expedition', VALUE_OPTIONAL),
                 'ending' => new external_value(PARAM_TEXT, 'Text of the end of the mission', VALUE_DEFAULT, ''),
                 'remembered' => new external_multiple_structure(
                     new external_value(PARAM_TEXT, 'A line of what the class did'),

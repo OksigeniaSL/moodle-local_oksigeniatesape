@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.114.0 (2026-10-18)
+
+- **The strength of the expedition.** On the class screen, next to the battle, a bar grows with what the class has
+  done: the lanterns lit (most of it), the stains cleaned and the pages recovered, and the tasks of the places done by
+  at least half of the class. In the final battle the Embrollo starts with up to 30 % fewer threads, according to it
+  (not in a rehearsal).
+- **Knots the Embrollo knows.** The knots of what the class still mixes up in the scenes (less than 60 % right, with
+  four answers or more) are named under the bar, three at most, and the Embrollo keeps them for the last turns of the
+  final battle, where the class screen says so. Breaking one in a practice battle takes it off the list until the class
+  misses it again.
+
 ## 0.113.0 (2026-10-18)
 
 - **A playable prologue.** Who comes in for the first time sees the vignettes of the mission before choosing who to

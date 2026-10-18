@@ -639,6 +639,7 @@ final class structures {
                 'laugh' => new external_value(PARAM_TEXT, 'Its laugh, once resolved, if the attack fell (empty: none)'),
                 'why' => new external_value(PARAM_TEXT, 'Its whole why, once resolved, if the class broke it', VALUE_DEFAULT, ''),
                 'broken' => new external_value(PARAM_BOOL, 'The class broke it in this turn', VALUE_DEFAULT, false),
+                'known' => new external_value(PARAM_BOOL, 'The class still mixes it up: the Embrollo kept it', VALUE_DEFAULT, false),
             ], 'By turns: the knot of the turn', VALUE_OPTIONAL),
             'targetid' => new external_value(PARAM_INT, 'By turns: the team the knot goes for (0: none)', VALUE_DEFAULT, 0),
             'target' => new external_value(PARAM_TEXT, 'By turns: the name of that team', VALUE_DEFAULT, ''),

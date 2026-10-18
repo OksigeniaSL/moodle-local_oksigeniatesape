@@ -893,5 +893,15 @@ function xmldb_local_oksigeniatesape_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026101838, 'local', 'oksigeniatesape');
     }
 
+    if ($oldversion < 2026101842) {
+        // The knots the class broke in a practice battle: the Embrollo does not keep them for the final.
+        $table = new xmldb_table('local_oksigeniatesape_region');
+        $field = new xmldb_field('reviewed', XMLDB_TYPE_TEXT, null, null, null, null, null, 'reasons');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        upgrade_plugin_savepoint(true, 2026101842, 'local', 'oksigeniatesape');
+    }
+
     return true;
 }

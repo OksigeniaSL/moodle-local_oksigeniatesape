@@ -497,6 +497,8 @@ final class view {
                 'chapters' => $chapters,
                 // The final battle, if the mission saves something for the end, and the text of its end.
                 'final' => !empty($mission->data['battle']['final']),
+                // How much the class weakened the Embrollo for it.
+                'expedition' => expedition::strength($courseid) + ['known' => array_column(expedition::known($courseid), 'name')],
                 'ending' => missions::text($mission->data['ending'] ?? '', $mission->skin, $mission->variant),
                 // What the Great Book remembers of the class at the end: what at least half of it did, without names.
                 'remembered' => self::remembered($courseid, $mission),

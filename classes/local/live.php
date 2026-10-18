@@ -136,7 +136,9 @@ final class live {
         }
         // A rehearsal: three test questions to check the phones on the first day, without prizes nor the mission.
         $final = $final && !$rehearsal;
-        $plan = $turns && !$rehearsal ? knots::plan($courseid, $count, $final) : [];
+        // The final battle: the knots of what the class still mixes up, kept by the Embrollo for the end.
+        $known = $final && $turns ? array_column(expedition::known($courseid), 'code') : [];
+        $plan = $turns && !$rehearsal ? knots::plan($courseid, $count, $final, $known) : [];
         $questions = $rehearsal ? self::REHEARSAL : ($plan ? array_column($plan, 1) : questions::pick_many($courseid, $count));
         if (!$questions) {
             throw new \moodle_exception('noquestions', 'local_oksigeniatesape');
@@ -158,7 +160,7 @@ final class live {
             $state['knots'] = array_column($plan, 0);
             $rules = knots::rules(missions::get($courseid));
             $state += ['candles' => $rules['candles'], 'maxcandles' => $rules['candles'], 'phases' => $rules['phases'],
-                'tangled' => [], 'broken' => [], 'hanging' => [], 'dazed' => false];
+                'tangled' => [], 'broken' => [], 'hanging' => [], 'dazed' => false, 'known' => $known];
         }
         $record = (object) ['courseid' => $courseid, 'kind' => 'battle', 'state' => json_encode($state), 'round' => 0,
             'timecreated' => $now, 'timemodified' => $now, 'timeend' => 0];
@@ -475,6 +477,11 @@ final class live {
             if (!empty($state['rematch'])) {
                 $state['hp'] = max(1, (int) round($state['maxhp'] * $state['rematch']));
             }
+            // The final battle: what the class did during the mission weakens the Embrollo before it starts.
+            if (!empty($state['final']) && empty($state['rehearsal'])) {
+                $state['weaker'] = expedition::strength((int) $live->courseid)['weaker'];
+                $state['hp'] = max(1, (int) round($state['hp'] * (1 - $state['weaker'] / 100)));
+            }
         }
         $round++;
         if (!empty($state['knots'])) {
@@ -601,6 +608,10 @@ final class live {
                 'hanging' => array_values(array_unique($state['hanging'] ?? [])), 'final' => !empty($state['final'])]) : null;
             $DB->set_field(self::T . 'region', 'battlestate', $escaped, ['courseid' => $live->courseid]);
             regions::forget();
+            // The knots broken in a practice battle are reviewed: the Embrollo does not keep them for the final.
+            if (empty($state['final']) && empty($state['rehearsal'])) {
+                expedition::reviewed((int) $live->courseid, array_values(array_unique($state['broken'] ?? [])), $now);
+            }
         }
         $live = self::save($live, $state, $round, $now);
         $DB->set_field(self::T . 'live', 'timeend', $now, ['id' => $live->id]);
@@ -1169,7 +1180,8 @@ final class live {
         $resolved = $stage === 'resolve';
         return ['stage' => $stage, 'stageleft' => $left, 'knot' => ['name' => $knot['name'], 'claim' => $knot['claim'],
             'laugh' => $resolved && !empty($info['counter']) ? $knot['laugh'] : '',
-            'why' => $resolved && !empty($info['broken']) ? $knot['why'] : '', 'broken' => $resolved && !empty($info['broken'])],
+            'why' => $resolved && !empty($info['broken']) ? $knot['why'] : '', 'broken' => $resolved && !empty($info['broken']),
+            'known' => in_array((string) $info['knot'], $state['known'] ?? [], true)],
             'targetid' => $target, 'target' => isset($teams[$target]) ? format_string($teams[$target]->name) : '',
             'damage' => (int) ($info['damage'] ?? 0), 'intent' => (string) ($info['intent'] ?? 'team'),
             'tangled' => array_map('intval', array_keys($state['tangled'] ?? [])), 'broken' => count($state['broken'] ?? []),
