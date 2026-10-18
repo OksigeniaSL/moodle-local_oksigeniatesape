@@ -289,7 +289,8 @@
         /** For the tests of the browser. */
         state: function() {
           return {ready: !!S, image: shown, speaker: who, figure: !!(S && S.speaker), rigs: cast.rigs || {},
-            hero: S && S.hero && S.hero.puppet ? S.hero.puppet.clipName : '',
+            hero: S && S.hero && S.hero.puppet ? S.hero.puppet.clipName + (S.hero.puppet.tone ? ' ' + S.hero.puppet.tone : '') :
+              '',
             pet: S && S.pet && S.pet.puppet ? S.pet.puppet.clipName : ''};
         },
         close: function() {

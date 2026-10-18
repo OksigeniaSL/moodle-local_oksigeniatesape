@@ -10,6 +10,8 @@
  * mirrored, so it points and waves with its free hand; a tool may change the gestures (byTool: a shield is strapped to
  * the forearm), a figure may hang a piece from another parent or draw it in another order (meta.rig.override), and it
  * may have pieces its body does not (meta.rig.extra: wings), which the gestures move if they have tracks for them.
+ * The skin is painted in one tone (meta.rig.skin.own); for another of its tones, each piece with skin is drawn again
+ * over itself with its frame <piece>.skin.<tone>, the same piece with the skin already in that tone.
  *
  * @package    local_oksigeniatesape
  * @copyright  2026 Oksigenia <dev@oksigenia.cc>
@@ -121,8 +123,9 @@
    * @param {Object} scene
    * @param {string} name What it was loaded as.
    * @param {boolean} still Without movement.
+   * @param {string|null} tone The tone of skin (t1, t2, t3), or null for the one it is painted in.
    */
-  function Puppet(scene, name, still) {
+  function Puppet(scene, name, still, tone) {
     var self = this;
     var atlas = scene.cache.json.get(name + '.atlas');
     var skeleton = scene.cache.json.get(name + '.skeleton');
@@ -131,6 +134,8 @@
     var override = rig.override || {};
     this.anims = scene.cache.json.get(name + '.anims');
     this.still = still;
+    /** @var {string|null} The tone of skin drawn over the one it is painted in. */
+    this.tone = tone || null;
     this.feet = rig.feet;
     /** @var {boolean} Its tool in the left hand: every gesture mirrored; it points to the left of its picture. */
     this.mirror = rig.toolHand === 'l';
@@ -148,17 +153,30 @@
       if (!texture.has(s.name)) {
         texture.add(s.name, 0, f.frame.x, f.frame.y, f.frame.w, f.frame.h);
       }
+      var origin = [f.pivot ? f.pivot.x : 0.5, f.pivot ? f.pivot.y : 0.5];
       var part = {name: s.name, parent: 'parent' in ov ? ov.parent : s.parent, z: 'z' in ov ? ov.z : s.z,
-        at: rig.joints[s.name],
-        image: scene.add.image(0, 0, name, s.name).setOrigin(f.pivot ? f.pivot.x : 0.5, f.pivot ? f.pivot.y : 0.5)};
+        at: rig.joints[s.name], image: scene.add.image(0, 0, name, s.name).setOrigin(origin[0], origin[1]), over: null};
+      // The same piece with the skin in the tone of the student, over it.
+      var skin = tone && atlas.frames[s.name + '.skin.' + tone];
+      if (skin) {
+        if (!texture.has(s.name + '.skin.' + tone)) {
+          texture.add(s.name + '.skin.' + tone, 0, skin.frame.x, skin.frame.y, skin.frame.w, skin.frame.h);
+        }
+        part.over = scene.add.image(0, 0, name, s.name + '.skin.' + tone).setOrigin(origin[0], origin[1]);
+      }
       self.parts.push(part);
       self.byName[s.name] = part;
     });
-    this.container = scene.add.container(0, 0, this.parts.slice().sort(function(a, b) {
+    var drawn = [];
+    this.parts.slice().sort(function(a, b) {
       return a.z - b.z;
-    }).map(function(p) {
-      return p.image;
-    }));
+    }).forEach(function(p) {
+      drawn.push(p.image);
+      if (p.over) {
+        drawn.push(p.over);
+      }
+    });
+    this.container = scene.add.container(0, 0, drawn);
     // Its size is that of the figure it was cut from: what is put over its head goes over it.
     this.container.setSize((skeleton.canvas || rig.canvas)[0], (skeleton.canvas || rig.canvas)[1]);
     this.clip = null;
@@ -281,7 +299,12 @@
     this.parts.forEach(function(p) {
       var m = matrixOf(p);
       var sx = Math.hypot(m[0], m[1]);
-      p.image.setPosition(m[4], m[5]).setRotation(Math.atan2(m[1], m[0])).setScale(sx, sx ? (m[0] * m[3] - m[1] * m[2]) / sx : 0);
+      var sy = sx ? (m[0] * m[3] - m[1] * m[2]) / sx : 0;
+      [p.image, p.over].forEach(function(image) {
+        if (image) {
+          image.setPosition(m[4], m[5]).setRotation(Math.atan2(m[1], m[0])).setScale(sx, sy);
+        }
+      });
     });
   };
 
@@ -319,14 +342,16 @@
     },
 
     /**
-     * The puppet, once loaded; null if something of it did not come or does not fit.
+     * The puppet, once loaded; null if something of it did not come or does not fit, or if it does not have the tone of
+     * skin asked for (then the picture in that tone is shown).
      *
      * @param {Object} scene
      * @param {string} name
      * @param {boolean} still Without movement.
+     * @param {string|null} [tone] t1, t2 or t3; null for the tone it is painted in.
      * @return {Puppet|null}
      */
-    make: function(scene, name, still) {
+    make: function(scene, name, still, tone) {
       try {
         var atlas = scene.cache.json.get(name + '.atlas');
         var skeleton = scene.cache.json.get(name + '.skeleton');
@@ -335,7 +360,11 @@
             !anims || !anims.clips) {
           return null;
         }
-        var puppet = new Puppet(scene, name, still);
+        var skin = atlas.meta.rig.skin;
+        if (tone && (!skin || (tone !== skin.own && (skin.tones || []).indexOf(tone) < 0))) {
+          return null;
+        }
+        var puppet = new Puppet(scene, name, still, tone && skin && tone !== skin.own ? tone : null);
         return puppet.parts.length ? puppet : null;
       } catch (e) {
         return null;

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.129.0 (2026-10-19)
+
+- **The puppets take the tone of skin of the student.** A puppet is cut from the picture in the tone it is painted in
+  (`meta.rig.skin.own`) and brings the other tones it can take: each piece with skin has a frame
+  `<piece>.skin.<tone>`, drawn over it with the same movement. With a tone the puppet does not bring, the picture in
+  that tone is shown, as before.
+
 ## 0.128.0 (2026-10-19)
 
 - **Defensa del nido, drawn.** Where the device draws with WebGL and moves, the field of the game is drawn by the

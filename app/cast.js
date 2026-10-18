@@ -17,17 +17,39 @@
    *
    * @param {Object} c The character.
    * @param {string} [family] The family of heroes of the world.
+   * @param {boolean} [untoned] The picture in the tone it is painted in, whatever the tone chosen.
    * @return {string|null}
    */
-  function heroKey(c, family) {
+  function heroKey(c, family, untoned) {
+    return T.artKey(T.characterKeys(family || T.family || 'storyheroes', c.role, c.lineage, c.nameform === 'f' ? 'f' : 'm',
+      c.stage || 1, untoned ? -1 : skinOf(c), false));
+  }
+
+  /**
+   * The tone of skin the student chose, as the index of T.SKINS (-1: none chosen).
+   *
+   * @param {Object} c The character.
+   * @return {number}
+   */
+  function skinOf(c) {
     var look = {};
     try {
       look = JSON.parse(c.appearance || '{}') || {};
     } catch (e) {
       look = {};
     }
-    return T.artKey(T.characterKeys(family || T.family || 'storyheroes', c.role, c.lineage, c.nameform === 'f' ? 'f' : 'm',
-      c.stage || 1, T.SKINS.indexOf(look.skin), false));
+    return T.SKINS.indexOf(look.skin);
+  }
+
+  /**
+   * The tone of skin of the student as the pictures name it (t1, t2, t3), or null if none was chosen.
+   *
+   * @param {Object} c The character.
+   * @return {string|null}
+   */
+  function toneOf(c) {
+    var skin = skinOf(c);
+    return skin < 0 ? null : 't' + (skin < 2 ? 1 : skin < 4 ? 2 : 3);
   }
 
   /**
@@ -80,14 +102,20 @@
      * @return {Object} hero (key of its picture), pet (as creature() gives it), rigs (hero, pet: whether puppets).
      */
     load: function(scene, c, family) {
-      var hero = heroKey(c, family);
+      var hero = c.role ? heroKey(c, family) : null;
+      // The puppet is cut from the picture in the tone it is painted in, and brings the other tones it can take.
+      var tone = c.role ? toneOf(c) : null;
       var pet = creature(c);
-      var rigs = T.puppet ? {hero: T.puppet.find(hero, 'hero'), pet: T.puppet.find(pet.key, 'creature')} : {};
+      var rigs = T.puppet ? {hero: c.role ? T.puppet.find(heroKey(c, family, true), 'hero') : null,
+        pet: T.puppet.find(pet.key, 'creature')} : {};
       if (rigs.hero) {
         T.puppet.load(scene, 'puppet.hero', rigs.hero);
-      } else if (hero) {
+      }
+      // The picture, too, when there is no puppet or the tone chosen might not be one of the puppet's.
+      if (hero && (!rigs.hero || tone)) {
         scene.load.image('hero', T.artUrl([hero]));
       }
+      scene.castTone = tone;
       if (rigs.pet) {
         T.puppet.load(scene, 'puppet.pet', rigs.pet);
       } else if (pet.url) {
@@ -110,7 +138,7 @@
      * @return {Object} The figure: x, y, sprite, puppet, shadow, base, facing, lift, tilt, pose…
      */
     actor: function(S, which, x, y, height, still, hue) {
-      var puppet = T.puppet && T.puppet.make(S, 'puppet.' + which, still);
+      var puppet = T.puppet && T.puppet.make(S, 'puppet.' + which, still, which === 'hero' ? S.castTone || null : null);
       if (!puppet && !S.textures.exists(which)) {
         figure(S, which, which === 'hero' ? 0xffc857 : 0x7cc67f);
       }
