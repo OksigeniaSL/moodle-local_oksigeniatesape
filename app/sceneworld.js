@@ -232,6 +232,28 @@
         }),
 
         /**
+         * The creature sniffs out an option that is not it: it sniffs for a moment, and then looks up.
+         */
+        sniff: later(function() {
+          if (S.pet) {
+            S.pet.pose = 'sniff';
+            S.time.delayedCall(still ? 0 : 1600, function() {
+              S.pet.pose = null;
+              T.cast.act(S.pet, 'alert');
+            });
+          }
+        }),
+
+        /**
+         * A help is opened: the hero points at what it shows.
+         */
+        hint: later(function() {
+          if (S.hero) {
+            T.cast.act(S.hero, 'point');
+          }
+        }),
+
+        /**
          * A decision is asked: the hero thinks, and the creature looks at them.
          */
         ask: later(function() {

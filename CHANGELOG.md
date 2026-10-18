@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.128.0 (2026-10-19)
+
+- **Defensa del nido, drawn.** Where the device draws with WebGL and moves, the field of the game is drawn by the
+  engine: the forest behind, the nest with the creature of the student in it (a puppet, when the art pack brings it),
+  and the animals coming down with their own drawing, swaying a little as they come. The net flies from the nest: the
+  right one wraps the animal and takes it away, and the creature jumps for joy; a wrong one, or none, and the animal
+  slips in, the creature gets a fright and the nest shakes. The name of each animal, the nets and the warmth of the
+  nest stay in the page, with the keyboard and the reader as before; with time or without hurry, and the server counts
+  the game the same (`app/nestworld.js`).
+- An animal is drawn by the name the student sees (`being.<name without accents or spaces>`, as the beings of the
+  encounters): the same animal has the same drawing in every game, and each regional variant its own. The nest can be
+  painted (`stage.nest`, and `stage.nest.front` for its front edge).
+- With the place alive behind a scene, the creature sniffs when its nose strikes out an option, and the hero points
+  when a help is opened. The world behind a page draws at most 30 frames a second.
+
 ## 0.127.0 (2026-10-19)
 
 - **The voices of the told moments.** Each piece of a told moment plays its recorded voice if the art pack brings it,

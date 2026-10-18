@@ -1502,6 +1502,7 @@
               T.toast(esc(t('app_hint_nobreath')), true);
               return;
             }
+            alive('hint');
             var index = opened.length;
             run.events.push({n: run.node, hint: index});
             run.opened[run.node] = opened.concat([index]);
@@ -1647,9 +1648,10 @@
           }
           sniff.closest('.sniff-row').classList.add('done');
           sniff.disabled = true;
-          if (T.fx) {
+          if (T.fx && !T.fx.sound('sniff')) {
             T.fx.sound('tap');
           }
+          alive('sniff');
           T.toast(esc(t('app_sniffed', creatureName())));
         };
       }

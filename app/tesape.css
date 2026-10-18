@@ -3467,6 +3467,29 @@ body.in-scene {
   transform: translate(-50%, 80px);
 }
 
+/* The field drawn by the engine: the animals, the nest and the creature are in it; over it, the name of each animal. */
+.nest-world,
+.nest-world canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+.nest-arena.live {
+  background: #0f2131;
+}
+
+.nest-arena.live .critter-pic,
+.nest-arena.live .critter .paw,
+.nest-arena.live .nest-home {
+  display: none;
+}
+
+.nest-arena.live .critter {
+  padding: 4px 10px;
+  font-size: 14px;
+}
+
 .nest-home {
   position: absolute;
   left: 50%;

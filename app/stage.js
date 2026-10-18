@@ -40,22 +40,27 @@
    * @param {Object} Phaser
    * @param {Element} parent
    * @param {Object} scene
+   * @param {number} [limit] Frames a second at most (0: as the screen).
+   * @param {boolean} [fit] The size of the parent, not of the window.
    * @return {Object} game, dpr, resize (the listener, to take it away).
    */
-  function game(Phaser, parent, scene) {
+  function game(Phaser, parent, scene, limit, fit) {
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var size = function() {
+      return fit ? [Math.max(1, parent.clientWidth), Math.max(1, parent.clientHeight)] : [window.innerWidth, window.innerHeight];
+    };
     var made = new Phaser.Game({
       type: Phaser.AUTO,
       parent: parent,
       backgroundColor: '#0f2131',
-      scale: {mode: Phaser.Scale.NONE, width: Math.round(window.innerWidth * dpr), height: Math.round(window.innerHeight * dpr),
-        zoom: 1 / dpr},
+      scale: {mode: Phaser.Scale.NONE, width: Math.round(size()[0] * dpr), height: Math.round(size()[1] * dpr), zoom: 1 / dpr},
       audio: {noAudio: true},
       banner: false,
+      fps: {limit: limit || 0},
       scene: scene
     });
     var resize = function() {
-      made.scale.resize(Math.round(window.innerWidth * dpr), Math.round(window.innerHeight * dpr));
+      made.scale.resize(Math.round(size()[0] * dpr), Math.round(size()[1] * dpr));
     };
     window.addEventListener('resize', resize);
     return {game: made, dpr: dpr, resize: resize};
@@ -153,11 +158,15 @@
      *
      * @param {Element} parent
      * @param {Object} scene preload, create, update: called with the scene of Phaser as this.
+     * @param {Object} [opts] fit: the size of the parent (a field of a game) and not of the window; fps (30 by default:
+     *     behind a page, figures that breathe and talk, and the tablet works less).
      * @return {Promise} game, dpr, close().
      */
-    backdrop: function(parent, scene) {
+    backdrop: function(parent, scene, opts) {
+      opts = opts || {};
       return T.stage.load().then(function(Phaser) {
-        var made = game(Phaser, parent, {key: 'backdrop', preload: scene.preload, create: scene.create, update: scene.update});
+        var made = game(Phaser, parent, {key: 'backdrop', preload: scene.preload, create: scene.create, update: scene.update},
+          opts.fps || 30, !!opts.fit);
         var closed = false;
         return {game: made.game, dpr: made.dpr, close: function() {
           if (closed) {

@@ -34,11 +34,21 @@
     var show = m.show;
     m.onclose = function() {
       stop();
+      unfield();
       document.removeEventListener('keydown', onKey);
     };
     var game = null;
     var calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var run = null;
+    // The field drawn by the engine (nestworld.js), where it can be; without it, the field of the page.
+    var field = null;
+
+    function unfield() {
+      if (field) {
+        field.close();
+        field = null;
+      }
+    }
 
     function netLabel(id) {
       var n = game.nets.filter(function(x) {
@@ -122,6 +132,25 @@
       }
       document.addEventListener('keydown', onKey);
       hud();
+      if (T.nestWorld && T.nestWorld.can()) {
+        var arena = layer.querySelector('[data-arena]');
+        T.nestWorld.open(arena, {world: m.world, place: game.place || 'bosque'}).then(function(f) {
+          if (!run || run.over || !arena.isConnected) {
+            f.close();
+            return;
+          }
+          field = f;
+          // Those already coming down, and the one aimed at.
+          run.live.forEach(function(l) {
+            f.add(l);
+          });
+          f.aim(run.aim);
+          // For the tests of the browser.
+          layer.nestField = f;
+        }).catch(function() {
+          // The field of the page, as always.
+        });
+      }
       if (calm) {
         nextTurn();
       } else {
@@ -207,7 +236,7 @@
       el.type = 'button';
       el.className = 'critter';
       // Its own drawing, when the art pack paints it (never the card of its group: that would give the net away).
-      var pic = T.artUrl(['being.' + animal.id]);
+      var pic = T.artUrl([T.nestWorld ? T.nestWorld.drawing(animal.label) : '', 'being.' + animal.id]);
       el.innerHTML = (pic ? '<img class="critter-pic" src="' + esc(pic) + '" alt="">' : '<span class="paw" aria-hidden="true">' +
         '</span>') + esc(animal.label);
       var lanes = calm ? [1] : [0, 1, 2];
@@ -220,10 +249,13 @@
         aim(live);
       };
       run.live.push(live);
+      place(live);
+      if (field) {
+        field.add(live);
+      }
       if (!run.aim || run.aim.done) {
         aim(live);
       }
-      place(live);
       return live;
     }
 
@@ -237,6 +269,9 @@
         l.el.setAttribute('aria-pressed', l === live ? 'true' : 'false');
       });
       run.aim = live;
+      if (field) {
+        field.aim(live);
+      }
     }
 
     function lowest() {
@@ -341,6 +376,9 @@
         m.sound('right');
         m.answer(true);
         l.el.classList.add('caught');
+        if (field) {
+          field.caught(l);
+        }
         say('<b>' + esc(t('app_nest_caught', l.animal.label)) + '</b> ' + esc(netLabel(right)) + '.', true);
         remove(l);
       } else {
@@ -369,6 +407,9 @@
       m.sound('near');
       m.answer(false);
       l.el.classList.add('slipped');
+      if (field) {
+        field.slipped(l, !!net);
+      }
       var why = l.animal.why || netHint(l.animal.net);
       say('<b>' + esc(t(net ? 'app_nest_wrong' : 'app_nest_escaped', {animal: l.animal.label,
         net: netLabel(l.animal.net)})) + '</b> ' + esc(why), false);
@@ -414,6 +455,12 @@
       run.over = true;
       run.playid = run.playid || T.playId();
       stop();
+      // The last net lands before the field goes.
+      var going = field;
+      field = null;
+      if (going) {
+        setTimeout(going.close, 900);
+      }
       document.removeEventListener('keydown', onKey);
       m.save(run.playid, run.events, ending);
     }
