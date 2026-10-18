@@ -728,6 +728,7 @@ $string['board_battle_first'] = 'Primera pregunta';
 $string['board_battle_help'] = 'Preguntas de la misión para toda la clase. Cada acierto le quita vida al Embrollo; fallar no le quita nada a nadie.';
 $string['board_battle_join'] = 'Entra en Tesapé desde tu móvil: la batalla aparece sola.';
 $string['board_battle_joined'] = '{$a} dentro';
+$string['board_battle_joined_of'] = 'Han entrado {$a->joined} de {$a->total}';
 $string['board_battle_life'] = 'Vida del Embrollo';
 $string['board_battle_lost'] = 'El Embrollo se ha escapado esta vez.';
 $string['board_battle_losthelp'] = 'Nadie pierde nada. Otro día habrá revancha.';

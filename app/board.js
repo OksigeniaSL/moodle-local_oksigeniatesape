@@ -455,6 +455,17 @@
   }
 
   /**
+   * How many of the class can come into a battle: those with a character who are not resting.
+   *
+   * @return {number}
+   */
+  function players() {
+    return (state.cls ? state.cls.students : []).filter(function(st) {
+      return st.character && !(st.character.member && st.character.member.status === 'paused');
+    }).length;
+  }
+
+  /**
    * By turns, the music and the moments of the battle: its start, its music (the second piece once the Embrollo is
    * frayed), the moment it frays; and back to the soft music when it ends.
    *
@@ -462,7 +473,7 @@
    */
   function turnFx(l) {
     var frayed = l.maxhp && l.hp / l.maxhp <= 0.6;
-    T.fx.musicKind(l.outcome || !l.round ? '' : frayed ? 'battle2' : 'battle1');
+    T.fx.musicKind(l.outcome ? '' : frayed && l.round ? 'battle2' : 'battle1');
     if (l.round === 1 && l.stage === 'intent' && state.started !== l.id) {
       state.started = l.id;
       T.fx.sound('battle.start');
@@ -543,8 +554,9 @@
     } else if (!l.round) {
       main = '<div class="battle-lobby">' + (l.rematch ? '<p class="turn-outcome fell">' + esc(t('board_battle_rematch',
         l.rematch)) + '</p>' : '') + '<p class="lead">' + esc(t(l.mode === 'phones' ? 'board_battle_join' :
-        'board_battle_aloudhelp')) + '</p>' + (l.mode === 'phones' ? '<p class="battle-count">' +
-        esc(t('board_battle_joined', l.joined)) + '</p>' : '') + '</div>';
+        'board_battle_aloudhelp')) + '</p>' + (l.mode === 'phones' ? '<p class="battle-count">' + esc(players() ?
+        t('board_battle_joined_of', {joined: l.joined, total: players()}) : t('board_battle_joined', l.joined)) + '</p>' :
+        '') + '</div>';
       buttons = '<button class="btn btn-main" data-battlenext' + (l.mode === 'phones' && !l.joined ? ' disabled' : '') + '>' +
         esc(t(l.maxcandles ? 'board_turn_first' : 'board_battle_first')) + '</button>' + (l.kind === 'battle' ?
         '<button class="btn btn-soft" data-battlefinish>' +

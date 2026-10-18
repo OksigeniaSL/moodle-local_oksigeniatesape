@@ -728,6 +728,7 @@ $string['board_battle_first'] = 'First question';
 $string['board_battle_help'] = 'Questions of the mission for the whole class. Each right answer takes life from the Embrollo; a wrong one takes nothing from anybody.';
 $string['board_battle_join'] = 'Open Tesapé on your phone: the battle appears by itself.';
 $string['board_battle_joined'] = '{$a} in';
+$string['board_battle_joined_of'] = '{$a->joined} of {$a->total} have joined';
 $string['board_battle_life'] = 'Life of the Embrollo';
 $string['board_battle_lost'] = 'The Embrollo got away this time.';
 $string['board_battle_losthelp'] = 'Nobody loses anything. Another day there will be a rematch.';

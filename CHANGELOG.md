@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.101.0 (2026-10-18)
+
+- **The lobby of a battle** says how many of the class have joined («18 of 24 have joined»: those with a character
+  who are not resting), and in a battle by turns it has the music of the battle, if the music is on.
+
 ## 0.100.0 (2026-10-18)
 
 - **Touches with a reason**: the bar of the selected students starts with six reasons («Helped their team · +10
