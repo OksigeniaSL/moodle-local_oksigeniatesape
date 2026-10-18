@@ -187,4 +187,59 @@ final class talents_test extends \advanced_testcase {
         $this->assertFalse($runner->has(['role' => 'scout']));
         $this->assertTrue($runner->lend(['scout'])->has(['role' => 'scout']));
     }
+
+    public function test_the_talents_of_level_nine_in_minigames_and_powers(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $dg = $this->getDataGenerator();
+        $course = $dg->create_course();
+        regions::save($course->id, ['enabled' => 1]);
+        missions::install($course->id, 'livingthings', 'valley', 'es');
+        $mission = missions::get($course->id);
+        // In the minigames, as the client and the server read it.
+        $plain = minigames::config($mission, 'circulosbosque', 2, 'protector');
+        $this->assertSame($plain['misses'] + 1, minigames::config(
+            $mission,
+            'circulosbosque',
+            2,
+            'protector',
+            ['endurance']
+        )['misses']);
+        $nest = minigames::config($mission, 'nestdefence', 2, 'protector');
+        $tough = minigames::config($mission, 'nestdefence', 2, 'protector', ['endurance']);
+        $this->assertSame($nest['shield'] + 1, $tough['shield']);
+        $this->assertSame(max(1, $nest['goal'] - 1), $tough['goal']);
+        $this->assertSame(3, minigames::config($mission, 'circulosbosque', 2, 'healer', ['secondwind'])['streak']);
+        $this->assertSame(minigames::STREAK, minigames::config($mission, 'circulosbosque', 2, 'healer')['streak']);
+        $this->assertSame(2, minigames::config($mission, 'circulosbosque', 2, 'sage', ['keeneye'])['looks']);
+        $this->assertSame(1, minigames::config($mission, 'circulosbosque', 2, 'sage')['looks']);
+        $this->assertSame(2, minigames::config($mission, 'circulosbosque', 2, 'scout', ['farsight'])['ahead']);
+        // A talent of another role does nothing.
+        $this->assertSame(0, minigames::config($mission, 'circulosbosque', 2, 'healer', ['farsight'])['ahead']);
+        // In the powers: «Light cheer» and «Light shortcut», a breath less.
+        $group = $dg->create_group(['courseid' => $course->id]);
+        $chars = [];
+        foreach (['healer', 'scout', 'protector', 'sage'] as $role) {
+            [, $user, $chars[$role]] = $this->make_student($role, 9, $course);
+            $dg->create_group_member(['groupid' => $group->id, 'userid' => $user->id]);
+        }
+        $power = fn($code) => array_values(array_filter(powers::catalog($course->id), fn($p) => $p->code === $code))[0];
+        talents::choose($chars['healer'], 9, 'lightcheer');
+        talents::choose($chars['scout'], 9, 'lightshortcut');
+        $this->assertSame((int) $power('cheer')->cost - 1, powers::cost($power('cheer'), $chars['healer']));
+        $this->assertSame((int) $power('trail')->cost - 1, powers::cost($power('trail'), $chars['scout']));
+        // «Shared time»: Extra time for the whole team, and always through the teacher.
+        $this->assertSame('none', powers::target($power('extratime'), $chars['protector']));
+        talents::choose($chars['protector'], 9, 'sharedtime');
+        $this->assertSame('team', powers::target($power('extratime'), $chars['protector']));
+        $DB->set_field(self::T . 'member', 'breath', engine::BREATH_MAX, ['courseid' => $course->id]);
+        $this->assertTrue((bool) $power('extratime')->autoapprove);
+        $request = powers::request($course->id, (int) $chars['protector']->userid, (int) $power('extratime')->id);
+        $this->assertSame('pending', $request->status);
+        $inbox = powers::requests($course->id)['pending'];
+        $this->assertSame(format_string($group->name), $inbox[0]['target']);
+        // «Shared notes» too.
+        talents::choose($chars['sage'], 9, 'sharednotes');
+        $this->assertSame('team', powers::target($power('notes'), $chars['sage']));
+    }
 }

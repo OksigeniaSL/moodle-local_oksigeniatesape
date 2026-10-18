@@ -64,9 +64,10 @@ final class minigames {
      * @param string $code
      * @param int $step
      * @param string $role Of the student: protector, healer, sage or scout.
+     * @param string[] $talents Those of the student that act in the course.
      * @return array|null
      */
-    public static function config(\stdClass $mission, string $code, int $step, string $role = ''): ?array {
+    public static function config(\stdClass $mission, string $code, int $step, string $role = '', array $talents = []): ?array {
         $config = self::config_step($mission, $code, $step);
         if (!$config) {
             return null;
@@ -78,15 +79,23 @@ final class minigames {
             'creature' => missions::text($scene['creature'] ?? '', $mission->skin, $mission->variant),
         ];
         $config['passive'] = in_array($role, characters::ROLES, true) ? $role : '';
-        $config['streak'] = self::STREAK;
+        $has = fn($code) => in_array($code, $talents, true);
+        // «Second wind»: the healer gets the slip back after three, not five.
+        $config['streak'] = $config['passive'] === 'healer' && $has('secondwind') ? 3 : self::STREAK;
+        // The looks of the sage («Keen eye»: two) and what the scout sees coming («Far sight»: two things).
+        $config['looks'] = $config['passive'] === 'sage' ? ($has('keeneye') ? 2 : 1) : 0;
+        $config['ahead'] = $config['passive'] === 'scout' ? ($has('farsight') ? 2 : 1) : 0;
         if ($config['passive'] === 'protector') {
+            // «Endurance»: two slips more, not one.
+            $more = $has('endurance') ? 2 : 1;
+            $config['extra'] = $more;
             if (isset($config['misses'])) {
-                $config['misses']++;
+                $config['misses'] += $more;
             }
             if (!empty($config['shield'])) {
                 // In the nest, each animal that gets in is one not caught: the goal comes down with the shield.
-                $config['shield']++;
-                $config['goal'] = max(1, $config['goal'] - 1);
+                $config['shield'] += $more;
+                $config['goal'] = max(1, $config['goal'] - $more);
             }
         }
         return $config;
@@ -501,7 +510,13 @@ final class minigames {
             }
         }
         $mission = missions::get($courseid);
-        $game = $mission ? self::config($mission, $code, (int) $member->step, (string) $char->role) : null;
+        $game = $mission ? self::config(
+            $mission,
+            $code,
+            (int) $member->step,
+            (string) $char->role,
+            talents::acting($char, $courseid)
+        ) : null;
         if (!$game) {
             throw new \moodle_exception('nominigame', 'local_oksigeniatesape');
         }

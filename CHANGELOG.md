@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.107.0 (2026-10-18)
+
+- **Talents at level 9**, for the minigames and the powers; with them, each role has its three pairs:
+  - Protector: «Endurance» (two slips more in the minigames, not one) or «Shared time» (their Extra time is for the
+    whole team).
+  - Healer: «Second wind» (the first slip comes back after three right in a row, not five) or «Light cheer» (Cheer
+    costs 1 breath less).
+  - Sage: «Keen eye» (two looks a play, not one) or «Shared notes» (their Notes are for the whole team).
+  - Scout: «Far sight» (they see the two things coming, not one; in the hunt for mistakes, the sentences of the next
+    two) or «Light shortcut» (Shortcut costs 1 breath less).
+- A power made for the whole team by a talent always waits for the teacher, even if it approves itself; the inbox
+  says the team, and the breath the student paid.
+
 ## 0.106.0 (2026-10-18)
 
 - **Talents at level 6**, for the battle by turns (the choice of level 3 and that of level 6 come one after the other

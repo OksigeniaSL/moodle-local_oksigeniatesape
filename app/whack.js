@@ -208,7 +208,9 @@
     /** A thing comes out of a free hole. */
     function spawn() {
       var thing = run.queue.shift();
-      m.ahead(run.queue.length ? t('app_passive_coming', run.queue[0].label) : '');
+      m.ahead(m.coming(run.queue.map(function(q) {
+        return q.label;
+      })));
       var taken = run.out.map(function(o) {
         return o.hole;
       });
@@ -335,7 +337,9 @@
         return;
       }
       var thing = run.queue.shift();
-      m.ahead(run.queue.length ? t('app_passive_coming', run.queue[0].label) : '');
+      m.ahead(m.coming(run.queue.map(function(q) {
+        return q.label;
+      })));
       var reads = T.adapted.readaloud && T.readAloud && window.speechSynthesis;
       var box = layer.querySelector('[data-one]');
       box.innerHTML = '<div class="whack-thing up" data-thing>' + T.thing(thing.picture, thing.label) + '</div><p class="sr-only" ' +

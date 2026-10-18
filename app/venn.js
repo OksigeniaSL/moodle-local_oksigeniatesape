@@ -147,9 +147,11 @@
         };
       });
       // What the scout sees coming; the look of the sage, the place of this card.
-      m.ahead(thing && run.item + 1 < run.order.length ? t('app_passive_coming', s.items[run.order[run.item + 1]].label) : '');
+      m.ahead(thing ? m.coming(run.order.slice(run.item + 1).map(function(i) {
+        return s.items[i].label;
+      })) : '');
       var spent = body.querySelector('[data-look]');
-      if (spent && m.flow.looked) {
+      if (spent && m.lookSpent()) {
         spent.disabled = true;
         spent.classList.add('spent');
       }

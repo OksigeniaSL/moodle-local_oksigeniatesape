@@ -114,7 +114,7 @@
       });
       // The look of the sage: two names that are not this one go out.
       var spent = body.querySelector('[data-look]');
-      if (spent && m.flow.looked) {
+      if (spent && m.lookSpent()) {
         spent.disabled = true;
         spent.classList.add('spent');
       }

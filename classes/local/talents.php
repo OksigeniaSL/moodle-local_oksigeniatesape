@@ -31,10 +31,10 @@ final class talents {
 
     /** @var array The talents of each role: at each level that brings a choice, the two to choose from. */
     public const CATALOG = [
-        'protector' => [3 => ['longshield', 'teamguard'], 6 => ['quickshield', 'candleguard']],
-        'healer' => [3 => ['doublecare', 'lightbreather'], 6 => ['sparecandle', 'strongcheer']],
-        'sage' => [3 => ['househints', 'wideglance'], 6 => ['quickglance', 'knotreading']],
-        'scout' => [3 => ['freshtrack', 'sharedtrail'], 6 => ['quicktrail', 'widetrail']],
+        'protector' => [3 => ['longshield', 'teamguard'], 6 => ['quickshield', 'candleguard'], 9 => ['endurance', 'sharedtime']],
+        'healer' => [3 => ['doublecare', 'lightbreather'], 6 => ['sparecandle', 'strongcheer'], 9 => ['secondwind', 'lightcheer']],
+        'sage' => [3 => ['househints', 'wideglance'], 6 => ['quickglance', 'knotreading'], 9 => ['keeneye', 'sharednotes']],
+        'scout' => [3 => ['freshtrack', 'sharedtrail'], 6 => ['quicktrail', 'widetrail'], 9 => ['farsight', 'lightshortcut']],
     ];
 
     /**
@@ -89,6 +89,17 @@ final class talents {
             }
         }
         return null;
+    }
+
+    /**
+     * The talents of a character that act in a course: those of their role, unless the course turns them off.
+     *
+     * @param \stdClass $char
+     * @param int $courseid
+     * @return string[] Codes.
+     */
+    public static function acting(\stdClass $char, int $courseid): array {
+        return self::on_in($courseid) ? array_values(self::of($char)) : [];
     }
 
     /**

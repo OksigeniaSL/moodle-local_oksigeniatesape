@@ -28,6 +28,7 @@ use local_oksigeniatesape\local\minigames;
 use local_oksigeniatesape\local\missions;
 use local_oksigeniatesape\local\powers;
 use local_oksigeniatesape\local\regions;
+use local_oksigeniatesape\local\talents;
 use local_oksigeniatesape\local\teams;
 use local_oksigeniatesape\local\view;
 
@@ -76,7 +77,13 @@ final class get_minigame extends external_api {
             throw new \moodle_exception('nominigame', 'local_oksigeniatesape');
         }
         $member = engine::member($char, $params['courseid']);
-        $config = minigames::config($mission, $params['game'], (int) $member->step, (string) $char->role);
+        $config = minigames::config(
+            $mission,
+            $params['game'],
+            (int) $member->step,
+            (string) $char->role,
+            talents::acting($char, $params['courseid'])
+        );
         if (!$config) {
             throw new \moodle_exception('nominigame', 'local_oksigeniatesape');
         }
@@ -157,6 +164,9 @@ final class get_minigame extends external_api {
             ], 'The two lines at the start'),
             'passive' => new external_value(PARAM_ALPHA, 'Role whose passive the student has, or empty'),
             'streak' => new external_value(PARAM_INT, 'Right answers in a row for the healer to get a slip back'),
+            'looks' => new external_value(PARAM_INT, 'Looks of the sage in a play', VALUE_DEFAULT, 0),
+            'ahead' => new external_value(PARAM_INT, 'Things the scout sees coming', VALUE_DEFAULT, 0),
+            'extra' => new external_value(PARAM_INT, 'Slips more the protector holds', VALUE_DEFAULT, 0),
         ]);
     }
 }

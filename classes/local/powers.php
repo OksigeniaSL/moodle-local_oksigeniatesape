@@ -56,6 +56,12 @@ final class powers {
         'lateday' => ['all', 5, 6, 'none'],
     ];
 
+    /** @var array The talents that make a power cost a breath less. */
+    private const LIGHT = ['breather' => 'lightbreather', 'cheer' => 'lightcheer', 'trail' => 'lightshortcut'];
+
+    /** @var array The talents that make a power for the whole team. */
+    private const SHARED = ['extratime' => 'sharedtime', 'notes' => 'sharednotes'];
+
     /** @var string[] Who a power is for: the roles, and all. */
     public const ROLES = ['protector', 'healer', 'sage', 'scout', 'all'];
 
@@ -145,12 +151,23 @@ final class powers {
     }
 
     /**
-     * Who a power is used on.
+     * Who a power is used on: for a character with «Shared time» or «Shared notes», those powers go to the whole team.
      *
      * @param \stdClass $power
+     * @param \stdClass|null $char Who uses it (null: as the course has it).
      * @return string mate, fallen, team or none.
      */
-    public static function target(\stdClass $power): string {
+    public static function target(\stdClass $power, ?\stdClass $char = null): string {
+        // «Shared time» and «Shared notes»: for the whole team.
+        if (
+            $char && isset(self::SHARED[$power->code]) && talents::has(
+                (int) $char->id,
+                self::SHARED[$power->code],
+                (int) $power->courseid
+            )
+        ) {
+            return 'team';
+        }
         return self::CATALOG[$power->code][3] ?? 'none';
     }
 
@@ -243,7 +260,7 @@ final class powers {
         if ((int) $char->level < (int) $power->minlevel) {
             throw new \moodle_exception('powerlocked', 'local_oksigeniatesape', '', $power->minlevel);
         }
-        $target = self::check_target($courseid, $userid, self::target($power), $targetuserid);
+        $target = self::check_target($courseid, $userid, self::target($power, $char), $targetuserid);
         $cost = self::cost($power, $char);
         // One request at a time for a character: what is pending and the breath are read again inside.
         $request = engine::one_at_a_time((int) $char->id, function () use ($DB, $power, $member, $target, $userid, $now, $cost) {
@@ -272,15 +289,16 @@ final class powers {
             $transaction->allow_commit();
             return $request;
         });
-        if ($power->autoapprove) {
+        // A privilege made for the whole team by a talent goes through the teacher, even if the power approves itself.
+        if ($power->autoapprove && self::target($power, $char) === self::target($power)) {
             return self::decide((int) $request->id, true, 0, $now);
         }
         return $request;
     }
 
     /**
-     * What a power costs a character: its breath, one less for Breather with «Light breather» (never under one if it
-     * costs one or more).
+     * What a power costs a character: its breath, one less with «Light breather», «Light cheer» or «Light shortcut»
+     * (never under one if it costs one or more).
      *
      * @param \stdClass $power
      * @param \stdClass $char
@@ -288,7 +306,7 @@ final class powers {
      */
     public static function cost(\stdClass $power, \stdClass $char): int {
         $cost = (int) $power->cost;
-        if ($power->code === 'breather' && talents::has((int) $char->id, 'lightbreather', (int) $power->courseid)) {
+        if (isset(self::LIGHT[$power->code]) && talents::has((int) $char->id, self::LIGHT[$power->code], (int) $power->courseid)) {
             $cost = max(min($cost, 1), $cost - 1);
         }
         return $cost;
@@ -520,7 +538,7 @@ final class powers {
                 'description' => self::description($power),
                 'cost' => self::cost($power, $char),
                 'minlevel' => (int) $power->minlevel,
-                'target' => self::target($power),
+                'target' => self::target($power, $char),
                 'locked' => (int) $char->level < (int) $power->minlevel,
                 'pending' => isset($pending[$power->id]),
             ];
@@ -552,7 +570,7 @@ final class powers {
         global $DB;
         $catalog = self::catalog($courseid);
         $names = \core_user\fields::for_name()->get_sql('u', false, '', '', false)->selects;
-        $sql = 'SELECT r.*, c.userid, ' . $names . '
+        $sql = 'SELECT r.*, c.userid, c.id AS charid, c.role, ' . $names . '
                   FROM {' . self::T . 'powerreq} r
                   JOIN {' . self::T . 'member} m ON m.id = r.memberid
                   JOIN {' . self::T . 'char} c ON c.id = m.charid
@@ -566,16 +584,20 @@ final class powers {
             $limit
         ) : [];
         $targets = self::target_names(array_merge($pending, $decided), $courseid);
-        $out = function ($request) use ($catalog, $targets) {
+        $out = function ($request) use ($catalog, $targets, $courseid) {
             $power = $catalog[$request->powerid] ?? null;
+            $who = (object) ['id' => $request->charid, 'role' => $request->role];
+            // What goes to the whole team says which team.
+            $team = $power && !$request->targetmemberid && self::target($power, $who) === 'team' ?
+                teams::of($courseid, (int) $request->userid) : null;
             return [
                 'id' => (int) $request->id,
                 'userid' => (int) $request->userid,
                 'fullname' => fullname($request),
                 'power' => $power ? self::name($power) : '',
                 'code' => $power ? $power->code : '',
-                'cost' => $power ? (int) $power->cost : 0,
-                'target' => $targets[$request->targetmemberid] ?? '',
+                'cost' => $power ? self::cost($power, $who) : 0,
+                'target' => $targets[$request->targetmemberid] ?? ($team ? format_string($team->name) : ''),
                 'status' => $request->status,
                 'time' => (int) $request->timecreated,
             ];

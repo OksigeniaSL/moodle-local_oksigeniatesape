@@ -199,7 +199,9 @@
       if (!animal) {
         return null;
       }
-      m.ahead(run.queue.length ? t('app_passive_coming', run.queue[0].label) : '');
+      m.ahead(m.coming(run.queue.map(function(q) {
+        return q.label;
+      })));
       var arena = layer.querySelector('[data-arena]');
       var el = document.createElement('button');
       el.type = 'button';

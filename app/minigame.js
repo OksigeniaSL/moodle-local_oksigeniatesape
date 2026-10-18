@@ -162,7 +162,7 @@
 
     /** A new play: no streak, no notch, the look of the sage unused. */
     m.begin = function() {
-      m.flow = {streak: 0, misses: 0, heat: 0, slipped: false, forgiven: 0, looked: false};
+      m.flow = {streak: 0, misses: 0, heat: 0, slipped: false, forgiven: 0, looked: 0};
       layer.classList.remove('streak');
     };
 
@@ -228,13 +228,25 @@
       }
       var name = T.roleName(m.world.family, role, c.nameform);
       name = name.charAt(0).toLocaleLowerCase(cfg.lang || 'es') + name.slice(1);
+      // With a talent that changes it, the passive tells it so («Keen eye»: two looks; «Far sight»: two things).
+      var key = 'app_passive_' + role + ((role === 'sage' && m.game.looks > 1) || (role === 'scout' && m.game.ahead > 1) ||
+        (role === 'protector' && m.game.extra > 1) ? '_two' : '');
       return '<p class="help game-passive">' + T.icon(role === 'sage' ? 'lens' : role === 'scout' ? 'trail' :
-        role === 'protector' ? 'shield' : 'energy') + esc(t('app_passive_' + role, {name: name, streak: m.game.streak})) +
+        role === 'protector' ? 'shield' : 'energy') + esc(t(key, {name: name, streak: m.game.streak, misses: m.game.misses})) +
         '</p>';
     };
 
     /**
-     * The look of the sage, for the counters: once a play.
+     * Whether the sage has used up their looks of the play (one, or two with «Keen eye»).
+     *
+     * @return {boolean}
+     */
+    m.lookSpent = function() {
+      return m.flow.looked >= (m.game.looks || 1);
+    };
+
+    /**
+     * The look of the sage, for the counters: once a play (twice with «Keen eye»).
      *
      * @return {string}
      */
@@ -256,19 +268,21 @@
         return;
       }
       b.onclick = function() {
-        if (m.flow.looked) {
+        if (m.lookSpent()) {
           return;
         }
         // Spent before it looks: a game may draw itself again to show it.
-        m.flow.looked = true;
+        m.flow.looked++;
         if (look() === false) {
-          m.flow.looked = false;
+          m.flow.looked--;
           return;
         }
         m.sound('choose');
         var now = layer.querySelector('[data-look]') || b;
-        now.disabled = true;
-        now.classList.add('spent');
+        if (m.lookSpent()) {
+          now.disabled = true;
+          now.classList.add('spent');
+        }
       };
     };
 
@@ -279,6 +293,17 @@
      */
     m.aheadSlot = function() {
       return m.game.passive === 'scout' ? '<p class="game-ahead" data-ahead aria-live="polite"></p>' : '';
+    };
+
+    /**
+     * What the scout sees coming, from what comes next: one thing, or two with «Far sight».
+     *
+     * @param {string[]} labels What comes, in order.
+     * @return {string}
+     */
+    m.coming = function(labels) {
+      var seen = labels.slice(0, m.game.ahead || 1);
+      return seen.length ? t('app_passive_coming', seen.join(' · ')) : '';
     };
 
     /**

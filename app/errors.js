@@ -138,7 +138,7 @@
       trail(body);
       // The look of the sage: a word with a mistake is marked.
       var spent = body.querySelector('[data-look]');
-      if (spent && m.flow.looked) {
+      if (spent && m.lookSpent()) {
         spent.disabled = true;
         spent.classList.add('spent');
       }
@@ -212,19 +212,25 @@
         return;
       }
       var all = Array.prototype.slice.call(body.querySelectorAll('.errors-text button'));
-      var k = all.findIndex(function(b) {
-        return b.hasAttribute('data-m');
+      // The next mistake, or the next two with «Far sight»: the start of the sentence of each.
+      var starts = [];
+      all.forEach(function(b, k) {
+        if (!b.hasAttribute('data-m') || starts.length >= (game.ahead || 1)) {
+          return;
+        }
+        var start = k;
+        while (start > 0 && !/[.!?:;]$/.test(all[start - 1].textContent.trim())) {
+          start--;
+        }
+        if (starts.indexOf(start) < 0) {
+          starts.push(start);
+        }
       });
-      if (k < 0) {
-        return;
-      }
-      var start = k;
-      while (start > 0 && !/[.!?:;]$/.test(all[start - 1].textContent.trim())) {
-        start--;
-      }
-      all[start].classList.add('trail');
-      all[start].insertAdjacentHTML('beforebegin', '<span class="errors-trail">' + T.icon('trail') + '<span class="sr-only">' +
-        esc(t('app_passive_trail')) + '</span></span>');
+      starts.forEach(function(start) {
+        all[start].classList.add('trail');
+        all[start].insertAdjacentHTML('beforebegin', '<span class="errors-trail">' + T.icon('trail') + '<span class="sr-only">' +
+          esc(t('app_passive_trail')) + '</span></span>');
+      });
     }
 
     /* ---------- The end ---------- */
