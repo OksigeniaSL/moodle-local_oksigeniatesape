@@ -970,6 +970,37 @@ body.still .opening-lantern {
   font-size: 14px;
 }
 
+/* The friends of the expedition, in the book. */
+.friends-card .friend .face img {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.friends-card .friend .btn {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 6px 14px;
+  font-size: .95rem;
+}
+
+.friend-said {
+  margin: 6px 0 0;
+  padding-left: 10px;
+  border-left: 3px solid var(--lantern);
+  font-style: italic;
+}
+
+.friend-moment .friend-face {
+  display: block;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 8px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
 /* A card to fill in: the gaps, and the pieces to take to it. */
 .fill-card {
   display: grid;

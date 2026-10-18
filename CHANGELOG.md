@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.122.0 (2026-10-18)
+
+- **The friends of the expedition.** The characters of a mission (`friends`) remember the pages of the Great Book a
+  student gave back from what is theirs. With so many of their pages, they tell the student something new and give
+  them some gems, once. In the book tab of the tablet, each friend with their pages, what they told and what is still
+  to come; the tab glows while someone has something to tell.
+- Mission «Los seres vivos» v53: the druid, the librarian, the owl, the gardener and the heron, with two talks each
+  (at two and at four of their pages), in both skins.
+
 ## 0.121.0 (2026-10-18)
 
 - **What was not known when deciding.** A decision can tell, after its consequences, what was missing when it was

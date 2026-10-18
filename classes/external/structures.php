@@ -231,6 +231,19 @@ final class structures {
                 'title' => new external_value(PARAM_TEXT, 'Title'),
                 'text' => new external_value(PARAM_TEXT, 'Text'),
             ])),
+            'friends' => new external_multiple_structure(new external_single_structure([
+                'code' => new external_value(PARAM_ALPHANUMEXT, 'Who speaks, as in the mission'),
+                'name' => new external_value(PARAM_TEXT, 'Their name'),
+                'pages' => new external_value(PARAM_INT, 'Pages given back from what is theirs'),
+                'of' => new external_value(PARAM_INT, 'Their pages in all'),
+                'talks' => new external_multiple_structure(new external_single_structure([
+                    'at' => new external_value(PARAM_INT, 'Pages it takes'),
+                    'open' => new external_value(PARAM_BOOL, 'The student has them'),
+                    'read' => new external_value(PARAM_BOOL, 'The student listened to it'),
+                    'text' => new external_value(PARAM_TEXT, 'What they say (empty while not open)'),
+                    'gems' => new external_value(PARAM_INT, 'Gems it gives'),
+                ])),
+            ]), 'The friends of the expedition', VALUE_DEFAULT, []),
         ], 'Mission of the course', VALUE_OPTIONAL);
     }
 

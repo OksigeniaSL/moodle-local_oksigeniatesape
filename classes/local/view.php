@@ -399,6 +399,8 @@ final class view {
             'mapheight' => (int) ($data['maplayers']['height'] ?? 0),
             'chapters' => $list,
             'pages' => $pages,
+            // The friends of the expedition: what each one tells the student, by the pages given back from what is theirs.
+            'friends' => friends::view($mission, $found),
             // The field guide of the beings met: place by place, how many there are and which the student has.
             'guide' => $current ? array_map(fn($g) => $g + ['name' => missions::text(
                 array_column($data['chapters'] ?? [], 'name', 'code')[$g['place']] ?? $g['place'],

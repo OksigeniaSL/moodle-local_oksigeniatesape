@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 52,
+ "version": 53,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 53,
+   "kind": "improvement",
+   "date": "2026-10-18",
+   "text": "Los amigos de la expedición: la druida, la bibliotecaria, el búho, la jardinera y la garza cuentan algo nuevo y regalan gemas con dos y con cuatro páginas devueltas de lo suyo"
+  },
   {
    "version": 52,
    "kind": "improvement",
@@ -538,6 +544,135 @@
   "embrollo": {
    "valley": "El Embrollo",
    "azara": "El Embrollo"
+  }
+ },
+ "friends": {
+  "druida-mayor": {
+   "pages": [
+    "ser-vivo",
+    "levadura",
+    "cinco-pruebas",
+    "como-cambia-la-ciencia"
+   ],
+   "talks": [
+    {
+     "at": 2,
+     "gems": 1,
+     "text": {
+      "valley": "Dos páginas de vuelta en el Gran Libro. ¿Sabes por qué te di la semilla a ti? Porque mirabas antes de tocar. La ciencia empieza así.",
+      "azara": "Dos notas recuperadas. Cuando llegué al Río de la Plata, en 1781, apuntaba todo lo que veía, aunque no supiera qué era. Tú haces lo mismo: primero mirar, después nombrar."
+     }
+    },
+    {
+     "at": 4,
+     "gems": 2,
+     "text": {
+      "valley": "Cuatro páginas. Cuando yo era aprendiz, confundía la levadura con el polvo. Lo que cambió no fue lo que sabía, sino cómo miraba. Toma, para el camino.",
+      "azara": "Cuatro notas. Algunas cosas que escribí al principio no eran ciertas, y las taché yo mismo cuando miré mejor. Eso también es ciencia: cambiar de idea cuando lo que ves te lo pide."
+     }
+    }
+   ]
+  },
+  "bibliotecaria": {
+   "pages": [
+    "grupos",
+    "celulas",
+    "por-dentro",
+    "nombre-cientifico",
+    "fuentes"
+   ],
+   "talks": [
+    {
+     "at": 2,
+     "gems": 1,
+     "text": {
+      "valley": "Dos páginas en su sitio. ¿Sabes qué es lo que más me gusta de este trabajo? Que cada libro bien ordenado ayuda a alguien que todavía no conozco.",
+      "azara": "Dos notas en su sitio. Un cuaderno ordenado sirve a quien venga después, aunque sea dentro de doscientos años."
+     }
+    },
+    {
+     "at": 4,
+     "gems": 2,
+     "text": {
+      "valley": "Cuatro páginas. Te cuento un secreto: el Embrollo nunca ha entrado en la sala de los libros que dicen de dónde sacan cada cosa. Ahí no tiene de qué alimentarse.",
+      "azara": "Cuatro notas. Las mejores no son las más bonitas, sino las que dicen dónde y cuándo se vio cada cosa."
+     }
+    }
+   ]
+  },
+  "buho": {
+   "pages": [
+    "caracol",
+    "vertebrados",
+    "huellas-de-tinta",
+    "buenas-preguntas",
+    "egagropilas"
+   ],
+   "talks": [
+    {
+     "at": 2,
+     "gems": 1,
+     "text": {
+      "valley": "Uuh. Dos páginas. Muchos cruzan el bosque mirando el suelo. Tú miras también las ramas. Eso me gusta.",
+      "azara": "Dos notas. En el monte no se pierde quien mira arriba y abajo. Tú miras las dos cosas."
+     }
+    },
+    {
+     "at": 4,
+     "gems": 2,
+     "text": {
+      "valley": "Cuatro páginas. Te diré dónde duermo: en el roble hueco junto al arroyo. No se lo digas al Embrollo.",
+      "azara": "Cuatro notas. Te enseño una cosa de baqueano: si los pájaros callan de golpe, algo grande se acerca. Escucha antes de mirar."
+     }
+    }
+   ]
+  },
+  "jardinera": {
+   "pages": [
+    "plantas",
+    "viaje-agua",
+    "la-letra",
+    "semillas-viajeras",
+    "una-sola-cosa"
+   ],
+   "talks": [
+    {
+     "at": 2,
+     "gems": 1,
+     "text": "Dos páginas de las plantas. ¿Ves esa maceta torcida? Es mía, de cuando empecé: la regaba tanto que se ahogaba. Las plantas también enseñan a esperar."
+    },
+    {
+     "at": 4,
+     "gems": 2,
+     "text": "Cuatro páginas. Guarda estas semillas: no son para plantarlas hoy, sino para que recuerdes que cada una lleva dentro una planta entera, esperando."
+    }
+   ]
+  },
+  "garza": {
+   "pages": [
+    "cadenas",
+    "ecosistema",
+    "descomponedores",
+    "los-que-volvieron"
+   ],
+   "talks": [
+    {
+     "at": 2,
+     "gems": 1,
+     "text": {
+      "valley": "Dos páginas del lago. Desde arriba veo lo que abajo no se ve: dónde el agua está quieta, dónde corre, dónde hay peces. Tú empiezas a verlo también.",
+      "azara": "Dos notas del río. Desde arriba veo lo que abajo no se ve: dónde el agua está quieta, dónde corre, dónde hay peces. Tú empiezas a verlo también."
+     }
+    },
+    {
+     "at": 4,
+     "gems": 2,
+     "text": {
+      "valley": "Cuatro páginas. Cuando el Embrollo bebía de las páginas tachadas, pensé que el lago se perdería. Ahora sé que no: alguien las está devolviendo.",
+      "azara": "Cuatro notas. Cuando vi las notas tachadas del cuaderno, pensé que se perdería todo lo del río. Ahora sé que no: alguien las está rehaciendo."
+     }
+    }
+   ]
   }
  },
  "items": {

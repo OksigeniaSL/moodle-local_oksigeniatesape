@@ -475,6 +475,13 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:play',
     ],
+    'local_oksigeniatesape_friend_talk' => [
+        'classname' => 'local_oksigeniatesape\\external\\friend_talk',
+        'description' => 'A student listens to what a friend of the expedition tells them.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:play',
+    ],
     'local_oksigeniatesape_team_reserve' => [
         'classname' => 'local_oksigeniatesape\\external\\team_reserve',
         'description' => 'A student proposes, confirms or takes back a spending of the reserve of their team.',

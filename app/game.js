@@ -1057,6 +1057,11 @@
         // What is waiting glows; how many, only for who listens.
         var badge = tab === 'challenges' && pending ? '<span class="new-glow" aria-hidden="true"></span><span class="sr-only"> (' +
           pending + ')</span>' : '';
+        // A friend of the expedition has something to tell, in the book.
+        if (tab === 'log' && friendWaiting()) {
+          badge = '<span class="new-glow" aria-hidden="true"></span><span class="sr-only"> (' + esc(t('app_friend_waits')) +
+            ')</span>';
+        }
         // A talent to choose waits on the sheet.
         if (tab === 'me' && c && c.talentpending) {
           badge = '<span class="new-glow" aria-hidden="true"></span><span class="sr-only"> (' + esc(t('app_talent_title')) +
@@ -1118,6 +1123,9 @@
     }
     if (state.tab === 'team') {
       bindTeam();
+    }
+    if (state.tab === 'log') {
+      bindFriends();
     }
   }
 
@@ -2895,6 +2903,16 @@
     }).join('') + '</ul><small class="help-soft">' + esc(t('app_parts_help', count + '/' + parts.length)) + '</small>';
   }
 
+  /** The friends of the expedition: listening to what they have to tell. */
+  function bindFriends() {
+    app.querySelectorAll('[data-friend]').forEach(function(b) {
+      b.onclick = function() {
+        b.disabled = true;
+        friendMoment(b.dataset.friend, Number(b.dataset.at));
+      };
+    });
+  }
+
   /** «My part is done» and the rest: marked, and the task drawn again. */
   function bindParts() {
     app.querySelectorAll('[data-part]').forEach(function(b) {
@@ -2975,8 +2993,88 @@
           '<span style="width:22px;height:22px;flex:none">' + T.icon('gems') + '</span>') +
           '<span class="grow"><b>' + esc(i.name) + '</b><small>' + esc(i.description) + '</small></span></li>';
       }).join('') + '</ul></section>' : '';
-    return '<div class="grid2">' + book + items + '</div><section class="card" style="margin-top:16px"><h2>' +
-      esc(t('app_tab_log')) + '</h2>' + logList(w.log) + '</section>';
+    return '<div class="grid2">' + book + items + '</div>' + friendsCard() + '<section class="card" style="margin-top:16px">' +
+      '<h2>' + esc(t('app_tab_log')) + '</h2>' + logList(w.log) + '</section>';
+  }
+
+  /**
+   * Whether a friend of the expedition has something new to tell.
+   *
+   * @return {boolean}
+   */
+  function friendWaiting() {
+    var m = state.world && state.world.mission;
+    return !!(m && (m.friends || []).some(function(f) {
+      return f.talks.some(function(k) {
+        return k.open && !k.read;
+      });
+    }));
+  }
+
+  /**
+   * The friends of the expedition: each one, with the pages given back from what is theirs and what they told; what
+   * they have to tell, to listen to; what is still to come, with the pages it takes.
+   *
+   * @return {string}
+   */
+  function friendsCard() {
+    var m = state.world.mission;
+    if (!m || !(m.friends || []).length) {
+      return '';
+    }
+    return '<section class="card friends-card" style="margin-top:16px"><h2>' + esc(t('app_friends')) + '</h2><p class="help-soft">' +
+      esc(t('app_friends_help')) + '</p><ul class="list">' + m.friends.map(function(f) {
+        var art = T.artUrl(['speaker.' + f.code + '.' + m.skin, 'speaker.' + f.code]);
+        var talks = f.talks.map(function(k) {
+          if (k.open && !k.read) {
+            return '<button type="button" class="btn btn-main" data-friend="' + esc(f.code) + '" data-at="' + k.at + '">' +
+              esc(t('app_friend_listen')) + '</button>';
+          }
+          return k.open ? '<blockquote class="friend-said">«' + esc(k.text) + '»</blockquote>' : '<small class="help-soft">' +
+            esc(t('app_friend_later', k.at)) + '</small>';
+        }).join('');
+        return '<li class="item friend"><span class="face">' + (art ? '<img src="' + esc(art) + '" alt="">' : T.icon('me')) +
+          '</span><span class="grow"><b>' + esc(f.name) + '</b><small>' + esc(t('app_friend_pages', f.pages + '/' + f.of)) +
+          '</small>' + talks + '</span></li>';
+      }).join('') + '</ul></section>';
+  }
+
+  /**
+   * What a friend tells: their picture, their words and, the first time, their gift.
+   *
+   * @param {string} code
+   * @param {number} at
+   */
+  function friendMoment(code, at) {
+    var f = state.world.mission.friends.filter(function(x) {
+      return x.code === code;
+    })[0];
+    T.api('friend_talk', {courseid: cfg.courseid, friend: code, at: at}).then(function(r) {
+      var art = T.artUrl(['speaker.' + code + '.' + state.world.mission.skin, 'speaker.' + code]);
+      var layer = document.createElement('div');
+      layer.className = 'badge-moment friend-moment';
+      layer.setAttribute('role', 'dialog');
+      layer.setAttribute('aria-modal', 'true');
+      layer.setAttribute('aria-labelledby', 'tesape-friend-title');
+      layer.innerHTML = '<div class="badge-card">' + (art ? '<img class="friend-face" src="' + esc(art) + '" alt="">' : '') +
+        '<h2 id="tesape-friend-title">' + esc(f ? f.name : '') + '</h2><p class="lead">«' + esc(r.text) + '»</p>' +
+        (r.gems ? '<p class="conseq good"><span class="what">' + esc(r.gems === 1 ? t('app_friend_gift_one') :
+          t('app_friend_gift', r.gems)) + '</span></p>' : '') +
+        '<div class="actions"><button type="button" class="btn btn-main" data-close>' + esc(t('app_continue')) +
+        '</button></div></div>';
+      document.body.appendChild(layer);
+      if (T.fx) {
+        T.fx.sound('heart');
+      }
+      var close = layer.querySelector('[data-close]');
+      close.focus();
+      close.onclick = function() {
+        layer.remove();
+        refresh();
+      };
+    }).catch(function(e) {
+      T.toast(esc(e.message), true);
+    });
   }
 
   function tabMe() {
