@@ -758,5 +758,16 @@ function xmldb_local_oksigeniatesape_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026101818, 'local', 'oksigeniatesape');
     }
 
+    if ($oldversion < 2026101822) {
+        // The first week, step by step; the courses that already play went through it.
+        $table = new xmldb_table('local_oksigeniatesape_region');
+        $field = new xmldb_field('setup', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0', 'mischief');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+            $DB->set_field('local_oksigeniatesape_region', 'setup', 6, ['enabled' => 1]);
+        }
+        upgrade_plugin_savepoint(true, 2026101822, 'local', 'oksigeniatesape');
+    }
+
     return true;
 }

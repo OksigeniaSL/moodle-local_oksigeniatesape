@@ -519,6 +519,13 @@ final class structures {
                 1,
             ),
             'mischief' => new external_value(PARAM_ALPHA, 'What the Embrollo does every day', VALUE_DEFAULT, 'calm'),
+            'setup' => new external_value(PARAM_INT, 'Steps of the first week gone through (6: all, and the list)', VALUE_DEFAULT, 0),
+            'completion' => new external_value(
+                PARAM_BOOL,
+                'Completion of activities on in the site and the course',
+                VALUE_DEFAULT,
+                true
+            ),
             'look' => new external_value(PARAM_ALPHA, 'Theme of the class (empty: the one of the world)', VALUE_DEFAULT, ''),
             'worldlook' => new external_value(PARAM_ALPHA, 'Theme of the world', VALUE_DEFAULT, 'night'),
         ]);

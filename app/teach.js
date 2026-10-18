@@ -206,6 +206,10 @@
       welcome();
       return;
     }
+    if (state.steps) {
+      firstSteps(state.steps);
+      return;
+    }
     var pending = queued().length;
     app.innerHTML = '<div class="sky"></div><div class="world">' +
       '<header class="hud"><div class="me"><span class="face emblem-face">' + T.emblem() + '</span><span class="who">' +
@@ -235,12 +239,17 @@
       }).join('') + '</nav><main class="content" id="content"></main></div>';
     bindLight();
     app.querySelector('[data-how]').onclick = howItWorks;
-    // The first time a teacher opens the panel of a course, how it works in two minutes.
+    // The first time a teacher opens the panel of a course, how it works in two minutes: once the first week is done,
+    // not over its steps.
     try {
       var hkey = 'tesape-how-' + cfg.courseid + '-' + cfg.userid;
-      if (!window.localStorage.getItem(hkey)) {
+      if (!window.localStorage.getItem(hkey) && d.region.setup >= STEPS.length) {
         window.localStorage.setItem(hkey, '1');
-        setTimeout(howItWorks, 300);
+        setTimeout(function() {
+          if (!state.steps) {
+            howItWorks();
+          }
+        }, 300);
       }
     } catch (e) {
       // Without storage it does not show by itself; the «?» is there.
@@ -276,28 +285,221 @@
     return el;
   }
 
+  /* ---------- The first week, step by step ---------- */
+
+  /** The steps of the first week, and the minutes each one takes. */
+  var STEPS = [['mission', 3], ['family', 1], ['devices', 1], ['teams', 1], ['rehearse', 3]];
+
+  /**
+   * How long a step takes, said as people say it.
+   *
+   * @param {number} n Minutes.
+   * @return {string}
+   */
+  function minutes(n) {
+    return n === 1 ? t('teach_first_minute') : t('teach_first_minutes', n);
+  }
+
   function welcome() {
-    var d = state.data;
     app.innerHTML = '<div class="sky"></div><div class="story">' + T.vignette('region') + '<h1>' + esc(t('teach_welcome')) +
-      '</h1><p class="lead">' + esc(t('teach_welcome_help')) + '</p><h3>' + esc(t('teach_family')) + '</h3>' +
-      '<div class="pills" style="margin-bottom:6px">' + families(d.region.family) + '</div><p class="help">' +
-      esc(t('teach_family_help')) + '</p><div class="actions">' +
-      (can('manageregion') ? '<button class="btn btn-main" data-on>' + esc(t('teach_turnon')) + '</button>' :
-      '<p class="help">' + esc(t('teach_askeditor')) + '</p>') + '<a class="btn btn-soft" href="' + esc(cfg.courseurl) +
-      '">' + esc(t('app_exit')) + '</a></div></div>';
-    var family = d.region.family;
-    bindFamilies(function(f) {
-      family = f;
-    });
+      '</h1><p class="lead">' + esc(t('teach_welcome_help')) + '</p><ol class="first-plan">' + STEPS.map(function(x) {
+        return '<li><b>' + esc(t('teach_first_' + x[0])) + '</b> <small>' + esc(minutes(x[1])) + '</small></li>';
+      }).join('') + '</ol><div class="actions">' + (can('manageregion') ? '<button class="btn btn-main" data-on>' +
+      esc(t('teach_turnon')) + '</button>' : '<p class="help">' + esc(t('teach_askeditor')) + '</p>') +
+      '<a class="btn btn-soft" href="' + esc(cfg.courseurl) + '">' + esc(t('app_exit')) + '</a></div></div>';
     var on = app.querySelector('[data-on]');
     if (on) {
       on.onclick = function() {
         on.disabled = true;
-        T.api('save_region', {courseid: cfg.courseid, enabled: true, family: family}).then(function() {
+        T.api('save_region', {courseid: cfg.courseid, enabled: true}).then(function() {
           T.toast(esc(t('teach_on')));
+          state.steps = 1;
           load();
         }).catch(function(e) {
           on.disabled = false;
+          T.toast(esc(e.message), true);
+        });
+      };
+    }
+  }
+
+  /**
+   * One step of the first week: what to do and how long it takes, done here; then on to the next one, or back to the
+   * panel to go on later.
+   *
+   * @param {number} n From 1 to 5.
+   */
+  function firstSteps(n) {
+    var d = state.data;
+    var r = d.region;
+    var step = STEPS[n - 1];
+    state.steps = n;
+    if (step[0] === 'mission' && !state.missions) {
+      app.innerHTML = '<div class="loading"><div><div class="lamp"></div>' + esc(t('app_loading')) + '</div></div>';
+      T.api('get_missions', {courseid: cfg.courseid}).then(function(m) {
+        state.missions = m;
+        if (state.steps === n) {
+          firstSteps(n);
+        }
+      }).catch(function(e) {
+        T.toast(esc(e.message), true);
+        state.steps = 0;
+        render();
+      });
+      return;
+    }
+    var body = '';
+    if (step[0] === 'mission') {
+      var m = state.missions;
+      body = (m.installed ? '<p class="first-done">✓ ' + esc(t('teach_first_mission_done', m.installed.title)) + '</p>' :
+        m.packages.map(packageCard).join('')) + (r.completion ? '' : '<p class="first-warn">' +
+        esc(t('teach_first_completion')) + '</p>');
+    } else if (step[0] === 'family') {
+      body = '<div class="pills" style="margin-bottom:6px">' + families(r.family) + '</div>';
+    } else if (step[0] === 'devices') {
+      body = '<div class="first-choices" role="group" aria-label="' + esc(t('teach_first_devices')) + '">' +
+        [['1', 'tablets'], ['0', 'none']].map(function(x) {
+          var on = (r.devices !== false) === (x[0] === '1');
+          return '<button type="button" class="pill" aria-pressed="' + on + '" ' +
+            'data-firstdevices="' + x[0] + '"><b>' + esc(t('board_devices_' + x[1])) + '</b><small>' +
+            esc(t('teach_first_devices_' + x[1])) + '</small></button>';
+        }).join('') + '</div>';
+    } else if (step[0] === 'teams') {
+      var have = d.students.filter(function(x) {
+        return !!x.character;
+      }).length;
+      var count = {have: have, total: d.students.length};
+      // Nearly everyone has a character: they can be made now, in «Class».
+      body = '<p class="first-done">' + (d.standings.length ? '✓ ' + esc(t('teach_first_teams_done', d.standings.length)) :
+        esc(t(have && have >= 0.8 * d.students.length ? 'teach_first_teams_ready' : 'teach_first_teams_wait', count))) +
+        '</p>';
+    } else {
+      body = '<ol class="first-list">' + ['board', 'print', 'sheet'].map(function(x) {
+        return '<li>' + esc(t('teach_first_rehearse_' + x)) + '</li>';
+      }).join('') + '</ol>' + (can('runclassscreen') ? '<p><a class="btn btn-soft" target="_blank" href="' +
+        esc(cfg.wwwroot + '/local/oksigeniatesape/board.php?id=' + cfg.courseid) + '">' + esc(t('teach_first_open_board')) +
+        '</a></p>' : '');
+    }
+    var last = n === STEPS.length;
+    app.innerHTML = '<div class="sky"></div><div class="story first-steps"><div class="kicker">' +
+      esc(t('teach_first_step', {n: n, total: STEPS.length, time: minutes(step[1])})) + '</div><ol class="first-dots" ' +
+      'aria-hidden="true">' + STEPS.map(function(x, i) {
+        return '<li class="' + (i + 1 < n ? 'done' : i + 1 === n ? 'now' : '') + '"></li>';
+      }).join('') + '</ol><h1>' + esc(t('teach_first_' + step[0])) + '</h1><p class="lead">' +
+      esc(t('teach_first_' + step[0] + '_help')) + '</p>' + body + '<div class="actions">' + (n > 1 ?
+      '<button class="btn btn-soft" type="button" data-firstback>' + esc(t('teach_first_back')) + '</button>' : '') +
+      '<button class="btn btn-main" type="button" data-firstnext>' + esc(t(last ? 'teach_first_finish' : 'teach_first_next')) +
+      '</button><button class="btn btn-soft" type="button" data-firstlater>' + esc(t('teach_first_later')) +
+      '</button></div></div>';
+    window.scrollTo(0, 0);
+    var save = function(settings) {
+      return T.api('save_region', Object.assign({courseid: cfg.courseid}, settings)).then(function(region) {
+        state.data.region = region;
+        T.family = region.family;
+      }).catch(function(e) {
+        T.toast(esc(e.message), true);
+      });
+    };
+    bindInstall(app, function() {
+      firstSteps(n);
+    });
+    bindFamilies(function(f) {
+      save({family: f});
+    });
+    app.querySelectorAll('[data-firstdevices]').forEach(function(b) {
+      b.onclick = function() {
+        app.querySelectorAll('[data-firstdevices]').forEach(function(o) {
+          o.setAttribute('aria-pressed', o === b);
+        });
+        save({devices: b.dataset.firstdevices === '1'});
+      };
+    });
+    var back = app.querySelector('[data-firstback]');
+    if (back) {
+      back.onclick = function() {
+        firstSteps(n - 1);
+      };
+    }
+    app.querySelector('[data-firstnext]').onclick = function() {
+      this.disabled = true;
+      save({setup: Math.max(r.setup, n)}).then(function() {
+        if (last) {
+          state.steps = 0;
+          state.tab = 'class';
+          render();
+        } else {
+          firstSteps(n + 1);
+        }
+      });
+    };
+    app.querySelector('[data-firstlater]').onclick = function() {
+      state.steps = 0;
+      state.tab = 'class';
+      render();
+    };
+  }
+
+  /**
+   * In the class tab: the way back to the first week while it is not finished, and then the list of the first day.
+   *
+   * @return {string}
+   */
+  function firstCard() {
+    var d = state.data;
+    var r = d.region;
+    if (!can('manageregion') || r.setup >= 6) {
+      return '';
+    }
+    if (r.setup < STEPS.length) {
+      return '<section class="card first-card" style="margin-bottom:16px"><div class="kicker">' + esc(t('teach_first')) +
+        '</div><h2>' + esc(t('teach_first_left', {done: r.setup, total: STEPS.length})) + '</h2><div class="actions" ' +
+        'style="justify-content:flex-start"><button class="btn btn-main" type="button" data-firststeps>' +
+        esc(t(r.setup ? 'teach_first_go_on' : 'teach_first_start')) + '</button></div></section>';
+    }
+    var ticked = {};
+    try {
+      ticked = JSON.parse(window.localStorage.getItem('tesape-firstday-' + cfg.courseid) || '{}') || {};
+    } catch (e) {
+      // Nothing ticked on this device.
+    }
+    return '<section class="card first-card" style="margin-bottom:16px"><div class="kicker">' + esc(t('teach_first')) +
+      '</div><h2>' + esc(t('teach_firstday_title')) + '</h2><ul class="first-ticks">' + ['users', 'board',
+      r.devices === false ? 'cards' : 'tablets', 'sheet', 'rehearsal'].map(function(item) {
+        return '<li><label class="chip"><input type="checkbox" data-firsttick="' + item + '"' + (ticked[item] ? ' checked' :
+          '') + '> ' + esc(t('teach_firstday_' + item, d.students.length)) + '</label></li>';
+      }).join('') + '</ul><div class="actions" style="justify-content:flex-start"><button class="btn btn-soft" ' +
+      'type="button" data-firstdone>' + esc(t('teach_firstday_done')) + '</button></div></section>';
+  }
+
+  function bindFirstCard(el) {
+    var go = el.querySelector('[data-firststeps]');
+    if (go) {
+      go.onclick = function() {
+        firstSteps(Math.min(STEPS.length, state.data.region.setup + 1));
+      };
+    }
+    el.querySelectorAll('[data-firsttick]').forEach(function(box) {
+      box.onchange = function() {
+        var ticked = {};
+        el.querySelectorAll('[data-firsttick]').forEach(function(b) {
+          ticked[b.dataset.firsttick] = b.checked;
+        });
+        try {
+          window.localStorage.setItem('tesape-firstday-' + cfg.courseid, JSON.stringify(ticked));
+        } catch (e) {
+          // Without storage, the ticks last while the page is open.
+        }
+      };
+    });
+    var done = el.querySelector('[data-firstdone]');
+    if (done) {
+      done.onclick = function() {
+        done.disabled = true;
+        T.api('save_region', {courseid: cfg.courseid, setup: 6}).then(function(region) {
+          state.data.region = region;
+          render();
+        }).catch(function(e) {
+          done.disabled = false;
           T.toast(esc(e.message), true);
         });
       };
@@ -1086,7 +1288,7 @@
           '" aria-label="' + esc(t('app_teamstate_' + g.state)) + '"></span>' : '') + '</button>';
       }).join('') + '</div>';
     var shown = studentsShown();
-    var el = content(sessionCard() + remoteCard() + inboxCard() + todayCard() + teamsCard() + farCard() + '<section class="card"><div class="section-title"><h2>' +
+    var el = content(firstCard() + sessionCard() + remoteCard() + inboxCard() + todayCard() + teamsCard() + farCard() + '<section class="card"><div class="section-title"><h2>' +
       esc(t('teach_tab_class')) +
       '</h2><span class="section-tools"><label class="chip"><input type="checkbox" data-showres' + (state.showres ? ' checked' :
       '') + '> ' + esc(t('teach_showres')) + '</label><button class="btn btn-soft" data-all>' + esc(t('teach_selectall')) +
@@ -1124,6 +1326,7 @@
       };
     });
     bindInbox(el.querySelector('[data-inbox]'));
+    bindFirstCard(el);
     el.querySelectorAll('[data-team]').forEach(function(b) {
       b.onclick = function() {
         state.team = Number(b.dataset.team);
@@ -2006,19 +2209,32 @@
         });
       };
     }
+    bindInstall(el, tabMission);
+  }
+
+  /**
+   * The forms that install a mission in the course.
+   *
+   * @param {Element} el
+   * @param {Function} done What to draw once installed.
+   */
+  function bindInstall(el, done) {
     el.querySelectorAll('form[data-install]').forEach(function(f) {
       f.onsubmit = function(ev) {
         ev.preventDefault();
         var skin = f.querySelector('[name="skin"]:checked');
         var variant = f.querySelector('[name="variant"]:checked');
         var acts = f.querySelector('[name="activities"]');
+        var button = f.querySelector('[type="submit"]');
+        button.disabled = true;
         T.api('install_mission', {courseid: cfg.courseid, code: f.dataset.install, skin: skin.value,
           variant: variant.value, activities: !!(acts && acts.checked)}).then(function(missions) {
           state.missions = missions;
           state.results = null;
           T.toast(esc(t('app_saved')));
-          tabMission();
+          done();
         }).catch(function(e) {
+          button.disabled = false;
           T.toast(esc(e.message), true);
         });
       };
@@ -2717,7 +2933,7 @@
           '</small></span></label>';
       }).join('') + '</div>';
     var coverCard = '<h3>' + esc(t('teach_cover')) + '</h3><p style="color:var(--text-soft)">' + esc(t('teach_cover_help')) +
-      '</p><div class="cover-options">' + covers + '</div>' + inside + '<p><a href="' +
+      '</p><div class="cover-options">' + covers + '</div><p><a href="' +
       esc(cfg.wwwroot + '/course/view.php?id=' + cfg.courseid) + '">' + esc(t('teach_cover_see')) + '</a></p>';
     // The badge of Moodle the mission brings: whether it is on, and where the teacher turns it on.
     var badgeCard = r.badgeid ? '<h3>' + esc(t('teach_badge')) + '</h3><p style="color:var(--text-soft)">' +
@@ -2728,40 +2944,52 @@
       'align-items:flex-start;margin:4px 0"><input type="checkbox" name="gradebook"' + (r.gradebook ? ' checked' : '') +
       (editable ? '' : ' disabled') + '> <span>' + esc(t('teach_set_gradebook')) + '</span></label><small style="' +
       'display:block;color:var(--text-soft);margin-bottom:14px">' + esc(t('teach_set_gradebook_help')) + '</small>';
-    var el = content('<section class="card"><h2>' + esc(t('teach_tab_settings')) + '</h2><form data-settings>' +
-      '<label class="chip" style="display:inline-flex;gap:8px;align-items:center;margin-bottom:14px"><input ' +
+    var check = function(name, on) {
+      return '<label class="chip" style="display:inline-flex;gap:8px;align-items:center;margin:4px 0 14px"><input ' +
+        'type="checkbox" name="' + name + '"' + (on ? ' checked' : '') + (editable ? '' : ' disabled') + '> ' +
+        esc(t('teach_set_' + name)) + '</label>';
+    };
+    var choice = function(name, values, now, label) {
+      return '<div class="pills" style="justify-content:flex-start" role="radiogroup" aria-label="' +
+        esc(t('teach_set_' + name)) + '">' +
+        values.map(function(v) {
+          return '<label class="chip"><input type="radio" name="' + name + '" value="' + v + '"' + (String(now) === String(v) ?
+            ' checked' : '') + (editable ? '' : ' disabled') + '> ' + esc(label(v)) + '</label>';
+        }).join('') + '</div>';
+    };
+    // Two layers: what a teacher touches any day, and folded, what is set once or rarely.
+    var daily = '<label class="chip" style="display:inline-flex;gap:8px;align-items:center;margin-bottom:14px"><input ' +
       'type="checkbox" name="enabled"' + (r.enabled ? ' checked' : '') + (editable ? '' : ' disabled') + '> ' +
       esc(t('teach_set_enabled')) + '</label><h3>' + esc(t('teach_family')) + '</h3><div class="pills" style="' +
-      'justify-content:flex-start;margin-bottom:14px">' + families(r.family) + '</div>' +
-      field('groupingid', t('teach_set_groupingid'), groupings) + field('timezone', t('teach_set_timezone'), timezone) +
-      (editable ? '<div style="margin:-6px 0 14px">' +
-      makeTeamsForm() + '</div>' : '') + '<div class="grid2" style="gap:10px">' +
-      num('weeklycap', r.weeklycap, true) + num('dailymanualcap', r.dailymanualcap, false) +
-      num('dailyenergylosscap', r.dailyenergylosscap, false) + num('completionrule', r.completionrule, true) + '</div>' +
-      '<label class="chip" style="display:inline-flex;gap:8px;align-items:center;margin:4px 0 14px"><input ' +
-      'type="checkbox" name="leaderboard"' + (r.leaderboard ? ' checked' : '') + (editable ? '' : ' disabled') + '> ' +
-      esc(t('teach_set_leaderboard')) + '</label><label class="chip" style="display:inline-flex;gap:8px;align-items:center;' +
-      'margin:4px 0 14px"><input type="checkbox" name="quiet"' + (r.quiet ? ' checked' : '') + (editable ? '' : ' disabled') +
-      '> ' + esc(t('teach_set_quiet')) + '</label><h3>' + esc(t('board_devices')) + '</h3><p class="help-soft">' +
-      esc(t('teach_set_devices_help')) + '</p><div class="pills" role="radiogroup" aria-label="' + esc(t('board_devices')) + '">' +
-      [['1', 'board_devices_tablets'], ['0', 'board_devices_none']].map(function(d) {
+      'justify-content:flex-start;margin-bottom:14px">' + families(r.family) + '</div><h3>' + esc(t('board_devices')) +
+      '</h3><p class="help-soft">' + esc(t('teach_set_devices_help')) + '</p><div class="pills" style="justify-content:' +
+      'flex-start" role="radiogroup" ' +
+      'aria-label="' + esc(t('board_devices')) + '">' + [['1', 'board_devices_tablets'], ['0', 'board_devices_none']]
+      .map(function(d) {
         return '<label class="chip"><input type="radio" name="devices" value="' + d[0] + '"' + ((r.devices !== false) ===
           (d[0] === '1') ? ' checked' : '') + (editable ? '' : ' disabled') + '> ' + esc(t(d[1])) + '</label>';
-      }).join('') + '</div><h3>' + esc(t('teach_set_mischief')) + '</h3><p class="help-soft">' + esc(t('teach_set_mischief_help')) +
-      '</p><div class="pills" role="radiogroup" aria-label="' + esc(t('teach_set_mischief')) + '">' +
-      ['off', 'calm', 'naughty'].map(function(m) {
-        return '<label class="chip"><input type="radio" name="mischief" value="' + m + '"' + ((r.mischief || 'calm') === m ?
-          ' checked' : '') + (editable ? '' : ' disabled') + '> ' + esc(t('teach_set_mischief_' + m)) + '</label>';
-      }).join('') + '</div><h3>' + esc(t('teach_set_devicemusic')) + '</h3><p class="help-soft">' +
-      esc(t('teach_set_devicemusic_help')) + '</p><div class="pills" role="radiogroup" aria-label="' +
-      esc(t('teach_set_devicemusic')) + '">' + [0, 1, 2].map(function(m) {
-        var now = r.devicemusic === undefined ? 1 : r.devicemusic;
-        return '<label class="chip"><input type="radio" name="devicemusic" value="' + m + '"' + (now === m ? ' checked' : '') +
-          (editable ? '' : ' disabled') + '> ' + esc(t('teach_set_devicemusic_' + m)) + '</label>';
-      }).join('') + '</div><h3>' + esc(t('teach_set_nicknames')) + '</h3>' + nick + lookCard + coverCard +
-      badgeCard + gradesCard +
-      (editable ? '<div class="actions" style="justify-content:flex-start;margin-top:14px"><button class="btn btn-main" ' +
-      'type="submit">' + esc(t('app_save')) + '</button></div>' : '') + '</form></section>');
+      }).join('') + '</div><h3>' + esc(t('teach_set_nicknames')) + '</h3>' + nick + '<div>' +
+      check('leaderboard', r.leaderboard) + ' ' + check('quiet', r.quiet) + '</div><h3>' + esc(t('teach_set_devicemusic')) +
+      '</h3><p class="help-soft">' + esc(t('teach_set_devicemusic_help')) + '</p>' + choice('devicemusic', [0, 1, 2],
+      r.devicemusic === undefined ? 1 : r.devicemusic, function(m) {
+        return t('teach_set_devicemusic_' + m);
+      }) + '<h3>' + esc(t('teach_set_mischief')) + '</h3><p class="help-soft">' + esc(t('teach_set_mischief_help')) +
+      '</p>' + choice('mischief', ['off', 'calm', 'naughty'], r.mischief || 'calm', function(m) {
+        return t('teach_set_mischief_' + m);
+      }) + coverCard;
+    var advanced = '<details class="settings-advanced"' + (state.advanced ? ' open' : '') + '><summary><b>' +
+      esc(t('teach_set_advanced')) + '</b><small>' + esc(t('teach_set_advanced_help')) + '</small></summary>' +
+      field('groupingid', t('teach_set_groupingid'), groupings) + field('timezone', t('teach_set_timezone'), timezone) +
+      (editable ? '<div style="margin:-6px 0 14px">' + makeTeamsForm() + '</div>' : '') +
+      '<div class="grid2" style="gap:10px">' + num('weeklycap', r.weeklycap, true) +
+      num('dailymanualcap', r.dailymanualcap, false) + num('dailyenergylosscap', r.dailyenergylosscap, false) +
+      num('completionrule', r.completionrule, true) + '</div>' + inside + lookCard + badgeCard + gradesCard + '</details>';
+    var el = content('<section class="card"><h2>' + esc(t('teach_tab_settings')) + '</h2><form data-settings>' + daily +
+      advanced + (editable ? '<div class="actions" style="justify-content:flex-start;margin-top:14px"><button ' +
+      'class="btn btn-main" type="submit">' + esc(t('app_save')) + '</button></div>' : '') + '</form></section>');
+    el.querySelector('.settings-advanced').ontoggle = function() {
+      state.advanced = this.open;
+    };
     var family = r.family;
     bindFamilies(function(f) {
       family = f;

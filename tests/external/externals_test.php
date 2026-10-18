@@ -187,6 +187,16 @@ final class externals_test extends \advanced_testcase {
         $this->assertFalse($region['leaderboard']);
         $this->assertEquals(0, $region['completionrule']);
         $this->assertTrue($region['enabled']);
+        // The first week: the steps gone through, kept between 0 and 6, and whether completion is on.
+        $this->assertSame(0, $region['setup']);
+        $region = $this->call('save_region', $w->teacher, [$w->course->id, null, null, null, null, null, null, null, null, null,
+            null, null, null, null, null, null, null, null, null, 3]);
+        $this->assertSame(3, $region['setup']);
+        $region = $this->call('save_region', $w->teacher, [$w->course->id, null, null, null, null, null, null, null, null, null,
+            null, null, null, null, null, null, null, null, null, 9]);
+        $this->assertSame(6, $region['setup']);
+        $this->assertSame('animals', $region['family']);
+        $this->assertIsBool($region['completion']);
         $this->assertEquals(['ok' => true], $this->call('delete_challenge', $w->teacher, [$w->course->id, $challenge['id']]));
     }
 

@@ -746,6 +746,10 @@ final class view {
             'devices' => (bool) ($region->devices ?? true),
             'devicemusic' => (int) ($region->devicemusic ?? 1),
             'mischief' => (string) ($region->mischief ?? 'calm'),
+            'setup' => (int) ($region->setup ?? 0),
+            // Without completion of activities, the activities of Moodle give no saber: the first step says so.
+            'completion' => !empty($GLOBALS['CFG']->enablecompletion) && (!$region ||
+                !empty($GLOBALS['DB']->get_field('course', 'enablecompletion', ['id' => $region->courseid]))),
             'look' => (string) ($region->look ?? ''),
             'worldlook' => themes::current('', art::manifest()),
         ];

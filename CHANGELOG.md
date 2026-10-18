@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.99.0 (2026-10-18)
+
+- **The first week, step by step**: turning Tesapé on in a course opens five steps, each with the minutes it takes
+  (the mission, with a warning when completion of activities is off; the names of the roles; how the class plays;
+  the teams, when nearly everyone has a character; and a rehearsal before the first day). It can be left and taken
+  up again from a card in the class tab, which then becomes the list of the first day. Courses that already play
+  skip it.
+- **Settings in two layers**: what a teacher touches any day comes first; grouping, time zone, teams, caps, saber per
+  activity, hidden activities, theme, badge and gradebook are folded under «Advanced».
+
 ## 0.98.0 (2026-10-18)
 
 - **Adaptations in one touch**: «Reading support» (read aloud, big text, more hints), «No hurry, no noise» (no hurry,

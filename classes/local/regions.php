@@ -115,6 +115,9 @@ final class regions {
         if (array_key_exists('devicemusic', $settings)) {
             $region->devicemusic = max(0, min(2, (int) $settings['devicemusic']));
         }
+        if (array_key_exists('setup', $settings)) {
+            $region->setup = max(0, min(6, (int) $settings['setup']));
+        }
         if (array_key_exists('mischief', $settings)) {
             if (!in_array($settings['mischief'], stains::MODES, true)) {
                 throw new \invalid_parameter_exception('Unknown mischief: ' . $settings['mischief']);
