@@ -433,6 +433,13 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:runclassscreen',
     ],
+    'local_oksigeniatesape_set_team_state' => [
+        'classname' => 'local_oksigeniatesape\\external\\set_team_state',
+        'description' => 'A student says how their team is doing today.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:play',
+    ],
     'local_oksigeniatesape_erase_stain' => [
         'classname' => 'local_oksigeniatesape\\external\\erase_stain',
         'description' => 'The teacher takes a stain of the Embrollo as cleaned by the class.',

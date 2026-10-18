@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.95.0 (2026-10-18)
+
+Block 4.2 of the plan.
+
+- **«We need help!»**: in their Team tab, a team says how it is doing today: ready, working or asking for help. The
+  class screen shows a lantern beside each team (green, amber, or the one asking for help, beating), without names nor
+  why, within five seconds; the teacher sees it beside the name of each team in the panel. A team that has finished
+  sees who asks for help and can go. Only today counts.
+
 ## 0.94.0 (2026-10-18)
 
 - **The Workshop edits the sheets of the sessions**: the title, what to prepare, each step and what is read aloud, the

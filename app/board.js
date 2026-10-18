@@ -50,6 +50,7 @@
       state.cls = r[1];
       state.live = r[2].live || null;
       session(r[2].session);
+      state.teamstates = r[2].teams ? JSON.parse(r[2].teams) : {};
       modes();
       T.family = r[1].region.family;
       schedule();
@@ -99,6 +100,7 @@
     }
     T.api('live_host', {courseid: cfg.courseid, action: 'state'}).then(function(r) {
       session(r.session);
+      teamStates(r.teams);
       var live = r.live || null;
       var was = state.live;
       if ((live && live.id) !== (was && was.id) || (live && live.outcome) !== (was && was.outcome)) {
@@ -106,6 +108,37 @@
       }
     }).catch(function() {
       // A poll that fails is tried again at the next one.
+    });
+  }
+
+  /* ---------- How each team says it is doing ---------- */
+
+  /**
+   * The lantern of the state of a team: ready, working or asking for help, without names nor why.
+   *
+   * @param {number} id
+   * @param {string} st
+   * @return {string}
+   */
+  function teamState(id, st) {
+    return '<span class="team-state-lamp' + (st ? ' state-' + st : '') + '" data-teamlamp="' + id + '">' +
+      (st ? '<i aria-hidden="true"></i>' + esc(t('board_teamstate_' + st)) : '') + '</span>';
+  }
+
+  function teamStates(json) {
+    var states = {};
+    try {
+      states = json ? JSON.parse(json) : {};
+    } catch (e) {
+      states = {};
+    }
+    state.teamstates = states;
+    app.querySelectorAll('[data-teamlamp]').forEach(function(el) {
+      var st = states[el.dataset.teamlamp] || '';
+      if ((el.dataset.st || '') !== st) {
+        el.dataset.st = st;
+        el.outerHTML = teamState(el.dataset.teamlamp, st).replace('data-teamlamp=', 'data-st="' + st + '" data-teamlamp=');
+      }
     });
   }
 
@@ -1137,7 +1170,7 @@
       var lantern = (team.banner || []).indexOf('banner-lantern') >= 0 ? '<span class="banner-lantern">' +
         T.icon('lantern') + '</span> ' : '';
       return '<div class="board-team"><button type="button" class="team-name" data-team="' + team.id + '">' + lantern +
-        esc(team.name) + '</button>' + (w ? '<span class="meter level"><i style="width:' + pct + '%"></i></span>' : '') +
+        esc(team.name) + '</button>' + teamState(team.id, (state.teamstates || {})[team.id] || team.state) + (w ? '<span class="meter level"><i style="width:' + pct + '%"></i></span>' : '') +
         '<div class="members">' + members.map(student).join('') + '</div></div>';
     }).join('');
     var loose = cls.students.filter(function(s) {

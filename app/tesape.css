@@ -8564,3 +8564,77 @@ body.adapt-still .mission-grid .chapter.as-sheet {
     animation: none;
   }
 }
+
+/* ---------- How each team says it is doing ---------- */
+
+.team-state {
+  margin: 8px 0 12px;
+}
+
+.team-state .pills {
+  justify-content: flex-start;
+}
+
+.team-state .chip.state-help[aria-pressed="true"] {
+  border-color: #ef7d5c;
+  background: rgba(239, 125, 92, .25);
+}
+
+.team-state .chip.state-ready[aria-pressed="true"] {
+  border-color: #7cc67f;
+  background: rgba(124, 198, 127, .25);
+}
+
+.team-state-lamp {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  margin-inline-start: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.team-state-lamp i,
+.team-state-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #8a9aa8;
+}
+
+.state-ready i,
+.team-state-dot.state-ready {
+  background: #7cc67f;
+  box-shadow: 0 0 8px #7cc67f;
+}
+
+.state-working i,
+.team-state-dot.state-working {
+  background: #ffc857;
+  box-shadow: 0 0 8px #ffc857;
+}
+
+.state-help i,
+.team-state-dot.state-help {
+  background: #ef7d5c;
+  box-shadow: 0 0 10px #ef7d5c;
+  animation: tesape-help 1.2s ease-in-out infinite;
+}
+
+.team-state-lamp.state-help {
+  color: #ffc4b2;
+}
+
+@keyframes tesape-help {
+  50% {
+    transform: scale(1.35);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .state-help i,
+  .team-state-dot.state-help {
+    animation: none;
+  }
+}

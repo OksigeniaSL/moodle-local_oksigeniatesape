@@ -587,11 +587,13 @@ final class view {
                 'validations' => $validations,
             ];
         }
+        // How each team says it is doing today.
+        $states = teams::states($courseid);
         $view = [
             'region' => self::region($region),
             'students' => $list,
             'teams' => array_values(array_map(fn($g) => ['id' => (int) $g->id, 'name' => format_string($g->name),
-                'banner' => market::team_owns($courseid, (int) $g->id)], $groups)),
+                'banner' => market::team_owns($courseid, (int) $g->id), 'state' => $states[(int) $g->id] ?? ''], $groups)),
             'groupings' => array_values(array_map(
                 fn($g) => ['id' => (int) $g->id, 'name' => format_string($g->name)],
                 groups_get_all_groupings($courseid)
@@ -903,7 +905,8 @@ final class view {
         $playing = count(array_filter($mates, fn($m) => isset($m['character']['member'])));
         return ['id' => (int) $group->id, 'name' => format_string($group->name), 'members' => $mates,
             'energy' => $energy, 'energymax' => $playing * engine::ENERGY_MAX, 'carer' => $carers,
-            'banner' => market::team_owns($courseid, (int) $group->id)];
+            'banner' => market::team_owns($courseid, (int) $group->id),
+            'state' => teams::states($courseid)[(int) $group->id] ?? ''];
     }
 
     /**

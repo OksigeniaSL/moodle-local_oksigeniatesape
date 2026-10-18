@@ -92,6 +92,12 @@ final class get_class extends external_api {
             'teams' => new external_multiple_structure(new external_single_structure([
                 'id' => new external_value(PARAM_INT, 'Group'),
                 'name' => new external_value(PARAM_TEXT, 'Name'),
+                'state' => new external_value(
+                    PARAM_ALPHA,
+                    'How the team says it is doing today: ready, working, help or empty',
+                    VALUE_DEFAULT,
+                    ''
+                ),
                 'banner' => new external_multiple_structure(
                     new external_value(PARAM_ALPHANUMEXT, 'Ornament of the banner'),
                     'What the team has of the market',

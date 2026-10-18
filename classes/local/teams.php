@@ -46,6 +46,48 @@ final class teams {
     /** @var string[] Order in which the roles are dealt out, so that every team gets each one. */
     public const ROLE_ORDER = ['protector', 'healer', 'sage', 'scout'];
 
+    /** @var string[] How a team says it is doing today. */
+    public const STATES = ['ready', 'working', 'help'];
+
+    /**
+     * A team says how it is doing today: ready, working or asking for help. The class screen shows it beside the team,
+     * without names nor why.
+     *
+     * @param int $courseid
+     * @param int $groupid
+     * @param string $state One of STATES.
+     * @param int|null $now
+     */
+    public static function set_state(int $courseid, int $groupid, string $state, ?int $now = null): void {
+        global $DB;
+        if (!in_array($state, self::STATES, true)) {
+            throw new \invalid_parameter_exception('Unknown state of a team');
+        }
+        $now = $now ?? time();
+        $day = (int) (new \DateTimeImmutable('@' . $now))->setTimezone(engine::timezone($courseid))->format('Ymd');
+        $row = $DB->get_record(self::T . 'teamstate', ['courseid' => $courseid, 'groupid' => $groupid]);
+        $fields = ['state' => $state, 'day' => $day, 'timemodified' => $now];
+        if ($row) {
+            $DB->update_record(self::T . 'teamstate', (object) (['id' => $row->id] + $fields));
+        } else {
+            $DB->insert_record(self::T . 'teamstate', (object) (['courseid' => $courseid, 'groupid' => $groupid] + $fields));
+        }
+    }
+
+    /**
+     * How the teams of a course say they are doing today.
+     *
+     * @param int $courseid
+     * @param int|null $now
+     * @return array Group id => state.
+     */
+    public static function states(int $courseid, ?int $now = null): array {
+        global $DB;
+        $day = (int) (new \DateTimeImmutable('@' . ($now ?? time())))->setTimezone(engine::timezone($courseid))->format('Ymd');
+        $states = $DB->get_records_menu(self::T . 'teamstate', ['courseid' => $courseid, 'day' => $day], '', 'groupid, state');
+        return array_map('strval', $states);
+    }
+
     /**
      * The team of a student in a course.
      *

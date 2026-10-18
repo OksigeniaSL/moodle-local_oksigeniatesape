@@ -875,7 +875,8 @@
       'data-team="0" aria-pressed="' + (!state.team) + '">' + esc(t('teach_everyone')) + '</button>' +
       d.teams.map(function(g) {
         return '<button class="chip" data-team="' + g.id + '" aria-pressed="' + (state.team === g.id) + '">' + esc(g.name) +
-          '</button>';
+          (g.state ? ' <span class="team-state-dot state-' + g.state + '" title="' + esc(t('app_teamstate_' + g.state)) +
+          '" aria-label="' + esc(t('app_teamstate_' + g.state)) + '"></span>' : '') + '</button>';
       }).join('') + '</div>';
     var shown = studentsShown();
     var el = content(sessionCard() + remoteCard() + todayCard() + namesCard() + teamsCard() + farCard() + '<section class="card"><div class="section-title"><h2>' +

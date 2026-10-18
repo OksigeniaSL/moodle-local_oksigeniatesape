@@ -86,6 +86,12 @@ final class get_world extends external_api {
             'team' => new external_single_structure([
                 'id' => new external_value(PARAM_INT, 'Group'),
                 'name' => new external_value(PARAM_TEXT, 'Name'),
+                'state' => new external_value(
+                    PARAM_ALPHA,
+                    'How the team says it is doing today: ready, working, help or empty',
+                    VALUE_DEFAULT,
+                    ''
+                ),
                 'members' => new external_multiple_structure(new external_single_structure([
                     'userid' => new external_value(PARAM_INT, 'User'),
                     'name' => new external_value(PARAM_TEXT, 'Name shown to classmates'),

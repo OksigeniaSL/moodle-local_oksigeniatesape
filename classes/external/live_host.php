@@ -23,6 +23,7 @@ use core_external\external_value;
 use local_oksigeniatesape\local\live;
 use local_oksigeniatesape\local\regions;
 use local_oksigeniatesape\local\sessions;
+use local_oksigeniatesape\local\teams;
 
 /**
  * The battle on the class screen: open it, the next question, show the answer, mark the teams that answered aloud,
@@ -117,6 +118,8 @@ final class live_host extends external_api {
             // The session going on, for the class screen to show what the teacher launches.
             $session = sessions::board($courseid, $now);
             $session = $session ? ['session' => json_encode($session)] : [];
+            // How each team says it is doing today, for its lantern on the class screen.
+            $session['teams'] = json_encode((object) teams::states($courseid, $now));
             $live = live::recent($courseid, $now, true);
             if (!$live) {
                 return $session;
@@ -220,6 +223,7 @@ final class live_host extends external_api {
         return new external_single_structure([
             'live' => structures::live_board(),
             'session' => new external_value(PARAM_RAW, 'The session going on, as the class screen shows it (JSON)', VALUE_OPTIONAL),
+            'teams' => new external_value(PARAM_RAW, 'How each team says it is doing today, by group (JSON)', VALUE_OPTIONAL),
         ]);
     }
 }

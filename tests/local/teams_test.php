@@ -109,6 +109,23 @@ final class teams_test extends \advanced_testcase {
         }
     }
 
+    public function test_a_team_says_how_it_is_doing_today(): void {
+        $this->resetAfterTest();
+        $course = $this->getDataGenerator()->create_course();
+        regions::save($course->id, ['enabled' => 1]);
+        $lynx = $this->getDataGenerator()->create_group(['courseid' => $course->id]);
+        $heron = $this->getDataGenerator()->create_group(['courseid' => $course->id]);
+        $now = time();
+        teams::set_state($course->id, (int) $lynx->id, 'working', $now);
+        teams::set_state($course->id, (int) $heron->id, 'help', $now);
+        teams::set_state($course->id, (int) $lynx->id, 'ready', $now + 60);
+        $this->assertSame([(int) $lynx->id => 'ready', (int) $heron->id => 'help'], teams::states($course->id, $now + 61));
+        // Only today counts.
+        $this->assertSame([], teams::states($course->id, $now + 2 * DAYSECS));
+        $this->expectException(\invalid_parameter_exception::class);
+        teams::set_state($course->id, (int) $lynx->id, 'asleep', $now);
+    }
+
     public function test_make_needs_students(): void {
         $this->resetAfterTest();
         $course = $this->getDataGenerator()->create_course();

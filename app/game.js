@@ -2163,7 +2163,13 @@
       html += '<section class="card team-card"><div class="kicker">' + esc(t('app_tab_team')) + '</div><h2>' +
         (team.banner.indexOf('banner-lantern') >= 0 ? '<span class="banner-lantern" title="' +
         esc(t('app_market_banner-lantern')) + '">' + T.icon('lantern') + '</span> ' : '') + esc(team.name) + '</h2>' +
-        '<div class="team-week"><span class="meter level"><i style="width:' + pct + '%"></i></span>' +
+        // How the team is doing today: the class screen shows it beside the team, without names.
+        '<div class="team-state" role="group" aria-label="' + esc(t('app_teamstate')) + '"><small>' +
+        esc(t('app_teamstate')) + '</small><div class="pills">' + ['ready', 'working', 'help'].map(function(st) {
+          return '<button type="button" class="chip state-' + st + '" data-teamstate="' + st + '" aria-pressed="' +
+            (team.state === st) + '">' + esc(t('app_teamstate_' + st)) + '</button>';
+        }).join('') + '</div>' + (team.state === 'help' ? '<p class="help-soft">' + esc(t('app_teamstate_help_note')) +
+        '</p>' : '') + '</div><div class="team-week"><span class="meter level"><i style="width:' + pct + '%"></i></span>' +
         '<small>' + esc(wk.reached ? t('app_team_reached') : t('app_team_week', {done: wk.done, needed: wk.needed,
         part: wk.part})) + '</small></div><div class="team-week"><span class="meter energy"><i style="width:' + epct +
         '%"></i></span><small>' + esc(t(team.carer ? 'app_team_energy_carer' : 'app_team_energy', {energy: team.energy,
@@ -2311,6 +2317,16 @@
   }
 
   function bindTeam() {
+    app.querySelectorAll('[data-teamstate]').forEach(function(b) {
+      b.onclick = function() {
+        T.api('set_team_state', {courseid: cfg.courseid, state: b.dataset.teamstate}).then(function(r) {
+          state.world.team.state = r.state;
+          world();
+        }).catch(function(e) {
+          T.toast(esc(e.message), true);
+        });
+      };
+    });
     app.querySelectorAll('[data-pact]').forEach(function(b) {
       b.onclick = function() {
         if (b.getAttribute('aria-pressed') === 'true') {
