@@ -352,6 +352,40 @@
   }
 
   /**
+   * A choice that stays: a touch marks a card (another touch changes it), and a button keeps it. Nothing is chosen by
+   * one touch alone.
+   *
+   * @param {Element} layer
+   * @param {string} selector The cards.
+   * @param {Function} keep Called with the card kept.
+   */
+  function markThenKeep(layer, selector, keep) {
+    var cards = layer.querySelectorAll(selector);
+    var bar = document.createElement('div');
+    bar.className = 'actions keep-bar';
+    cards[0].parentNode.insertAdjacentElement('afterend', bar);
+    var button = null;
+    var marked = null;
+    cards.forEach(function(card) {
+      card.setAttribute('aria-pressed', 'false');
+      card.onclick = function() {
+        marked = card;
+        cards.forEach(function(x) {
+          x.setAttribute('aria-pressed', x === card ? 'true' : 'false');
+        });
+        if (!button) {
+          bar.innerHTML = '<button type="button" class="btn btn-main" data-keep></button>';
+          button = bar.querySelector('[data-keep]');
+          button.onclick = function() {
+            keep(marked, cards, button);
+          };
+        }
+        button.textContent = t('app_keep_this', card.querySelector('b').textContent);
+      };
+    });
+  }
+
+  /**
    * The creature reached its second stage: it chooses its way, land, air or water, with the coat that goes with each.
    * Once; its next stages follow it.
    *
@@ -384,28 +418,28 @@
       // Without storage it is offered again next time.
     }
     layer.querySelector('[data-branch]').focus();
-    layer.querySelectorAll('[data-branch]').forEach(function(b) {
-      b.onclick = function() {
-        layer.querySelectorAll('[data-branch]').forEach(function(x) {
-          x.disabled = true;
+    markThenKeep(layer, '[data-branch]', function(b, cards, button) {
+      cards.forEach(function(x) {
+        x.disabled = true;
+      });
+      button.disabled = true;
+      T.api('choose_branch', {courseid: cfg.courseid, branch: b.dataset.branch}).then(function(r) {
+        c.creature = r.creature;
+        delete c.branchpending;
+        if (T.fx) {
+          T.fx.sound('hatch');
+          T.fx.sparkles();
+        }
+        T.toast(esc(t('app_branch_done', creatureName(c))));
+        later.click();
+        world();
+      }).catch(function(e) {
+        cards.forEach(function(x) {
+          x.disabled = false;
         });
-        T.api('choose_branch', {courseid: cfg.courseid, branch: b.dataset.branch}).then(function(r) {
-          c.creature = r.creature;
-          delete c.branchpending;
-          if (T.fx) {
-            T.fx.sound('hatch');
-            T.fx.sparkles();
-          }
-          T.toast(esc(t('app_branch_done', creatureName(c))));
-          later.click();
-          world();
-        }).catch(function(e) {
-          layer.querySelectorAll('[data-branch]').forEach(function(x) {
-            x.disabled = false;
-          });
-          T.toast(esc(e.message), true);
-        });
-      };
+        button.disabled = false;
+        T.toast(esc(e.message), true);
+      });
     });
     return layer;
   }
@@ -467,36 +501,36 @@
     later.textContent = t('app_talent_later');
     later.className = 'btn btn-soft';
     layer.querySelector('[data-talent]').focus();
-    layer.querySelectorAll('[data-talent]').forEach(function(b) {
-      b.onclick = function() {
-        layer.querySelectorAll('[data-talent]').forEach(function(x) {
-          x.disabled = true;
+    markThenKeep(layer, '[data-talent]', function(b, cards, button) {
+      cards.forEach(function(x) {
+        x.disabled = true;
+      });
+      button.disabled = true;
+      T.api('choose_talent', {courseid: cfg.courseid, level: p.level, code: b.dataset.talent}).then(function(r) {
+        state.world.character.talents = r.talents;
+        if (r.talentpending) {
+          state.world.character.talentpending = r.talentpending;
+        } else {
+          delete state.world.character.talentpending;
+        }
+        if (T.fx) {
+          T.fx.sound('levelup');
+          T.fx.sparkles();
+        }
+        T.toast(esc(t('app_talent_chosen', b.querySelector('b').textContent)));
+        later.click();
+        world();
+        // The next level that brought a talent, straight after.
+        if (r.talentpending) {
+          talentMoment(r.talentpending);
+        }
+      }).catch(function(e) {
+        cards.forEach(function(x) {
+          x.disabled = false;
         });
-        T.api('choose_talent', {courseid: cfg.courseid, level: p.level, code: b.dataset.talent}).then(function(r) {
-          state.world.character.talents = r.talents;
-          if (r.talentpending) {
-            state.world.character.talentpending = r.talentpending;
-          } else {
-            delete state.world.character.talentpending;
-          }
-          if (T.fx) {
-            T.fx.sound('levelup');
-            T.fx.sparkles();
-          }
-          T.toast(esc(t('app_talent_chosen', b.querySelector('b').textContent)));
-          later.click();
-          world();
-          // The next level that brought a talent, straight after.
-          if (r.talentpending) {
-            talentMoment(r.talentpending);
-          }
-        }).catch(function(e) {
-          layer.querySelectorAll('[data-talent]').forEach(function(x) {
-            x.disabled = false;
-          });
-          T.toast(esc(e.message), true);
-        });
-      };
+        button.disabled = false;
+        T.toast(esc(e.message), true);
+      });
     });
     return layer;
   }
@@ -3261,6 +3295,8 @@
     // The names missed today are crossed out, and each miss opened one more clue.
     var crossed = e.crossed || [];
     var shown = Math.min(Math.max(1 + crossed.length, opened || 0), e.clues.length);
+    // The creature by its name, or «Your creature» while it has none.
+    var petName = creatureName(c) || t('app_stage_creature');
     var being = e.picture.replace(/^being\./, '');
     var art = beingArt(being);
     var skin = state.world.mission && state.world.mission.skin;
@@ -3274,7 +3310,7 @@
         esc(t('app_encounter_title')) + '</div>' + (art ? '<img class="encounter-pic hidden-one" src="' + esc(art) + '" alt="">' :
         '<span class="encounter-pic shadow" aria-hidden="true">?</span>') + '<p class="encounter-sniff">' +
         (c && c.creature ? '<span class="encounter-pet" aria-hidden="true">' + T.creature(c.creature, c.creaturestage) +
-        '</span>' : '') + esc(t('app_encounter_sniff', {creature: creatureName(c), group: t('app_group_' + e.group)})) + '</p>' +
+        '</span>' : '') + esc(t('app_encounter_sniff', {creature: petName, group: t('app_group_' + e.group)})) + '</p>' +
         '<ol class="encounter-clues">' + e.clues.slice(0, shown).map(function(x, i) {
           return '<li>«' + esc(x) + '»' + (hear(i) ? ' <button type="button" class="btn btn-soft icon-btn hear-btn" data-hear="' +
             i + '" aria-label="' + esc(t('app_encounter_hear', i + 1)) + '">' + T.icon('sound') + '</button>' : '') + '</li>';
@@ -3286,7 +3322,7 @@
           }
           return '<button type="button" class="btn btn-soft" data-who="' + esc(o.id) + '">' + esc(o.name) + '</button>';
         }).join('') + '</div><div data-said>' + (crossed.length ? '<p class="help-soft">' + esc(t('app_encounter_again',
-          creatureName(c))) + '</p>' : '') + '</div>' + (ch && T.stage && T.stage.asList() && T.moves() ? '<div class="actions" ' +
+          petName)) + '</p>' : '') + '</div>' + (ch && T.stage && T.stage.asList() && T.moves() ? '<div class="actions" ' +
           'style="justify-content:flex-start"><button type="button" class="btn btn-soft" data-walkagain>' +
           esc(t('app_stage_walk')) + '</button></div>' : '') + '</div>';
       var again = layer.querySelector('[data-walkagain]');
@@ -3333,7 +3369,7 @@
               pet.classList.add('react-' + pose);
             }
             var react = c && c.creature ? '<p class="encounter-react">' + esc(t(r.right ? 'app_encounter_react_' +
-              (REACT[r.group] ? r.group : 'other') : 'app_encounter_react_hid', creatureName(c))) + '</p>' : '';
+              (REACT[r.group] ? r.group : 'other') : 'app_encounter_react_hid', petName)) + '</p>' : '';
             if (r.right) {
               b.classList.add('chosen');
               layer.classList.add('known');

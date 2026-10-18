@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.126.0 (2026-10-18)
+
+- **The place alive behind the scenes.** Where the device draws with WebGL and moves, a scene is played in its place:
+  the painting of each moment at full screen, the hero and the creature of the student standing in it (as puppets when
+  the art pack brings them), and who speaks standing in front of them when the pack has their figure
+  (`figure.<speaker>`), moving while their words are read. The words go in a box at the bottom; the other moments, in a
+  panel over the place. The world answers what is chosen (a light, a shadow, a shake, something that grows) and the
+  ending (joy, a warm moment, or the creature that comforts). What is read and decided is the same page as before:
+  «See as a list» takes the place alive away, here and in the next moments on that device (`app/sceneworld.js`).
+- The hero and the creature of the moments that are played are shared by the encounter and the scenes (`app/cast.js`);
+  the engine can draw a world behind a page (`T.stage.backdrop`).
+- **A talent or the branch of the creature is kept with a second touch**: a touch marks a card (another one changes
+  it) and «Keep…» keeps it, as their text asks to think it over.
+- In the encounter as a list, a creature without a name yet is «Your creature» in what it says.
+
 ## 0.125.0 (2026-10-18)
 
 - **Puppets in the walked encounter.** The hero and the creature move by pieces when the art pack brings the puppet cut

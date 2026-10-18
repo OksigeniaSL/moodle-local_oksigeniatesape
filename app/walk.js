@@ -116,44 +116,6 @@
     }
   }
 
-  /**
-   * The picture of the hero of the student, as the game draws them: its key in the pack.
-   *
-   * @param {Object} c The character.
-   * @return {string|null}
-   */
-  function heroArt(c) {
-    var look = {};
-    try {
-      look = JSON.parse(c.appearance || '{}') || {};
-    } catch (e) {
-      look = {};
-    }
-    return T.artKey(T.characterKeys(T.family || 'storyheroes', c.role, c.lineage, c.nameform === 'f' ? 'f' : 'm',
-      c.stage || 1, T.SKINS.indexOf(look.skin), false));
-  }
-
-  /**
-   * The picture of the creature of the student, and its hue.
-   *
-   * @param {Object} c The character.
-   * @return {Object} key, url, hue, name.
-   */
-  function creatureArt(c) {
-    var traits = {};
-    try {
-      traits = JSON.parse(c.creature || '{}') || {};
-    } catch (e) {
-      traits = {};
-    }
-    var st = Math.max(1, Math.min(5, c.creaturestage || 1));
-    var low = Math.min(4, st);
-    var coat = traits.coat || 'none';
-    var key = T.artKey(['creature.' + st + '.' + coat, 'creature.' + st, 'creature.' + low + '.' + coat, 'creature.' + low,
-      'creature']);
-    return {key: key, url: key ? T.artUrl([key]) : null, hue: Number(traits.hue) || 0, name: traits.name || ''};
-  }
-
   T.walk = {
     /**
      * Whether a place can be walked for its encounter here.
@@ -178,10 +140,9 @@
       var e = ch.encounter;
       var place = JSON.parse(ch.stage);
       var c = world.character;
-      var pet = creatureArt(c);
-      var hero = heroArt(c);
-      // The puppets cut from those same pictures, if the pack brings them: then they move by pieces.
-      var rigs = T.puppet ? {hero: T.puppet.find(hero, 'hero'), pet: T.puppet.find(pet.key, 'creature')} : {};
+      var pet = T.cast.creature(c);
+      // The hero and the creature: their puppets, if the pack brings them, or their pictures.
+      var cast = {hero: T.cast.heroKey(c), rigs: {}};
       var being = e.picture.replace(/^being\./, '');
       var skin = world.mission && world.mission.skin && world.mission.skin !== 'valley' ? '.' + world.mission.skin : '';
       // What the hidden being says at each trace, in the voice of the pack (the one of its skin, if it has one).
@@ -270,16 +231,7 @@
             if (place.front && T.artUrl([place.front])) {
               this.load.image('front', T.artUrl([place.front]));
             }
-            if (rigs.hero) {
-              T.puppet.load(this, 'puppet.hero', rigs.hero);
-            } else if (hero) {
-              this.load.image('hero', T.artUrl([hero]));
-            }
-            if (rigs.pet) {
-              T.puppet.load(this, 'puppet.pet', rigs.pet);
-            } else if (pet.url) {
-              this.load.image('pet', pet.url);
-            }
+            cast = T.cast.load(this, c);
             var picture = T.artUrl(['being.' + being, CRITTER[being] || 'none']);
             if (picture) {
               this.load.image('being', picture);
@@ -301,36 +253,17 @@
             var still = moment.still;
             // Without a picture, a shape: the moment is still played.
             if (!S.textures.exists('being')) {
-              makeFigure(S, 'being', 0x2b2418);
+              T.cast.figure(S, 'being', 0x2b2418);
             }
-            makeTextures(S);
+            T.cast.textures(S);
             S.add.image(0, 0, 'bg').setOrigin(0).setDepth(0);
             if (S.textures.exists('front')) {
               S.add.image(0, 0, 'front').setOrigin(0).setDepth(5000);
             }
-            // A figure: a puppet that moves by pieces, or its picture; the size, that of the figure it was cut from.
-            var actor = function(key, x, y, height, rig) {
-              var puppet = rig && T.puppet.make(S, rig, still);
-              if (!puppet && !S.textures.exists(key)) {
-                makeFigure(S, key, key === 'hero' ? 0xffc857 : 0x7cc67f);
-              }
-              var sprite = puppet ? puppet.container.setPosition(x, y) : S.add.image(x, y, key).setOrigin(0.5, 1);
-              var shadow = S.add.ellipse(x, y, 10, 10, 0x0b1a10, 0.32);
-              return {x: x, y: y, sprite: sprite, puppet: puppet, shadow: shadow, base: height / sprite.height, walk: 0,
-                moving: false, facing: 1, lift: 0, tilt: 0, pose: null};
-            };
             var start = point(place.start);
-            S.hero = actor('hero', start.x, start.y, 250, rigs.hero && 'puppet.hero');
-            S.pet = actor('pet', start.x - 85, start.y + 12, 124, rigs.pet && 'puppet.pet');
+            S.hero = T.cast.actor(S, 'hero', start.x, start.y, 250, still);
+            S.pet = T.cast.actor(S, 'pet', start.x - 85, start.y + 12, 124, still, pet.hue);
             S.pet.mode = 'follow';
-            if (pet.hue) {
-              try {
-                S.pet.sprite.enableFilters();
-                S.pet.sprite.filters.internal.addColorMatrix().colorMatrix.hue(pet.hue);
-              } catch (err) {
-                // Without filters, the creature keeps the colour of its picture.
-              }
-            }
             var hide = hides[state.hide];
             S.bush = S.add.image(hide.x, hide.y, S.textures.exists('bush.still') ? 'bush.still' : 'soft').setOrigin(0.5, 0.912)
               .setScale(S.textures.exists('bush.still') ? 230 / 560 : 3).setDepth(hide.y + 6);
@@ -391,16 +324,7 @@
             }
             hud();
 
-            /**
-             * A figure does something once (surprise, point, sniff…), if it is a puppet.
-             *
-             * @param {Object} who
-             * @param {string} clip
-             * @return {boolean} Whether it did.
-             */
-            S.act = function(who, clip) {
-              return !!who.puppet && who.puppet.play(clip, true);
-            };
+            S.act = T.cast.act;
 
             /** The bush shakes. */
             S.rustle = function() {
@@ -740,7 +664,7 @@
               state: function() {
                 return {place: e.place, being: being, found: state.found, crossed: state.crossed.slice(), hide: hides[state.hide],
                   solved: state.solved, busy: state.busy, hero: {x: S.hero.x, y: S.hero.y}, traces: traces,
-                  phase: state.phase, pictures: {hero: hero, pet: pet.key, rigs: {hero: !!rigs.hero, pet: !!rigs.pet}},
+                  phase: state.phase, pictures: {hero: cast.hero, pet: pet.key, rigs: cast.rigs},
                   puppets: {hero: S.hero.puppet ? S.hero.puppet.clipName : '', pet: S.pet.puppet ? S.pet.puppet.clipName : ''}};
               },
               walkTo: function(x, y) {
@@ -768,8 +692,10 @@
               S.camTarget.x = S.hero.x * 0.72 + S.pet.x * 0.28;
               S.camTarget.y = S.hero.y * 0.85 + S.pet.y * 0.15 - 110;
             }
-            animate(S, S.hero, place, time, dt, 7, moment.still, step);
-            animate(S, S.pet, place, time, dt, 12, moment.still, step);
+            T.cast.move(S, S.hero, depthOf(place, S.hero.y), time, dt, 7, moment.still, function() {
+              sound(step, '');
+            });
+            T.cast.move(S, S.pet, depthOf(place, S.pet.y), time, dt, 12, moment.still);
             S.emotes.forEach(function(em) {
               em.bubble.setPosition(em.who.sprite.x, em.who.sprite.y - em.who.sprite.displayHeight - 30 - em.rise);
             });
@@ -922,107 +848,19 @@
   }
 
   /**
-   * Walking and breathing from a single picture: bob, sway, squash, dust; smaller further back.
+   * How near the front of the ground a point is: smaller further back.
    *
-   * @param {Object} S The scene.
-   * @param {Object} who
    * @param {Object} place
-   * @param {number} time
-   * @param {number} dt
-   * @param {number} rate
-   * @param {boolean} still
-   * @param {string} ground The sound of a step there.
+   * @param {number} y
+   * @return {number} 0.7 at the back, 1 at the front.
    */
-  function animate(S, who, place, time, dt, rate, still, ground) {
+  function depthOf(place, y) {
     var top = Math.min.apply(null, place.walk.map(function(p) {
       return p[1];
     }));
     var bottom = Math.max.apply(null, place.walk.map(function(p) {
       return p[1];
     }));
-    var depth = 0.7 + 0.3 * Math.max(0, Math.min(1, (who.y - top) / ((bottom - top) || 1)));
-    var scale = who.base * depth;
-    var bob = 0;
-    var sway = 0;
-    var squash = 1;
-    if (who.moving) {
-      who.walk += dt * rate;
-      bob = Math.abs(Math.sin(who.walk)) * (still ? 2 : 9) * depth;
-      sway = still ? 0 : Math.sin(who.walk) * 3.5;
-      squash = 1 - Math.abs(Math.cos(who.walk)) * 0.035;
-      who.dustClock = (who.dustClock || 0) + dt;
-      if (who.dustClock > 0.17) {
-        who.dustClock = 0;
-        S.dust.setDepth(who.y - 2);
-        S.dust.emitParticleAt(who.x, who.y - 4, still ? 1 : 2);
-        if (who === S.hero) {
-          who.steps = (who.steps || 0) + 1;
-          if (who.steps % 2 === 0) {
-            sound(ground, '');
-          }
-        }
-      }
-    } else {
-      squash = 1 + Math.sin(time / 520 + who.x) * 0.012;
-    }
-    if (who.puppet) {
-      // A puppet walks and breathes by itself, or does what it is doing, unless it is in the middle of something.
-      if (!who.puppet.busy()) {
-        who.puppet.play(who.moving ? 'walk' : who.pose || 'idle');
-      }
-      who.puppet.draw(dt);
-      bob = 0;
-      sway = 0;
-      squash = 1;
-    }
-    who.sprite.setPosition(who.x, who.y - bob + who.lift);
-    who.sprite.setScale(scale * who.facing, scale * squash);
-    who.sprite.setAngle(sway + who.tilt);
-    who.sprite.setDepth(who.y);
-    who.shadow.setPosition(who.x, who.y - 2);
-    who.shadow.setSize(who.sprite.displayHeight * 0.42, who.sprite.displayHeight * 0.09);
-    who.shadow.setDepth(who.y - 1);
-  }
-
-  /**
-   * Textures drawn in code for the effects: a dot, a spark, a leaf, a soft light and a heart.
-   *
-   * @param {Object} S The scene.
-   */
-  function makeTextures(S) {
-    var g = S.add.graphics();
-    g.fillStyle(0xffffff, 1).fillCircle(8, 8, 8);
-    g.generateTexture('dot', 16, 16);
-    g.clear();
-    g.fillStyle(0xffffff, 1).fillPoints([{x: 8, y: 0}, {x: 10, y: 6}, {x: 16, y: 8}, {x: 10, y: 10}, {x: 8, y: 16},
-      {x: 6, y: 10}, {x: 0, y: 8}, {x: 6, y: 6}], true);
-    g.generateTexture('spark', 16, 16);
-    g.clear();
-    g.fillStyle(0xffffff, 1).fillEllipse(6, 3, 12, 6);
-    g.generateTexture('leaf', 12, 6);
-    g.clear();
-    for (var r = 32; r > 0; r--) {
-      g.fillStyle(0xffffff, 0.05).fillCircle(32, 32, r);
-    }
-    g.generateTexture('soft', 64, 64);
-    g.clear();
-    g.fillStyle(0xffffff, 1).fillCircle(6, 6, 6).fillCircle(16, 6, 6).fillTriangle(0.5, 8, 21.5, 8, 11, 20);
-    g.generateTexture('heart', 22, 22);
-    g.destroy();
-  }
-
-  /**
-   * A shape for a figure without a picture: a rounded body with a light on top.
-   *
-   * @param {Object} S The scene.
-   * @param {string} key
-   * @param {number} colour
-   */
-  function makeFigure(S, key, colour) {
-    var g = S.add.graphics();
-    g.fillStyle(colour, 1).fillRoundedRect(10, 20, 60, 90, 28);
-    g.fillStyle(0xffffff, 0.35).fillCircle(40, 40, 12);
-    g.generateTexture(key, 80, 120);
-    g.destroy();
+    return 0.7 + 0.3 * Math.max(0, Math.min(1, (y - top) / ((bottom - top) || 1)));
   }
 })();

@@ -820,6 +820,13 @@ body.tesape {
   border-color: var(--lantern);
 }
 
+/* The card marked, before it is kept. */
+.talent-card[aria-pressed="true"] {
+  border-color: var(--lantern);
+  background: rgba(255, 200, 87, .22);
+  box-shadow: 0 0 0 3px rgba(255, 200, 87, .35);
+}
+
 .talent-card small,
 .talent-medals small {
   color: var(--text-soft);
@@ -5660,10 +5667,15 @@ body.in-battle .badge-moment {
   font-weight: 400;
 }
 
-.scene-read {
+.scene-read,
+.scene-still {
   min-width: 48px;
   margin-left: auto;
   padding: 0;
+}
+
+.scene-still + .scene-read {
+  margin-left: 0;
 }
 
 /* Reading aloud in the cards of the game: at the top right of the card, or by the mark of an item. */
@@ -6495,6 +6507,76 @@ body.adapt-colours .errors-text .fixed ins {
   font-size: 24px;
 }
 
+/* The place alive behind a scene: the world at full screen, the words in a box at the bottom as in a role-playing
+   game, and the other moments in a panel over the place. Its paintings and the corner of the hero go: they are in the
+   world. */
+.scene-layer.live {
+  background: #0f2131;
+}
+
+.scene-world,
+.scene-world canvas {
+  position: fixed;
+  inset: 0;
+  display: block;
+}
+
+.scene-layer.live .scene {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.scene-layer.live .scene-top {
+  background: none;
+}
+
+.scene-layer.live .scene-title {
+  text-shadow: 0 1px 3px #000, 0 0 12px rgba(0, 0, 0, .6);
+}
+
+.scene-layer.live .scene-body {
+  margin-top: auto;
+  padding: 14px;
+  border: 2px solid rgba(255, 200, 87, .55);
+  border-radius: 16px;
+  background: rgba(15, 33, 49, .93);
+}
+
+.scene-layer.live .scene-body:has(> .dlg) {
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+.scene-layer.live .scene-pic,
+.scene-layer.live .dlg-me {
+  display: none;
+}
+
+.scene-layer.live .dlg-stage {
+  height: 0;
+  margin: 0;
+}
+
+.scene-layer.live .dlg-face {
+  width: 84px;
+  bottom: 6px;
+}
+
+.scene-layer.live .dlg:has(.dlg-face) .dlg-name {
+  left: 106px;
+}
+
+.scene-layer.live.has-figure .dlg-face {
+  display: none;
+}
+
+.scene-layer.live.has-figure .dlg .dlg-name {
+  left: 18px;
+}
+
 /* What the world says when something is chosen: no colour of right or wrong, the voice of the place. */
 .conseq.said {
   border-color: var(--accent);
@@ -7219,6 +7301,7 @@ body.adapt-still .mission-grid .chapter {
 }
 
 .scene-read svg,
+.scene-still svg,
 .scene-close svg,
 .read-card svg,
 .hud .sound svg {

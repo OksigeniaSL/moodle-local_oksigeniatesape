@@ -331,6 +331,7 @@ $string['app_inplace'] = 'In its place.';
 $string['app_items'] = 'Your bag';
 $string['app_justify_about'] = 'You chose: {$a}';
 $string['app_keep'] = 'In pencil, in your notebook:';
+$string['app_keep_this'] = 'Keep «{$a}»';
 $string['app_landmark_album'] = 'Album';
 $string['app_landmark_market'] = 'Market';
 $string['app_lane_done'] = 'Ready';

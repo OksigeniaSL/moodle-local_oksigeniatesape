@@ -34,6 +34,33 @@
     }
   }
 
+  /**
+   * A game of the engine in an element, at the resolution of the screen, drawn again when the window changes.
+   *
+   * @param {Object} Phaser
+   * @param {Element} parent
+   * @param {Object} scene
+   * @return {Object} game, dpr, resize (the listener, to take it away).
+   */
+  function game(Phaser, parent, scene) {
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var made = new Phaser.Game({
+      type: Phaser.AUTO,
+      parent: parent,
+      backgroundColor: '#0f2131',
+      scale: {mode: Phaser.Scale.NONE, width: Math.round(window.innerWidth * dpr), height: Math.round(window.innerHeight * dpr),
+        zoom: 1 / dpr},
+      audio: {noAudio: true},
+      banner: false,
+      scene: scene
+    });
+    var resize = function() {
+      made.scale.resize(Math.round(window.innerWidth * dpr), Math.round(window.innerHeight * dpr));
+    };
+    window.addEventListener('resize', resize);
+    return {game: made, dpr: dpr, resize: resize};
+  }
+
   T.stage = {
     /**
      * Whether a moment can be played with movement here: WebGL, things that move, and the student did not choose the
@@ -120,6 +147,33 @@
      *     moment as its `stage`); onlist (the student goes to the list); onclose (the moment is over or left).
      * @return {Promise} The moment: say(), hush(), panel(), hidePanel(), close(), toList(), still.
      */
+    /**
+     * A world drawn behind a moment that is read and touched in the page (a scene): only the canvas, in an element the
+     * moment puts behind what it shows; nothing of it is read or touched.
+     *
+     * @param {Element} parent
+     * @param {Object} scene preload, create, update: called with the scene of Phaser as this.
+     * @return {Promise} game, dpr, close().
+     */
+    backdrop: function(parent, scene) {
+      return T.stage.load().then(function(Phaser) {
+        var made = game(Phaser, parent, {key: 'backdrop', preload: scene.preload, create: scene.create, update: scene.update});
+        var closed = false;
+        return {game: made.game, dpr: made.dpr, close: function() {
+          if (closed) {
+            return;
+          }
+          closed = true;
+          window.removeEventListener('resize', made.resize);
+          try {
+            made.game.destroy(true);
+          } catch (e) {
+            // Already gone.
+          }
+        }};
+      });
+    },
+
     open: function(opts) {
       return T.stage.load().then(function(Phaser) {
         var back = document.activeElement;
@@ -201,7 +255,7 @@
             clearTimeout(timer);
             window.removeEventListener('resize', resize);
             try {
-              game.destroy(true);
+              made.game.destroy(true);
             } catch (e) {
               // Already gone.
             }
@@ -269,24 +323,10 @@
             }
           }
         };
-        // Drawn at the resolution of the screen, and drawn again when the window changes.
-        var dpr = Math.min(window.devicePixelRatio || 1, 2);
-        var game = new Phaser.Game({
-          type: Phaser.AUTO,
-          parent: layer.querySelector('.stage-world'),
-          backgroundColor: '#0f2131',
-          scale: {mode: Phaser.Scale.NONE, width: Math.round(window.innerWidth * dpr),
-            height: Math.round(window.innerHeight * dpr), zoom: 1 / dpr},
-          audio: {noAudio: true},
-          banner: false,
-          scene: scene
-        });
-        var resize = function() {
-          game.scale.resize(Math.round(window.innerWidth * dpr), Math.round(window.innerHeight * dpr));
-        };
-        window.addEventListener('resize', resize);
-        moment.game = game;
-        moment.dpr = dpr;
+        var made = game(Phaser, layer.querySelector('.stage-world'), scene);
+        var resize = made.resize;
+        moment.game = made.game;
+        moment.dpr = made.dpr;
         // For the tests of the browser: the moment open now.
         window.TesapeStage = moment;
         layer.querySelector('[data-stage-list]').focus();

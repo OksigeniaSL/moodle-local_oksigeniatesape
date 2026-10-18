@@ -364,8 +364,78 @@
     // A team session: the scene runs here, and the hand chooses on its own tablet; who is in it now.
     var huddle = null;
     var huddleIds = [];
+    // The place alive behind the scene (sceneworld.js), when it can be: what it is told waits until it is ready.
+    var live = null;
+    var liveQueue = null;
+    // What is read grows (what the world says after a decision): the figures move up to stand above it.
+    var roomWatch = null;
+
+    /**
+     * Tells the place alive behind the scene, if there is one, what happens.
+     *
+     * @param {string} what image, speak, talk, answer, ask or ending.
+     */
+    function alive(what) {
+      var args = [].slice.call(arguments, 1);
+      if (live) {
+        live[what].apply(null, args);
+      } else if (liveQueue) {
+        liveQueue.push([what, args]);
+      }
+    }
+
+    /**
+     * Opens the place alive behind the scene: only for the scenes a student plays, where the device moves and draws.
+     */
+    function liven() {
+      if (cm || opts.preview || !T.sceneWorld || !T.sceneWorld.can()) {
+        return;
+      }
+      liveQueue = [];
+      var holder = document.createElement('div');
+      holder.className = 'scene-world';
+      holder.setAttribute('aria-hidden', 'true');
+      layer.insertBefore(holder, layer.firstChild);
+      layer.classList.add('live');
+      T.sceneWorld.open(holder, {world: world, image: T.artUrl(pictureKeys(sceneImage(), data)), still: !T.moves()})
+      .then(function(w) {
+        if (!liveQueue) {
+          w.close();
+          return;
+        }
+        live = w;
+        liveQueue.forEach(function(call) {
+          w[call[0]].apply(null, call[1]);
+        });
+        liveQueue = null;
+        // For the tests of the browser.
+        layer.liveWorld = w;
+      }).catch(function() {
+        // Without the engine, the scene as it was.
+        unliven();
+      });
+    }
+
+    /** The place alive goes: the scene goes on as it was, with its paintings in the page. */
+    function unliven() {
+      liveQueue = null;
+      if (roomWatch) {
+        roomWatch.disconnect();
+        roomWatch = null;
+      }
+      if (live) {
+        live.close();
+        live = null;
+      }
+      var holder = layer.querySelector('.scene-world');
+      if (holder) {
+        holder.remove();
+      }
+      layer.classList.remove('live', 'has-figure');
+    }
 
     function close() {
+      unliven();
       if (huddle) {
         huddle.stop();
         huddle = null;
@@ -421,6 +491,7 @@
       if (!T.fx) {
         return;
       }
+      alive('ending', outcome);
       if (outcome === 'success') {
         T.fx.sound('win');
         T.fx.confetti();
@@ -498,12 +569,56 @@
       if (reads) {
         window.speechSynthesis.cancel();
       }
-      layer.innerHTML = '<div class="scene"><div class="scene-top"><span class="scene-title">' + esc(sc ? sc.title : '') +
-        '</span>' + (reads ? '<button class="btn btn-soft scene-read" type="button" data-read aria-label="' +
-        esc(t('app_read_aloud')) + '" title="' + esc(t('app_read_aloud')) + '">' + T.icon('speak') + '</button>' : '') +
-        (saving ? '' : '<button class="btn btn-soft scene-close" type="button" aria-label="' + esc(t('app_close')) +
-        '">' + T.icon('close') + '</button>') + '</div>' + (opts.team && opts.team.length ? '<p class="team-banner">' + esc(t('app_team_banner')) +
-        '</p>' : '') + '<div class="scene-body" tabindex="-1">' + html + '</div></div>';
+      var page = '<div class="scene"><div class="scene-top"><span class="scene-title">' + esc(sc ? sc.title : '') +
+        '</span>' + (layer.classList.contains('live') ? '<button class="btn btn-soft scene-still" type="button" data-still ' +
+        'aria-label="' + esc(t('app_stage_list')) + '" title="' + esc(t('app_stage_list')) + '">' + T.icon('log') + '</button>' :
+        '') + (reads ? '<button class="btn btn-soft scene-read" type="button" ' +
+        'data-read aria-label="' + esc(t('app_read_aloud')) + '" title="' + esc(t('app_read_aloud')) + '">' +
+        T.icon('speak') + '</button>' : '') + (saving ? '' : '<button class="btn btn-soft scene-close" type="button" ' +
+        'aria-label="' + esc(t('app_close')) + '">' + T.icon('close') + '</button>') + '</div>' + (opts.team &&
+        opts.team.length ? '<p class="team-banner">' + esc(t('app_team_banner')) + '</p>' : '') +
+        '<div class="scene-body" tabindex="-1">' + html + '</div></div>';
+      // With the place alive behind, only what is read and touched changes; the world stays.
+      var old = layer.querySelector('.scene');
+      if (layer.classList.contains('live') && old) {
+        old.outerHTML = page;
+      } else if (layer.classList.contains('live')) {
+        layer.insertAdjacentHTML('beforeend', page);
+      } else {
+        layer.innerHTML = page;
+      }
+      var still = layer.querySelector('[data-still]');
+      if (still) {
+        // As a list: the moments without the place alive, here and in the next ones, on this device.
+        still.onclick = function() {
+          T.stage.setList(true);
+          unliven();
+          still.remove();
+          layer.querySelector('.scene-body').focus();
+        };
+      }
+      // The painting of the moment, in the world behind; who spoke goes quiet; the figures stand above what is read.
+      var painted = layer.querySelector('.scene-body .scene-pic.art img');
+      if (painted) {
+        alive('image', painted.getAttribute('src'));
+      }
+      alive('talk', 0);
+      if (layer.classList.contains('live')) {
+        var room = function() {
+          var now = layer.querySelector('.scene-body');
+          if (now) {
+            alive('room', now.getBoundingClientRect().top);
+          }
+        };
+        room();
+        if (roomWatch) {
+          roomWatch.disconnect();
+        }
+        if (window.ResizeObserver) {
+          roomWatch = new window.ResizeObserver(room);
+          roomWatch.observe(layer.querySelector('.scene-body'));
+        }
+      }
       var cross = layer.querySelector('.scene-close');
       if (cross) {
         cross.onclick = leave;
@@ -682,6 +797,7 @@
         }
         run.decided = run.node;
         handTo(n);
+        alive('ask');
       }
       if (n.type === 'story') {
         story(n);
@@ -731,6 +847,9 @@
     function story(n) {
       var pieces = cut(tx(n.text));
       var at = 0;
+      // Who speaks stands in the place, if the pack has their figure; then their round portrait is not needed.
+      var figure = n.speaker ? T.artUrl(['figure.' + n.speaker + '.' + data.skin, 'figure.' + n.speaker]) : null;
+      layer.classList.toggle('has-figure', !!figure);
       var body = show('<div class="dlg">' + stage(n.image, n.speaker) + '<div class="dlg-box">' + (n.speaker ?
         '<span class="dlg-name">' + esc(data.speakers[n.speaker] || n.speaker) + '</span>' : '') +
         '<p class="scene-text" data-piece></p><span class="dlg-dots" data-dots aria-hidden="true"></span>' +
@@ -743,6 +862,8 @@
           return '<i class="' + (i === at ? 'on' : i < at ? 'seen' : '') + '"></i>';
         }).join('') : '';
         button.textContent = last ? t('app_continue') : t('app_next');
+        alive('speak', n.speaker || null, figure);
+        alive('talk', Math.max(1500, pieces[at].length * 45));
       }
       button.onclick = function() {
         if (at >= pieces.length - 1) {
@@ -818,6 +939,10 @@
      */
     function answer(body, o) {
       var pic = body.querySelector('.scene-pic');
+      alive('answer', o.fx || '');
+      if (o.image && T.artUrl(pictureKeys(o.image, data))) {
+        alive('image', T.artUrl(pictureKeys(o.image, data)));
+      }
       if (o.image && pic) {
         var art = T.artUrl(pictureKeys(o.image, data));
         var img = pic.querySelector('img');
@@ -2730,6 +2855,7 @@
         data.items = JSON.parse(d.items || '{}');
         data.flags = JSON.parse(d.flags || '[]');
         sc = JSON.parse(d.definition);
+        liven();
         if (T.fx) {
           // The soft sound of the place of the scene.
           T.fx.ambient(T.fx.place(d.place), d.place);
