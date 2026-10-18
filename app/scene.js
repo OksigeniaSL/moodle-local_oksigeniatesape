@@ -564,6 +564,10 @@
     }
 
     function show(html) {
+      // A new moment: whoever was speaking stops.
+      if (T.fx && T.fx.hush) {
+        T.fx.hush();
+      }
       // Reading aloud is always at hand in a scene (who has it in their adaptations hears it by itself).
       var reads = !!window.speechSynthesis;
       if (reads) {
@@ -626,6 +630,9 @@
       var read = layer.querySelector('[data-read]');
       if (read) {
         read.onclick = function() {
+          if (T.fx && T.fx.hush) {
+            T.fx.hush();
+          }
           readAloud(layer.querySelector('.scene-body'));
         };
       }
@@ -850,6 +857,14 @@
       // Who speaks stands in the place, if the pack has their figure; then their round portrait is not needed.
       var figure = n.speaker ? T.artUrl(['figure.' + n.speaker + '.' + data.skin, 'figure.' + n.speaker]) : null;
       layer.classList.toggle('has-figure', !!figure);
+      // The recorded voice of each piece, if the pack has it (not for who has reading aloud: they hear it already).
+      var voices = T.fx && T.lineKey && !T.adapted.readaloud ? pieces.map(function(p) {
+        var key = T.lineKey(p);
+        return T.artUrl([key]) ? key : null;
+      }) : [];
+      if (voices.some(Boolean)) {
+        T.fx.fetch(voices.filter(Boolean));
+      }
       var body = show('<div class="dlg">' + stage(n.image, n.speaker) + '<div class="dlg-box">' + (n.speaker ?
         '<span class="dlg-name">' + esc(data.speakers[n.speaker] || n.speaker) + '</span>' : '') +
         '<p class="scene-text" data-piece></p><span class="dlg-dots" data-dots aria-hidden="true"></span>' +
@@ -864,6 +879,9 @@
         button.textContent = last ? t('app_continue') : t('app_next');
         alive('speak', n.speaker || null, figure);
         alive('talk', Math.max(1500, pieces[at].length * 45));
+        if (voices[at]) {
+          T.fx.voice(voices[at]);
+        }
       }
       button.onclick = function() {
         if (at >= pieces.length - 1) {

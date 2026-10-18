@@ -6550,7 +6550,10 @@ body.adapt-colours .errors-text .fixed ins {
   background: none;
 }
 
-.scene-layer.live .scene-pic,
+/* The paintings that are only paintings go (the world shows them); those that are played on (find, path, the state of
+   what is tended) stay. */
+.scene-layer.live .scene-body > .scene-pic,
+.scene-layer.live .dlg-stage .scene-pic,
 .scene-layer.live .dlg-me {
   display: none;
 }

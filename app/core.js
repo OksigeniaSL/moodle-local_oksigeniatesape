@@ -627,6 +627,23 @@
     return null;
   };
 
+  /**
+   * The key of the recorded voice of a piece of text (voice.line.<FNV-1a of its UTF-8 bytes, in hex>): it follows the
+   * words, so a text that changes (another variant, the name of a creature) simply has no voice, never another one.
+   *
+   * @param {string} text
+   * @return {string}
+   */
+  T.lineKey = function(text) {
+    var bytes = window.TextEncoder ? new window.TextEncoder().encode(String(text)) : [];
+    var h = 0x811c9dc5;
+    for (var i = 0; i < bytes.length; i++) {
+      h ^= bytes[i];
+      h = Math.imul(h, 0x01000193) >>> 0;
+    }
+    return 'voice.line.' + ('0000000' + h.toString(16)).slice(-8);
+  };
+
   /* ---------- The map of a mission ---------- */
 
   /** @var {string[]} The zones of a map in layers, from the bottom up. */

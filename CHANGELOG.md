@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.127.0 (2026-10-19)
+
+- **The voices of the told moments.** Each piece of a told moment plays its recorded voice if the art pack brings it,
+  under `voice.line.<key>`, the key being the FNV-1a hash of the piece's text (`T.lineKey`): a text that changes (a
+  regional variant, the name of the student's creature) has no voice, never a wrong one. A new moment, or reading aloud,
+  stops the voice; who has reading aloud in their adaptations hears that, not the recording.
+- With the place alive behind a scene, the paintings that are played on (to find something, a path, the state of what
+  is tended) stay in the page; only those that are just a painting go behind.
+
 ## 0.126.0 (2026-10-18)
 
 - **The place alive behind the scenes.** Where the device draws with WebGL and moves, a scene is played in its place:
