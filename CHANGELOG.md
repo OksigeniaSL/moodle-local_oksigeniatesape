@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.130.0 (2026-10-19)
+
+- **The battle on the class screen, with movement.** Where the screen draws with WebGL and moves, a clear canvas over
+  the board draws the Embrollo in its place, floating and fraying as it loses threads, and the heroes of each team in
+  the place of their team. Each turn is seen: the right answers pull threads off it, the knot it throws flies to the team
+  it goes for (or to all), a shield stops it, a broken knot bursts, the team it goes for is marked, and at the end it is
+  shut in its jar or runs away. The board, its questions and its buttons are the same as before (`app/battleworld.js`).
+- **Who speaks in a scene moves by pieces** when the art pack brings their puppet (`rig.figure.<code>`, with the body
+  of a speaker or of a bird): they greet when they come, talk while their words are read, nod at what is chosen, show
+  surprise and laugh at a good ending.
+- **The places inside, walked**: the front layer of each place (`scene.<place>.front`, the hero passes behind it), and
+  the traces painted on the ground until they are found (`stage.trace.<n>`); footprints never for a being without legs.
+
 ## 0.129.0 (2026-10-19)
 
 - **The puppets take the tone of skin of the student.** A puppet is cut from the picture in the tone it is painted in

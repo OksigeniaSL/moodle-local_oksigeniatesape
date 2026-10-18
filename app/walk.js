@@ -228,8 +228,16 @@
         scene: {
           preload: function() {
             this.load.image('bg', T.artUrl(['scene.' + ch.code]));
-            if (place.front && T.artUrl([place.front])) {
-              this.load.image('front', T.artUrl([place.front]));
+            // What stands in front of the place (branches, the edge of a shelf), for the hero to pass behind.
+            var front = T.artUrl([place.front || 'scene.' + ch.code + '.front']);
+            if (front) {
+              this.load.image('front', front);
+            }
+            // The traces painted on the ground.
+            for (var k = 1; k <= 6; k++) {
+              if (T.artUrl(['stage.trace.' + k])) {
+                this.load.image('trace.' + k, T.artUrl(['stage.trace.' + k]));
+              }
             }
             cast = T.cast.load(this, c);
             var picture = T.artUrl(['being.' + being, CRITTER[being] || 'none']);
@@ -269,6 +277,24 @@
               .setScale(S.textures.exists('bush.still') ? 230 / 560 : 3).setDepth(hide.y + 6);
             S.hidden = S.add.image(hide.x, hide.y, 'being').setOrigin(0.5, 1).setDepth(hide.y + 2).setVisible(false);
             // A pool of warm light and a ring mark the next place to look, without words.
+            // Each trace, painted on the ground until it is found (a different one each, from the being of the day).
+            // Footprints (1 and 5) say «it has legs»: not for a being without them.
+            var legless = /^(molusco|gusano|planta|hongo|pez)$/.test(e.group) || being === 'culebra';
+            var looks = [1, 2, 3, 4, 5, 6].filter(function(k) {
+              return S.textures.exists('trace.' + k) && !(legless && (k === 1 || k === 5));
+            });
+            var seed = being.split('').reduce(function(sum, letter) {
+              return sum + letter.charCodeAt(0);
+            }, 0);
+            S.marks = traces.map(function(tr, i) {
+              if (!looks.length) {
+                return null;
+              }
+              var mark = S.add.image(tr.x, tr.y, 'trace.' + looks[(seed + i) % looks.length]).setOrigin(0.5, 0.75)
+                .setDepth(tr.y - 3);
+              mark.setScale(110 / mark.width).setAlpha(i < state.found ? 0.3 : 0.95);
+              return mark;
+            });
             S.pool = S.add.image(0, 0, 'soft').setScale(3.4, 1.1).setTint(0xffd27a).setBlendMode('ADD').setDepth(1)
               .setVisible(false);
             S.ring = S.add.ellipse(0, 0, 60, 22).setStrokeStyle(3, 0xfff1bd, 0.9).setDepth(1).setVisible(false);
@@ -457,6 +483,9 @@
                   S.ring.setVisible(false);
                   S.burst.explode(still ? 6 : 22, spot.x, spot.y - 10);
                   sound('clue', 'chime');
+                  if (S.marks[i]) {
+                    S.tweens.add({targets: S.marks[i], alpha: 0.3, duration: still ? 1 : 600});
+                  }
                   state.found++;
                   state.last = S.time.now;
                   hud();

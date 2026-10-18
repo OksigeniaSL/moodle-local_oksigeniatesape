@@ -8471,6 +8471,27 @@ body.adapt-still .mission-grid .chapter.as-sheet {
   border-color: var(--lantern);
 }
 
+/* The battle with movement: the Embrollo and the heroes of each team are drawn over the board, in their places. */
+.battle-world,
+.battle-world canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: block;
+  pointer-events: none;
+}
+
+body.battle-live .battle-board:not(.won) .battle-boss .embrollo {
+  visibility: hidden;
+}
+
+/* Their place stays, a little taller, for the heroes drawn in it. */
+body.battle-live .battle-board .team-heroes {
+  visibility: hidden;
+  height: 72px;
+  min-width: 150px;
+}
+
 .team-heroes {
   display: flex;
 }

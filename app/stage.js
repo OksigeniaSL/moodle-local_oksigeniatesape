@@ -42,9 +42,10 @@
    * @param {Object} scene
    * @param {number} [limit] Frames a second at most (0: as the screen).
    * @param {boolean} [fit] The size of the parent, not of the window.
+   * @param {boolean} [clear] A clear canvas, to draw over a page and let it be seen.
    * @return {Object} game, dpr, resize (the listener, to take it away).
    */
-  function game(Phaser, parent, scene, limit, fit) {
+  function game(Phaser, parent, scene, limit, fit, clear) {
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
     var size = function() {
       return fit ? [Math.max(1, parent.clientWidth), Math.max(1, parent.clientHeight)] : [window.innerWidth, window.innerHeight];
@@ -52,7 +53,8 @@
     var made = new Phaser.Game({
       type: Phaser.AUTO,
       parent: parent,
-      backgroundColor: '#0f2131',
+      backgroundColor: clear ? 'rgba(0,0,0,0)' : '#0f2131',
+      transparent: !!clear,
       scale: {mode: Phaser.Scale.NONE, width: Math.round(size()[0] * dpr), height: Math.round(size()[1] * dpr), zoom: 1 / dpr},
       audio: {noAudio: true},
       banner: false,
@@ -159,14 +161,14 @@
      * @param {Element} parent
      * @param {Object} scene preload, create, update: called with the scene of Phaser as this.
      * @param {Object} [opts] fit: the size of the parent (a field of a game) and not of the window; fps (30 by default:
-     *     behind a page, figures that breathe and talk, and the tablet works less).
+     *     behind a page, figures that breathe and talk, and the tablet works less); clear: a clear canvas, over a page.
      * @return {Promise} game, dpr, close().
      */
     backdrop: function(parent, scene, opts) {
       opts = opts || {};
       return T.stage.load().then(function(Phaser) {
         var made = game(Phaser, parent, {key: 'backdrop', preload: scene.preload, create: scene.create, update: scene.update},
-          opts.fps || 30, !!opts.fit);
+          opts.fps || 30, !!opts.fit, !!opts.clear);
         var closed = false;
         return {game: made.game, dpr: made.dpr, close: function() {
           if (closed) {

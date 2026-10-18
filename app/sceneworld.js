@@ -14,6 +14,8 @@
   var T = window.Tesape;
   /** @var {Object} Who is drawn as a grown-up, a little taller than the hero. */
   var TALL = {'druida-mayor': true, 'bibliotecaria': true, 'jardinera': true, 'barquero': true};
+  /** @var {Object} Who is a bird: their puppet has the body of a bird (rig.bird), the others that of a speaker. */
+  var BIRD = {buho: true, garza: true};
 
   T.sceneWorld = {
     /**
@@ -149,24 +151,35 @@
             return;
           }
           var key = 'figure.' + code;
+          // Their puppet, cut from that same figure, if the pack brings it: then they talk, nod and greet.
+          var rig = T.puppet ? T.puppet.find(key, BIRD[code] ? 'bird' : 'speaker') : null;
+          var name = 'puppet.' + key;
           var enter = function() {
             if (who !== code) {
               return;
             }
-            var sprite = S.add.image(0, 0, key).setOrigin(0.5, 860 / 896);
-            S.speaker = {code: code, x: 0, y: 0, sprite: sprite, puppet: null,
+            var puppet = rig && T.puppet.make(S, name, still);
+            var sprite = puppet ? puppet.container : S.add.image(0, 0, key).setOrigin(0.5, 860 / 896);
+            S.speaker = {code: code, x: 0, y: 0, sprite: sprite, puppet: puppet,
               shadow: S.add.ellipse(0, 0, 10, 10, 0x0b1a10, 0.32), base: 1, walk: 0, moving: false, facing: 1, lift: 0,
               tilt: 0, talk: 0};
             layout(true);
+            if (puppet) {
+              puppet.play('greet', true);
+            }
             if (!still) {
               sprite.setAlpha(0);
               S.tweens.add({targets: sprite, alpha: 1, duration: 300});
             }
           };
-          if (S.textures.exists(key)) {
+          if (rig ? S.textures.exists(name) : S.textures.exists(key)) {
             enter();
           } else {
-            S.load.image(key, url);
+            if (rig) {
+              T.puppet.load(S, name, rig);
+            } else {
+              S.load.image(key, url);
+            }
             S.load.once('complete', enter);
             S.load.start();
           }
@@ -211,6 +224,9 @@
         answer: later(function(fx) {
           if (S.pet) {
             T.cast.act(S.pet, 'alert');
+          }
+          if (S.speaker && S.speaker.puppet) {
+            T.cast.act(S.speaker, fx === 'shake' || fx === 'dark' ? 'surprise' : 'nod');
           }
           if (still) {
             return;
@@ -272,6 +288,9 @@
             if (S.hero) {
               T.cast.act(S.hero, 'celebrate');
             }
+            if (S.speaker && S.speaker.puppet) {
+              T.cast.act(S.speaker, 'laugh');
+            }
             if (S.pet) {
               S.pet.pose = 'happy';
               T.cast.act(S.pet, 'hop');
@@ -288,7 +307,8 @@
 
         /** For the tests of the browser. */
         state: function() {
-          return {ready: !!S, image: shown, speaker: who, figure: !!(S && S.speaker), rigs: cast.rigs || {},
+          return {ready: !!S, image: shown, speaker: who, figure: !!(S && S.speaker),
+            speakerPuppet: S && S.speaker && S.speaker.puppet ? S.speaker.puppet.clipName : '', rigs: cast.rigs || {},
             hero: S && S.hero && S.hero.puppet ? S.hero.puppet.clipName + (S.hero.puppet.tone ? ' ' + S.hero.puppet.tone : '') :
               '',
             pet: S && S.pet && S.pet.puppet ? S.pet.puppet.clipName : ''};
@@ -349,7 +369,16 @@
             }
           });
           var sp = S.speaker;
-          if (sp) {
+          if (sp && sp.puppet) {
+            // A puppet talks while the words show, and listens after.
+            if (!sp.puppet.busy()) {
+              sp.puppet.play(speaking ? 'talk' : 'idle');
+            }
+            sp.puppet.draw(dt);
+            sp.sprite.setPosition(sp.x, sp.y).setScale(sp.base, sp.base).setDepth(sp.y);
+            sp.shadow.setPosition(sp.x, sp.y - 2).setSize(sp.sprite.displayHeight * 0.4, sp.sprite.displayHeight * 0.08)
+              .setDepth(sp.y - 1);
+          } else if (sp) {
             // Who speaks moves while the words show: a breath, and a little bounce at each phrase.
             sp.talk += speaking && !still ? dt * 7 : 0;
             var bounce = speaking && !still ? Math.abs(Math.sin(sp.talk)) * 6 : 0;

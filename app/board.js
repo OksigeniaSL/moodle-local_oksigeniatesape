@@ -713,7 +713,8 @@
       var won = l.stage === 'resolve' && lane && lane.done;
       var shielded = l.stage === 'resolve' && l.shielded && l.targetid === team.id;
       return '<div class="battle-team' + (l.targetid === team.id && !l.outcome ? ' target' : '') +
-        ((l.tangled || []).indexOf(team.id) >= 0 && !l.outcome ? ' tangled' : '') + (shielded ? ' shielded' : '') + '">' +
+        ((l.tangled || []).indexOf(team.id) >= 0 && !l.outcome ? ' tangled' : '') + (shielded ? ' shielded' : '') +
+        '" data-teamid="' + team.id + '">' +
         (l.maxcandles ? heroes(team.id) : '') + (won ? '<span class="thread-off" aria-hidden="true">−1</span>' : '') +
         (shielded ? '<span class="team-shield" aria-hidden="true">' + T.icon('shield') + '</span>' : '') + '<b>' + esc(team.name) +
         '</b><small>' + (l.mode === 'phones' ?
@@ -737,6 +738,65 @@
       '<div class="battle-teams">' + teams + '</div></div>';
     battleFx(l);
     bindBattle();
+    liveBattle(l);
+  }
+
+  /**
+   * The battle with movement over the board (battleworld.js), where the screen moves and draws: it is told where the
+   * Embrollo and each team are after every drawing, and what happened. Without it, the board as always.
+   *
+   * @param {Object} l
+   */
+  function liveBattle(l) {
+    if (!T.battleWorld || !T.battleWorld.can()) {
+      return;
+    }
+    // The heroes of a team, as heroes() shows them: the protector in front, five at most.
+    var members = function(id) {
+      return (state.cls ? state.cls.students : []).filter(function(st) {
+        return st.teamid === id && st.character;
+      }).sort(function(a, b) {
+        return (b.character.role === 'protector') - (a.character.role === 'protector');
+      }).slice(0, 5).map(function(st) {
+        return Object.assign({userid: st.userid}, st.character);
+      });
+    };
+    var tell = function(w) {
+      var boss = app.querySelector('.battle-boss .embrollo');
+      var teams = Array.prototype.map.call(app.querySelectorAll('.battle-team[data-teamid]'), function(box) {
+        var id = Number(box.dataset.teamid);
+        // The heroes stand where the board keeps their place (the battle by turns); without it, only the Embrollo moves.
+        var place = box.querySelector('.team-heroes');
+        return {id: id, box: (place || box).getBoundingClientRect(), members: place ? members(id) : []};
+      });
+      w.update(l, {boss: boss ? boss.getBoundingClientRect() : null, teams: teams});
+    };
+    if (state.battleWorld && state.battleWorld !== 'opening') {
+      tell(state.battleWorld);
+    } else if (!state.battleWorld) {
+      state.battleWorld = 'opening';
+      T.battleWorld.open().then(function(w) {
+        if (!battling()) {
+          w.close();
+          state.battleWorld = null;
+          return;
+        }
+        state.battleWorld = w;
+        // For the tests of the browser.
+        app.battleWorld = w;
+        tell(w);
+      }).catch(function() {
+        state.battleWorld = null;
+      });
+    }
+  }
+
+  /** The battle is over and left: the movement goes. */
+  function unliveBattle() {
+    if (state.battleWorld && state.battleWorld !== 'opening') {
+      state.battleWorld.close();
+    }
+    state.battleWorld = null;
   }
 
   /**
@@ -1577,6 +1637,7 @@
       drawBattle(true);
       return;
     }
+    unliveBattle();
     if (state.print) {
       drawPrint();
       return;
