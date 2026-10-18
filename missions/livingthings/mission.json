@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 36,
+ "version": 37,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 37,
+   "kind": "improvement",
+   "date": "2026-10-18",
+   "text": "Cada minijuego empieza con dos líneas de escena: lo que ha hecho el Embrollo y cómo reacciona tu criatura"
+  },
   {
    "version": 36,
    "kind": "improvement",
@@ -2027,6 +2033,16 @@
   "nestdefence": {
    "title": "Defensa del nido",
    "intro": "Los animales del bosque bajan curiosos hacia el nido de tu criatura. Para que no lo pisen, atrápalos con la red que les toca, míralos bien y suéltalos lejos. Con la red equivocada, el animal pasa y el nido pierde abrigo.",
+   "scene": {
+    "embrollo": {
+     "valley": "«¡Ji, ji! He abierto el bosque de par en par. ¡Que bajen todos a ver el nido!»",
+     "azara": "Por la ladera bajan animales curiosos, derechos hacia el campamento."
+    },
+    "creature": {
+     "valley": "{{creature}} se esconde en el nido y asoma los ojos: confía en tus redes.",
+     "azara": "{{creature}} se acurruca entre las mantas y no les quita ojo."
+    }
+   },
    "win": "El nido está a salvo y has visto de cerca a todo el bosque. Te quedas con la red de captura, para observar sin hacer daño, y con lo que los animales dejaron al pasar: pelo, plumas y escamas para el abrigo de tu criatura.",
    "lose": "El nido se ha quedado frío esta vez, pero sigue ahí y tu criatura también. Fíjate en lo que te dice cada animal al pasar y vuelve a intentarlo.",
    "reward": {
@@ -2399,6 +2415,16 @@
    "type": "whack",
    "title": "¿Quién está vivo?",
    "intro": "El Embrollo ha revuelto el claro con cosas traídas de todas partes: unas están vivas y otras no. Asoman un momento por los huecos y se vuelven a esconder. Toca solo los seres vivos, para apuntarlos en el cuaderno de campo, y deja pasar lo demás. Antes de tocar, pregúntate si se nutre, se relaciona y se reproduce.",
+   "scene": {
+    "embrollo": {
+     "valley": "«He mezclado lo vivo con lo que no lo está. ¡A ver quién distingue una semilla de una piedra!»",
+     "azara": "Entre las muestras del rastreo se han colado cosas que no están vivas."
+    },
+    "creature": {
+     "valley": "{{creature}} olisquea un hueco y estornuda: algo se mueve ahí abajo.",
+     "azara": "{{creature}} husmea las cajas una a una, con mucha atención."
+    }
+   },
    "win": "Tienes apuntados los seres vivos del claro. Ya sabes mirar: lo que se nutre, se relaciona y se reproduce es un ser vivo, aunque no se mueva ni haga ruido.",
    "lose": "Esta vez el Embrollo te ha despistado. Abajo tienes lo que más te ha liado, con su porqué: léelo y vuelve a intentarlo.",
    "reward": {
@@ -2636,6 +2662,16 @@
    "type": "venn",
    "title": "Los dos círculos de la biblioteca",
    "intro": "Sobre la mesa grande de la biblioteca flotan dos círculos de luz, y el Embrollo ha soltado sus fichas por el suelo. Devuelve cada ficha a su círculo. Si es de los dos, va al centro, donde se cruzan.",
+   "scene": {
+    "embrollo": {
+     "valley": "«Dos círculos y un montón de fichas sueltas. ¿Y si alguna va en los dos? ¡Eso no lo adivinas!»",
+     "azara": "Las fichas de la colección se han desordenado sobre la mesa de trabajo."
+    },
+    "creature": {
+     "valley": "{{creature}} salta de un círculo al otro, como si probara dónde cabe.",
+     "azara": "{{creature}} empuja una ficha con el hocico hacia el centro de la mesa."
+    }
+   },
    "win": "Los dos círculos brillan en orden. Ya sabes que un mismo ser vivo puede estar en dos grupos a la vez.",
    "lose": "Esta vez los círculos se han enredado. Abajo tienes las fichas que se fueron a otro sitio, con su porqué: léelas y vuelve a intentarlo.",
    "misses": {
@@ -2678,6 +2714,16 @@
    "type": "venn",
    "title": "Los dos círculos del bosque",
    "intro": "En el claro del bosque, dos círculos de luz esperan a los animales que el Embrollo ha revuelto. Lleva cada ficha a su círculo. Si es de los dos, va al centro, donde se cruzan.",
+   "scene": {
+    "embrollo": {
+     "valley": "«He revuelto a los animales del bosque. ¡Que cada uno busque su círculo, si puede!»",
+     "azara": "Las notas sobre los animales del bosque se han mezclado en el cuaderno."
+    },
+    "creature": {
+     "valley": "{{creature}} se sienta entre los dos círculos y espera a ver qué haces.",
+     "azara": "{{creature}} sigue con la mirada a un escarabajo que cruza la libreta."
+    }
+   },
    "win": "Los dos círculos brillan en orden. Has visto que lo que hace un animal no siempre dice a qué grupo pertenece.",
    "lose": "Esta vez los círculos se han enredado. Abajo tienes las fichas que se fueron a otro sitio, con su porqué: léelas y vuelve a intentarlo.",
    "misses": {
@@ -2724,6 +2770,16 @@
    "type": "venn",
    "title": "Los dos círculos del lago",
    "intro": "En la orilla del Gran Lago, dos círculos de luz ordenan quién come qué, y el Embrollo los ha mezclado. Lleva cada ficha a su círculo. Si es de los dos, va al centro, donde se cruzan.",
+   "scene": {
+    "embrollo": {
+     "valley": "«¿Quién se come a quién? En la orilla lo he liado todo, ¡ji, ji!»",
+     "azara": "Las notas de quién come qué en la orilla del río están revueltas."
+    },
+    "creature": {
+     "valley": "{{creature}} mira el agua y retrocede un paso: algo grande nada ahí.",
+     "azara": "{{creature}} se queda junto al agua, con las orejas tiesas."
+    }
+   },
    "win": "Los dos círculos brillan en orden. Quien come plantas y también animales va en el centro: es omnívoro.",
    "lose": "Esta vez los círculos se han enredado. Abajo tienes las fichas que se fueron a otro sitio, con su porqué: léelas y vuelve a intentarlo.",
    "misses": {
@@ -2770,6 +2826,16 @@
    "type": "whoami",
    "title": "Las sombras del jardín",
    "intro": "Al caer la tarde, en el Jardín de la Luz se mueven unas sombras: son partes de las plantas que el Embrollo ha escondido en la niebla. Cada sombra te da una pista. Adivina quién es antes de que se escape.",
+   "scene": {
+    "embrollo": {
+     "valley": "«He convertido las partes de las plantas en sombras. ¡Adivina quién es cada una!»",
+     "azara": "Al caer la tarde, del jardín solo se ven las siluetas de las plantas."
+    },
+    "creature": {
+     "valley": "{{creature}} persigue una sombra por el jardín y se queda mirándola, sin entender nada.",
+     "azara": "{{creature}} olfatea una hoja y estornuda."
+    }
+   },
    "win": "Todas las sombras han vuelto a su planta. Ya conoces cada parte y lo que hace.",
    "lose": "Esta vez las sombras se han escapado. Abajo tienes las que se fueron, con todas sus pistas: léelas y vuelve a intentarlo.",
    "misses": {
@@ -2873,6 +2939,16 @@
    "type": "whoami",
    "title": "Las sombras de la torre",
    "intro": "En lo alto de la torre, el Embrollo ha convertido en sombras a los seres vivos que has conocido en el viaje. Cada sombra te da una pista. Adivina quién es y devuélvele su forma antes de que se escape.",
+   "scene": {
+    "embrollo": {
+     "valley": "«Todos los seres que has conocido son ahora sombras. ¡Mis sombras!»",
+     "azara": "En la penumbra del último cuarto, las láminas del cuaderno solo dejan ver siluetas."
+    },
+    "creature": {
+     "valley": "{{creature}} se pega a tus pies: en la torre todo da un poco de miedo.",
+     "azara": "{{creature}} se acerca a cada silueta con mucho cuidado."
+    }
+   },
    "win": "Todas las sombras han recuperado su forma. Has reconocido a cada ser vivo del valle por lo que hace y por cómo es, sin verlo.",
    "lose": "Esta vez las sombras se han escapado. Abajo tienes las que se fueron, con todas sus pistas: léelas y vuelve a intentarlo.",
    "misses": {
@@ -2988,6 +3064,16 @@
    "type": "errors",
    "title": "El cuaderno enredado: ¿qué es un ser vivo?",
    "intro": "El Embrollo ha enredado las fichas del cuaderno de campo de este lugar: ha cambiado algunos datos sobre lo que está vivo y lo que no. Lee cada ficha y toca las palabras que están mal. Cuidado: si tocas una palabra que estaba bien, cae una mancha de tinta.",
+   "scene": {
+    "embrollo": {
+     "valley": "«He cambiado unas palabritas en tu cuaderno. Nada, poca cosa…»",
+     "azara": "Al pasar a limpio las fichas del claro se colaron algunos datos equivocados."
+    },
+    "creature": {
+     "valley": "{{creature}} mira la ficha y ladea la cabeza: algo no le cuadra.",
+     "azara": "{{creature}} se sube a la mesa y lee la ficha contigo."
+    }
+   },
    "win": "El cuaderno vuelve a decir la verdad: lo vivo con lo vivo y lo inerte con lo inerte. Buen ojo de naturalista.",
    "lose": "Esta vez han caído demasiadas manchas de tinta. Fíjate en el porqué de cada error y vuelve a intentarlo: antes de tocar, pregúntate si se nutre, se relaciona y se reproduce.",
    "misses": {
@@ -3044,6 +3130,16 @@
    "type": "errors",
    "title": "El cuaderno enredado: los grupos de seres vivos",
    "intro": "El Embrollo ha revuelto las fichas del cuaderno de campo y ha cambiado de grupo a algunos seres vivos. Lee cada ficha y toca las palabras que están mal. Cuidado: si tocas una palabra que estaba bien, cae una mancha de tinta.",
+   "scene": {
+    "embrollo": {
+     "valley": "«¿Grupos? Yo prefiero el revoltijo. He cambiado de sitio a unos cuantos.»",
+     "azara": "En las fichas de la biblioteca, algunos seres han acabado en el grupo que no es."
+    },
+    "creature": {
+     "valley": "{{creature}} husmea una página y arruga el hocico.",
+     "azara": "{{creature}} pasa las páginas con la pata, despacio."
+    }
+   },
    "win": "Cada ser vivo vuelve a su grupo, y esta vez por algo que se puede comprobar, no por su aspecto. El cuaderno queda en orden.",
    "lose": "Esta vez han caído demasiadas manchas de tinta. Fíjate en el porqué de cada error y vuelve a intentarlo: la pregunta que más ayuda es si fabrica su alimento con la luz o lo toma de otros.",
    "misses": {
@@ -3100,6 +3196,16 @@
    "type": "errors",
    "title": "El cuaderno enredado: los animales",
    "intro": "El Embrollo ha cambiado datos en las fichas de los animales del cuaderno de campo. Lee cada ficha y toca las palabras que están mal. Cuidado: si tocas una palabra que estaba bien, cae una mancha de tinta.",
+   "scene": {
+    "embrollo": {
+     "valley": "«Plumas para el pez, escamas para el pájaro… ¿A que así queda más bonito?»",
+     "azara": "Con las prisas del bosque, alguien copió mal unas cuantas notas."
+    },
+    "creature": {
+     "valley": "{{creature}} se rasca detrás de la oreja, con desconfianza.",
+     "azara": "{{creature}} señala una línea de la ficha y te mira."
+    }
+   },
    "win": "Cada animal vuelve a su grupo, por lo que no cambia: lo que cubre su cuerpo, cómo respira y cuántas patas tiene. Las huellas del bosque ya se pueden seguir.",
    "lose": "Esta vez han caído demasiadas manchas de tinta. Fíjate en el porqué de cada error y vuelve a intentarlo: mira lo que no cambia, no dónde vive el animal ni cómo se mueve.",
    "misses": {
@@ -3156,6 +3262,16 @@
    "type": "errors",
    "title": "El cuaderno enredado: las plantas",
    "intro": "El Embrollo ha enredado las fichas de las plantas del cuaderno de campo: hay datos cambiados sobre cómo viven. Lee cada ficha y toca las palabras que están mal. Cuidado: si tocas una palabra que estaba bien, cae una mancha de tinta.",
+   "scene": {
+    "embrollo": {
+     "valley": "«Las plantas comen tierra, ¿no? Lo he dejado escrito, por si se te olvida.»",
+     "azara": "La humedad del jardín ha corrido la tinta, y alguien rellenó los huecos a ojo."
+    },
+    "creature": {
+     "valley": "{{creature}} señala una palabra con la pata y resopla.",
+     "azara": "{{creature}} sopla sobre la ficha, como si quisiera secarla."
+    }
+   },
    "win": "Las fichas de las plantas vuelven a estar bien: la raíz toma el agua, la hoja fabrica el alimento con la luz y de la flor salen las semillas.",
    "lose": "Esta vez han caído demasiadas manchas de tinta. Fíjate en el porqué de cada error y vuelve a intentarlo: recuerda el viaje del agua y lo que necesita una hoja para fabricar el alimento.",
    "misses": {
@@ -3212,6 +3328,16 @@
    "type": "errors",
    "title": "El cuaderno enredado: quién come a quién",
    "intro": "El Embrollo ha enredado las fichas del cuaderno de campo de la orilla y ha soltado algunos eslabones de las cadenas. Lee cada ficha y toca las palabras que están mal. Cuidado: si tocas una palabra que estaba bien, cae una mancha de tinta.",
+   "scene": {
+    "embrollo": {
+     "valley": "«En mi lago, el pez grande se come al sol. ¿A que suena bien?»",
+     "azara": "Las notas de la orilla se mojaron y alguien las copió de memoria."
+    },
+    "creature": {
+     "valley": "{{creature}} suelta un resoplido: eso no puede ser.",
+     "azara": "{{creature}} se sacude el agua junto a la libreta."
+    }
+   },
    "win": "Las cadenas vuelven a estar bien atadas, del productor al último consumidor, sin olvidar a los descomponedores.",
    "lose": "Esta vez han caído demasiadas manchas de tinta. Fíjate en el porqué de cada error y vuelve a intentarlo: sigue la cadena desde el productor, del que es comido al que come.",
    "misses": {
@@ -3268,6 +3394,16 @@
    "type": "errors",
    "title": "El cuaderno enredado: la guía de campo",
    "intro": "El Embrollo ha metido sus nudos en las fichas de la guía de campo: datos cambiados y alguno que nadie comprobó. Lee cada ficha y toca las palabras que están mal. Cuidado: si tocas una palabra que estaba bien, cae una mancha de tinta.",
+   "scene": {
+    "embrollo": {
+     "valley": "«Esta ficha es mi obra maestra. No encontrarás ni un error. Bueno… quizá uno.»",
+     "azara": "Antes de entregar el cuaderno, hay que repasar lo que se mezcló por el camino."
+    },
+    "creature": {
+     "valley": "{{creature}} se pone de puntillas para leer contigo.",
+     "azara": "{{creature}} se acomoda en tu hombro para leer contigo."
+    }
+   },
    "win": "La guía de campo queda limpia, con cada dato en su sitio. Al Embrollo le queda un nudo menos.",
    "lose": "Esta vez han caído demasiadas manchas de tinta. Fíjate en el porqué de cada error y vuelve a intentarlo: a cada dato, pregúntale de dónde sale.",
    "misses": {

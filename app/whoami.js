@@ -41,8 +41,8 @@
     /* ---------- Start ---------- */
 
     function intro() {
-      var body = show('<div class="whoami-intro"><span class="whoami-shadow big" aria-hidden="true">?</span>' +
-        '<p class="lead">' + esc(game.intro) + '</p><p class="help">' + esc(t('app_whoami_goal', {misses: game.misses})) +
+      var body = show('<div class="whoami-intro">' + m.opening('<span class="whoami-shadow big" aria-hidden="true">?</span>') +
+        '<p class="help">' + esc(t('app_whoami_goal', {misses: game.misses})) +
         '</p>' + m.passiveNote() + '<div class="actions"><button class="btn btn-main" data-go>' + esc(t('app_whoami_start')) + '</button></div>' +
         '</div>');
       body.querySelector('[data-go]').onclick = start;

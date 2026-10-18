@@ -150,6 +150,10 @@ final class get_minigame extends external_api {
             'goal' => new external_value(PARAM_INT, 'Animals to catch, or mistakes to find'),
             'shield' => new external_value(PARAM_INT, 'What the shield of the nest holds'),
             'speed' => new external_value(PARAM_INT, 'Speed, 1 to 4'),
+            'scene' => new external_single_structure([
+                'embrollo' => new external_value(PARAM_TEXT, 'What the Embrollo did, or empty'),
+                'creature' => new external_value(PARAM_TEXT, 'How the creature takes it, with {{creature}}, or empty'),
+            ], 'The two lines at the start'),
             'passive' => new external_value(PARAM_ALPHA, 'Role whose passive the student has, or empty'),
             'streak' => new external_value(PARAM_INT, 'Right answers in a row for the healer to get a slip back'),
         ]);

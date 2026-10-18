@@ -53,8 +53,8 @@
     /* ---------- Start ---------- */
 
     function intro() {
-      var body = show('<div class="venn-intro"><span class="battle-mini" aria-hidden="true">' + T.embrollo(1) + '</span>' +
-        '<p class="lead">' + esc(game.intro) + '</p><p class="help">' + esc(t('app_venn_goal', {misses: game.misses})) +
+      var body = show('<div class="venn-intro">' + m.opening('<span class="battle-mini" aria-hidden="true">' +
+        T.embrollo(1) + '</span>') + '<p class="help">' + esc(t('app_venn_goal', {misses: game.misses})) +
         '</p>' + m.passiveNote() + '<div class="actions"><button class="btn btn-main" data-go>' + esc(t('app_venn_start')) + '</button></div></div>');
       body.querySelector('[data-go]').onclick = start;
       body.querySelector('[data-go]').focus();

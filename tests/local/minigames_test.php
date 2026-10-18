@@ -90,6 +90,16 @@ final class minigames_test extends \advanced_testcase {
         $this->assertNull(minigames::config($w->mission, 'nogame', 2));
     }
 
+    public function test_each_minigame_opens_with_two_lines_of_scene(): void {
+        $this->resetAfterTest();
+        $w = $this->make_class();
+        foreach (array_keys($w->mission->data['games']) as $code) {
+            $scene = minigames::config($w->mission, $code, 2)['scene'];
+            $this->assertNotSame('', $scene['embrollo'], $code);
+            $this->assertStringContainsString('{{creature}}', $scene['creature'], $code);
+        }
+    }
+
     public function test_the_protector_holds_one_slip_more(): void {
         global $DB;
         $this->resetAfterTest();

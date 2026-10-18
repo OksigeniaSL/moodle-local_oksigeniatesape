@@ -62,8 +62,8 @@
     /* ---------- Start ---------- */
 
     function intro() {
-      var body = show('<div class="nest-intro">' + '<div class="nest-hero" aria-hidden="true">' + creature() + '</div>' +
-        '<p class="lead">' + esc(game.intro) + '</p><ul class="nest-legend">' + game.nets.map(function(n) {
+      var body = show('<div class="nest-intro">' + m.opening('<div class="nest-hero" aria-hidden="true">' + creature() +
+        '</div>') + '<ul class="nest-legend">' + game.nets.map(function(n) {
           return '<li><b>' + esc(n.label) + '</b><span>' + esc(n.hint) + '</span></li>';
         }).join('') + '</ul><p class="help">' + esc(t('app_nest_goal', {goal: game.goal, total: game.animals.length})) + '</p>' +
         m.passiveNote() + '<label class="chip nest-calm"><input type="checkbox" data-calm' + (calm ? ' checked' : '') + '> ' +

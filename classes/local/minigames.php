@@ -71,6 +71,12 @@ final class minigames {
         if (!$config) {
             return null;
         }
+        // The two lines at the start: what the Embrollo did and how the creature takes it ({{creature}}, for the client).
+        $scene = $mission->data['games'][$code]['scene'] ?? [];
+        $config['scene'] = [
+            'embrollo' => missions::text($scene['embrollo'] ?? '', $mission->skin, $mission->variant),
+            'creature' => missions::text($scene['creature'] ?? '', $mission->skin, $mission->variant),
+        ];
         $config['passive'] = in_array($role, characters::ROLES, true) ? $role : '';
         $config['streak'] = self::STREAK;
         if ($config['passive'] === 'protector') {

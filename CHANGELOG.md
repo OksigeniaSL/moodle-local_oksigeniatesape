@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.87.0 (2026-10-18)
+
+- **Each minigame opens with two lines of scene**: what the Embrollo did, in its own voice, and how the creature of
+  the student takes it (by its name, once it has hatched); then what to do. In the expedition of Azara, a narrator
+  tells the trouble. The pilot mission, version 37, with the lines of its thirteen minigames.
+
 ## 0.86.0 (2026-10-18)
 
 - **The streak tightens the game**: a minigame starts gently and goes a notch faster every three right answers in a

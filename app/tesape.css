@@ -7973,3 +7973,48 @@ body.adapt-still .mission-grid .chapter.as-sheet {
     animation: none;
   }
 }
+
+/* ---------- The opening of a minigame: two lines of scene ---------- */
+
+.game-opening {
+  display: grid;
+  gap: 10px;
+  margin: 4px 0 12px;
+  text-align: start;
+}
+
+.game-opening .line {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 10px;
+  align-items: center;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--r);
+  background: rgba(var(--hi), .06);
+  border: 1px solid var(--line);
+  font-size: clamp(15px, 4.2vw, 17px);
+  line-height: 1.4;
+}
+
+.game-opening .line.embrollo {
+  border-color: rgba(185, 166, 255, .35);
+}
+
+.game-opening .line.creature {
+  border-color: rgba(124, 198, 127, .35);
+}
+
+.game-opening .who {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+}
+
+.game-opening .who svg,
+.game-opening .who img,
+.game-opening .who .creature {
+  max-width: 56px;
+  max-height: 56px;
+}

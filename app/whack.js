@@ -60,8 +60,8 @@
     /* ---------- Start ---------- */
 
     function intro() {
-      var body = show('<div class="whack-intro"><span class="battle-mini" aria-hidden="true">' + T.embrollo(1) + '</span>' +
-        '<p class="lead">' + esc(game.intro) + '</p><p class="help">' + esc(t('app_whack_goal', {goal: game.goal,
+      var body = show('<div class="whack-intro">' + m.opening('<span class="battle-mini" aria-hidden="true">' +
+        T.embrollo(1) + '</span>') + '<p class="help">' + esc(t('app_whack_goal', {goal: game.goal,
         alive: alive(), misses: game.misses})) + '</p>' + m.passiveNote() + '<label class="chip nest-calm"><input type="checkbox" data-calm' +
         (calm ? ' checked' : '') + '> ' + esc(t('app_whack_calm')) + '</label><div class="actions">' +
         '<button class="btn btn-main" data-go>' + esc(t('app_whack_start')) + '</button></div></div>');

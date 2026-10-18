@@ -52,8 +52,8 @@
     /* ---------- Start ---------- */
 
     function intro() {
-      var body = show('<div class="errors-intro"><span class="battle-mini" aria-hidden="true">' + T.embrollo(1) + '</span>' +
-        '<p class="lead">' + esc(game.intro) + '</p><p class="help">' + esc(t('app_errors_goal', {goal: game.goal,
+      var body = show('<div class="errors-intro">' + m.opening('<span class="battle-mini" aria-hidden="true">' +
+        T.embrollo(1) + '</span>') + '<p class="help">' + esc(t('app_errors_goal', {goal: game.goal,
         misses: game.misses})) + '</p>' + m.passiveNote() + '<div class="actions"><button class="btn btn-main" data-go>' +
         esc(t('app_errors_start')) + '</button></div></div>');
       body.querySelector('[data-go]').onclick = start;

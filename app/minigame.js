@@ -115,6 +115,35 @@
       }
     };
 
+    /**
+     * The start of a minigame: the two lines of its scene (what the Embrollo did, and how the creature takes it, if it
+     * has hatched), then what to do; without a scene, the art of the game and what to do, as before.
+     *
+     * @param {string} art The picture of the game, when it has no scene.
+     * @return {string}
+     */
+    m.opening = function(art) {
+      var game = m.game;
+      var scene = game.scene || {};
+      if (!scene.embrollo) {
+        return art + '<p class="lead">' + esc(game.intro) + '</p>';
+      }
+      var c = m.world.character || {};
+      var html = '<div class="game-opening"><p class="line embrollo"><span class="who" aria-hidden="true">' +
+        T.embrollo(1) + '</span><span>' + esc(scene.embrollo) + '</span></p>';
+      var name = '';
+      try {
+        name = c.creature ? JSON.parse(c.creature).name || '' : '';
+      } catch (e) {
+        name = '';
+      }
+      if (scene.creature && name && c.creaturestage > 0) {
+        html += '<p class="line creature"><span class="who" aria-hidden="true">' + T.creature(c.creature, c.creaturestage) +
+          '</span><span>' + esc(scene.creature.replace(/\{\{creature\}\}/g, name)) + '</span></p>';
+      }
+      return html + '</div><p class="help">' + esc(game.intro) + '</p>';
+    };
+
     /* ---------- Inside the play: the streak and the passive of the role ---------- */
 
     /** A new play: no streak, no notch, the look of the sage unused. */
