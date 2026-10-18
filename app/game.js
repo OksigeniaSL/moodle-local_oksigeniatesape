@@ -1127,6 +1127,16 @@
     var crowd = m.chapters.map(function(ch) {
       return silhouettes(ch, mates[ch.id] || 0);
     }).join('');
+    // What the Embrollo stained: a blot of ink beside the lantern of the place, to clean it.
+    var blots = state.visit ? '' : (state.world.stains || []).map(function(s, i) {
+      var ch = m.chapters.filter(function(x) {
+        return x.code === s.chapter;
+      })[0];
+      return ch ? '<foreignObject x="' + (ch.x + 28 + 14 * i) + '" y="' + (ch.y - 46) + '" width="36" height="36" class="blot">' +
+        '<div xmlns="http://www.w3.org/1999/xhtml"><button type="button" class="blot-btn" data-stain="' + s.id + '" title="' +
+        esc(t('app_stain_on', s.place)) + '"><span aria-hidden="true">' + BLOT + '</span><span class="sr-only">' +
+        esc(t('app_stain_on', s.place)) + '</span></button></div></foreignObject>' : '';
+    }).join('');
     var c = state.world.character;
     var reached = Math.min(lastDone + 1, m.chapters.length - 1);
     var fresh = T.mapNewRoad(cfg.courseid + '-' + cfg.userid + '-' + m.code, m.chapters, reached);
@@ -1175,7 +1185,7 @@
       '" role="group" aria-label="' + esc(m.title) + '"><defs>' + T.MAPGLOW + '</defs>' + T.mapGround(m) +
       T.mapLandmarks(m) + T.mapNight(m) + '<polyline points="' + pts + '" class="road"/>' +
       (walked ? '<polyline points="' + walked + '" class="road walked"/>' : '') + roadDrawing(fresh) +
-      (T.critters ? T.critters.fireflies(m) : '') + places + crowd + me + pet + hungry + '</svg></div>';
+      (T.critters ? T.critters.fireflies(m) : '') + places + crowd + blots + me + pet + hungry + '</svg></div>';
   }
 
   /**
@@ -1284,6 +1294,70 @@
       }
     }
     return {x: Math.max(4, at.x - 132), y: at.y - 50, w: 40, small: true};
+  }
+
+  /** A blot of ink, drawn. */
+  var BLOT = '<svg viewBox="0 0 40 40" width="100%" height="100%"><path d="M20 4c5 0 6 5 10 6s7 5 5 10-1 7-4 10-8 6-13 ' +
+    '5-8-3-11-7-6-8-3-12 7-12 16-12z" fill="#2b1d4a" stroke="#b9a6ff" stroke-width="2"/><circle cx="33" cy="33" r="3" ' +
+    'fill="#2b1d4a" stroke="#b9a6ff" stroke-width="1.5"/></svg>';
+
+  /**
+   * A stain of the Embrollo, to clean: its sheet with its words; the wrong ones touched, it is clean for the whole class,
+   * with a gem and the complaint of the Embrollo, and then each mistake with what it should say.
+   *
+   * @param {Object} stain id, place, title, parts.
+   */
+  function stainMoment(stain) {
+    var layer = document.createElement('div');
+    layer.className = 'badge-moment stain-moment';
+    layer.setAttribute('role', 'dialog');
+    layer.setAttribute('aria-modal', 'true');
+    layer.setAttribute('aria-labelledby', 'tesape-stain-title');
+    layer.innerHTML = '<div class="badge-card"><div class="kicker" id="tesape-stain-title">' +
+      esc(t('app_stain_on', stain.place)) + '</div><h2>' + esc(stain.title) + '</h2><div data-sheet></div><div data-said></div><div class="actions">' +
+      '<button type="button" class="btn btn-soft" data-close>' + esc(t('app_close')) + '</button></div></div>';
+    document.body.appendChild(layer);
+    var sheet = layer.querySelector('[data-sheet]');
+    var key = 'stain-' + stain.id;
+    var lane = {engine: 'errors', parts: stain.parts, mine: true};
+    var close = function() {
+      layer.remove();
+    };
+    layer.querySelector('[data-close]').onclick = close;
+    var draw = function() {
+      T.lane(sheet, lane, {key: key, sent: false, open: true, onsend: function(payload) {
+        T.api('clean_stain', {courseid: cfg.courseid, stainid: stain.id, payload: JSON.stringify(payload)}).then(function(r) {
+          var said = layer.querySelector('[data-said]');
+          if (!r.clean) {
+            // Still ink: what was touched is forgotten, and it is tried again.
+            delete T.lane.kept[key];
+            said.innerHTML = '<p class="turn-outcome fell">' + esc(t('app_stain_still')) + '</p>';
+            draw();
+            return;
+          }
+          lane.solution = r.solution;
+          T.lane(sheet, lane, {key: key, sent: true, open: false, onsend: function() {}});
+          said.innerHTML = '<p class="turn-outcome undone">' + esc(t('app_stain_clean', r.gems)) + '</p>' + (r.complaint ?
+            '<p class="knot-laugh">«' + esc(r.complaint.replace(/^«|»$/g, '')) + '»</p>' : '');
+          if (T.fx) {
+            T.fx.sound('gem');
+          }
+          layer.querySelector('[data-close]').onclick = function() {
+            close();
+            refresh();
+          };
+        }).catch(function(e) {
+          T.toast(esc(e.message), true);
+          close();
+          refresh();
+        });
+      }});
+    };
+    draw();
+    var first = layer.querySelector('button');
+    if (first) {
+      first.focus();
+    }
   }
 
   function walkTo(g, ch) {
@@ -1762,6 +1836,17 @@
     if (feed) {
       feed.onclick = feedMoment;
     }
+    app.querySelectorAll('[data-stain]').forEach(function(b) {
+      b.onclick = function(ev) {
+        ev.stopPropagation();
+        var stain = (state.world.stains || []).filter(function(s) {
+          return s.id === Number(b.dataset.stain);
+        })[0];
+        if (stain) {
+          stainMoment(stain);
+        }
+      };
+    });
     var begin = app.querySelector('[data-begin]');
     if (begin) {
       begin.onclick = function() {

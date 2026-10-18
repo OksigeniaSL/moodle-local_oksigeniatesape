@@ -405,6 +405,20 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:play',
     ],
+    'local_oksigeniatesape_clean_stain' => [
+        'classname' => 'local_oksigeniatesape\\external\\clean_stain',
+        'description' => 'A student cleans a stain the Embrollo left in the valley.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:play',
+    ],
+    'local_oksigeniatesape_erase_stain' => [
+        'classname' => 'local_oksigeniatesape\\external\\erase_stain',
+        'description' => 'The teacher takes a stain of the Embrollo as cleaned by the class.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:award',
+    ],
     'local_oksigeniatesape_class_scene' => [
         'classname' => 'local_oksigeniatesape\\external\\class_scene',
         'description' => 'A scene played by the whole class on the class screen: its decisions and what each player gets.',

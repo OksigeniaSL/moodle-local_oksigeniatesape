@@ -78,6 +78,7 @@ final class save_region extends external_api {
                 null,
                 NULL_ALLOWED,
             ),
+            'mischief' => new external_value(PARAM_ALPHA, 'off, calm or naughty', VALUE_DEFAULT, null, NULL_ALLOWED),
         ]);
     }
 
@@ -102,6 +103,7 @@ final class save_region extends external_api {
      * @param string|null $look
      * @param bool|null $devices
      * @param int|null $devicemusic
+     * @param string|null $mischief
      * @return array
      */
     public static function execute(
@@ -122,7 +124,8 @@ final class save_region extends external_api {
         ?bool $quiet = null,
         ?string $look = null,
         ?bool $devices = null,
-        ?int $devicemusic = null
+        ?int $devicemusic = null,
+        ?string $mischief = null
     ): array {
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
@@ -143,6 +146,7 @@ final class save_region extends external_api {
             'look' => $look,
             'devices' => $devices,
             'devicemusic' => $devicemusic,
+            'mischief' => $mischief,
         ]);
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);

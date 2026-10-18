@@ -669,5 +669,31 @@ function xmldb_local_oksigeniatesape_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026101802, 'local', 'oksigeniatesape');
     }
 
+    if ($oldversion < 2026101804) {
+        // What the Embrollo does every day: the stains, and how much it does in each course.
+        $table = new xmldb_table('local_oksigeniatesape_region');
+        $field = new xmldb_field('mischief', XMLDB_TYPE_CHAR, '10', null, XMLDB_NOTNULL, null, 'calm', 'devicemusic');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        $table = new xmldb_table('local_oksigeniatesape_stain');
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('courseid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('day', XMLDB_TYPE_INTEGER, '8', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('chapter', XMLDB_TYPE_CHAR, '40', null, XMLDB_NOTNULL, null, '');
+        $table->add_field('game', XMLDB_TYPE_CHAR, '40', null, XMLDB_NOTNULL, null, '');
+        $table->add_field('sheet', XMLDB_TYPE_CHAR, '40', null, XMLDB_NOTNULL, null, '');
+        $table->add_field('cleanedat', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('erased', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('courseid', XMLDB_KEY_FOREIGN, ['courseid'], 'course', ['id']);
+        $table->add_index('courseid-day', XMLDB_INDEX_UNIQUE, ['courseid', 'day']);
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+        upgrade_plugin_savepoint(true, 2026101804, 'local', 'oksigeniatesape');
+    }
+
     return true;
 }

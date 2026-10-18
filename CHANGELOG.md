@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.81.0 (2026-10-18)
+
+Block 3.2 of the plan: the Embrollo does something every day.
+
+- **The stain of the day**: every school day (Monday to Friday, decided on the first visit of the day, without a
+  scheduled task) the Embrollo stains the place of today with a sheet of the hunt for mistakes of that place. It is a
+  blot of ink beside the lantern on the map of every student; whoever cleans it (touches the wrong words) gets a gem and
+  the complaint of the Embrollo, and then sees each mistake with what it should say; it is clean for the whole class.
+  Under «Today in the valley», on the class screen and in the panel, the teacher can take it as cleaned by the class
+  (aloud), and nobody gets a gem for that.
+- **The Embrollo in the valley**, a setting of the course: off; calm (the default: one stain at most, which never
+  grows); naughty (one more each day it is not cleaned, up to three). It never takes anything from anybody. Who cleaned
+  a stain is not kept: the gem is in the ledger.
+- The pilot mission, version 34, with the complaints of the Embrollo in its two stories.
+
 ## 0.80.0 (2026-10-18)
 
 Block 3.2 of the plan: the Embrollo does something.

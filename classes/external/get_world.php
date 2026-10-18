@@ -139,6 +139,17 @@ final class get_world extends external_api {
                 'image' => new external_value(PARAM_URL, 'Image of the badge'),
                 'url' => new external_value(PARAM_URL, 'Where the student sees their badges'),
             ], 'The badge of the mission, when the teacher turned it on', VALUE_OPTIONAL),
+            'stains' => new external_multiple_structure(new external_single_structure([
+                'id' => new external_value(PARAM_INT, 'Stain'),
+                'chapter' => new external_value(PARAM_ALPHANUMEXT, 'The place stained'),
+                'place' => new external_value(PARAM_TEXT, 'Its name'),
+                'title' => new external_value(PARAM_TEXT, 'The title of the sheet'),
+                'parts' => new external_multiple_structure(new external_single_structure([
+                    'text' => new external_value(PARAM_RAW, 'Plain text'),
+                    'mark' => new external_value(PARAM_INT, 'A mistake (-1: plain text)'),
+                    'wrong' => new external_value(PARAM_TEXT, 'What it says'),
+                ])),
+            ]), 'What the Embrollo stained in the valley, to clean', VALUE_DEFAULT, []),
             'page' => new external_single_structure([
                 'question' => new external_single_structure([
                     'text' => new external_value(PARAM_TEXT, 'Question'),

@@ -221,6 +221,11 @@ final class structures {
                 'teaser' => new external_value(PARAM_TEXT, 'What waits in the next place', VALUE_DEFAULT, ''),
             ], 'The last letter of the Embrollo', VALUE_OPTIONAL),
             'gloat' => new external_value(PARAM_TEXT, 'While a rematch is pending: the letter the Embrollo boasts in', VALUE_OPTIONAL),
+            'stains' => new external_multiple_structure(new external_single_structure([
+                'id' => new external_value(PARAM_INT, 'Stain'),
+                'place' => new external_value(PARAM_TEXT, 'The place stained'),
+                'title' => new external_value(PARAM_TEXT, 'The title of the sheet'),
+            ]), 'What the Embrollo stained, not cleaned yet', VALUE_DEFAULT, []),
             'lostscene' => new external_single_structure([
                 'id' => new external_value(PARAM_INT, 'Scene'),
                 'title' => new external_value(PARAM_TEXT, 'Its title'),
@@ -479,6 +484,7 @@ final class structures {
                 VALUE_DEFAULT,
                 1,
             ),
+            'mischief' => new external_value(PARAM_ALPHA, 'What the Embrollo does every day', VALUE_DEFAULT, 'calm'),
             'look' => new external_value(PARAM_ALPHA, 'Theme of the class (empty: the one of the world)', VALUE_DEFAULT, ''),
             'worldlook' => new external_value(PARAM_ALPHA, 'Theme of the world', VALUE_DEFAULT, 'night'),
         ]);

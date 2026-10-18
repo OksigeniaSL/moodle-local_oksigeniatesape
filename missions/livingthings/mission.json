@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 33,
+ "version": 34,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 34,
+   "kind": "improvement",
+   "date": "2026-10-18",
+   "text": "El Embrollo mancha cada día el lugar de hoy con una ficha de sus errores; quien la limpia se lleva una gema y su queja"
+  },
   {
    "version": 33,
    "kind": "improvement",
@@ -403,6 +409,26 @@
    "name": "el hilo desenredado",
    "description": "Lo que queda del Embrollo cuando la clase lo vence: un hilo limpio y bien recogido."
   }
+ },
+ "stains": {
+  "complaints": [
+   {
+    "valley": "¡Mi mancha favorita! Me había quedado tan bonita…",
+    "azara": "La tinta enredada se encoge y desaparece entre las páginas, refunfuñando."
+   },
+   {
+    "valley": "¿Ya? ¡Si la acababa de hacer! Mañana, más tinta.",
+    "azara": "Un borrón menos en el cuaderno. Al margen queda escrito, con letra enredada: «Mañana, más»."
+   },
+   {
+    "valley": "Vale, vale: esa palabra estaba mal. Pero las otras… también. Hmpf.",
+    "azara": "La nota enredada se arruga sola y sale volando por la ventana."
+   },
+   {
+    "valley": "¡Eh! Que esa tinta me costó un hilo entero.",
+    "azara": "Las letras torcidas se ponen derechas, una a una, como si les diera vergüenza."
+   }
+  ]
  },
  "battle": {
   "reward": "thread",

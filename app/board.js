@@ -827,7 +827,8 @@
     var taunt = d.letter && d.mixup ? '<span class="taunt">' + esc(t('board_today_taunt', d.mixup)) + '</span>' : '';
     return '<section class="card board-today"><div class="kicker">' + esc(t('board_today')) + '</div><h3>' +
       esc(d.chapter) + '</h3>' + (d.gloat ? '<blockquote class="letter gloat"><small>' + esc(t('board_today_gloat')) +
-      '</small>' + esc(d.gloat) + '</blockquote>' : '') + (award && d.lostscene ? '<div class="actions board-small">' +
+      '</small>' + esc(d.gloat) + '</blockquote>' : '') + stainsList(d.stains || [], award) +
+      (award && d.lostscene ? '<div class="actions board-small">' +
       '<button class="btn btn-soft" data-playscene="' + d.lostscene.id + '">' + esc(t('board_today_scene', d.lostscene.title)) +
       '</button></div>' : '') + (d.letter ? '<blockquote class="letter"><small>' + esc(t('board_today_letter',
       d.letter.chapter)) + '</small>' + esc(d.letter.text) + taunt + '</blockquote>' + (d.letter.teaser ? '<p class="teaser">' +
@@ -835,6 +836,22 @@
       '<ol class="today-sessions">' + sessions + '</ol>' : '') + (d.offscreen ? '<p class="help-soft">' +
       esc(t('board_today_offscreen', d.offscreen)) + '</p>' : '') + (d.mixup && !taunt ? '<p class="help-soft">' +
       esc(t('board_today_mixup', d.mixup)) + '</p>' : '') + '</section>';
+  }
+
+  /**
+   * What the Embrollo stained, under «Today in the valley»: the class cleans it aloud and the teacher takes it as
+   * cleaned (nobody gets a gem: the class did it).
+   *
+   * @param {Object[]} stains
+   * @param {boolean} award
+   * @return {string}
+   */
+  function stainsList(stains, award) {
+    return stains.length ? '<ul class="stains">' + stains.map(function(s) {
+      return '<li><span class="stain-dot" aria-hidden="true"></span><span>' + esc(t('board_today_stain', s)) + '</span>' +
+        (award ? '<button type="button" class="btn btn-soft" data-erasestain="' + s.id + '">' + esc(t('board_stain_erase')) +
+        '</button>' : '') + '</li>';
+    }).join('') + '</ul>' : '';
   }
 
   function openerCard() {
@@ -1212,6 +1229,10 @@
     });
     on('[data-playscene]', function(el) {
       playScene(+el.dataset.playscene);
+    });
+    on('[data-erasestain]', function(el) {
+      el.disabled = true;
+      act(T.api('erase_stain', {courseid: cfg.courseid, stainid: +el.dataset.erasestain}));
     });
     on('[data-print]', function(el) {
       state.print = el.dataset.print;

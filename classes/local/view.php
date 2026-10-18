@@ -145,6 +145,10 @@ final class view {
         $mission = self::mission($courseid, $char, $member);
         if ($mission) {
             $world['mission'] = $mission;
+            // What the Embrollo stained in the valley, to clean.
+            $installed = missions::get($courseid);
+            $stained = array_map(fn($s) => stains::view($s, $installed), stains::open($courseid));
+            $world['stains'] = array_values(array_filter($stained));
             if (!empty($world['team'])) {
                 // Where each one of the team is: the place where they last played, for the map (without names).
                 $at = self::team_places($courseid, (int) $mission['id'], array_column($world['team']['members'], 'userid'));
@@ -695,6 +699,7 @@ final class view {
             'quiet' => (bool) ($region->quiet ?? false),
             'devices' => (bool) ($region->devices ?? true),
             'devicemusic' => (int) ($region->devicemusic ?? 1),
+            'mischief' => (string) ($region->mischief ?? 'calm'),
             'look' => (string) ($region->look ?? ''),
             'worldlook' => themes::current('', art::manifest()),
         ];

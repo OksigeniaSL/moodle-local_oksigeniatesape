@@ -7682,3 +7682,71 @@ body.adapt-still .mission-grid .chapter.as-sheet {
     animation: none;
   }
 }
+
+/* A stain of the Embrollo on the map: a blot of ink beside the lantern of its place. */
+.map .blot {
+  overflow: visible;
+}
+
+.blot-btn {
+  display: block;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+/* What wobbles is the ink, not the button: the touch always lands. */
+.blot-btn > span:first-child {
+  display: block;
+  width: 100%;
+  height: 100%;
+  animation: blot-wobble 3s ease-in-out infinite;
+}
+
+@keyframes blot-wobble {
+  0%, 100% {
+    transform: rotate(0) scale(1);
+  }
+
+  50% {
+    transform: rotate(8deg) scale(1.06);
+  }
+}
+
+.stain-moment .badge-card {
+  max-width: 520px;
+  text-align: left;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blot-btn > span:first-child {
+    animation: none;
+  }
+}
+
+/* What the Embrollo stained, under «Today in the valley». */
+.stains {
+  display: grid;
+  gap: 8px;
+  margin: 10px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stains li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.stain-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50% 40% 55% 45%;
+  background: #2b1d4a;
+  box-shadow: 0 0 0 2px #b9a6ff;
+}

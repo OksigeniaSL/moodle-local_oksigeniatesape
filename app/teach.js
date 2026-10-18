@@ -393,7 +393,12 @@
         '</small>' : '') + (x.scene ? '<small>' + esc(t('teach_today_scene', x.scene)) + '</small>' : '') + '</li>';
     }).join('');
     return '<section class="card today-card" style="margin-bottom:16px"><div class="kicker">' + esc(t('board_today')) +
-      '</div><h2>' + esc(today.chapter) + '</h2>' + (today.lostscene ? '<p class="teaser"><b>' + esc(t('teach_today_night')) +
+      '</div><h2>' + esc(today.chapter) + '</h2>' + (today.stains && today.stains.length ? '<ul class="stains">' +
+      today.stains.map(function(s) {
+        return '<li><span class="stain-dot" aria-hidden="true"></span><span>' + esc(t('board_today_stain', s)) + '</span>' +
+          (can('award') ? '<button type="button" class="btn btn-soft" data-erasestain="' + s.id + '">' +
+          esc(t('board_stain_erase')) + '</button>' : '') + '</li>';
+      }).join('') + '</ul>' : '') + (today.lostscene ? '<p class="teaser"><b>' + esc(t('teach_today_night')) +
       '</b> ' + esc(t('teach_today_night_help', today.lostscene.title)) + '</p>' : '') +
       (sessions ? '<ol class="today-sessions">' + sessions + '</ol>' : '') +
       (today.offscreen ? '<p class="help-soft">' + esc(t('board_today_offscreen', today.offscreen)) + '</p>' : '') +
@@ -662,6 +667,17 @@
       }
       render();
     };
+    el.querySelectorAll('[data-erasestain]').forEach(function(b) {
+      b.onclick = function() {
+        b.disabled = true;
+        T.api('erase_stain', {courseid: cfg.courseid, stainid: Number(b.dataset.erasestain)}).then(function() {
+          b.closest('li').remove();
+        }).catch(function(e) {
+          b.disabled = false;
+          T.toast(esc(e.message), true);
+        });
+      };
+    });
     el.querySelectorAll('[data-goto]').forEach(function(b) {
       b.onclick = function() {
         state.tab = b.dataset.goto;
@@ -2223,6 +2239,11 @@
       [['1', 'board_devices_tablets'], ['0', 'board_devices_none']].map(function(d) {
         return '<label class="chip"><input type="radio" name="devices" value="' + d[0] + '"' + ((r.devices !== false) ===
           (d[0] === '1') ? ' checked' : '') + (editable ? '' : ' disabled') + '> ' + esc(t(d[1])) + '</label>';
+      }).join('') + '</div><h3>' + esc(t('teach_set_mischief')) + '</h3><p class="help-soft">' + esc(t('teach_set_mischief_help')) +
+      '</p><div class="pills" role="radiogroup" aria-label="' + esc(t('teach_set_mischief')) + '">' +
+      ['off', 'calm', 'naughty'].map(function(m) {
+        return '<label class="chip"><input type="radio" name="mischief" value="' + m + '"' + ((r.mischief || 'calm') === m ?
+          ' checked' : '') + (editable ? '' : ' disabled') + '> ' + esc(t('teach_set_mischief_' + m)) + '</label>';
       }).join('') + '</div><h3>' + esc(t('teach_set_devicemusic')) + '</h3><p class="help-soft">' +
       esc(t('teach_set_devicemusic_help')) + '</p><div class="pills" role="radiogroup" aria-label="' +
       esc(t('teach_set_devicemusic')) + '">' + [0, 1, 2].map(function(m) {
@@ -2274,6 +2295,7 @@
         quiet: f.quiet.checked,
         devices: f.querySelector('[name="devices"]:checked').value === '1',
         devicemusic: Number(f.querySelector('[name="devicemusic"]:checked').value),
+        mischief: f.querySelector('[name="mischief"]:checked').value,
         nicknames: picked ? Number(picked.value) : 0,
         timezone: f.timezone.value,
         portal: cover ? cover.value : 'door',

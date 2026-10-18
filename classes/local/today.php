@@ -92,6 +92,11 @@ final class today {
         if (!empty($region->battlestate) && $gloat) {
             $today['gloat'] = missions::text($gloat, $mission->skin, $mission->variant);
         }
+        // What the Embrollo stained, for the class to clean it (or for the teacher to take it as cleaned).
+        $today['stains'] = array_values(array_filter(array_map(function ($stain) use ($mission) {
+            $view = stains::view($stain, $mission);
+            return $view ? ['id' => $view['id'], 'place' => $view['place'], 'title' => $view['title']] : null;
+        }, stains::open($courseid))));
         // And the scene the battle lost opens, to play it with the class.
         $lost = (string) ($mission->data['battle']['lost']['scene'] ?? '');
         if (!empty($region->battlestate) && isset($scenes[$lost])) {

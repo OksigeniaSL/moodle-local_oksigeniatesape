@@ -86,6 +86,7 @@ class restore_local_oksigeniatesape_plugin extends restore_local_plugin {
             'quiet' => (int) ($data->quiet ?? 0),
             'devices' => (int) ($data->devices ?? 1),
             'devicemusic' => max(0, min(2, (int) ($data->devicemusic ?? 1))),
+            'mischief' => in_array($data->mischief ?? '', \local_oksigeniatesape\local\stains::MODES, true) ? $data->mischief : 'calm',
             'look' => in_array($data->look ?? '', \local_oksigeniatesape\local\themes::LOOKS, true) ? $data->look : '',
             'timemodified' => $now,
         ];

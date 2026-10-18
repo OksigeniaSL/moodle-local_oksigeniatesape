@@ -1,0 +1,222 @@
+<?php
+// This file is part of Moodle - https://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+
+namespace local_oksigeniatesape\local;
+
+/**
+ * What the Embrollo does every day: it stains the place of today with a sheet of its mistakes, from the hunt for
+ * mistakes of that place. Decided on the first visit of the day, from Monday to Friday, without a scheduled task.
+ * Whoever cleans it (touches the wrong words) gets a gem and its complaint, and it is clean for the whole class; the
+ * teacher can take it as cleaned by the class with a touch. Calm (the default) leaves one stain at most, which never
+ * grows; naughty leaves another one every day it is not cleaned, up to three. It never takes anything from anybody.
+ *
+ * @package    local_oksigeniatesape
+ * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+final class stains {
+    /** @var string Prefix of the tables of the plugin. */
+    private const T = 'local_oksigeniatesape_';
+
+    /** @var string[] How much the Embrollo does in the valley, a setting of the course. */
+    public const MODES = ['off', 'calm', 'naughty'];
+
+    /** @var int Stains at the same time, at most, when it is naughty. */
+    public const MAX = 3;
+
+    /** @var int Gems for cleaning a stain. */
+    public const GEMS = 1;
+
+    /**
+     * The stains of a class not cleaned yet, after deciding the one of today if it was not decided.
+     *
+     * @param int $courseid
+     * @param int|null $now
+     * @return \stdClass[] Oldest first.
+     */
+    public static function open(int $courseid, ?int $now = null): array {
+        global $DB;
+        $now = $now ?? time();
+        $region = regions::get($courseid);
+        $mode = in_array($region->mischief ?? 'calm', self::MODES, true) ? $region->mischief : 'calm';
+        $mission = missions::get($courseid);
+        if (!$region || !$region->enabled || $mode === 'off' || !$mission) {
+            return [];
+        }
+        $open = self::unclean($courseid);
+        $date = (new \DateTimeImmutable('@' . $now))->setTimezone(engine::timezone($courseid));
+        $day = (int) $date->format('Ymd');
+        if ((int) $date->format('N') > 5 || $DB->record_exists(self::T . 'stain', ['courseid' => $courseid, 'day' => $day])) {
+            return $open;
+        }
+        // Today's: a new stain if there is room for it; if not, the day is noted as decided all the same.
+        $chapter = pacts::chapter($mission);
+        $room = $mode === 'naughty' ? count($open) < self::MAX : !$open;
+        $sheet = $chapter && $room ? self::next_sheet($mission, (string) $chapter->code, $courseid) : null;
+        $record = (object) ['courseid' => $courseid, 'day' => $day, 'chapter' => $sheet ? (string) $chapter->code : '',
+            'game' => $sheet['game'] ?? '', 'sheet' => $sheet['sheet'] ?? '', 'cleanedat' => $sheet ? 0 : $now, 'erased' => 0,
+            'timecreated' => $now];
+        try {
+            $record->id = $DB->insert_record(self::T . 'stain', $record);
+        } catch (\dml_write_exception $e) {
+            // Another visit decided it at the same time.
+            return self::unclean($courseid);
+        }
+        if ($sheet) {
+            $open[] = $record;
+        }
+        return $open;
+    }
+
+    /**
+     * The stains of a class not cleaned yet, oldest first.
+     *
+     * @param int $courseid
+     * @return \stdClass[]
+     */
+    private static function unclean(int $courseid): array {
+        global $DB;
+        $where = "courseid = ? AND cleanedat = 0 AND chapter <> ''";
+        return array_values($DB->get_records_select(self::T . 'stain', $where, [$courseid], 'id'));
+    }
+
+    /**
+     * The sheet the Embrollo stains a place with: the next one of the hunt for mistakes of that place, in turn.
+     *
+     * @param \stdClass $mission
+     * @param string $chapter
+     * @param int $courseid
+     * @return array|null game, sheet; null if the place has no hunt for mistakes.
+     */
+    private static function next_sheet(\stdClass $mission, string $chapter, int $courseid): ?array {
+        global $DB;
+        foreach ($mission->data['chapters'] ?? [] as $info) {
+            if (($info['code'] ?? '') !== $chapter) {
+                continue;
+            }
+            foreach ($info['games'] ?? [] as $game) {
+                $sheets = $mission->data['games'][$game]['sheets'] ?? [];
+                if (($mission->data['games'][$game]['type'] ?? '') === 'errors' && $sheets) {
+                    $done = $DB->count_records(self::T . 'stain', ['courseid' => $courseid, 'game' => $game]);
+                    return ['game' => (string) $game, 'sheet' => (string) $sheets[$done % count($sheets)]['id']];
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * A stain as the students see it: the place, the title of the sheet and its words, without what is right.
+     *
+     * @param \stdClass $stain
+     * @param \stdClass $mission
+     * @return array|null id, chapter, place, title, parts (text, mark, wrong); null if its sheet is not there any more.
+     */
+    public static function view(\stdClass $stain, \stdClass $mission): ?array {
+        $sheet = self::sheet($stain, $mission);
+        if (!$sheet) {
+            return null;
+        }
+        $place = '';
+        foreach ($mission->data['chapters'] ?? [] as $info) {
+            if (($info['code'] ?? '') === $stain->chapter) {
+                $place = missions::text($info['name'] ?? '', $mission->skin);
+            }
+        }
+        $parts = minigames::parts(missions::text($sheet['text'] ?? '', $mission->skin, $mission->variant));
+        return ['id' => (int) $stain->id, 'chapter' => (string) $stain->chapter, 'place' => $place,
+            'title' => missions::text($sheet['title'] ?? '', $mission->skin, $mission->variant),
+            'parts' => array_map(fn($p) => ['text' => $p['text'], 'mark' => $p['mark'], 'wrong' => $p['wrong']], $parts)];
+    }
+
+    /**
+     * The sheet of a stain, from the hunt for mistakes of the mission.
+     *
+     * @param \stdClass $stain
+     * @param \stdClass $mission
+     * @return array|null
+     */
+    private static function sheet(\stdClass $stain, \stdClass $mission): ?array {
+        foreach ($mission->data['games'][$stain->game]['sheets'] ?? [] as $sheet) {
+            if ((string) ($sheet['id'] ?? '') === (string) $stain->sheet) {
+                return $sheet;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * A student cleans a stain: every mistake touched and at most one word that was right. Clean, it is clean for the
+     * whole class, and who cleaned it gets a gem and the complaint of the Embrollo.
+     *
+     * @param int $courseid
+     * @param int $stainid
+     * @param \stdClass $member
+     * @param array $payload marks (the mistakes touched), misses (words right touched).
+     * @param int|null $now
+     * @return array clean, gems, complaint, solution (mark, right, why) once clean.
+     */
+    public static function clean(int $courseid, int $stainid, \stdClass $member, array $payload, ?int $now = null): array {
+        global $DB;
+        $now = $now ?? time();
+        $mission = missions::get($courseid);
+        $stain = $DB->get_record(self::T . 'stain', ['id' => $stainid, 'courseid' => $courseid]);
+        $sheet = $stain && $mission ? self::sheet($stain, $mission) : null;
+        if (!$sheet || (int) $stain->cleanedat) {
+            throw new \moodle_exception('nostain', 'local_oksigeniatesape');
+        }
+        $parts = minigames::parts(missions::text($sheet['text'] ?? '', $mission->skin, $mission->variant));
+        $marks = array_values(array_filter($parts, fn($p) => $p['mark'] >= 0));
+        $lane = ['engine' => 'errors', 'solution' => array_map(fn($p) => ['mark' => $p['mark'], 'right' => $p['right'],
+            'why' => $p['why']], $marks)];
+        if (!live::lane_right($lane, $payload)) {
+            return ['clean' => false, 'gems' => 0, 'complaint' => '', 'solution' => []];
+        }
+        // One cleans it: two at the same time do not both get the gem.
+        $lock = \core\lock\lock_config::get_lock_factory('local_oksigeniatesape')->get_lock('stain-' . $stainid, 5);
+        if (!$lock) {
+            throw new \moodle_exception('nostain', 'local_oksigeniatesape');
+        }
+        try {
+            if ((int) $DB->get_field(self::T . 'stain', 'cleanedat', ['id' => $stainid])) {
+                throw new \moodle_exception('nostain', 'local_oksigeniatesape');
+            }
+            $DB->set_field(self::T . 'stain', 'cleanedat', $now, ['id' => $stainid]);
+        } finally {
+            $lock->release();
+        }
+        $entry = engine::gems($member, self::GEMS, 'stain', 0, 0, $stainid, $now);
+        $complaints = (array) ($mission->data['stains']['complaints'] ?? []);
+        $complaint = $complaints ? missions::text($complaints[$stainid % count($complaints)], $mission->skin, $mission->variant) :
+            get_string('app_stain_complaint', 'local_oksigeniatesape');
+        return ['clean' => true, 'gems' => $entry ? (int) $entry->amount : 0, 'complaint' => $complaint,
+            'solution' => $lane['solution']];
+    }
+
+    /**
+     * The teacher takes a stain as cleaned by the class (aloud, on the class screen) or rubs it out: nobody gets a gem.
+     *
+     * @param int $courseid
+     * @param int $stainid
+     * @param int|null $now
+     */
+    public static function erase(int $courseid, int $stainid, ?int $now = null): void {
+        global $DB;
+        $where = 'id = ? AND courseid = ? AND cleanedat = 0';
+        $DB->set_field_select(self::T . 'stain', 'erased', 1, $where, [$stainid, $courseid]);
+        $DB->set_field_select(self::T . 'stain', 'cleanedat', $now ?? time(), $where, [$stainid, $courseid]);
+    }
+}
