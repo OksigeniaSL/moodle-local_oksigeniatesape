@@ -48,6 +48,11 @@
     }
     if (!w.character) {
       state.draft = {role: '', nameform: 'm', lineage: '', look: null};
+      // The first time, the prologue of the mission: what happened in the valley, before choosing who to be.
+      if (w.opening && w.opening.beats.length) {
+        opening(0);
+        return;
+      }
       go('role');
       return;
     }
@@ -57,6 +62,36 @@
   }
 
   /* ---------- The first time: a story that ends with the character ---------- */
+
+  /**
+   * A vignette of the prologue: its picture (of the pack, or drawn until it arrives), who speaks and what is told; the
+   * first one sees a lantern go out. «Go on» leads to the next one and, after the last, to the question of the role.
+   *
+   * @param {number} i
+   */
+  function opening(i) {
+    var o = state.world.opening;
+    var b = o.beats[i];
+    if (!b) {
+      go('role');
+      return;
+    }
+    var art = T.artUrl(['scene.' + b.image + '.' + o.skin, 'scene.' + b.image, i === 0 ? 'scene.prologue' : '']);
+    var face = b.speaker ? T.artUrl(['speaker.' + b.speaker]) : null;
+    app.innerHTML = '<div class="story opening' + (i === 0 ? ' lantern-out' : '') + '">' + (art ? '<div class="vignette art" ' +
+      'aria-hidden="true"><img src="' + esc(art) + '" alt=""></div>' : T.vignette(i === 0 ? 'region' : 'mission')) +
+      (i === 0 ? '<span class="opening-lantern" aria-hidden="true">' + T.icon('lantern') + '</span>' : '') +
+      (b.speakername ? '<p class="opening-who">' + (face ? '<img src="' + esc(face) + '" alt="">' : '') + '<b>' +
+      esc(b.speakername) + '</b></p>' : '') + '<p class="lead">' + esc(b.text) + '</p><div class="actions sticky-actions">' +
+      '<button class="btn btn-main" data-goon>' + esc(t(i + 1 < o.beats.length ? 'app_next' : 'app_opening_go')) +
+      '</button></div></div>';
+    var on = app.querySelector('[data-goon]');
+    on.focus();
+    on.onclick = function() {
+      opening(i + 1);
+    };
+    window.scrollTo(0, 0);
+  }
 
   function steps(current) {
     var list = ['role'];
@@ -103,12 +138,14 @@
         var on = state.draft.role === role && (!people || state.draft.nameform === form);
         return '<button class="choice" type="button" data-role="' + role + '" data-nameform="' + form + '" aria-pressed="' +
           on + '">' + T.avatar({role: role, nameform: form, look: T.defaultLook(role), stage: 1}) + '<strong>' +
-          esc(T.roleName(fam, role, form)) + '</strong><small data-roleline>' + (on ? esc(t('roledesc_' + role)) : '') +
+          esc(T.roleName(fam, role, form)) + '</strong>' + (state.world.opening ? '<em class="role-does">' +
+          esc(t('app_role_does_' + role)) + '</em>' : '') + '<small data-roleline>' + (on ? esc(t('roledesc_' + role)) : '') +
           '</small></button>';
       }).join('');
     }).join('');
-    // What each role does, in one line, only on the card touched.
-    app.innerHTML = '<div class="story">' + s.bar + '<h2>' + esc(t('app_who')) + '</h2><div class="choices">' + cards +
+    // What each role does, in one line, only on the card touched. In the prologue, the question of the druid.
+    var ask = state.world.opening && state.world.opening.ask;
+    app.innerHTML = '<div class="story">' + s.bar + '<h2>' + esc(ask || t('app_who')) + '</h2><div class="choices">' + cards +
       '</div><div class="actions sticky-actions">' +
       '<button class="btn btn-main" data-next disabled>' + esc(t('app_next')) + '</button></div></div>';
     var next = app.querySelector('[data-next]');
@@ -227,7 +264,9 @@
         return '<button class="choice" type="button" data-lineage="' + l + '" aria-pressed="' + (d.lineage === l) + '">' +
           draftAvatar({lineage: l}) + '<strong>' + esc(T.lineageName(l, d.nameform)) + '</strong></button>';
       }).join('') + '</div><p class="help">' + esc(t('app_lineage_help')) + '</p>' : '';
-      app.innerHTML = '<div class="story">' + s.bar + '<h2>' + esc(t('app_look')) + '</h2>' + cards +
+      // In the prologue, the mirror of the river.
+      var mirror = state.world.opening && state.world.opening.mirror;
+      app.innerHTML = '<div class="story">' + s.bar + '<h2>' + esc(mirror || t('app_look')) + '</h2>' + cards +
         (lookChanges(d, 1) ? builder(d, 1) : '') + nav(s) + '</div>';
       app.querySelectorAll('[data-lineage]').forEach(function(b) {
         b.onclick = function() {
@@ -485,10 +524,19 @@
       lineage: T.hasLineages(state.world.family) ? d.lineage : '',
       appearance: JSON.stringify(d.look)
     }).then(function(world) {
+      var played = !!(state.world && state.world.opening);
       state.world = world;
       state.tab = 'world';
       remember();
       var m = world.mission;
+      // Who played the prologue does not need the card that tells it again.
+      if (played && m) {
+        try {
+          window.localStorage.setItem('tesape-mission-' + cfg.courseid + '-' + m.id + '-' + cfg.userid, '1');
+        } catch (e) {
+          // Without storage the card shows once; nothing else.
+        }
+      }
       var first = !world.welcome && m && m.chapters.length ? m.chapters[0].scenes.filter(function(sc) {
         return !sc.done;
       })[0] : null;

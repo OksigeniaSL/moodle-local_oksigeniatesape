@@ -841,11 +841,75 @@ body.tesape {
   background: rgba(255, 200, 87, .1);
 }
 
+/* The prologue: the vignettes before choosing who to be. */
+.story.opening .lead {
+  font-size: 1.15rem;
+}
+
+.opening-who {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 0 0 6px;
+}
+
+.opening-who img {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.story.opening {
+  position: relative;
+}
+
+.opening-lantern {
+  position: absolute;
+  top: 18px;
+  right: 22px;
+  width: 40px;
+  height: 40px;
+  filter: drop-shadow(0 0 12px var(--lantern));
+  animation: tesape-lantern-out 2.4s ease-in 1s forwards;
+}
+
+@keyframes tesape-lantern-out {
+  40% {
+    opacity: .9;
+  }
+  55% {
+    opacity: .3;
+  }
+  70% {
+    opacity: .8;
+  }
+  100% {
+    opacity: 0;
+    filter: none;
+  }
+}
+
+body.still .opening-lantern {
+  animation: none;
+  opacity: 0;
+}
+
+.role-does {
+  display: block;
+  font-style: normal;
+  color: var(--lantern);
+  font-size: 14px;
+}
+
 /* A path: someone goes along a picture, place by place. */
 .path-map {
   position: relative;
-  height: min(420px, 62vh);
-  margin: 8px 0 12px;
+  /* The proportion of its picture, set when it loads: the places stay where the picture has them. */
+  aspect-ratio: 2 / 3;
+  height: min(560px, 66vh);
+  max-width: 100%;
+  margin: 8px auto 12px;
   border-radius: 16px;
   overflow: hidden;
 }
@@ -857,10 +921,18 @@ body.tesape {
   margin: 0;
 }
 
-.path-map .scene-pic img,
-.path-map .scene-pic svg {
+.path-map .vignette.scene-pic {
+  width: 100%;
+  margin: 0;
+  box-shadow: none;
+}
+
+.path-map .vignette.scene-pic img,
+.path-map .vignette.scene-pic svg {
   width: 100%;
   height: 100%;
+  max-height: none;
+  aspect-ratio: auto;
   object-fit: cover;
 }
 

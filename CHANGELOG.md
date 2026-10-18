@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.113.0 (2026-10-18)
+
+- **A playable prologue.** Who comes in for the first time sees the vignettes of the mission before choosing who to
+  be: a lantern of the valley goes out, the Great Book appears stained, the druid puts a seed in their hand. The role is
+  chosen as the answer to her question («When something gets tangled, what do you do?»: «I stand in front», «I mend
+  what is broken», «I look closely», «I follow the trail»), and the look, in the mirror of the river. A mission without
+  a prologue keeps the screens as they were.
+- A path takes the proportion of its picture, so that each place stays on what it marks.
+- Mission «Los seres vivos» v48: the prologue; the whole plant for the drop's journey and the plants of the basement in
+  their states, with the new art (mission art layer, version 2).
+
 ## 0.112.0 (2026-10-18)
 
 - **Two new verbs for scenes.** `path`: someone (a drop, an animal) waits on a picture and the student touches the

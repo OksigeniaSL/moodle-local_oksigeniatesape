@@ -70,6 +70,11 @@ final class view {
             'hascoat' => false,
         ];
         if (!$char) {
+            // Who comes in for the first time: the prologue of the mission, before choosing a role.
+            $opening = $enabled ? self::opening($courseid) : null;
+            if ($opening) {
+                $world['opening'] = $opening;
+            }
             return $world;
         }
         $member = $enabled ? engine::member($char, $courseid) : null;
@@ -947,6 +952,36 @@ final class view {
             'energy' => $energy, 'energymax' => $playing * engine::ENERGY_MAX, 'carer' => $carers,
             'banner' => market::team_owns($courseid, (int) $group->id),
             'state' => teams::states($courseid)[(int) $group->id] ?? ''];
+    }
+
+    /**
+     * The playable prologue of the mission of a course: its vignettes (picture, who speaks and what is told), the
+     * question that makes the student choose their role and the mirror where they choose their look, in the skin of
+     * the course.
+     *
+     * @param int $courseid
+     * @return array|null
+     */
+    public static function opening(int $courseid): ?array {
+        $mission = missions::get($courseid);
+        $data = $mission ? ($mission->data['opening'] ?? null) : null;
+        if (!$data || empty($data['beats'])) {
+            return null;
+        }
+        $text = fn($t) => missions::text($t ?? '', $mission->skin, $mission->variant);
+        $speakers = $mission->data['speakers'] ?? [];
+        return [
+            'beats' => array_values(array_map(fn($b) => [
+                'image' => (string) ($b['image'] ?? ''),
+                'speaker' => (string) ($b['speaker'] ?? ''),
+                'speakername' => isset($b['speaker'], $speakers[$b['speaker']]) ? $text($speakers[$b['speaker']]) : '',
+                'text' => $text($b['text'] ?? ''),
+            ], $data['beats'])),
+            'ask' => $text($data['ask'] ?? ''),
+            'mirror' => $text($data['mirror'] ?? ''),
+            'skin' => (string) $mission->skin,
+            'place' => (string) (($mission->data['chapters'][0]['code'] ?? '')),
+        ];
     }
 
     /**

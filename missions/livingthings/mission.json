@@ -1,12 +1,24 @@
 {
  "code": "livingthings",
- "version": 46,
+ "version": 48,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 48,
+   "kind": "improvement",
+   "date": "2026-10-18",
+   "text": "El prólogo jugable: tres viñetas antes de elegir papel (la linterna que se apaga, el Gran Libro revuelto, la semilla en la mano), la pregunta de la druida para el papel y el espejo del río para el aspecto"
+  },
+  {
+   "version": 47,
+   "kind": "improvement",
+   "date": "2026-10-18",
+   "text": "La planta entera para guiar a la gota y las plantas del sótano en sus estados, con el arte nuevo"
+  },
   {
    "version": 46,
    "kind": "improvement",
@@ -247,6 +259,40 @@
  "prologue": {
   "valley": "Una noche, en el Valle de Tesapé, se apagó la primera linterna. Luego otra. En cada sendero brillaba una, y todas se alimentaban del Gran Libro de la Vida, donde estaba anotado cada ser vivo del valle. Por la mañana, el libro apareció revuelto y, junto a él, unas huellas que no eran de ningún animal conocido. Ha sido el Embrollo: no rompe nada, lo confunde todo. Cada página en su sitio, una linterna encendida; cada página enredada, un rincón del valle a oscuras. Los sabios del valle llevan semanas intentándolo y no pueden. Por eso han llamado a una expedición nueva: recorrer el valle, observar a cada ser vivo, seguir esas huellas y volver a encender las linternas.",
   "azara": "En 1781 llegó al Río de la Plata Félix de Azara, un ingeniero militar aragonés. Venía a medir fronteras, pero pasó veinte años observando y describiendo la fauna de estas tierras. Imaginemos que aparece un cuaderno de campo de su expedición, con páginas perdidas, notas mezcladas y manchas de tinta corrida que nadie sabe explicar. La clase es la expedición que lo completará."
+ },
+ "opening": {
+  "beats": [
+   {
+    "image": "prologue",
+    "text": {
+     "valley": "Es de noche en el Valle de Tesapé. En cada sendero brilla una linterna. De pronto, una tiembla… y se apaga.",
+     "azara": "Año 1781. Un barco llega al Río de la Plata. Entre los baúles viaja un cuaderno de campo con las tapas mojadas."
+    }
+   },
+   {
+    "image": "libro",
+    "text": {
+     "valley": "Por la mañana, el Gran Libro de la Vida aparece revuelto y manchado de tinta. Junto a él, en el barro, hay unas huellas que no son de ningún animal conocido.",
+     "azara": "Al abrir el cuaderno, las páginas están mezcladas y la tinta, corrida. Nadie sabe explicar esas manchas."
+    }
+   },
+   {
+    "image": "semilla",
+    "speaker": "druida-mayor",
+    "text": {
+     "valley": "«Toma.» La druida mayor te pone en la mano una semilla tibia que tiembla. «Guárdala bien. La expedición sale al amanecer, y te necesita.»",
+     "azara": "«Toma.» El naturalista te pone en la mano una semilla que encontró entre las hojas del cuaderno. «Guárdala bien. Salimos mañana, y te necesitamos.»"
+    }
+   }
+  ],
+  "ask": {
+   "valley": "«Antes de salir, dime una cosa: cuando algo se enreda, ¿tú qué haces?»",
+   "azara": "«Antes de salir, dime una cosa: cuando algo se tuerce en una expedición, ¿tú qué haces?»"
+  },
+  "mirror": {
+   "valley": "En el agua del río te ves por primera vez. ¿Cómo eres?",
+   "azara": "En el agua del río te ves la cara. ¿Cómo eres?"
+  }
  },
  "skins": {
   "valley": "El valle",

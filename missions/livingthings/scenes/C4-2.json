@@ -89,6 +89,7 @@
      },
      "correct": true,
      "points": 8,
+     "image": "sotano-verdes",
      "text": "Pasan tres días. Las hojas se han girado hacia la ventana y están verdes, y los tallos, firmes.",
      "feedback": "Las plantas fabrican su alimento en las hojas, con la luz del sol, el agua que suben por la raíz y el dióxido de carbono del aire, que entra por unos poros diminutos."
     },
@@ -104,6 +105,7 @@
        "flag": "leche-a-las-plantas"
       }
      ],
+     "image": "sotano-moho",
      "text": "Pasan tres días. La maceta huele mal, ha salido moho sobre la tierra y las plantas siguen pálidas.",
      "feedback": "Las plantas no comen como los animales: fabrican su alimento con la luz, el agua y el aire. La leche se estropea en la tierra y solo alimenta al moho, que es un hongo."
     },
@@ -114,6 +116,7 @@
        "azucar"
       ]
      },
+     "image": "sotano-moho",
      "text": "Pasan tres días. Sobre la tierra ha salido moho y las plantas siguen pálidas.",
      "feedback": "Las plantas no toman azúcar de la tierra: lo fabrican ellas mismas en las hojas, con la luz. El azúcar de la maceta solo alimenta al moho, que es un hongo."
     },
@@ -124,6 +127,7 @@
        "oscuridad"
       ]
      },
+     "image": "sotano-palidas",
      "text": "Pasan tres días. Las plantas están aún más largas y pálidas, estiradas hacia la rendija.",
      "feedback": "A oscuras, la planta no puede fabricar su alimento y gasta sus reservas en estirarse, buscando una luz que no encuentra. Por eso crece larga, pálida y débil."
     },

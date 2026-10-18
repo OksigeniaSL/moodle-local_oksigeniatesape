@@ -33,7 +33,7 @@
    "type": "path",
    "prompt": "¿Por dónde va la gota? Toca el sitio al que pasa.",
    "traveler": "la gota",
-   "image": "gota-raiz",
+   "image": "gota-planta",
    "from": {
     "x": 50,
     "y": 99

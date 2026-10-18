@@ -1906,6 +1906,20 @@
           esc(tx(n.traveler || '•')) + '</span></div><div data-out>' + (said || '') + '</div>');
         hintArea(n, body);
         roleBar(n, body);
+        // The map takes the proportion of its picture, so that each place stays on what it marks.
+        var img = body.querySelector('.path-map img');
+        var fit = function() {
+          if (img.naturalWidth) {
+            body.querySelector('.path-map').style.aspectRatio = img.naturalWidth + ' / ' + img.naturalHeight;
+          }
+        };
+        if (img) {
+          if (img.complete) {
+            fit();
+          } else {
+            img.onload = fit;
+          }
+        }
         body.querySelectorAll('.path-stop:not([disabled])').forEach(function(b) {
           b.onclick = function() {
             var s = n.steps.filter(function(x) {

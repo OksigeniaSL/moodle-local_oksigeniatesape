@@ -252,6 +252,18 @@ final class get_world extends external_api {
                 'status' => new external_value(PARAM_ALPHA, 'new or read'),
                 'time' => new external_value(PARAM_INT, 'When'),
             ])),
+            'opening' => new external_single_structure([
+                'beats' => new external_multiple_structure(new external_single_structure([
+                    'image' => new external_value(PARAM_ALPHANUMEXT, 'Key of its picture'),
+                    'speaker' => new external_value(PARAM_ALPHANUMEXT, 'Who speaks (empty: nobody)'),
+                    'speakername' => new external_value(PARAM_TEXT, 'Their name'),
+                    'text' => new external_value(PARAM_TEXT, 'What is told'),
+                ])),
+                'ask' => new external_value(PARAM_TEXT, 'The question that makes them choose their role'),
+                'mirror' => new external_value(PARAM_TEXT, 'Where they choose their look'),
+                'skin' => new external_value(PARAM_ALPHANUMEXT, 'Skin of the mission'),
+                'place' => new external_value(PARAM_ALPHANUMEXT, 'The first place, for the pictures'),
+            ], 'The prologue of the mission, for who has no character yet', VALUE_OPTIONAL),
             'hascoat' => new external_value(PARAM_BOOL, 'The creature can be dressed'),
         ]);
     }

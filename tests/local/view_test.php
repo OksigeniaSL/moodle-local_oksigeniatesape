@@ -151,4 +151,22 @@ final class view_test extends \advanced_testcase {
         $marks = scenes::class_flags($course->id, (int) $mission->id);
         $this->assertEqualsCanonicalizing(['semilla-en-el-nido', 'pregunta-buena'], $marks);
     }
+
+    public function test_who_has_no_character_gets_the_prologue_of_the_mission(): void {
+        $this->resetAfterTest();
+        $gen = $this->getDataGenerator();
+        $course = $gen->create_course();
+        regions::save($course->id, ['enabled' => 1]);
+        missions::install($course->id, 'livingthings', 'valley', 'es');
+        $user = $gen->create_and_enrol($course, 'student');
+        $world = view::world($course->id, $user->id);
+        $this->assertCount(3, $world['opening']['beats']);
+        $this->assertSame('druida-mayor', $world['opening']['beats'][2]['speaker']);
+        $this->assertSame('La druida mayor', $world['opening']['beats'][2]['speakername']);
+        $this->assertStringContainsString('¿tú qué haces?', $world['opening']['ask']);
+        $this->assertNotSame('', $world['opening']['mirror']);
+        // Once they have their character, no more.
+        characters::create($user->id, 'sage', 'f');
+        $this->assertArrayNotHasKey('opening', view::world($course->id, $user->id));
+    }
 }
