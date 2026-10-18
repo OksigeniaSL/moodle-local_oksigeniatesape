@@ -33,6 +33,32 @@
     var parts = f.path.split('/');
     var list = parts[0] === 'nodes' ? parts[2] : '';
     var n = parseInt(parts[parts.length - 1], 10) + 1;
+    // A text of the sheet of a session: of the entry, or of a session of a place.
+    var at = parts[0] === 'entry' ? 1 : parts[2] === 'sessions' ? 4 : -1;
+    if (at > 0 && parts.length > at && (parts.length > at + 1 || f.kind !== 'do' && f.kind !== 'materials')) {
+      var session = parts[0] === 'entry' ? t('teach_ws_k_entry') : t('teach_ws_k_sessionname', parseInt(parts[3], 10) + 1);
+      var item = parseInt(parts[at + 1], 10) + 1;
+      switch (f.kind) {
+        case 'title':
+          return t('teach_ws_k_sheet_title', session);
+        case 'spare':
+          return t('teach_ws_k_sheet_spare', session);
+        case 'before':
+          return t('teach_ws_k_sheet_before', session);
+        case 'do':
+          return t('teach_ws_k_sheet_step', {s: session, n: item});
+        case 'say':
+          return t('teach_ws_k_sheet_say', {s: session, n: item});
+        case 'ask':
+          return t('teach_ws_k_sheet_ask', {s: session, n: item});
+        case 'expect':
+          return t('teach_ws_k_sheet_expect', {s: session, n: item});
+        case 'mistake':
+          return t('teach_ws_k_sheet_mistake', {s: session, n: item});
+        case 'redirect':
+          return t('teach_ws_k_sheet_redirect', {s: session, n: item});
+      }
+    }
     switch (f.kind) {
       case 'title':
         return t('teach_ws_k_title');

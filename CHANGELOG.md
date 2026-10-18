@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.94.0 (2026-10-18)
+
+- **The Workshop edits the sheets of the sessions**: the title, what to prepare, each step and what is read aloud, the
+  key questions with what is expected, the mistakes to watch with how to turn them round, and what to do if time is
+  left or short; the entry session with the first place. The guide of the session reads the changes of the course.
+
 ## 0.93.0 (2026-10-18)
 
 - **The lantern lit with a rite.** During a session, when half of the class has the lantern of a place, it waits ready

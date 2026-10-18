@@ -119,6 +119,21 @@ final class edits_test extends \advanced_testcase {
         edits::save($course->id, 'C1-2', edits::SNIFF, 'off');
     }
 
+    public function test_the_sheets_of_the_sessions_can_be_changed_and_the_guide_reads_them(): void {
+        $this->resetAfterTest();
+        $course = $this->make_course();
+        $paths = array_column(array_merge(...array_column(edits::view($course->id)['chapters'], 'fields')), 'path');
+        $this->assertContains('chapters/claro/sessions/1/steps/1/do', $paths);
+        $this->assertContains('chapters/claro/sessions/1/questions/0/expect', $paths);
+        // The entry session goes with the first place.
+        $this->assertContains('entry/watch/1/redirect', $paths);
+        $this->assertTrue(edits::save($course->id, edits::MISSION, 'chapters/claro/sessions/1/steps/1/do', 'El nido, con calma.'));
+        $this->assertTrue(edits::save($course->id, edits::MISSION, 'entry/questions/0/ask', '¿Qué hace cada papel?'));
+        $mission = missions::get($course->id);
+        $this->assertSame('El nido, con calma.', sessions::view($course->id, $mission, 'claro', 2)['steps'][1]['do']);
+        $this->assertSame('¿Qué hace cada papel?', sessions::view($course->id, $mission, sessions::ENTRY, 1)['questions'][0]['ask']);
+    }
+
     public function test_only_texts_can_be_changed(): void {
         $this->resetAfterTest();
         $course = $this->make_course();

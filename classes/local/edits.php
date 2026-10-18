@@ -47,7 +47,7 @@ final class edits {
 
     /** @var string[] Fields with one text, in a scene, a node or an element of a list. */
     private const TEXTS = ['title', 'whatif', 'text', 'prompt', 'label', 'say', 'feedback', 'intro', 'offscreen', 'do', 'materials',
-        'name', 'claim', 'laugh', 'weakness', 'why'];
+        'name', 'claim', 'laugh', 'weakness', 'why', 'ask', 'expect', 'mistake', 'redirect', 'spare'];
 
     /** @var string[] Lists of elements with an id, in a node. */
     private const ELEMENTS = ['options', 'items', 'bins', 'steps'];
@@ -136,12 +136,16 @@ final class edits {
                 self::field($texts, $base, $chapter, ['intro', 'offscreen']);
                 foreach (array_values($chapter['sessions'] ?? []) as $i => $session) {
                     self::field($texts, $base . '/sessions/' . $i, $session, ['do', 'materials']);
+                    self::sheet($texts, $base . '/sessions/' . $i, $session);
                 }
                 foreach (array_values($chapter['pacts'] ?? []) as $i => $pact) {
                     if (self::is_text($pact)) {
                         $texts[$base . '/pacts/' . $i] = $pact;
                     }
                 }
+            }
+            if (!empty($definition['entry'])) {
+                self::sheet($texts, 'entry', $definition['entry']);
             }
             // The knots of the battle: the minion, what the Embrollo claims and its laugh, the idea that undoes it and why.
             foreach ($definition['battle']['knots'] ?? [] as $knot) {
@@ -187,6 +191,30 @@ final class edits {
             }
         }
         return $texts;
+    }
+
+    /**
+     * The texts of the sheet of a session: its title, what to prepare, its steps (what is done and read aloud), its key
+     * questions with their answers, the mistakes to watch with how to turn them round, and what to do if time is left.
+     *
+     * @param array $texts
+     * @param string $base
+     * @param array $sheet
+     */
+    private static function sheet(array &$texts, string $base, array $sheet): void {
+        self::field($texts, $base, $sheet, ['title', 'spare']);
+        foreach (array_values((array) ($sheet['before'] ?? [])) as $i => $line) {
+            if (self::is_text($line)) {
+                $texts[$base . '/before/' . $i] = $line;
+            }
+        }
+        foreach (['steps' => ['do', 'say'], 'questions' => ['ask', 'expect'], 'watch' => ['mistake', 'redirect']] as $list => $names) {
+            foreach (array_values((array) ($sheet[$list] ?? [])) as $i => $element) {
+                if (is_array($element)) {
+                    self::field($texts, $base . '/' . $list . '/' . $i, $element, $names);
+                }
+            }
+        }
     }
 
     /**
@@ -448,7 +476,9 @@ final class edits {
             // The knots of the battle of this place go with its texts.
             $here = array_filter($original['battle']['knots'] ?? [], fn($k) => (int) ($k['chapter'] ?? 0) === $i + 1);
             $knots = array_map(fn($k) => 'battle/knots/' . ($k['code'] ?? '') . '/', $here);
-            $mine = fn($f) => strpos($f['path'], $prefix) === 0 || array_filter($knots, fn($k) => strpos($f['path'], $k) === 0);
+            // The entry session, before the first place, goes with the first place.
+            $mine = fn($f) => strpos($f['path'], $prefix) === 0 || array_filter($knots, fn($k) => strpos($f['path'], $k) === 0)
+                || ($i === 0 && strpos($f['path'], 'entry/') === 0);
             $chapters[] = [
                 'code' => (string) $chapter['code'],
                 'number' => $i + 1,
