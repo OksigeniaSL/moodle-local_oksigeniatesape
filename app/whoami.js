@@ -10,13 +10,8 @@
   'use strict';
 
   var T = window.Tesape;
-  var cfg = T.cfg;
   var t = T.t;
   var esc = T.esc;
-
-  function cap(text) {
-    return text ? text.charAt(0).toUpperCase() + text.slice(1) : text;
-  }
 
   /**
    * Plays Who am I?
@@ -24,38 +19,15 @@
    * @param {Object} opts code, world, onclose(world).
    */
   T.playWhoami = function(opts) {
-    var layer = document.createElement('div');
-    layer.className = 'scene-layer whoami-layer';
-    layer.setAttribute('role', 'dialog');
-    layer.setAttribute('aria-modal', 'true');
-    document.body.appendChild(layer);
-    document.body.classList.add('in-scene');
-    var world = opts.world;
+    var m = T.minigame(opts, 'whoami', function(g) {
+      game = g;
+      intro();
+    });
+    var layer = m.layer;
+    var show = m.show;
+    var sound = m.sound;
     var game = null;
     var run = null;
-
-    function close() {
-      if (window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-      }
-      layer.remove();
-      document.body.classList.remove('in-scene');
-      opts.onclose(world);
-    }
-
-    function show(html) {
-      layer.innerHTML = '<div class="scene whoami"><div class="scene-top"><span class="scene-title">' +
-        esc(game ? game.title : '') + '</span><button class="btn btn-soft scene-close" type="button" aria-label="' +
-        esc(t('app_close')) + '">' + T.icon('close') + '</button></div><div class="scene-body">' + html + '</div></div>';
-      layer.querySelector('.scene-close').onclick = close;
-      return layer.querySelector('.scene-body');
-    }
-
-    function sound(name) {
-      if (T.fx) {
-        T.fx.sound(name);
-      }
-    }
 
     /** Stars as a string of ★ and ☆. */
     function stars(won, of) {
@@ -109,7 +81,7 @@
         '<section class="card whoami-card">' + (reads ? '<button type="button" class="btn btn-soft read-card" ' +
         'data-readcard aria-label="' + esc(t('app_read_aloud')) + '">' + T.icon('speak') + '</button>' : '') + '<div class="whoami-head">' +
         '<span class="whoami-shadow' + (run.done === 'found' ? ' found' : '') + '" aria-hidden="true">' +
-        (run.done === 'found' ? '✓' : '?') + '</span><h2>' + esc(run.done ? cap(r.answer) : t('app_whoami_who')) + '</h2>' +
+        (run.done === 'found' ? '✓' : '?') + '</span><h2>' + esc(run.done ? T.cap(r.answer) : t('app_whoami_who')) + '</h2>' +
         '</div><ol class="whoami-clues">' + r.clues.slice(0, run.done ? r.clues.length : run.shown).map(function(c, i) {
           return '<li class="' + (i >= run.shown ? 'late' : '') + '">' + esc(c) + '</li>';
         }).join('') + '</ol></section><div class="whoami-say' + (run.say ? ' ' + run.say.kind : '') + '" aria-live="polite">' +
@@ -118,7 +90,7 @@
         html += '<div class="whoami-options">' + r.options.map(function(o) {
           var tried = run.tried.indexOf(o) >= 0;
           return '<button type="button" class="btn btn-soft' + (tried ? ' tried' : '') + '" data-guess="' + esc(o) + '"' +
-            (tried ? ' disabled' : '') + '>' + esc(cap(o)) + '</button>';
+            (tried ? ' disabled' : '') + '>' + esc(T.cap(o)) + '</button>';
         }).join('') + '</div><div class="actions">' + (left > 0 ? '<button class="btn btn-soft" data-clue>' +
           esc(t('app_whoami_clue', left)) + '</button>' : '') + '</div>';
       } else {
@@ -221,68 +193,18 @@
       }
       run.over = true;
       run.playid = run.playid || T.playId();
-      show('<p class="help">' + esc(t('app_saving')) + '</p>');
-      var events = JSON.stringify(run.events);
-      T.api('play_minigame', {courseid: cfg.courseid, game: game.code, playid: run.playid, events: events}).then(function(result) {
-        world = result.world;
-        ending(result);
-      }).catch(function(e) {
-        if ((e.network || e.retry) && T.keepPlay && T.keepPlay({kind: 'minigame', game: game.code, playid: run.playid, title: game.title || '',
-          events: events, at: Date.now()})) {
-          // No connection: what was played is kept on the device and goes by itself when the connection comes back.
-          show('<div class="conseq good"><span class="what">' + esc(t('app_offline_kept')) + '</span>' +
-            esc(t('app_offline_kept_help')) + '</div><div class="actions"><button class="btn btn-main" data-back>' +
-            esc(t('app_backtomap')) + '</button></div>').querySelector('[data-back]').onclick = close;
-          return;
-        }
-        // It could not be kept either: it can be sent again from here, without playing it again.
-        var body = show('<p>' + esc(e.message) + '</p><div class="actions"><button class="btn btn-main" data-again>' +
-          esc(t('app_retry')) + '</button><button class="btn btn-soft" data-back>' + esc(t('app_backtomap')) +
-          '</button></div>');
-        body.querySelector('[data-back]').onclick = close;
-        body.querySelector('[data-again]').onclick = function() {
-          run.over = false;
-          finish();
-        };
-      });
+      m.save(run.playid, run.events, ending);
     }
 
     function ending(result) {
-      var gifts = result.items.map(function(name) {
-        return '<li>' + T.icon('gems') + esc(t('app_gotitem', name)) + '</li>';
-      });
-      if (result.gems) {
-        gifts.push('<li>' + T.icon('gems') + esc('+' + result.gems + ' ' + t('app_gems')) + '</li>');
-      }
       // The shadows that got away, with all their clues: to read now, without hurry.
       var lost = run.lost.map(function(r) {
-        return '<li><b>' + esc(cap(r.answer)) + '</b>: ' + esc(r.clues.join(' ')) + '</li>';
+        return '<li><b>' + esc(T.cap(r.answer)) + '</b>: ' + esc(r.clues.join(' ')) + '</li>';
       }).join('');
-      sound(result.success ? 'win' : 'wrong');
-      var body = show('<div class="nest-end ' + (result.success ? 'won' : 'lost') + '"><span class="whoami-shadow big' +
-        (result.success ? ' found' : '') + '" aria-hidden="true">' + (result.success ? '✓' : '?') + '</span><h2>' +
-        esc(result.success ? t('app_whoami_won') : t('app_whoami_lost')) + '</h2><p class="lead">' +
-        esc(result.success ? game.win : game.lose) + '</p>' + (gifts.length ? '<ul class="gifts">' + gifts.join('') + '</ul>' :
-        '') + (lost ? '<div class="card whack-learn"><h3>' + esc(t('app_whack_learn')) + '</h3><ul>' + lost + '</ul></div>' :
-        '') + '<div class="actions">' + (result.success ? '' : '<button class="btn btn-main" data-again>' +
-        esc(t('app_tryagain')) + '</button>') + '<button class="btn ' + (result.success ? 'btn-main' : 'btn-soft') +
-        '" data-back>' + esc(t('app_backtomap')) + '</button></div></div>');
-      body.querySelector('[data-back]').onclick = close;
-      var again = body.querySelector('[data-again]');
-      if (again) {
-        again.onclick = intro;
-      }
-      if (result.success && T.fx && T.fx.confetti) {
-        T.fx.confetti();
-      }
+      m.ending(result, {won: t('app_whoami_won'), lost: t('app_whoami_lost'), learn: lost, again: intro,
+        art: '<span class="whoami-shadow big' + (result.success ? ' found' : '') + '" aria-hidden="true">' +
+          (result.success ? '✓' : '?') + '</span>'});
     }
 
-    show('<div class="loading-inline"><div class="lamp"></div>' + esc(t('app_loading')) + '</div>');
-    T.api('get_minigame', {courseid: cfg.courseid, game: opts.code}).then(function(g) {
-      game = g;
-      intro();
-    }).catch(function(e) {
-      show('<p>' + esc(e.message) + '</p>');
-    });
   };
 })();

@@ -20,50 +20,25 @@
   /** Animals on the screen at once. */
   var AT_ONCE = 3;
 
-  function shuffle(list) {
-    var a = list.slice();
-    for (var i = a.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var x = a[i];
-      a[i] = a[j];
-      a[j] = x;
-    }
-    return a;
-  }
-
   /**
    * Plays Defensa del nido.
    *
    * @param {Object} opts code, world, onclose(world).
    */
   T.playNest = function(opts) {
-    var layer = document.createElement('div');
-    layer.className = 'scene-layer nest-layer';
-    layer.setAttribute('role', 'dialog');
-    layer.setAttribute('aria-modal', 'true');
-    document.body.appendChild(layer);
-    document.body.classList.add('in-scene');
-    var world = opts.world;
+    var m = T.minigame(opts, 'nest', function(g) {
+      game = g;
+      intro();
+    });
+    var layer = m.layer;
+    var show = m.show;
+    m.onclose = function() {
+      stop();
+      document.removeEventListener('keydown', onKey);
+    };
     var game = null;
     var calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var run = null;
-
-    function close() {
-      stop();
-      document.removeEventListener('keydown', onKey);
-      layer.remove();
-      document.body.classList.remove('in-scene');
-      opts.onclose(world);
-    }
-
-    function show(html) {
-      layer.innerHTML = '<div class="scene nest"><div class="scene-top"><span class="scene-title">' +
-        esc(game ? game.title : '') + '</span><button class="btn btn-soft scene-close" type="button" aria-label="' +
-        esc(t('app_close')) + '">' + T.icon('close') + '</button></div><div class="scene-body">' + html + '</div></div>';
-      layer.querySelector('.scene-close').onclick = close;
-      layer.scrollTop = 0;
-      return layer.querySelector('.scene-body');
-    }
 
     function netLabel(id) {
       var n = game.nets.filter(function(x) {
@@ -80,7 +55,7 @@
     }
 
     function creature() {
-      var c = world.character || {};
+      var c = m.world.character || {};
       return c.creature ? T.creature(c.creature, c.creaturestage) : T.icon('lantern');
     }
 
@@ -104,7 +79,7 @@
 
     function start() {
       run = {
-        queue: shuffle(game.animals),
+        queue: T.shuffle(game.animals),
         live: [],
         events: [],
         caught: 0,
@@ -118,8 +93,7 @@
         lane: 0
       };
       var body = show('<div class="nest-hud"><span class="nest-shield" data-shield></span><span class="nest-count" ' +
-        'data-count></span>' + (calm ? '' : '<button class="btn btn-soft icon-btn game-pause" data-pause aria-pressed="false" aria-label="' +
-        esc(t('app_nest_pause')) + '" title="' + esc(t('app_nest_pause')) + '">' + T.pauseIcon(false) + '</button>') + '</div><div class="nest-arena" data-arena><div class="nest-home" aria-hidden="true">' + creature() +
+        'data-count></span>' + (calm ? '' : m.pauseButton()) + '</div><div class="nest-arena" data-arena><div class="nest-home" aria-hidden="true">' + creature() +
         '</div><div class="nest-say" data-say aria-live="polite"></div></div><div class="nest-nets" role="group" ' +
         'aria-label="' + esc(t('app_nest_nets')) + '">' + game.nets.map(function(n, i) {
           return '<button class="btn nest-net" type="button" data-net="' + esc(n.id) + '"><small>' + (i + 1) + '</small>' +
@@ -156,15 +130,7 @@
         return;
       }
       run.paused = !run.paused;
-      var b = layer.querySelector('[data-pause]');
-      if (b) {
-        // An icon, so that the counters fit on a phone; its name says what it does.
-        b.innerHTML = T.pauseIcon(run.paused);
-        b.setAttribute('aria-pressed', run.paused ? 'true' : 'false');
-        b.setAttribute('aria-label', run.paused ? t('app_nest_resume') : t('app_nest_pause'));
-        b.title = b.getAttribute('aria-label');
-      }
-      layer.querySelector('[data-arena]').classList.toggle('paused', run.paused);
+      m.setPaused(run.paused);
       if (!run.paused) {
         run.last = performance.now();
         run.frame = requestAnimationFrame(tick);
@@ -418,52 +384,13 @@
       run.playid = run.playid || T.playId();
       stop();
       document.removeEventListener('keydown', onKey);
-      show('<p class="help">' + esc(t('app_saving')) + '</p>');
-      T.api('play_minigame', {courseid: cfg.courseid, game: game.code, playid: run.playid, events: JSON.stringify(run.events)})
-        .then(function(result) {
-          world = result.world;
-          ending(result);
-        }).catch(function(e) {
-          var events = JSON.stringify(run.events);
-          if ((e.network || e.retry) && T.keepPlay && T.keepPlay({kind: 'minigame', game: game.code, playid: run.playid, title: game.title || '',
-            events: events, at: Date.now()})) {
-            // No connection: what was played is kept on the device and goes by itself when the connection comes back.
-            show('<div class="conseq good"><span class="what">' + esc(t('app_offline_kept')) + '</span>' +
-              esc(t('app_offline_kept_help')) + '</div><div class="actions"><button class="btn btn-main" data-back>' +
-              esc(t('app_backtomap')) + '</button></div>').querySelector('[data-back]').onclick = close;
-            return;
-          }
-          // It could not be kept either: it can be sent again from here, without playing it again.
-          var body = show('<p>' + esc(e.message) + '</p><div class="actions"><button class="btn btn-main" data-again>' +
-            esc(t('app_retry')) + '</button><button class="btn btn-soft" data-back>' + esc(t('app_backtomap')) +
-            '</button></div>');
-          body.querySelector('[data-back]').onclick = close;
-          body.querySelector('[data-again]').onclick = function() {
-            run.over = false;
-            finish();
-          };
-        });
+      m.save(run.playid, run.events, ending);
     }
 
     function ending(result) {
-      var gifts = result.items.map(function(name) {
-        return '<li>' + T.icon('gems') + esc(t('app_gotitem', name)) + '</li>';
-      }).join('');
-      var html = '<div class="nest-end ' + (result.success ? 'won' : 'lost') + '"><div class="nest-hero" aria-hidden="true">' +
-        creature() + '</div><h2>' + esc(result.success ? t('app_nest_won') : t('app_nest_lost')) + '</h2><p class="lead">' +
-        esc(result.success ? game.win : game.lose) + '</p>' + (gifts ? '<ul class="gifts">' + gifts + '</ul>' : '');
-      if (result.coat && world.character && world.character.creature) {
-        html += coatChooser();
-      }
-      html += '<div class="actions">' + (result.success ? '' : '<button class="btn btn-main" data-again>' +
-        esc(t('app_tryagain')) + '</button>') + '<button class="btn ' + (result.success ? 'btn-main' : 'btn-soft') +
-        '" data-back>' + esc(t('app_backtomap')) + '</button></div></div>';
-      var body = show(html);
-      body.querySelector('[data-back]').onclick = close;
-      var again = body.querySelector('[data-again]');
-      if (again) {
-        again.onclick = intro;
-      }
+      var body = m.ending(result, {won: t('app_nest_won'), lost: t('app_nest_lost'), again: intro,
+        art: '<div class="nest-hero" aria-hidden="true">' + creature() + '</div>',
+        more: result.coat && m.world.character && m.world.character.creature ? coatChooser() : ''});
       bindCoat(body);
     }
 
@@ -476,7 +403,7 @@
     }
 
     function coatPreview(coat) {
-      var c = world.character || {};
+      var c = m.world.character || {};
       var traits = {};
       try {
         traits = JSON.parse(c.creature || '{}') || {};
@@ -491,7 +418,7 @@
       body.querySelectorAll('[data-coat]').forEach(function(b) {
         b.onclick = function() {
           T.api('set_coat', {courseid: cfg.courseid, coat: b.dataset.coat}).then(function(w) {
-            world = w;
+            m.world = w;
             body.querySelectorAll('[data-coat]').forEach(function(o) {
               o.setAttribute('aria-pressed', o === b);
             });
@@ -503,13 +430,6 @@
       });
     }
 
-    show('<div class="loading-inline"><div class="lamp"></div>' + esc(t('app_loading')) + '</div>');
-    T.api('get_minigame', {courseid: cfg.courseid, game: opts.code}).then(function(g) {
-      game = g;
-      intro();
-    }).catch(function(e) {
-      show('<p>' + esc(e.message) + '</p>');
-    });
   };
 
   /**

@@ -10,27 +10,11 @@
   'use strict';
 
   var T = window.Tesape;
-  var cfg = T.cfg;
   var t = T.t;
   var esc = T.esc;
 
   /** The places of a card: only the first circle, both, only the second. */
   var ZONES = ['a', 'ab', 'b'];
-
-  function shuffle(list) {
-    var a = list.slice();
-    for (var i = a.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var x = a[i];
-      a[i] = a[j];
-      a[j] = x;
-    }
-    return a;
-  }
-
-  function cap(text) {
-    return text ? text.charAt(0).toUpperCase() + text.slice(1) : text;
-  }
 
   /**
    * Plays the two circles.
@@ -38,39 +22,18 @@
    * @param {Object} opts code, world, onclose(world).
    */
   T.playVenn = function(opts) {
-    var layer = document.createElement('div');
-    layer.className = 'scene-layer venn-layer';
-    layer.setAttribute('role', 'dialog');
-    layer.setAttribute('aria-modal', 'true');
-    document.body.appendChild(layer);
-    document.body.classList.add('in-scene');
-    var world = opts.world;
+    var m = T.minigame(opts, 'venn', function(g) {
+      game = g;
+      intro();
+    });
+    var layer = m.layer;
+    var show = m.show;
+    var sound = m.sound;
+    m.onclose = function() {
+      document.removeEventListener('keydown', onKey);
+    };
     var game = null;
     var run = null;
-
-    function close() {
-      document.removeEventListener('keydown', onKey);
-      if (window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-      }
-      layer.remove();
-      document.body.classList.remove('in-scene');
-      opts.onclose(world);
-    }
-
-    function show(html) {
-      layer.innerHTML = '<div class="scene venn"><div class="scene-top"><span class="scene-title">' +
-        esc(game ? game.title : '') + '</span><button class="btn btn-soft scene-close" type="button" aria-label="' +
-        esc(t('app_close')) + '">' + T.icon('close') + '</button></div><div class="scene-body">' + html + '</div></div>';
-      layer.querySelector('.scene-close').onclick = close;
-      return layer.querySelector('.scene-body');
-    }
-
-    function sound(name) {
-      if (T.fx) {
-        T.fx.sound(name);
-      }
-    }
 
     /**
      * Where a card goes, in words: a circle, or the middle.
@@ -105,7 +68,7 @@
 
     function sheet() {
       var s = game.sheets[run.sheet];
-      run.order = shuffle(s.items.map(function(x, i) {
+      run.order = T.shuffle(s.items.map(function(x, i) {
         return i;
       }));
       run.item = 0;
@@ -216,15 +179,15 @@
         run.right++;
         run.placed[zone].push({label: thing.label});
         sound('right');
-        run.say = {kind: 'good', html: '<b>' + esc(cap(t('app_venn_right', thing.label))) + '</b>' +
-          (thing.why ? ' ' + esc(cap(thing.why)) : '')};
+        run.say = {kind: 'good', html: '<b>' + esc(T.cap(t('app_venn_right', thing.label))) + '</b>' +
+          (thing.why ? ' ' + esc(T.cap(thing.why)) : '')};
       } else {
         run.slips++;
         run.mixed.push({label: thing.label, place: place(s, thing.zone), why: thing.why});
         run.placed[thing.zone].push({label: thing.label, wrong: true});
         sound('wrong');
-        run.say = {kind: 'bad', html: '<b>' + esc(cap(t('app_venn_goes', {thing: thing.label,
-          place: place(s, thing.zone)}))) + '</b>' + (thing.why ? ' ' + esc(cap(thing.why)) : '')};
+        run.say = {kind: 'bad', html: '<b>' + esc(T.cap(t('app_venn_goes', {thing: thing.label,
+          place: place(s, thing.zone)}))) + '</b>' + (thing.why ? ' ' + esc(T.cap(thing.why)) : '')};
       }
       if (run.slips >= game.misses) {
         finish();
@@ -242,70 +205,17 @@
       run.over = true;
       run.playid = run.playid || T.playId();
       document.removeEventListener('keydown', onKey);
-      show('<p class="help">' + esc(t('app_saving')) + '</p>');
-      var events = JSON.stringify(run.events);
-      T.api('play_minigame', {courseid: cfg.courseid, game: game.code, playid: run.playid, events: events}).then(function(result) {
-        world = result.world;
-        ending(result);
-      }).catch(function(e) {
-        if ((e.network || e.retry) && T.keepPlay && T.keepPlay({kind: 'minigame', game: game.code, playid: run.playid, title: game.title || '',
-          events: events, at: Date.now()})) {
-          // No connection: what was played is kept on the device and goes by itself when the connection comes back.
-          show('<div class="conseq good"><span class="what">' + esc(t('app_offline_kept')) + '</span>' +
-            esc(t('app_offline_kept_help')) + '</div><div class="actions"><button class="btn btn-main" data-back>' +
-            esc(t('app_backtomap')) + '</button></div>').querySelector('[data-back]').onclick = close;
-          return;
-        }
-        // It could not be kept either: it can be sent again from here, without playing it again.
-        var body = show('<p>' + esc(e.message) + '</p><div class="actions"><button class="btn btn-main" data-again>' +
-          esc(t('app_retry')) + '</button><button class="btn btn-soft" data-back>' + esc(t('app_backtomap')) +
-          '</button></div>');
-        body.querySelector('[data-back]').onclick = close;
-        body.querySelector('[data-again]').onclick = function() {
-          run.over = false;
-          finish();
-        };
-      });
+      m.save(run.playid, run.events, ending);
     }
 
     function ending(result) {
-      var gifts = result.items.map(function(name) {
-        return '<li>' + T.icon('gems') + esc(t('app_gotitem', name)) + '</li>';
-      });
-      if (result.gems) {
-        gifts.push('<li>' + T.icon('gems') + esc('+' + result.gems + ' ' + t('app_gems')) + '</li>');
-      }
       // What went to the wrong place, with where it goes and why: to read now, without hurry.
       var mixed = run.mixed.map(function(x) {
-        return '<li><b>' + esc(cap(t('app_venn_goes', {thing: x.label, place: x.place}))) + '</b>' +
-          (x.why ? ' ' + esc(cap(x.why)) : '') + '</li>';
+        return '<li><b>' + esc(T.cap(t('app_venn_goes', {thing: x.label, place: x.place}))) + '</b>' +
+          (x.why ? ' ' + esc(T.cap(x.why)) : '') + '</li>';
       }).join('');
-      sound(result.success ? 'win' : 'wrong');
-      var body = show('<div class="nest-end ' + (result.success ? 'won' : 'lost') + '"><span class="battle-mini" ' +
-        'aria-hidden="true">' + T.embrollo(result.success ? 0.2 : 1) + '</span><h2>' + esc(result.success ?
-        t('app_venn_won') : t('app_venn_lost')) + '</h2><p class="lead">' + esc(result.success ? game.win : game.lose) +
-        '</p>' +
-        (gifts.length ? '<ul class="gifts">' + gifts.join('') + '</ul>' : '') + (mixed ? '<div class="card whack-learn">' +
-        '<h3>' + esc(t('app_whack_learn')) + '</h3><ul>' + mixed + '</ul></div>' : '') + '<div class="actions">' +
-        (result.success ? '' : '<button class="btn btn-main" data-again>' + esc(t('app_tryagain')) + '</button>') +
-        '<button class="btn ' + (result.success ? 'btn-main' : 'btn-soft') + '" data-back>' + esc(t('app_backtomap')) +
-        '</button></div></div>');
-      body.querySelector('[data-back]').onclick = close;
-      var again = body.querySelector('[data-again]');
-      if (again) {
-        again.onclick = intro;
-      }
-      if (result.success && T.fx && T.fx.confetti) {
-        T.fx.confetti();
-      }
+      m.ending(result, {won: t('app_venn_won'), lost: t('app_venn_lost'), learn: mixed, again: intro});
     }
 
-    show('<div class="loading-inline"><div class="lamp"></div>' + esc(t('app_loading')) + '</div>');
-    T.api('get_minigame', {courseid: cfg.courseid, game: opts.code}).then(function(g) {
-      game = g;
-      intro();
-    }).catch(function(e) {
-      show('<p>' + esc(e.message) + '</p>');
-    });
   };
 })();

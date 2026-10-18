@@ -66,11 +66,15 @@ final class minigames_test extends \advanced_testcase {
     public function test_levels_by_step(): void {
         $this->resetAfterTest();
         $w = $this->make_class('py');
+        // The first step, by traits: what the body is covered with, and those without bones.
         $first = minigames::config($w->mission, 'nestdefence', 1);
-        $this->assertSame(['vertebrate', 'invertebrate'], array_column($first['nets'], 'id'));
+        $this->assertSame(['fur', 'feathers', 'scales', 'wetskin', 'invertebrate'], array_column($first['nets'], 'id'));
         $animals = array_column($first['animals'], null, 'id');
-        $this->assertSame('vertebrate', $animals['felino']['net']);
+        $this->assertSame('fur', $animals['felino']['net']);
         $this->assertSame('yaguareté', $animals['felino']['label']);
+        $this->assertSame('scales', $animals['lagarto']['net']);
+        $this->assertSame('scales', $animals['pezrio']['net']);
+        $this->assertSame('wetskin', $animals['rana']['net']);
         $this->assertSame('invertebrate', $animals['lombriz']['net']);
 
         $core = minigames::config($w->mission, 'nestdefence', 2);

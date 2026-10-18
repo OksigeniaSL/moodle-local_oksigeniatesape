@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 35,
+ "version": 36,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 36,
+   "kind": "improvement",
+   "date": "2026-10-18",
+   "text": "Defensa del nido: en el primer escalón, las redes son de rasgos (pelo, plumas, escamas, piel húmeda) y el nido de la criatura pierde abrigo"
+  },
   {
    "version": 35,
    "kind": "improvement",
@@ -2020,14 +2026,30 @@
  "games": {
   "nestdefence": {
    "title": "Defensa del nido",
-   "intro": "Los animales del bosque bajan curiosos hacia el nido de tu criatura. Para que no lo pisen, atrápalos con la red de su grupo, míralos bien y suéltalos lejos. Con la red equivocada, el animal pasa y daña el escudo del nido.",
+   "intro": "Los animales del bosque bajan curiosos hacia el nido de tu criatura. Para que no lo pisen, atrápalos con la red que les toca, míralos bien y suéltalos lejos. Con la red equivocada, el animal pasa y el nido pierde abrigo.",
    "win": "El nido está a salvo y has visto de cerca a todo el bosque. Te quedas con la red de captura, para observar sin hacer daño, y con lo que los animales dejaron al pasar: pelo, plumas y escamas para el abrigo de tu criatura.",
-   "lose": "El escudo no ha aguantado esta vez, pero el nido sigue ahí. Fíjate en lo que te dice cada animal al pasar y vuelve a intentarlo.",
+   "lose": "El nido se ha quedado frío esta vez, pero sigue ahí y tu criatura también. Fíjate en lo que te dice cada animal al pasar y vuelve a intentarlo.",
    "reward": {
     "item": "net",
     "coat": true
    },
    "nets": {
+    "fur": {
+     "label": "Pelo",
+     "hint": "Tiene el cuerpo cubierto de pelo: es un mamífero."
+    },
+    "feathers": {
+     "label": "Plumas",
+     "hint": "Tiene el cuerpo cubierto de plumas: es un ave."
+    },
+    "scales": {
+     "label": "Escamas",
+     "hint": "Tiene el cuerpo cubierto de escamas: es un reptil o un pez."
+    },
+    "wetskin": {
+     "label": "Piel húmeda",
+     "hint": "Tiene la piel desnuda y húmeda, sin pelo, plumas ni escamas: es un anfibio."
+    },
     "vertebrate": {
      "label": "Vertebrado",
      "hint": "Tiene esqueleto por dentro, con columna vertebral."
@@ -2068,6 +2090,13 @@
      "label": "Molusco",
      "hint": "Tiene el cuerpo blando, muchas veces con concha."
     }
+   },
+   "covers": {
+    "mammal": "fur",
+    "bird": "feathers",
+    "reptile": "scales",
+    "fish": "scales",
+    "amphibian": "wetskin"
    },
    "parents": {
     "mammal": "vertebrate",
@@ -2245,22 +2274,25 @@
    "levels": {
     "1": {
      "nets": [
-      "vertebrate",
+      "fur",
+      "feathers",
+      "scales",
+      "wetskin",
       "invertebrate"
      ],
      "animals": [
       "felino",
-      "pajarillo",
-      "lagarto",
-      "rana",
-      "pezrio",
       "roedor",
+      "pajarillo",
+      "zancuda",
+      "lagarto",
+      "pezrio",
+      "rana",
+      "salamandra",
       "mariquita",
       "caracol",
       "hormiga",
-      "arana",
-      "lombriz",
-      "mariposa"
+      "lombriz"
      ],
      "goal": 9,
      "shield": 4,

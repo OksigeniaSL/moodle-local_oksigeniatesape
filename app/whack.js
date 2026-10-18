@@ -11,7 +11,6 @@
   'use strict';
 
   var T = window.Tesape;
-  var cfg = T.cfg;
   var t = T.t;
   var esc = T.esc;
 
@@ -21,69 +20,26 @@
   /** Holes of the clearing. */
   var HOLES = 6;
 
-  function shuffle(list) {
-    var a = list.slice();
-    for (var i = a.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var x = a[i];
-      a[i] = a[j];
-      a[j] = x;
-    }
-    return a;
-  }
-
-  /**
-   * A text with its first letter in capitals, to start a sentence with the name of a thing.
-   *
-   * @param {string} text
-   * @return {string}
-   */
-  function cap(text) {
-    return text ? text.charAt(0).toUpperCase() + text.slice(1) : text;
-  }
-
   /**
    * Plays Who is alive?
    *
    * @param {Object} opts code, world, onclose(world).
    */
   T.playWhack = function(opts) {
-    var layer = document.createElement('div');
-    layer.className = 'scene-layer whack-layer';
-    layer.setAttribute('role', 'dialog');
-    layer.setAttribute('aria-modal', 'true');
-    document.body.appendChild(layer);
-    document.body.classList.add('in-scene');
-    var world = opts.world;
+    var m = T.minigame(opts, 'whack', function(g) {
+      game = g;
+      intro();
+    });
+    var layer = m.layer;
+    var show = m.show;
+    var sound = m.sound;
+    m.onclose = function() {
+      stop();
+      document.removeEventListener('keydown', onKey);
+    };
     var game = null;
     var calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var run = null;
-
-    function close() {
-      stop();
-      document.removeEventListener('keydown', onKey);
-      if (window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-      }
-      layer.remove();
-      document.body.classList.remove('in-scene');
-      opts.onclose(world);
-    }
-
-    function show(html) {
-      layer.innerHTML = '<div class="scene whack"><div class="scene-top"><span class="scene-title">' +
-        esc(game ? game.title : '') + '</span><button class="btn btn-soft scene-close" type="button" aria-label="' +
-        esc(t('app_close')) + '">' + T.icon('close') + '</button></div><div class="scene-body">' + html + '</div></div>';
-      layer.querySelector('.scene-close').onclick = close;
-      layer.scrollTop = 0;
-      return layer.querySelector('.scene-body');
-    }
-
-    function sound(name) {
-      if (T.fx) {
-        T.fx.sound(name);
-      }
-    }
 
     function alive() {
       return game.things.filter(function(x) {
@@ -119,7 +75,7 @@
 
     function start() {
       run = {
-        queue: shuffle(game.things),
+        queue: T.shuffle(game.things),
         out: [],
         events: [],
         mixed: [],
@@ -136,8 +92,7 @@
         holes += '<div class="whack-hole" data-hole="' + i + '"><small aria-hidden="true">' + (i + 1) + '</small></div>';
       }
       var body = show('<div class="nest-hud"><span class="whack-slips" data-slips></span><span class="nest-count" ' +
-        'data-count></span>' + (calm ? '' : '<button class="btn btn-soft icon-btn game-pause" data-pause aria-pressed="false" aria-label="' +
-        esc(t('app_nest_pause')) + '" title="' + esc(t('app_nest_pause')) + '">' + T.pauseIcon(false) + '</button>') + '</div><div class="whack-arena' + (calm ? ' calm' : '') + '" data-arena role="group" aria-label="' +
+        'data-count></span>' + (calm ? '' : m.pauseButton()) + '</div><div class="whack-arena' + (calm ? ' calm' : '') + '" data-arena role="group" aria-label="' +
         esc(t('app_whack_holes')) + '">' + (calm ? '<div class="whack-one" data-one></div>' : holes) +
         '<div class="nest-say" data-say aria-live="polite"></div></div>');
       var pause = body.querySelector('[data-pause]');
@@ -166,15 +121,7 @@
         return;
       }
       run.paused = !run.paused;
-      var b = layer.querySelector('[data-pause]');
-      if (b) {
-        // An icon, so that the counters fit on a phone; its name says what it does.
-        b.innerHTML = T.pauseIcon(run.paused);
-        b.setAttribute('aria-pressed', run.paused ? 'true' : 'false');
-        b.setAttribute('aria-label', run.paused ? t('app_nest_resume') : t('app_nest_pause'));
-        b.title = b.getAttribute('aria-label');
-      }
-      layer.querySelector('[data-arena]').classList.toggle('paused', run.paused);
+      m.setPaused(run.paused);
       if (!run.paused) {
         run.last = performance.now();
         run.frame = requestAnimationFrame(tick);
@@ -316,14 +263,14 @@
       if (o.thing.alive) {
         run.caught++;
         sound('right');
-        say('<b>' + esc(cap(t('app_whack_alive', o.thing.label))) + '</b>' + (o.thing.why ? ' ' + esc(o.thing.why) : ''),
+        say('<b>' + esc(T.cap(t('app_whack_alive', o.thing.label))) + '</b>' + (o.thing.why ? ' ' + esc(o.thing.why) : ''),
           true);
         away(o, 'caught');
       } else {
         run.slips++;
         run.mixed.push(o.thing);
         sound('wrong');
-        say('<b>' + esc(cap(t('app_whack_notalive', o.thing.label))) + '</b> ' + esc(why(o.thing)), false);
+        say('<b>' + esc(T.cap(t('app_whack_notalive', o.thing.label))) + '</b> ' + esc(why(o.thing)), false);
         away(o, 'slipped');
       }
       hud();
@@ -340,7 +287,7 @@
     function hide(o) {
       if (o.thing.alive) {
         run.mixed.push(o.thing);
-        say('<b>' + esc(cap(t('app_whack_hid', o.thing.label))) + '</b> ' + esc(why(o.thing)), false);
+        say('<b>' + esc(T.cap(t('app_whack_hid', o.thing.label))) + '</b> ' + esc(why(o.thing)), false);
       }
       away(o, 'gone');
     }
@@ -404,7 +351,7 @@
       }
       sound(right ? 'right' : 'wrong');
       var key = o.thing.alive ? (yes ? 'app_whack_alive' : 'app_whack_wasalive') : 'app_whack_notalive';
-      say('<b>' + esc(cap(t(key, o.thing.label))) + '</b> ' + esc(why(o.thing)), right);
+      say('<b>' + esc(T.cap(t(key, o.thing.label))) + '</b> ' + esc(why(o.thing)), right);
       hud();
       if (run.slips >= game.misses) {
         finish();
@@ -431,39 +378,10 @@
       run.playid = run.playid || T.playId();
       stop();
       document.removeEventListener('keydown', onKey);
-      show('<p class="help">' + esc(t('app_saving')) + '</p>');
-      var events = JSON.stringify(run.events);
-      T.api('play_minigame', {courseid: cfg.courseid, game: game.code, playid: run.playid, events: events}).then(function(result) {
-        world = result.world;
-        ending(result);
-      }).catch(function(e) {
-        if ((e.network || e.retry) && T.keepPlay && T.keepPlay({kind: 'minigame', game: game.code, playid: run.playid, title: game.title || '',
-          events: events, at: Date.now()})) {
-          // No connection: what was played is kept on the device and goes by itself when the connection comes back.
-          show('<div class="conseq good"><span class="what">' + esc(t('app_offline_kept')) + '</span>' +
-            esc(t('app_offline_kept_help')) + '</div><div class="actions"><button class="btn btn-main" data-back>' +
-            esc(t('app_backtomap')) + '</button></div>').querySelector('[data-back]').onclick = close;
-          return;
-        }
-        // It could not be kept either: it can be sent again from here, without playing it again.
-        var body = show('<p>' + esc(e.message) + '</p><div class="actions"><button class="btn btn-main" data-again>' +
-          esc(t('app_retry')) + '</button><button class="btn btn-soft" data-back>' + esc(t('app_backtomap')) +
-          '</button></div>');
-        body.querySelector('[data-back]').onclick = close;
-        body.querySelector('[data-again]').onclick = function() {
-          run.over = false;
-          finish();
-        };
-      });
+      m.save(run.playid, run.events, ending);
     }
 
     function ending(result) {
-      var gifts = result.items.map(function(name) {
-        return '<li>' + T.icon('gems') + esc(t('app_gotitem', name)) + '</li>';
-      });
-      if (result.gems) {
-        gifts.push('<li>' + T.icon('gems') + esc('+' + result.gems + ' ' + t('app_gems')) + '</li>');
-      }
       // What was mixed up, once each, with its why: to read now, without hurry.
       var seen = {};
       var mixed = run.mixed.filter(function(x) {
@@ -473,34 +391,11 @@
         seen[x.id] = true;
         return true;
       }).map(function(x) {
-        return '<li><b>' + esc(cap(t(x.alive ? 'app_whack_wasalive' : 'app_whack_wasnot', x.label))) + '</b> ' +
+        return '<li><b>' + esc(T.cap(t(x.alive ? 'app_whack_wasalive' : 'app_whack_wasnot', x.label))) + '</b> ' +
           esc(why(x)) + '</li>';
       }).join('');
-      sound(result.success ? 'win' : 'wrong');
-      var body = show('<div class="nest-end ' + (result.success ? 'won' : 'lost') + '"><span class="battle-mini" ' +
-        'aria-hidden="true">' + T.embrollo(result.success ? 0.2 : 1) + '</span><h2>' + esc(result.success ?
-        t('app_whack_won') : t('app_whack_lost')) + '</h2><p class="lead">' + esc(result.success ? game.win : game.lose) +
-        '</p>' + (gifts.length ? '<ul class="gifts">' + gifts.join('') + '</ul>' : '') + (mixed ? '<div class="card ' +
-        'whack-learn"><h3>' + esc(t('app_whack_learn')) + '</h3><ul>' + mixed + '</ul></div>' : '') +
-        '<div class="actions">' + (result.success ? '' : '<button class="btn btn-main" data-again>' +
-        esc(t('app_tryagain')) + '</button>') + '<button class="btn ' + (result.success ? 'btn-main' : 'btn-soft') +
-        '" data-back>' + esc(t('app_backtomap')) + '</button></div></div>');
-      body.querySelector('[data-back]').onclick = close;
-      var again = body.querySelector('[data-again]');
-      if (again) {
-        again.onclick = intro;
-      }
-      if (result.success && T.fx && T.fx.confetti) {
-        T.fx.confetti();
-      }
+      m.ending(result, {won: t('app_whack_won'), lost: t('app_whack_lost'), learn: mixed, again: intro});
     }
 
-    show('<div class="loading-inline"><div class="lamp"></div>' + esc(t('app_loading')) + '</div>');
-    T.api('get_minigame', {courseid: cfg.courseid, game: opts.code}).then(function(g) {
-      game = g;
-      intro();
-    }).catch(function(e) {
-      show('<p>' + esc(e.message) + '</p>');
-    });
   };
 })();

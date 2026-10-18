@@ -2199,6 +2199,11 @@ body.in-scene {
   height: 120px;
 }
 
+.nest-hero {
+  display: flex;
+  justify-content: center;
+}
+
 .nest-legend {
   list-style: none;
   padding: 0;
@@ -2394,10 +2399,13 @@ body.in-scene {
 }
 
 .nest-next {
+  /* Centred without a transform: pressed, a button shrinks with its own (and moving it would lose the tap). */
   position: absolute;
-  left: 50%;
+  left: 0;
+  right: 0;
   bottom: 108px;
-  transform: translateX(-50%);
+  width: fit-content;
+  margin-inline: auto;
 }
 
 .nest-nets {

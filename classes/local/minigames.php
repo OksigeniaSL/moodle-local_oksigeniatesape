@@ -918,6 +918,11 @@ final class minigames {
      * @return string
      */
     private static function net(array $game, string $group, array $nets): string {
+        // By traits (the first step): what the body of the group is covered with, if that net is played.
+        $cover = (string) ($game['covers'][$group] ?? '');
+        if ($cover !== '' && in_array($cover, $nets, true)) {
+            return $cover;
+        }
         $seen = [];
         while (!in_array($group, $nets, true)) {
             if (isset($seen[$group]) || !isset($game['parents'][$group])) {

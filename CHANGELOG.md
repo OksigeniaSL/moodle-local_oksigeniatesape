@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.85.0 (2026-10-18)
+
+- **The defence of the nest by traits at the first step**: the nets are what the body is covered with (fur, feathers,
+  scales, wet skin) and those without bones; from the second step on, the groups. A game can map each group to its
+  cover (`covers`). The pilot mission, version 36, with the nest that loses its warmth instead of its shield.
+- **A common frame for the minigames** (`app/minigame.js`): the layer, the frame, the loading, the pause button, the
+  saving (kept on the device without a connection, or sent again) and the end where the world answers, shared by the
+  five; each one keeps only its mechanics. The defence of the nest now ends like the others, with its gems, its sound
+  and its confetti, and with the creature in the middle.
+- **Fixed**: in the defence of the nest without hurry, «Continue» did not answer a tap: pressed, the button moved half
+  its width and the tap was lost. The minigames test plays the defence of the nest now too.
+
 ## 0.84.0 (2026-10-18)
 
 Block 3.5 of the plan: minigames that are seen, not read.
