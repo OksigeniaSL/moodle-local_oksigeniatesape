@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 61,
+ "version": 62,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 62,
+   "kind": "improvement",
+   "date": "2026-10-19",
+   "text": "El rastro del búho sale al azar entre tres: la baba del caracol, la muda de una culebra y la pluma de un pájaro carpintero, cada uno con su buena primera pregunta y su página; los cuatro candidatos, en otro orden cada vez"
+  },
   {
    "version": 61,
    "kind": "improvement",
@@ -1047,7 +1053,11 @@
   },
   "buho": {
    "pages": [
-    "caracol",
+    [
+     "caracol",
+     "culebra",
+     "pajarocarpintero"
+    ],
     "vertebrados",
     "huellas-de-tinta",
     "buenas-preguntas",
@@ -2215,6 +2225,14 @@
    "title": "El caracol",
    "text": "Es un invertebrado de la familia de los moluscos. Lleva concha, necesita humedad y deja un rastro brillante al moverse. Lo seguí media mañana para comprobar lo del rastro."
   },
+  "culebra": {
+   "title": "La culebra",
+   "text": "Es un reptil. Tiene huesos, escamas y la piel seca, y no tiene patas. Al crecer se quita la piel de una vez, vuelta del revés como un calcetín, y la deja enganchada en las ramas o entre las piedras. La piel vacía mide más que la culebra que la dejó, porque se estira al salir. A la dueña la seguí con la vista, de lejos, hasta las piedras del sol."
+  },
+  "pajarocarpintero": {
+   "title": "El pájaro carpintero",
+   "text": "Es un ave que trepa por los troncos, agarrada a la corteza y apoyada en la cola, que tiene dura. Con el pico, recto y fuerte, saca insectos de debajo de la corteza y abre el agujero de su nido. La pluma de su cola tenía la punta gastada de tanto apoyarse."
+  },
   "vertebrados": {
    "title": "Los vertebrados",
    "text": "Tienen esqueleto por dentro, con columna vertebral. Son cinco grupos, mamíferos, aves, reptiles, anfibios y peces. Los demás animales son invertebrados. El murciélago y el delfín me engañaron una vez; ya no."
@@ -2370,8 +2388,8 @@
   {
    "flag": "pregunta-buena",
    "text": {
-    "valley": "En el bosque, esta expedición preguntó bien al búho: lo primero, si el animal del rastro tenía huesos.",
-    "azara": "En el monte, esta expedición preguntó bien al baqueano: lo primero, si el animal del rastro tenía huesos."
+    "valley": "En el bosque, esta expedición eligió bien la primera pregunta al búho.",
+    "azara": "En el monte, esta expedición eligió bien la primera pregunta al baqueano."
    }
   },
   {
@@ -2957,8 +2975,8 @@
     {
      "flag": "pregunta-buena",
      "text": {
-      "valley": "Lo primero que le preguntamos al búho fue si el animal del rastro tenía huesos. Nos regaló una pregunta más.",
-      "azara": "Lo primero que le preguntamos al baqueano fue si el animal del rastro tenía huesos. Nos regaló una pregunta más."
+      "valley": "Elegimos bien la primera pregunta al búho, y nos regaló otra más.",
+      "azara": "Elegimos bien la primera pregunta al baqueano, y nos regaló otra más."
      }
     },
     {

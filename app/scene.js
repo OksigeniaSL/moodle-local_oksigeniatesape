@@ -1343,6 +1343,23 @@
     }
 
     /**
+     * A list in another order, each time (the class screen does not load the minigames, which have their own).
+     *
+     * @param {Array} list
+     * @return {Array}
+     */
+    function mixed(list) {
+      var out = list.slice();
+      for (var i = out.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var keep = out[i];
+        out[i] = out[j];
+        out[j] = keep;
+      }
+      return out;
+    }
+
+    /**
      * The drawing of a thing to sort that is in the catalog of the mission, when the art pack has it: before its name.
      *
      * @param {Object} it
@@ -1710,10 +1727,24 @@
           return run.clues.indexOf(c) >= 0;
         });
       };
-      var open = n.options.filter(function(o) {
+      // The options in their place, or in another order each play where the scene says so (`shuffle`: the candidates of
+      // the owl, so that the right one is not learned by where it is).
+      var options = n.options;
+      if (n.shuffle) {
+        run.orders = run.orders || {};
+        run.orders[run.node] = run.orders[run.node] || mixed(n.options.map(function(o) {
+          return o.id;
+        }));
+        options = run.orders[run.node].map(function(id) {
+          return n.options.filter(function(o) {
+            return o.id === id;
+          })[0];
+        });
+      }
+      var open = options.filter(function(o) {
         return has(o.requires) && tried.indexOf(o.id) < 0 && !crossed(o);
       });
-      var opts = n.options.filter(function(o) {
+      var opts = options.filter(function(o) {
         // What other scenes left (flags) is memory, not something to get: without it, the option is not there; nor is
         // the option of another role (each role sees only its own). What was tried and led back here is not there
         // either: the world changed, it is not the same question again.

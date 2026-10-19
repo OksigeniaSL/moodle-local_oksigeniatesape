@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.154.0 (2026-10-19)
+
+- **The trail of the owl comes at random among three** (mission v62): the slime of a snail, the shed skin of a snake and
+  the feather of a woodpecker, each one with its pieces for each role, its own good first question (with the feather,
+  not the one about bones: the feather answers it already), its four candidates and the page of its animal. Replaying
+  the scene, or watching another team play it, does not give the answer. The owl counts the page of any of the three
+  animals as one (a page of a friend can be a list of pages of which one counts).
+- **Options in another order each play** where a scene says so (`shuffle`): the four candidates of the owl, so that the
+  right one is not learned by where it is.
+
 ## 0.153.0 (2026-10-19)
 
 - **The energy is called «ánimo»** (spirit) in every text of the game, of the teacher and of the mission (mission v61);

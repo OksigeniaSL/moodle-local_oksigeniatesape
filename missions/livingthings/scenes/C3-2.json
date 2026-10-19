@@ -11,7 +11,7 @@
  ],
  "minutes": 8,
  "whatif": "¿Y si solo se pudieran hacer tres preguntas de sí o no para adivinar un animal? ¿Cuáles serían las mejores para empezar?",
- "start": "memoria",
+ "start": "rastro",
  "clues": {
   "sinhuesos": "No tiene huesos por dentro",
   "huevos": "Pone huevos",
@@ -23,9 +23,38 @@
   "tierra": "No respira en el agua; vive en tierra, en sitios húmedos",
   "sinpatas": "No tiene patas; se arrastra sobre un pie",
   "humedad": "Vive donde hay humedad",
-  "sinprisa": "Iba sin ninguna prisa"
+  "sinprisa": "Iba sin ninguna prisa",
+  "huesos-muda": "Tiene huesos por dentro",
+  "huevos-muda": "Pone huevos",
+  "sinpelo-muda": "No tiene pelo",
+  "sinplumas-muda": "No tiene plumas",
+  "sin6patas-muda": "No tiene seis patas",
+  "escamas-muda": "Tiene escamas",
+  "seca-muda": "Tiene la piel seca, no húmeda",
+  "sinpatas-muda": "No tiene patas; se arrastra ondulando el cuerpo",
+  "sol-muda": "Busca las piedras secas, al sol",
+  "sinparpados-muda": "Mira sin parpadear",
+  "huesos-ave": "Tiene huesos por dentro",
+  "plumas-ave": "Tiene plumas",
+  "vuela-ave": "Vuela",
+  "pico-ave": "Tiene el pico recto, no en gancho",
+  "huevos-ave": "Pone huevos",
+  "dedia-ave": "Busca su comida de día, no de noche",
+  "pesca-ave": "No pesca en el agua",
+  "trepa-ave": "Trepa por los troncos",
+  "nido-ave": "Abre su nido con el pico, en un agujero",
+  "arriba-ave": "La pluma cayó desde arriba, sin pisadas alrededor",
+  "ruido-ave": "Hace ruido de día"
  },
  "nodes": {
+  "rastro": {
+   "type": "branch",
+   "pick": [
+    "memoria",
+    "memoria-muda",
+    "memoria-ave"
+   ]
+  },
   "memoria": {
    "type": "branch",
    "rules": [
@@ -326,6 +355,7 @@
   },
   "adivinar": {
    "type": "choice",
+   "shuffle": true,
    "prompt": "¿De quién es el rastro?",
    "image": "cuatro-candidatos",
    "hints": [
@@ -470,6 +500,921 @@
     },
     {
      "page": "caracol"
+    },
+    {
+     "page": "huellas-de-tinta"
+    }
+   ]
+  },
+  "memoria-muda": {
+   "type": "branch",
+   "rules": [
+    {
+     "if": {
+      "flag": "pluma-en-el-nido"
+     },
+     "next": "intro-muda-nido"
+    }
+   ],
+   "else": "intro-muda"
+  },
+  "intro-muda": {
+   "type": "story",
+   "speaker": "buho",
+   "image": "bosque-muda",
+   "text": {
+    "valley": "Junto a un tronco, enganchado en unas ramitas, hay algo fino y arrugado, como papel de seda, que tiembla con el aire. Al lado, otras marcas que no se parecen a nada. El búho guardián lo mira un buen rato, en silencio. Cuando por fin habla, es para avisar de que solo responde sí o no: «Es una piel vacía. Alguien se la quitó al crecer y siguió su camino. Tres preguntas. Hay que elegirlas bien».",
+    "azara": "El baqueano se agacha junto a un tronco, donde hay algo fino y arrugado, como papel de seda, enganchado en unas ramitas. Al lado, otras marcas que no se parecen a nada. Lo mira un buen rato, en silencio. Cuando por fin habla, dice muy poco: «Es una piel vacía: alguien se la quitó al crecer. Contesto sí o no. Tres preguntas, ni una más»."
+   },
+   "next": "p1-muda"
+  },
+  "intro-muda-nido": {
+   "type": "story",
+   "speaker": "buho",
+   "image": "bosque-muda",
+   "text": {
+    "valley": "El búho guardián nos mira un buen rato, en silencio, antes de mirar el tronco. «Alguien de esta expedición puso una pluma en el nido. Una pluma no es un animal: es lo que un animal deja. Esto tampoco es un animal.» Enganchado en unas ramitas hay algo fino y arrugado, como papel de seda: una piel vacía que alguien se quitó al crecer. Al lado, otras marcas que no se parecen a nada. El búho solo responde sí o no. «Tres preguntas. Hay que elegirlas bien.»",
+    "azara": "El baqueano nos mira un buen rato, en silencio, antes de mirar el tronco. «Alguien puso una pluma en el cajón de los seres vivos. Una pluma no es un animal: es lo que un animal deja. Esto tampoco.» Se agacha junto a algo fino y arrugado, como papel de seda: una piel vacía que alguien se quitó al crecer. Al lado, otras marcas que no se parecen a nada. «Contesto sí o no. Tres preguntas, ni una más.»"
+   },
+   "next": "p1-muda"
+  },
+  "p1-muda": {
+   "type": "choice",
+   "prompt": "Primera pregunta",
+   "hints": [
+    "La mejor pregunta es la que deja fuera a más animales de golpe.",
+    "Hay una pregunta que parte a todos los animales en dos grupos grandes."
+   ],
+   "views": {
+    "protector": "Mudan la piel animales con huesos, como muchos reptiles, y animales sin huesos, como las arañas y los insectos, que se quitan su cubierta dura para crecer.",
+    "healer": "Ponen huevos la mayoría de los reptiles, las aves, los insectos y las arañas: preguntar por los huevos separa a muy pocos del resto.",
+    "sage": "En una buena clave, la primera pregunta deja muchos grupos de animales en el «sí» y muchos en el «no»."
+   },
+   "options": [
+    {
+     "id": "huevos",
+     "label": "¿Pone huevos?",
+     "say": "«Sí.» Y espera, sin moverse, la pregunta siguiente.",
+     "feedback": "Ponen huevos las aves, la mayoría de los reptiles, casi todos los peces, los insectos, las arañas y muchos anfibios: con ese sí casi nadie queda fuera. Cuanto más separa una pregunta, más dice su respuesta.",
+     "effects": [
+      {
+       "clue": "huevos-muda"
+      }
+     ]
+    },
+    {
+     "id": "pelo",
+     "label": "¿Tiene pelo?",
+     "say": "«No», contesta, sin apartar la vista de la piel vacía.",
+     "feedback": "Todos los mamíferos tienen pelo, aunque sea poco: si no tiene pelo, no es un mamífero. Pero quedan todavía muchos grupos.",
+     "effects": [
+      {
+       "clue": "sinpelo-muda"
+      }
+     ]
+    },
+    {
+     "id": "huesos",
+     "label": "¿Tiene huesos por dentro?",
+     "say": {
+      "valley": "«Sí.» El búho se queda mirando a quien preguntó y le regala una pregunta más.",
+      "azara": "«Sí.» El baqueano se queda mirando a quien preguntó y le regala una pregunta más."
+     },
+     "feedback": "Una piel vacía no dice el grupo: la dejan al crecer animales con huesos, como muchos reptiles, y animales sin huesos, como las arañas y los insectos, que se quitan su cubierta dura. Esa pregunta parte a todos los animales en dos grandes grupos, vertebrados e invertebrados: con un solo «sí», quedan fuera todos los invertebrados.",
+     "effects": [
+      {
+       "extraquestion": 1
+      },
+      {
+       "flag": "pregunta-buena"
+      },
+      {
+       "clue": "huesos-muda"
+      }
+     ]
+    },
+    {
+     "id": "plumas",
+     "label": "¿Tiene plumas?",
+     "say": "«No.» Y vuelve a quedarse en silencio.",
+     "feedback": "Solo las aves tienen plumas: si no tiene plumas, no es un ave. Pero quedan todavía muchos grupos.",
+     "effects": [
+      {
+       "clue": "sinplumas-muda"
+      }
+     ]
+    }
+   ],
+   "next": "p2-muda"
+  },
+  "p2-muda": {
+   "type": "choice",
+   "prompt": "Segunda pregunta",
+   "hints": [
+    "Si tiene huesos y deja la piel vacía, ¿qué animales conocemos así, y en qué se diferencian unos de otros?"
+   ],
+   "views": {
+    "scout": "Vista de cerca, la piel vacía es de una sola pieza, larga como un brazo, y no tiene ningún hueco por donde salieran patas.",
+    "protector": "La piel vacía está entre piedras secas, al sol, lejos del barro y de las hojas mojadas.",
+    "healer": "A contraluz, la piel vacía tiene dibujadas escamas pequeñas, en filas, como las tejas de un tejado.",
+    "sage": {
+     "valley": "Clave del Gran Libro, para pieles vacías del bosque. ¿Tiene huesos? No: un insecto o una araña. Sí: un reptil; ¿tiene patas? Sí: una lagartija. No: una culebra.",
+     "azara": "Clave del cuaderno, para pieles vacías del monte. ¿Tiene huesos? No: un insecto o una araña. Sí: un reptil; ¿tiene patas? Sí: una lagartija. No: una culebra."
+    }
+   },
+   "options": [
+    {
+     "id": "patas6",
+     "label": "¿Tiene seis patas?",
+     "say": "«No.» Y sigue mirando la piel vacía.",
+     "feedback": "Todos los insectos tienen seis patas: si no tiene seis, no es un insecto. Pero hay animales con ocho, como las arañas, y otros sin ninguna: quedan muchos por descartar.",
+     "effects": [
+      {
+       "clue": "sin6patas-muda"
+      }
+     ]
+    },
+    {
+     "id": "escamas",
+     "label": "¿Tiene escamas?",
+     "say": {
+      "valley": "«Sí.» Y pasa la punta de un ala por encima de la piel vacía, sin romperla.",
+      "azara": "«Sí.» Y pasa un dedo por encima de la piel vacía, sin romperla."
+     },
+     "feedback": "Llevan el cuerpo cubierto de escamas los reptiles y casi todos los peces; las arañas, las lombrices y los caracoles, no. Esa respuesta deja fuera a muchos animales.",
+     "effects": [
+      {
+       "clue": "escamas-muda"
+      }
+     ]
+    },
+    {
+     "id": "humeda",
+     "label": "¿Su piel está húmeda?",
+     "say": "«No: seca.» Un soplo de aire mueve la piel vacía, que cruje como papel.",
+     "feedback": "La piel húmeda, como la de las ranas, las salamandras o las lombrices, se seca enseguida al aire, y por eso quien la tiene busca la sombra y la humedad. La piel seca y con escamas pierde muy poca agua y aguanta el sol.",
+     "effects": [
+      {
+       "clue": "seca-muda"
+      }
+     ]
+    },
+    {
+     "id": "patas",
+     "label": "¿Tiene patas?",
+     "say": "«No: se arrastra ondulando el cuerpo.»",
+     "feedback": "Sin patas quedan fuera muchos animales: los que caminan con cuatro, con seis, con ocho o con más. Avanzar ondulando el cuerpo sobre el suelo es una manera muy distinta de moverse.",
+     "effects": [
+      {
+       "clue": "sinpatas-muda"
+      }
+     ]
+    },
+    {
+     "id": "seguir",
+     "label": "Que el explorador del equipo siga el rastro desde la piel vacía hasta donde acaba",
+     "requires": {
+      "teamrole": "scout"
+     },
+     "locked": "Esto lo haría alguien que sigue rastros: el explorador del equipo.",
+     "effects": [
+      {
+       "clue": "sol-muda"
+      }
+     ],
+     "say": {
+      "valley": "El rastro va de piedra seca en piedra seca y acaba en la que más sol recibe. «Eso no es preguntar», dice el búho, «pero también es saber mirar.»",
+      "azara": "El rastro va de piedra seca en piedra seca y acaba en la que más sol recibe. «Eso no es preguntar», dice el baqueano, «pero también es saber mirar.»"
+     },
+     "feedback": "Mirar también da respuestas: si el rastro acaba en la piedra más soleada, su dueño busca el calor del sol."
+    },
+    {
+     "id": "guardia",
+     "label": "Montar guardia junto a la piel vacía para que nadie la pise",
+     "requires": {
+      "role": "protector"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "say": "Nadie la pisa y la piel sigue entera. Entre las piedras, algo se mueve un momento y se queda quieto. Una gema por proteger el rastro.",
+     "feedback": "Una piel vacía es tan fina que se rompe con nada, y rota ya no dice lo mismo: las pruebas se protegen antes de estudiarlas. Y si algo se mueve cerca, quien la dejó anda todavía por aquí."
+    }
+   ],
+   "next": "p3-muda"
+  },
+  "p3-muda": {
+   "type": "choice",
+   "extra": true,
+   "prompt": {
+    "valley": "Última pregunta (o dos, si el búho regaló una)",
+    "azara": "Última pregunta (o dos, si el baqueano regaló una)"
+   },
+   "hints": [
+    "Una pregunta que confirme lo que ya sospechamos vale más que una al azar."
+   ],
+   "options": [
+    {
+     "id": "escamas",
+     "label": "¿Tiene escamas?",
+     "say": {
+      "valley": "«Sí.» Y pasa la punta de un ala por encima de la piel vacía, sin romperla.",
+      "azara": "«Sí.» Y pasa un dedo por encima de la piel vacía, sin romperla."
+     },
+     "feedback": "Llevan el cuerpo cubierto de escamas los reptiles y casi todos los peces; las arañas, las lombrices y los caracoles, no. Esa respuesta deja fuera a muchos animales.",
+     "effects": [
+      {
+       "clue": "escamas-muda"
+      }
+     ]
+    },
+    {
+     "id": "humeda",
+     "label": "¿Su piel está húmeda?",
+     "say": "«No: seca.» Un soplo de aire mueve la piel vacía, que cruje como papel.",
+     "feedback": "La piel húmeda, como la de las ranas, las salamandras o las lombrices, se seca enseguida al aire, y por eso quien la tiene busca la sombra y la humedad. La piel seca y con escamas pierde muy poca agua y aguanta el sol.",
+     "effects": [
+      {
+       "clue": "seca-muda"
+      }
+     ]
+    },
+    {
+     "id": "patas",
+     "label": "¿Tiene patas?",
+     "say": "«No: se arrastra ondulando el cuerpo.»",
+     "feedback": "Sin patas quedan fuera muchos animales: los que caminan con cuatro, con seis, con ocho o con más. Avanzar ondulando el cuerpo sobre el suelo es una manera muy distinta de moverse.",
+     "effects": [
+      {
+       "clue": "sinpatas-muda"
+      }
+     ]
+    },
+    {
+     "id": "cuidar",
+     "label": "Preguntarle cómo está, en lugar de preguntarle por la piel vacía",
+     "requires": {
+      "role": "healer"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      },
+      {
+       "clue": "sinparpados-muda"
+      }
+     ],
+     "say": "«Nadie me pregunta nunca eso. Bien, gracias. El que dejó esta piel me miró esta mañana desde las piedras, sin parpadear ni una vez.» Una gema por acordarse de quien responde.",
+     "feedback": "Quien se siente escuchado cuenta más de lo que se le pregunta. Y no parpadear también es una pista: hay animales sin párpados, que llevan cada ojo tapado por una escama transparente."
+    },
+    {
+     "id": "repasar",
+     "label": "Repasar en voz alta lo que ya sabemos, en lugar de preguntar",
+     "requires": {
+      "role": "sage"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "say": "Dichas en voz alta, todas juntas, las respuestas sueltas empiezan a encajar. Una gema por ordenar lo que ya se sabe.",
+     "feedback": "Quien ordena lo que ya sabe gasta menos preguntas: juntas, las respuestas dejan fuera a más candidatos que cada una por separado."
+    },
+    {
+     "id": "marcas",
+     "label": "En vez de preguntar, mirar las otras marcas, las que no se parecen a nada",
+     "requires": {
+      "role": "scout"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "say": {
+      "valley": "Son manchas de tinta corrida, como las del nido. El búho las mira mucho rato. Una gema por fijarse antes que nadie.",
+      "azara": "Son manchas de tinta corrida, como las del margen del cuaderno. El baqueano las mira mucho rato. Una gema por fijarse antes que nadie."
+     },
+     "feedback": {
+      "valley": "No todas las marcas del suelo son huellas: estas no tienen forma de pata ni de cuerpo, y son de la misma tinta que las del nido. No son de ningún animal.",
+      "azara": "No todas las marcas del suelo son huellas: estas no tienen forma de pata ni de cuerpo, y son de la misma tinta que las del margen del cuaderno. No son de ningún animal."
+     }
+    }
+   ],
+   "next": "adivinar-muda"
+  },
+  "adivinar-muda": {
+   "type": "choice",
+   "shuffle": true,
+   "prompt": "¿De quién es la piel vacía?",
+   "image": "cuatro-candidatos-muda",
+   "hints": [
+    {
+     "valley": "Repasemos las respuestas del búho: ¿cuál de los cuatro las cumple todas?",
+     "azara": "Repasemos las respuestas del baqueano: ¿cuál de los cuatro las cumple todas?"
+    },
+    "Mudar la piel no basta: más de uno de los cuatro deja su piel vacía al crecer."
+   ],
+   "options": [
+    {
+     "id": "lagartija",
+     "label": "—Es de una lagartija",
+     "correct": false,
+     "objective": "SV-04",
+     "contradicts": [
+      "sinpatas-muda"
+     ],
+     "say": "La lagartija sale de una grieta, mueve la cabeza a un lado y a otro y vuelve a esconderse.",
+     "feedback": "La lagartija también es un reptil con escamas y también muda la piel, pero tiene cuatro patas, y la piel se le cae a trozos, no de una pieza.",
+     "next": "dormido-muda"
+    },
+    {
+     "id": "culebra",
+     "label": "—Es de una culebra",
+     "correct": true,
+     "points": 5,
+     "objective": "SV-04",
+     "say": "La culebra asoma entre las piedras, saca la lengua un par de veces y se aleja ondulando.",
+     "feedback": "La culebra tiene huesos, escamas y la piel seca, y no tiene patas: es un reptil, un vertebrado, y encaja con todas las respuestas. Al crecer, se quita la piel de una vez, vuelta del revés como un calcetín.",
+     "next": "porque-muda"
+    },
+    {
+     "id": "arana",
+     "label": "—Es de una araña",
+     "correct": false,
+     "objective": "SV-04",
+     "contradicts": [
+      "huesos-muda",
+      "escamas-muda",
+      "sinpatas-muda"
+     ],
+     "say": "La araña baja por su hilo, toca la piel vacía con una pata y vuelve a subir.",
+     "feedback": "La araña también deja su cubierta vacía al crecer, con las ocho patas huecas, pero no tiene huesos ni escamas: es un arácnido, un invertebrado.",
+     "next": "dormido-muda"
+    },
+    {
+     "id": "lombriz",
+     "label": "—Es de una lombriz",
+     "correct": false,
+     "objective": "SV-04",
+     "contradicts": [
+      "huesos-muda",
+      "escamas-muda",
+      "seca-muda"
+     ],
+     "say": "La lombriz asoma de la tierra húmeda y vuelve a meterse.",
+     "feedback": "La lombriz es larga y no tiene patas, como la culebra, pero no tiene huesos y su piel es blanda y húmeda, sin escamas. Además, crece sin mudar la piel.",
+     "next": "dormido-muda"
+    }
+   ]
+  },
+  "porque-muda": {
+   "type": "choice",
+   "prompt": {
+    "valley": "Antes de devolverle el nombre al Gran Libro: ¿qué respuestas del búho nos dicen que es una culebra?",
+    "azara": "Antes de apuntarlo en el cuaderno: ¿qué respuestas del baqueano nos dicen que es una culebra?"
+   },
+   "select": {
+    "min": 2,
+    "max": 3
+   },
+   "objective": "SV-07",
+   "hints": [
+    "Sirven las respuestas que dejan fuera a los otros tres, no las que valen para todos."
+   ],
+   "options": [
+    {
+     "id": "sinpatas",
+     "label": "No tiene patas",
+     "correct": true,
+     "points": 2,
+     "say": "La lagartija y la araña se apartan de la piel vacía.",
+     "feedback": "La lagartija y la araña tienen patas; la culebra, no. La lombriz tampoco las tiene, y para ella hace falta otra respuesta."
+    },
+    {
+     "id": "huesos",
+     "label": "Tiene huesos por dentro",
+     "correct": true,
+     "points": 2,
+     "say": "La araña y la lombriz se apartan de la piel vacía.",
+     "feedback": "La araña y la lombriz no tienen huesos: esa respuesta las deja fuera. La lagartija sí los tiene, como la culebra."
+    },
+    {
+     "id": "huevos",
+     "label": "Pone huevos",
+     "correct": false,
+     "say": "Nadie se aparta: los cuatro siguen junto a la piel vacía.",
+     "feedback": "La lagartija, la araña y la lombriz también ponen huevos: una respuesta que vale para todos no ayuda a elegir."
+    },
+    {
+     "id": "escamas",
+     "label": "Tiene escamas",
+     "correct": true,
+     "points": 2,
+     "say": "La araña y la lombriz se quedan atrás.",
+     "feedback": "Ni la araña ni la lombriz tienen escamas. La lagartija sí: es un reptil, como la culebra, y para ella hace falta otra respuesta."
+    },
+    {
+     "id": "sinplumas",
+     "label": "No tiene plumas",
+     "correct": false,
+     "say": "Nadie se aparta: los cuatro se miran unos a otros.",
+     "feedback": "Ninguno de los cuatro tiene plumas: lo que vale para todos no separa a nadie."
+    }
+   ],
+   "next": "bien-muda"
+  },
+  "dormido-muda": {
+   "type": "ending",
+   "outcome": "retry",
+   "retry": "p1-muda",
+   "text": {
+    "valley": "El búho cierra un ojo, luego el otro. «Mañana me preguntan mejor», murmura, y mete la cabeza bajo el ala. Lo que se averiguó no se pierde: con preguntas que dejen fuera a muchos animales de golpe, la piel vacía se lee sola.",
+    "azara": "El baqueano se baja el sombrero sobre los ojos. «Mañana me preguntan mejor», murmura, y se queda quieto. Lo que se averiguó no se pierde: con preguntas que dejen fuera a muchos animales de golpe, la piel vacía se lee sola."
+   },
+   "keep": "La otra vez la piel vacía no encajó con lo que se adivinó. Esta vez: primero, la pregunta que deja fuera a más animales."
+  },
+  "bien-muda": {
+   "type": "ending",
+   "outcome": "success",
+   "text": {
+    "valley": "El nombre de la culebra vuelve al Gran Libro y una luciérnaga se enciende sobre la piel vacía. Entre las piedras, algo largo se desliza y desaparece. El búho abre las alas: «Preguntar bien es la mitad de saber». Después mira las otras marcas, las que no se parecen a nada, y tarda todavía más en contestar: «Esas no son de ningún animal. Son de una idea mal escrita». {{creature}} intenta seguirlas y se mancha la nariz de tinta.",
+    "azara": "El baqueano sonríe y el cuaderno recupera su página. Entre las piedras, algo largo se desliza y desaparece. «Así trabajaba el naturalista: preguntando a cada rastro.» Mira las otras marcas y tarda todavía más en contestar: «Esas no son de ningún bicho. Son de alguien que escribió sin mirar». {{creature}} intenta seguirlas y se mancha la nariz de tinta."
+   },
+   "effects": [
+    {
+     "saber": 20
+    },
+    {
+     "page": "culebra"
+    },
+    {
+     "page": "huellas-de-tinta"
+    }
+   ]
+  },
+  "memoria-ave": {
+   "type": "branch",
+   "rules": [
+    {
+     "if": {
+      "flag": "pluma-en-el-nido"
+     },
+     "next": "intro-ave-nido"
+    }
+   ],
+   "else": "intro-ave"
+  },
+  "intro-ave": {
+   "type": "story",
+   "speaker": "buho",
+   "image": "bosque-pluma",
+   "text": {
+    "valley": "En el barro, junto a un tronco grueso, hay una pluma caída. Al lado, otras marcas que no se parecen a nada. El búho guardián la mira un buen rato, en silencio. Cuando por fin habla, es para avisar de que solo responde sí o no: «Una pluma no es un animal: es lo que un animal deja. Tres preguntas. Hay que elegirlas bien».",
+    "azara": "El baqueano se agacha junto a un tronco grueso, donde hay una pluma caída en el barro. Al lado, otras marcas que no se parecen a nada. La mira un buen rato, en silencio. Cuando por fin habla, dice muy poco: «Contesto sí o no. Tres preguntas, ni una más»."
+   },
+   "next": "p1-ave"
+  },
+  "intro-ave-nido": {
+   "type": "story",
+   "speaker": "buho",
+   "image": "bosque-pluma",
+   "text": {
+    "valley": "El búho guardián nos mira un buen rato, en silencio, antes de mirar el barro. «Alguien de esta expedición puso una pluma en el nido. Hoy el rastro es otra pluma. Una pluma no es un animal: es lo que un animal deja. Hoy toca saber de quién.» En el barro, junto a un tronco grueso, hay una pluma caída y, al lado, otras marcas que no se parecen a nada. El búho solo responde sí o no. «Tres preguntas. Hay que elegirlas bien.»",
+    "azara": "El baqueano nos mira un buen rato, en silencio, antes de mirar el barro. «Alguien puso una pluma en el cajón de los seres vivos. Hoy el rastro es otra pluma. Una pluma no es un animal: es lo que un animal deja.» Se agacha junto a un tronco grueso, donde hay una pluma caída y, al lado, otras marcas que no se parecen a nada. «Contesto sí o no. Tres preguntas, ni una más.»"
+   },
+   "next": "p1-ave"
+  },
+  "p1-ave": {
+   "type": "choice",
+   "prompt": "Primera pregunta",
+   "hints": [
+    "Antes de preguntar, miremos lo que ya nos dice la pluma.",
+    "Una pregunta cuya respuesta ya sabemos no deja fuera a nadie."
+   ],
+   "views": {
+    "protector": "Solo las aves tienen plumas. Los murciélagos y muchos insectos también vuelan, pero ninguno tiene una sola pluma.",
+    "healer": "Todas las aves tienen huesos, plumas y pico, pero el pico no es igual en todas: en gancho, recto, corto y grueso, largo y fino…",
+    "sage": "Una buena pregunta no se gasta en lo que el rastro ya dice: sirve para dejar fuera lo que todavía no sabemos."
+   },
+   "options": [
+    {
+     "id": "huesos",
+     "label": "¿Tiene huesos por dentro?",
+     "say": "«Sí», contesta, sin apartar la vista de la pluma.",
+     "feedback": "Con un animal del que no se sabe nada, es la mejor pregunta para empezar: parte a todos en vertebrados, con huesos, e invertebrados, sin ellos. Pero la pluma ya decía que es un ave, y todas las aves tienen huesos: esta vez, el «sí» no deja fuera a nadie nuevo.",
+     "effects": [
+      {
+       "clue": "huesos-ave"
+      }
+     ]
+    },
+    {
+     "id": "plumas",
+     "label": "¿Tiene plumas?",
+     "say": {
+      "valley": "«Sí.» El búho mira la pluma del barro y después a quien preguntó.",
+      "azara": "«Sí.» El baqueano mira la pluma del barro y después a quien preguntó."
+     },
+     "feedback": "Esa respuesta ya estaba en el barro: solo las aves tienen plumas, así que quien pierde una es un ave. Preguntar lo que el rastro ya dice es gastar una pregunta.",
+     "effects": [
+      {
+       "clue": "plumas-ave"
+      }
+     ]
+    },
+    {
+     "id": "vuela",
+     "label": "¿Vuela?",
+     "say": "«Sí.» Y vuelve a quedarse en silencio.",
+     "feedback": "Vuelan casi todas las aves, pero también los murciélagos, que tienen pelo, y muchos insectos. Volar no dice de qué grupo es un animal; las plumas, sí.",
+     "effects": [
+      {
+       "clue": "vuela-ave"
+      }
+     ]
+    },
+    {
+     "id": "pico",
+     "label": "¿Tiene el pico en gancho?",
+     "say": {
+      "valley": "«No. Lo tiene recto.» El búho se queda mirando a quien preguntó y le regala una pregunta más.",
+      "azara": "«No. Lo tiene recto.» El baqueano se queda mirando a quien preguntó y le regala una pregunta más."
+     },
+     "feedback": "La pluma ya había contestado varias preguntas: solo las aves tienen plumas, y todas tienen huesos y pico. Lo que no dice es qué ave es. El pico no cambia de un ejemplar a otro y cuenta cómo come cada una: en gancho lo tienen las aves que desgarran a sus presas, como los búhos y las águilas, y también los loros. Con un solo «no», quedan fuera todas ellas.",
+     "effects": [
+      {
+       "extraquestion": 1
+      },
+      {
+       "flag": "pregunta-buena"
+      },
+      {
+       "clue": "pico-ave"
+      }
+     ]
+    }
+   ],
+   "next": "p2-ave"
+  },
+  "p2-ave": {
+   "type": "choice",
+   "prompt": "Segunda pregunta",
+   "hints": [
+    "Si es un ave, ¿en qué se diferencian unas aves de otras? Pensemos en cómo y dónde busca cada una su comida."
+   ],
+   "views": {
+    "scout": "Vista de cerca, la pluma es dura y recta, y tiene la punta gastada, como si rozara a menudo contra algo áspero.",
+    "protector": "La pluma está al pie de un tronco grueso, lejos del arroyo. En el suelo, alrededor, hay trocitos de corteza recién caídos.",
+    "healer": "Los búhos y las lechuzas tienen plumas suaves, con el borde como un peine, para volar sin ruido. La del barro es dura y lisa.",
+    "sage": {
+     "valley": "Clave del Gran Libro, para aves del bosque. ¿Trepa por los troncos? Sí: un pájaro carpintero u otro trepador. No: ¿pesca en el agua? Sí: un martín pescador. No: otra ave del bosque.",
+     "azara": "Clave del cuaderno, para aves del monte. ¿Trepa por los troncos? Sí: un pájaro carpintero u otro trepador. No: ¿pesca en el agua? Sí: un martín pescador. No: otra ave del monte."
+    }
+   },
+   "options": [
+    {
+     "id": "huevos",
+     "label": "¿Pone huevos?",
+     "say": "«Sí.» Y espera, sin moverse, la pregunta siguiente.",
+     "feedback": "Todas las aves ponen huevos; los murciélagos, no: sus crías nacen vivas y maman. Pero si la pluma ya decía que es un ave, esta respuesta no deja fuera a ninguna.",
+     "effects": [
+      {
+       "clue": "huevos-ave"
+      }
+     ]
+    },
+    {
+     "id": "dedia",
+     "label": "¿Busca su comida de noche?",
+     "say": {
+      "valley": "«No: de día.» Y bosteza: a esas horas, él duerme.",
+      "azara": "«No: de día.» Y mira hacia lo alto de los árboles."
+     },
+     "feedback": "De noche buscan su comida los búhos, las lechuzas y casi todos los murciélagos. El dueño de la pluma la busca de día: esa respuesta deja fuera a los animales nocturnos.",
+     "effects": [
+      {
+       "clue": "dedia-ave"
+      }
+     ]
+    },
+    {
+     "id": "pesca",
+     "label": "¿Pesca en el agua?",
+     "say": "«No.» Y mira hacia el arroyo, que queda lejos.",
+     "feedback": "Hay aves que pescan, como el martín pescador o la garza, y viven junto al agua. El dueño de la pluma busca su comida en otro sitio.",
+     "effects": [
+      {
+       "clue": "pesca-ave"
+      }
+     ]
+    },
+    {
+     "id": "trepa",
+     "label": "¿Trepa por los troncos?",
+     "say": "«Sí.» Y levanta la vista hacia la corteza del tronco.",
+     "feedback": "Pocas aves trepan por los troncos agarradas a la corteza: esa respuesta deja fuera a casi todas las demás.",
+     "effects": [
+      {
+       "clue": "trepa-ave"
+      }
+     ]
+    },
+    {
+     "id": "seguir",
+     "label": "Que el explorador del equipo busque de dónde cayó la pluma",
+     "requires": {
+      "teamrole": "scout"
+     },
+     "locked": "Esto lo haría alguien que sigue rastros: el explorador del equipo.",
+     "effects": [
+      {
+       "clue": "arriba-ave"
+      }
+     ],
+     "say": {
+      "valley": "Alrededor de la pluma no hay ni una pisada: cayó desde arriba. «Eso no es preguntar», dice el búho, «pero también es saber mirar.»",
+      "azara": "Alrededor de la pluma no hay ni una pisada: cayó desde arriba. «Eso no es preguntar», dice el baqueano, «pero también es saber mirar.»"
+     },
+     "feedback": "Mirar también da respuestas: si no hay pisadas, el dueño de la pluma no bajó al suelo; la perdió desde una rama o desde el tronco."
+    },
+    {
+     "id": "guardia",
+     "label": "Montar guardia junto a la pluma para que no se la lleve el viento",
+     "requires": {
+      "role": "protector"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "say": "Nadie la pisa y el viento no se la lleva. Al rato, desde lo alto, cae otra pluma pequeña. Una gema por proteger el rastro.",
+     "feedback": "Una pluma pesa tan poco que cualquier soplo se la lleva: las pruebas se protegen antes de estudiarlas. Y si cae otra, quien las pierde anda todavía cerca."
+    }
+   ],
+   "next": "p3-ave"
+  },
+  "p3-ave": {
+   "type": "choice",
+   "extra": true,
+   "prompt": {
+    "valley": "Última pregunta (o dos, si el búho regaló una)",
+    "azara": "Última pregunta (o dos, si el baqueano regaló una)"
+   },
+   "hints": [
+    "Una pregunta que confirme lo que ya sospechamos vale más que una al azar."
+   ],
+   "options": [
+    {
+     "id": "trepa",
+     "label": "¿Trepa por los troncos?",
+     "say": "«Sí.» Y levanta la vista hacia la corteza del tronco.",
+     "feedback": "Pocas aves trepan por los troncos agarradas a la corteza: esa respuesta deja fuera a casi todas las demás.",
+     "effects": [
+      {
+       "clue": "trepa-ave"
+      }
+     ]
+    },
+    {
+     "id": "nido",
+     "label": "¿Abre su nido con el pico?",
+     "say": "«Sí: un agujero.» Y no dice dónde.",
+     "feedback": "Pocas aves abren con el pico el agujero de su nido: unas lo hacen en los troncos y otras en la tierra de las orillas. Esa respuesta deja fuera a casi todas, pero no a todas las que se parecen.",
+     "effects": [
+      {
+       "clue": "nido-ave"
+      }
+     ]
+    },
+    {
+     "id": "pesca",
+     "label": "¿Pesca en el agua?",
+     "say": "«No.» Y mira hacia el arroyo, que queda lejos.",
+     "feedback": "Hay aves que pescan, como el martín pescador o la garza, y viven junto al agua. El dueño de la pluma busca su comida en otro sitio.",
+     "effects": [
+      {
+       "clue": "pesca-ave"
+      }
+     ]
+    },
+    {
+     "id": "cuidar",
+     "label": "Preguntarle cómo está, en lugar de preguntarle por la pluma",
+     "requires": {
+      "role": "healer"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      },
+      {
+       "clue": "ruido-ave"
+      }
+     ],
+     "say": {
+      "valley": "«Nadie me pregunta nunca eso. Bien, gracias, aunque hoy he dormido poco: el dueño de esta pluma hace mucho ruido de día, justo cuando yo duermo.» Una gema por acordarse de quien responde.",
+      "azara": "«Nadie me pregunta nunca eso. Bien, gracias, aunque hoy no he podido dormir la siesta: el dueño de esta pluma hace mucho ruido de día.» Una gema por acordarse de quien responde."
+     },
+     "feedback": "Quien se siente escuchado cuenta más de lo que se le pregunta. Y un ruido también es una pista: el dueño de la pluma anda despierto y trabajando de día."
+    },
+    {
+     "id": "repasar",
+     "label": "Repasar en voz alta lo que ya sabemos, en lugar de preguntar",
+     "requires": {
+      "role": "sage"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "say": "Dichas en voz alta, todas juntas, las respuestas sueltas empiezan a encajar. Una gema por ordenar lo que ya se sabe.",
+     "feedback": "Quien ordena lo que ya sabe gasta menos preguntas: juntas, las respuestas dejan fuera a más candidatos que cada una por separado."
+    },
+    {
+     "id": "marcas",
+     "label": "En vez de preguntar, mirar las otras marcas, las que no se parecen a nada",
+     "requires": {
+      "role": "scout"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "say": {
+      "valley": "Son manchas de tinta corrida, como las del nido. El búho las mira mucho rato. Una gema por fijarse antes que nadie.",
+      "azara": "Son manchas de tinta corrida, como las del margen del cuaderno. El baqueano las mira mucho rato. Una gema por fijarse antes que nadie."
+     },
+     "feedback": {
+      "valley": "No todas las marcas del suelo son huellas: estas no tienen forma de pata ni de cuerpo, y son de la misma tinta que las del nido. No son de ningún animal.",
+      "azara": "No todas las marcas del suelo son huellas: estas no tienen forma de pata ni de cuerpo, y son de la misma tinta que las del margen del cuaderno. No son de ningún animal."
+     }
+    }
+   ],
+   "next": "adivinar-ave"
+  },
+  "adivinar-ave": {
+   "type": "choice",
+   "shuffle": true,
+   "prompt": "¿De quién es la pluma?",
+   "image": "cuatro-candidatos-ave",
+   "hints": [
+    {
+     "valley": "Repasemos las respuestas del búho: ¿cuál de los cuatro las cumple todas?",
+     "azara": "Repasemos las respuestas del baqueano: ¿cuál de los cuatro las cumple todas?"
+    },
+    "Volar no es lo mismo que tener plumas: uno de los cuatro vuela con alas de piel."
+   ],
+   "options": [
+    {
+     "id": "murcielago",
+     "label": "—Es de un murciélago",
+     "correct": false,
+     "objective": "SV-04",
+     "contradicts": [
+      "plumas-ave",
+      "huevos-ave",
+      "pico-ave",
+      "dedia-ave",
+      "nido-ave"
+     ],
+     "say": "El murciélago, colgado boca abajo de una rama, se envuelve en sus alas y sigue durmiendo.",
+     "feedback": "El murciélago vuela, pero no es un ave: sus alas son de piel, su cuerpo tiene pelo y sus crías nacen vivas y maman. Es un mamífero, y ningún mamífero tiene plumas.",
+     "next": "dormido-ave"
+    },
+    {
+     "id": "martinpescador",
+     "label": "—Es de un martín pescador",
+     "correct": false,
+     "objective": "SV-04",
+     "contradicts": [
+      "trepa-ave",
+      "pesca-ave"
+     ],
+     "say": "El martín pescador pasa rozando el agua del arroyo, con un pez en el pico.",
+     "feedback": "El martín pescador también es un ave de pico recto y fuerte, y también abre su nido con el pico, pero en la tierra de las orillas. No trepa por los troncos: vive junto al agua y pesca.",
+     "next": "dormido-ave"
+    },
+    {
+     "id": "pajarocarpintero",
+     "label": "—Es de un pájaro carpintero",
+     "correct": true,
+     "points": 5,
+     "objective": "SV-04",
+     "say": "Desde lo alto del tronco llega un toc, toc, toc. El pájaro carpintero asoma la cabeza por un agujero y vuelve a su trabajo.",
+     "feedback": "El pájaro carpintero es un ave: tiene plumas, pico y huesos, y pone huevos. Trepa por los troncos agarrado a la corteza y apoyado en la cola, que tiene dura, y con el pico, recto y fuerte, saca insectos de debajo de la corteza y abre el agujero de su nido. Encaja con todas las respuestas.",
+     "next": "porque-ave"
+    },
+    {
+     "id": "lechuza",
+     "label": "—Es de una lechuza",
+     "correct": false,
+     "objective": "SV-04",
+     "contradicts": [
+      "pico-ave",
+      "trepa-ave",
+      "dedia-ave",
+      "nido-ave"
+     ],
+     "say": "La lechuza abre los ojos en un hueco del tronco, los vuelve a cerrar y sigue durmiendo.",
+     "feedback": "La lechuza es un ave, pero tiene el pico en gancho, caza de noche y sus plumas son suaves, para volar sin ruido. No trepa por los troncos ni abre su nido con el pico: anida en huecos que ya existen.",
+     "next": "dormido-ave"
+    }
+   ]
+  },
+  "porque-ave": {
+   "type": "choice",
+   "prompt": {
+    "valley": "Antes de devolverle el nombre al Gran Libro: ¿qué respuestas del búho nos dicen que es un pájaro carpintero?",
+    "azara": "Antes de apuntarlo en el cuaderno: ¿qué respuestas del baqueano nos dicen que es un pájaro carpintero?"
+   },
+   "select": {
+    "min": 2,
+    "max": 3
+   },
+   "objective": "SV-07",
+   "hints": [
+    "Sirven las respuestas que dejan fuera a los otros tres, no las que valen para todos."
+   ],
+   "options": [
+    {
+     "id": "vuela",
+     "label": "Vuela",
+     "correct": false,
+     "say": "Nadie se aparta: los cuatro siguen junto a la pluma.",
+     "feedback": "El pájaro carpintero, el martín pescador, la lechuza y el murciélago vuelan: una respuesta que vale para todos no ayuda a elegir."
+    },
+    {
+     "id": "trepa",
+     "label": "Trepa por los troncos",
+     "correct": true,
+     "points": 2,
+     "say": "El martín pescador y la lechuza se apartan de la pluma.",
+     "feedback": "Ni el martín pescador ni la lechuza trepan por los troncos: esa respuesta deja fuera a los dos."
+    },
+    {
+     "id": "pico",
+     "label": "Tiene el pico recto, no en gancho",
+     "correct": true,
+     "points": 2,
+     "say": "La lechuza y el murciélago se apartan de la pluma.",
+     "feedback": "La lechuza tiene el pico en gancho, y el murciélago no tiene pico: esa respuesta deja fuera a los dos. El martín pescador, en cambio, también lo tiene recto."
+    },
+    {
+     "id": "huesos",
+     "label": "Tiene huesos por dentro",
+     "correct": false,
+     "say": "Nadie se aparta: los cuatro se miran unos a otros.",
+     "feedback": "Los cuatro tienen huesos por dentro, también el murciélago, que es un mamífero: lo que vale para todos no separa a nadie."
+    },
+    {
+     "id": "plumas",
+     "label": "Tiene plumas",
+     "correct": true,
+     "points": 2,
+     "say": "El murciélago se aparta, sin hacer ruido.",
+     "feedback": "Solo las aves tienen plumas: el murciélago, que tiene pelo, se queda fuera. Ya lo decía la pluma del barro."
+    }
+   ],
+   "next": "bien-ave"
+  },
+  "dormido-ave": {
+   "type": "ending",
+   "outcome": "retry",
+   "retry": "p1-ave",
+   "text": {
+    "valley": "El búho cierra un ojo, luego el otro. «Mañana me preguntan mejor», murmura, y mete la cabeza bajo el ala. Lo que se averiguó no se pierde: si no se gastan preguntas en lo que la pluma ya dice, el rastro se lee solo.",
+    "azara": "El baqueano se baja el sombrero sobre los ojos. «Mañana me preguntan mejor», murmura, y se queda quieto. Lo que se averiguó no se pierde: si no se gastan preguntas en lo que la pluma ya dice, el rastro se lee solo."
+   },
+   "keep": "La otra vez la pluma no encajó con lo que se adivinó. Esta vez: nada de preguntar lo que la pluma ya dice; primero, lo que no dice."
+  },
+  "bien-ave": {
+   "type": "ending",
+   "outcome": "success",
+   "text": {
+    "valley": "El nombre del pájaro carpintero vuelve al Gran Libro y una luciérnaga se enciende sobre la pluma. Arriba, el toc, toc, toc no para. El búho abre las alas: «Preguntar bien es la mitad de saber». Después mira las otras marcas, las que no se parecen a nada, y tarda todavía más en contestar: «Esas no son de ningún animal. Son de una idea mal escrita». {{creature}} intenta seguirlas y se mancha la nariz de tinta.",
+    "azara": "El baqueano sonríe y el cuaderno recupera su página. Arriba, el toc, toc, toc no para. «Así trabajaba el naturalista: preguntando a cada rastro.» Mira las otras marcas y tarda todavía más en contestar: «Esas no son de ningún bicho. Son de alguien que escribió sin mirar». {{creature}} intenta seguirlas y se mancha la nariz de tinta."
+   },
+   "effects": [
+    {
+     "saber": 20
+    },
+    {
+     "page": "pajarocarpintero"
     },
     {
      "page": "huellas-de-tinta"

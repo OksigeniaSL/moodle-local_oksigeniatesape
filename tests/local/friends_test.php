@@ -53,8 +53,11 @@ final class friends_test extends \advanced_testcase {
         ))[0];
         $this->assertSame([0, 5], [$buho()['pages'], $buho()['of']]);
         $this->assertSame('', $buho()['talks'][0]['text']);
-        // One page of the owl's: not yet.
+        // One page of the owl's: not yet. The animal of the trail of the owl comes at random: another of them, as it comes
+        // to who plays the scene again, counts as the same one.
         $page('caracol');
+        $page('culebra');
+        $this->assertSame(1, $buho()['pages']);
         try {
             friends::listen($course->id, $char, 'buho', 2, self::NOW);
             $this->fail('A talk with too few pages');

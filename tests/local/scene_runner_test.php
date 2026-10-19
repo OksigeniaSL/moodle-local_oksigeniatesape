@@ -203,6 +203,23 @@ final class scene_runner_test extends \advanced_testcase {
     }
 
     /**
+     * The trail of the owl comes at random among three (the slime of a snail, the shed skin of a snake, the feather of a
+     * woodpecker): each one can be played to its good ending, with the page of its own animal.
+     */
+    public function test_every_trail_of_the_owl_can_be_played_to_its_good_ending(): void {
+        $scene = autoplayer::scene('C3-2');
+        $this->assertSame(['memoria', 'memoria-muda', 'memoria-ave'], $scene['nodes']['rastro']['pick']);
+        foreach (['caracol', 'culebra', 'pajarocarpintero'] as $way => $page) {
+            $result = (new scene_runner($scene))->run(autoplayer::play($scene, [], [], [], '', $way));
+            $this->assertSame('success', $result['outcome'], $page);
+            $this->assertContains(['page' => $page], $result['effects'], $page);
+            foreach ($result['objectives'] as $objective => $o) {
+                $this->assertSame($o['total'], $o['ok'], "$page $objective");
+            }
+        }
+    }
+
+    /**
      * A first try with mix-ups put right on the way is taken by the server, ends as the good play (or in the partial
      * ending, where the scene counts what was right at the first try), and the mix-ups count against the objectives.
      * Quests ask for more: a play wrong at every first try can be sent back, one with some mix-ups counts.

@@ -31,10 +31,20 @@ final class autoplayer {
      * @param array $scene
      * @param string[] $items Items the student carries.
      * @param string[] $roles Roles in the team.
+     * @param string[] $flags Flags of the mission the character carries.
+     * @param string $role The character's own role.
+     * @param int $way Which of its ways a branch at random takes.
      * @return array
      */
-    public static function play(array $scene, array $items = [], array $roles = []): array {
-        return \local_oksigeniatesape\local\autoplayer::play($scene, $items, $roles);
+    public static function play(
+        array $scene,
+        array $items = [],
+        array $roles = [],
+        array $flags = [],
+        string $role = '',
+        int $way = 0
+    ): array {
+        return \local_oksigeniatesape\local\autoplayer::play($scene, $items, $roles, $flags, $role, $way);
     }
 
     /**

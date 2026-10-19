@@ -40,7 +40,7 @@ final class friends {
         $list = [];
         foreach ($mission->data['friends'] ?? [] as $code => $friend) {
             $pages = (array) ($friend['pages'] ?? []);
-            $have = count(array_filter($pages, fn($p) => !empty($found['page'][$p])));
+            $have = self::counted($pages, fn($p) => !empty($found['page'][$p]));
             $talks = [];
             foreach ($friend['talks'] ?? [] as $talk) {
                 $at = (int) ($talk['at'] ?? 0);
@@ -55,6 +55,18 @@ final class friends {
             ), 'pages' => $have, 'of' => count($pages), 'talks' => $talks];
         }
         return $list;
+    }
+
+    /**
+     * How many pages of a friend a student gave back: a list of pages counts as one, given back if any of them is (the
+     * animal of the trail of the owl, which comes at random).
+     *
+     * @param array $pages Codes, or lists of codes.
+     * @param callable $given Whether a page was given back.
+     * @return int
+     */
+    private static function counted(array $pages, callable $given): int {
+        return count(array_filter($pages, fn($p) => is_array($p) ? (bool) array_filter($p, $given) : $given($p)));
     }
 
     /**
@@ -83,7 +95,7 @@ final class friends {
             "charid = ? AND missionid = ? AND kind = 'page'",
             [$char->id, $mission->id]
         );
-        if (count(array_intersect((array) ($friend['pages'] ?? []), $given)) < $at) {
+        if (self::counted((array) ($friend['pages'] ?? []), fn($p) => in_array($p, $given, true)) < $at) {
             throw new \moodle_exception('nofriendtalk', 'local_oksigeniatesape');
         }
         $gems = 0;
