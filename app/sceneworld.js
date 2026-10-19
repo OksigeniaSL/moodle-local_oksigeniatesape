@@ -311,7 +311,9 @@
             speakerPuppet: S && S.speaker && S.speaker.puppet ? S.speaker.puppet.clipName : '', rigs: cast.rigs || {},
             hero: S && S.hero && S.hero.puppet ? S.hero.puppet.clipName + (S.hero.puppet.tone ? ' ' + S.hero.puppet.tone : '') :
               '',
-            pet: S && S.pet && S.pet.puppet ? S.pet.puppet.clipName : ''};
+            pet: S && S.pet && S.pet.puppet ? S.pet.puppet.clipName : '',
+            aura: !!(S && S.hero && S.hero.aura),
+            paint: !!(S && S.pet && S.pet.sprite.filters && S.pet.sprite.filters.internal.list.length)};
         },
         close: function() {
           pending = [];
@@ -335,9 +337,10 @@
           T.cast.textures(S);
           if (c && c.role) {
             S.hero = T.cast.actor(S, 'hero', 0, 0, 1, still);
+            T.cast.aura(S, S.hero, c.aura, still);
             if (c.creature) {
               var pet = T.cast.creature(c);
-              S.pet = T.cast.actor(S, 'pet', 0, 0, 1, still, pet.hue);
+              S.pet = T.cast.actor(S, 'pet', 0, 0, 1, still, pet.hue, pet.paint);
             }
           }
           S.sparks = S.add.particles(0, 0, 'spark', {lifespan: 1000, speed: {min: 80, max: 280}, scale: {start: 0.9, end: 0},

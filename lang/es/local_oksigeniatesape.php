@@ -245,6 +245,7 @@ $string['app_exit_my'] = 'A mi área personal';
 $string['app_exit_saved'] = 'Todo lo que has terminado está guardado.';
 $string['app_exit_waiting'] = 'Partidas que esperan en este dispositivo a la conexión, y se enviarán solas: {$a}.';
 $string['app_expedition_back'] = 'Volver a la expedición de ahora';
+$string['app_expedition_free'] = 'Expedición libre: sus escenas se pueden volver a jugar por gusto. Pueden dar gemas y páginas, y recuerdan lo que hiciste aquí; el saber, las linternas y los objetos son de la expedición de ahora.';
 $string['app_expedition_lit'] = 'Linternas de la clase: {$a->lit} de {$a->total}';
 $string['app_expedition_mine'] = 'Tus linternas: {$a->mine} · Tus páginas: {$a->pages}';
 $string['app_expedition_visit'] = 'Visitar';

@@ -110,7 +110,7 @@ final class scenes_test extends \advanced_testcase {
     private function play(\stdClass $w, \stdClass $user, string $code, array $items = []): array {
         global $DB;
         $scene = $DB->get_record(self::T . 'scene', ['missionid' => $w->mission->id, 'code' => $code]);
-        [$carried, $roles, $flags, $role] = scenes::context(characters::get($user->id), $w->course->id);
+        [$carried, $roles, $flags, $role] = scenes::context(characters::get($user->id), $w->course->id, (int) $w->mission->id);
         return scenes::play($w->course->id, $user->id, $scene->id, autoplayer::play(
             json_decode($scene->definition, true),
             array_merge($carried, $items),
@@ -225,16 +225,39 @@ final class scenes_test extends \advanced_testcase {
         $this->assertEquals(0, characters::get($w->users[0]->id)->saber);
     }
 
-    public function test_only_the_scenes_of_the_mission_in_course_are_played(): void {
+    public function test_the_scenes_of_a_past_expedition_are_played_freely(): void {
         global $DB;
         $this->resetAfterTest();
         $w = $this->make_class(1);
-        $old = $DB->get_record(self::T . 'scene', ['missionid' => $w->mission->id, 'code' => 'C1-1']);
-        // The class goes on to another expedition: the scenes of the past one are only read.
-        missions::install($w->course->id, 'livingthings', 'valley', 'py');
-        $this->assertNotEmpty(scenes::get($w->course->id, $old->id)->data);
+        $user = $w->users[0];
+        $old = scenes::get($w->course->id, (int) $DB->get_field(self::T . 'scene', 'id', ['missionid' => $w->mission->id,
+            'code' => 'C1-2']));
+        // The class goes on to another expedition (a copy of the mission, standing for any other one).
+        $second = clone $w->mission;
+        unset($second->id);
+        $second->code = 'second';
+        $second->id = $DB->insert_record(self::T . 'mission', $second);
+        missions::forget();
+        $this->assertTrue(scenes::free($w->course->id, $old));
+        // The scenes of the past one are played as quests, with the memory of their own expedition.
+        $char = characters::get($user->id);
+        $DB->insert_record(self::T . 'found', ['charid' => $char->id, 'courseid' => $w->course->id,
+            'missionid' => $w->mission->id, 'kind' => 'flag', 'code' => 'oldmemory', 'timecreated' => time()]);
+        $this->assertSame(['oldmemory'], scenes::context($char, $w->course->id, (int) $old->missionid)[2]);
+        $this->assertSame([], scenes::context($char, $w->course->id)[2]);
+        $result = $this->play($w, $user, 'C1-2');
+        $this->assertSame('success', $result['outcome']);
+        $this->assertSame(0, $result['rewards']['saber']);
+        $this->assertSame([], $result['rewards']['lanterns']);
+        $this->assertSame([], $result['rewards']['items']);
+        $this->assertEquals(0, characters::get($user->id)->saber);
+        // It counts as played in its own expedition.
+        $done = ['charid' => $char->id, 'kind' => 'scene', 'code' => 'C1-2'];
+        $this->assertTrue($DB->record_exists(self::T . 'found', $done + ['missionid' => $w->mission->id]));
+        $this->assertFalse($DB->record_exists(self::T . 'found', $done + ['missionid' => $second->id]));
+        // A class scene or a team session only plays the expedition in course.
         $this->expectException(\moodle_exception::class);
-        scenes::play($w->course->id, $w->users[0]->id, $old->id, [], null);
+        scenes::playable($w->course->id, (int) $old->id);
     }
 
     public function test_a_play_starts_at_a_retry_node_only_after_that_retry(): void {

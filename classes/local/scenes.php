@@ -72,20 +72,36 @@ final class scenes {
     }
 
     /**
-     * A scene of the mission in course, to play it: those of past expeditions are only read.
+     * A scene of the mission in course, to play it; with the free expedition, also one of a past expedition of the
+     * course, played for pleasure (see free()).
      *
      * @param int $courseid
      * @param int $sceneid
+     * @param bool $past Also a scene of a past expedition.
      * @return \stdClass With the definition decoded in data.
      */
-    public static function playable(int $courseid, int $sceneid): \stdClass {
+    public static function playable(int $courseid, int $sceneid, bool $past = false): \stdClass {
         $scene = self::get($courseid, $sceneid);
         $mission = missions::get($courseid);
-        $off = $mission ? edits::off($courseid, (string) $mission->code) : [];
-        if (!$mission || (int) $scene->missionid !== (int) $mission->id || in_array((string) $scene->code, $off, true)) {
+        $off = edits::off($courseid, (string) $scene->missioncode);
+        $current = $mission && (int) $scene->missionid === (int) $mission->id;
+        if (!$mission || (!$current && !$past) || in_array((string) $scene->code, $off, true)) {
             throw new \moodle_exception('invalidgameplay', 'local_oksigeniatesape');
         }
         return $scene;
+    }
+
+    /**
+     * Whether a scene is played in the free expedition: it is of a past expedition of the course. As a quest, it gives
+     * gems, pages and memory of its own expedition, never saber, lanterns, items or anything of the creature.
+     *
+     * @param int $courseid
+     * @param \stdClass $scene
+     * @return bool
+     */
+    public static function free(int $courseid, \stdClass $scene): bool {
+        $mission = missions::get($courseid);
+        return $mission && (int) $scene->missionid !== (int) $mission->id;
     }
 
     /**
@@ -229,9 +245,10 @@ final class scenes {
      *
      * @param \stdClass $char
      * @param int $courseid
+     * @param int|null $missionid The expedition whose memory counts (null: the one in course).
      * @return array [item codes, roles of the team, flags of the mission (what they did in other scenes), own role]
      */
-    public static function context(\stdClass $char, int $courseid): array {
+    public static function context(\stdClass $char, int $courseid, ?int $missionid = null): array {
         global $DB;
         $items = $DB->get_fieldset_sql(
             'SELECT i.code
@@ -253,11 +270,11 @@ final class scenes {
             // With the trade of the day, what their team lent goes, and what it was lent comes.
             $items = events::traded($courseid, (int) $group->id, $items);
         }
-        $mission = missions::get($courseid);
+        $missionid = $missionid ?? (int) (missions::get($courseid)->id ?? 0);
         $flags = [];
-        if ($mission) {
+        if ($missionid) {
             $where = "charid = ? AND missionid = ? AND kind = 'flag'";
-            $flags = $DB->get_fieldset_select(self::T . 'found', 'code', $where, [$char->id, $mission->id]);
+            $flags = $DB->get_fieldset_select(self::T . 'found', 'code', $where, [$char->id, $missionid]);
         }
         // The creature, once hatched, goes with the hero as one more thing they carry: it can sniff in the scenes.
         if ((int) ($char->creaturestage ?? 0) >= 1) {
@@ -455,7 +472,7 @@ final class scenes {
         if ($member->status === 'paused') {
             throw new \moodle_exception('pausedgame', 'local_oksigeniatesape');
         }
-        $scene = self::playable($courseid, $sceneid);
+        $scene = self::playable($courseid, $sceneid, true);
         if ($playid !== '') {
             $done = $DB->get_record(self::T . 'sceneattempt', ['charid' => $char->id, 'sceneid' => $scene->id,
                 'playid' => $playid]);
@@ -478,7 +495,8 @@ final class scenes {
                 throw new \moodle_exception('invalidgameplay', 'local_oksigeniatesape');
             }
         }
-        [$items, $roles, $flags] = self::context($char, $courseid);
+        // The memory of the expedition of the scene: a past one, in the free expedition.
+        [$items, $roles, $flags] = self::context($char, $courseid, (int) $scene->missionid);
         // A scene only for one cannot be played as a team.
         $team = $mates && ($scene->data['mode'] ?? 'both') !== 'solo' ? self::mates(
             $courseid,
@@ -789,7 +807,8 @@ final class scenes {
             'hatched' => false, 'grew' => false, 'chapter' => '', 'classlantern' => ''];
         $target = ['saber' => 0, 'gems' => 0];
         $effects = array_merge($result['effects'], $result['inline']);
-        $quest = !empty($scene->quest);
+        // A scene of a past expedition is played freely: as a quest.
+        $quest = !empty($scene->quest) || self::free((int) $member->courseid, $scene);
         if ($quest) {
             // A quest is for whoever wants more: gems, pages and memory, never saber, lanterns, items or the creature.
             $effects = array_map(fn($e) => array_intersect_key($e, ['gems' => 1, 'page' => 1, 'flag' => 1]), $effects);

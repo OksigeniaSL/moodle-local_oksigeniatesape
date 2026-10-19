@@ -2244,9 +2244,10 @@
       return '<li class="item"><span class="grow"><b>' + esc(sc.title) + done(sc) + '</b><small>' + (sc.mode === 'team' ?
         esc(t('app_team_meant')) : '') + (sc.done && sc.better ? (sc.mode === 'team' ? ' · ' : '') +
         esc(t('app_status_better')) : '') + '</small></span>' +
-        (past ? '' : '<span class="item-actions">' + together(sc) + '<button class="btn ' + (isNext('scene', sc.id) ?
+        // In a past expedition, the free expedition: played alone, for pleasure.
+        '<span class="item-actions">' + (past ? '' : together(sc)) + '<button class="btn ' + (!past && isNext('scene', sc.id) ?
         'btn-main' : 'btn-soft') + '" data-scene="' + sc.id + '">' + esc(sc.done ? t('app_playagain') :
-        t('app_play')) + '</button></span>') + '</li>';
+        t('app_play')) + '</button></span></li>';
     }).join('');
     var acts = past ? [] : w.activities.filter(function(a) {
       return a.chapterid === ch.id;
@@ -2272,9 +2273,8 @@
     }).map(function(q) {
       return '<li class="item"><span class="grow"><b>' + esc(q.title) + done(q) + '</b><small>' + esc(t('app_quest_step_' +
         (q.step === 4 ? 4 : 3))) + (q.done && q.better ? ' · ' + esc(t('app_status_better')) : '') + '</small></span>' +
-        (past ? '' :
         '<button class="btn btn-soft" data-scene="' + q.id + '">' + esc(q.done ? t('app_playagain') : t('app_play')) +
-        '</button>') + '</li>';
+        '</button></li>';
     }).join('');
     var games = (ch.games || []).map(function(g) {
       return '<li class="item"><span class="mini-icon">' + T.icon('game') + '</span><span class="grow"><b>' + esc(g.title) +
@@ -2612,9 +2612,20 @@
     });
     app.querySelectorAll('[data-scene]').forEach(function(b) {
       b.onclick = function() {
+        var visit = state.visit;
         T.playScene({sceneid: Number(b.dataset.scene), world: state.world, onclose: function(world) {
           state.world = world;
-          route();
+          if (!visit) {
+            route();
+            return;
+          }
+          // In the free expedition, the past one again, with what was just played in it.
+          T.api('get_expedition', {courseid: cfg.courseid, missionid: visit.id}).then(function(r) {
+            state.visit = r.mission;
+            route();
+          }).catch(function() {
+            route();
+          });
         }});
       };
     });
@@ -2645,7 +2656,8 @@
     var w = state.world;
     if (state.visit) {
       return '<section class="card visit-head" style="margin-bottom:12px"><div class="kicker">' +
-        esc(t('app_expedition_visiting')) + '</div><div class="actions" style="justify-content:flex-start"><button ' +
+        esc(t('app_expedition_visiting')) + '</div><p class="help-soft">' + esc(t('app_expedition_free')) + '</p>' +
+        '<div class="actions" style="justify-content:flex-start"><button ' +
         'class="btn btn-soft" data-leave>' + esc(t('app_expedition_back')) + '</button></div></section>' +
         missionView(state.visit, true);
     }

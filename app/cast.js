@@ -53,10 +53,31 @@
   }
 
   /**
-   * The picture of the creature of a character, its hue and its name.
+   * The paints of the market as colour matrices, the same as the tablet paints them with filters: one over the hue of
+   * the creature.
+   */
+  var PAINTS = {
+    'paint-gold': function(m) {
+      m.hue(17);
+      m.saturate(0.9, true);
+      m.brightness(1.18, true);
+    },
+    'paint-night': function(m) {
+      m.hue(190);
+      m.saturate(-0.15, true);
+      m.brightness(0.75, true);
+    },
+    'paint-snow': function(m) {
+      m.grayscale(0.92);
+      m.brightness(1.25, true);
+    }
+  };
+
+  /**
+   * The picture of the creature of a character, its hue, its paint and its name.
    *
    * @param {Object} c The character.
-   * @return {Object} key, url, hue, name.
+   * @return {Object} key, url, hue, paint, name.
    */
   function creature(c) {
     var traits = {};
@@ -70,7 +91,8 @@
     var coat = traits.coat || 'none';
     var key = T.artKey(['creature.' + st + '.' + coat, 'creature.' + st, 'creature.' + low + '.' + coat, 'creature.' + low,
       'creature']);
-    return {key: key, url: key ? T.artUrl([key]) : null, hue: Number(traits.hue) || 0, name: traits.name || ''};
+    return {key: key, url: key ? T.artUrl([key]) : null, hue: Number(traits.hue) || 0, paint: PAINTS[traits.paint] ?
+      traits.paint : '', name: traits.name || ''};
   }
 
   /**
@@ -135,25 +157,75 @@
      * @param {number} height In the units of the scene.
      * @param {boolean} still Without movement.
      * @param {number} [hue] A turn of colour (the creature).
+     * @param {string} [paint] The paint of the market, over the hue (the creature).
      * @return {Object} The figure: x, y, sprite, puppet, shadow, base, facing, lift, tilt, pose…
      */
-    actor: function(S, which, x, y, height, still, hue) {
+    actor: function(S, which, x, y, height, still, hue, paint) {
       var puppet = T.puppet && T.puppet.make(S, 'puppet.' + which, still, which === 'hero' ? S.castTone || null : null);
       if (!puppet && !S.textures.exists(which)) {
         figure(S, which, which === 'hero' ? 0xffc857 : 0x7cc67f);
       }
       var sprite = puppet ? puppet.container.setPosition(x, y) : S.add.image(x, y, which).setOrigin(0.5, 1);
       var shadow = S.add.ellipse(x, y, 10, 10, 0x0b1a10, 0.32);
-      if (hue) {
+      if (hue || PAINTS[paint]) {
         try {
           sprite.enableFilters();
-          sprite.filters.internal.addColorMatrix().colorMatrix.hue(hue);
+          var matrix = sprite.filters.internal.addColorMatrix().colorMatrix;
+          if (PAINTS[paint]) {
+            PAINTS[paint](matrix);
+          } else {
+            matrix.hue(hue);
+          }
         } catch (err) {
           // Without filters, the creature keeps the colour of its picture.
         }
       }
       return {x: x, y: y, sprite: sprite, puppet: puppet, shadow: shadow, base: height / sprite.height, walk: 0,
         moving: false, facing: 1, lift: 0, tilt: 0, pose: null};
+    },
+
+    /**
+     * The aura of the market around the hero, as the tablet shows it: fireflies that blink around them, or leaves that
+     * fall around them. Without movement, a still light of its colour. Needs the textures of textures().
+     *
+     * @param {Object} S The scene.
+     * @param {Object} who The figure, as actor() makes it.
+     * @param {string} aura aura-fireflies or aura-leaves.
+     * @param {boolean} still
+     */
+    aura: function(S, who, aura, still) {
+      var looks = {
+        // A firefly is a soft light, a leaf a leaf.
+        'aura-fireflies': {texture: 'soft', tint: [0xffd23f, 0xffe58a], light: 0xffe58a, scale: {start: 0.36, end: 0.2},
+          speed: {min: 4, max: 16}, gravityY: 0, frequency: 150, blendMode: 'ADD'},
+        'aura-leaves': {texture: 'leaf', tint: [0x6fd08c, 0x9bdc6a, 0x4fae6a], light: 0x6fd08c, scale: {start: 1.1, end: 0.8},
+          speed: {min: 6, max: 20}, gravityY: 14, frequency: 260, rotate: {min: 0, max: 360}, blendMode: 'NORMAL'}
+      };
+      var look = looks[aura];
+      if (!look) {
+        return;
+      }
+      // Around the body, as tall as the figure is drawn now (move() keeps it).
+      var around = {getRandomPoint: function(p) {
+        var tall = who.auraTall || 100;
+        p.x = (Math.random() - 0.5) * tall * 0.65;
+        p.y = (Math.random() - 0.5) * tall * 0.9;
+        return p;
+      }};
+      who.auraStill = still;
+      try {
+        who.aura = still ? S.add.image(who.x, who.y, 'soft').setTint(look.light).setAlpha(0.35) :
+          S.add.particles(0, 0, look.texture, {lifespan: 2000, scale: look.scale, speed: look.speed, gravityY: look.gravityY,
+            rotate: look.rotate || 0, tint: look.tint, frequency: look.frequency, blendMode: look.blendMode,
+            emitZone: {type: 'random', source: around}, alpha: {onEmit: function() {
+              return 0;
+            }, onUpdate: function(particle, key, t) {
+              // It comes, glows and goes.
+              return Math.sin(t * Math.PI);
+            }}});
+      } catch (err) {
+        // Without particles, the hero goes without their aura here; the tablet still shows it.
+      }
     },
 
     /**
@@ -221,6 +293,17 @@
       who.shadow.setPosition(who.x, who.y - 2);
       who.shadow.setSize(who.sprite.displayHeight * 0.42, who.sprite.displayHeight * 0.09);
       who.shadow.setDepth(who.y - 1);
+      if (who.aura) {
+        // The fireflies around the body, in front of it.
+        var tall = who.sprite.height * scale;
+        who.auraTall = tall;
+        if (who.auraStill) {
+          who.aura.setPosition(who.x, who.y - tall * 0.5).setDisplaySize(tall * 0.9, tall * 1.1);
+        } else {
+          who.aura.setPosition(who.x, who.y - tall * 0.55);
+        }
+        who.aura.setDepth(who.y + 1);
+      }
     },
 
     /**

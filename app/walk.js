@@ -270,7 +270,8 @@
             }
             var start = point(place.start);
             S.hero = T.cast.actor(S, 'hero', start.x, start.y, 250, still);
-            S.pet = T.cast.actor(S, 'pet', start.x - 85, start.y + 12, 124, still, pet.hue);
+            T.cast.aura(S, S.hero, c.aura, still);
+            S.pet = T.cast.actor(S, 'pet', start.x - 85, start.y + 12, 124, still, pet.hue, pet.paint);
             S.pet.mode = 'follow';
             var hide = hides[state.hide];
             S.bush = S.add.image(hide.x, hide.y, S.textures.exists('bush.still') ? 'bush.still' : 'soft').setOrigin(0.5, 0.912)

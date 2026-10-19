@@ -89,7 +89,8 @@ final class get_scene extends external_api {
         $aided = false;
         $char = characters::get((int) $USER->id);
         if ($char && has_capability('local/oksigeniatesape:play', $context)) {
-            [, , $flags, $role] = scenes::context($char, $params['courseid']);
+            // The memory of the expedition of the scene: a past one, in the free expedition.
+            [, , $flags, $role] = scenes::context($char, $params['courseid'], (int) $scene->missionid);
             $member = engine::member($char, $params['courseid']);
             $breath = (int) $member->breath;
             $aided = scenes::aided($member, $scene);

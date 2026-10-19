@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.139.0 (2026-10-19)
+
+- **The free expedition.** The scenes of the past expeditions of a course, which could only be visited, are played
+  again for pleasure: alone, from the visit of that expedition, with its memory (what the student did there changes
+  them as it did). They are played as quests: they may give gems and pages, and they count as played in their own
+  expedition, never knowledge, lanterns, items or anything of the creature, which belong to the expedition of now. The
+  visit says so. Class scenes and team sessions still play only the expedition of now (`scenes::free`).
+- **The cosmetics of the market on the figures of the game layer.** The paint of the creature colours its puppet or its
+  picture in the walked encounter, the scenes and the nest, as the tablet paints it; the aura of the hero goes around
+  them: fireflies, soft lights that come and go, or leaves that fall. Without movement, a still light of its colour.
+
 ## 0.138.0 (2026-10-19)
 
 - **The museum of the class in the Library.** The entries of the field guide of the whole class (approved, where the

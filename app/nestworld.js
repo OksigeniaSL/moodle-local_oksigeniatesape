@@ -309,7 +309,8 @@
           m.generateTexture('paw', 64, 64);
           m.destroy();
           if (c && c.creature) {
-            S.pet = T.cast.actor(S, 'pet', 0, 0, 1, !!opts.still, T.cast.creature(c).hue);
+            var pet = T.cast.creature(c);
+            S.pet = T.cast.actor(S, 'pet', 0, 0, 1, !!opts.still, pet.hue, pet.paint);
           }
           S.ring = S.add.ellipse(0, 0, 70, 20).setStrokeStyle(3, 0xffc857, 1).setDepth(9).setVisible(false);
           S.sparks = S.add.particles(0, 0, 'spark', {lifespan: 800, speed: {min: 60, max: 200}, scale: {start: 0.8, end: 0},

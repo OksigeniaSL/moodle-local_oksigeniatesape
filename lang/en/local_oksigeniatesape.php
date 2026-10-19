@@ -245,6 +245,7 @@ $string['app_exit_my'] = 'To my dashboard';
 $string['app_exit_saved'] = 'Everything you have finished is saved.';
 $string['app_exit_waiting'] = 'Plays waiting on this device for the connection, which will go by themselves: {$a}.';
 $string['app_expedition_back'] = 'Back to the current expedition';
+$string['app_expedition_free'] = 'Free expedition: its scenes can be played again for pleasure. They may give gems and pages, and they remember what you did here; knowledge, lanterns and items belong to the expedition of now.';
 $string['app_expedition_lit'] = 'Lanterns of the class: {$a->lit} of {$a->total}';
 $string['app_expedition_mine'] = 'Your lanterns: {$a->mine} · Your pages: {$a->pages}';
 $string['app_expedition_visit'] = 'Visit';
