@@ -29,8 +29,11 @@ final class knots {
     /** @var string Prefix of the tables of the plugin. */
     private const T = 'local_oksigeniatesape_';
 
-    /** The engines of a lane the battle plays: choose, sort and put in order (by one player of the team), the mistakes. */
-    public const ENGINES = ['choice', 'classify', 'order', 'errors'];
+    /**
+     * The engines of a lane the battle plays: choose, sort and put in order (by one player of the team), the mistakes,
+     * and two minigames played by one player of the team: «Who is alive?» (whack) and the two circles (venn).
+     */
+    public const ENGINES = ['choice', 'classify', 'order', 'errors', 'whack', 'venn'];
 
     /** Candles of the tower, and knots of each size of battle, when the mission does not say. */
     public const CANDLES = 5;
@@ -51,9 +54,16 @@ final class knots {
         $list = [];
         foreach ($mission->data['battle']['knots'] ?? [] as $knot) {
             $mine = array_values(array_intersect((array) ($knot['questions'] ?? []), $ids));
-            // Its lanes, or else each of its questions is a lane to choose; a question the course does not use, out.
+            // Its lanes, or else each of its questions is a lane to choose; a question the course does not use, out. The
+            // questions the teachers took for a knot with lanes are one more lane each.
+            $given = $knot['lanes'] ?? array_map(fn($q) => ['engine' => 'choice', 'question' => $q], $mine);
+            foreach (isset($knot['lanes']) ? (array) ($knot['taken'] ?? []) : [] as $taken) {
+                if (!in_array($taken, array_column($given, 'question'), true)) {
+                    $given[] = ['engine' => 'choice', 'question' => (string) $taken];
+                }
+            }
             $lanes = [];
-            foreach ($knot['lanes'] ?? array_map(fn($q) => ['engine' => 'choice', 'question' => $q], $mine) as $lane) {
+            foreach ($given as $lane) {
                 $engine = (string) ($lane['engine'] ?? '');
                 $playable = $engines === null || in_array($engine, $engines, true);
                 if (!$playable || ($engine === 'choice' && !in_array($lane['question'] ?? '', $ids, true))) {

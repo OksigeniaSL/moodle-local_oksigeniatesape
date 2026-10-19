@@ -583,6 +583,31 @@ final class live_test extends \advanced_testcase {
         $this->assertFalse(live::lane_right($five, ['order' => ['b', 'a', 'd', 'c', 'e']]));
     }
 
+    public function test_by_turns_who_is_alive_and_the_two_circles_are_lanes_too(): void {
+        $this->resetAfterTest();
+        [$course] = $this->make_class();
+        $mission = missions::get($course->id);
+        $knots = array_column(knots::usable($mission, null), null, 'code');
+        $make = new \ReflectionMethod(live::class, 'lane_of');
+        $pick = fn($code, $engine) => array_values(array_filter($knots[$code]['lanes'], fn($l) => $l['engine'] === $engine))[0];
+        // «Who is alive?»: every living thing touched and nothing else, one slip at most.
+        $whack = $make->invoke(null, $pick('piedra', 'whack'), $mission);
+        $this->assertSame(['musgo', 'lombriz', 'semilla', 'seta'], $whack['solution']);
+        $this->assertArrayNotHasKey('alive', $whack['shown']['items'][0]);
+        $this->assertTrue(live::lane_right($whack, ['picked' => ['seta', 'musgo', 'lombriz', 'semilla']]));
+        $this->assertTrue(live::lane_right($whack, ['picked' => ['seta', 'musgo', 'lombriz']]));
+        $this->assertFalse(live::lane_right($whack, ['picked' => ['seta', 'musgo', 'lombriz', 'piedra']]));
+        $this->assertFalse(live::lane_right($whack, ['picked' => []]));
+        // The two circles: each thing in its place, one slip forgiven from five things on.
+        $venn = $make->invoke(null, $pick('arena', 'venn'), $mission);
+        $this->assertSame('both', $venn['solution']['lombriz']);
+        $this->assertNotSame('', $venn['shown']['a']);
+        $right = $venn['solution'];
+        $this->assertTrue(live::lane_right($venn, ['placed' => $right]));
+        $this->assertTrue(live::lane_right($venn, ['placed' => ['robot' => 'both'] + $right]));
+        $this->assertFalse(live::lane_right($venn, ['placed' => ['robot' => 'both', 'piedra' => 'a'] + $right]));
+    }
+
     public function test_a_class_of_twenty_five_plays_a_whole_final_battle_by_turns_and_wins_it(): void {
         global $DB;
         $this->resetAfterTest();
@@ -623,9 +648,10 @@ final class live_test extends \advanced_testcase {
                 $lane = $lanes[$member->team];
                 $engine = $lane['engine'] ?? 'choice';
                 $engines[$engine] = true;
-                if ($engine === 'classify' || $engine === 'order') {
+                if (in_array($engine, ['classify', 'order', 'whack', 'venn'], true)) {
                     if ((int) $lane['speaker'] === (int) $member->charid) {
-                        $payload = $engine === 'order' ? ['order' => $lane['solution']] : ['placed' => $lane['solution']];
+                        $payload = $engine === 'order' ? ['order' => $lane['solution']] : ($engine === 'whack' ?
+                            ['picked' => $lane['solution']] : ['placed' => $lane['solution']]);
                         live::strike($live, $member, $round, $payload, $now);
                     }
                 } else if ($engine === 'errors') {
@@ -652,8 +678,9 @@ final class live_test extends \advanced_testcase {
         $this->assertSame([], $state['hanging']);
         // And at the end too, for the jar and its sounds.
         $this->assertSame(5, live::board_view($live, $now)['maxcandles']);
-        // On the way, the class chose, sorted and found the mistakes of the Embrollo.
-        $this->assertEqualsCanonicalizing(['choice', 'classify', 'errors'], array_keys($engines));
+        // On the way, the class chose, sorted, found the mistakes of the Embrollo, told what is alive and used the two
+        // circles.
+        $this->assertEqualsCanonicalizing(['choice', 'classify', 'errors', 'venn', 'whack'], array_keys($engines));
         // Everybody who played gets the prize of the battle.
         $this->assertCount(25, $state['rewarded']);
         $this->assertSame('', (string) $DB->get_field(self::T . 'region', 'battlestate', ['courseid' => $course->id]));

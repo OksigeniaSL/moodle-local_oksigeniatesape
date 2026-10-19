@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 59,
+ "version": 60,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 60,
+   "kind": "improvement",
+   "date": "2026-10-19",
+   "text": "En la batalla, la Piedra que rueda trae una lazada de «¿Quién está vivo?» y la Nube de arena una de los dos círculos"
+  },
   {
    "version": 59,
    "kind": "improvement",
@@ -1764,6 +1770,66 @@
      "Q1-4"
     ],
     "page": "ser-vivo",
+    "lanes": [
+     {
+      "engine": "choice",
+      "question": "Q1-1"
+     },
+     {
+      "engine": "choice",
+      "question": "Q1-2"
+     },
+     {
+      "engine": "whack",
+      "prompt": "Toca solo lo que está vivo. Ojo: no todo lo que se mueve lo está, ni todo lo que parece quieto deja de estarlo.",
+      "items": [
+       {
+        "id": "musgo",
+        "label": "el musgo",
+        "alive": true
+       },
+       {
+        "id": "lombriz",
+        "label": "la lombriz",
+        "alive": true
+       },
+       {
+        "id": "semilla",
+        "label": "una semilla",
+        "alive": true
+       },
+       {
+        "id": "seta",
+        "label": "la seta",
+        "alive": true
+       },
+       {
+        "id": "piedra",
+        "label": "la piedra que rueda",
+        "alive": false
+       },
+       {
+        "id": "fuego",
+        "label": "el fuego",
+        "alive": false
+       },
+       {
+        "id": "nube",
+        "label": "la nube",
+        "alive": false
+       },
+       {
+        "id": "cristal",
+        "label": "un cristal de sal",
+        "alive": false
+       }
+      ]
+     },
+     {
+      "engine": "choice",
+      "question": "Q1-4"
+     }
+    ],
     "chapter": 1,
     "objective": "SV-01",
     "weakness": "Las tres funciones vitales",
@@ -1779,6 +1845,54 @@
      "Q2-3"
     ],
     "page": "celulas",
+    "lanes": [
+     {
+      "engine": "choice",
+      "question": "Q1-3"
+     },
+     {
+      "engine": "choice",
+      "question": "Q2-3"
+     },
+     {
+      "engine": "venn",
+      "prompt": "Cada uno a su sitio en los dos círculos. Lo que cumple las dos cosas, donde se cruzan; lo que ninguna, fuera.",
+      "a": "Está hecho de células",
+      "b": "Se mueve por sí mismo",
+      "items": [
+       {
+        "id": "lombriz",
+        "label": "la lombriz",
+        "in": "both"
+       },
+       {
+        "id": "mariquita",
+        "label": "la mariquita",
+        "in": "both"
+       },
+       {
+        "id": "musgo",
+        "label": "el musgo",
+        "in": "a"
+       },
+       {
+        "id": "seta",
+        "label": "la seta",
+        "in": "a"
+       },
+       {
+        "id": "robot",
+        "label": "un robot de juguete",
+        "in": "b"
+       },
+       {
+        "id": "piedra",
+        "label": "una piedra",
+        "in": "none"
+       }
+      ]
+     }
+    ],
     "chapter": 2,
     "objective": "SV-02",
     "weakness": "La célula",

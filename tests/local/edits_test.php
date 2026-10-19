@@ -211,6 +211,7 @@ final class edits_test extends \advanced_testcase {
         $mission = missions::get($course->id);
         $knot = $mission->data['battle']['knots'][0];
         $before = count($knot['questions']);
+        $lanes = count(array_column(knots::usable($mission), null, 'code')[$knot['code']]['lanes']);
         $id = edits::knot_accept($course->id, $knot['code'], ['text' => '¿Está viva una semilla seca?',
             'options' => ['Sí, aunque no lo parezca', 'No, porque no se mueve', 'Solo si crece'], 'why' => 'Con agua germina.']);
         $mission = missions::get($course->id);
@@ -221,6 +222,13 @@ final class edits_test extends \advanced_testcase {
         $this->assertCount($before + 1, array_column($mission->data['battle']['knots'], null, 'code')[$knot['code']]['questions']);
         $usable = array_column(knots::usable($mission), null, 'code')[$knot['code']];
         $this->assertContains($id, $usable['questions']);
+        $this->assertCount($lanes + 1, $usable['lanes']);
+        // A knot without lanes of its own plays its questions: the one taken, once.
+        $bare = array_values(array_filter($mission->data['battle']['knots'], fn($k) => empty($k['lanes'])))[0];
+        $other = edits::knot_accept($course->id, $bare['code'], ['text' => '¿Vuela el murciélago?', 'options' => ['Sí', 'No'],
+            'why' => 'Tiene alas.']);
+        $usable = array_column(knots::usable(missions::get($course->id)), null, 'code')[$bare['code']];
+        $this->assertCount(1, array_keys($usable['questions'], $other));
         // The proposal of the AI is cleaned as anything a teacher writes.
         $clean = edits::clean_proposal(['questions' => [['text' => ' ¿Qué es? ', 'options' => ['A', '', 'B', 'C', 'D', 'E']],
             ['text' => 'Sin opciones', 'options' => ['A']], 'no'], 'laughs' => ['¡Ja!', '¡Je!', '¡Ji!']]);

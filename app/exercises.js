@@ -2,8 +2,9 @@
  * Tesapé: the lanes of a battle by turns that are not to choose, the same way on every tablet. Given a lane, it draws it
  * and gives back what the student did (the server says whether it undoes it): sorting, touch a thing and then its
  * group; putting in order, touch the steps one after the other; the mistakes of the Embrollo, touch the words that are
- * wrong in the sheet. Once the turn is resolved, it shows the solution: each thing in its group, the steps in their
- * order, each mistake with the right word and why.
+ * wrong in the sheet; «Who is alive?», touch what is alive; the two circles, touch a thing and then its place in them.
+ * Once the turn is resolved, it shows the solution: each thing in its group, the steps in their order, each mistake
+ * with the right word and why, what was alive.
  *
  * @copyright  2026 Oksigenia <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -125,6 +126,61 @@
   }
 
   /**
+   * «Who is alive?», by one player of the team: the things, each a button to mark it alive or not.
+   *
+   * @param {Object} lane prompt, items, mine, speaker, solution (the ids of what is alive) once resolved.
+   * @param {Object} state alive (ids marked).
+   * @param {boolean} sent
+   * @return {string}
+   */
+  function whackHtml(lane, state, sent) {
+    var solution = lane.solution || null;
+    return '<p class="battle-q">' + esc(lane.prompt) + '</p>' + (!lane.mine && lane.speaker ? '<p class="help-soft">' +
+      esc(t('app_lane_speaker', lane.speaker)) + '</p>' : '') + '<div class="lane-items lane-alive">' +
+      lane.items.map(function(i) {
+        var on = state.alive.indexOf(i.id) >= 0;
+        var alive = solution ? solution.indexOf(i.id) >= 0 : null;
+        return '<button type="button" class="chip lane-item' + (on ? ' picked' : '') + (alive === true ? ' right' :
+          alive === false && on ? ' wrong' : '') + '" data-alive="' + esc(i.id) + '" aria-pressed="' + on + '"' +
+          (sent || solution || !lane.mine ? ' disabled' : '') + '>' + esc(i.label) + '</button>';
+      }).join('') + '</div>';
+  }
+
+  /**
+   * The two circles, by one player of the team: the things to place, and four places, the first circle alone, where the
+   * two cross, the second alone, and out of both; a thing touched goes to the place touched next.
+   *
+   * @param {Object} lane prompt, a, b (what each circle says), items, mine, speaker, solution (id => a, both, b or none).
+   * @param {Object} state placed, picked.
+   * @param {boolean} sent
+   * @return {string}
+   */
+  function vennHtml(lane, state, sent) {
+    var placed = state.placed || {};
+    var solution = lane.solution || null;
+    var chip = function(i) {
+      return '<button type="button" class="chip lane-item' + (state.picked === i.id ? ' picked' : '') + (solution ? ' right' :
+        '') + '" data-item="' + esc(i.id) + '"' + (sent || solution || !lane.mine ? ' disabled' : '') + '>' + esc(i.label) +
+        '</button>';
+    };
+    var zone = function(id, label) {
+      var here = lane.items.filter(function(i) {
+        return solution ? solution[i.id] === id : placed[i.id] === id;
+      });
+      return '<div class="lane-bin venn-' + id + '" data-bin="' + id + '"><button type="button" class="lane-put" data-put="' +
+        id + '"' + (sent || solution || !lane.mine || !state.picked ? ' disabled' : '') + '>' + esc(label) + '</button><span>' +
+        here.map(chip).join('') + '</span></div>';
+    };
+    var free = lane.items.filter(function(i) {
+      return !placed[i.id] && !solution;
+    });
+    return '<p class="battle-q">' + esc(lane.prompt) + '</p>' + (!lane.mine && lane.speaker ? '<p class="help-soft">' +
+      esc(t('app_lane_speaker', lane.speaker)) + '</p>' : '') + '<div class="lane-items">' + free.map(chip).join('') +
+      '</div><div class="lane-venn">' + zone('a', t('app_venn_only', lane.a)) + zone('both', t('app_venn_both')) +
+      zone('b', t('app_venn_only', lane.b)) + '</div>' + zone('none', t('app_venn_none'));
+  }
+
+  /**
    * A lane drawn in an element: what the student does is kept in the tablet until they send it with «Done».
    *
    * @param {Element} el
@@ -132,13 +188,16 @@
    * @param {Object} opts sent (already sent), open (the lane takes answers), onsend(payload).
    */
   T.lane = function(el, lane, opts) {
-    var state = T.lane.kept[opts.key] = T.lane.kept[opts.key] || {placed: {}, marks: [], slips: [], picked: '', ordered: []};
+    var state = T.lane.kept[opts.key] = T.lane.kept[opts.key] || {placed: {}, marks: [], slips: [], picked: '', ordered: [],
+      alive: []};
     var draw = function() {
       var body = lane.engine === 'classify' ? classifyHtml(lane, state, opts.sent) : lane.engine === 'order' ?
-        orderHtml(lane, state, opts.sent) : errorsHtml(lane, state, opts.sent);
-      var ready = lane.engine === 'classify' ? lane.items.every(function(i) {
+        orderHtml(lane, state, opts.sent) : lane.engine === 'whack' ? whackHtml(lane, state, opts.sent) :
+        lane.engine === 'venn' ? vennHtml(lane, state, opts.sent) : errorsHtml(lane, state, opts.sent);
+      var ready = lane.engine === 'classify' || lane.engine === 'venn' ? lane.items.every(function(i) {
         return state.placed[i.id];
-      }) : lane.engine === 'order' ? state.ordered.length === lane.items.length : state.marks.length > 0;
+      }) : lane.engine === 'order' ? state.ordered.length === lane.items.length : lane.engine === 'whack' ?
+        state.alive.length > 0 : state.marks.length > 0;
       el.innerHTML = body + (lane.mine && !opts.sent && !lane.solution && opts.open ? '<div class="actions">' +
         '<button type="button" class="btn btn-main" data-lanedone' + (ready ? '' : ' disabled') + '>' + esc(t('app_lane_done')) +
         '</button></div>' : '');
@@ -163,6 +222,17 @@
             state.picked = '';
             draw();
           }
+        };
+      });
+      el.querySelectorAll('[data-alive]').forEach(function(b) {
+        b.onclick = function() {
+          var at = state.alive.indexOf(b.dataset.alive);
+          if (at >= 0) {
+            state.alive.splice(at, 1);
+          } else {
+            state.alive.push(b.dataset.alive);
+          }
+          draw();
         };
       });
       el.querySelectorAll('[data-step]').forEach(function(b) {
@@ -206,7 +276,8 @@
       if (done) {
         done.onclick = function() {
           done.disabled = true;
-          opts.onsend(lane.engine === 'classify' ? {placed: state.placed} : lane.engine === 'order' ? {order: state.ordered} :
+          opts.onsend(lane.engine === 'classify' || lane.engine === 'venn' ? {placed: state.placed} : lane.engine === 'order' ?
+            {order: state.ordered} : lane.engine === 'whack' ? {picked: state.alive} :
             {marks: state.marks, misses: state.slips.length});
         };
       }

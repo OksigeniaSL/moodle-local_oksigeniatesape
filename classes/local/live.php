@@ -1963,7 +1963,7 @@ final class live {
             if ($engine !== 'choice') {
                 // Another engine: what it shows goes to the tablets; what solves it stays here until the turn is resolved.
                 $lanes[$team] = self::lane_of($lane, $mission) + ['options' => 2, 'correct' => 1];
-                if ($engine === 'classify' || $engine === 'order') {
+                if (in_array($engine, ['classify', 'order', 'whack', 'venn'], true)) {
                     // Sorting and putting in order are done by the team: one of its players, by turns, does it; the
                     // others help aloud.
                     $where = 'liveid = ? AND round = 0 AND team = ?';
@@ -1988,8 +1988,8 @@ final class live {
      * A lane of another engine than choosing, ready for the turn: what the tablets show (shown) and what solves it
      * (solution), with its prompt as the question the class screen shows.
      *
-     * @param array $lane From the knot: classify (prompt, bins, items), order (prompt, steps in their order) or errors
-     *     (text).
+     * @param array $lane From the knot: classify (prompt, bins, items), order (prompt, steps in their order), errors
+     *     (text), whack (prompt, items with alive) or venn (prompt, a, b, items with in: a, b, both or none).
      * @param \stdClass $mission
      * @return array engine, question, shown, solution.
      */
@@ -2018,6 +2018,17 @@ final class live {
                 'options' => []], 'shown' => ['prompt' => $text($lane['prompt'] ?? ''), 'items' => $shown],
                 'solution' => array_column($steps, 'id')];
         }
+        if ($lane['engine'] === 'whack' || $lane['engine'] === 'venn') {
+            // «Who is alive?» and the two circles, by one player of the team: the things shown in an order of their own.
+            $items = array_map(fn($i) => ['id' => (string) $i['id'], 'label' => $text($i['label'])], $lane['items'] ?? []);
+            shuffle($items);
+            $shown = ['prompt' => $text($lane['prompt'] ?? ''), 'items' => $items] + ($lane['engine'] === 'venn' ?
+                ['a' => $text($lane['a'] ?? ''), 'b' => $text($lane['b'] ?? '')] : []);
+            $solution = $lane['engine'] === 'venn' ? array_column($lane['items'] ?? [], 'in', 'id') :
+                array_values(array_map(fn($i) => (string) $i['id'], array_filter($lane['items'] ?? [], fn($i) => !empty($i['alive']))));
+            return ['engine' => $lane['engine'], 'question' => ['id' => $lane['engine'], 'text' => $shown['prompt'],
+                'options' => []], 'shown' => $shown, 'solution' => $solution];
+        }
         // The mistakes of the Embrollo in a sheet: plain text and marked words, each a mistake.
         $parts = minigames::parts($text($lane['text'] ?? ''));
         $prompt = get_string('board_lane_errors', 'local_oksigeniatesape');
@@ -2029,9 +2040,10 @@ final class live {
     }
 
     /**
-     * Whether what a player did in a lane of another engine undoes it: sorting, each thing in its group (one slip is
-     * forgiven from five things on); putting in order, every step in its place (from five steps on, two next to each
-     * other swapped are forgiven); the mistakes, each one touched and at most one word that was right.
+     * Whether what a player did in a lane of another engine undoes it: sorting and the two circles, each thing in its
+     * group (one slip is forgiven from five things on); putting in order, every step in its place (from five steps on,
+     * two next to each other swapped are forgiven); «Who is alive?», every living thing touched and nothing else, one
+     * slip at most; the mistakes, each one touched and at most one word that was right.
      *
      * @param array $lane As lane_of() makes it.
      * @param array $payload classify: placed (item id => bin id); order: order (step ids); errors: marks (numbers), misses
@@ -2055,7 +2067,12 @@ final class live {
             }
             return $swapped <= intdiv(count($solution), 5);
         }
-        if ($lane['engine'] === 'classify') {
+        if ($lane['engine'] === 'whack') {
+            // Every living thing touched and nothing else, with one slip at most.
+            $picked = array_unique(array_map('strval', (array) ($payload['picked'] ?? [])));
+            return count(array_diff($lane['solution'], $picked)) + count(array_diff($picked, $lane['solution'])) <= 1;
+        }
+        if ($lane['engine'] === 'classify' || $lane['engine'] === 'venn') {
             $placed = (array) ($payload['placed'] ?? []);
             $wrong = 0;
             foreach ($lane['solution'] as $item => $bin) {

@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.147.0 (2026-10-19)
+
+- **«Who is alive?» and the two circles as lanes of the battle by turns**, played by one player of the team as sorting
+  and putting in order are (the others help aloud): touch what is alive, every living thing and nothing else, one slip
+  at most; and each thing to its place in two circles (the first alone, where they cross, the second alone, out of
+  both), one slip forgiven from five things on. On a phone, the two circles one over the other. Mission v60: the
+  Rolling Stone brings a lane of «Who is alive?» (the seed is alive, the stone that rolls is not) and the Cloud of sand
+  one of the two circles («Made of cells» and «Moves by itself», with a toy robot outside the first).
+- **Fixed:** a question a teacher takes for a knot that has lanes of its own (drafted by the AI of the site and
+  accepted) is one more lane of it; before, it joined its questions but was not played by turns.
+
 ## 0.146.0 (2026-10-19)
 
 - **A dizzy team, carried by another one** (battle by turns). A team the blow of the Embrollo finds tangled already is

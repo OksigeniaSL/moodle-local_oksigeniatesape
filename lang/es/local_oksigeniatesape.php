@@ -806,6 +806,7 @@ $string['app_venn_goes'] = '{$a->thing}: su sitio es {$a->place}.';
 $string['app_venn_left'] = 'Quedan {$a} fichas';
 $string['app_venn_lost'] = 'Esta vez los círculos se han enredado';
 $string['app_venn_next'] = 'Siguiente página';
+$string['app_venn_none'] = 'En ninguno: fuera de los dos';
 $string['app_venn_only'] = 'Solo «{$a}»';
 $string['app_venn_right'] = '{$a}: ¡en su sitio!';
 $string['app_venn_sheet'] = 'Página {$a->n} de {$a->total}';

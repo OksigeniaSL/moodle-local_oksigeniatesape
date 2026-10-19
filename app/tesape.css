@@ -8783,6 +8783,65 @@ body.adapt-still .mission-grid .chapter.as-sheet {
   color: var(--text);
 }
 
+/* The two circles of a lane: the first alone, where they cross and the second alone, side by side as two rings that
+   overlap; out of both, under them. */
+.lane-venn {
+  display: grid;
+  grid-template-columns: 1fr .8fr 1fr;
+  margin: 8px 0 10px;
+}
+
+.lane-venn .lane-bin {
+  border-style: solid;
+  border-radius: 999px 0 0 999px;
+  padding: 18px 12px 18px 22px;
+  background: rgba(143, 211, 255, .08);
+}
+
+.lane-venn .venn-both {
+  border-radius: 0;
+  border-left: 0;
+  border-right: 0;
+  background: rgba(var(--lantern-rgb), .16);
+}
+
+.lane-venn .venn-b {
+  border-radius: 0 999px 999px 0;
+  padding: 18px 22px 18px 12px;
+  background: rgba(124, 198, 127, .1);
+}
+
+.lane-bin.venn-none {
+  min-height: 70px;
+}
+
+/* On a phone, the two circles one over the other, crossing in the middle. */
+@media (max-width: 560px) {
+  .lane-venn {
+    grid-template-columns: 1fr;
+  }
+
+  .lane-venn .lane-bin,
+  .lane-venn .venn-b {
+    padding: 16px 18px;
+  }
+
+  .lane-venn .lane-bin {
+    border-radius: 80px 80px 0 0;
+  }
+
+  .lane-venn .venn-both {
+    border: 2px solid rgba(var(--lantern-rgb), .5);
+    border-top: 0;
+    border-bottom: 0;
+    border-radius: 0;
+  }
+
+  .lane-venn .venn-b {
+    border-radius: 0 0 80px 80px;
+  }
+}
+
 .lane-put {
   justify-self: start;
   min-height: var(--tap);

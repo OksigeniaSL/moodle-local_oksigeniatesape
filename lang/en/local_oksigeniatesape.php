@@ -806,6 +806,7 @@ $string['app_venn_goes'] = '{$a->thing}: its place is {$a->place}.';
 $string['app_venn_left'] = 'Cards left: {$a}';
 $string['app_venn_lost'] = 'The circles got tangled this time';
 $string['app_venn_next'] = 'Next page';
+$string['app_venn_none'] = 'In neither: out of both';
 $string['app_venn_only'] = 'Only «{$a}»';
 $string['app_venn_right'] = '{$a}: in its place!';
 $string['app_venn_sheet'] = 'Page {$a->n} of {$a->total}';

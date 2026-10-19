@@ -127,7 +127,7 @@ final class edits {
      * @return bool
      */
     private static function is_list(string $path): bool {
-        return $path === 'questions' || (bool) preg_match('#^battle/knots/[A-Za-z0-9_-]+/questions$#', $path);
+        return $path === 'questions' || (bool) preg_match('#^battle/knots/[A-Za-z0-9_-]+/(questions|taken)$#', $path);
     }
 
     /**
@@ -264,6 +264,9 @@ final class edits {
         $id = (string) end($saved)['id'];
         $mine = array_values(array_unique(array_merge((array) ($knot['questions'] ?? []), [$id])));
         self::store($courseid, (string) $mission->code, self::MISSION, 'battle/knots/' . $code . '/questions', json_encode($mine));
+        // A knot with lanes of its own plays them, not its questions: the one taken is one more lane of it.
+        $taken = array_values(array_unique(array_merge((array) ($knot['taken'] ?? []), [$id])));
+        self::store($courseid, (string) $mission->code, self::MISSION, 'battle/knots/' . $code . '/taken', json_encode($taken));
         return $id;
     }
 
@@ -939,7 +942,8 @@ final class edits {
                 }
             }
         }
-        if ($at === null && array_key_exists($key, $data)) {
+        if ($at === null && (array_key_exists($key, $data) || (!$path && $key === 'taken'))) {
+            // The questions taken for a knot are the only thing a change adds that the mission did not have.
             $at = $key;
         }
         if ($at === null) {
