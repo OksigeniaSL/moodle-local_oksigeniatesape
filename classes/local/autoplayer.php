@@ -33,9 +33,17 @@ final class autoplayer {
      * @param string[] $roles Roles in the team.
      * @param string[] $flags Flags of the mission the character carries.
      * @param string $role The character's own role.
+     * @param int $way Which of its ways a branch at random takes (counted from 0, round the list).
      * @return array
      */
-    public static function play(array $scene, array $items = [], array $roles = [], array $flags = [], string $role = ''): array {
+    public static function play(
+        array $scene,
+        array $items = [],
+        array $roles = [],
+        array $flags = [],
+        string $role = '',
+        int $way = 0
+    ): array {
         $runner = new scene_runner($scene, $items, $roles, $flags, $role);
         $events = [];
         $node = $scene['start'];
@@ -48,6 +56,12 @@ final class autoplayer {
                     $node = $n['next'];
                     break;
                 case 'branch':
+                    if (!empty($n['pick'])) {
+                        // A way at random: the one asked for.
+                        $events[] = ['n' => $node, 'to' => $n['pick'][$way % count($n['pick'])]];
+                        $node = $n['pick'][$way % count($n['pick'])];
+                        break;
+                    }
                     // The first rule that can hold: flags the character has, or a number of right answers.
                     $node = $n['else'];
                     foreach ($n['rules'] as $rule) {

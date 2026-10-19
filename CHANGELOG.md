@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.153.0 (2026-10-19)
+
+- **The energy is called «ánimo»** (spirit) in every text of the game, of the teacher and of the mission (mission v61);
+  the verb of the healer in the battle, their power and their talents are called **Bálsamo** (Balm), so that the two do
+  not mix. The internal keys do not change.
+- **The scent of the creature can go wrong.** Where a scene says so (`sniff_wrong`), the creature points at an option
+  that is not right instead of striking one out, and the option stays to be chosen. Mission v61: in the nest, the
+  feather smells of bird and it points at it as if it were alive.
+- **A branch at random** (`pick`): a scene can take one of several ways at random; the tablet draws it and the server
+  checks it is one of them.
+
 ## 0.152.0 (2026-10-19)
 
 - **Covering a missing role with the reserve of the team** (battle by turns). Once a team has used its free cover of

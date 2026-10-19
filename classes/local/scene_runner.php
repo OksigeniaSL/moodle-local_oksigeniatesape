@@ -279,7 +279,7 @@ final class scene_runner {
                     $node = $n['next'];
                     break;
                 case 'branch':
-                    $node = $this->branch($n);
+                    $node = $this->branch($node, $n);
                     break;
                 case 'choice':
                 case 'use':
@@ -343,12 +343,21 @@ final class scene_runner {
     }
 
     /**
-     * A branch: the first rule that holds, or else.
+     * A branch: one of its ways at random (`pick`, as the tablet drew it), or the first rule that holds, or else.
      *
+     * @param string $node
      * @param array $n
      * @return string Next node.
      */
-    private function branch(array $n): string {
+    private function branch(string $node, array $n): string {
+        if (!empty($n['pick'])) {
+            // One of its ways at random, drawn on the tablet: the event says which one, and it has to be one of them.
+            $to = (string) ($this->take($node)['to'] ?? '');
+            if (!in_array($to, array_map('strval', (array) $n['pick']), true)) {
+                $this->fail('not a way of ' . $node);
+            }
+            return $to;
+        }
         foreach ($n['rules'] ?? [] as $rule) {
             $if = $rule['if'] ?? [];
             if (isset($if['flag'])) {
@@ -423,7 +432,7 @@ final class scene_runner {
             if (!isset($options[$id]) || !$this->has($options[$id]['requires'] ?? null)) {
                 $this->fail('option not available: ' . $id);
             }
-            if (($this->sniffed[$node] ?? null) === $id) {
+            if (($this->sniffed[$node] ?? null) === $id && empty($n['sniff_wrong'])) {
                 $this->fail('the creature struck out ' . $id);
             }
             $option = $options[$id];
@@ -810,6 +819,10 @@ final class scene_runner {
      * @return string|null The option, or null if the creature cannot sniff here.
      */
     public static function sniffs(array $n): ?string {
+        if (($n['type'] ?? '') === 'choice' && !empty($n['sniff_wrong']['option'])) {
+            // Where its scent goes wrong (the feather smells of bird), it points at that option instead of striking one.
+            return (string) $n['sniff_wrong']['option'];
+        }
         $options = $n['options'] ?? [];
         $one = ($n['type'] ?? '') === 'choice' && empty($n['dilemma']) && (int) ($n['select']['max'] ?? 1) === 1;
         if (!$one || count($options) < 3) {

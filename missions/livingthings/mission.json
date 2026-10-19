@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 60,
+ "version": 61,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 61,
+   "kind": "improvement",
+   "date": "2026-10-19",
+   "text": "El recurso «energía» se llama ahora «ánimo», y en el nido el olfato de la criatura se equivoca con la pluma: huele a pájaro y la señala como si estuviera viva"
+  },
   {
    "version": 60,
    "kind": "improvement",
@@ -1708,8 +1714,8 @@
     "azara": "Alba en el campamento"
    },
    "text": {
-    "valley": "Con la primera luz, el valle amanece en calma. Hoy nadie pierde energía. Un buen día para atreverse.",
-    "azara": "Amanece sin prisa en el campamento. Hoy nadie de la expedición pierde energía. Un buen día para atreverse."
+    "valley": "Con la primera luz, el valle amanece en calma. Hoy nadie pierde ánimo. Un buen día para atreverse.",
+    "azara": "Amanece sin prisa en el campamento. Hoy nadie de la expedición pierde ánimo. Un buen día para atreverse."
    }
   },
   "breeze": {

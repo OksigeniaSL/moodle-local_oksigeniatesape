@@ -290,7 +290,7 @@ final class events_test extends \advanced_testcase {
         [$course] = $this->make_class(true);
         $calm = events::export(events::draw($course->id, 'calm', self::NOW));
         $this->assertSame('La primera luz', $calm['name']);
-        $this->assertStringContainsString('energía', $calm['text']);
+        $this->assertStringContainsString('ánimo', $calm['text']);
         $this->assertSame('', events::export(events::draw($course->id, 'exchange', self::NOW))['name']);
     }
 }

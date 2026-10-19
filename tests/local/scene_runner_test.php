@@ -135,6 +135,40 @@ final class scene_runner_test extends \advanced_testcase {
         (new scene_runner(['sniff' => false] + $scene, ['creature']))->run($sniffed);
     }
 
+    /**
+     * Where the scent of the creature goes wrong, it points at an option that is not right instead of striking one out,
+     * and the option can still be chosen.
+     */
+    public function test_the_scent_of_the_creature_can_go_wrong(): void {
+        $scene = ['id' => 'T', 'start' => 'q', 'nodes' => [
+            'q' => ['type' => 'choice', 'prompt' => '?', 'objective' => 'SV-01', 'select' => ['min' => 2, 'max' => 2],
+                'sniff_wrong' => ['option' => 'pluma', 'say' => 'Huele a pájaro'], 'options' => [
+                ['id' => 'seta', 'label' => 'Seta', 'correct' => true],
+                ['id' => 'musgo', 'label' => 'Musgo', 'correct' => true],
+                ['id' => 'pluma', 'label' => 'Pluma', 'correct' => false],
+            ], 'next' => 'fin'],
+            'fin' => ['type' => 'ending', 'outcome' => 'success', 'effects' => []],
+        ]];
+        $this->assertSame('pluma', scene_runner::sniffs($scene['nodes']['q']));
+        $result = (new scene_runner($scene, ['creature']))->run([['n' => 'q', 'sniff' => 1], ['n' => 'q', 'pick' => ['seta', 'pluma']]]);
+        $this->assertSame(1, $result['sniffed']);
+        $this->assertEquals(['ok' => 1, 'total' => 2, 'sniffed' => 2, 'helped' => 1], $result['objectives']['SV-01']);
+    }
+
+    /**
+     * A branch at random: the tablet draws the way and says which; it has to be one of them.
+     */
+    public function test_a_branch_at_random_takes_the_way_the_tablet_drew(): void {
+        $scene = ['id' => 'T', 'start' => 'b', 'nodes' => [
+            'b' => ['type' => 'branch', 'pick' => ['x', 'y']],
+            'x' => ['type' => 'ending', 'outcome' => 'success', 'effects' => [['gems' => 1]]],
+            'y' => ['type' => 'ending', 'outcome' => 'success', 'effects' => [['gems' => 2]]],
+        ]];
+        $this->assertSame(['b', 'y'], (new scene_runner($scene))->run([['n' => 'b', 'to' => 'y']])['path']);
+        $this->expectException(\moodle_exception::class);
+        (new scene_runner($scene))->run([['n' => 'b', 'to' => 'z']]);
+    }
+
     public function test_the_creature_does_not_sniff_a_dilemma_or_two_options(): void {
         $dilemma = ['type' => 'choice', 'dilemma' => true, 'options' => [['id' => 'a'], ['id' => 'b'], ['id' => 'c']]];
         $this->assertNull(scene_runner::sniffs($dilemma));

@@ -828,6 +828,11 @@
       }
       if (n.type === 'story') {
         story(n);
+      } else if (n.type === 'branch' && n.pick && n.pick.length) {
+        // One of its ways at random (the trail of the owl: whose it is changes from one play to the next).
+        var way = n.pick[Math.floor(Math.random() * n.pick.length)];
+        run.events.push({n: run.node, to: way});
+        go(way);
       } else if (n.type === 'branch') {
         var target = n.else;
         (n.rules || []).some(function(rule) {
@@ -1648,6 +1653,10 @@
      * @return {string|null}
      */
     function sniffs(n) {
+      if (n.type === 'choice' && n.sniff_wrong && n.sniff_wrong.option) {
+        // Where its scent goes wrong (the feather smells of bird), it points at that option instead of striking one.
+        return n.sniff_wrong.option;
+      }
       var one = !n.dilemma && ((n.select && n.select.max) || 1) === 1;
       if (!one || (n.options || []).length < 3) {
         return null;
@@ -1767,7 +1776,14 @@
           run.events.push({n: run.node, sniff: 1});
           run.sniffed[run.node] = struck;
           var b = body.querySelector('.opt[data-id="' + struck + '"]');
-          if (b) {
+          if (b && n.sniff_wrong) {
+            // It got it wrong: it points at it, and the option stays to be chosen or not.
+            b.classList.add('sniff-point');
+            b.insertAdjacentHTML('beforeend', '<small class="sniff-tag">' + esc(t('app_sniff_point', creatureName())) +
+              '</small>');
+            // Where it points, in sight.
+            b.scrollIntoView({block: 'center'});
+          } else if (b) {
             b.outerHTML = sniffedOption(pick(struck));
           }
           sniff.closest('.sniff-row').classList.add('done');
@@ -1776,7 +1792,7 @@
             T.fx.sound('tap');
           }
           alive('sniff');
-          T.toast(esc(t('app_sniffed', creatureName())));
+          T.toast(esc(n.sniff_wrong ? tx(n.sniff_wrong.say) : t('app_sniffed', creatureName())));
         };
       }
       body.querySelectorAll('.opt[data-id]').forEach(function(b) {

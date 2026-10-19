@@ -125,8 +125,10 @@ final class edits_test extends \advanced_testcase {
         $this->resetAfterTest();
         $course = $this->make_course();
         $scenes = array_column(array_merge(...array_column(edits::view($course->id)['chapters'], 'scenes')), null, 'code');
-        // The nest has no question to sniff; the clue of the C2-2, one.
-        $this->assertFalse($scenes['C1-2']['sniffable']);
+        // «Animal or plant?» has no question to sniff; the nest, its feather (where the scent goes wrong); the clue of the
+        // C2-2, one.
+        $this->assertFalse($scenes['C2-1']['sniffable']);
+        $this->assertTrue($scenes['C1-2']['sniffable']);
         $this->assertTrue($scenes['C2-2']['sniffable']);
         $this->assertTrue($scenes['C2-2']['sniff']);
         $this->assertTrue(edits::save($course->id, 'C2-2', edits::SNIFF, 'off'));
@@ -138,7 +140,7 @@ final class edits_test extends \advanced_testcase {
         $this->assertFalse(edits::save($course->id, 'C2-2', edits::SNIFF, ''));
         $this->assertArrayNotHasKey('sniff', $this->scene($course->id, 'C2-2')->data);
         $this->expectException(\invalid_parameter_exception::class);
-        edits::save($course->id, 'C1-2', edits::SNIFF, 'off');
+        edits::save($course->id, 'C2-1', edits::SNIFF, 'off');
     }
 
     public function test_the_teacher_takes_a_scene_out_of_the_game(): void {

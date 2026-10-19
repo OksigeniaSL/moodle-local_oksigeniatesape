@@ -10550,3 +10550,15 @@ body.still .class-row-team.cheer {
   vertical-align: middle;
   margin-right: 6px;
 }
+
+/* The creature's scent that goes wrong: the option it points at stays, marked. */
+.opt.sniff-point {
+  outline: 2px dashed var(--lantern);
+  outline-offset: 2px;
+}
+
+.opt .sniff-tag {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-soft);
+}

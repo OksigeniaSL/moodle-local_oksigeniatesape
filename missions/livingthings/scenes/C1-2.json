@@ -121,6 +121,10 @@
     "min": 5,
     "max": 5
    },
+   "sniff_wrong": {
+    "option": "pluma",
+    "say": "«¡Huele a pájaro! Esta, esta.» Tu criatura no se aparta de la pluma. Huele a pájaro, sí… ¿Pero está vivo todo lo que huele a pájaro?"
+   },
    "hints": [
     "¿Qué hacen todos los seres vivos que no hace una piedra? Se nutren, se relacionan y se reproducen.",
     "Dos cosas del claro vienen de un ser vivo o guardan uno dentro. No es lo mismo."
