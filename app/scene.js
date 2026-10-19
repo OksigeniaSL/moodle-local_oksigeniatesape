@@ -385,10 +385,11 @@
     }
 
     /**
-     * Opens the place alive behind the scene: only for the scenes a student plays, where the device moves and draws.
+     * Opens the place alive behind the scene, where the device moves and draws: for the scenes a student plays, and for
+     * those the class plays on its screen (without a hero of its own: the place and who speaks). Not in a preview.
      */
     function liven() {
-      if (cm || opts.preview || !T.sceneWorld || !T.sceneWorld.can()) {
+      if (opts.preview || !T.sceneWorld || !T.sceneWorld.can()) {
         return;
       }
       liveQueue = [];
@@ -397,7 +398,8 @@
       holder.setAttribute('aria-hidden', 'true');
       layer.insertBefore(holder, layer.firstChild);
       layer.classList.add('live');
-      T.sceneWorld.open(holder, {world: world, image: T.artUrl(pictureKeys(sceneImage(), data)), still: !T.moves()})
+      // In class, the hero is the whole class: no figure of its own, only the place and who speaks.
+      T.sceneWorld.open(holder, {world: cm ? {} : world, image: T.artUrl(pictureKeys(sceneImage(), data)), still: !T.moves()})
       .then(function(w) {
         if (!liveQueue) {
           w.close();

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.131.0 (2026-10-19)
+
+- **A scene played by the class on its screen has the place alive behind it**, as the scenes of each student: the
+  painting of each moment at full screen and who speaks in full figure (a puppet, if the art pack brings it), with the
+  words in the big box of the class screen. Without a hero of its own: the hero is the whole class.
+
 ## 0.130.0 (2026-10-19)
 
 - **The battle on the class screen, with movement.** Where the screen draws with WebGL and moves, a clear canvas over
