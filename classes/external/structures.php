@@ -831,6 +831,7 @@ final class structures {
                 'played' => new external_value(PARAM_BOOL, 'By turns aloud: it was played on the screen', VALUE_DEFAULT, false),
                 'struck' => new external_value(PARAM_INT, 'By turns aloud: the option a glance struck out', VALUE_DEFAULT, -1),
             ]), 'By turns: the lane of each team', VALUE_OPTIONAL),
+            'pick' => new external_value(PARAM_INT, 'A scene with the class: the option the teacher chose', VALUE_OPTIONAL),
             'sorting' => new external_single_structure([
                 'items' => new external_multiple_structure(new external_single_structure([
                     'id' => new external_value(PARAM_ALPHANUMEXT, 'Knot'),

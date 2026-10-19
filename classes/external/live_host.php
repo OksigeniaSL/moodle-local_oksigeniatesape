@@ -45,7 +45,7 @@ final class live_host extends external_api {
             'courseid' => new external_value(PARAM_INT, 'Course'),
             'action' => new external_value(
                 PARAM_ALPHA,
-                'state, start, next, reveal, mark, argue, verb, boardplay, settle, finish, startvote, vote, pause or resume'
+                'state, start, next, reveal, mark, argue, verb, boardplay, settle, finish, startvote, vote, pick, pause or resume'
             ),
             'mode' => new external_value(PARAM_ALPHA, 'start: phones or aloud', VALUE_DEFAULT, 'phones'),
             'count' => new external_value(PARAM_INT, 'start: questions', VALUE_DEFAULT, 6),
@@ -72,6 +72,7 @@ final class live_host extends external_api {
             ),
             'kind' => new external_value(PARAM_ALPHA, 'verb: glance, trail, shield, cheer or carry', VALUE_DEFAULT, ''),
             'target' => new external_value(PARAM_INT, 'verb: the team it goes to', VALUE_DEFAULT, 0),
+            'option' => new external_value(PARAM_INT, 'pick: the option of the decision, from 0', VALUE_DEFAULT, -1),
         ]);
     }
 
@@ -95,6 +96,7 @@ final class live_host extends external_api {
      * @param string $meta
      * @param string $kind
      * @param int $target
+     * @param int $option
      * @return array
      */
     public static function execute(
@@ -114,7 +116,8 @@ final class live_host extends external_api {
         bool $rehearsal = false,
         string $meta = '{}',
         string $kind = '',
-        int $target = 0
+        int $target = 0,
+        int $option = -1
     ): array {
         global $USER;
         $params = self::validate_parameters(self::execute_parameters(), [
@@ -134,6 +137,7 @@ final class live_host extends external_api {
             'rehearsal' => $rehearsal,
             'kind' => $kind,
             'target' => $target,
+            'option' => $option,
             'meta' => $meta,
         ]);
         $context = \context_course::instance($params['courseid']);
@@ -240,6 +244,10 @@ final class live_host extends external_api {
                 break;
             case 'settle':
                 $live = live::settle($live, $now);
+                break;
+            case 'pick':
+                require_capability('local/oksigeniatesape:award', $context);
+                $live = live::pick($live, $params['option'], $now);
                 break;
             case 'finish':
                 require_capability('local/oksigeniatesape:award', $context);

@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.155.0 (2026-10-19)
+
+- **A scene with the class, driven from the teacher's phone.** While the class votes a decision with its phones on the
+  class screen, the remote of the teacher («The class screen, from here») shows the question and its options, with the
+  votes once closed; the teacher closes the vote there and touches what the class decided, and the class screen plays it
+  as if it were touched there. Service `live_host`, action `pick`. The remote is called «The class screen, from here».
+- **The campfire, to close a session.** From the session of the day, «Campfire» shows on the class screen the creatures
+  of the class asleep around a fire, without names, and three cards to talk about («Something you did not know this
+  morning», «Something that still muddles you», «Something you will look for or tell at home»); what still muddles is
+  what the teacher writes down when closing, for the next session.
+
 ## 0.154.0 (2026-10-19)
 
 - **The trail of the owl comes at random among three** (mission v62): the slime of a snail, the shed skin of a snake and

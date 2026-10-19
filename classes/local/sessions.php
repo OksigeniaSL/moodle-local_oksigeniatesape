@@ -42,7 +42,7 @@ final class sessions {
      * @var string[] What the class screen shows for a session: the place entered, the card, a timer, the commitments, a
      * scene, the lantern lit, or the teams in council.
      */
-    public const SHOWS = ['enter', 'card', 'timer', 'pacts', 'scene', 'light', 'council'];
+    public const SHOWS = ['enter', 'card', 'timer', 'pacts', 'scene', 'light', 'council', 'campfire'];
 
     /** @var int Minutes of the council of the teams. */
     public const COUNCIL = 2;

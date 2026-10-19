@@ -163,6 +163,9 @@ final class sessions_test extends \advanced_testcase {
         $this->assertNotEmpty($pacts['options']);
         $this->assertSame('Claro del Despertar', $pacts['place']);
         $this->assertSame([['name' => 'Los Linces', 'chose' => 0, 'total' => 2]], $pacts['teams']);
+        // The campfire, to close: shown as it is (the class screen draws the creatures and the three cards).
+        sessions::show($course->id, 'campfire', 0, 0, $now + 200);
+        $this->assertSame('campfire', sessions::board($course->id, $now + 201)['shown']);
         // The council of the teams: two minutes, and each team with the role that starts the hand, once chosen.
         sessions::show($course->id, 'council', 0, 0, $now + 240);
         $board = sessions::board($course->id, $now + 241);

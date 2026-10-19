@@ -300,6 +300,25 @@
           return '<li>' + esc(o) + '</li>';
         }).join('') + '</ol><ul class="show-teams" data-steams>' + (s.pacts ? pactTeams(s.pacts) : '') + '</ul>' +
         '<div class="show-clock small" data-sclock>2:00</div></div>';
+    } else if (s.shown === 'campfire') {
+      // The campfire, to close: the creatures of the class asleep around the fire, without names, and three cards to
+      // talk about what each one takes home.
+      var pets = (state.cls ? state.cls.students : []).filter(function(st) {
+        return st.character && st.character.creature && st.character.creature !== '{}';
+      }).slice(0, 14);
+      html = '<div class="show-card campfire"><div class="kicker">' + esc(t('board_campfire')) + '</div><h1>' +
+        esc(t('board_campfire_title')) + '</h1><div class="campfire-ring" aria-hidden="true">' + pets.map(function(st, i) {
+          var a = (i / Math.max(1, pets.length)) * Math.PI * 2;
+          return '<span class="campfire-pet" style="left:' + (50 + 40 * Math.cos(a)).toFixed(1) + '%;top:' +
+            (50 + 30 * Math.sin(a)).toFixed(1) + '%;animation-delay:-' + ((i * 0.7) % 4).toFixed(1) + 's">' +
+            T.creature(st.character.creature, st.character.creaturestage) + '</span>';
+        }).join('') + '<span class="campfire-fire"><i></i><i></i><i></i></span></div><ol class="campfire-cards">' +
+        ['new', 'confused', 'home'].map(function(k) {
+          return '<li>' + esc(t('board_campfire_' + k)) + '</li>';
+        }).join('') + '</ol><p class="lead">' + esc(t('board_campfire_help')) + '</p></div>';
+      if (T.fx) {
+        T.fx.sound('lantern');
+      }
     } else if (s.shown === 'council') {
       // The teams in council: each one, on a tablet, looks at its task and chooses who starts the hand.
       var ev = state.board && state.board.event;

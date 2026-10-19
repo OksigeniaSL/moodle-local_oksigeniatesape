@@ -235,6 +235,27 @@ final class live {
     }
 
     /**
+     * A scene played with the class: the teacher chooses, from their phone, the option the class decided (after the vote,
+     * or without it); the class screen plays it as if it were touched there.
+     *
+     * @param \stdClass $live
+     * @param int $option Of the decision being voted, from 0.
+     * @param int|null $now
+     * @return \stdClass The session.
+     */
+    public static function pick(\stdClass $live, int $option, ?int $now = null): \stdClass {
+        $now = $now ?? time();
+        $state = self::state($live);
+        $round = (int) $live->round;
+        $info = $state['rounds'][$round] ?? null;
+        if ($live->kind !== 'vote' || !$info || $option < 0 || $option >= (int) $info['options']) {
+            throw new \invalid_parameter_exception('Not an option of the decision being voted');
+        }
+        $state['rounds'][$round]['pick'] = $option;
+        return self::save($live, $state, $round, $now);
+    }
+
+    /**
      * Who came in with their phone, by character.
      *
      * @param \stdClass $live
@@ -934,6 +955,10 @@ final class live {
             $view['right'] = (int) $info['right'];
             if ($info['revealed'] && $live->kind === 'vote') {
                 $view['tally'] = $info['tally'];
+            }
+            if ($live->kind === 'vote' && isset($info['pick'])) {
+                // What the teacher chose from their phone, for the class screen to play it.
+                $view['pick'] = (int) $info['pick'];
             }
         }
         $view['rewarded'] = count($state['rewarded']);

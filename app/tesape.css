@@ -10562,3 +10562,123 @@ body.still .class-row-team.cheer {
   margin-top: 4px;
   color: var(--text-soft);
 }
+
+/* The campfire on the class screen, to close a session: the creatures of the class asleep around the fire. */
+.campfire-ring {
+  position: relative;
+  height: 230px;
+  margin: 8px 0 14px;
+}
+
+.campfire-pet {
+  position: absolute;
+  width: 84px;
+  height: 84px;
+  margin: -42px 0 0 -42px;
+  animation: tesape-row-breath 4.2s ease-in-out infinite;
+}
+
+.campfire-pet > * {
+  width: 100%;
+  height: 100%;
+}
+
+.campfire-pet img,
+.campfire-pet svg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* The fire: two crossed logs and three flames shaped as drops, pointing up. */
+.campfire-fire {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 90px;
+  height: 100px;
+  margin: -60px 0 0 -45px;
+}
+
+.campfire-fire::before,
+.campfire-fire::after {
+  content: "";
+  position: absolute;
+  bottom: 4px;
+  left: 8px;
+  width: 74px;
+  height: 12px;
+  border-radius: 6px;
+  background: #6b4426;
+  transform: rotate(14deg);
+}
+
+.campfire-fire::after {
+  transform: rotate(-14deg);
+}
+
+.campfire-fire i {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  width: 40px;
+  height: 40px;
+  margin-left: -20px;
+  border-radius: 50% 0 50% 50%;
+  background: linear-gradient(-45deg, #ffe9a8 10%, #ffc857 40%, #ef7d5c 85%);
+  transform: rotate(-45deg);
+  transform-origin: 50% 50%;
+  animation: tesape-flame 1.4s ease-in-out infinite;
+  opacity: .95;
+}
+
+.campfire-fire i:nth-child(2) {
+  width: 28px;
+  height: 28px;
+  margin-left: -32px;
+  bottom: 14px;
+  animation-delay: -.5s;
+}
+
+.campfire-fire i:nth-child(3) {
+  width: 30px;
+  height: 30px;
+  margin-left: 2px;
+  bottom: 14px;
+  animation-delay: -.9s;
+}
+
+@keyframes tesape-flame {
+  50% {
+    transform: rotate(-45deg) scale(1.12);
+  }
+}
+
+.campfire-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.campfire-cards li {
+  padding: 16px;
+  border-radius: var(--r-s);
+  background: rgba(var(--lantern-rgb), .12);
+  border: 1px solid rgba(var(--lantern-rgb), .4);
+  font-size: 1.2em;
+}
+
+body.still .campfire-pet,
+body.still .campfire-fire i {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .campfire-pet,
+  .campfire-fire i {
+    animation: none;
+  }
+}

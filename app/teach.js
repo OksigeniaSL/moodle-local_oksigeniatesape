@@ -1041,7 +1041,9 @@
           '</p>' + ready + review(v) + steps(v, true) + sheetExtras(v) + '<div class="actions" style="justify-content:flex-start">' +
           (v.shown ? '<button type="button" class="btn btn-soft" data-sshow="">' + esc(t('teach_session_clear')) + '</button>' :
           '') + (v.shown === 'council' ? '' : '<button type="button" class="btn btn-soft" data-sshow="council">' +
-          esc(t('teach_session_act_council')) + '</button>') + '<button type="button" class="btn btn-main" data-sclose>' +
+          esc(t('teach_session_act_council')) + '</button>') + (v.shown === 'campfire' ? '' : '<button type="button" ' +
+          'class="btn btn-soft" data-sshow="campfire">' + esc(t('teach_session_act_campfire')) + '</button>') +
+          '<button type="button" class="btn btn-main" data-sclose>' +
           esc(t('teach_session_close')) + '</button></div>';
       } else {
         box.innerHTML = '<div class="kicker">' + esc(t('teach_session_next')) + (v.optional ? ' · ' +
@@ -1193,6 +1195,8 @@
         buttons = [['start', 'teach_command_start'], ['startfinal', 'teach_command_final']];
       } else if (l.kind !== 'battle') {
         line = t('teach_command_vote');
+        // The decision being voted: closed from here, and what the class decided, chosen here for the class screen.
+        buttons = l.round && l.open ? [['reveal', 'board_scene_voteclose']] : [];
       } else if (!l.round) {
         line = t('board_battle_joined', l.joined);
         buttons = [['next', l.maxcandles ? 'board_turn_first' : 'board_battle_first'], ['finish', 'board_battle_cancel']];
@@ -1240,9 +1244,16 @@
           return '<span class="tag">' + esc(x) + '</span>';
         }).join(' ') + '</span></li>';
       }).join('') + '</ul>' : '';
+      // A scene with the class: the decision and its options, with the votes once closed; a touch chooses it.
+      var decide = l && l.kind === 'vote' && l.round && l.question && l.pick === undefined ? '<p class="help-soft">' +
+        esc(t('teach_command_pick_help')) + '</p><p><b>' + esc(l.question.text) + '</b></p><div class="opts">' +
+        l.question.options.map(function(o, i) {
+          return '<button type="button" class="opt" data-remotepick="' + i + '">' + esc(o) + (l.tally ? ' <small>' +
+            esc(t('board_scene_optvotes', l.tally[i] || 0)) + '</small>' : '') + '</button>';
+        }).join('') + '</div>' : '';
       // As on the class screen: with tablets, the first turn waits until somebody is in.
       var empty = l && !l.round && l.mode === 'phones' && !l.joined;
-      box.innerHTML = '<p>' + esc(line) + '</p>' + how + marks + '<div class="actions" style="justify-content:flex-start">' +
+      box.innerHTML = '<p>' + esc(line) + '</p>' + decide + how + marks + '<div class="actions" style="justify-content:flex-start">' +
         buttons.map(function(b, i) {
           return '<button type="button" class="btn ' + (i ? 'btn-soft' : 'btn-main') + '" data-remote="' + b[0] + '"' +
             (empty && b[0] === 'next' ? ' disabled' : '') + '>' + esc(t(b[1])) + '</button>';
@@ -1251,6 +1262,18 @@
         b.onclick = function() {
           var p = b.dataset.remotemark.split(':');
           host('mark', {groupid: +p[0], right: p[1] === '1'}).then(function(r) {
+            draw(r.live || null);
+          }).catch(function(e) {
+            T.toast(esc(e.message), true);
+          });
+        };
+      });
+      box.querySelectorAll('[data-remotepick]').forEach(function(b) {
+        b.onclick = function() {
+          box.querySelectorAll('[data-remotepick]').forEach(function(x) {
+            x.disabled = true;
+          });
+          host('pick', {option: +b.dataset.remotepick}).then(function(r) {
             draw(r.live || null);
           }).catch(function(e) {
             T.toast(esc(e.message), true);

@@ -470,6 +470,16 @@ final class live_test extends \advanced_testcase {
         $this->assertCount(4, live::joined($live));
         // With the node and the ids of its options, for what confuses the class.
         $this->assertEquals([['node' => 'n1', 'ids' => ['a', 'b', 'c'], 'tally' => [3, 0, 1]]], live::votes($live));
+        // The teacher chooses from their phone what the class decided; the class screen sees it to play it.
+        $this->assertArrayNotHasKey('pick', live::board_view($live, self::NOW));
+        $live = live::pick($live, 2, self::NOW);
+        $this->assertSame(2, live::board_view($live, self::NOW)['pick']);
+        try {
+            live::pick($live, 3, self::NOW);
+            $this->fail('An option that is not there');
+        } catch (\invalid_parameter_exception $e) {
+            $this->assertStringContainsString('Not an option', $e->getMessage());
+        }
         // A vote ends without prizes.
         $live = live::finish($live, 2, self::NOW);
         $this->assertEquals('done', live::board_view($live, self::NOW)['outcome']);

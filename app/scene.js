@@ -2796,19 +2796,38 @@
           closed = true;
           this.disabled = true;
           clearTimeout(timer);
-          cm.vote.close().then(tally);
+          cm.vote.close().then(function(live) {
+            tally(live);
+            poll();
+          });
         };
       }
+      var round = 0;
+      // The vote is followed while the decision is on the screen: the count, the vote closed from the teacher's phone,
+      // and the option they chose there, which is played here as if it were touched here.
       function poll() {
         timer = setTimeout(function() {
-          if (!document.body.contains(box) || closed) {
+          if (!document.body.contains(box)) {
             return;
           }
           cm.vote.state().then(function(live) {
-            if (live && live.open && !closed) {
-              count(live);
-              poll();
+            if (!live || live.round !== round) {
+              return;
             }
+            if (live.pick !== undefined && live.pick >= 0 && open[live.pick]) {
+              var b = body.querySelector('.opt[data-id="' + open[live.pick].id + '"]');
+              if (b && !b.disabled) {
+                b.click();
+              }
+              return;
+            }
+            if (live.open && !closed) {
+              count(live);
+            } else if (!live.open && !closed) {
+              closed = true;
+              tally(live);
+            }
+            poll();
           });
         }, 1500);
       }
@@ -2834,6 +2853,7 @@
         }), {node: run.node, ids: open.map(function(o) {
           return o.id;
         })}).then(function(live) {
+          round = live ? live.round : 0;
           count(live);
           poll();
         }).catch(function(e) {
