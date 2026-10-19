@@ -56,6 +56,16 @@ final class page {
                 }
             }
         }
+        // The story of the mission may tell some texts in its own way, when the game speaks its language.
+        $mission = missions::get((int) $course->id);
+        $told = $mission ? ($mission->data['texts'][(string) $mission->skin] ?? []) : [];
+        if (is_array($told) && strpos($lang, (string) ($mission->data['lang'] ?? '')) === 0) {
+            foreach ($told as $key => $text) {
+                if (isset($strings[$key]) && is_string($text) && trim($text) !== '') {
+                    $strings[$key] = $text;
+                }
+            }
+        }
         $config += [
             'wwwroot' => $CFG->wwwroot,
             'sesskey' => sesskey(),

@@ -51,6 +51,56 @@ final class page_test extends \advanced_testcase {
         $this->assertArrayNotHasKey('pluginname', $config['strings']);
     }
 
+    public function test_the_story_of_the_mission_tells_its_texts_in_its_language(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $course = $this->getDataGenerator()->create_course();
+        regions::save($course->id, ['enabled' => 1]);
+        $mission = missions::install($course->id, 'livingthings', 'azara', 'es');
+        $this->setUser($this->getDataGenerator()->create_and_enrol($course, 'student'));
+        $strings = function () use ($course): array {
+            ob_start();
+            page::output('game', $course);
+            preg_match('/window\.TESAPE_CONFIG = (\{.*?\});<\/script>/s', ob_get_clean(), $m);
+            return json_decode($m[1], true)['strings'];
+        };
+        // The mission is in Spanish and the game speaks English: the texts of the language pack.
+        $this->assertSame(get_string('app_battle_title', 'local_oksigeniatesape'), $strings()['app_battle_title']);
+        // In the language of the mission, the expedition of Azara tells the battle in its own way.
+        $data = json_decode($DB->get_field('local_oksigeniatesape_mission', 'definition', ['id' => $mission->id]), true);
+        $data['lang'] = 'en';
+        $DB->set_field('local_oksigeniatesape_mission', 'definition', json_encode($data), ['id' => $mission->id]);
+        missions::forget();
+        $told = $strings();
+        $this->assertSame($data['texts']['azara']['app_battle_title'], $told['app_battle_title']);
+        $this->assertSame(get_string('app_who', 'local_oksigeniatesape'), $told['app_who']);
+        // The valley uses those of the language pack.
+        $DB->set_field('local_oksigeniatesape_mission', 'skin', 'valley', ['id' => $mission->id]);
+        missions::forget();
+        $this->assertSame(get_string('app_battle_title', 'local_oksigeniatesape'), $strings()['app_battle_title']);
+    }
+
+    public function test_the_texts_of_the_missions_are_texts_of_the_client(): void {
+        $this->resetAfterTest();
+        $strings = get_string_manager()->load_component_strings('local_oksigeniatesape', 'en');
+        $marks = function (string $text): array {
+            preg_match_all('/\{\$a(->\w+)?\}/', $text, $m);
+            $found = array_unique($m[0]);
+            sort($found);
+            return $found;
+        };
+        foreach (missions::packages() as $code => $package) {
+            foreach ($package['texts'] ?? [] as $skin => $texts) {
+                $this->assertArrayHasKey($skin, $package['skins'], "$code: $skin");
+                foreach ($texts as $key => $text) {
+                    $this->assertMatchesRegularExpression('/^(app|board|event)_/', $key, "$code: $key");
+                    $this->assertArrayHasKey($key, $strings, "$code: $key");
+                    $this->assertSame($marks($strings[$key]), $marks($text), "$code: $key");
+                }
+            }
+        }
+    }
+
     public function test_course_link(): void {
         global $PAGE;
         $this->resetAfterTest();

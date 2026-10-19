@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 56,
+ "version": 57,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 57,
+   "kind": "improvement",
+   "date": "2026-10-19",
+   "text": "En la piel de Azara, la batalla final y lo que el Embrollo hace cada día se cuentan con el cuaderno, las notas y el barco que zarpa al amanecer"
+  },
   {
    "version": 56,
    "kind": "fix",
@@ -1631,6 +1637,44 @@
     "azara": "Las letras torcidas se ponen derechas, una a una, como si les diera vergüenza."
    }
   ]
+ },
+ "texts": {
+  "azara": {
+   "app_backtovalley": "Volver al campamento",
+   "app_battle_call": "¡El Embrollo revuelve las notas del cuaderno antes de que zarpe el barco! Entra en la batalla con tu clase.",
+   "app_battle_escaped": "El Embrollo se ha escapado por la ventana esta vez",
+   "app_battle_lost_turns": "Se ha escapado por la ventana con una página del cuaderno. Nadie pierde nada; el barco espera a la revancha, que sigue donde quedó.",
+   "app_battle_right": "¡Bien! Una nota menos revuelta y un hilo menos para el Embrollo.",
+   "app_battle_title": "Las notas antes del barco",
+   "app_battle_won": "¡La clase ha vencido al Embrollo! El cuaderno sube al barco con todas sus notas en orden.",
+   "app_friends_help": "Cada personaje recuerda las páginas del cuaderno que le has devuelto de lo suyo. Con dos y con cuatro, te cuenta algo y te hace un regalo.",
+   "app_guide_beings": "Los seres de la expedición",
+   "app_letter": "Encontrada junto a la linterna:",
+   "app_market": "El puesto del campamento",
+   "app_page_back": "¡La página «{$a}» vuelve al cuaderno!",
+   "app_page_stolen": "El Embrollo se ha llevado una página del cuaderno",
+   "app_reason_market": "El puesto del campamento",
+   "app_reason_pageback": "Página del cuaderno recuperada",
+   "app_res_gems_help": "Para el puesto del campamento. Las ganas en las gestas, las batallas y la misión.",
+   "app_welcome_back_kicker": "De vuelta en el campamento",
+   "board_battle": "Las notas antes del barco",
+   "board_battle_help": "El barco a España zarpa al amanecer y el Embrollo ha revuelto las notas del cuaderno. Preguntas de la misión para toda la clase; cada acierto le quita vida al Embrollo, y fallar no le quita nada a nadie.",
+   "board_battle_lost": "El Embrollo se ha escapado por la ventana esta vez.",
+   "board_battle_losthelp_turns": "Se ha escapado por la ventana con una página del cuaderno. Nadie pierde nada; el barco espera a la revancha, que sigue donde quedó, y los nudos rotos no vuelven.",
+   "board_battle_won": "¡La clase ha vencido al Embrollo! El cuaderno sube al barco con todas sus notas en orden.",
+   "board_knot_done": "¡El equipo {$a} deshizo el nudo! La página vuelve al cuaderno, y la expedición es más fuerte.",
+   "board_knot_says": "El naturalista lee en voz alta una nota mezclada:",
+   "board_remembered": "El cuaderno recuerda",
+   "board_today": "Hoy en la expedición",
+   "board_today_gloat": "La nota del Embrollo, después de escaparse",
+   "board_today_letter": "Una nota suelta del Embrollo, en {$a}:",
+   "board_today_page": "El Embrollo se ha llevado una página del cuaderno: «{$a->title}»",
+   "board_turn_candle": "El ataque cae sobre {$a}: se apaga un farol del muelle",
+   "board_turn_candle_all": "Menos de la mitad deshizo su lazada: se apaga un farol del muelle",
+   "board_turn_candles": "Faroles del muelle: {$a->lit} de {$a->all}",
+   "board_turn_shield_all": "¡Un escudo salva el farol del muelle!",
+   "event_knot_text": "El Embrollo ha enredado una página de un equipo. Tiene hasta que acabe el día para deshacer el nudo en una tableta; si lo consigue, la página vuelve al cuaderno y la expedición se hace más fuerte."
+  }
  },
  "cards": {
   "calm": {

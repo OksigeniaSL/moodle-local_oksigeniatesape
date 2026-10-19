@@ -722,7 +722,9 @@
         esc(t('board_battle_joined', team.joined)) + ' · ' : '') + esc(t('board_battle_teamright', team.right)) + '</small>' +
         marks + '</div>';
     }).join('');
-    var tower = l.maxcandles ? T.artUrl(['scene.torre']) : null;
+    // The place of the battle, as the story of the mission paints it (the port of the expedition of Azara), or the tower.
+    var skin = (state.board.mission || {}).skin;
+    var tower = l.maxcandles ? T.artUrl(['scene.battle.' + skin, 'scene.torre']) : null;
     var end = l.maxcandles && l.outcome ? ' ' + l.outcome : '';
     app.innerHTML = '<div class="board battle-board' + (hit ? ' shake' : '') + (l.maxcandles ? ' turns' + end : '') + '"' +
       (tower ? ' style="--tower:url(\'' + esc(tower) + '\')"' : '') + '><header class="board-top">' + T.emblem() +

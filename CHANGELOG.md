@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.140.0 (2026-10-19)
+
+- **The story of a mission tells some texts of the game in its own way** (`texts` of the mission, by skin, with keys of
+  the language pack of the client), when the game speaks the language of the mission. Mission «Los seres vivos» v57: in
+  the expedition of Azara, the battle is «The notes before the ship» (the ship to Spain sails at dawn and the Embrollo
+  has mixed the notes of the notebook), the candles of the tower are the lanterns of the pier, and the pages, the
+  camp and the stall are those of the notebook and the expedition. The class screen paints the battle by turns with the
+  place of the battle of the story (`scene.battle.<skin>`) if the art pack has it, or with the tower.
+
 ## 0.139.0 (2026-10-19)
 
 - **The free expedition.** The scenes of the past expeditions of a course, which could only be visited, are played
