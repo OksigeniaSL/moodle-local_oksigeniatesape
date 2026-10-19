@@ -114,6 +114,11 @@ final class huddles_test extends \advanced_testcase {
                 $this->assertSame('huddlenotyours', $e->errorcode);
             }
         }
+        // The information is shared out: each one tells their piece first.
+        foreach ([$leo, $eva] as $who) {
+            [$s, $c] = huddles::get($course->id, $who->id, (int) $huddle->id, self::NOW + 9);
+            huddles::tell($s, $c, $seq);
+        }
         [$s, $c] = huddles::get($course->id, $leo->id, (int) $huddle->id, self::NOW + 9);
         huddles::decide($s, $c, 'b', $seq, self::NOW + 9);
         // The guide sees it to play it; the rest, that it waits.
@@ -191,6 +196,45 @@ final class huddles_test extends \advanced_testcase {
         $placed = ['a' => 'vivo', 'b' => 'no', 'c' => 'vivo'];
         huddles::decide($s, $c, '', $seq, self::NOW + 7, $placed);
         $this->assertSame($placed, json_decode(huddles::mine($course->id, $ana->id, self::NOW + 8)['pending']['answer'], true));
+    }
+
+    public function test_with_the_information_shared_out_it_is_decided_when_everybody_told_their_piece(): void {
+        $this->resetAfterTest();
+        [$course, $users, , $sceneid] = $this->make_team();
+        [$ana, $leo, $eva] = $users;
+        $huddle = huddles::open($course->id, $ana->id, $sceneid, self::NOW);
+        huddles::join($course->id, $leo->id, self::NOW + 1);
+        huddles::join($course->id, $eva->id, self::NOW + 1);
+        [$session, $char] = huddles::get($course->id, $ana->id, (int) $huddle->id, self::NOW + 2);
+        huddles::start($session, $char, self::NOW + 2);
+        $seq = huddles::publish($session, $char, ['node' => 'n1', 'kind' => 'choose', 'prompt' => '¿Por dónde?',
+            'options' => [['id' => 'a', 'label' => 'A'], ['id' => 'b', 'label' => 'B']], 'hand' => (int) $leo->id,
+            'views' => ['scout' => 'Huellas hacia el agua', 'sage' => 'La clave dice: con escamas']], self::NOW + 3);
+        $view = huddles::mine($course->id, $leo->id, self::NOW + 4);
+        $this->assertSame([true, 0, 2, false, false], [$view['shared'], $view['told'], $view['tellers'], $view['mytold'],
+            $view['ready']]);
+        // The hand cannot decide until everybody in, besides the guide, told their piece.
+        foreach ([$leo, $eva] as $i => $who) {
+            [$s, $c] = huddles::get($course->id, $leo->id, (int) $huddle->id, self::NOW + 5 + $i);
+            try {
+                huddles::decide($s, $c, 'a', $seq, self::NOW + 5 + $i);
+                $this->fail('Decided before everybody told their piece');
+            } catch (\moodle_exception $e) {
+                $this->assertSame('huddlewait', $e->errorcode);
+            }
+            [$s, $c] = huddles::get($course->id, $who->id, (int) $huddle->id, self::NOW + 5 + $i);
+            huddles::tell($s, $c, $seq);
+        }
+        $view = huddles::mine($course->id, $leo->id, self::NOW + 7);
+        $this->assertSame([2, true, true], [$view['told'], $view['mytold'], $view['ready']]);
+        [$s, $c] = huddles::get($course->id, $leo->id, (int) $huddle->id, self::NOW + 7);
+        huddles::decide($s, $c, 'a', $seq, self::NOW + 7);
+        $this->assertSame('a', huddles::mine($course->id, $ana->id, self::NOW + 8)['pending']['option']);
+        // A decision without pieces does not wait.
+        [$session, $char] = huddles::get($course->id, $ana->id, (int) $huddle->id, self::NOW + 9);
+        huddles::publish($session, $char, ['node' => 'n2', 'kind' => 'choose', 'prompt' => '¿Y ahora?',
+            'options' => [['id' => 'c', 'label' => 'C']], 'hand' => (int) $eva->id], self::NOW + 9);
+        $this->assertTrue(huddles::mine($course->id, $eva->id, self::NOW + 10)['ready']);
     }
 
     public function test_who_drops_out_stops_counting_and_a_session_without_its_guide_is_gone(): void {

@@ -10514,3 +10514,30 @@ body.still .class-row-team.cheer {
   width: 46px;
   height: 46px;
 }
+
+/* A team session with the information shared out: the decision waits until everybody told the team their piece. */
+.scene-layer.team-wait .opts,
+.scene-layer.team-wait [data-cls],
+.scene-layer.team-wait .card-pieces,
+.scene-layer.team-wait .actions [data-confirm] {
+  pointer-events: none;
+  opacity: .55;
+}
+
+.team-wait-note {
+  margin: 8px 0;
+  padding: 8px 12px;
+  border-radius: var(--r-s);
+  background: rgba(var(--lantern-rgb), .12);
+  color: var(--text);
+}
+
+.huddle-told {
+  display: grid;
+  gap: 6px;
+  margin: 10px 0;
+}
+
+.huddle-told .btn {
+  justify-self: start;
+}

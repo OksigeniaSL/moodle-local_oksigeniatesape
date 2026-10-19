@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.151.0 (2026-10-19)
+
+- **With the information shared out, the team sets off when everybody has told their piece.** In a team session, a
+  decision where each role sees a piece of its own waits until every tablet in, besides the guide (who reads its own
+  from the scene), says «I have told my piece»; every tablet sees how many have, and the guide's waits too. Service
+  `huddle`, action `tell`.
+
 ## 0.150.0 (2026-10-19)
 
 - **The team session, with every kind of decision on the tablet of the hand.** Besides choosing, a decision of several

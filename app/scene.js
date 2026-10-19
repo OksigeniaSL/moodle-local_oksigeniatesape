@@ -1338,6 +1338,35 @@
     }
 
     /**
+     * In a team session with the information shared out: until everybody in told the team their piece, the decision
+     * waits on this tablet too, saying how many told it.
+     *
+     * @param {Object|null} wait told, all; or null, when it can be decided.
+     */
+    function huddleGate(wait) {
+      layer.classList.toggle('team-wait', !!wait);
+      var note = layer.querySelector('.team-wait-note');
+      if (!wait) {
+        if (note) {
+          note.remove();
+        }
+        return;
+      }
+      if (!note) {
+        note = document.createElement('p');
+        note.className = 'team-wait-note';
+        note.setAttribute('role', 'status');
+        var prompt = layer.querySelector('.scene-prompt');
+        if (prompt) {
+          prompt.parentNode.insertBefore(note, prompt.nextSibling);
+        } else {
+          layer.appendChild(note);
+        }
+      }
+      note.textContent = t('app_huddle_told', wait);
+    }
+
+    /**
      * In a team session, who is still in: if the hand of a decision to choose went away, it passes to the next one who
      * is there.
      *
@@ -3062,7 +3091,7 @@
         if (opts.huddle && T.huddleSync) {
           // Those who start are in until the session says otherwise.
           huddleIds = (opts.team || []).map(Number);
-          huddle = T.huddleSync(opts.huddle, huddleNow, huddlePlay, huddlePresent);
+          huddle = T.huddleSync(opts.huddle, huddleNow, huddlePlay, huddlePresent, huddleGate);
         }
         start(null);
       }).catch(function(e) {

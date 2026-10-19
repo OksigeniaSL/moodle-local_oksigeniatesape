@@ -39,7 +39,7 @@ final class huddle extends external_api {
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
             'courseid' => new external_value(PARAM_INT, 'Course'),
-            'action' => new external_value(PARAM_ALPHA, 'mine, open, join, start, publish, decide, leave or close'),
+            'action' => new external_value(PARAM_ALPHA, 'mine, open, join, start, publish, decide, tell, leave or close'),
             'sceneid' => new external_value(PARAM_INT, 'open: the scene', VALUE_DEFAULT, 0),
             'huddleid' => new external_value(PARAM_INT, 'start, publish, decide, close: the session', VALUE_DEFAULT, 0),
             'node' => new external_value(PARAM_RAW, 'publish: the decision at hand (JSON)', VALUE_DEFAULT, ''),
@@ -118,6 +118,9 @@ final class huddle extends external_api {
                 $whole = json_decode($params['answer'], true);
                 huddles::decide($session, $char, $params['option'], $params['seq'], $now, is_array($whole) ? $whole : []);
                 break;
+            case 'tell':
+                huddles::tell($session, $char, $params['seq']);
+                break;
             case 'leave':
                 huddles::leave($session, $char);
                 return [];
@@ -179,6 +182,11 @@ final class huddle extends external_api {
                     []
                 ),
                 'waiting' => new external_value(PARAM_BOOL, 'A choice waits for the guide'),
+                'shared' => new external_value(PARAM_BOOL, 'Information shared out: each one tells it', VALUE_DEFAULT, false),
+                'tellers' => new external_value(PARAM_INT, 'Who tells their piece (those in but the guide)', VALUE_DEFAULT, 0),
+                'told' => new external_value(PARAM_INT, 'How many of them told it', VALUE_DEFAULT, 0),
+                'mytold' => new external_value(PARAM_BOOL, 'This student told it', VALUE_DEFAULT, false),
+                'ready' => new external_value(PARAM_BOOL, 'The decision can be taken', VALUE_DEFAULT, true),
                 'pending' => new external_single_structure([
                     'by' => new external_value(PARAM_INT, 'Who chose'),
                     'option' => new external_value(PARAM_ALPHANUMEXT, 'What'),

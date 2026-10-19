@@ -211,8 +211,11 @@ final class huddles {
             'kind' => clean_param((string) ($node['kind'] ?? ''), PARAM_ALPHA),
             'prompt' => clean_param((string) ($node['prompt'] ?? ''), PARAM_TEXT),
             'options' => $options, 'hand' => (int) ($node['hand'] ?? 0), 'bins' => $bins,
-            'max' => max(1, (int) ($node['max'] ?? 1)), 'min' => max(1, (int) ($node['min'] ?? 1))];
+            'max' => max(1, (int) ($node['max'] ?? 1)), 'min' => max(1, (int) ($node['min'] ?? 1)),
+            'shared' => (bool) $views];
         $state['pending'] = null;
+        // With the information shared out, each one tells the team their piece before it is decided.
+        $state['told'] = [];
         self::save($huddle, $state, $now);
         return $state['seq'];
     }
@@ -245,10 +248,49 @@ final class huddles {
         ) {
             throw new \moodle_exception('huddlenotyours', 'local_oksigeniatesape');
         }
+        if (!self::ready($state, self::present($huddle, $now))) {
+            throw new \moodle_exception('huddlewait', 'local_oksigeniatesape');
+        }
         $state['pending'] = ['by' => (int) $char->userid, 'option' => $option, 'seq' => $seq] +
             ($node['kind'] === 'choose' ? [] : ['answer' => $answer]);
         // The decision of a member does not count as a sign of the guide.
         self::save($huddle, $state, (int) $huddle->timemodified);
+    }
+
+    /**
+     * With the information shared out, a tablet says it told the team its piece: the decision is taken once everybody in
+     * has (the guide reads its own aloud from the scene).
+     *
+     * @param \stdClass $huddle
+     * @param \stdClass $char
+     * @param int $seq The number of the decision they saw.
+     */
+    public static function tell(\stdClass $huddle, \stdClass $char, int $seq): void {
+        $state = self::state($huddle);
+        if ($seq !== (int) $state['seq'] || empty($state['node']['shared'])) {
+            throw new \moodle_exception('huddlenotyours', 'local_oksigeniatesape');
+        }
+        $told = array_map('intval', $state['told'] ?? []);
+        $told[] = (int) $char->userid;
+        $state['told'] = array_values(array_unique($told));
+        // Telling does not count as a sign of the guide.
+        self::save($huddle, $state, (int) $huddle->timemodified);
+    }
+
+    /**
+     * Whether the decision at hand can be taken: always, unless the information is shared out and someone in, besides the
+     * guide, has not told their piece yet.
+     *
+     * @param array $state
+     * @param array $present As present() gives it.
+     * @return bool
+     */
+    private static function ready(array $state, array $present): bool {
+        if (empty($state['node']['shared'])) {
+            return true;
+        }
+        $told = array_map('intval', $state['told'] ?? []);
+        return !array_filter($present, fn($p) => !$p['guide'] && !in_array((int) $p['userid'], $told, true));
     }
 
     /**
@@ -384,6 +426,12 @@ final class huddles {
             'known' => $node ? array_values($node['known'] ?? []) : [],
             'waiting' => !empty($state['pending']),
         ];
+        // With the information shared out: how many of those in, besides the guide, told their piece.
+        $tellers = array_values(array_filter($present, fn($p) => !$p['guide']));
+        $told = array_map('intval', $state['told'] ?? []);
+        $view += ['shared' => !empty($node['shared']), 'tellers' => count($tellers),
+            'told' => count(array_filter($tellers, fn($p) => in_array((int) $p['userid'], $told, true))),
+            'mytold' => in_array((int) $char->userid, $told, true), 'ready' => self::ready($state, $present)];
         // The choice waiting is for the guide to play.
         if ($guide && !empty($state['pending'])) {
             $view['pending'] = ['by' => (int) $state['pending']['by'], 'option' => (string) $state['pending']['option'],

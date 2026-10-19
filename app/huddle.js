@@ -123,9 +123,11 @@
    * @param {Function} now Returns the decision at hand (node, kind, prompt, options, hand), or null.
    * @param {Function} play Plays the option chosen on another tablet.
    * @param {Function} present Gets the users still in.
+   * @param {Function} [gate] Gets, with the information shared out, how many told their piece (told, all) while the
+   *     decision waits for them, or null when it can be decided.
    * @return {Object} With stop().
    */
-  T.huddleSync = function(id, now, play, present) {
+  T.huddleSync = function(id, now, play, present, gate) {
     follow.guiding = true;
     var sent = '';
     var applied = {};
@@ -147,6 +149,9 @@
           present(h.members.map(function(m) {
             return Number(m.userid);
           }));
+          if (gate) {
+            gate(h.shared && !h.ready ? {told: h.told, all: h.tellers} : null);
+          }
           if (h.pending && h.pending.seq === h.seq && !applied[h.seq]) {
             applied[h.seq] = true;
             play(h.pending.option, h.pending.answer || '');
@@ -281,7 +286,8 @@
     }
     follow.joined = true;
     document.body.classList.add('in-huddle');
-    var sig = JSON.stringify([h.seq, h.started, h.members, h.waiting, h.hand, h.myturn, h.piece, h.known]);
+    var sig = JSON.stringify([h.seq, h.started, h.members, h.waiting, h.hand, h.myturn, h.piece, h.known, h.told, h.tellers,
+      h.mytold, h.ready]);
     if (follow.sig === sig) {
       return;
     }
@@ -291,12 +297,18 @@
       h.known.map(function(k) {
         return '<li>' + esc(k) + '</li>';
       }).join('') + '</ul></div>' : '') + (h.started && h.piece ? '<div class="piece mine"><b>' + esc(t('app_piece_mine')) +
-      '</b><p>' + esc(h.piece) + '</p><small>' + esc(t('app_piece_tell')) + '</small></div>' : '');
+      '</b><p>' + esc(h.piece) + '</p><small>' + esc(t('app_piece_tell')) + '</small></div>' : '') +
+      // With the information shared out, each one says they told their piece; it is decided when everybody has.
+      (h.started && h.shared ? '<div class="huddle-told">' + (h.mytold ? '' : '<button type="button" class="btn btn-main" ' +
+      'data-tell>' + esc(t('app_huddle_tell')) + '</button>') + '<p class="help-soft" role="status">' +
+      esc(t('app_huddle_told', {told: h.told, all: h.tellers})) + '</p></div>' : '');
+    // Until everybody told their piece, the hand waits.
+    var wait = h.shared && !h.ready;
     var body = '';
     if (!h.started) {
       body = '<p class="help">' + esc(t('app_huddle_notyet', h.guidename)) + '</p>';
     } else if (h.kind === 'choose' && h.options.length) {
-      var mine = h.myturn && !h.waiting;
+      var mine = h.myturn && !h.waiting && !wait;
       body = '<p class="huddle-turn' + (h.myturn ? ' mine' : '') + '">' + esc(h.myturn ? t('app_huddle_yourturn') :
         t('app_huddle_theirturn', h.handname)) + '</p><p class="scene-prompt">' + esc(h.prompt) + '</p><div class="opts">' +
         h.options.map(function(o) {
@@ -307,7 +319,7 @@
       // Several at once: picked here and sent together.
       var picks = follow.picks && follow.picks.seq === h.seq ? follow.picks.ids : [];
       follow.picks = {seq: h.seq, ids: picks};
-      var free = h.myturn && !h.waiting;
+      var free = h.myturn && !h.waiting && !wait;
       body = '<p class="huddle-turn' + (h.myturn ? ' mine' : '') + '">' + esc(h.myturn ? t('app_huddle_yourturn') :
         t('app_huddle_theirturn', h.handname)) + '</p><p class="scene-prompt">' + esc(h.prompt) + '</p><div class="opts">' +
         h.options.map(function(o) {
@@ -356,6 +368,18 @@
         follow.show(h);
       };
     });
+    var tell = layer.querySelector('[data-tell]');
+    if (tell) {
+      tell.onclick = function() {
+        tell.disabled = true;
+        api('tell', {huddleid: h.id, seq: h.seq}).then(function(r) {
+          follow.show(r.huddle || null);
+        }).catch(function(e) {
+          T.toast(esc(e.message), true);
+          follow.sig = '';
+        });
+      };
+    }
     var send = layer.querySelector('[data-multisend]');
     if (send) {
       send.onclick = function() {
@@ -365,8 +389,8 @@
     }
     var lane = layer.querySelector('[data-hlane]');
     if (lane) {
-      T.lane(lane, {engine: 'classify', prompt: h.prompt, items: h.options, bins: h.bins, mine: h.myturn},
-        {key: 'huddle-' + h.id + '-' + h.seq, open: h.myturn && !h.waiting, sent: h.waiting, onsend: function(payload) {
+      T.lane(lane, {engine: 'classify', prompt: h.prompt, items: h.options, bins: h.bins, mine: h.myturn && !wait},
+        {key: 'huddle-' + h.id + '-' + h.seq, open: h.myturn && !h.waiting && !wait, sent: h.waiting, onsend: function(payload) {
           follow.decide(h, {answer: JSON.stringify(payload.placed)});
         }});
     }
