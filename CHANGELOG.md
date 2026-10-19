@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.144.0 (2026-10-19)
+
+- **The home of the creature and an outing with it.** In Me, «Its home»: the creature sleeps in its painted nest, with
+  what the hero has won around it (the items, the golden cards, its coat and its paint). And an outing for whoever
+  wants it, at home too: what is left today of its page, the being of the day and the stain of tonight, each with its
+  button and a tick once done. Breath and gems, never knowledge; the class needs none of it.
+
 ## 0.143.0 (2026-10-19)
 
 - **What the hero wears.** The items of the mission that can be worn go in the hand or on the shoulder, one in each

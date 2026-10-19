@@ -5033,6 +5033,80 @@ body.in-battle .badge-moment {
   height: 128px;
 }
 
+/* ---------- The home of the creature ---------- */
+
+.home-nest {
+  position: relative;
+  width: min(100%, 360px);
+  aspect-ratio: 16 / 10;
+  margin: 8px auto;
+}
+
+.home-nest img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.home-nest .home-front {
+  z-index: 2;
+}
+
+.home-nest .home-creature {
+  position: absolute;
+  left: 50%;
+  bottom: 40%;
+  z-index: 1;
+  width: 42%;
+  height: auto;
+  aspect-ratio: 1;
+  transform: translateX(-50%);
+}
+
+.home-nest:not(.art) .home-creature {
+  bottom: 12%;
+}
+
+.home-nest .home-creature .creature,
+.home-nest .home-creature svg,
+.home-nest .home-creature img {
+  width: 100%;
+  height: 100%;
+}
+
+.home-shelf {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 8px 0;
+}
+
+.home-thing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 76px;
+  text-align: center;
+}
+
+.home-thing img,
+.home-thing svg {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.outing {
+  margin-top: 14px;
+}
+
+.outing .item.done {
+  opacity: .7;
+}
+
 /* ---------- What the hero wears ---------- */
 
 .items-card .item.worn {

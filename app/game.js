@@ -3379,6 +3379,114 @@
   }
 
   /**
+   * The home of the creature: it sleeps in its nest, with what the hero has won around it (the items, the golden
+   * cards, its coat and its paint), and a short outing with it, for whoever wants it at home: its page, the being of
+   * the day and the stain of tonight, in any order. Nothing of the outing is needed for the class.
+   *
+   * @return {string}
+   */
+  function homeCard() {
+    var w = state.world;
+    var c = w.character;
+    if (!c.creature) {
+      return '';
+    }
+    var name = creatureName(c);
+    var traits = {};
+    try {
+      traits = JSON.parse(c.creature) || {};
+    } catch (e) {
+      traits = {};
+    }
+    var nest = T.artUrl(['stage.nest']);
+    var front = T.artUrl(['stage.nest.front']);
+    var things = [];
+    if (traits.coat && traits.coat !== 'none') {
+      things.push(t('app_home_coat', t('app_coat_' + traits.coat)));
+    }
+    if (traits.paint) {
+      things.push(t('app_home_paint', t('app_market_' + traits.paint)));
+    }
+    var items = (w.items || []).filter(function(i) {
+      return !i.borrowed;
+    });
+    var golden = ((w.album && w.album.cards) || []).filter(function(x) {
+      return x.golden;
+    });
+    return '<section class="card no-print creature-home" style="margin-top:16px"><h2>' + esc(t('app_home_title', name)) +
+      '</h2><div class="home-nest' + (nest ? ' art' : '') + '">' + (nest ? '<img class="home-back" src="' + esc(nest) +
+      '" alt="">' : '') + '<span class="home-creature pet-zzz">' + T.creature(c.creature, c.creaturestage, true) +
+      '<i>z</i><i>z</i></span>' + (front ? '<img class="home-front" src="' + esc(front) + '" alt="">' : '') + '</div>' +
+      '<p class="help-soft">' + esc(t('app_home_sleeps', name)) + (things.length ? ' ' + esc(things.join(' · ')) : '') +
+      '</p>' + (items.length ? '<div class="home-shelf" aria-label="' + esc(t('app_items')) + '">' + items.map(function(i) {
+        var art = T.artUrl(['item.' + i.code]);
+        return '<span class="home-thing" title="' + esc(i.name) + '">' + (art ? '<img src="' + esc(art) + '" alt="">' :
+          T.icon('gems')) + '<small>' + esc(i.name) + '</small></span>';
+      }).join('') + '</div>' : '') + (golden.length ? '<p class="help-soft">' + esc(t('app_home_golden', golden.map(function(x) {
+        return x.name;
+      }).join(', '))) + '</p>' : '') + outingCard(name) + '</section>';
+  }
+
+  /**
+   * A short outing with the creature, for whoever wants it at home: what is left today of its page, the being of the
+   * day and the stain of tonight, each with its button; done, a tick. Breath and gems, never knowledge.
+   *
+   * @param {string} name Of the creature.
+   * @return {string}
+   */
+  function outingCard(name) {
+    var steps = outingSteps();
+    if (!steps.length) {
+      return '';
+    }
+    var open = steps.filter(function(s) {
+      return !s.done;
+    });
+    var left = open.length;
+    return '<div class="outing"><h3>' + esc(t('app_outing_title', name)) + '</h3><p class="help-soft">' +
+      esc(t(left ? 'app_outing_help' : 'app_outing_done', name)) + '</p><ul class="list">' + steps.map(function(s, i) {
+        return '<li class="item' + (s.done ? ' done' : '') + '"><span class="mini-icon">' + T.icon(s.done ? 'lantern' : s.icon) +
+          '</span><span class="grow"><b>' + esc(s.label) + '</b>' + (s.where ? '<small>' + esc(s.where) + '</small>' : '') +
+          '</span>' + (s.done ? '<span class="tag done">' + esc(t('app_outing_tick')) + '</span>' : '<button type="button" ' +
+          'class="btn ' + (s === open[0] ? 'btn-main' : 'btn-soft') + '" data-outing="' + i + '">' + esc(t('app_open')) + '</button>') + '</li>';
+      }).join('') + '</ul></div>';
+  }
+
+  /**
+   * The steps of the outing today: the page of the creature, the being of the day (in the first place with one) and the
+   * stain of tonight, those there are.
+   *
+   * @return {Object[]} label, where, icon, done and go (what opens it).
+   */
+  function outingSteps() {
+    var w = state.world;
+    var c = w.character;
+    var name = creatureName(c);
+    var steps = [];
+    if (w.page) {
+      steps.push({label: t('app_outing_feed', name), icon: 'energy', done: !!w.page.answered, go: feedMoment});
+    }
+    var chapters = (w.mission && w.mission.chapters) || [];
+    var being = chapters.filter(function(ch) {
+      return ch.encounter;
+    })[0];
+    if (being) {
+      steps.push({label: t('app_outing_walk'), where: being.name, icon: 'trail', done: false, go: function() {
+        meet(being);
+      }});
+    }
+    var stain = (w.stains || []).filter(function(s) {
+      return s.kind !== 'page';
+    })[0];
+    if (stain) {
+      steps.push({label: t('app_outing_stain'), where: stain.place, icon: 'lens', done: false, go: function() {
+        stainMoment(stain);
+      }});
+    }
+    return steps;
+  }
+
+  /**
    * The parts of «Me» besides the sheet, as big buttons in two rows; the one open, under them, with the way back.
    *
    * @return {string}
@@ -3393,6 +3501,7 @@
     var parts = [
       // The look opens its builder: it is not a part under the buttons.
       ['look', 'me', lookChanges(c, c.stage) ? 'edit' : ''],
+      ['home', 'game', homeCard()],
       ['comfort', 'sun', comfortCard()],
       ['names', 'log', namesCard()],
       ['coat', 'game', coat],
@@ -3804,6 +3913,15 @@
 
   function bindMe() {
     var c = state.world.character;
+    // The outing: each step opens what it is.
+    app.querySelectorAll('[data-outing]').forEach(function(b) {
+      b.onclick = function() {
+        var step = outingSteps()[Number(b.dataset.outing)];
+        if (step) {
+          step.go();
+        }
+      };
+    });
     var museum = app.querySelector('.museum-card');
     if (museum && state.world.museum) {
       T.bindMuseum(museum, state.world.museum, state.book, function(book) {
