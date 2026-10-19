@@ -3415,7 +3415,7 @@
     });
     return '<section class="card no-print creature-home" style="margin-top:16px"><h2>' + esc(t('app_home_title', name)) +
       '</h2><div class="home-nest' + (nest ? ' art' : '') + '">' + (nest ? '<img class="home-back" src="' + esc(nest) +
-      '" alt="">' : '') + '<span class="home-creature pet-zzz">' + T.creature(c.creature, c.creaturestage, true) +
+      '" alt="">' : '') + '<span class="home-creature pet-zzz">' + T.creature(c.creature, c.creaturestage) +
       '<i>z</i><i>z</i></span>' + (front ? '<img class="home-front" src="' + esc(front) + '" alt="">' : '') + '</div>' +
       '<p class="help-soft">' + esc(t('app_home_sleeps', name)) + (things.length ? ' ' + esc(things.join(' · ')) : '') +
       '</p>' + (items.length ? '<div class="home-shelf" aria-label="' + esc(t('app_items')) + '">' + items.map(function(i) {

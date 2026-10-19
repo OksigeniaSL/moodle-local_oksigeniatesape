@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.144.1 (2026-10-19)
+
+- In «Its home», the creature keeps its own colour: it was drawn with the animation of a hatching, which took its hue
+  away (Campus saw it).
+
 ## 0.144.0 (2026-10-19)
 
 - **The home of the creature and an outing with it.** In Me, «Its home»: the creature sleeps in its painted nest, with
