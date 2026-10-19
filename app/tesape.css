@@ -6800,6 +6800,21 @@ body.adapt-colours .errors-text .fixed ins {
   left: 18px;
 }
 
+/* What is played on a picture (a find, a path) with the place alive: it goes on the painting itself, which the world
+   shows whole above what is read; on the layer, out of the moment that comes in moving. */
+.scene-layer > .on-painting {
+  animation: none;
+}
+
+.on-painting {
+  position: fixed;
+  z-index: 1;
+}
+
+.on-painting[hidden] {
+  display: none;
+}
+
 /* What the world says when something is chosen: no colour of right or wrong, the voice of the place. */
 .conseq.said {
   border-color: var(--accent);

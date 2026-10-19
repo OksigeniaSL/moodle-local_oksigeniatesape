@@ -59,6 +59,9 @@
       };
       // Where what is read starts, in pixels of the page: the figures stand above it.
       var room = 0;
+      // While something is looked for on the painting: told where the painting is, and where the bar on top ends.
+      var searching = null;
+      var bar = 0;
       var layout = function(snap) {
         var w = S.scale.width;
         var h = S.scale.height;
@@ -71,11 +74,25 @@
           ground = Math.max(h * 0.36, Math.min(ground, room * ratio - 6 * ratio));
         }
         var size = Math.min(h * (tall ? 0.34 : 0.42), w * (tall ? 0.5 : 0.3), (ground - 64 * ratio) * 0.92);
+        // Looking for something on the painting, it is seen whole between the bar on top and what is read; else, it
+        // fills the screen.
+        var top = (bar || 64) * ratio;
+        var bottom = room ? room * ratio - 8 * ratio : h * 0.62;
         S.bgs.forEach(function(bg) {
           if (bg.texture && bg.texture.key !== '__MISSING') {
-            bg.setPosition(w / 2, h / 2).setScale(Math.max(w / bg.width, h / bg.height));
+            if (searching && bottom - top > 40) {
+              bg.setPosition(w / 2, top + (bottom - top) / 2).setScale(Math.min(w / bg.width, (bottom - top) / bg.height));
+            } else {
+              bg.setPosition(w / 2, h / 2).setScale(Math.max(w / bg.width, h / bg.height));
+            }
           }
         });
+        var painting = S.bgs[S.bgs.length - 1];
+        if (searching && painting) {
+          searching({left: (painting.x - painting.displayWidth / 2) / ratio,
+            top: (painting.y - painting.displayHeight / 2) / ratio, width: painting.displayWidth / ratio,
+            height: painting.displayHeight / ratio});
+        }
         S.ground = ground;
         var place = function(f, x, y, base) {
           if (!f) {
@@ -199,6 +216,56 @@
         room: later(function(top) {
           room = top;
           layout(false);
+        }),
+
+        /**
+         * Something is looked for on the painting (find): it is seen whole above what is read, the figures step aside,
+         * and the scene is told where the painting is, now and whenever it moves, to put what can be touched on it.
+         *
+         * @param {boolean} on
+         * @param {Function} [told] Gets left, top, width and height, in pixels of the page.
+         * @param {number} [top] Where the bar on top of the scene ends, in pixels of the page.
+         */
+        search: later(function(on, told, top) {
+          if (!on && !searching) {
+            return;
+          }
+          searching = on ? told : null;
+          bar = top || 0;
+          [S.hero, S.pet, S.speaker].forEach(function(f) {
+            if (f) {
+              S.tweens.add({targets: [f.sprite, f.shadow], alpha: on ? 0 : 1, duration: still ? 1 : 300});
+              if (f.aura) {
+                f.aura.setVisible(!on);
+              }
+            }
+          });
+          layout(false);
+        }),
+
+        /**
+         * What was touched on the painting: sparks where something was found, a puff of dust where it was not.
+         *
+         * @param {number} x In percent of the painting.
+         * @param {number} y
+         * @param {boolean} found
+         */
+        mark: later(function(x, y, found) {
+          var bg = S.bgs[S.bgs.length - 1];
+          if (!bg) {
+            return;
+          }
+          var px = bg.x + (x / 100 - 0.5) * bg.displayWidth;
+          var py = bg.y + (y / 100 - 0.5) * bg.displayHeight;
+          if (found) {
+            S.sparks.explode(still ? 4 : 18, px, py);
+            return;
+          }
+          if (!S.puff) {
+            S.puff = S.add.particles(0, 0, 'dot', {lifespan: 520, speed: {min: 20, max: 70}, scale: {start: 0.6, end: 0},
+              alpha: {start: 0.55, end: 0}, tint: 0xb9c2c9, emitting: false}).setDepth(5000);
+          }
+          S.puff.explode(still ? 3 : 10, px, py);
         }),
 
         /**

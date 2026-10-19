@@ -369,6 +369,9 @@
     var liveQueue = null;
     // What is read grows (what the world says after a decision): the figures move up to stand above it.
     var roomWatch = null;
+    // Something looked for on the painting of the place alive: where the painting is, and how to draw the moment again
+    // on the page if the place alive goes.
+    var search = null;
 
     /**
      * Tells the place alive behind the scene, if there is one, what happens.
@@ -420,6 +423,8 @@
 
     /** The place alive goes: the scene goes on as it was, with its paintings in the page. */
     function unliven() {
+      var again = search && search.redraw;
+      search = null;
       liveQueue = null;
       if (roomWatch) {
         roomWatch.disconnect();
@@ -434,6 +439,9 @@
         holder.remove();
       }
       layer.classList.remove('live', 'has-figure');
+      if (again) {
+        again();
+      }
     }
 
     function close() {
@@ -566,6 +574,10 @@
     }
 
     function show(html) {
+      // What was played on the painting goes with its moment.
+      layer.querySelectorAll(':scope > .on-painting').forEach(function(over) {
+        over.remove();
+      });
       // A new moment: whoever was speaking stops.
       if (T.fx && T.fx.hush) {
         T.fx.hush();
@@ -793,6 +805,12 @@
     }
 
     function go(node) {
+      // What was looked for on the painting is over: the painting fills the place again.
+      if (search) {
+        clearTimeout(search.wait);
+        search = null;
+        alive('search', false);
+      }
       run.node = node;
       next();
     }
@@ -2256,9 +2274,68 @@
     }
 
     /**
+     * Whether what is played on a picture (a find, a path, what is tended) goes on the painting of the place alive:
+     * while the place is there, the picture has its painting, and it has not had to go back to the page.
+     *
+     * @param {string} image
+     * @return {boolean}
+     */
+    function onPainting(image) {
+      return layer.classList.contains('live') && !!T.artUrl(pictureKeys(image, data)) && !(search && search.page);
+    }
+
+    /**
+     * Puts what is played on a picture (the .on-painting of the moment, if it has one) on the painting of the place
+     * alive, which the world shows whole above what is read; the first time, it asks the world for it. If the painting
+     * does not come, the moment is drawn again on the page.
+     *
+     * @param {string} image
+     * @param {Function} redraw Draws the moment again as it is now.
+     */
+    function overPainting(image, redraw) {
+      // Out of the moment, which comes in moving: on the layer, where the painting is in the page.
+      var mine = layer.querySelector('.scene-body .on-painting');
+      if (mine) {
+        layer.appendChild(mine);
+      }
+      var place = function() {
+        var over = layer.querySelector(':scope > .on-painting');
+        var box = search && search.box;
+        if (!over || !box) {
+          return;
+        }
+        over.style.left = box.left + 'px';
+        over.style.top = box.top + 'px';
+        over.style.width = box.width + 'px';
+        over.style.height = box.height + 'px';
+        over.hidden = false;
+      };
+      if (!search) {
+        search = {box: null, redraw: null, page: false, wait: setTimeout(function() {
+          if (search && !search.box) {
+            search.page = true;
+            alive('search', false);
+            search.redraw();
+          }
+        }, 4000)};
+        alive('image', T.artUrl(pictureKeys(image, data)));
+        alive('search', true, function(box) {
+          if (search) {
+            search.box = box;
+            place();
+          }
+        }, layer.querySelector('.scene-top').getBoundingClientRect().bottom);
+      }
+      search.redraw = redraw;
+      place();
+    }
+
+    /**
      * A find: things to find on a picture, touched one by one. What is one of them stays marked, with what it says; what
      * is not says why, once. Touching where there is nothing says so, without counting. For who does not see the
-     * picture, each thing is a button with its name.
+     * picture, each thing is a button with its name. With the place alive behind, they are looked for on the painting of
+     * the place itself, seen whole above what is read, and the world answers each touch; if the painting does not come,
+     * on the page.
      *
      * @param {Object} n The node: image, spots (id, label, x, y, r in percent; correct; say, feedback), find.
      */
@@ -2269,40 +2346,50 @@
       }).length, n.find || spots.length);
       var found = [];
       var wrong = [];
+      var image = n.image || sceneImage();
       function spot(id) {
         return spots.filter(function(s) {
           return s.id === id;
         })[0];
       }
       function draw(said, done) {
+        var world = onPainting(image);
+        var marks = spots.map(function(s) {
+          var got = found.indexOf(s.id) >= 0;
+          var miss = wrong.indexOf(s.id) >= 0;
+          var r = Number(s.r || 7);
+          // The name of what was found stays inside the picture, near the edges too.
+          var edge = Number(s.x) > 70 ? ' edge-r' : Number(s.x) < 30 ? ' edge-l' : '';
+          return '<button type="button" class="find-spot' + edge + (got ? ' found' : '') + (miss ? ' miss' : '') + '" data-id="' +
+            esc(s.id) + '" style="left:' + Number(s.x) + '%;top:' + Number(s.y) + '%;width:' + 2 * r + '%" aria-label="' +
+            esc(tx(s.label)) + '"' + (got || miss || done ? ' disabled' : '') + '>' + (got ? '<span>' + esc(tx(s.label)) +
+            '</span>' : '') + '</button>';
+        }).join('');
         var body = show(pieces(n) + '<p class="scene-prompt">' + esc(tx(n.prompt)) + '</p><p class="find-count">' +
-          esc(t('app_find_count', found.length + '/' + need)) + '</p><div class="find-map">' +
-          picture(n.image || sceneImage(), data) + spots.map(function(s) {
-            var got = found.indexOf(s.id) >= 0;
-            var miss = wrong.indexOf(s.id) >= 0;
-            var r = Number(s.r || 7);
-            // The name of what was found stays inside the picture, near the edges too.
-            var edge = Number(s.x) > 70 ? ' edge-r' : Number(s.x) < 30 ? ' edge-l' : '';
-            return '<button type="button" class="find-spot' + edge + (got ? ' found' : '') + (miss ? ' miss' : '') + '" data-id="' +
-              esc(s.id) + '" style="left:' + Number(s.x) + '%;top:' + Number(s.y) + '%;width:' + 2 * r + '%" aria-label="' +
-              esc(tx(s.label)) + '"' + (got || miss || done ? ' disabled' : '') + '>' + (got ? '<span>' + esc(tx(s.label)) +
-              '</span>' : '') + '</button>';
-          }).join('') + '</div><div data-out>' + (said || '') + (done ? '<div class="actions"><button class="btn btn-main" ' +
-          'data-go>' + esc(t('app_continue')) + '</button></div>' : '') + '</div>');
+          esc(t('app_find_count', found.length + '/' + need)) + '</p>' + (world ? '<div class="on-painting find-on" hidden>' + marks +
+          '</div>' : '<div class="find-map">' + picture(image, data) + marks + '</div>') + '<div data-out>' + (said || '') +
+          (done ? '<div class="actions"><button class="btn btn-main" data-go>' + esc(t('app_continue')) + '</button></div>' :
+          '') + '</div>');
         hintArea(n, body);
         roleBar(n, body);
-        var map = body.querySelector('.find-map');
-        var img = map.querySelector('img');
-        var fit = function() {
-          if (img.naturalWidth) {
-            map.style.aspectRatio = img.naturalWidth + ' / ' + img.naturalHeight;
-          }
-        };
-        if (img) {
-          if (img.complete) {
-            fit();
-          } else {
-            img.onload = fit;
+        var map = body.querySelector(world ? '.on-painting' : '.find-map');
+        if (world) {
+          overPainting(image, function() {
+            draw(said, done);
+          });
+        } else {
+          var img = map.querySelector('img');
+          var fit = function() {
+            if (img.naturalWidth) {
+              map.style.aspectRatio = img.naturalWidth + ' / ' + img.naturalHeight;
+            }
+          };
+          if (img) {
+            if (img.complete) {
+              fit();
+            } else {
+              img.onload = fit;
+            }
           }
         }
         if (done) {
@@ -2318,8 +2405,12 @@
           }
           var out = body.querySelector('[data-out]');
           out.innerHTML = '<div class="conseq said">' + esc(t('app_find_nothing')) + '</div>';
+          if (world) {
+            var r = map.getBoundingClientRect();
+            alive('mark', 100 * (ev.clientX - r.left) / r.width, 100 * (ev.clientY - r.top) / r.height, false);
+          }
         };
-        body.querySelectorAll('.find-spot:not([disabled])').forEach(function(b) {
+        map.querySelectorAll('.find-spot:not([disabled])').forEach(function(b) {
           b.onclick = function() {
             var s = spot(b.dataset.id);
             run.events.push(by({n: run.node, spot: s.id}));
@@ -2327,6 +2418,7 @@
             var words = '<span class="what">' + esc(tx(s.label)) + '</span>' + esc(tx(s.say || s.feedback || '') ||
               t('app_find_not')) + (s.say && s.feedback ? '<details class="why-more"><summary>' + esc(t('app_why')) +
               '</summary><p>' + esc(tx(s.feedback)) + '</p></details>' : '');
+            alive('mark', Number(s.x), Number(s.y), !!s.correct);
             if (s.correct) {
               found.push(s.id);
               (s.effects || []).forEach(clue);
@@ -2358,10 +2450,13 @@
     function path(n) {
       var done = [];
       var from = n.from || {x: 50, y: 92};
+      var image = n.image || sceneImage();
       function draw(said) {
         var at = done.length ? done[done.length - 1] : from;
-        var body = show(pieces(n) + '<p class="scene-prompt">' + esc(tx(n.prompt)) + '</p><div class="path-map">' +
-          picture(n.image || sceneImage(), data) + n.steps.map(function(s, i) {
+        // With the place alive, the journey is on its painting; else, on a picture in the page.
+        var world = onPainting(image);
+        var body = show(pieces(n) + '<p class="scene-prompt">' + esc(tx(n.prompt)) + '</p>' + (world ?
+          '<div class="on-painting path-on" hidden>' : '<div class="path-map">' + picture(image, data)) + n.steps.map(function(s, i) {
             var visited = done.indexOf(s) >= 0;
             return '<button type="button" class="path-stop' + (visited ? ' visited' : '') + '" data-id="' + esc(s.id) + '" ' +
               'style="left:' + Number(s.x) + '%;top:' + Number(s.y) + '%"' + (visited ? ' disabled' : '') + '>' +
@@ -2370,8 +2465,15 @@
           esc(tx(n.traveler || '•')) + '</span></div><div data-out>' + (said || '') + '</div>');
         hintArea(n, body);
         roleBar(n, body);
+        // Where the stops are: on the painting (out of the moment), or in the page.
+        var stops = world ? body.querySelector('.on-painting') : body;
+        if (world) {
+          overPainting(image, function() {
+            draw(said);
+          });
+        }
         // The map takes the proportion of its picture, so that each place stays on what it marks.
-        var img = body.querySelector('.path-map img');
+        var img = world ? null : body.querySelector('.path-map img');
         var fit = function() {
           if (img.naturalWidth) {
             body.querySelector('.path-map').style.aspectRatio = img.naturalWidth + ' / ' + img.naturalHeight;
@@ -2384,13 +2486,14 @@
             img.onload = fit;
           }
         }
-        body.querySelectorAll('.path-stop:not([disabled])').forEach(function(b) {
+        stops.querySelectorAll('.path-stop:not([disabled])').forEach(function(b) {
           b.onclick = function() {
             var s = n.steps.filter(function(x) {
               return x.id === b.dataset.id;
             })[0];
             var expected = n.steps[done.length];
             run.events.push(by({n: run.node, step: s.id}));
+            alive('mark', Number(s.x), Number(s.y), s === expected);
             if (s === expected) {
               done.push(s);
               if (T.fx) {
@@ -2455,9 +2558,12 @@
         var items = (n.items || []).filter(function(it) {
           return has(it.requires);
         });
-        var shown = last ? '<div class="tend-state' + (last.correct ? ' good' : '') + '">' + (last.image ?
+        // How the being looks now: with the place alive, on its painting, seen whole above what is read; else, in the page.
+        var looks = last ? last.image : n.image;
+        var world = !!looks && onPainting(looks);
+        var shown = last ? '<div class="tend-state' + (last.correct ? ' good' : '') + '">' + (last.image && !world ?
           picture(last.image, data) : '') + '<p>' + esc(tx(last.text || '')) + '</p>' + (last.feedback ? '<small>' +
-          esc(tx(last.feedback)) + '</small>' : '') + '</div>' : (n.image ? picture(n.image, data) : '');
+          esc(tx(last.feedback)) + '</small>' : '') + '</div>' : (n.image && !world ? picture(n.image, data) : '');
         var more = last && !last.correct && round < rounds;
         var body = show(pieces(n) + shown + '<p class="scene-prompt">' + esc(tx(n.prompt)) + '</p>' + (last && (last.correct ||
           !more) ? '' : '<div class="opts tend-items">' + items.map(function(it) {
@@ -2471,6 +2577,12 @@
           'data-goon>' + esc(t('app_tend_goon')) + '</button>' : '')) + '</div>');
         hintArea(n, body);
         roleBar(n, body);
+        if (world) {
+          overPainting(looks, function() {
+            draw();
+          });
+          alive('image', T.artUrl(pictureKeys(looks, data)));
+        }
         body.querySelectorAll('.tend-items .opt').forEach(function(b) {
           b.onclick = function() {
             var id = b.dataset.id;
@@ -2495,6 +2607,8 @@
             if (T.fx) {
               T.fx.sound(last.correct ? 'item' : 'choose');
             }
+            // The world answers how the being is: it grows, or it is looked at worried.
+            alive('answer', last.correct ? 'grow' : '');
             chosen = [];
             draw();
           };

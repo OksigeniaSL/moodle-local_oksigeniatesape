@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.141.0 (2026-10-19)
+
+- **The verbs played on the painting of the place alive.** With the place alive behind a scene, a find, a path and a
+  tend are played on the painting of the place itself, which is seen whole above what is read while the hero and the
+  creature step aside: what can be touched is on the painting (buttons with their names, as before), and the world
+  answers each touch, with sparks where something is found or the drop goes on, and dust where not; what is tended
+  changes there, from one state to the next, and grows when it is right. If the painting does not come, or «See as a
+  list», they go back to the page with what was done.
+
 ## 0.140.0 (2026-10-19)
 
 - **The story of a mission tells some texts of the game in its own way** (`texts` of the mission, by skin, with keys of
