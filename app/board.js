@@ -767,9 +767,9 @@
         var id = Number(box.dataset.teamid);
         // The heroes stand where the board keeps their place (the battle by turns); without it, only the Embrollo moves.
         var place = box.querySelector('.team-heroes');
-        return {id: id, box: (place || box).getBoundingClientRect(), members: place ? members(id) : []};
+        return {id: id, box: place || box, members: place ? members(id) : []};
       });
-      w.update(l, {boss: boss ? boss.getBoundingClientRect() : null, teams: teams});
+      w.update(l, {boss: boss, teams: teams});
     };
     if (state.battleWorld && state.battleWorld !== 'opening') {
       tell(state.battleWorld);

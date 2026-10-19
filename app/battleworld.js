@@ -57,15 +57,20 @@
         seen[key] = true;
         return true;
       };
+      // Where things are in the page now, read at every frame: the page may move them (another width, full screen, a
+      // bubble of the Embrollo that takes two lines) without drawing the board again.
+      var rect = function(el) {
+        return el && el.isConnected ? el.getBoundingClientRect() : null;
+      };
       var bossAt = function() {
-        var r = places.boss;
+        var r = rect(places.boss);
         var k = ratio();
         return r ? {x: (r.left + r.width / 2) * k, y: (r.top + r.height / 2) * k, size: Math.max(r.width, r.height) * k} :
           {x: S.scale.width / 2, y: S.scale.height * 0.3, size: S.scale.height * 0.3};
       };
       // The place of the heroes of a team in the board: they stand on its bottom.
       var teamAt = function(id) {
-        var r = places.teams[id];
+        var r = rect(places.teams[id]);
         var k = ratio();
         return r ? {x: (r.left + r.width / 2) * k, y: (r.top + r.height) * k, width: r.width * k, height: r.height * k} : null;
       };
@@ -114,8 +119,6 @@
           return;
         }
         var list = heroes[team.id] || [];
-        // Close together, a little over each other, as tall as their place.
-        var size = Math.min(at.height * 0.98, at.width / Math.max(3, team.members.length) * 2.6);
         team.members.forEach(function(c, i) {
           var key = 'hero.' + c.userid;
           var h = list[i];
@@ -129,24 +132,20 @@
               return;
             }
             h = {key: key, sprite: S.add.image(0, 0, S.textures.exists(key) ? key : 'dot').setOrigin(0.5, 860 / 896)
-              .setDepth(20).setVisible(S.textures.exists(key)), phase: Math.random() * 6};
+              .setDepth(20).setVisible(false), phase: Math.random() * 6};
             list[i] = h;
             if (!S.textures.exists(key)) {
+              var shown = h;
               S.load.image(key, url);
               S.load.once('filecomplete-image-' + key, function() {
-                h.sprite.setTexture(key).setVisible(true);
-                place();
+                shown.sprite.setTexture(key);
               });
               S.load.start();
             }
           }
-          var place = function() {
-            var n = team.members.length;
-            h.x = at.x + (i - (n - 1) / 2) * size * 0.36;
-            h.y = at.y - 2 * ratio();
-            h.base = size / 896;
-          };
-          place();
+          // Its place in the row of its team; where the row is, at every frame.
+          h.index = i;
+          h.count = team.members.length;
         });
         list.length = team.members.length;
         heroes[team.id] = list;
@@ -156,7 +155,8 @@
          * The board has been drawn again: where things are now, and what has happened.
          *
          * @param {Object} l The battle, as the board gets it.
-         * @param {Object} where boss (the box of the Embrollo in the page), teams ({id, box, members}).
+         * @param {Object} where boss (the Embrollo in the page), teams ({id, box: the place of its heroes in the page,
+         *     members}): elements, read again at every frame.
          */
         update: function(l, where) {
           if (!S) {
@@ -221,7 +221,15 @@
           return {ready: !!S, boss: !!(S && S.boss && S.boss.img.visible), life: S ? S.life : 1, ending: S ? S.ending || '' : '',
             teams: Object.keys(heroes).length, heroes: Object.keys(heroes).reduce(function(sum, id) {
               return sum + heroes[id].filter(Boolean).length;
-            }, 0), hits: count.hits, knots: count.knots, shields: count.shields, bursts: count.bursts};
+            }, 0), hits: count.hits, knots: count.knots, shields: count.shields, bursts: count.bursts,
+            // The teams whose heroes stand inside their place now.
+            aligned: !S ? 0 : Object.keys(heroes).filter(function(id) {
+              var at = teamAt(id);
+              return at && heroes[id].every(function(h) {
+                return !h || (h.sprite.x >= at.x - at.width / 2 - 1 && h.sprite.x <= at.x + at.width / 2 + 1 &&
+                  Math.abs(h.sprite.y - at.y) < 12 * ratio());
+              });
+            }).length};
         },
         close: function() {
           document.body.classList.remove('battle-live');
@@ -293,11 +301,19 @@
               .setAlpha(0.6 + 0.4 * Math.sin(time / 200));
           }
           Object.keys(heroes).forEach(function(id) {
+            var at = teamAt(id);
             heroes[id].forEach(function(h) {
-              if (h && h.base) {
-                h.sprite.setPosition(h.x, h.y - Math.abs(Math.sin(time / 600 + h.phase)) * 3 * k)
-                  .setScale(h.base);
+              if (!h) {
+                return;
               }
+              h.sprite.setVisible(!!at && h.sprite.texture.key === h.key);
+              if (!at) {
+                return;
+              }
+              // Close together, a little over each other, as tall as their place.
+              var size = Math.min(at.height * 0.98, at.width / Math.max(3, h.count) * 2.6);
+              h.sprite.setPosition(at.x + (h.index - (h.count - 1) / 2) * size * 0.36,
+                at.y - 2 * k - Math.abs(Math.sin(time / 600 + h.phase)) * 3 * k).setScale(size / 896);
             });
           });
         }

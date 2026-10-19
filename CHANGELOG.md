@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.132.0 (2026-10-19)
+
+- The battle with movement on the class screen follows the board when it moves without being drawn again (another
+  width, full screen, a bubble of the Embrollo that takes two lines): the heroes of each team and the Embrollo are put
+  in their places at every frame, not only when the board is drawn.
+
 ## 0.131.0 (2026-10-19)
 
 - **A scene played by the class on its screen has the place alive behind it**, as the scenes of each student: the
