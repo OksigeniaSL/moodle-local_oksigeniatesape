@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.143.0 (2026-10-19)
+
+- **What the hero wears.** The items of the mission that can be worn go in the hand or on the shoulder, one in each
+  place, from the bag of the tablet, where each says what it does so (mission v58: `slot` and `worn` of its items).
+  The lantern in the hand lights the bush where the being of the walked encounter hides; the magnifier in the hand
+  gives a look more in each minigame; the net on the shoulder catches an animal that slips in the Defence of the nest.
+  What an item opens in the scenes it still opens from the bag. Nothing is bought: everything is won (`equipment`,
+  service `equip`, field `slot` of the inventory).
+
 ## 0.142.0 (2026-10-19)
 
 - **The bestiary of the Embrollo and the spaced practice of the page of the day.** The page the creature asks for

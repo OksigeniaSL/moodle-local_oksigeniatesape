@@ -63,7 +63,7 @@ class provider implements
             'ledger' => ['charid', 'courseid', 'resource', 'amount', 'reason', 'cmid', 'actorid', 'capped', 'undoneby',
                 'timecreated'],
             'powerreq' => ['powerid', 'memberid', 'targetmemberid', 'status', 'decidedby', 'timecreated'],
-            'inventory' => ['charid', 'itemid', 'courseid', 'source', 'timecreated'],
+            'inventory' => ['charid', 'itemid', 'courseid', 'source', 'slot', 'timecreated'],
             'sceneattempt' => ['sceneid', 'charid', 'courseid', 'teamplay', 'path', 'score', 'objectives', 'ending', 'attempt',
                 'timestarted', 'timefinished'],
             'minigame' => ['charid', 'courseid', 'cmid', 'game', 'playid', 'success', 'tries', 'detail', 'timecreated'],
@@ -401,7 +401,7 @@ class provider implements
         }
         self::export_ledger($context, $charid, $courseid);
         $items = $DB->get_records_sql(
-            'SELECT v.id, i.code, i.name, v.source, v.timecreated
+            'SELECT v.id, i.code, i.name, v.source, v.slot, v.timecreated
                FROM {' . self::T . 'inventory} v
                JOIN {' . self::T . 'item} i ON i.id = v.itemid
               WHERE v.charid = ? AND v.courseid = ?
@@ -414,6 +414,7 @@ class provider implements
                     'code' => $v->code,
                     'name' => $v->name,
                     'source' => $v->source,
+                    'slot' => $v->slot,
                     'timecreated' => transform::datetime($v->timecreated),
                 ], $items)),
             ]);

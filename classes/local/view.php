@@ -150,9 +150,13 @@ final class view {
                 'parts' => $group ? classroom::team_parts($challenge, (int) $group->id, $userid) : [],
             ];
         }
+        // Each with where it is worn, where it could be and what it does so.
+        $kinds = missions::get($courseid)->data['items'] ?? [];
         $world['items'] = array_values(array_map(fn($i) => ['code' => $i->code, 'name' => format_string($i->name),
-            'description' => (string) $i->description], $DB->get_records_sql(
-                'SELECT i.id, i.code, i.name, i.description
+            'description' => (string) $i->description, 'slot' => (string) $i->slot,
+            'fits' => equipment::fits($courseid, (string) $i->code),
+            'worn' => (string) ($kinds[$i->code]['worn'] ?? '')], $DB->get_records_sql(
+                'SELECT i.id, i.code, i.name, i.description, v.slot
                FROM {' . self::T . 'inventory} v
                JOIN {' . self::T . 'item} i ON i.id = v.itemid
               WHERE v.charid = ? AND v.courseid = ?

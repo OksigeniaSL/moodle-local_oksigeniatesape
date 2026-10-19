@@ -5033,6 +5033,26 @@ body.in-battle .badge-moment {
   height: 128px;
 }
 
+/* ---------- What the hero wears ---------- */
+
+.items-card .item.worn {
+  border-color: rgba(var(--lantern-rgb), .55);
+}
+
+.items-card .item .tag {
+  display: inline-block;
+  margin: 2px 0 2px 6px;
+}
+
+.items-card .item-worn {
+  color: var(--leaf-text);
+}
+
+.items-card .item .grow > .btn {
+  display: inline-flex;
+  margin-top: 8px;
+}
+
 /* ---------- The museum of the class ---------- */
 
 .museum {

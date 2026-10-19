@@ -24,6 +24,7 @@ use core_external\external_value;
 use local_oksigeniatesape\local\characters;
 use local_oksigeniatesape\local\creatures;
 use local_oksigeniatesape\local\engine;
+use local_oksigeniatesape\local\equipment;
 use local_oksigeniatesape\local\ideas;
 use local_oksigeniatesape\local\minigames;
 use local_oksigeniatesape\local\missions;
@@ -84,7 +85,8 @@ final class get_minigame extends external_api {
             (int) $member->step,
             (string) $char->role,
             talents::acting($char, $params['courseid']),
-            creatures::sniffs($char)
+            creatures::sniffs($char),
+            equipment::worn($char, $params['courseid'])
         );
         if (!$config) {
             throw new \moodle_exception('nominigame', 'local_oksigeniatesape');
@@ -170,6 +172,8 @@ final class get_minigame extends external_api {
             'ahead' => new external_value(PARAM_INT, 'Things the scout sees coming', VALUE_DEFAULT, 0),
             'extra' => new external_value(PARAM_INT, 'Slips more the protector holds', VALUE_DEFAULT, 0),
             'sniffs' => new external_value(PARAM_INT, 'Times the creature points out a case in a play', VALUE_DEFAULT, 0),
+            'lens' => new external_value(PARAM_INT, 'Looks more, by the magnifier in the hand', VALUE_DEFAULT, 0),
+            'packnet' => new external_value(PARAM_INT, 'Animals that slip the net in the pack catches', VALUE_DEFAULT, 0),
         ]);
     }
 }

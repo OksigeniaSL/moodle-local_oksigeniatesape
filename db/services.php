@@ -461,6 +461,13 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:play',
     ],
+    'local_oksigeniatesape_equip' => [
+        'classname' => 'local_oksigeniatesape\\external\\equip',
+        'description' => 'A student wears an item they carry, in the hand or in the pack, or takes it off.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:play',
+    ],
     'local_oksigeniatesape_choose_talent' => [
         'classname' => 'local_oksigeniatesape\\external\\choose_talent',
         'description' => 'A student chooses the talent a level brought them.',

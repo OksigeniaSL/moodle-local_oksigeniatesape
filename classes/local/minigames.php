@@ -66,6 +66,7 @@ final class minigames {
      * @param string $role Of the student: protector, healer, sage or scout.
      * @param string[] $talents Those of the student that act in the course.
      * @param int $sniffs Times their creature sniffs in a play (creatures::sniffs()).
+     * @param string[] $worn What the hero wears (equipment::worn()): slot => item.
      * @return array|null
      */
     public static function config(
@@ -74,7 +75,8 @@ final class minigames {
         int $step,
         string $role = '',
         array $talents = [],
-        int $sniffs = 0
+        int $sniffs = 0,
+        array $worn = []
     ): ?array {
         $config = self::config_step($mission, $code, $step);
         if (!$config) {
@@ -95,6 +97,14 @@ final class minigames {
         $config['ahead'] = $config['passive'] === 'scout' ? ($has('farsight') ? 2 : 1) : 0;
         // The creature, from its second stage, points out a case once a play.
         $config['sniffs'] = $sniffs;
+        // The magnifier in the hand: a look more, for anyone; the net in the pack, in the nest, catches one that slips.
+        $config['lens'] = ($worn['hand'] ?? '') === 'magnifier' ? 1 : 0;
+        $config['looks'] += $config['lens'];
+        $config['packnet'] = ($worn['pack'] ?? '') === 'net' && !empty($config['shield']) ? 1 : 0;
+        if ($config['packnet']) {
+            $config['shield'] += 1;
+            $config['goal'] = max(1, $config['goal'] - 1);
+        }
         if ($config['passive'] === 'protector') {
             // «Endurance»: two slips more, not one.
             $more = $has('endurance') ? 2 : 1;
@@ -526,7 +536,8 @@ final class minigames {
             (int) $member->step,
             (string) $char->role,
             talents::acting($char, $courseid),
-            creatures::sniffs($char)
+            creatures::sniffs($char),
+            equipment::worn($char, $courseid)
         ) : null;
         if (!$game) {
             throw new \moodle_exception('nominigame', 'local_oksigeniatesape');

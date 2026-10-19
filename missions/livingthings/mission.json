@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 57,
+ "version": 58,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 58,
+   "kind": "improvement",
+   "date": "2026-10-19",
+   "text": "El farol, la lupa potente y la red se llevan puestos (en la mano o en la mochila) y así hacen algo más"
+  },
   {
    "version": 57,
    "kind": "improvement",
@@ -1099,15 +1105,21 @@
  "items": {
   "lantern": {
    "name": "el farol",
-   "description": "Alumbra de noche sin asustar a nadie."
+   "description": "Alumbra de noche sin asustar a nadie.",
+   "slot": "hand",
+   "worn": "En la mano, cuando buscas andando al ser del día, alumbra la mata donde se esconde."
   },
   "magnifier": {
    "name": "la lupa potente",
-   "description": "Para ver de cerca lo que se esconde."
+   "description": "Para ver de cerca lo que se esconde.",
+   "slot": "hand",
+   "worn": "En la mano, una mirada más en cada minijuego, para ver algo de cerca."
   },
   "net": {
    "name": "la red de captura",
-   "description": "Para observar sin hacer daño y soltar después."
+   "description": "Para observar sin hacer daño y soltar después.",
+   "slot": "pack",
+   "worn": "Al hombro, en Defensa del nido, atrapa a un animal que se cuela."
   },
   "naturalistlens": {
    "name": "la lupa del naturalista",

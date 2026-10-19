@@ -965,5 +965,15 @@ function xmldb_local_oksigeniatesape_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026101846, 'local', 'oksigeniatesape');
     }
 
+    if ($oldversion < 2026101906) {
+        // Where the hero wears each item: in the hand or in the pack.
+        $table = new xmldb_table('local_oksigeniatesape_inventory');
+        $field = new xmldb_field('slot', XMLDB_TYPE_CHAR, '8', null, null, null, null, 'source');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        upgrade_plugin_savepoint(true, 2026101906, 'local', 'oksigeniatesape');
+    }
+
     return true;
 }

@@ -247,6 +247,7 @@
         <FIELD NAME="itemid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="source" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="minigame, challenge or battle"/>
+        <FIELD NAME="slot" TYPE="char" LENGTH="8" NOTNULL="false" SEQUENCE="false" COMMENT="Where the hero wears it: hand or pack (null: not worn)"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>

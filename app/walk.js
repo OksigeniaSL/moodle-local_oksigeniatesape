@@ -141,6 +141,10 @@
       var place = JSON.parse(ch.stage);
       var c = world.character;
       var pet = T.cast.creature(c);
+      // The lantern in the hand lights where the being hides.
+      var lantern = (world.items || []).some(function(i) {
+        return i.code === 'lantern' && i.slot === 'hand';
+      });
       // The hero and the creature: their puppets, if the pack brings them, or their pictures.
       var cast = {hero: T.cast.heroKey(c), rigs: {}};
       var being = e.picture.replace(/^being\./, '');
@@ -277,6 +281,13 @@
             S.bush = S.add.image(hide.x, hide.y, S.textures.exists('bush.still') ? 'bush.still' : 'soft').setOrigin(0.5, 0.912)
               .setScale(S.textures.exists('bush.still') ? 230 / 560 : 3).setDepth(hide.y + 6);
             S.hidden = S.add.image(hide.x, hide.y, 'being').setOrigin(0.5, 1).setDepth(hide.y + 2).setVisible(false);
+            if (lantern) {
+              S.lamp = S.add.image(hide.x, hide.y - 60, 'soft').setScale(4.4, 3.2).setTint(0xffd27a).setBlendMode('ADD')
+                .setAlpha(0.6).setDepth(hide.y + 7);
+              if (!still) {
+                S.tweens.add({targets: S.lamp, alpha: {from: 0.4, to: 0.75}, duration: 1300, yoyo: true, repeat: -1});
+              }
+            }
             // A pool of warm light and a ring mark the next place to look, without words.
             // Each trace, painted on the ground until it is found (a different one each, from the being of the day).
             // Footprints (1 and 5) say «it has legs»: not for a being without them.
@@ -694,7 +705,7 @@
               state: function() {
                 return {place: e.place, being: being, found: state.found, crossed: state.crossed.slice(), hide: hides[state.hide],
                   solved: state.solved, busy: state.busy, hero: {x: S.hero.x, y: S.hero.y}, traces: traces,
-                  phase: state.phase, pictures: {hero: cast.hero, pet: pet.key, rigs: cast.rigs},
+                  phase: state.phase, pictures: {hero: cast.hero, pet: pet.key, rigs: cast.rigs}, lamp: !!S.lamp,
                   puppets: {hero: S.hero.puppet ? S.hero.puppet.clipName : '', pet: S.pet.puppet ? S.pet.puppet.clipName : ''}};
               },
               walkTo: function(x, y) {
@@ -726,6 +737,10 @@
               sound(step, '');
             });
             T.cast.move(S, S.pet, depthOf(place, S.pet.y), time, dt, 12, moment.still);
+            if (S.lamp) {
+              // On the bush, wherever the being goes.
+              S.lamp.setPosition(S.bush.x, S.bush.y - 60).setDepth(S.bush.depth + 1);
+            }
             S.emotes.forEach(function(em) {
               em.bubble.setPosition(em.who.sprite.x, em.who.sprite.y - em.who.sprite.displayHeight - 30 - em.rise);
             });

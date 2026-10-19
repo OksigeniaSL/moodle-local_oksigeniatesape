@@ -223,19 +223,23 @@
     m.passiveNote = function() {
       var c = m.world.character || {};
       var role = m.game.passive;
+      // What the hero wears and does something here: the magnifier in the hand, the net in the pack.
+      var worn = (m.game.lens ? '<p class="help game-passive">' + T.icon('lens') + esc(t('app_worn_lens')) + '</p>' : '') +
+        (m.game.packnet ? '<p class="help game-passive">' + T.icon('net') + esc(t('app_worn_packnet')) + '</p>' : '');
       if (!role || !T.roleName) {
-        return '';
+        return worn;
       }
       var name = T.roleName(m.world.family, role, c.nameform);
       name = name.charAt(0).toLocaleLowerCase(cfg.lang || 'es') + name.slice(1);
       // With a talent that changes it, the passive tells it so («Keen eye»: two looks; «Far sight»: two things).
-      var key = 'app_passive_' + role + ((role === 'sage' && m.game.looks > 1) || (role === 'scout' && m.game.ahead > 1) ||
+      var key = 'app_passive_' + role + ((role === 'sage' && m.game.looks - (m.game.lens || 0) > 1) ||
+        (role === 'scout' && m.game.ahead > 1) ||
         (role === 'protector' && m.game.extra > 1) ? '_two' : '');
       // And the creature, from its second stage: it sniffs a case once a play.
       return '<p class="help game-passive">' + T.icon(role === 'sage' ? 'lens' : role === 'scout' ? 'trail' :
         role === 'protector' ? 'shield' : 'energy') + esc(t(key, {name: name, streak: m.game.streak, misses: m.game.misses})) +
         '</p>' + (m.game.sniffs ? '<p class="help game-passive">' + T.icon('trail') + esc(t('app_passive_sniff_note')) +
-        '</p>' : '');
+        '</p>' : '') + worn;
     };
 
     /**

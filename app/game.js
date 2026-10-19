@@ -1305,7 +1305,34 @@
     }
     if (state.tab === 'log') {
       bindFriends();
+      bindWear();
     }
+  }
+
+  /**
+   * Wearing an item, or putting it away: the world comes back with it in its place.
+   */
+  function bindWear() {
+    app.querySelectorAll('[data-wear]').forEach(function(b) {
+      b.onclick = function() {
+        b.disabled = true;
+        var on = b.dataset.on === '1';
+        T.api('equip', {courseid: cfg.courseid, item: b.dataset.wear, on: on}).then(function(w) {
+          state.world = w;
+          if (T.fx) {
+            T.fx.sound(on ? 'chime' : 'tap');
+          }
+          world();
+          var again = app.querySelector('[data-wear="' + b.dataset.wear + '"]');
+          if (again) {
+            again.focus();
+          }
+        }).catch(function(e) {
+          b.disabled = false;
+          T.toast(esc(e.message), true);
+        });
+      };
+    });
   }
 
   /**
@@ -3204,17 +3231,39 @@
           return '<article class="page"><h3>' + esc(pg.title) + '</h3><p>' + esc(pg.text) + '</p></article>';
         }).join('') : '<p>' + esc(t('app_nopages')) + '</p>') + '</section>';
     }
-    var items = w.items.length ? '<section class="card"><h2>' + esc(t('app_items')) + '</h2><ul class="list">' +
-      w.items.map(function(i) {
+    var items = w.items.length ? '<section class="card items-card"><h2>' + esc(t('app_items')) + '</h2>' + wornLine() +
+      '<ul class="list">' + w.items.map(function(i) {
         var art = T.artUrl(['item.' + i.code]);
-        return '<li class="item">' + (art ? '<img class="item-art" src="' + esc(art) + '" alt="">' :
-          '<span style="width:22px;height:22px;flex:none">' + T.icon('gems') + '</span>') +
-          '<span class="grow"><b>' + esc(i.name) + '</b><small>' + esc(i.description) + '</small>' + (i.lent ?
+        // What can be worn says where and what it does so, with its button.
+        var wear = i.fits && !i.lent ? '<small class="item-worn">' + esc(i.worn) + '</small>' : '';
+        var button = i.fits && !i.lent ? '<button type="button" class="btn ' + (i.slot ? 'btn-soft' : 'btn-main') +
+          '" data-wear="' + esc(i.code) + '" data-on="' + (i.slot ? 0 : 1) + '">' + esc(t(i.slot ? 'app_wear_off' :
+          'app_wear_' + i.fits)) + '</button>' : '';
+        return '<li class="item' + (i.slot ? ' worn' : '') + '">' + (art ? '<img class="item-art" src="' + esc(art) +
+          '" alt="">' : '<span style="width:22px;height:22px;flex:none">' + T.icon('gems') + '</span>') +
+          '<span class="grow"><b>' + esc(i.name) + '</b>' + (i.slot ? '<span class="tag done">' + esc(t('app_worn_' + i.slot)) +
+          '</span>' : '') + '<small>' + esc(i.description) + '</small>' + wear + (i.lent ?
           '<small class="item-trade">' + esc(t('app_item_lent', i.lent)) + '</small>' : i.borrowed ? '<small class="item-trade">' +
-          esc(t('app_item_borrowed', i.borrowed)) + '</small>' : '') + '</span></li>';
+          esc(t('app_item_borrowed', i.borrowed)) + '</small>' : '') + button + '</span></li>';
       }).join('') + '</ul></section>' : '';
     return '<div class="grid2">' + book + items + '</div>' + friendsCard() + '<section class="card" style="margin-top:16px">' +
       '<h2>' + esc(t('app_tab_log')) + '</h2>' + logList(w.log) + '</section>';
+  }
+
+  /**
+   * What the hero wears: in the hand and in the pack, or nothing yet.
+   *
+   * @return {string}
+   */
+  function wornLine() {
+    var worn = {};
+    (state.world.items || []).forEach(function(i) {
+      if (i.slot) {
+        worn[i.slot] = i.name;
+      }
+    });
+    return '<p class="help-soft worn-line">' + esc(t('app_worn_line', {hand: worn.hand || t('app_worn_nothing'),
+      pack: worn.pack || t('app_worn_nothing')})) + '</p>';
   }
 
   /**
