@@ -386,7 +386,9 @@
     }).concat((live.targets || []).filter(function(x) {
       return x.id !== live.myteam;
     }));
-    return '<div class="battle-token cover"><p class="help-soft">' + esc(t('app_token_cover')) + '</p>' +
+    // The free cover of the battle used, the reserve of the team pays the next one.
+    return '<div class="battle-token cover"><p class="help-soft">' + esc(live.coverpaid ? t('app_token_cover_reserve',
+      {cost: live.coverpaid, left: live.reserve}) : t('app_token_cover')) + '</p>' +
       live.covers.map(function(kind) {
         var on = kind === 'shield' || kind === 'cheer' ? teams : [];
         if (!on.length) {

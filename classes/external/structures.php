@@ -879,6 +879,8 @@ final class structures {
                 'By turns: verbs of roles missing in the team, which they can use once',
                 VALUE_OPTIONAL
             ),
+            'coverpaid' => new external_value(PARAM_INT, 'By turns: breath of the reserve a cover costs now', VALUE_OPTIONAL),
+            'reserve' => new external_value(PARAM_INT, 'By turns: breath in the reserve of their team', VALUE_OPTIONAL),
             'carry' => new external_multiple_structure(new external_single_structure([
                 'id' => new external_value(PARAM_INT, 'Group'),
                 'name' => new external_value(PARAM_TEXT, 'Team'),

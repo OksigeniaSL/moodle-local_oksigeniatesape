@@ -99,6 +99,28 @@ final class edits_test extends \advanced_testcase {
         $this->assertEquals($original, $this->scene($course->id, 'C1-2')->data);
     }
 
+    public function test_the_pieces_of_the_information_shared_out_are_changed_and_each_one_stays_its_own(): void {
+        $this->resetAfterTest();
+        $course = $this->make_course();
+        // The questions to the owl: each role sees a piece of its own in the first question.
+        $views = $this->scene($course->id, 'C3-2')->data['nodes']['p1']['views'];
+        $roles = array_keys($views);
+        $this->assertGreaterThan(1, count($roles));
+        $fields = [];
+        foreach (edits::view($course->id)['chapters'] as $chapter) {
+            foreach ($chapter['scenes'] as $scene) {
+                $fields = array_merge($fields, $scene['fields']);
+            }
+        }
+        $pieces = array_values(array_filter($fields, fn($f) => $f['kind'] === 'views' && $f['node'] === 'p1'));
+        $this->assertCount(count($roles), $pieces);
+        $this->assertTrue(edits::save($course->id, 'C3-2', 'nodes/p1/views/' . $roles[0], 'Un trozo propio del docente'));
+        $this->assertSame('Un trozo propio del docente', $this->scene($course->id, 'C3-2')->data['nodes']['p1']['views'][$roles[0]]);
+        // The same as the piece of another role: nobody would need to tell it.
+        $this->expectException(\moodle_exception::class);
+        edits::save($course->id, 'C3-2', 'nodes/p1/views/' . $roles[1], 'Un trozo propio del docente');
+    }
+
     public function test_the_teacher_switches_the_sniffing_of_the_creature_in_a_scene(): void {
         $this->resetAfterTest();
         $course = $this->make_course();

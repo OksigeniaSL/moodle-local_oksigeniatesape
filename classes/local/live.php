@@ -79,6 +79,9 @@ final class live {
     /** @var int Aloud: gems for each member of a team whose spokesperson argued its answer, right or not. */
     public const ARGUED = 1;
 
+    /** @var int Breath of the reserve of the team that covers the verb of a missing role, once the free cover is used. */
+    public const COVER_RESERVE = 2;
+
     /** @var string[] By turns aloud: the verbs a team says and the teacher marks on the class screen. */
     public const ALOUD_VERBS = ['glance', 'trail', 'shield', 'cheer', 'carry'];
 
@@ -1035,6 +1038,8 @@ final class live {
             // The verb of a role nobody in the team has today, once a battle for the team, by turns.
             throw new \moodle_exception('tokenused', 'local_oksigeniatesape');
         }
+        // Covered again, the reserve of the team pays it.
+        $paid = $cover !== '' && self::cover_paid($live, (int) $joined->team);
         if ($turns) {
             // By turns: the verb rests two turns after it is used, also when another of the same role in the team used it.
             if (self::rest($live, (int) $joined->team, $kind, $member, $round) > 0) {
@@ -1060,6 +1065,11 @@ final class live {
                 'charid' => $member->charid, 'round' => $round, 'team' => $joined->team, 'kind' => $kind,
                 'target' => $turns ? $target : 0, 'timecreated' => $now]);
         } catch (\dml_write_exception $e) {
+            throw new \moodle_exception('tokenused', 'local_oksigeniatesape');
+        }
+        if ($paid && !reserve::take((int) $joined->team, self::COVER_RESERVE, $now)) {
+            // The reserve ran out in between: the cover is not made.
+            $DB->delete_records(self::T . 'livetoken', ['liveid' => $live->id, 'charid' => $member->charid, 'round' => $round]);
             throw new \moodle_exception('tokenused', 'local_oksigeniatesape');
         }
         return $kind;
@@ -1136,7 +1146,8 @@ final class live {
 
     /**
      * By turns, the verbs of the roles nobody in a team who came into the battle has: anyone in the team can use one of
-     * them, once a battle for the team, without saying why the role is missing. None once the team has used one.
+     * them, once a battle for the team, without saying why the role is missing; after that, paying with the breath of the
+     * reserve of the team (cover_paid()). None once the team has used its own and its reserve cannot pay.
      *
      * @param \stdClass $live
      * @param int $team
@@ -1164,7 +1175,33 @@ final class live {
             'liveid = ? AND team = ? AND kind ' . $in,
             array_merge([$live->id, $team], $params)
         );
-        return $covered ? [] : $missing;
+        return !$covered || reserve::amount($team) >= self::COVER_RESERVE ? $missing : [];
+    }
+
+    /**
+     * By turns, whether covering the verb of a missing role costs the team breath of its reserve now: its free cover of
+     * the battle is used.
+     *
+     * @param \stdClass $live
+     * @param int $team
+     * @return bool
+     */
+    public static function cover_paid(\stdClass $live, int $team): bool {
+        global $DB;
+        $roles = $DB->get_fieldset_sql(
+            'SELECT c.role
+               FROM {' . self::T . 'livein} l
+               JOIN {' . self::T . 'char} c ON c.id = l.charid
+              WHERE l.liveid = ? AND l.round = 0 AND l.team = ?',
+            [$live->id, $team]
+        );
+        $missing = array_values(array_diff_key(self::TOKENS, array_flip($roles)));
+        if (!$missing) {
+            return false;
+        }
+        [$in, $params] = $DB->get_in_or_equal($missing);
+        $where = 'liveid = ? AND team = ? AND kind ' . $in;
+        return $DB->record_exists_select(self::T . 'livetoken', $where, array_merge([$live->id, $team], $params));
     }
 
     /**
@@ -1215,6 +1252,11 @@ final class live {
             $view['tokenrest'] = $rest;
             // And the verb of a role missing in the team, which anyone in it can use once.
             $view['covers'] = $round > 0 && empty($state['rounds'][$round]['revealed']) ? self::covers($live, $team) : [];
+            if ($view['covers'] && self::cover_paid($live, $team)) {
+                // Covering again costs breath of the reserve of the team: how much, and how much it has.
+                $view['coverpaid'] = self::COVER_RESERVE;
+                $view['reserve'] = reserve::amount($team);
+            }
             if (in_array($kind, ['shield', 'cheer'], true) || array_intersect($view['covers'], ['shield', 'cheer'])) {
                 $names = self::teams((int) $live->courseid);
                 $view['targets'] = array_map(fn($id) => ['id' => $id, 'name' => isset($names[$id]) ?

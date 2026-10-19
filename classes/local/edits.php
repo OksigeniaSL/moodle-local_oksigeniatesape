@@ -407,6 +407,12 @@ final class edits {
                     $texts[$base . '/stuck/' . $key] = $text;
                 }
             }
+            // With the information shared out, the piece each role sees.
+            foreach ($node['views'] ?? [] as $role => $text) {
+                if (self::is_text($text)) {
+                    $texts[$base . '/views/' . $role] = $text;
+                }
+            }
             foreach (self::ELEMENTS as $list) {
                 foreach ($node[$list] ?? [] as $element) {
                     if (!is_array($element) || !isset($element['id'])) {
@@ -501,6 +507,17 @@ final class edits {
         $value = trim(clean_param($value, PARAM_TEXT));
         if (\core_text::strlen($value) > self::MAX_TEXT) {
             throw new \invalid_parameter_exception('Too long');
+        }
+        if ($value !== '' && preg_match('#^nodes/([^/]+)/views/([a-z]+)$#', $path, $m)) {
+            // A piece of the information shared out has to be its own: the same as the piece of another role, nobody
+            // would need to tell it.
+            $node = self::apply($original, $courseid, (string) $mission->code, $scene)['nodes'][$m[1]] ?? [];
+            foreach ($node['views'] ?? [] as $role => $text) {
+                $other = self::resolve($text, (string) $mission->skin, (string) $mission->variant, $original['locals'] ?? []);
+                if ($role !== $m[2] && \core_text::strtolower(trim($other)) === \core_text::strtolower($value)) {
+                    throw new \moodle_exception('wssamepiece', 'local_oksigeniatesape');
+                }
+            }
         }
         return self::store($courseid, (string) $mission->code, $scene, $path, $value);
     }
@@ -800,8 +817,8 @@ final class edits {
         foreach ($texts as $path => $text) {
             $original = self::resolve($text, $skin, $variant, $locals);
             $parts = explode('/', $path);
-            $kind = preg_match('/^\d+$/', end($parts)) || in_array($parts[count($parts) - 2] ?? '', ['stuck', 'feedback'], true)
-                ? $parts[count($parts) - 2] : end($parts);
+            $grouped = in_array($parts[count($parts) - 2] ?? '', ['stuck', 'feedback', 'views'], true);
+            $kind = preg_match('/^\d+$/', end($parts)) || $grouped ? $parts[count($parts) - 2] : end($parts);
             $fields[] = [
                 'path' => $path,
                 'kind' => $kind,

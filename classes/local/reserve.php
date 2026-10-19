@@ -77,6 +77,26 @@ final class reserve {
     }
 
     /**
+     * Takes breath from the reserve of a team, if it has that much (a cover in a battle).
+     *
+     * @param int $groupid
+     * @param int $amount
+     * @param int|null $now
+     * @return bool Whether it had it.
+     */
+    public static function take(int $groupid, int $amount, ?int $now = null): bool {
+        global $DB;
+        $row = $DB->get_record(self::T . 'team', ['groupid' => $groupid]);
+        if (!$row || (int) $row->breath < $amount) {
+            return false;
+        }
+        $where = 'id = ? AND breath = ?';
+        $DB->set_field_select(self::T . 'team', 'breath', (int) $row->breath - $amount, $where, [$row->id, $row->breath]);
+        $DB->set_field(self::T . 'team', 'timemodified', $now ?? time(), ['id' => $row->id]);
+        return (int) $DB->get_field(self::T . 'team', 'breath', ['id' => $row->id]) === (int) $row->breath - $amount;
+    }
+
+    /**
      * Fills the reserve for something the team did, once (up to the most it holds).
      *
      * @param int $courseid

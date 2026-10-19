@@ -666,6 +666,14 @@ final class live_test extends \advanced_testcase {
         // The other team still has its own, and its own verbs are there.
         $this->assertNotSame([], live::covers($live, (int) $groups[1]->id));
         $this->assertSame('glance', live::token($live, $members[1], self::NOW + 3));
+        // With breath in the reserve of the team, it covers again the next turn, paying it: two breath each time.
+        reserve::credit($course->id, $team, 'test', 5, self::NOW + 4);
+        $this->assertEqualsCanonicalizing(['trail', 'shield', 'cheer'], live::covers($live, $team));
+        $live = live::next($live, self::NOW + 60);
+        $view = live::device_view($live, $members[0], self::NOW + 61);
+        $this->assertSame([live::COVER_RESERVE, 5], [$view['coverpaid'], $view['reserve']]);
+        $this->assertSame('trail', live::token($live, $members[0], self::NOW + 61, 0, 'trail'));
+        $this->assertSame(3, reserve::amount($team));
     }
 
     public function test_a_lane_to_put_in_order_is_undone_with_its_steps_in_their_place(): void {

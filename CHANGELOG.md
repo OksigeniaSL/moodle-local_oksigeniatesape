@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.152.0 (2026-10-19)
+
+- **Covering a missing role with the reserve of the team** (battle by turns). Once a team has used its free cover of
+  the battle, anyone in it can cover the verb of a role nobody brought again, paying two breath of the reserve of the
+  team; the tablet says what it costs and how much the reserve has.
+- **The pieces of the information shared out, in the Workshop.** What each role sees of a decision can be changed like
+  any other text of the scene; a piece the same as the one of another role is refused, since nobody would need to tell
+  it.
+- **The things to sort that are in the catalog, drawn.** In a scene to sort, a thing that is a being or a thing of the
+  catalog of the mission (by its id, or by `thing`) shows its drawing before its name when the art pack has it, the same
+  as in the minigames; a being named by the country of the course, as the one it names.
+
 ## 0.151.0 (2026-10-19)
 
 - **With the information shared out, the team sets off when everybody has told their piece.** In a team session, a

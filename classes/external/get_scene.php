@@ -24,6 +24,7 @@ use core_external\external_value;
 use local_oksigeniatesape\local\characters;
 use local_oksigeniatesape\local\edits;
 use local_oksigeniatesape\local\engine;
+use local_oksigeniatesape\local\minigames;
 use local_oksigeniatesape\local\missions;
 use local_oksigeniatesape\local\results;
 use local_oksigeniatesape\local\scenes;
@@ -121,7 +122,29 @@ final class get_scene extends external_api {
             'househints' => $char && $role === 'sage' && talents::has((int) $char->id, 'househints', $params['courseid']),
             // The mistakes the shield of the protector stops in a play: two with «Long shield».
             'shields' => $char ? scenes::shields($char, $params['courseid']) : 0,
+            'pictures' => json_encode((object) self::pictures($mission, $scene->data)),
         ];
+    }
+
+    /**
+     * The drawings of the things to sort of a scene that are in the catalog of the mission (by their id, or by `thing`):
+     * the same drawing as in the minigames and the encounters.
+     *
+     * @param \stdClass $mission With data.
+     * @param array $definition Of the scene.
+     * @return array Thing of the scene => key of its drawing.
+     */
+    private static function pictures(\stdClass $mission, array $definition): array {
+        $pictures = [];
+        foreach ($definition['nodes'] ?? [] as $node) {
+            foreach (($node['type'] ?? '') === 'classify' ? $node['items'] ?? [] : [] as $item) {
+                $id = (string) ($item['thing'] ?? $item['id'] ?? '');
+                if ($id !== '' && isset($mission->data['things'][$id])) {
+                    $pictures[(string) $item['id']] = minigames::picture($mission, $id, true);
+                }
+            }
+        }
+        return $pictures;
     }
 
     /**
@@ -151,6 +174,7 @@ final class get_scene extends external_api {
             'definition' => new external_value(PARAM_RAW, 'The scene (JSON)'),
             'skin' => new external_value(PARAM_ALPHANUMEXT, 'Skin of the mission'),
             'place' => new external_value(PARAM_ALPHANUMEXT, 'Place of the chapter of the scene', VALUE_DEFAULT, ''),
+            'pictures' => new external_value(PARAM_RAW, 'Things to sort in the catalog: thing => drawing (JSON)', VALUE_DEFAULT, '{}'),
             'variant' => new external_value(PARAM_ALPHANUMEXT, 'Local examples'),
             'speakers' => new external_value(PARAM_RAW, 'Names of who speaks (JSON)'),
             'items' => new external_value(PARAM_RAW, 'Names of the items (JSON)'),

@@ -1338,6 +1338,18 @@
     }
 
     /**
+     * The drawing of a thing to sort that is in the catalog of the mission, when the art pack has it: before its name.
+     *
+     * @param {Object} it
+     * @return {string}
+     */
+    function clsPic(it) {
+      var key = (data.pictures || {})[it.id];
+      var url = key ? T.artUrl([key]) : null;
+      return url ? '<img class="cls-pic" src="' + esc(url) + '" alt="">' : '';
+    }
+
+    /**
      * In a team session with the information shared out: until everybody in told the team their piece, the decision
      * waits on this tablet too, saying how many told it.
      *
@@ -1976,7 +1988,7 @@
         box.innerHTML = '<p class="help">' + esc(trip > 1 ? t('app_classify_again') : t('app_classify_help')) + '</p>' +
           '<div class="cls-table" role="group" aria-label="' + esc(t('app_classify_table')) + '">' + left.map(function(it) {
             return '<button type="button" class="cls-thing" data-thing="' + esc(it.id) + '" aria-pressed="' +
-              (chosen === it.id) + '">' + esc(tx(it.label)) + evidenceTag(n, it, tx((n.bins.filter(function(b) {
+              (chosen === it.id) + '">' + clsPic(it) + esc(tx(it.label)) + evidenceTag(n, it, tx((n.bins.filter(function(b) {
                 return b.id === it.bin;
               })[0] || {}).label || it.bin)) + '</button>';
           }).join('') + locked.map(function(it) {
@@ -1991,7 +2003,7 @@
               inside.map(function(it) {
                 return right[it.id] ? '<span class="cls-thing kept">' + esc(tx(it.label)) + '</span>' :
                   '<button type="button" class="cls-thing placed" data-take="' + esc(it.id) + '" aria-label="' +
-                  esc(t('app_classify_take', tx(it.label))) + '">' + esc(tx(it.label)) + '</button>';
+                  esc(t('app_classify_take', tx(it.label))) + '">' + clsPic(it) + esc(tx(it.label)) + '</button>';
               }).join('') + '</span></div>';
           }).join('') + '</div><div class="actions"><button class="btn btn-main" data-confirm' + (all ? '' : ' disabled') +
           '>' + esc(n.commit ? tx(n.commit) : t('app_confirm')) + '</button></div>';
@@ -3082,6 +3094,7 @@
         data.speakers = JSON.parse(d.speakers || '{}');
         data.items = JSON.parse(d.items || '{}');
         data.flags = JSON.parse(d.flags || '[]');
+        data.pictures = JSON.parse(d.pictures || '{}');
         sc = JSON.parse(d.definition);
         liven();
         if (T.fx) {

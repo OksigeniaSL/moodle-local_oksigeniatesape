@@ -77,6 +77,10 @@
         return t(list === 'items' ? 'teach_ws_k_feedback_card' : 'teach_ws_k_feedback_option');
       case 'stuck':
         return t('teach_ws_k_stuck');
+      case 'views':
+        // A piece of the information shared out: what only that role sees.
+        return t('teach_ws_k_piece', T.roleName ? T.roleName(T.family || '', parts[parts.length - 1], 'm') :
+          parts[parts.length - 1]);
       case 'intro':
         return t('teach_ws_k_intro');
       case 'offscreen':
