@@ -128,6 +128,13 @@ final class get_world extends external_api {
                     []
                 ),
                 'pacts' => structures::team_pacts(),
+                'bannerstage' => structures::bannerstage(),
+                'brought' => new external_value(
+                    PARAM_BOOL,
+                    'The messengers of another team brought it a hint today: the first of each scene is free',
+                    VALUE_DEFAULT,
+                    false
+                ),
             ], 'Team', VALUE_OPTIONAL),
             'market' => structures::market(),
             'expeditions' => structures::expeditions(),

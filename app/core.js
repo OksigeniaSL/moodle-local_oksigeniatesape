@@ -1158,6 +1158,47 @@
   };
 
   /**
+   * The banner of a team, as it has grown with the weeks it reached its goal: the cloth, its border, the emblem of the
+   * light, the ribbons and the star on top of the pole. The cloth takes a colour of its own for each team.
+   *
+   * @param {Object} banner stage (1 to 5), as the server sends it.
+   * @param {number} teamid
+   * @return {string} SVG.
+   */
+  T.banner = function(banner, teamid) {
+    var stage = (banner && banner.stage) || 1;
+    var cloth = ['#c0504d', '#3f7fbf', '#4f9a5a', '#8e5bb5', '#d08a2e', '#2d9a9a'][Math.abs(teamid || 0) % 6];
+    var shape = 'M10 10 H42 V46 L26 38 L10 46 Z';
+    var svg = '<svg class="team-flag stage-' + stage + '" viewBox="0 0 48 64" aria-hidden="true">' +
+      '<path d="M8 6 V62" stroke="#7a5a3a" stroke-width="3" stroke-linecap="round"/>' +
+      '<path d="' + shape + '" fill="' + cloth + '"/>' +
+      '<path d="M10 10 H42 V24 L10 24 Z" fill="#fff" opacity=".12"/>';
+    if (stage >= 2) {
+      svg += '<path d="' + shape + '" fill="none" stroke="#f2c14e" stroke-width="2.4" stroke-linejoin="round"/>';
+    }
+    if (stage >= 3) {
+      // The emblem: a small sun, the light of Tesapé.
+      var rays = '';
+      for (var i = 0; i < 8; i++) {
+        rays += '<path d="M26 16.5 V14" transform="rotate(' + (i * 45) + ' 26 24)" stroke="#fff3c4" stroke-width="1.8" ' +
+          'stroke-linecap="round"/>';
+      }
+      svg += rays + '<circle cx="26" cy="24" r="5.2" fill="#ffd866" stroke="#fff3c4" stroke-width="1"/>';
+    }
+    if (stage >= 4) {
+      svg += '<path d="M8 12 Q2 22 5 34" fill="none" stroke="#f2c14e" stroke-width="2.4" stroke-linecap="round"/>' +
+        '<path d="M8 12 Q4 26 9 40" fill="none" stroke="#fff3c4" stroke-width="2" stroke-linecap="round"/>';
+    }
+    if (stage >= 5) {
+      svg += '<path d="M8 0.5 L9.6 4 L13.3 4.3 L10.5 6.7 L11.4 10.4 L8 8.4 L4.6 10.4 L5.5 6.7 L2.7 4.3 L6.4 4 Z" ' +
+        'fill="#ffd866" stroke="#b8860b" stroke-width=".8" stroke-linejoin="round"/>';
+    } else {
+      svg += '<circle cx="8" cy="5.5" r="2.4" fill="#7a5a3a"/>';
+    }
+    return svg + '</svg>';
+  };
+
+  /**
    * A picture of the valley at dusk, for the story screens and the region card: the painting of the art pack, or one
    * drawn here.
    *

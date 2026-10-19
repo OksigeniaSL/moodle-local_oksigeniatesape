@@ -4935,6 +4935,64 @@ body.in-battle .badge-moment {
   vertical-align: -3px;
 }
 
+/* ---------- The banner of the team ---------- */
+
+.team-flag {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.team-flag-box {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 36px;
+  height: 48px;
+}
+
+.board-team .team-name .team-flag-box {
+  width: 27px;
+  height: 36px;
+  margin-right: 6px;
+  vertical-align: -10px;
+}
+
+.team-banner-line {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin: 10px 0 4px;
+}
+
+.team-banner-line b,
+.team-banner-line small {
+  display: block;
+}
+
+.banner-gifts {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.banner-gifts li {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin: 2px 0;
+}
+
+.banner-gifts svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+
+.team-flag-big {
+  width: 96px;
+  height: 128px;
+}
+
 /* ---------- The album of the field guide ---------- */
 
 .album {

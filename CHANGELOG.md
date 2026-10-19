@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.137.0 (2026-10-19)
+
+- **The banner of the team** grows with the weeks the team reaches its goal: a plain cloth, then a border (1 week),
+  the emblem of the light (2), ribbons (4) and the star on top of the pole (6). It grows as a team and never shrinks.
+  With the border, the reserve of the team holds 2 more breaths (12); with the emblem, the first hint of each scene the
+  team plays together is free. The class screen shows it beside the name of each team; the tab Team of the tablet,
+  with its weeks, what it needs to grow and what it gives; and when it has grown since the tablet last saw it, a moment
+  shows it, from how it was to how it is (`banners`).
+- The price of a hint on the tablet counts the hint the messengers of another team brought that day, as the server
+  already did.
+
 ## 0.136.0 (2026-10-19)
 
 - **The trade, a card of the day.** With two teams or more, each team may lend another one of the items its members

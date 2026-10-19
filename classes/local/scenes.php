@@ -311,7 +311,8 @@ final class scenes {
 
     /**
      * The hints opened in a play cost breath: one each; the sage gets the first free and pays half for the rest. The day
-     * the messengers of another team bring one, the first is free too.
+     * the messengers of another team bring one, the first is free too; and in a play as a team, from the emblem of its
+     * banner, one more.
      *
      * @param \stdClass $char
      * @param \stdClass $member
@@ -319,6 +320,7 @@ final class scenes {
      * @param int $hints Hints opened.
      * @param int $now
      * @param bool $free Played with the aids of the first steps.
+     * @param bool $together Played as a team: from the emblem of its banner, the first hint is free.
      * @return int Breath paid.
      */
     private static function pay_hints(
@@ -327,7 +329,8 @@ final class scenes {
         int $sceneid,
         int $hints,
         int $now,
-        bool $free = false
+        bool $free = false,
+        bool $together = false
     ): int {
         // With «more help» or the aids of the first steps, the hints are free.
         $free = $free || adapt::has($member, 'hints');
@@ -335,6 +338,7 @@ final class scenes {
         $gift = talents::has((int) $char->id, 'househints', (int) $member->courseid) ? 2 : 1;
         $team = teams::of((int) $member->courseid, (int) $char->userid);
         $brought = $team && events::brought((int) $member->courseid, (int) $team->id, $now) ? 1 : 0;
+        $brought += $team && $together ? banners::free_hints((int) $member->courseid, (int) $team->id) : 0;
         $cost = $free ? 0 : ($char->role === 'sage' ? (int) ceil(max(0, $hints - $gift - $brought) / 2) :
             max(0, $hints - $brought));
         $fresh = engine::member($char, (int) $member->courseid, $now);
@@ -616,7 +620,8 @@ final class scenes {
             $rewards['rescued'] = self::rescue($courseid, $char, $fallen, (int) $scene->id, $now);
         }
         $free = self::aided($member, $scene) || $fallen;
-        $rewards['hints'] = self::pay_hints($char, $member, (int) $scene->id, (int) $result['hints'], $now, $free);
+        $together = (bool) $team;
+        $rewards['hints'] = self::pay_hints($char, $member, (int) $scene->id, (int) $result['hints'], $now, $free, $together);
         $rewards['shielded'] = (bool) $result['shielded'];
         return [$attempt, $rewards];
     }

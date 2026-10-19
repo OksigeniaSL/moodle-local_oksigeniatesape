@@ -104,6 +104,7 @@ final class get_class extends external_api {
                     VALUE_DEFAULT,
                     []
                 ),
+                'bannerstage' => structures::bannerstage(),
             ])),
             'groupings' => new external_multiple_structure(new external_single_structure([
                 'id' => new external_value(PARAM_INT, 'Grouping'),

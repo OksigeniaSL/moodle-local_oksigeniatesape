@@ -818,6 +818,23 @@
         ascentMoment(then);
       });
     }
+    // The banner of the team, grown since this device last saw it (the first time, it is only noted).
+    var team = state.world.team;
+    if (team && team.bannerstage) {
+      var fkey = 'tesape-banner-' + cfg.courseid + '-' + team.id;
+      var flag = null;
+      try {
+        flag = window.localStorage.getItem(fkey);
+        window.localStorage.setItem(fkey, String(team.bannerstage.stage));
+      } catch (e) {
+        flag = null;
+      }
+      if (flag && team.bannerstage.stage > Number(flag)) {
+        moments.push(function(then) {
+          bannerMoment(team, Number(flag), then);
+        });
+      }
+    }
     // The badge of the mission, celebrated once on each device.
     var b = state.world.badge;
     if (b && b.issued) {
@@ -988,6 +1005,62 @@
         T.fx.sparkles();
       }, T.moves() ? 1100 : 0);
     }
+  }
+
+  /**
+   * The banner of the team has grown: as it was and as it is, and what it gives now.
+   *
+   * @param {Object} team
+   * @param {number} from The stage this device saw last.
+   * @param {Function} then
+   */
+  function bannerMoment(team, from, then) {
+    var now = team.bannerstage;
+    moment('<div class="kicker">' + esc(t('app_banner_kicker')) + '</div><div class="rise"><div class="rise-from team-flag-big">' +
+      T.banner({stage: from}, team.id) + '</div><div class="rise-to team-flag-big">' + T.banner(now, team.id) + '</div></div>' +
+      '<h2 id="tesape-banner-title">' + esc(t('app_banner_grew', t('app_banner_' + now.name))) + '</h2><p class="help">' +
+      esc(t('app_banner_grew_help')) + '</p>' + bannerGifts(now.stage, from), 'tesape-banner-title', then);
+    if (T.fx) {
+      setTimeout(function() {
+        T.fx.sound('levelup');
+        T.fx.sparkles();
+      }, T.moves() ? 1100 : 0);
+    }
+  }
+
+  /**
+   * What the banner gives at a stage: with the border, two breaths more in the reserve; with the emblem, the first hint
+   * of each scene played as a team free. Only what came after a stage, if it is given.
+   *
+   * @param {number} stage
+   * @param {number} [after]
+   * @return {string}
+   */
+  function bannerGifts(stage, after) {
+    var gifts = [[2, 'app_banner_gives_border', 'breath'], [3, 'app_banner_gives_emblem', 'log']].filter(function(g) {
+      return stage >= g[0] && (after || 0) < g[0];
+    });
+    return gifts.length ? '<ul class="banner-gifts">' + gifts.map(function(g) {
+      return '<li>' + T.icon(g[2]) + ' ' + esc(t(g[1])) + '</li>';
+    }).join('') + '</ul>' : '';
+  }
+
+  /**
+   * The banner in the card of the team: as it is, the weeks with the goal, how many more it needs to grow and what it
+   * gives.
+   *
+   * @param {Object} team
+   * @return {string}
+   */
+  function bannerLine(team) {
+    var b = team.bannerstage;
+    if (!b) {
+      return '';
+    }
+    return '<div class="team-banner-line"><span class="team-flag-box">' + T.banner(b, team.id) + '</span><span class="grow">' +
+      '<b>' + esc(t('app_banner_now', t('app_banner_' + b.name))) + '</b><small>' + esc(b.next ?
+      t('app_banner_next', {weeks: b.weeks, next: b.next}) : t('app_banner_full', b.weeks)) + '</small>' + bannerGifts(b.stage) +
+      '</span></div>';
   }
 
   /**
@@ -2638,7 +2711,7 @@
         '<small>' + esc(wk.reached ? t('app_team_reached') : t('app_team_week', {done: wk.done, needed: wk.needed,
         part: wk.part})) + '</small></div><div class="team-week"><span class="meter energy"><i style="width:' + epct +
         '%"></i></span><small>' + esc(t(team.carer ? 'app_team_energy_carer' : 'app_team_energy', {energy: team.energy,
-        max: team.energymax})) + '</small></div><ul class="list">' + team.members.map(function(mate) {
+        max: team.energymax})) + '</small></div>' + bannerLine(team) + '<ul class="list">' + team.members.map(function(mate) {
           var c = mate.character;
           var m = c && c.member;
           var tag = m && m.status === 'paused' ? '<span class="tag todo">' + esc(t('app_resting')) + '</span>' :

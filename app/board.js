@@ -1408,7 +1408,10 @@
       var pct = w && w.needed ? Math.min(100, Math.round(100 * w.done / w.needed)) : 0;
       var lantern = (team.banner || []).indexOf('banner-lantern') >= 0 ? '<span class="banner-lantern">' +
         T.icon('lantern') + '</span> ' : '';
-      return '<div class="board-team"><button type="button" class="team-name" data-team="' + team.id + '">' + lantern +
+      // The banner of the team, as it has grown with the weeks it reached its goal.
+      var flag = team.bannerstage ? '<span class="team-flag-box" title="' + esc(t('app_banner_now',
+        t('app_banner_' + team.bannerstage.name))) + '">' + T.banner(team.bannerstage, team.id) + '</span>' : '';
+      return '<div class="board-team"><button type="button" class="team-name" data-team="' + team.id + '">' + flag + lantern +
         esc(team.name) + '</button>' + teamState(team.id, (state.teamstates || {})[team.id] || team.state) + (w ? '<span class="meter level"><i style="width:' + pct + '%"></i></span>' : '') +
         '<div class="members">' + members.map(student).join('') + '</div></div>';
     }).join('');

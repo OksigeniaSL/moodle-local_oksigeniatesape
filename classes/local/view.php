@@ -630,7 +630,8 @@ final class view {
             'region' => self::region($region),
             'students' => $list,
             'teams' => array_values(array_map(fn($g) => ['id' => (int) $g->id, 'name' => format_string($g->name),
-                'banner' => market::team_owns($courseid, (int) $g->id), 'state' => $states[(int) $g->id] ?? ''], $groups)),
+                'banner' => market::team_owns($courseid, (int) $g->id), 'state' => $states[(int) $g->id] ?? '',
+                'bannerstage' => banners::view($courseid, (int) $g->id)], $groups)),
             'groupings' => array_values(array_map(
                 fn($g) => ['id' => (int) $g->id, 'name' => format_string($g->name)],
                 groups_get_all_groupings($courseid)
@@ -1008,6 +1009,8 @@ final class view {
         return ['id' => (int) $group->id, 'name' => format_string($group->name), 'members' => $mates,
             'energy' => $energy, 'energymax' => $playing * engine::ENERGY_MAX, 'carer' => $carers,
             'banner' => market::team_owns($courseid, (int) $group->id),
+            'bannerstage' => banners::view($courseid, (int) $group->id),
+            'brought' => events::brought($courseid, (int) $group->id),
             'state' => teams::states($courseid)[(int) $group->id] ?? '',
             'first' => teams::firsts($courseid)[(int) $group->id] ?? ''] + ($council ? ['council' => $council] : []) +
             ($reserve ? ['reserve' => $reserve] : []);

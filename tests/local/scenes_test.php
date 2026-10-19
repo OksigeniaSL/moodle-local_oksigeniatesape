@@ -407,6 +407,38 @@ final class scenes_test extends \advanced_testcase {
         $this->assertSame(3, scenes::play($w->course->id, $w->users[0]->id, $scene->id, $events($w->users[0]), null)['rewards']['hints']);
     }
 
+    public function test_from_the_emblem_of_the_banner_the_first_hint_of_a_team_play_is_free(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $w = $this->make_class(2);
+        $gen = $this->getDataGenerator();
+        $group = $gen->create_group(['courseid' => $w->course->id]);
+        foreach ([0, 1] as $i) {
+            $gen->create_group_member(['groupid' => $group->id, 'userid' => $w->users[$i]->id]);
+            $DB->set_field(self::T . 'char', 'role', 'scout', ['userid' => $w->users[$i]->id]);
+        }
+        $scene = $DB->get_record(self::T . 'scene', ['missionid' => $w->mission->id, 'code' => 'C2-2']);
+        $def = json_decode($scene->definition, true);
+        $def['nodes']['colocar']['hints'] = ['Una', 'Dos', 'Tres'];
+        $DB->set_field(self::T . 'scene', 'definition', json_encode($def), ['id' => $scene->id]);
+        $hints = [['n' => 'colocar', 'hint' => 0], ['n' => 'colocar', 'hint' => 1], ['n' => 'colocar', 'hint' => 2]];
+        $events = function (\stdClass $user) use ($w, $def, $hints): array {
+            [$items, $roles, $flags, $role] = scenes::context(characters::get($user->id), $w->course->id);
+            return array_merge($hints, autoplayer::play($def, $items, $roles, $flags, $role));
+        };
+        // Two weeks with the goal of the team: the emblem.
+        foreach ([0, 2] as $week) {
+            $member = engine::member(characters::get($w->users[0]->id), $w->course->id);
+            engine::gems($member, teams::GOAL_GEMS, 'teamgoal', 0, 0, (int) $group->id, time() - $week * WEEKSECS);
+        }
+        $this->assertSame('emblem', banners::view($w->course->id, (int) $group->id)['name']);
+        // Alone, the three hints are paid; as a team, two.
+        $user = $w->users[0];
+        $this->assertSame(3, scenes::play($w->course->id, $user->id, $scene->id, $events($user), null)['rewards']['hints']);
+        $result = scenes::play($w->course->id, $user->id, $scene->id, $events($user), null, null, [$w->users[1]->id]);
+        $this->assertSame(2, $result['rewards']['hints']);
+    }
+
     public function test_the_healer_rescues_a_worn_out_teammate_by_playing_a_scene_together(): void {
         global $DB;
         $this->resetAfterTest();

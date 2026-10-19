@@ -93,7 +93,7 @@ final class reserve {
             return;
         }
         // What went in, as it went in: taken back, the same comes out.
-        $given = max(0, min($amount, self::MAX - (int) $row->breath));
+        $given = max(0, min($amount, banners::reserve_max($courseid, $groupid) - (int) $row->breath));
         $filled[$key] = $given;
         $DB->update_record(self::T . 'team', (object) ['id' => $row->id, 'breath' => (int) $row->breath + $given,
             'filled' => json_encode($filled), 'timemodified' => $now ?? time()]);
@@ -262,6 +262,7 @@ final class reserve {
         foreach (self::COSTS as $kind => $cost) {
             $costs[] = ['kind' => $kind, 'cost' => $cost];
         }
-        return ['breath' => self::amount($groupid), 'max' => self::MAX, 'costs' => $costs, 'open' => $open];
+        return ['breath' => self::amount($groupid), 'max' => banners::reserve_max($courseid, $groupid), 'costs' => $costs,
+            'open' => $open];
     }
 }

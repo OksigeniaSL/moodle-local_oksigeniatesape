@@ -1079,7 +1079,9 @@
     }
 
     /**
-     * What the next hint costs: one breath; the sage gets the first free and pays half for the rest; free in class.
+     * What the next hint costs: one breath; the sage gets the first free and pays half for the rest; free in class. The
+     * day the messengers of another team brought one, the first is free; and in a play as a team, from the emblem of its
+     * banner, one more.
      *
      * @return {number}
      */
@@ -1088,12 +1090,15 @@
       if (cm || data.aided || T.adapted.hints) {
         return 0;
       }
+      var team = world && world.team;
+      var free = (team && team.brought ? 1 : 0) + (team && opts.team && opts.team.length && team.bannerstage &&
+        team.bannerstage.stage >= 3 ? 1 : 0);
       if (data.role === 'sage') {
         // The first free (the first two with «Hints of the house»), and half for the rest: as the server charges.
-        var gift = data.househints ? 2 : 1;
+        var gift = (data.househints ? 2 : 1) + free;
         return run.hints < gift ? 0 : (run.hints - gift + 1) % 2;
       }
-      return 1;
+      return run.hints < free ? 0 : 1;
     }
 
     /**

@@ -599,6 +599,20 @@ final class structures {
     }
 
     /**
+     * The banner of a team: its stage grows with the weeks it reaches its goal.
+     *
+     * @return external_single_structure
+     */
+    public static function bannerstage(): external_single_structure {
+        return new external_single_structure([
+            'stage' => new external_value(PARAM_INT, 'Stage, 1 (cloth) to 5 (star)'),
+            'name' => new external_value(PARAM_ALPHA, 'cloth, border, emblem, ribbons or star'),
+            'weeks' => new external_value(PARAM_INT, 'Weeks the team reached its goal'),
+            'next' => new external_value(PARAM_INT, 'Weeks still needed for the next stage (0: at the star)'),
+        ], 'The banner of the team, as it has grown', VALUE_OPTIONAL);
+    }
+
+    /**
      * The reserve of breath of a team, as its members see it.
      *
      * @param int $required VALUE_REQUIRED or VALUE_OPTIONAL.
