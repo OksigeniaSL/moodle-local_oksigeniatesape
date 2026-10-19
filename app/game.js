@@ -348,7 +348,8 @@
     }).join('') + '</ul>' + (c.talentsoff ? '<p class="help-soft">' + esc(t('app_talents_off')) + '</p>' : '') : '') +
       (c.talentpending ? '<p><button type="button" class="btn btn-main" data-choosetalent>' + esc(t('app_talent_choose')) +
       '</button></p>' : '') + (c.branchpending ? '<p><button type="button" class="btn btn-main" data-choosebranch>' +
-      esc(t('app_branch_choose', creatureName(c))) + '</button></p>' : '');
+      esc(t('app_branch_choose', creatureName(c))) + '</button></p>' : '') + (c.ascentpending ? '<p><button type="button" ' +
+      'class="btn btn-main" data-ascentopen>' + esc(t('app_ascent_choose')) + '</button></p>' : '');
   }
 
   /**
@@ -474,6 +475,61 @@
       esc(t('app_skill_title')) + '</h2><ul class="skill-medals">' + list.map(function(s) {
         return '<li class="lit"><span class="skill-mark" aria-hidden="true">✦</span><span>' + esc(s.name) + '</span></li>';
       }).join('') + '</ul>', 'tesape-skill-title', then);
+  }
+
+  /**
+   * The rite of ascent, once in a mission: the four roles in the hero's stage and lineage, theirs marked as theirs. A
+   * touch marks one and a button keeps it; keeping their own is staying. Left for later, it waits on the sheet.
+   *
+   * @param {Function} [then]
+   * @return {Element}
+   */
+  function ascentMoment(then) {
+    var c = state.world.character;
+    var family = state.world.family;
+    var layer = moment('<div class="kicker">' + esc(t('app_ascent_kicker')) + '</div><h2 id="tesape-ascent-title">' +
+      esc(t('app_ascent_title')) + '</h2><p class="help">' + esc(t(c.ascentpending === 'final' ? 'app_ascent_final' :
+      'app_ascent_lanterns')) + '</p><div class="talent-cards ascent-cards">' + T.ROLES.map(function(role) {
+        return '<button type="button" class="talent-card" data-ascent="' + role + '"><span class="ascent-hero" ' +
+          'aria-hidden="true">' + T.avatar({role: role, nameform: c.nameform, lineage: c.lineage, look: c.appearance,
+          stage: c.stage, family: family}) + '</span><b>' + esc(T.roleName(family, role, c.nameform)) + '</b><small>' +
+          esc(t('app_role_does_' + role)) + (role === c.role ? ' · ' + esc(t('app_ascent_yours')) : '') + '</small></button>';
+      }).join('') + '</div>', 'tesape-ascent-title', then);
+    var later = layer.querySelector('[data-close]');
+    later.textContent = t('app_talent_later');
+    later.className = 'btn btn-soft';
+    // Offered by itself once on each device: then it waits on the sheet.
+    try {
+      window.localStorage.setItem('tesape-ascent-' + cfg.courseid + '-' + cfg.userid, '1');
+    } catch (e) {
+      // Without storage it is offered again next time.
+    }
+    layer.querySelector('[data-ascent="' + c.role + '"]').focus();
+    markThenKeep(layer, '[data-ascent]', function(b, cards, button) {
+      cards.forEach(function(x) {
+        x.disabled = true;
+      });
+      button.disabled = true;
+      T.api('ascend', {courseid: cfg.courseid, role: b.dataset.ascent}).then(function(r) {
+        var name = T.roleName(family, r.role, c.nameform);
+        T.toast(esc(t(r.role === c.role ? 'app_ascent_stayed' : 'app_ascent_changed', name)));
+        c.ascentpending = '';
+        if (T.fx) {
+          T.fx.sound('levelup');
+          T.fx.sparkles();
+        }
+        later.click();
+        // The world again: the hero in their role, and the talents of a new role to choose.
+        refresh();
+      }).catch(function(e) {
+        cards.forEach(function(x) {
+          x.disabled = false;
+        });
+        button.disabled = false;
+        T.toast(esc(e.message), true);
+      });
+    });
+    return layer;
   }
 
   /**
@@ -748,6 +804,18 @@
     if (c.branchpending && !branchOffered) {
       moments.push(function(then) {
         branchMoment(then);
+      });
+    }
+    // The rite of ascent: by itself once on each device, then on the sheet.
+    var ascentOffered = null;
+    try {
+      ascentOffered = window.localStorage.getItem('tesape-ascent-' + cfg.courseid + '-' + cfg.userid);
+    } catch (e) {
+      ascentOffered = null;
+    }
+    if (c.ascentpending && !ascentOffered) {
+      moments.push(function(then) {
+        ascentMoment(then);
       });
     }
     // The badge of the mission, celebrated once on each device.
@@ -3679,6 +3747,12 @@
       if (way && c.branchpending) {
         way.onclick = function() {
           branchMoment();
+        };
+      }
+      var rite = app.querySelector('[data-ascentopen]');
+      if (rite && c.ascentpending) {
+        rite.onclick = function() {
+          ascentMoment();
         };
       }
       return;

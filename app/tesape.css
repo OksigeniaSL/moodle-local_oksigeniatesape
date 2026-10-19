@@ -802,6 +802,27 @@ body.tesape {
   margin: 12px 0;
 }
 
+/* The rite of ascent: the hero in each role, over its card; the four at a glance, two by two. */
+.ascent-cards {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ascent-cards .talent-card {
+  padding: 10px;
+}
+
+.ascent-cards .ascent-hero {
+  display: block;
+  height: 110px;
+  text-align: center;
+}
+
+.ascent-cards .ascent-hero img,
+.ascent-cards .ascent-hero svg {
+  width: auto;
+  height: 100%;
+}
+
 .talent-card {
   display: grid;
   gap: 6px;

@@ -63,6 +63,7 @@ final class structures {
                 false
             ),
             'branchpending' => new external_value(PARAM_BOOL, 'Its creature chooses its branch', VALUE_DEFAULT, false),
+            'ascentpending' => new external_value(PARAM_ALPHA, 'Why the rite of ascent waits, or empty', VALUE_DEFAULT, ''),
             'skills' => new external_multiple_structure(new external_single_structure([
                 'code' => new external_value(PARAM_ALPHANUMEXT, 'Objective'),
                 'name' => new external_value(PARAM_TEXT, 'What it is to know how to do'),

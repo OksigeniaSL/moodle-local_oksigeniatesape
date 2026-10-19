@@ -842,6 +842,8 @@ final class view {
             'skills' => $private && $member ? skills::of($char, (int) $member->courseid) : [],
             // Its creature reached its second stage and chooses its branch.
             'branchpending' => $private && creatures::branch_pending($char),
+            // The rite of ascent waits: why (the six lanterns lit, or the final won), or nothing.
+            'ascentpending' => $private && $member ? (string) ascents::pending($char, (int) $member->courseid) : '',
         ];
         $pending = $private && $member && talents::on_in((int) $member->courseid) ? talents::pending($char) : null;
         if ($pending) {

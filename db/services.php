@@ -454,6 +454,13 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:play',
     ],
+    'local_oksigeniatesape_ascend' => [
+        'classname' => 'local_oksigeniatesape\\external\\ascend',
+        'description' => 'A student makes their ascent: they stay in their role or take another one, keeping their level.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:play',
+    ],
     'local_oksigeniatesape_choose_talent' => [
         'classname' => 'local_oksigeniatesape\\external\\choose_talent',
         'description' => 'A student chooses the talent a level brought them.',

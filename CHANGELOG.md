@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.135.0 (2026-10-19)
+
+- **The rite of ascent.** Once in a mission, when the student has lit the six lanterns or their class has won the final
+  battle, the hero may stay in their role or try another one, keeping their level and the talents of each role, without
+  the time a change of role waits otherwise. It comes by itself once on each device (the four roles in the hero's stage
+  and lineage, theirs marked as theirs; a touch marks one, «Keep…» keeps it) and waits on the sheet while it is open.
+  Out of the rite, the teacher changes roles as always (`ascents`, service `ascend`).
+
 ## 0.134.0 (2026-10-19)
 
 - Mission «Los seres vivos» v56. «La clave del patio» asks for five questions: the five that look at what does not
