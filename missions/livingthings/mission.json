@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 55,
+ "version": 56,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 56,
+   "kind": "fix",
+   "date": "2026-10-19",
+   "text": "La clave del patio pide las cinco preguntas que no cambian (con cuatro siempre chocaban dos seres) y se prueba con un murciélago que cae con el gato; en la carrera de la cadena, el explorador y el protector tienen tarea también sin patio"
+  },
   {
    "version": 55,
    "kind": "improvement",
@@ -3236,7 +3242,7 @@
    "offscreenparts": [
     {
      "role": "scout",
-     "text": "Cuenta las plantas que quedan en pie justo antes del silbato."
+     "text": "Cuenta las plantas que quedan en juego justo antes del silbato (en pie en el patio, o boca arriba sobre la mesa)."
     },
     {
      "role": "sage",
@@ -3244,7 +3250,7 @@
     },
     {
      "role": "protector",
-     "text": "Comprueba que tu equipo atrapa sin empujar y, al acabar, recoge sus pañuelos."
+     "text": "Comprueba que tu equipo juega limpio (sin empujar en el patio, sin quitar tarjetas en la mesa) y, al acabar, recoge sus pañuelos o sus tarjetas."
     },
     {
      "role": "healer",

@@ -60,10 +60,10 @@
   },
   "elegir": {
    "type": "choice",
-   "prompt": "¿Qué cuatro preguntas ponemos en la clave?",
+   "prompt": "¿Qué cinco preguntas ponemos en la clave?",
    "select": {
-    "min": 4,
-    "max": 4
+    "min": 5,
+    "max": 5
    },
    "hints": [
     "Una buena pregunta separa por algo que no cambia de un ejemplar a otro.",
@@ -139,34 +139,47 @@
      "feedback": "Al equipo que lo pruebe el jueves no le sirve de nada. La clave tiene que valer para cualquiera, cualquier día."
     }
    ],
-   "next": "prueba"
+   "next": "probar"
+  },
+  "probar": {
+   "type": "branch",
+   "rules": [
+    {
+     "if": {
+      "correct_at_least": 5,
+      "in": "elegir"
+     },
+     "next": "prueba"
+    }
+   ],
+   "else": "resultado"
   },
   "prueba": {
    "type": "choice",
-   "prompt": "Otro equipo prueba la clave con un ser elegido en secreto: {{local:pajaro}} y el gato caen en la misma casilla. La clave se atasca. ¿Qué pregunta añadimos?",
+   "prompt": "La clave funciona con los seis. Otro equipo la prueba con un ser que no estaba en la tabla: un murciélago del alero del colegio. Tiene huesos y tiene pelo, como el gato, y los dos caen en la misma casilla. ¿Qué pregunta añadimos?",
    "hints": [
     "¿Qué tiene uno que no tenga el otro, y que no se le pueda quitar?",
-    "Lo que hace un animal cambia según el día; lo que lleva encima, no."
+    "Lo que hace un animal cambia según el día; lo que lleva en el cuerpo, no."
    ],
    "views": {
-    "protector": "En el barrio hay gatos grises, negros, blancos y naranjas.",
-    "healer": "El pingüino y el avestruz son aves, y ninguno de los dos vuela."
+    "protector": "En el barrio hay gatos grises, negros, blancos y naranjas, y murciélagos pardos y negros.",
+    "healer": "Las crías de murciélago no vuelan hasta que tienen unas semanas, y uno con un ala herida tampoco."
    },
    "options": [
     {
-     "id": "plumas",
-     "label": "¿Tiene plumas?",
+     "id": "alas",
+     "label": "¿Tiene alas?",
      "correct": true,
      "points": 3,
      "objective": "SV-04",
-     "feedback": "La clave se desatasca: uno dice sí y el otro no, y lo dirán siempre. Cada uno en su casilla."
+     "feedback": "La clave se desatasca: el murciélago tiene alas y el gato no, y lo dirán siempre. Cada uno en su casilla."
     },
     {
      "id": "color",
-     "label": "¿Es de color gris?",
+     "label": "¿Es de color negro?",
      "correct": false,
      "objective": "SV-04",
-     "feedback": "Hay gatos grises y hay gatos naranjas. Al siguiente gato, la clave vuelve a atascarse."
+     "feedback": "Hay gatos negros y murciélagos pardos. Al siguiente ejemplar, la clave vuelve a atascarse."
     },
     {
      "id": "vuela",
@@ -174,11 +187,11 @@
      "correct": false,
      "points": 1,
      "objective": "SV-04",
-     "feedback": "Hoy sirve. Pero el día que alguien pruebe la clave con un pingüino, se atasca. Mejor preguntar por lo que lleva encima que por lo que hace."
+     "feedback": "Hoy sirve. Pero una cría de murciélago todavía no vuela, y uno con un ala herida tampoco: la clave se atasca con ellos. Mejor preguntar por lo que lleva en el cuerpo que por lo que hace."
     },
     {
      "id": "rastro",
-     "label": "Seguir el rastro del ser secreto hasta donde está escondido, antes de preguntar nada",
+     "label": "Seguir el rastro del ser nuevo hasta donde se esconde, antes de preguntar nada",
      "requires": {
       "role": "scout"
      },
@@ -188,7 +201,7 @@
        "gems": 1
       }
      ],
-     "feedback": "El rastro acaba en un tejado: plumas sueltas junto a un nido. «Eso no es una clave», dice el búho medio dormido, «pero es saber mirar». Una gema."
+     "feedback": "El rastro acaba en el alero del tejado: un murciélago colgado boca abajo, dormido, con las alas plegadas. «Eso no es una clave», dice el búho medio dormido, «pero es saber mirar». Una gema."
     }
    ],
    "next": "resultado"
@@ -198,14 +211,14 @@
    "rules": [
     {
      "if": {
-      "correct_at_least": 4,
+      "correct_at_least": 5,
       "in": "elegir"
      },
      "next": "guardianes"
     },
     {
      "if": {
-      "correct_at_least": 3,
+      "correct_at_least": 4,
       "in": "elegir"
      },
      "next": "atascada"
@@ -217,8 +230,8 @@
    "type": "ending",
    "outcome": "success",
    "text": {
-    "valley": "La clave funciona: cada ser del patio cae en su casilla, y con el ser secreto también. El búho abre un ojo: «Una buena pregunta separa por lo que no cambia. Con esa regla se puede hacer una clave de cualquier sitio: del patio, del barrio, del bosque entero». La tabla queda apuntada en el Gran Libro. {{creature}} prueba la clave consigo misma y no cae en ninguna casilla: todavía no sabe qué es.",
-    "azara": "La clave funciona: cada ser del patio cae en su casilla, y con el ser secreto también. El baqueano abre un ojo: «Una buena pregunta separa por lo que no cambia. Con esa regla se puede hacer una clave de cualquier sitio: del patio, del barrio, del monte entero». La tabla queda apuntada en el cuaderno. {{creature}} prueba la clave consigo misma y no cae en ninguna casilla: todavía no sabe qué es."
+    "valley": "La clave funciona: cada ser del patio cae en su casilla, y el murciélago tiene ya la suya. El búho abre un ojo: «Una buena pregunta separa por lo que no cambia. Con esa regla se puede hacer una clave de cualquier sitio: del patio, del barrio, del bosque entero». La tabla queda apuntada en el Gran Libro. {{creature}} prueba la clave consigo misma y no cae en ninguna casilla: todavía no sabe qué es.",
+    "azara": "La clave funciona: cada ser del patio cae en su casilla, y el murciélago tiene ya la suya. El baqueano abre un ojo: «Una buena pregunta separa por lo que no cambia. Con esa regla se puede hacer una clave de cualquier sitio: del patio, del barrio, del monte entero». La tabla queda apuntada en el cuaderno. {{creature}} prueba la clave consigo misma y no cae en ninguna casilla: todavía no sabe qué es."
    },
    "effects": [
     {

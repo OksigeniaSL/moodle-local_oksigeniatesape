@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.134.0 (2026-10-19)
+
+- Mission «Los seres vivos» v56. «La clave del patio» asks for five questions: the five that look at what does not
+  change put each of the six beings in its own box, and with four two of them always ended up together, whichever
+  question was missing. The complete key is tried with a being that was not on the table, a bat that falls with the
+  cat: the question to add is about what it carries on its body («Does it have wings?»), not about what it does. In the
+  chain race of the lake, the scout and the protector have a task in the version without a playground too.
+
 ## 0.133.0 (2026-10-19)
 
 - **The Embrollo moves by pieces** on the class screen when the art pack brings its puppet (`rig.boss.embrollo` and
