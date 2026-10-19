@@ -625,6 +625,7 @@
     } else if (!l.round) {
       main = '<div class="battle-lobby">' + (l.rematch ? '<p class="turn-outcome fell">' + esc(t('board_battle_rematch',
         l.rematch)) + '</p>' : '') + '<p class="lead">' + esc(t(l.mode === 'phones' ? 'board_battle_join' :
+        l.maxcandles ? 'board_turn_aloudhelp' :
         'board_battle_aloudhelp')) + '</p>' + (l.mode === 'phones' ? '<p class="battle-count">' + esc(players() ?
         t('board_battle_joined_of', {joined: l.joined, total: players()}) : t('board_battle_joined', l.joined)) + '</p>' :
         '') + '</div>';
@@ -639,32 +640,36 @@
         '<p class="knot-claim">«' + esc(l.knot.claim.replace(/^«|»$/g, '')) + '»</p>' + intentLine(l) + '</div>' +
         (l.stage === 'prep' ? '<p class="battle-count" data-stageleft="board_turn_prep" aria-live="off">' +
         esc(t('board_turn_prep', l.stageleft)) + '</p>' : '');
-      main += (l.tokens || []).map(function(k) {
-        return '<p class="battle-token-used">' + esc(k.target ? t('board_token_' + k.kind + '_on', k) :
-          t('board_token_' + k.kind, k.team || '')) + '</p>';
-      }).join('');
+      main += tokenLines(l);
     } else if (l.lanes && l.lanes.length) {
       // By turns: each team has its lane in its tablets; here, which one, and once resolved, whether it was undone.
+      var playing = aloudTurns(l) && !l.revealed && (l.lanes.filter(function(x) {
+        return x.teamid === state.playing && x.play && !x.played;
+      })[0] || null);
       main = '<p class="battle-qround">' + esc(t('board_turn_round', l)) + (l.stage === 'strike' ? ' · ' +
-        esc(t('board_turn_strike', l.knot.name)) : '') + '</p><ul class="lanes">' + l.lanes.map(function(lane) {
+        esc(t('board_turn_strike', l.knot.name)) : '') + '</p>' + (playing ? boardLane(l, playing) : '<ul class="lanes">' +
+        l.lanes.map(function(lane) {
           var q = lane.question;
-          return '<li class="lane' + (l.revealed ? (lane.done ? ' done' : ' failed') : '') +
+          var settled = l.revealed && l.stage !== 'mark';
+          return '<li class="lane' + (settled ? (lane.done ? ' done' : ' failed') : '') +
             (l.tangled.indexOf(lane.teamid) >= 0 ? ' tangled' : '') + '"><b>' + esc(lane.team) + '</b><span>' +
-            esc(q.text) + '</span>' + (l.revealed ? '<small>' + (lane.done ? '✓ ' : '✗ ') +
-            esc(q.options[q.correct] || '') + '</small>' : '') + '</li>';
-        }).join('') + '</ul>';
-      main += (l.tokens || []).map(function(k) {
-        return '<p class="battle-token-used">' + esc(k.target ? t('board_token_' + k.kind + '_on', k) :
-          t('board_token_' + k.kind, k.team || '')) + '</p>';
-      }).join('');
-      if (l.revealed) {
+            esc(q.text) + '</span>' + (aloudTurns(l) ? aloudLane(l, lane) : '') + (settled || (l.revealed && !lane.play) ?
+            '<small>' + (settled ? (lane.done ? '✓ ' : '✗ ') : '') + esc(lane.play ? '' : q.options[q.correct] || '') +
+            '</small>' : '') + '</li>';
+        }).join('') + '</ul>');
+      main += tokenLines(l);
+      if (l.stage === 'mark') {
+        // By turns aloud: the teacher marks each team (those that played on the screen are marked) and resolves it.
+        main += '<p class="help-soft">' + esc(t('board_turn_markhelp')) + '</p>';
+        buttons = '<button class="btn btn-main" data-battlesettle>' + esc(t('board_turn_settle')) + '</button>';
+      } else if (l.revealed) {
         main += turnOutcome(l);
         buttons = l.round < l.total && l.candles > 0 && l.hp > 0 ? '<button class="btn btn-main" data-battlenext>' +
           esc(t('board_turn_nextnow')) + '</button>' : '';
       } else {
-        main += '<p class="battle-count"><span data-answered>' + esc(t('board_battle_answered', l)) + '</span>' +
-          (l.left >= 0 ? ' <span class="battle-left" data-left="' + l.left + '" aria-live="off">' + l.left + ' s</span>' : '') +
-          '</p>';
+        main += '<p class="battle-count">' + (l.mode === 'phones' ? '<span data-answered>' + esc(t('board_battle_answered', l)) +
+          '</span>' : '') + (l.left >= 0 ? ' <span class="battle-left" data-left="' + l.left + '" aria-live="off">' + l.left +
+          ' s</span>' : '') + '</p>';
         buttons = '<button class="btn btn-main" data-battlereveal>' + esc(t('board_battle_reveal')) + '</button>';
       }
     } else {
@@ -674,10 +679,7 @@
         '</p><ol class="battle-board-options">' + q.options.map(function(o, i) {
           return '<li class="' + (l.revealed && q.correct === i ? 'right' : '') + '"><b>' + LETTERS[i] + '</b>' + esc(o) + '</li>';
         }).join('') + '</ol>';
-      main += (l.tokens || []).map(function(k) {
-        return '<p class="battle-token-used">' + esc(k.target ? t('board_token_' + k.kind + '_on', k) :
-          t('board_token_' + k.kind, k.team || '')) + '</p>';
-      }).join('');
+      main += tokenLines(l);
       if (l.revealed) {
         // By turns, what happened is told by the turn; without them, as it was.
         var told = l.stage === 'resolve' && l.target;
@@ -706,12 +708,14 @@
       buttons += '<button class="btn btn-soft" data-battlefinish>' + esc(t('board_battle_finish')) + '</button>';
     }
     var teams = l.teams.map(function(team) {
-      var marks = l.mode === 'aloud' && l.revealed && !l.outcome ? '<span class="pills"><button class="chip" data-mark="' +
+      var marks = l.mode === 'aloud' && l.revealed && !l.outcome && (!l.maxcandles || l.stage === 'mark') ?
+        '<span class="pills"><button class="chip" data-mark="' +
         team.id + ':1" aria-pressed="' + (team.mark === 1) + '" aria-label="' + esc(t('board_battle_markright', team.name)) +
         '">✓</button><button class="chip" data-mark="' + team.id + ':0" aria-pressed="' + (team.mark === 0) +
         '" aria-label="' + esc(t('board_battle_markwrong', team.name)) + '">✗</button><button class="chip argue" data-argue="' +
         team.id + '" aria-pressed="' + !!team.argued + '" aria-label="' +
         esc(t('board_battle_argued_for', team.name)) + '">' + esc(t('board_battle_argued')) + '</button></span>' : '';
+      var say = aloudTurns(l) && l.round && !l.revealed && !l.outcome ? teamVerbs(l, team) : '';
       // Aloud, who speaks for the team in this round: by turns, so that everybody gets to say why.
       var speaker = l.mode === 'aloud' && team.speaker && l.round && !l.outcome ? '<span class="tag speaker-tag">' +
         esc(t('board_battle_speaker', team.speaker)) + '</span>' : '';
@@ -729,7 +733,7 @@
         '</b>' + ((l.dizzy || []).indexOf(team.id) >= 0 && !l.outcome ? '<span class="tag dizzy-tag">' +
         esc(t('board_team_dizzy')) + '</span>' : '') + '<small>' + (l.mode === 'phones' ?
         esc(t('board_battle_joined', team.joined)) + ' · ' : '') + esc(t('board_battle_teamright', team.right)) + '</small>' +
-        speaker + marks + '</div>';
+        speaker + marks + say + '</div>';
     }).join('');
     // The place of the battle, as the story of the mission paints it (the port of the expedition of Azara), or the tower.
     var skin = (state.board.mission || {}).skin;
@@ -750,8 +754,125 @@
       '<div class="battle-teams">' + teams + '</div></div>';
     battleFx(l);
     bindBattle();
+    playOnBoard(l);
     sorting(l);
     liveBattle(l);
+  }
+
+  /**
+   * The verbs used in the turn, one line each; aloud, the trail tells there where the answer is and what comes next.
+   *
+   * @param {Object} l
+   * @return {string}
+   */
+  function tokenLines(l) {
+    return (l.tokens || []).map(function(k) {
+      return '<p class="battle-token-used">' + esc(k.target ? t('board_token_' + k.kind + '_on', k) :
+        t('board_token_' + k.kind, k.team || '')) + (k.place ? ' · ' + esc(t('board_token_trail_place', k.place)) : '') +
+        (k.next ? ' · ' + esc(t('board_token_trail_next', k)) : '') + '</p>';
+    }).join('');
+  }
+
+  /**
+   * Whether the battle is by turns and aloud (with cards, without tablets): the teacher marks the verbs and the teams,
+   * and the lanes that are not to choose are played on this screen.
+   *
+   * @param {Object} l
+   * @return {boolean}
+   */
+  function aloudTurns(l) {
+    return l.mode === 'aloud' && !!l.maxcandles;
+  }
+
+  /**
+   * By turns aloud, under the lane of a team: the options of a lane to choose (with the one a glance struck out), or the
+   * button to play it on this screen, or that it was played.
+   *
+   * @param {Object} l
+   * @param {Object} lane
+   * @return {string}
+   */
+  function aloudLane(l, lane) {
+    if (lane.play) {
+      return lane.played ? '<small class="tag done">' + esc(t('board_lane_played')) + '</small>' : l.stage === 'strike' &&
+        !l.revealed ? '<button class="btn btn-soft" data-boardplay="' + lane.teamid + '">' + esc(t('board_lane_play')) +
+        '</button>' : '';
+    }
+    if (l.revealed) {
+      return '';
+    }
+    return '<ol class="lane-options">' + lane.question.options.map(function(o, i) {
+      return '<li' + (i === lane.struck ? ' class="struck"' : '') + '><b>' + LETTERS[i] + '</b> ' + esc(o) + '</li>';
+    }).join('') + '</ol>';
+  }
+
+  /**
+   * By turns aloud, the lane of a team that is not to choose, played on this screen by its spokesperson.
+   *
+   * @param {Object} l
+   * @param {Object} lane
+   * @return {string}
+   */
+  function boardLane(l, lane) {
+    var team = l.teams.filter(function(x) {
+      return x.id === lane.teamid;
+    })[0] || {};
+    return '<div class="board-lane"><p class="lead"><b>' + esc(lane.team) + '</b>' + (team.speaker ? ' · ' +
+      esc(t('board_battle_speaker', team.speaker)) : '') + '</p><div class="lane-play" data-boardlane></div>' +
+      '<button class="btn btn-soft" data-boardback>' + esc(t('board_lane_back')) + '</button></div>';
+  }
+
+  /**
+   * Draws the lane played on this screen, if one is, where boardLane() left its place.
+   *
+   * @param {Object} l
+   */
+  function playOnBoard(l) {
+    var el = app.querySelector('[data-boardlane]');
+    var lane = el && (l.lanes || []).filter(function(x) {
+      return x.teamid === state.playing;
+    })[0];
+    if (!lane || !T.lane) {
+      return;
+    }
+    T.lane(el, JSON.parse(lane.play), {key: 'board-' + l.id + '-' + l.round + '-' + lane.teamid, open: true,
+      onsend: function(payload) {
+        host('boardplay', {groupid: lane.teamid, meta: JSON.stringify(payload)}).then(function() {
+          state.playing = null;
+          drawBattle(true);
+        });
+      }});
+  }
+
+  /**
+   * By turns aloud, the verbs a team can say now, on its card: the teacher marks the one it says. The shield and the
+   * cheer ask first which team they go to; a team can carry a dizzy one.
+   *
+   * @param {Object} l
+   * @param {Object} team
+   * @return {string}
+   */
+  function teamVerbs(l, team) {
+    var aim = state.aim && state.aim.team === team.id ? state.aim.kind : '';
+    if (aim) {
+      return '<span class="pills team-verbs"><small>' + esc(t('board_verb_aim', t('board_verb_' + aim))) + '</small>' +
+        l.teams.map(function(to) {
+          return '<button class="chip" data-say="' + team.id + ':' + aim + ':' + to.id + '">' + esc(to.name) + '</button>';
+        }).join('') + '<button class="chip" data-say="cancel">' + esc(t('board_verb_cancel')) + '</button></span>';
+    }
+    var carry = (l.dizzy || []).filter(function(id) {
+      return id !== team.id;
+    }).map(function(id) {
+      var to = l.teams.filter(function(x) {
+        return x.id === id;
+      })[0];
+      return '<button class="chip" data-say="' + team.id + ':carry:' + id + '">' + esc(t('board_verb_carry', to ? to.name :
+        '')) + '</button>';
+    }).join('');
+    return (team.verbs || []).length || carry ? '<span class="pills team-verbs">' + (team.verbs || []).map(function(kind) {
+      return '<button class="chip verb-' + kind + '" data-say="' + team.id + ':' + kind + '">' + esc(t('board_verb_' + kind)) +
+        '</button>';
+    }).join('') + carry + '</span>' : '';
   }
 
   /**
@@ -794,7 +915,7 @@
     el.innerHTML = (s.done ? '<p class="lead">' + esc(t('board_sorting_done', {right: right, total: l.sorting.items.length})) +
       '</p>' : '<p class="battle-count" data-sortleft aria-live="off"></p>') + '<div class="lane-play" data-sortlane></div>';
     T.lane(el.querySelector('[data-sortlane]'), {engine: 'classify', prompt: t('board_sorting_prompt'), items: l.sorting.items,
-      bins: l.sorting.bins, mine: true, solution: s.done ? solution : null}, {key: key, open: !s.done, sent: s.done,
+      bins: l.sorting.bins, mine: true, nopics: true, solution: s.done ? solution : null}, {key: key, open: !s.done, sent: s.done,
       onsend: finish});
     if (!s.done) {
       var tick = function() {
@@ -1045,6 +1166,28 @@
     on('[data-argue]', function(el) {
       host('argue', {groupid: +el.dataset.argue});
     });
+    on('[data-battlesettle]', function() {
+      host('settle');
+    });
+    on('[data-say]', function(el) {
+      var p = el.dataset.say.split(':');
+      if (p[0] === 'cancel' || (!p[2] && (p[1] === 'shield' || p[1] === 'cheer'))) {
+        // The shield and the cheer go to a team: which one, first.
+        state.aim = p[0] === 'cancel' ? null : {team: +p[0], kind: p[1]};
+        drawBattle(true);
+        return;
+      }
+      state.aim = null;
+      host('verb', {groupid: +p[0], kind: p[1], target: +(p[2] || 0)});
+    });
+    on('[data-boardplay]', function(el) {
+      state.playing = +el.dataset.boardplay;
+      drawBattle(true);
+    });
+    on('[data-boardback]', function() {
+      state.playing = null;
+      drawBattle(true);
+    });
     on('[data-dismiss]', function() {
       state.seen = l.id;
       try {
@@ -1170,7 +1313,33 @@
       '"><svg class="map" viewBox="0 0 400 ' + height + '" role="img" aria-label="' + esc(m.title) + '"><defs>' + T.MAPGLOW +
       '</defs>' + T.mapGround(m) + T.mapLandmarks(m) + T.mapNight(m) +
       '<polyline points="' + pts + '" class="road"/>' + (lit ? '<polyline points="' + walked + '" class="road walked"/>' : '') +
-      drawn + (T.critters ? T.critters.fireflies(m) : '') + places + '</svg></div>' + pastExpeditions() + '</section>';
+      drawn + (T.critters ? T.critters.fireflies(m) : '') + places + '</svg></div>' + classRow() + pastExpeditions() +
+      '</section>';
+  }
+
+  /**
+   * The class at the foot of the map, team by team: their heroes breathing, without names. A team that did more of its
+   * part of the week since the screen last looked jumps for a moment: the team, never who did it.
+   *
+   * @return {string}
+   */
+  function classRow() {
+    var cls = state.cls;
+    if (!cls || !cls.teams.length) {
+      return '';
+    }
+    var done = {};
+    (cls.standings || []).forEach(function(x) {
+      done[x.id] = x.done;
+    });
+    var seen = state.rowdone;
+    state.rowdone = done;
+    return '<div class="class-row" aria-hidden="true">' + cls.teams.map(function(team, i) {
+      var row = heroes(team.id);
+      var cheer = seen && seen[team.id] !== undefined && (done[team.id] || 0) > seen[team.id];
+      return row ? '<span class="class-row-team' + (cheer ? ' cheer' : '') + '" style="--breath:-' + (i * 0.7).toFixed(1) +
+        's">' + row + '</span>' : '';
+    }).join('') + '</div>';
   }
 
   /**

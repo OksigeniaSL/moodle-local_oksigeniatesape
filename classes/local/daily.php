@@ -295,7 +295,7 @@ final class daily {
             if (!in_array($place, $played, true)) {
                 continue;
             }
-            $cards[] = ['name' => missions::text($knot['name'] ?? '', $mission->skin),
+            $cards[] = ['code' => (string) $knot['code'], 'name' => missions::text($knot['name'] ?? '', $mission->skin),
                 'claim' => missions::text($knot['claim'] ?? '', $mission->skin),
                 'weakness' => missions::text($knot['weakness'] ?? '', $mission->skin),
                 'untangled' => in_array((string) $knot['code'], $beaten, true)];

@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.149.0 (2026-10-19)
+
+- **The battle by turns with cards, whole** (without tablets). Each team says its verb aloud and the teacher marks it on
+  the card of the team on the class screen: the glance strikes out a wrong option of a lane to choose, the trail says
+  where the answer is and what comes next, the shield and the cheer ask which team they go to, and a team can carry a
+  dizzy one; each verb rests two turns in the team, as on the tablets. The lanes to choose show their options for the
+  cards; the lanes to sort, to put in order, of mistakes, of «Who is alive?» and of the two circles are played on the
+  class screen by the spokesperson of the team, and count as its mark. Once the answers are out, the turn waits for the
+  teacher to mark the other teams and resolve it («Resolve the turn», also on the remote of the teacher), and then goes
+  on as with tablets. Service `live_host`, actions `verb`, `boardplay` and `settle`.
+- **The class at the foot of the map** of the class screen, team by team: the heroes of each team breathing, without
+  names; a team that did more of its part of the week since the screen last looked jumps for a moment (the team, never
+  who did it).
+- **Ready for the new art.** The bestiary shows each minion with its picture (`minion.<knot>`) when the art pack brings
+  it; the museum, its room behind the shelves (`scene.museo`); the lanes of the battle, the drawing of each being or
+  thing before its name. A being of the catalog named by the country of the course (the Iberian lynx, the jaguar or the
+  wildcat) is drawn as the one it names, as in the defence of the nest.
+- **Fixed:** «Argued» on the class screen gave its gems without saying who marked it.
+
 ## 0.148.0 (2026-10-19)
 
 - **The spokesperson who argues** (battle aloud, with cards). The class screen names who speaks for each team in each

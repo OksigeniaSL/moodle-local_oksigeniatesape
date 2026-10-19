@@ -259,7 +259,9 @@ final class minigames {
 
     /**
      * The key of the drawing of a being or a thing of the mission in the art pack: being.<id> if it is alive in the
-     * catalog of the mission (or in the game, if the catalog does not have it), thing.<id> if not.
+     * catalog of the mission (or in the game, if the catalog does not have it), thing.<id> if not. A being named by the
+     * country of the course (the Iberian lynx, the jaguar or the wildcat) is drawn as the one it names, as in the defence
+     * of the nest: being.linceiberico.
      *
      * @param \stdClass $mission
      * @param string $id
@@ -268,7 +270,12 @@ final class minigames {
      */
     public static function picture(\stdClass $mission, string $id, bool $alive): string {
         $card = $mission->data['things'][$id] ?? null;
-        return ((bool) ($card['alive'] ?? $alive) ? 'being.' : 'thing.') . $id;
+        $living = (bool) ($card['alive'] ?? $alive);
+        if ($living && is_array($card['label'] ?? null)) {
+            $label = (string) ($card['label'][$mission->variant] ?? $card['label']['gen'] ?? reset($card['label']));
+            return 'being.' . preg_replace('/[^a-z]/', '', \core_text::strtolower(\core_text::specialtoascii($label)));
+        }
+        return ($living ? 'being.' : 'thing.') . $id;
     }
 
     /**

@@ -3836,7 +3836,10 @@
     return '<section class="card no-print bestiary-card" style="margin-top:16px"><h2>' + esc(t('app_bestiary')) + '</h2>' +
       '<p class="help-soft">' + esc(t('app_bestiary_help', {untangled: beaten, all: list.length})) + '</p>' + (list.length ?
       '<ul class="list">' + list.map(function(m) {
-        return '<li class="item minion' + (m.untangled ? ' untangled' : '') + '">' + minionMark(m.untangled) +
+        // Its picture when the art pack brings it; meanwhile, a small tangle drawn here.
+        var pic = m.code ? T.artUrl(['minion.' + m.code]) : null;
+        return '<li class="item minion' + (m.untangled ? ' untangled' : '') + '">' + (pic ? '<img class="minion-art" src="' +
+          esc(pic) + '" alt="">' : minionMark(m.untangled)) +
           '<span class="grow"><b>' + esc(m.name) + '</b><span class="tag' + (m.untangled ? ' done' : ' todo') + '">' +
           esc(t(m.untangled ? 'app_bestiary_untangled' : 'app_bestiary_standing')) + '</span><small>«' + esc(m.claim) +
           '»</small>' + (m.untangled ? '<small class="minion-why">' + esc(t('app_bestiary_weakness', m.weakness)) +

@@ -140,6 +140,7 @@ final class get_world extends external_api {
             'expeditions' => structures::expeditions(),
             'album' => structures::album(),
             'bestiary' => new external_multiple_structure(new external_single_structure([
+                'code' => new external_value(PARAM_ALPHANUMEXT, 'Its knot, for its picture (minion.<code>)', VALUE_DEFAULT, ''),
                 'name' => new external_value(PARAM_TEXT, 'The minion'),
                 'claim' => new external_value(PARAM_TEXT, 'What it claims'),
                 'weakness' => new external_value(PARAM_TEXT, 'The idea that undoes it'),

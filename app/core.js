@@ -1228,7 +1228,10 @@
     }
     // Dark enough for the light letters of the spine.
     var colours = ['#7a3e33', '#335a77', '#4a6630', '#64477a', '#80552a', '#2c625c', '#76334f'];
-    return '<div class="museum">' + shelves.map(function(x) {
+    // The room of the museum behind the shelves, when the art pack brings it.
+    var room = T.artUrl(['scene.museo']);
+    return '<div class="museum' + (room ? ' with-room' : '') + '"' + (room ? ' style="--museum-room:url(\'' + T.esc(room) +
+      '\')"' : '') + '>' + shelves.map(function(x) {
       var shelf = x.shelf;
       var art = T.groupArt(shelf.group);
       var name = shelf.group || T.t('app_museum_nogroup');

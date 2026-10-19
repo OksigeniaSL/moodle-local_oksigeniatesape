@@ -45,7 +45,7 @@ final class live_host extends external_api {
             'courseid' => new external_value(PARAM_INT, 'Course'),
             'action' => new external_value(
                 PARAM_ALPHA,
-                'state, start, next, reveal, mark, argue, finish, startvote, vote, pause or resume'
+                'state, start, next, reveal, mark, argue, verb, boardplay, settle, finish, startvote, vote, pause or resume'
             ),
             'mode' => new external_value(PARAM_ALPHA, 'start: phones or aloud', VALUE_DEFAULT, 'phones'),
             'count' => new external_value(PARAM_INT, 'start: questions', VALUE_DEFAULT, 6),
@@ -64,7 +64,14 @@ final class live_host extends external_api {
                 VALUE_DEFAULT,
                 false
             ),
-            'meta' => new external_value(PARAM_RAW, 'vote: the node and the ids of the options, in JSON', VALUE_DEFAULT, '{}'),
+            'meta' => new external_value(
+                PARAM_RAW,
+                'vote: the node and the ids of the options; boardplay: what was played; in JSON',
+                VALUE_DEFAULT,
+                '{}'
+            ),
+            'kind' => new external_value(PARAM_ALPHA, 'verb: glance, trail, shield, cheer or carry', VALUE_DEFAULT, ''),
+            'target' => new external_value(PARAM_INT, 'verb: the team it goes to', VALUE_DEFAULT, 0),
         ]);
     }
 
@@ -86,6 +93,8 @@ final class live_host extends external_api {
      * @param bool $turns
      * @param bool $rehearsal
      * @param string $meta
+     * @param string $kind
+     * @param int $target
      * @return array
      */
     public static function execute(
@@ -103,7 +112,9 @@ final class live_host extends external_api {
         bool $final = false,
         bool $turns = false,
         bool $rehearsal = false,
-        string $meta = '{}'
+        string $meta = '{}',
+        string $kind = '',
+        int $target = 0
     ): array {
         global $USER;
         $params = self::validate_parameters(self::execute_parameters(), [
@@ -121,6 +132,8 @@ final class live_host extends external_api {
             'final' => $final,
             'turns' => $turns,
             'rehearsal' => $rehearsal,
+            'kind' => $kind,
+            'target' => $target,
             'meta' => $meta,
         ]);
         $context = \context_course::instance($params['courseid']);
@@ -214,7 +227,19 @@ final class live_host extends external_api {
                 break;
             case 'argue':
                 require_capability('local/oksigeniatesape:award', $context);
-                $live = live::argue($live, $params['groupid'], (int) $USER->id, $now);
+                $live = live::argue($live, $params['groupid'], $userid, $now);
+                break;
+            case 'verb':
+                // Marked by who marks the teams: the verbs change the turn as much as the marks.
+                require_capability('local/oksigeniatesape:award', $context);
+                $live = live::say_verb($live, $params['groupid'], $params['kind'], $params['target'], $now);
+                break;
+            case 'boardplay':
+                $payload = json_decode($params['meta'], true);
+                $live = live::board_strike($live, $params['groupid'], is_array($payload) ? $payload : [], $now);
+                break;
+            case 'settle':
+                $live = live::settle($live, $now);
                 break;
             case 'finish':
                 require_capability('local/oksigeniatesape:award', $context);

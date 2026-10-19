@@ -79,6 +79,9 @@ final class live {
     /** @var int Aloud: gems for each member of a team whose spokesperson argued its answer, right or not. */
     public const ARGUED = 1;
 
+    /** @var string[] By turns aloud: the verbs a team says and the teacher marks on the class screen. */
+    public const ALOUD_VERBS = ['glance', 'trail', 'shield', 'cheer', 'carry'];
+
     /** @var int Seconds the Embrollo takes to announce the knot of a turn and the team it goes for. */
     public const INTENT = 5;
 
@@ -560,6 +563,14 @@ final class live {
         if (!array_key_exists($groupid, self::teams((int) $live->courseid))) {
             throw new \invalid_parameter_exception('Not a team of the course');
         }
+        if (self::aloud_turns($state)) {
+            // By turns, the mark of each team waits for the turn to be resolved, and does not change after.
+            if (!empty($state['rounds'][$round]['settled'])) {
+                throw new \moodle_exception('roundclosed', 'local_oksigeniatesape');
+            }
+            $state['rounds'][$round]['teams'][$groupid] = $right ? 1 : 0;
+            return self::save($live, $state, $round, $now);
+        }
         $before = !empty($state['rounds'][$round]['teams'][$groupid]);
         if ($before !== $right) {
             $state['rounds'][$round]['teams'][$groupid] = $right ? 1 : 0;
@@ -567,6 +578,190 @@ final class live {
             $state['hp'] = min($state['maxhp'], max(0, $state['hp'] + ($right ? -1 : 1)));
         }
         return self::save($live, $state, $round, $now);
+    }
+
+    /**
+     * By turns aloud (with cards): a team says a verb and the teacher marks it on the class screen. The verbs of the
+     * tablets, without talents: the glance strikes out a wrong option of a lane to choose, the trail sees the next knot,
+     * the shield and the cheer go to a team (their own if none), and a team carries a dizzy one. A verb rests two turns
+     * in the team, as on the tablets; carrying needs no rest, once a turn for each dizzy team.
+     *
+     * @param \stdClass $live
+     * @param int $groupid The team that says it.
+     * @param string $kind glance, trail, shield, cheer or carry.
+     * @param int $target The team it goes to (shield, cheer, carry).
+     * @param int|null $now
+     * @return \stdClass The session.
+     */
+    public static function say_verb(\stdClass $live, int $groupid, string $kind, int $target = 0, ?int $now = null): \stdClass {
+        $now = $now ?? time();
+        $state = self::state($live);
+        $round = (int) $live->round;
+        $info = $state['rounds'][$round] ?? null;
+        if (!self::aloud_turns($state) || !$info || !empty($info['revealed']) || $state['outcome'] !== '') {
+            throw new \moodle_exception('roundclosed', 'local_oksigeniatesape');
+        }
+        $teams = self::playing($live, $state);
+        if (!in_array($groupid, $teams, true) || !in_array($kind, self::ALOUD_VERBS, true)) {
+            throw new \invalid_parameter_exception('Not a verb of a team that plays');
+        }
+        if ($kind === 'carry') {
+            $taken = array_filter($info['verbs'] ?? [], fn($v) => $v['kind'] === 'carry' && (int) $v['target'] === $target);
+            if (empty($state['dizzy'][$target]) || $target === $groupid || $taken) {
+                throw new \moodle_exception('nocarry', 'local_oksigeniatesape');
+            }
+        } else {
+            if (self::aloud_rest($state, $groupid, $kind, $round) > 0) {
+                throw new \moodle_exception('tokenused', 'local_oksigeniatesape');
+            }
+            $target = in_array($kind, ['shield', 'cheer'], true) && in_array($target, $teams, true) ? $target : $groupid;
+        }
+        $verb = ['team' => $groupid, 'kind' => $kind, 'target' => $target];
+        $lane = $info['lanes'][$target] ?? null;
+        if ($kind === 'glance' && $lane && empty($lane['engine']) && (int) $lane['options'] > 1) {
+            // The same wrong option the tablets would strike out.
+            $wrong = array_values(array_diff(range(0, (int) $lane['options'] - 1), [(int) $lane['correct']]));
+            $verb['struck'] = $wrong[self::seed($live, $round) % count($wrong)];
+        }
+        if ($kind === 'trail') {
+            // Where the answer of the lane of the team is and, as on the tablets, the knot of the next turn and who it
+            // goes for.
+            $verb['place'] = (string) ($lane['trail'] ?? '');
+            if ($round < count($state['knots'])) {
+                $next = knots::get(missions::get((int) $live->courseid), (string) $state['knots'][$round]);
+                $names = self::teams((int) $live->courseid);
+                $goes = $teams[$round % count($teams)];
+                $verb['next'] = (string) ($next['name'] ?? '');
+                $verb['goes'] = isset($names[$goes]) ? format_string($names[$goes]->name) : '';
+            }
+        }
+        $state['rounds'][$round]['verbs'][] = $verb;
+        return self::save($live, $state, $round, $now);
+    }
+
+    /**
+     * By turns aloud: the turns a verb of a team still rests (0: it can say it).
+     *
+     * @param array $state
+     * @param int $team
+     * @param string $kind
+     * @param int $round
+     * @return int
+     */
+    private static function aloud_rest(array $state, int $team, string $kind, int $round): int {
+        for ($r = $round; $r >= max(1, $round - self::REST); $r--) {
+            foreach ($state['rounds'][$r]['verbs'] ?? [] as $verb) {
+                if ((int) $verb['team'] === $team && $verb['kind'] === $kind) {
+                    return $r + self::REST + 1 - $round;
+                }
+            }
+        }
+        return 0;
+    }
+
+    /**
+     * By turns aloud: the lane of a team that is not to choose, played on the class screen by its spokesperson while the
+     * lanes take answers, once a turn. What they did counts as the mark of the team.
+     *
+     * @param \stdClass $live
+     * @param int $groupid
+     * @param array $payload As a tablet sends it.
+     * @param int|null $now
+     * @return \stdClass The session.
+     */
+    public static function board_strike(\stdClass $live, int $groupid, array $payload, ?int $now = null): \stdClass {
+        $now = $now ?? time();
+        $state = self::state($live);
+        $round = (int) $live->round;
+        $info = $state['rounds'][$round] ?? [];
+        $lane = $info['lanes'][$groupid] ?? null;
+        if (!self::aloud_turns($state) || !$lane || empty($lane['engine']) || !self::is_open($state, $now)) {
+            throw new \moodle_exception('roundclosed', 'local_oksigeniatesape');
+        }
+        if (!isset($info['played'][$groupid])) {
+            $right = self::lane_right($lane, $payload);
+            $state['rounds'][$round]['played'][$groupid] = $right;
+            $state['rounds'][$round]['teams'][$groupid] = $right ? 1 : 0;
+        }
+        return self::save($live, $state, $round, $now);
+    }
+
+    /**
+     * By turns aloud: the answers out and each team marked, the turn is resolved as with tablets, one answer for each team
+     * (right if the teacher marked it so, or its spokesperson played its lane right on the class screen).
+     *
+     * @param \stdClass $live
+     * @param int|null $now
+     * @return \stdClass The session.
+     */
+    public static function settle(\stdClass $live, ?int $now = null): \stdClass {
+        $now = $now ?? time();
+        $state = self::state($live);
+        $round = (int) $live->round;
+        $info = $state['rounds'][$round] ?? [];
+        if (!self::aloud_turns($state) || empty($info['revealed']) || !empty($info['settled']) || $state['outcome'] !== '') {
+            throw new \moodle_exception('roundclosed', 'local_oksigeniatesape');
+        }
+        $answers = [];
+        foreach ($info['lanes'] ?? [] as $team => $lane) {
+            $answers[] = (object) ['charid' => 0, 'team' => $team,
+                'answer' => !empty($info['teams'][$team]) ? (int) $lane['correct'] : -1];
+        }
+        $info['teams'] = [];
+        [$state, $info] = self::resolve($live, $state, $info, $answers);
+        $info['settled'] = true;
+        $info['revealedat'] = $now;
+        $state['rounds'][$round] = $info;
+        return self::save($live, $state, $round, $now);
+    }
+
+    /**
+     * Whether a battle is by turns and aloud (with cards, without tablets).
+     *
+     * @param array $state
+     * @return bool
+     */
+    private static function aloud_turns(array $state): bool {
+        return $state['mode'] === 'aloud' && !empty($state['knots']);
+    }
+
+    /**
+     * By turns aloud, the verbs a team can say now: those that are not resting nor said in the turn, while the lanes are
+     * open.
+     *
+     * @param array $state
+     * @param int $team
+     * @param int $round
+     * @return string[]
+     */
+    private static function aloud_verbs(array $state, int $team, int $round): array {
+        $info = $state['rounds'][$round] ?? null;
+        if (!self::aloud_turns($state) || !$info || !empty($info['revealed']) || $state['outcome'] !== '') {
+            return [];
+        }
+        return array_values(array_filter(['glance', 'trail', 'shield', 'cheer'], fn($kind) =>
+            self::aloud_rest($state, $team, $kind, $round) === 0));
+    }
+
+    /**
+     * By turns aloud, what the class screen needs of the lane of a team: to play it there if it is not to choose (what it
+     * shows and, once the answers are out, its solution), whether it was played, and the option a glance struck out.
+     *
+     * @param array $info The round.
+     * @param int $team
+     * @param array $lane
+     * @return array play (JSON, or empty), played, struck (-1: none).
+     */
+    private static function aloud_lane(array $info, int $team, array $lane): array {
+        $struck = -1;
+        foreach ($info['verbs'] ?? [] as $verb) {
+            if ((int) $verb['target'] === $team && isset($verb['struck'])) {
+                $struck = (int) $verb['struck'];
+            }
+        }
+        $play = empty($lane['engine']) ? '' : json_encode($lane['shown'] + ['engine' => $lane['engine'], 'mine' => true] +
+            (!empty($info['revealed']) ? ['solution' => $lane['solution']] : []));
+        return ['play' => $play, 'played' => isset($info['played'][$team]), 'struck' => $struck];
     }
 
     /**
@@ -706,7 +901,8 @@ final class live {
                 'right' => array_sum(array_map(fn($r) => (int) ($r['teams'][$group->id] ?? 0), $state['rounds'])),
                 'mark' => (int) ($state['rounds'][$round]['teams'][$group->id] ?? -1),
                 'argued' => !empty($state['rounds'][$round]['argued'][$group->id]),
-                'speaker' => $state['mode'] === 'aloud' && $round ? self::spokesperson($live, (int) $group->id, $round) : ''];
+                'speaker' => $state['mode'] === 'aloud' && $round ? self::spokesperson($live, (int) $group->id, $round) : '',
+                'verbs' => self::aloud_verbs($state, (int) $group->id, $round)];
         }
         $view = self::common($live, $state, $now) + ['joined' => count($players), 'teams' => $teams, 'answered' => 0];
         $sorting = $state['outcome'] === 'won' && !empty($state['final']) && !empty($state['knots']) ?
@@ -727,7 +923,8 @@ final class live {
                         $view['lanes'][] = ['teamid' => (int) $team, 'team' => (string) ($byid[$team] ?? ''),
                             'question' => self::question(['question' => $lane['question'], 'revealed' => $info['revealed']]),
                             'done' => !empty($lane['done']), 'right' => (int) ($lane['right'] ?? 0),
-                            'answered' => (int) ($lane['answered'] ?? 0)];
+                            'answered' => (int) ($lane['answered'] ?? 0)] +
+                            (self::aloud_turns($state) ? self::aloud_lane($info, (int) $team, $lane) : []);
                     }
                 }
             }
@@ -740,8 +937,13 @@ final class live {
         // The tokens used in the round, announced on the class screen.
         $names = array_map(fn($t) => $t['name'], $teams ? array_column($teams, null, 'id') : []);
         $used = $round > 0 ? $DB->get_records(self::T . 'livetoken', ['liveid' => $live->id, 'round' => $round], 'id') : [];
-        $view['tokens'] = array_values(array_map(fn($t) => ['kind' => $t->kind, 'team' => $names[$t->team] ?? '',
-            'target' => $t->target && $t->target != $t->team ? ($names[$t->target] ?? '') : ''], $used));
+        if ($round > 0 && self::aloud_turns($state)) {
+            $used = array_map(fn($v) => (object) $v, $state['rounds'][$round]['verbs'] ?? []);
+        }
+        $token = fn($t) => ['kind' => $t->kind, 'team' => $names[$t->team] ?? '',
+            'target' => $t->target && $t->target != $t->team ? ($names[$t->target] ?? '') : '',
+            'place' => (string) ($t->place ?? ''), 'next' => (string) ($t->next ?? ''), 'goes' => (string) ($t->goes ?? '')];
+        $view['tokens'] = array_values(array_map($token, $used));
         return $view;
     }
 
@@ -1438,6 +1640,9 @@ final class live {
             }
         } else if ($state['mode'] === 'phones' && !empty($info['lanes'])) {
             [$state, $info] = self::resolve($live, $state, $info, $answers);
+        } else if (!empty($info['lanes'])) {
+            // By turns aloud: the answers are out; the turn is resolved once the teacher marks each team (settle()).
+            $info['settled'] = false;
         } else if ($state['mode'] === 'phones') {
             $tokens = $DB->get_records(self::T . 'livetoken', ['liveid' => $live->id, 'round' => $round], '', 'id, team, kind');
             $cheer = array_map(fn($t) => (int) $t->team, array_filter($tokens, fn($t) => $t->kind === 'cheer'));
@@ -1503,6 +1708,12 @@ final class live {
         $round = (int) $live->round;
         $fields = 'id, charid, team, kind, target';
         $tokens = $DB->get_records(self::T . 'livetoken', ['liveid' => $live->id, 'round' => $round], '', $fields);
+        // Aloud, the verbs the teams said and the teacher marked, without talents (nobody's character).
+        $aloud = $state['mode'] === 'aloud';
+        foreach ($info['verbs'] ?? [] as $i => $verb) {
+            $tokens['aloud' . $i] = (object) ['id' => 0, 'charid' => 0, 'team' => (int) $verb['team'],
+                'kind' => (string) $verb['kind'], 'target' => (int) $verb['target']];
+        }
         // The shield and the cheer go to the team they were put on (their own, if none).
         $on = fn($kind) => array_map(fn($t) => (int) ($t->target ?: $t->team), array_filter($tokens, fn($t) => $t->kind === $kind));
         $shields = $on('shield');
@@ -1560,7 +1771,7 @@ final class live {
             $mine = array_filter($answers, fn($a) => (int) $a->team === (int) $team);
             $right = count(array_filter($mine, fn($a) => (int) $a->answer === (int) $lane['correct']));
             // Sorted for the team by one player: that one counts.
-            $players = isset($lane['speaker']) ? 1 : (int) ($present[$team] ?? 0);
+            $players = isset($lane['speaker']) || $aloud ? 1 : (int) ($present[$team] ?? 0);
             $undone = $players > 0 && 2 * $right > $players && !in_array((int) $team, $dizzy, true);
             $info['lanes'][$team] += ['answered' => count($mine), 'right' => $right, 'done' => $undone];
             $info['teams'][$team] = $right;
@@ -1596,7 +1807,7 @@ final class live {
         $state['hp'] = max(0, $state['hp'] - $damage);
         $info['damage'] = $damage;
         // A team nobody of which had to answer (all of it with «no hurry», and nobody did) is not in play this turn.
-        $inplay = array_filter(array_keys($info['lanes']), fn($team) => !empty($present[$team]) ||
+        $inplay = array_filter(array_keys($info['lanes']), fn($team) => $aloud || !empty($present[$team]) ||
             isset($info['lanes'][$team]['speaker']) || isset($carried[(int) $team]));
         $few = $inplay && 2 * $done < count($inplay);
         $target = (int) ($info['target'] ?? 0);
@@ -2192,6 +2403,10 @@ final class live {
         $info = $state['rounds'][$round] ?? null;
         if (!$info || empty($info['knot']) || $state['outcome'] !== '') {
             return ['', 0];
+        }
+        if (!empty($info['revealed']) && isset($info['settled']) && !$info['settled']) {
+            // By turns aloud: the teacher marks each team before the turn is resolved; nothing moves by itself.
+            return ['mark', -1];
         }
         if (!empty($info['revealed'])) {
             return ['resolve', max(0, (int) ($info['revealedat'] ?? $now) + self::RESOLVE - $now)];

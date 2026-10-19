@@ -390,11 +390,16 @@ final class minigames_test extends \advanced_testcase {
         $inert = array_values(array_filter($game['things'], fn($x) => !$x['alive']));
         $this->assertGreaterThanOrEqual($game['goal'], count($living));
         $this->assertGreaterThanOrEqual($game['misses'], count($inert));
-        // Each one with the key of its drawing, from the catalog of the mission: being.<id> or thing.<id>.
+        // Each one with the key of its drawing, from the catalog of the mission: being.<id> or thing.<id>; a being named
+        // by the country of the course, by its name (in Paraguay, the tree is the lapacho).
         foreach ($game['things'] as $thing) {
-            $this->assertSame(($thing['alive'] ? 'being.' : 'thing.') . $thing['id'], $thing['picture']);
+            $named = is_array($w->mission->data['things'][$thing['id']]['label'] ?? null) && $thing['alive'];
+            $plain = preg_replace('/[^a-z]/', '', \core_text::strtolower(\core_text::specialtoascii($thing['label'])));
+            $key = $named ? 'being.' . $plain : ($thing['alive'] ? 'being.' : 'thing.') . $thing['id'];
+            $this->assertSame($key, $thing['picture']);
             $this->assertArrayHasKey($thing['id'], $w->mission->data['things']);
         }
+        $this->assertSame('being.lapacho', minigames::picture($w->mission, 'arbol', true));
         // Every living thing touched, and one thing that is not: won, with a slip.
         $touch = array_map(fn($x) => ['i' => $x['id']], $living);
         $events = array_merge($touch, [['i' => $inert[0]['id']]]);

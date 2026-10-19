@@ -17,6 +17,18 @@
   var esc = T.esc;
 
   /**
+   * The drawing of a thing of a lane, when the art pack has it (a being or a thing of «Who is alive?»): before its name.
+   *
+   * @param {Object} lane Without pictures if it says so (its things are not beings nor things of the catalog).
+   * @param {Object} i id, label.
+   * @return {string}
+   */
+  function pic(lane, i) {
+    var url = lane.nopics ? null : T.artUrl(['being.' + i.id, 'thing.' + i.id]);
+    return url ? '<img class="lane-pic" src="' + esc(url) + '" alt="">' : '';
+  }
+
+  /**
    * Sorting: the things to place and the groups; a thing touched goes to the group touched next.
    *
    * @param {Object} lane prompt, items, bins, mine (this student sorts), speaker, solution once resolved.
@@ -34,7 +46,7 @@
       var right = solution ? solution[i.id] === where : null;
       return '<button type="button" class="chip lane-item' + (state.picked === i.id ? ' picked' : '') +
         (right === true ? ' right' : right === false ? ' wrong' : '') + '" data-item="' + esc(i.id) + '"' +
-        (sent || solution || !lane.mine ? ' disabled' : '') + '>' + esc(i.label) + '</button>';
+        (sent || solution || !lane.mine ? ' disabled' : '') + '>' + pic(lane, i) + esc(i.label) + '</button>';
     };
     return '<p class="battle-q">' + esc(lane.prompt) + '</p>' + (!lane.mine && lane.speaker ? '<p class="help-soft">' +
       esc(t('app_lane_speaker', lane.speaker)) + '</p>' : '') + '<div class="lane-items">' + free.map(function(i) {
@@ -142,7 +154,7 @@
         var alive = solution ? solution.indexOf(i.id) >= 0 : null;
         return '<button type="button" class="chip lane-item' + (on ? ' picked' : '') + (alive === true ? ' right' :
           alive === false && on ? ' wrong' : '') + '" data-alive="' + esc(i.id) + '" aria-pressed="' + on + '"' +
-          (sent || solution || !lane.mine ? ' disabled' : '') + '>' + esc(i.label) + '</button>';
+          (sent || solution || !lane.mine ? ' disabled' : '') + '>' + pic(lane, i) + esc(i.label) + '</button>';
       }).join('') + '</div>';
   }
 
@@ -160,7 +172,7 @@
     var solution = lane.solution || null;
     var chip = function(i) {
       return '<button type="button" class="chip lane-item' + (state.picked === i.id ? ' picked' : '') + (solution ? ' right' :
-        '') + '" data-item="' + esc(i.id) + '"' + (sent || solution || !lane.mine ? ' disabled' : '') + '>' + esc(i.label) +
+        '') + '" data-item="' + esc(i.id) + '"' + (sent || solution || !lane.mine ? ' disabled' : '') + '>' + pic(lane, i) + esc(i.label) +
         '</button>';
     };
     var zone = function(id, label) {

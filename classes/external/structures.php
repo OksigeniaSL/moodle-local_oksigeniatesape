@@ -799,11 +799,20 @@ final class structures {
                 'mark' => new external_value(PARAM_INT, 'Aloud: marked right (1), not (0) or not yet (-1) in this round'),
                 'argued' => new external_value(PARAM_BOOL, 'Aloud: its spokesperson argued in this round', VALUE_DEFAULT, false),
                 'speaker' => new external_value(PARAM_TEXT, 'Aloud: who speaks for it in this round', VALUE_DEFAULT, ''),
+                'verbs' => new external_multiple_structure(
+                    new external_value(PARAM_ALPHA, 'Verb'),
+                    'By turns aloud: the verbs it can say now',
+                    VALUE_DEFAULT,
+                    []
+                ),
             ])),
             'tokens' => new external_multiple_structure(new external_single_structure([
                 'kind' => new external_value(PARAM_ALPHA, 'glance, trail, shield or cheer'),
                 'team' => new external_value(PARAM_TEXT, 'Team of who used it'),
                 'target' => new external_value(PARAM_TEXT, 'By turns: the team it went to', VALUE_DEFAULT, ''),
+                'place' => new external_value(PARAM_TEXT, 'Aloud, a trail: where the answer is', VALUE_DEFAULT, ''),
+                'next' => new external_value(PARAM_TEXT, 'Aloud, a trail: the knot of the next turn', VALUE_DEFAULT, ''),
+                'goes' => new external_value(PARAM_TEXT, 'Aloud, a trail: the team it will go for', VALUE_DEFAULT, ''),
             ]), 'Battle tokens used in the round', VALUE_DEFAULT, []),
             'lanes' => new external_multiple_structure(new external_single_structure([
                 'teamid' => new external_value(PARAM_INT, 'Group'),
@@ -818,6 +827,9 @@ final class structures {
                 'done' => new external_value(PARAM_BOOL, 'The team undid it'),
                 'right' => new external_value(PARAM_INT, 'Right answers of the team'),
                 'answered' => new external_value(PARAM_INT, 'Answers of the team'),
+                'play' => new external_value(PARAM_RAW, 'By turns aloud: the lane to play on the screen, in JSON', VALUE_DEFAULT, ''),
+                'played' => new external_value(PARAM_BOOL, 'By turns aloud: it was played on the screen', VALUE_DEFAULT, false),
+                'struck' => new external_value(PARAM_INT, 'By turns aloud: the option a glance struck out', VALUE_DEFAULT, -1),
             ]), 'By turns: the lane of each team', VALUE_OPTIONAL),
             'sorting' => new external_single_structure([
                 'items' => new external_multiple_structure(new external_single_structure([

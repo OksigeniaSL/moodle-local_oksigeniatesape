@@ -27,6 +27,12 @@
   /** The class screen: the sounds of the stage of the battle are only heard there, and only it fetches them. */
   var stage = false;
   var STAGE = ['battle.start', 'counter', 'escape', 'jar', 'phase2', 'shield', 'sting.win', 'sting.lost', 'tick'];
+  /**
+   * The sounds of the big moments (a level, a lantern, the creature hatching): on a tablet they are not loaded ahead, but
+   * the first time they sound, since they come with a moment that opens slowly; a session where none comes does not
+   * download them.
+   */
+  var RARE = ['applause', 'drumroll', 'hatch', 'heart', 'lantern', 'levelup', 'path', 'win'];
 
   function muted() {
     if (quiet) {
@@ -178,7 +184,8 @@
       // The pieces of music (the soft one and those of the battle) ahead only on the class screen; on a tablet, the one
       // that is going to play, when it plays.
       if ((key.indexOf('sound.') === 0 && key.indexOf('sound.ambient.') !== 0 && key.indexOf('sound.music') !== 0 &&
-          (stage || STAGE.indexOf(key.slice(6)) < 0)) || (key.indexOf('sound.music') === 0 && stage)) {
+          (stage || (STAGE.indexOf(key.slice(6)) < 0 && RARE.indexOf(key.slice(6)) < 0))) ||
+          (key.indexOf('sound.music') === 0 && stage)) {
         loadSample(key);
       }
     });
@@ -748,6 +755,21 @@
      */
     sound: function(name) {
       if (playSample('sound.' + name)) {
+        return true;
+      }
+      var key = 'sound.' + name;
+      if (RARE.indexOf(name) >= 0 && !samples[key] && T.artUrl && T.artUrl([key]) && audio()) {
+        // A sound of a big moment, not loaded ahead: it sounds as soon as it comes, or the one made here if it does not.
+        var asked = Date.now();
+        waitFor(key, function() {
+          if (Date.now() - asked < 2500) {
+            playSample(key);
+          }
+        }, function() {
+          if (SOUNDS[name]) {
+            SOUNDS[name]();
+          }
+        });
         return true;
       }
       if (SOUNDS[name]) {

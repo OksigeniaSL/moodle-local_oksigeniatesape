@@ -297,7 +297,11 @@ final class live_test extends \advanced_testcase {
     public function test_aloud_the_spokesperson_turns_and_arguing_gives_a_gem_even_when_wrong(): void {
         global $DB;
         $this->resetAfterTest();
-        [$course, , $groups] = $this->make_class();
+        [$course, $members, $groups] = $this->make_class();
+        // Names of their own, so that two spokespeople are not told apart by chance.
+        foreach ($members as $i => $member) {
+            $DB->set_field('user', 'firstname', 'Portavoz' . $i, ['id' => $member->userid]);
+        }
         $live = live::start($course->id, 'aloud', 4, 0, self::NOW);
         $this->assertEquals(['', ''], array_column(live::board_view($live, self::NOW)['teams'], 'speaker'));
         $live = live::next($live, self::NOW);
@@ -321,6 +325,78 @@ final class live_test extends \advanced_testcase {
         $view = live::board_view(live::next($live, self::NOW), self::NOW);
         $this->assertNotEquals($first, $view['teams'][0]['speaker']);
         $this->assertEquals([false, false], array_column($view['teams'], 'argued'));
+    }
+
+    public function test_by_turns_aloud_the_teacher_marks_the_verbs_and_the_teams_and_then_the_turn_is_resolved(): void {
+        $this->resetAfterTest();
+        [$course, , $groups] = $this->make_class();
+        $a = (int) $groups[0]->id;
+        $b = (int) $groups[1]->id;
+        $live = live::next(live::start($course->id, 'aloud', 4, 30, self::NOW, false, true), self::NOW);
+        $info = json_decode($live->state, true)['rounds'][1];
+        $target = (int) $info['target'];
+        $other = $target === $a ? $b : $a;
+        // A team says a shield over the one the Embrollo goes for; said, it rests in that team.
+        $live = live::say_verb($live, $other, 'shield', $target, self::NOW);
+        $view = live::board_view($live, self::NOW);
+        $byid = array_column($view['teams'], null, 'id');
+        $this->assertSame(['glance', 'trail', 'cheer'], $byid[$other]['verbs']);
+        $said = [$view['tokens'][0]['kind'], $view['tokens'][0]['team']];
+        $this->assertSame(['shield', $byid[$other]['name']], $said);
+        try {
+            live::say_verb($live, $other, 'shield', $target, self::NOW);
+            $this->fail('The shield said twice');
+        } catch (\moodle_exception $e) {
+            $this->assertEquals('tokenused', $e->errorcode);
+        }
+        // The answers out, the turn waits for the marks: the team it went for got it wrong, but the shield saves it.
+        $live = live::reveal($live, self::NOW + 60);
+        $this->assertSame('mark', live::board_view($live, self::NOW + 60)['stage']);
+        $this->assertSame($live, live::tick($live, 2, true, self::NOW + 200));
+        $live = live::mark($live, $target, false, self::NOW + 60);
+        $live = live::mark($live, $other, true, self::NOW + 60);
+        $live = live::settle($live, self::NOW + 61);
+        $state = json_decode($live->state, true);
+        $view = live::board_view($live, self::NOW + 61);
+        $this->assertSame('resolve', $view['stage']);
+        $this->assertSame($target, (int) $state['rounds'][1]['shielded']);
+        $this->assertSame(5, $state['candles']);
+        $this->assertSame([false, true], [$state['rounds'][1]['lanes'][$target]['done'], $state['rounds'][1]['lanes'][$other]['done']]);
+        $this->assertLessThan($state['maxhp'], $state['hp']);
+        try {
+            live::mark($live, $target, true, self::NOW + 62);
+            $this->fail('Marked after the turn was resolved');
+        } catch (\moodle_exception $e) {
+            $this->assertEquals('roundclosed', $e->errorcode);
+        }
+        // The next turns: a lane that is not to choose is played on the class screen, and counts as the mark of its team.
+        $now = self::NOW + 100;
+        $played = false;
+        for ($round = 2; $round <= 4 && !$played; $round++) {
+            $live = live::next($live, $now);
+            $info = json_decode($live->state, true)['rounds'][$round];
+            foreach ($info['lanes'] as $team => $lane) {
+                if (!empty($lane['engine'])) {
+                    $payload = ['classify' => ['placed' => $lane['solution']], 'venn' => ['placed' => $lane['solution']],
+                        'order' => ['order' => $lane['solution']], 'whack' => ['picked' => $lane['solution']],
+                        'errors' => ['marks' => array_column($lane['solution'], 'mark')]][$lane['engine']];
+                    $shown = array_column(live::board_view($live, $now + 30)['lanes'], null, 'teamid')[$team];
+                    $this->assertSame($lane['engine'], json_decode($shown['play'], true)['engine']);
+                    $this->assertArrayNotHasKey('solution', json_decode($shown['play'], true));
+                    $live = live::board_strike($live, (int) $team, $payload, $now + 30);
+                    $this->assertSame(1, (int) array_column(live::board_view($live, $now + 30)['teams'], 'mark', 'id')[$team]);
+                    $live = live::settle(live::reveal($live, $now + 60), $now + 61);
+                    $this->assertTrue(json_decode($live->state, true)['rounds'][$round]['lanes'][$team]['done']);
+                    $played = true;
+                    break;
+                }
+            }
+            if (!$played) {
+                $live = live::settle(live::reveal($live, $now + 60), $now + 61);
+            }
+            $now += 100;
+        }
+        $this->assertTrue($played);
     }
 
     public function test_a_new_battle_closes_the_last_one_and_old_ones_are_cleaned_up(): void {

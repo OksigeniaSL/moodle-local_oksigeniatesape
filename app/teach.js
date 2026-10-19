@@ -1203,16 +1203,18 @@
           t('board_turn_candles', {lit: l.candles, all: l.maxcandles}) + ' · ' + t('board_turn_threads') + ': ' + l.hp +
           ' / ' + l.maxhp : '');
         var going = l.round < l.total && (!l.maxcandles || (l.candles > 0 && l.hp > 0));
-        buttons = (l.stage === 'intent' || l.stage === 'prep' ? [] : l.revealed ? (going ? [['next', l.stage ?
-          'board_turn_nextnow' : 'board_battle_next']] : []) : [['reveal', 'board_battle_reveal']]).concat([['pause',
-          'board_battle_pause'], ['finish', 'board_battle_finish']]);
+        // By turns aloud, once the answers are out, the turn waits for the marks of the teacher.
+        buttons = (l.stage === 'intent' || l.stage === 'prep' ? [] : l.stage === 'mark' ? [['settle', 'board_turn_settle']] :
+          l.revealed ? (going ? [['next', l.stage ? 'board_turn_nextnow' : 'board_battle_next']] : []) : [['reveal',
+          'board_battle_reveal']]).concat([['pause', 'board_battle_pause'], ['finish', 'board_battle_finish']]);
         if (l.paused) {
           line = t('board_battle_paused') + ' · ' + line;
           buttons = [['resume', 'board_battle_resume'], ['finish', 'board_battle_finish']];
         }
       }
       // Aloud, the teacher is who says whether each team got it: from here too.
-      var marks = l && l.mode === 'aloud' && l.revealed && !l.outcome ? '<ul class="list remote-marks">' +
+      var marks = l && l.mode === 'aloud' && l.revealed && !l.outcome && (!l.maxcandles || l.stage === 'mark') ?
+        '<ul class="list remote-marks">' +
         l.teams.map(function(team) {
           return '<li><b>' + esc(team.name) + '</b><span class="pills"><button type="button" class="chip" data-remotemark="' +
             team.id + ':1" aria-pressed="' + (team.mark === 1) + '" aria-label="' + esc(t('board_battle_markright', team.name)) +
