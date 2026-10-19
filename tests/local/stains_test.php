@@ -152,6 +152,13 @@ final class stains_test extends \advanced_testcase {
         $this->assertNotSame('', $view['claim']);
         $this->assertCount(4, $view['options']);
         $this->assertArrayNotHasKey('correct', $view);
+        // Not hidden; after a battle lost (a rematch pending), the Embrollo has hidden it: found by opening its place.
+        $this->assertFalse($view['hidden']);
+        $DB->set_field(self::T . 'region', 'battlestate', json_encode(['left' => 0.5]), ['courseid' => $course->id]);
+        regions::forget();
+        $this->assertTrue(stains::view($page, $mission)['hidden']);
+        $DB->set_field(self::T . 'region', 'battlestate', null, ['courseid' => $course->id]);
+        regions::forget();
         $ids = $mission->data['battle']['knots'][0]['questions'];
         $day = (int) (new \DateTimeImmutable('@' . $this->monday))->setTimezone(engine::timezone($course->id))->format('Ymd');
         $correct = questions::get($course->id, $ids[$day % count($ids)], (int) $page->id)['correct'];

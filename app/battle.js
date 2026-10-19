@@ -321,6 +321,21 @@
     if (live.weakness) {
       ahead = '<p class="battle-trail">' + esc(t('app_token_weakness', live.weakness)) + '</p>' + ahead;
     }
+    // A dizzy team does not strike: another team may carry its lane, with its action of the turn.
+    if ((live.dizzy || []).indexOf(live.myteam) >= 0) {
+      ahead = '<p class="battle-dizzy">' + esc(live.carriedby ? t('app_dizzy_carried', live.carriedby) : t('app_dizzy_mine')) +
+        '</p>' + ahead;
+    }
+    if (live.carrying) {
+      return ahead + '<p class="battle-trail">' + esc(t('app_carrying', live.carrying)) + '</p>';
+    }
+    if (live.carry && live.carry.length && ready) {
+      ahead += '<div class="battle-token carry"><p class="help-soft">' + esc(t('app_carry_help')) + '</p>' +
+        live.carry.map(function(x) {
+          return '<button type="button" class="btn btn-soft" data-carry="' + x.id + '">' + esc(t('app_carry_on', x.name)) +
+            '</button>';
+        }).join('') + '</div>';
+    }
     if (live.tokenused) {
       return ahead + '<p class="help-soft battle-token-used">' + esc(live.tokenrest ? t('app_token_rest', live.tokenrest) :
         t('app_token_used')) + '</p>';
@@ -451,6 +466,22 @@
           poll();
         }).then(function() {
           state.sending = false;
+        });
+      };
+    });
+    layer.querySelectorAll('[data-carry]').forEach(function(use) {
+      use.onclick = function() {
+        layer.querySelectorAll('[data-carry], [data-token]').forEach(function(b) {
+          b.disabled = true;
+        });
+        api('carry', {target: Number(use.dataset.carry)}).then(function(r) {
+          state.sig = '';
+          show(r.live || null);
+        }).catch(function(e) {
+          layer.querySelectorAll('[data-carry], [data-token]').forEach(function(b) {
+            b.disabled = false;
+          });
+          T.toast(esc(e.message), true);
         });
       };
     });

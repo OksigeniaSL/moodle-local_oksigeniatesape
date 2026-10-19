@@ -272,7 +272,8 @@ final class stains {
 
     /**
      * A page stolen as the students see it: the place of its knot, the title of the page, what the Embrollo claims and
-     * the question of today, without which option is right.
+     * the question of today, without which option is right. While a rematch is pending (the class lost a battle), the
+     * Embrollo has hidden it: it is not on the map, and whoever opens its place finds it.
      *
      * @param \stdClass $stain
      * @param \stdClass $mission
@@ -295,7 +296,8 @@ final class stains {
         return ['id' => (int) $stain->id, 'chapter' => (string) $stain->chapter, 'place' => $place,
             'title' => missions::text($page['title'] ?? '', $mission->skin, $mission->variant), 'parts' => [], 'kind' => 'page',
             'claim' => missions::text($knot['claim'] ?? '', $mission->skin, $mission->variant),
-            'question' => $question['text'], 'options' => $question['options']];
+            'question' => $question['text'], 'options' => $question['options'],
+            'hidden' => !empty(regions::get((int) $stain->courseid)->battlestate)];
     }
 
     /**

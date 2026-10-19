@@ -39,10 +39,18 @@ final class live_play extends external_api {
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
             'courseid' => new external_value(PARAM_INT, 'Course'),
-            'action' => new external_value(PARAM_ALPHA, 'state, join, answer, strike (by turns, a lane of another engine) or token'),
+            'action' => new external_value(
+                PARAM_ALPHA,
+                'state, join, answer, strike (by turns, a lane of another engine), token or carry (by turns, a dizzy team)'
+            ),
             'round' => new external_value(PARAM_INT, 'answer: the round', VALUE_DEFAULT, 0),
             'answer' => new external_value(PARAM_INT, 'answer: index of the option', VALUE_DEFAULT, -1),
-            'target' => new external_value(PARAM_INT, 'token, by turns: the team the shield or the cheer goes to', VALUE_DEFAULT, 0),
+            'target' => new external_value(
+                PARAM_INT,
+                'token, by turns: the team the shield or the cheer goes to; carry: the dizzy team',
+                VALUE_DEFAULT,
+                0
+            ),
             'payload' => new external_value(PARAM_RAW, 'strike, by turns: what was done in a lane (JSON)', VALUE_DEFAULT, ''),
             'cover' => new external_value(PARAM_ALPHA, 'token, by turns: the verb of a role missing in the team', VALUE_DEFAULT, ''),
         ]);
@@ -101,6 +109,9 @@ final class live_play extends external_api {
                 break;
             case 'token':
                 live::token($live, $member, $now, $params['target'], $params['cover']);
+                break;
+            case 'carry':
+                live::carry($live, $member, $params['target'], $now);
                 break;
             case 'answer':
                 live::answer($live, $member, $params['round'], $params['answer'], $now);

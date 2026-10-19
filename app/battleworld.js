@@ -44,7 +44,7 @@
       var heroes = {};
       var count = {hits: 0, knots: 0, shields: 0, bursts: 0, verbs: 0};
       // The colour of each verb: the shield, the cheer, the glance and the trail.
-      var VERBS = {shield: 0xffc857, cheer: 0xe8508f, glance: 0x8fd3ff, trail: 0x7cc67f};
+      var VERBS = {shield: 0xffc857, cheer: 0xe8508f, glance: 0x8fd3ff, trail: 0x7cc67f, carry: 0xb9a6ff};
       var ratio = function() {
         return S.scale.height / Math.max(1, window.innerHeight);
       };
@@ -84,7 +84,7 @@
        *
        * @param {number} fromId
        * @param {number} toId
-       * @param {string} kind shield, cheer, glance or trail.
+       * @param {string} kind shield, cheer, glance, trail or carry (the lane of a dizzy team).
        */
       var verb = function(fromId, toId, kind) {
         var a = teamAt(fromId);

@@ -5946,6 +5946,49 @@ body.in-battle .badge-moment {
   color: var(--lilac-text);
 }
 
+/* A dizzy team in the battle by turns: its card with a dashed lilac line; another team may carry its lane. */
+.battle-team.dizzy {
+  outline: 3px dashed rgba(185, 166, 255, .8);
+  outline-offset: 2px;
+}
+
+.dizzy-tag {
+  display: inline-block;
+  margin-left: 6px;
+  background: rgba(185, 166, 255, .25);
+  color: var(--lilac-text);
+}
+
+.battle-dizzy {
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: rgba(185, 166, 255, .16);
+  color: var(--lilac-text);
+  font-weight: 600;
+}
+
+/* The page the Embrollo hid after a battle lost, found in its place. */
+.hidden-page {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin: 10px 0;
+  padding: 12px;
+  border: 1px dashed rgba(var(--lantern-rgb), .6);
+  border-radius: 14px;
+  background: rgba(var(--lantern-rgb), .08);
+}
+
+.hidden-page > span {
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+}
+
+.hidden-page p {
+  margin: 4px 0 8px;
+}
+
 /* The class answers the postscript: who knows why it is not so. */
 .taunt-ask {
   margin: 6px 0 10px;

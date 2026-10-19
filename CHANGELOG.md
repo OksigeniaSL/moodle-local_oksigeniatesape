@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.146.0 (2026-10-19)
+
+- **A dizzy team, carried by another one** (battle by turns). A team the blow of the Embrollo finds tangled already is
+  dizzy: its lane does not count, even right, until another team carries it. Anyone of another team can carry it, with
+  their action of the turn (no verb besides): if their team undoes its own lane, the lane of the dizzy team counts too,
+  and it is not dizzy nor tangled any more. The cheer of the healer wakes it up as well. The tablets tell it (the dizzy
+  team, who carries it; the others, «Carry…»), and the class screen marks the dizzy team, says who is left dizzy and who
+  carries whom, and draws the carry as one more arrow (service `live_play`, action `carry`).
+- **The page the Embrollo hides after a battle lost.** While a rematch is pending, the page it stole is not on the map:
+  a line says it is hidden somewhere, and whoever opens its place finds it there and brings it back as always. Mission
+  v59: the line in the expedition of Azara.
+
 ## 0.145.0 (2026-10-19)
 
 - **The verbs of the battle, seen on the class screen.** Each verb used in a turn goes from the heroes of the team that

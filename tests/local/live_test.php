@@ -779,6 +779,95 @@ final class live_test extends \advanced_testcase {
         $this->assertNotSame('', $targets['shield']);
     }
 
+    public function test_by_turns_a_team_tangled_twice_is_dizzy_until_another_team_carries_its_lane(): void {
+        $this->resetAfterTest();
+        [$course, $members, $groups] = $this->make_class();
+        $live = live::start($course->id, 'phones', 8, 30, self::NOW, false, true);
+        foreach ($members as $member) {
+            live::join($live, $member, $member->userid, self::NOW);
+        }
+        $live = live::next($live, self::NOW);
+        $first = (int) $groups[0]->id;
+        $second = (int) $groups[1]->id;
+        // The first team was tangled already, and the knot goes for it again: it fails its lane, so it is dizzy.
+        $live = $this->set_state($live, function (array $state) use ($first) {
+            $state['tangled'][$first] = true;
+            $state['rounds'][1]['intent'] = 'team';
+            $state['rounds'][1]['target'] = $first;
+            return $state;
+        });
+        $live = $this->play_turn($live, $members, $groups, [false, true], self::NOW);
+        $view = live::board_view($live, self::NOW + 60);
+        $this->assertSame([$first], $view['dizzy']);
+        $this->assertNotSame('', $view['dizzied']);
+        // Next turn: the dizzy team gets its lane right, but it does not strike.
+        $at = self::NOW + live::INTENT + live::PREP + 31 + live::RESOLVE;
+        $live = live::tick($live, 2, true, $at);
+        $live = $this->set_state($live, function (array $state) {
+            $state['rounds'][2]['intent'] = 'recompose';
+            return $state;
+        });
+        $this->assertSame([['id' => $first, 'name' => $groups[0]->name]], live::device_view($live, $members[2], $at + 1)['carry']);
+        $theirs = live::device_view($live, $members[0], $at + 1);
+        $this->assertSame([], $theirs['carry'] ?? []);
+        // Nobody carries its own team; and once carried, nobody else does it again.
+        try {
+            live::carry($live, $members[0], $first, $at + 1);
+            $this->fail('Carried its own team');
+        } catch (\moodle_exception $e) {
+            $this->assertSame('nocarry', $e->errorcode);
+        }
+        live::carry($live, $members[2], $first, $at + 1);
+        $this->assertNotSame('', live::device_view($live, $members[2], $at + 2)['carrying']);
+        $this->assertNotSame('', live::device_view($live, $members[0], $at + 2)['carriedby']);
+        try {
+            live::carry($live, $members[3], $first, $at + 2);
+            $this->fail('Carried twice');
+        } catch (\moodle_exception $e) {
+            $this->assertSame('nocarry', $e->errorcode);
+        }
+        // The carry is the action of the turn of who carries: no verb besides.
+        try {
+            live::token($live, $members[2], $at + 2);
+            $this->fail('A verb besides the carry');
+        } catch (\moodle_exception $e) {
+            $this->assertSame('tokenused', $e->errorcode);
+        }
+        // The second team undoes its lane: the lane of the first counts too, and it is not dizzy nor tangled any more.
+        $live = $this->play_turn($live, $members, $groups, [true, true], $at);
+        $view = live::board_view($live, $at + 60);
+        $this->assertSame([], $view['dizzy']);
+        $this->assertSame([], $view['tangled']);
+        $this->assertSame([['team' => $groups[0]->name, 'by' => $groups[1]->name]], $view['carried']);
+        $this->assertContains('carry', array_column($view['tokens'], 'kind'));
+        $state = json_decode($live->state, true);
+        $this->assertTrue($state['rounds'][2]['lanes'][$first]['done']);
+        $this->assertSame($second, $state['rounds'][2]['lanes'][$first]['carried']);
+    }
+
+    public function test_by_turns_a_dizzy_team_not_carried_does_not_strike(): void {
+        $this->resetAfterTest();
+        [$course, $members, $groups] = $this->make_class();
+        $live = live::start($course->id, 'phones', 8, 30, self::NOW, false, true);
+        foreach ($members as $member) {
+            live::join($live, $member, $member->userid, self::NOW);
+        }
+        $live = live::next($live, self::NOW);
+        $first = (int) $groups[0]->id;
+        $live = $this->set_state($live, function (array $state) use ($first) {
+            $state['tangled'][$first] = true;
+            $state['dizzy'][$first] = true;
+            $state['rounds'][1]['intent'] = 'recompose';
+            return $state;
+        });
+        $live = $this->play_turn($live, $members, $groups, [true, true], self::NOW);
+        $state = json_decode($live->state, true);
+        $this->assertFalse($state['rounds'][1]['lanes'][$first]['done']);
+        $this->assertSame([$first], array_map('intval', array_keys($state['dizzy'])));
+        // Not every lane undone: the knot is left hanging.
+        $this->assertFalse($state['rounds'][1]['broken']);
+    }
+
     public function test_a_broken_knot_does_not_come_back_and_the_last_thread_brings_the_hardest(): void {
         global $DB;
         $this->resetAfterTest();

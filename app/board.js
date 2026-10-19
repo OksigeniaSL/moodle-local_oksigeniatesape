@@ -715,10 +715,12 @@
       var shielded = l.stage === 'resolve' && l.shielded && l.targetid === team.id;
       return '<div class="battle-team' + (l.targetid === team.id && !l.outcome ? ' target' : '') +
         ((l.tangled || []).indexOf(team.id) >= 0 && !l.outcome ? ' tangled' : '') + (shielded ? ' shielded' : '') +
+        ((l.dizzy || []).indexOf(team.id) >= 0 && !l.outcome ? ' dizzy' : '') +
         '" data-teamid="' + team.id + '">' +
         (l.maxcandles ? heroes(team.id) : '') + (won ? '<span class="thread-off" aria-hidden="true">−1</span>' : '') +
         (shielded ? '<span class="team-shield" aria-hidden="true">' + T.icon('shield') + '</span>' : '') + '<b>' + esc(team.name) +
-        '</b><small>' + (l.mode === 'phones' ?
+        '</b>' + ((l.dizzy || []).indexOf(team.id) >= 0 && !l.outcome ? '<span class="tag dizzy-tag">' +
+        esc(t('board_team_dizzy')) + '</span>' : '') + '<small>' + (l.mode === 'phones' ?
         esc(t('board_battle_joined', team.joined)) + ' · ' : '') + esc(t('board_battle_teamright', team.right)) + '</small>' +
         marks + '</div>';
     }).join('');
@@ -822,6 +824,10 @@
         esc(l.intent === 'all' ? t('board_turn_shield_all') : t('board_turn_shield', l.target)) + '</p>' : '') + (l.counter && !l.recovered ? '<p class="turn-outcome fell">' +
         esc(t(l.intent === 'all' ? 'board_turn_candle_all' : 'board_turn_candle', l.target)) + '</p>' : '') +
         (l.recovered ? '<p class="turn-outcome fell">' + esc(t('board_turn_recovered', l.counter)) + '</p>' : '') +
+        // A team carried by another, and the one the blow left dizzy.
+        (l.carried || []).map(function(c) {
+          return '<p class="turn-outcome undone">' + esc(t('board_turn_carried', c)) + '</p>';
+        }).join('') + (l.dizzied ? '<p class="turn-outcome fell">' + esc(t('board_turn_dizzied', l.dizzied)) + '</p>' : '') +
         (l.knot.laugh ? '<p class="knot-laugh">«' + esc(l.knot.laugh.replace(/^«|»$/g, '')) + '»</p>' : '') +
         (l.damage ? '<p class="battle-count">' + esc(t('board_turn_threads_off', l.damage)) + '</p>' : '') +
         (l.stageleft > 0 && l.round < l.total ? '<p class="help-soft" data-stageleft="board_turn_next" aria-live="off">' +

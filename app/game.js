@@ -1702,7 +1702,10 @@
     }
     // What the Embrollo stained, a blot of ink beside the lantern of the place, to clean it; or the page it stole, to bring
     // it back.
-    var blots = state.visit ? '' : (state.world.stains || []).map(function(s, i) {
+    // A page hidden after a battle lost is not on the map: it is found by opening its place.
+    var blots = state.visit ? '' : (state.world.stains || []).filter(function(s) {
+      return !s.hidden;
+    }).map(function(s, i) {
       var ch = m.chapters.filter(function(x) {
         return x.code === s.chapter;
       })[0];
@@ -2318,6 +2321,15 @@
       challenge = null;
     }
     var here = past ? 0 : matesAt()[ch.id] || 0;
+    // The page the Embrollo hid here after a battle lost: whoever opens the place finds it.
+    var hidden = past ? [] : (state.world.stains || []).filter(function(s) {
+      return s.hidden && s.chapter === ch.code;
+    });
+    peek = hidden.map(function(s) {
+      return '<div class="hidden-page"><span aria-hidden="true">' + PAGE + '</span><div><b>' + esc(t('app_page_found_here')) +
+        '</b><p class="help-soft">' + esc(t('app_page_found_help', s.title)) + '</p><button type="button" class="btn btn-main" ' +
+        'data-stain="' + s.id + '">' + esc(t('app_page_found_take')) + '</button></div></div>';
+    }).join('') + peek;
     return '<section class="card chapter">' + listen() + '<div class="kicker">' + esc(lantern) + '</div><h2>' +
       esc(ch.name) + '</h2>' + (here ? '<p class="mates-here">' + T.icon('team') + ' ' + esc(t('app_mates_here', here)) +
       '</p>' : '') + placeView(ch, past) +
@@ -2693,7 +2705,11 @@
         missionView(state.visit, true);
     }
     if (w.mission) {
-      return battlesCard() + missionView(w.mission) + expeditionsCard();
+      // A page hidden after a battle lost: somewhere in the valley, to be found.
+    var hidden = (w.stains || []).some(function(s) {
+      return s.hidden;
+    }) ? '<p class="team-banner hidden-banner">' + esc(t('app_page_hidden')) + '</p>' : '';
+    return battlesCard() + hidden + missionView(w.mission) + expeditionsCard();
     }
     var next = w.challenges.filter(function(ch) {
       return !ch.status || ch.status === 'notyet';

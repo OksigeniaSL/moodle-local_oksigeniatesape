@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 58,
+ "version": 59,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 59,
+   "kind": "improvement",
+   "date": "2026-10-19",
+   "text": "En la piel de Azara, la página que esconde el Embrollo al escaparse es del cuaderno"
+  },
   {
    "version": 58,
    "kind": "improvement",
@@ -1665,6 +1671,7 @@
    "app_market": "El puesto del campamento",
    "app_page_back": "¡La página «{$a}» vuelve al cuaderno!",
    "app_page_stolen": "El Embrollo se ha llevado una página del cuaderno",
+   "app_page_hidden": "Al escaparse, el Embrollo escondió una página del cuaderno en algún lugar de la expedición. ¿Dónde estará? Busca en los lugares.",
    "app_reason_market": "El puesto del campamento",
    "app_reason_pageback": "Página del cuaderno recuperada",
    "app_res_gems_help": "Para el puesto del campamento. Las ganas en las gestas, las batallas y la misión.",

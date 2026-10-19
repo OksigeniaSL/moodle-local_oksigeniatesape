@@ -752,6 +752,17 @@ final class structures {
                 VALUE_DEFAULT,
                 []
             ),
+            'dizzy' => new external_multiple_structure(
+                new external_value(PARAM_INT, 'Group'),
+                'By turns: teams dizzy (tangled twice): they do not strike until another team carries their lane',
+                VALUE_DEFAULT,
+                []
+            ),
+            'dizzied' => new external_value(PARAM_TEXT, 'By turns, resolved: the team the blow left dizzy', VALUE_DEFAULT, ''),
+            'carried' => new external_multiple_structure(new external_single_structure([
+                'team' => new external_value(PARAM_TEXT, 'The dizzy team'),
+                'by' => new external_value(PARAM_TEXT, 'The team that carried its lane'),
+            ]), 'By turns, resolved: the lanes of dizzy teams other teams carried and undid', VALUE_DEFAULT, []),
             'broken' => new external_value(PARAM_INT, 'By turns: knots the class broke', VALUE_DEFAULT, 0),
             'recovered' => new external_value(PARAM_BOOL, 'By turns: the Embrollo pulled itself together', VALUE_DEFAULT, false),
             'tally' => new external_multiple_structure(
@@ -840,6 +851,12 @@ final class structures {
                 'By turns: verbs of roles missing in the team, which they can use once',
                 VALUE_OPTIONAL
             ),
+            'carry' => new external_multiple_structure(new external_single_structure([
+                'id' => new external_value(PARAM_INT, 'Group'),
+                'name' => new external_value(PARAM_TEXT, 'Team'),
+            ]), 'By turns: dizzy teams the player can carry now, as their action of the turn', VALUE_OPTIONAL),
+            'carrying' => new external_value(PARAM_TEXT, 'By turns: the dizzy team the player carries', VALUE_OPTIONAL),
+            'carriedby' => new external_value(PARAM_TEXT, 'By turns: the team that carries the lane of theirs', VALUE_OPTIONAL),
             'targets' => new external_multiple_structure(new external_single_structure([
                 'id' => new external_value(PARAM_INT, 'Group'),
                 'name' => new external_value(PARAM_TEXT, 'Team'),

@@ -160,7 +160,7 @@ final class live {
             $state['knots'] = array_column($plan, 0);
             $rules = knots::rules(missions::get($courseid));
             $state += ['candles' => $rules['candles'], 'maxcandles' => $rules['candles'], 'phases' => $rules['phases'],
-                'tangled' => [], 'broken' => [], 'hanging' => [], 'dazed' => false, 'known' => $known];
+                'tangled' => [], 'broken' => [], 'hanging' => [], 'dazed' => false, 'known' => $known, 'dizzy' => []];
         }
         $record = (object) ['courseid' => $courseid, 'kind' => 'battle', 'state' => json_encode($state), 'round' => 0,
             'timecreated' => $now, 'timemodified' => $now, 'timeend' => 0];
@@ -825,6 +825,75 @@ final class live {
     }
 
     /**
+     * By turns, a player carries the lane of a dizzy team (tangled twice): it is undone if their own team undoes its own.
+     * It is their action of the turn, as a verb is; once a turn for each dizzy team, and never their own team.
+     *
+     * @param \stdClass $live
+     * @param \stdClass $member
+     * @param int $target The dizzy team.
+     * @param int|null $now
+     */
+    public static function carry(\stdClass $live, \stdClass $member, int $target, ?int $now = null): void {
+        global $DB;
+        $now = $now ?? time();
+        $state = self::state($live);
+        $round = (int) $live->round;
+        $joined = $DB->get_record(self::T . 'livein', ['liveid' => $live->id, 'round' => 0, 'charid' => $member->charid]);
+        $open = $live->kind === 'battle' && !empty($state['knots']) && $state['outcome'] === '' && $round > 0 &&
+            self::is_live($state, $now) && empty($state['rounds'][$round]['revealed']);
+        if ($member->status === 'paused' || !$joined || !$open) {
+            throw new \moodle_exception('roundclosed', 'local_oksigeniatesape');
+        }
+        $taken = $DB->record_exists(self::T . 'livetoken', ['liveid' => $live->id, 'round' => $round, 'kind' => 'carry',
+            'target' => $target]);
+        if (empty($state['dizzy'][$target]) || $target === (int) $joined->team || $taken) {
+            throw new \moodle_exception('nocarry', 'local_oksigeniatesape');
+        }
+        try {
+            $DB->insert_record(self::T . 'livetoken', (object) ['liveid' => $live->id, 'courseid' => $live->courseid,
+                'charid' => $member->charid, 'round' => $round, 'team' => $joined->team, 'kind' => 'carry',
+                'target' => $target, 'timecreated' => $now]);
+        } catch (\dml_write_exception $e) {
+            // Their action of the turn was used already.
+            throw new \moodle_exception('tokenused', 'local_oksigeniatesape');
+        }
+    }
+
+    /**
+     * By turns, what a player is told of the dizzy teams in the turn: those they could carry now (none if they used
+     * their action of the turn), the one they carry, and the team that carries theirs.
+     *
+     * @param \stdClass $live
+     * @param array $state
+     * @param \stdClass $member
+     * @param int $team Theirs.
+     * @param \stdClass[] $tokens Their tokens and those of their team, as tokens_for() reads them.
+     * @return array carry (id, name), carrying, carriedby.
+     */
+    private static function carries_for(\stdClass $live, array $state, \stdClass $member, int $team, array $tokens): array {
+        global $DB;
+        $round = (int) $live->round;
+        $where = ['liveid' => $live->id, 'round' => $round, 'kind' => 'carry'];
+        $carries = $DB->get_records(self::T . 'livetoken', $where, '', 'id, charid, team, target');
+        $names = self::teams((int) $live->courseid);
+        $name = fn($id) => isset($names[$id]) ? format_string($names[$id]->name) : '';
+        $mine = array_values(array_filter($carries, fn($t) => (int) $t->charid === (int) $member->charid));
+        $taken = array_map(fn($t) => (int) $t->target, $carries);
+        // Their action of the turn: none used yet in this round (a verb, or another carry).
+        $acted = (bool) array_filter($tokens, fn($t) => (int) $t->charid === (int) $member->charid && (int) $t->round === $round);
+        $open = array_filter(
+            array_map('intval', array_keys($state['dizzy'])),
+            fn($id) => $id !== $team && !in_array($id, $taken, true)
+        );
+        $by = array_values(array_filter($carries, fn($t) => (int) $t->target === $team));
+        return [
+            'carry' => $acted || $mine ? [] : array_values(array_map(fn($id) => ['id' => $id, 'name' => $name($id)], $open)),
+            'carrying' => $mine ? $name((int) $mine[0]->target) : '',
+            'carriedby' => $by ? $name((int) $by[0]->team) : '',
+        ];
+    }
+
+    /**
      * By turns, the verbs of the roles nobody in a team who came into the battle has: anyone in the team can use one of
      * them, once a battle for the team, without saying why the role is missing. None once the team has used one.
      *
@@ -965,6 +1034,10 @@ final class live {
             $goes = $teams ? $teams[$round % count($teams)] : 0;
             $view['nextknot'] = (string) ($next['name'] ?? '');
             $view['nexttarget'] = isset($names[$goes]) ? format_string($names[$goes]->name) : '';
+        }
+        // By turns: the dizzy teams this player could carry now, and the one they carry; and whether theirs is carried.
+        if (!empty($state['knots']) && !empty($state['dizzy'])) {
+            $view += self::carries_for($live, $state, $member, $team, $tokens);
         }
         // «Knot reading»: a glance of a sage who has it tells the team the weak point of the knot, whatever its lane.
         foreach ($glances as $charid) {
@@ -1184,8 +1257,28 @@ final class live {
             'known' => in_array((string) $info['knot'], $state['known'] ?? [], true)],
             'targetid' => $target, 'target' => isset($teams[$target]) ? format_string($teams[$target]->name) : '',
             'damage' => (int) ($info['damage'] ?? 0), 'intent' => (string) ($info['intent'] ?? 'team'),
-            'tangled' => array_map('intval', array_keys($state['tangled'] ?? [])), 'broken' => count($state['broken'] ?? []),
-            'recovered' => $resolved && !empty($info['recovered'])];
+            'tangled' => array_map('intval', array_keys($state['tangled'] ?? [])),
+            'dizzy' => array_map('intval', array_keys($state['dizzy'] ?? [])), 'broken' => count($state['broken'] ?? []),
+            'recovered' => $resolved && !empty($info['recovered'])] + ($resolved ? self::dizzy_news($info, $teams) : []);
+    }
+
+    /**
+     * Once a turn is resolved, what it did with the dizzy teams: the team the blow left dizzy, and the lanes of dizzy
+     * teams another team carried and undid.
+     *
+     * @param array $info The round.
+     * @param \stdClass[] $teams The teams of the course, by id.
+     * @return array dizzied (its name), carried (team, by).
+     */
+    private static function dizzy_news(array $info, array $teams): array {
+        $name = fn($id) => isset($teams[(int) $id]) ? format_string($teams[(int) $id]->name) : '';
+        $carried = [];
+        foreach ($info['lanes'] ?? [] as $team => $lane) {
+            if (!empty($lane['carried'])) {
+                $carried[] = ['team' => $name($team), 'by' => $name($lane['carried'])];
+            }
+        }
+        return ['dizzied' => empty($info['dizzied']) ? '' : $name($info['dizzied']), 'carried' => $carried];
     }
 
     /**
@@ -1339,7 +1432,7 @@ final class live {
         $strong = [];
         foreach (array_filter($tokens, fn($t) => $t->kind === 'cheer') as $token) {
             $team = (int) ($token->target ?: $token->team);
-            unset($state['tangled'][$team]);
+            unset($state['tangled'][$team], $state['dizzy'][$team]);
             $light = false;
             if ($state['candles'] < $state['maxcandles'] && empty($state['relit'])) {
                 $light = $state['relit'] = true;
@@ -1375,6 +1468,12 @@ final class live {
                 $present[(int) $player->team] = ($present[(int) $player->team] ?? 0) + 1;
             }
         }
+        // A dizzy team does not strike: its lane is undone if another team carries it and undoes its own.
+        $carried = [];
+        foreach (array_filter($tokens, fn($t) => $t->kind === 'carry') as $token) {
+            $carried[(int) $token->target] = $carried[(int) $token->target] ?? (int) $token->team;
+        }
+        $dizzy = array_map('intval', array_keys($state['dizzy'] ?? []));
         $damage = 0;
         $done = 0;
         foreach ($info['lanes'] as $team => $lane) {
@@ -1382,15 +1481,24 @@ final class live {
             $right = count(array_filter($mine, fn($a) => (int) $a->answer === (int) $lane['correct']));
             // Sorted for the team by one player: that one counts.
             $players = isset($lane['speaker']) ? 1 : (int) ($present[$team] ?? 0);
-            $undone = $players > 0 && 2 * $right > $players;
+            $undone = $players > 0 && 2 * $right > $players && !in_array((int) $team, $dizzy, true);
             $info['lanes'][$team] += ['answered' => count($mine), 'right' => $right, 'done' => $undone];
             $info['teams'][$team] = $right;
             $info['right'] += $right;
-            if ($undone) {
+        }
+        foreach ($dizzy as $team) {
+            $by = $carried[$team] ?? 0;
+            if (isset($info['lanes'][$team]) && $by && !empty($info['lanes'][$by]['done'])) {
+                $info['lanes'][$team]['done'] = true;
+                $info['lanes'][$team]['carried'] = $by;
+            }
+        }
+        foreach ($info['lanes'] as $team => $lane) {
+            if (!empty($lane['done'])) {
                 $done++;
                 // «Strong cheer»: a thread more if the team it cheers undoes its lane.
                 $damage += isset($strong[(int) $team]) ? 2 : 1;
-                unset($state['tangled'][$team]);
+                unset($state['tangled'][$team], $state['dizzy'][$team]);
             }
         }
         $all = $info['lanes'] && $done === count($info['lanes']);
@@ -1409,7 +1517,7 @@ final class live {
         $info['damage'] = $damage;
         // A team nobody of which had to answer (all of it with «no hurry», and nobody did) is not in play this turn.
         $inplay = array_filter(array_keys($info['lanes']), fn($team) => !empty($present[$team]) ||
-            isset($info['lanes'][$team]['speaker']));
+            isset($info['lanes'][$team]['speaker']) || isset($carried[(int) $team]));
         $few = $inplay && 2 * $done < count($inplay);
         $target = (int) ($info['target'] ?? 0);
         if ($state['hp'] > 0) {
@@ -1419,6 +1527,11 @@ final class live {
                     $info['shielded'] = $target;
                 } else {
                     $state['candles'] = max(0, $state['candles'] - 1);
+                    // Tangled again, the team is dizzy: it does not strike until another team carries its lane.
+                    if (!empty($state['tangled'][$target])) {
+                        $state['dizzy'][$target] = true;
+                        $info['dizzied'] = $target;
+                    }
                     $state['tangled'][$target] = true;
                     $info['counter'] = 1;
                 }
