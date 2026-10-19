@@ -10362,3 +10362,35 @@ body.battle-live .battle-board .team-heroes {
     animation: none;
   }
 }
+
+/* Aloud, who speaks for each team in this round. */
+.speaker-tag {
+  display: inline-block;
+  margin-left: 6px;
+}
+
+/* The final battle won: the loose threads, put back in their places of the map on the class screen. */
+.board-sorting {
+  margin-top: 16px;
+}
+
+.board-sorting .lane-items .lane-item {
+  animation: tesape-thread-fall .7s ease-out both;
+}
+
+@keyframes tesape-thread-fall {
+  from {
+    transform: translateY(-28px) rotate(-6deg);
+    opacity: 0;
+  }
+}
+
+body.still .board-sorting .lane-items .lane-item {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .board-sorting .lane-items .lane-item {
+    animation: none;
+  }
+}

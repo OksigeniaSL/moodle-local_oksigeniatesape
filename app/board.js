@@ -20,6 +20,8 @@
   var FULL = 60000;
   var LIVE = 1500;
   var LETTERS = 'ABCD';
+  /** @var {number} Seconds of the sorting of the loose threads, at the end of the mission. */
+  var SORTING = 60;
   var CARD_ICON = {calm: 'energy', breeze: 'saber', footprint: 'world', exchange: 'breath', knot: 'net', messengers: 'idea',
     trade: 'team'};
   var state = {board: null, cls: null, sel: {}, reveal: false, busy: false, sig: '', live: null, seen: 0, timer: 0,
@@ -618,7 +620,7 @@
       main = '<div class="battle-end ' + l.outcome + '"><h2>' + esc(t('board_battle_' + l.outcome)) + '</h2>' + ending +
         '<p class="lead">' + esc(l.outcome === 'won' ? t('board_battle_wonhelp', l.rewarded) : t(l.maxcandles ?
         'board_battle_losthelp_turns' : 'board_battle_losthelp')) +
-        '</p></div>';
+        '</p></div>' + (l.sorting ? '<div class="board-sorting" data-sorting></div>' : '');
       buttons = '<button class="btn btn-main" data-dismiss>' + esc(t('board_battle_back')) + '</button>';
     } else if (!l.round) {
       main = '<div class="battle-lobby">' + (l.rematch ? '<p class="turn-outcome fell">' + esc(t('board_battle_rematch',
@@ -707,7 +709,12 @@
       var marks = l.mode === 'aloud' && l.revealed && !l.outcome ? '<span class="pills"><button class="chip" data-mark="' +
         team.id + ':1" aria-pressed="' + (team.mark === 1) + '" aria-label="' + esc(t('board_battle_markright', team.name)) +
         '">✓</button><button class="chip" data-mark="' + team.id + ':0" aria-pressed="' + (team.mark === 0) +
-        '" aria-label="' + esc(t('board_battle_markwrong', team.name)) + '">✗</button></span>' : '';
+        '" aria-label="' + esc(t('board_battle_markwrong', team.name)) + '">✗</button><button class="chip argue" data-argue="' +
+        team.id + '" aria-pressed="' + !!team.argued + '" aria-label="' +
+        esc(t('board_battle_argued_for', team.name)) + '">' + esc(t('board_battle_argued')) + '</button></span>' : '';
+      // Aloud, who speaks for the team in this round: by turns, so that everybody gets to say why.
+      var speaker = l.mode === 'aloud' && team.speaker && l.round && !l.outcome ? '<span class="tag speaker-tag">' +
+        esc(t('board_battle_speaker', team.speaker)) + '</span>' : '';
       var lane = (l.lanes || []).filter(function(x) {
         return x.teamid === team.id;
       })[0];
@@ -722,7 +729,7 @@
         '</b>' + ((l.dizzy || []).indexOf(team.id) >= 0 && !l.outcome ? '<span class="tag dizzy-tag">' +
         esc(t('board_team_dizzy')) + '</span>' : '') + '<small>' + (l.mode === 'phones' ?
         esc(t('board_battle_joined', team.joined)) + ' · ' : '') + esc(t('board_battle_teamright', team.right)) + '</small>' +
-        marks + '</div>';
+        speaker + marks + '</div>';
     }).join('');
     // The place of the battle, as the story of the mission paints it (the port of the expedition of Azara), or the tower.
     var skin = (state.board.mission || {}).skin;
@@ -743,7 +750,66 @@
       '<div class="battle-teams">' + teams + '</div></div>';
     battleFx(l);
     bindBattle();
+    sorting(l);
     liveBattle(l);
+  }
+
+  /**
+   * The final battle won: the loose threads fall, each one with what a knot tangled, and the class puts each back in its
+   * place of the map, aloud and in a minute: one touches, the class decides. Without damage nor prizes; at the end, the
+   * map in order and how many went to their place at the first go.
+   *
+   * @param {Object} l
+   */
+  function sorting(l) {
+    var el = app.querySelector('[data-sorting]');
+    clearInterval(state.sortingtimer);
+    if (!el || !T.lane) {
+      return;
+    }
+    var s = state.sorting && state.sorting.id === l.id ? state.sorting : null;
+    if (!s) {
+      el.innerHTML = '<p class="lead">' + esc(t('board_sorting_intro')) + '</p><div class="actions"><button class="btn btn-main" ' +
+        'data-sortstart>' + esc(t('board_sorting_start')) + '</button></div>';
+      el.querySelector('[data-sortstart]').onclick = function() {
+        state.sorting = {id: l.id, until: Date.now() + SORTING * 1000, done: false};
+        sorting(l);
+      };
+      return;
+    }
+    var key = 'sorting-' + l.id;
+    var solution = {};
+    l.sorting.solution.forEach(function(x) {
+      solution[x.item] = x.bin;
+    });
+    var finish = function() {
+      clearInterval(state.sortingtimer);
+      s.done = true;
+      sorting(l);
+    };
+    var placed = (T.lane.kept[key] || {}).placed || {};
+    var right = l.sorting.items.filter(function(i) {
+      return placed[i.id] === solution[i.id];
+    }).length;
+    el.innerHTML = (s.done ? '<p class="lead">' + esc(t('board_sorting_done', {right: right, total: l.sorting.items.length})) +
+      '</p>' : '<p class="battle-count" data-sortleft aria-live="off"></p>') + '<div class="lane-play" data-sortlane></div>';
+    T.lane(el.querySelector('[data-sortlane]'), {engine: 'classify', prompt: t('board_sorting_prompt'), items: l.sorting.items,
+      bins: l.sorting.bins, mine: true, solution: s.done ? solution : null}, {key: key, open: !s.done, sent: s.done,
+      onsend: finish});
+    if (!s.done) {
+      var tick = function() {
+        var left = Math.max(0, Math.ceil((s.until - Date.now()) / 1000));
+        var box = el.querySelector('[data-sortleft]');
+        if (box) {
+          box.textContent = t('board_sorting_left', left);
+        }
+        if (!left) {
+          finish();
+        }
+      };
+      tick();
+      state.sortingtimer = setInterval(tick, 1000);
+    }
   }
 
   /**
@@ -975,6 +1041,9 @@
     on('[data-mark]', function(el) {
       var p = el.dataset.mark.split(':');
       host('mark', {groupid: +p[0], right: p[1] === '1'});
+    });
+    on('[data-argue]', function(el) {
+      host('argue', {groupid: +el.dataset.argue});
     });
     on('[data-dismiss]', function() {
       state.seen = l.id;

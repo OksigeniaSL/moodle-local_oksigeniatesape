@@ -1217,7 +1217,11 @@
           return '<li><b>' + esc(team.name) + '</b><span class="pills"><button type="button" class="chip" data-remotemark="' +
             team.id + ':1" aria-pressed="' + (team.mark === 1) + '" aria-label="' + esc(t('board_battle_markright', team.name)) +
             '">✓</button><button type="button" class="chip" data-remotemark="' + team.id + ':0" aria-pressed="' +
-            (team.mark === 0) + '" aria-label="' + esc(t('board_battle_markwrong', team.name)) + '">✗</button></span></li>';
+            (team.mark === 0) + '" aria-label="' + esc(t('board_battle_markwrong', team.name)) + '">✗</button>' +
+            '<button type="button" class="chip" data-remoteargue="' + team.id + '" aria-pressed="' + !!team.argued + '" ' +
+            'aria-label="' + esc(t('board_battle_argued_for', team.name)) + '">' +
+            esc(t('board_battle_argued')) + '</button></span>' + (team.speaker ? '<small>' +
+            esc(t('board_battle_speaker', team.speaker)) + '</small>' : '') + '</li>';
         }).join('') + '</ul>' : '';
       // By turns, how each team is, to referee: who it goes for, who is tangled, who undid their lane, the verbs used.
       var how = l && l.maxcandles && l.round && !l.outcome ? '<ul class="list remote-teams">' + l.teams.map(function(team) {
@@ -1245,6 +1249,16 @@
         b.onclick = function() {
           var p = b.dataset.remotemark.split(':');
           host('mark', {groupid: +p[0], right: p[1] === '1'}).then(function(r) {
+            draw(r.live || null);
+          }).catch(function(e) {
+            T.toast(esc(e.message), true);
+          });
+        };
+      });
+      box.querySelectorAll('[data-remoteargue]').forEach(function(b) {
+        b.onclick = function() {
+          b.disabled = true;
+          host('argue', {groupid: +b.dataset.remoteargue}).then(function(r) {
             draw(r.live || null);
           }).catch(function(e) {
             T.toast(esc(e.message), true);

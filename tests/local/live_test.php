@@ -197,6 +197,8 @@ final class live_test extends \advanced_testcase {
         $this->assertEquals(0, $view['hp']);
         $live = live::finish($live, 2, self::NOW);
         $this->assertEquals('won', live::board_view($live, self::NOW)['outcome']);
+        // Not the final battle: no threads to put back.
+        $this->assertArrayNotHasKey('sorting', live::board_view($live, self::NOW));
         $best = live::device_view($live, $members[0], self::NOW)['prize'];
         $other = live::device_view($live, $members[2], self::NOW)['prize'];
         $this->assertEquals(live::WIN_SABER, $best['saber']);
@@ -290,6 +292,35 @@ final class live_test extends \advanced_testcase {
         $view = live::board_view($live, self::NOW);
         $this->assertEquals(4, $view['hp']);
         $this->assertEquals([1, 0], array_column($view['teams'], 'mark'));
+    }
+
+    public function test_aloud_the_spokesperson_turns_and_arguing_gives_a_gem_even_when_wrong(): void {
+        global $DB;
+        $this->resetAfterTest();
+        [$course, , $groups] = $this->make_class();
+        $live = live::start($course->id, 'aloud', 4, 0, self::NOW);
+        $this->assertEquals(['', ''], array_column(live::board_view($live, self::NOW)['teams'], 'speaker'));
+        $live = live::next($live, self::NOW);
+        $first = live::board_view($live, self::NOW)['teams'][0]['speaker'];
+        $this->assertNotEmpty($first);
+        // Before the answer is out, nobody argues yet.
+        try {
+            live::argue($live, (int) $groups[0]->id, 2, self::NOW);
+            $this->fail('Argued before the answer');
+        } catch (\moodle_exception $e) {
+            $this->assertEquals('roundclosed', $e->errorcode);
+        }
+        // The answer was wrong, but the spokesperson said why: a gem for each one of the team, once.
+        $live = live::mark(live::reveal($live, self::NOW), (int) $groups[0]->id, false, self::NOW);
+        $live = live::argue($live, (int) $groups[0]->id, 2, self::NOW);
+        $live = live::argue($live, (int) $groups[0]->id, 2, self::NOW);
+        $view = live::board_view($live, self::NOW);
+        $this->assertEquals([true, false], array_column($view['teams'], 'argued'));
+        $this->assertEquals(2, $DB->count_records(self::T . 'ledger', ['courseid' => $course->id, 'reason' => 'argument']));
+        // The next round, the other one of the team speaks, and has still to argue.
+        $view = live::board_view(live::next($live, self::NOW), self::NOW);
+        $this->assertNotEquals($first, $view['teams'][0]['speaker']);
+        $this->assertEquals([false, false], array_column($view['teams'], 'argued'));
     }
 
     public function test_a_new_battle_closes_the_last_one_and_old_ones_are_cleaned_up(): void {
@@ -678,6 +709,12 @@ final class live_test extends \advanced_testcase {
         $this->assertSame([], $state['hanging']);
         // And at the end too, for the jar and its sounds.
         $this->assertSame(5, live::board_view($live, $now)['maxcandles']);
+        // The loose threads fall: what each knot of the battle tangled, to put back in its place of the map.
+        $sorting = live::board_view($live, $now)['sorting'];
+        $this->assertCount(count(array_unique($state['knots'])), $sorting['items']);
+        $this->assertSame(['claro', 'biblioteca', 'bosque', 'jardin', 'lago', 'torre'], array_column($sorting['bins'], 'id'));
+        $this->assertContains(['item' => 'piedra', 'bin' => 'claro'], $sorting['solution']);
+        $this->assertContains(['item' => 'pompa', 'bin' => 'torre'], $sorting['solution']);
         // On the way, the class chose, sorted, found the mistakes of the Embrollo, told what is alive and used the two
         // circles.
         $this->assertEqualsCanonicalizing(['choice', 'classify', 'errors', 'venn', 'whack'], array_keys($engines));

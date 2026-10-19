@@ -76,6 +76,9 @@ final class live {
     /** @var string[] The battle token of each role: one for each player and battle, in an open round, with phones. */
     public const TOKENS = ['sage' => 'glance', 'scout' => 'trail', 'protector' => 'shield', 'healer' => 'cheer'];
 
+    /** @var int Aloud: gems for each member of a team whose spokesperson argued its answer, right or not. */
+    public const ARGUED = 1;
+
     /** @var int Seconds the Embrollo takes to announce the knot of a turn and the team it goes for. */
     public const INTENT = 5;
 
@@ -567,6 +570,35 @@ final class live {
     }
 
     /**
+     * Aloud: the spokesperson of a team argued its answer, right or not: a gem for each member of the team, once a round.
+     *
+     * @param \stdClass $live
+     * @param int $groupid
+     * @param int $actorid The teacher who marks it.
+     * @param int|null $now
+     * @return \stdClass The session.
+     */
+    public static function argue(\stdClass $live, int $groupid, int $actorid, ?int $now = null): \stdClass {
+        $now = $now ?? time();
+        $state = self::state($live);
+        $round = (int) $live->round;
+        if ($state['mode'] !== 'aloud' || empty($state['rounds'][$round]['revealed']) || $state['outcome'] !== '') {
+            throw new \moodle_exception('roundclosed', 'local_oksigeniatesape');
+        }
+        if (!array_key_exists($groupid, self::teams((int) $live->courseid))) {
+            throw new \invalid_parameter_exception('Not a team of the course');
+        }
+        if (!empty($state['rounds'][$round]['argued'][$groupid])) {
+            return $live;
+        }
+        $state['rounds'][$round]['argued'][$groupid] = true;
+        foreach (teams::members((int) $live->courseid, $groupid) as $member) {
+            engine::gems($member, self::ARGUED, 'argument', $actorid, 0, (int) $live->id, $now);
+        }
+        return self::save($live, $state, $round, $now);
+    }
+
+    /**
      * The end of the battle: won if the Embrollo has no life left. Winning gives saber and gems to everybody who
      * played, and more gems to the team that helped most; losing takes nothing from anybody.
      *
@@ -672,9 +704,16 @@ final class live {
         foreach (self::teams((int) $live->courseid) as $group) {
             $teams[] = ['id' => (int) $group->id, 'name' => format_string($group->name), 'joined' => $joined[$group->id] ?? 0,
                 'right' => array_sum(array_map(fn($r) => (int) ($r['teams'][$group->id] ?? 0), $state['rounds'])),
-                'mark' => (int) ($state['rounds'][$round]['teams'][$group->id] ?? -1)];
+                'mark' => (int) ($state['rounds'][$round]['teams'][$group->id] ?? -1),
+                'argued' => !empty($state['rounds'][$round]['argued'][$group->id]),
+                'speaker' => $state['mode'] === 'aloud' && $round ? self::spokesperson($live, (int) $group->id, $round) : ''];
         }
         $view = self::common($live, $state, $now) + ['joined' => count($players), 'teams' => $teams, 'answered' => 0];
+        $sorting = $state['outcome'] === 'won' && !empty($state['final']) && !empty($state['knots']) ?
+            self::sorting((int) $live->courseid, $state['knots']) : null;
+        if ($sorting) {
+            $view['sorting'] = $sorting;
+        }
         if ($round > 0) {
             $info = $state['rounds'][$round];
             $view['answered'] = $info['revealed'] ? $info['answered'] :
@@ -1109,6 +1148,47 @@ final class live {
         $user = $char ? \core_user::get_user((int) $char->userid) : null;
         $region = regions::get($courseid);
         return $user && $region ? view::display_name($user, $char, $region) : '';
+    }
+
+    /**
+     * Aloud: who speaks for a team in a round, by turns among its members in play (the same order every round).
+     *
+     * @param \stdClass $live
+     * @param int $groupid
+     * @param int $round
+     * @return string Their name, or nothing if the team has nobody in play.
+     */
+    private static function spokesperson(\stdClass $live, int $groupid, int $round): string {
+        $chars = array_map(fn($m) => (int) $m->charid, teams::members((int) $live->courseid, $groupid));
+        sort($chars);
+        return $chars ? self::player_name((int) $live->courseid, $chars[($round - 1) % count($chars)]) : '';
+    }
+
+    /**
+     * The final battle won, the loose threads fall: each one carries what a knot tangled, and the class puts each back in
+     * its place of the map, on the class screen and aloud, in a minute (without damage nor prizes).
+     *
+     * @param int $courseid
+     * @param string[] $codes The knots of the battle.
+     * @return array|null items (id, label), bins (id, label: the places of the map) and solution (item, bin).
+     */
+    private static function sorting(int $courseid, array $codes): ?array {
+        $mission = missions::get($courseid);
+        $chapters = array_values($mission->data['chapters'] ?? []);
+        $knots = array_column(knots::usable($mission), null, 'code');
+        $text = fn($t) => missions::text($t, $mission->skin, $mission->variant);
+        $items = [];
+        $solution = [];
+        foreach (array_unique($codes) as $code) {
+            $knot = $knots[$code] ?? null;
+            $chapter = $knot ? $chapters[(int) ($knot['chapter'] ?? 0) - 1] ?? null : null;
+            if ($chapter && !empty($knot['weakness'])) {
+                $items[] = ['id' => $code, 'label' => $text($knot['weakness'])];
+                $solution[] = ['item' => $code, 'bin' => $chapter['code']];
+            }
+        }
+        $bins = array_map(fn($c) => ['id' => $c['code'], 'label' => $text($c['name'] ?? $c['code'])], $chapters);
+        return $items ? ['items' => $items, 'bins' => $bins, 'solution' => $solution] : null;
     }
 
     /**

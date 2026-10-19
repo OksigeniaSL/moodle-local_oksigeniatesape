@@ -45,7 +45,7 @@ final class live_host extends external_api {
             'courseid' => new external_value(PARAM_INT, 'Course'),
             'action' => new external_value(
                 PARAM_ALPHA,
-                'state, start, next, reveal, mark, finish, startvote, vote, pause or resume'
+                'state, start, next, reveal, mark, argue, finish, startvote, vote, pause or resume'
             ),
             'mode' => new external_value(PARAM_ALPHA, 'start: phones or aloud', VALUE_DEFAULT, 'phones'),
             'count' => new external_value(PARAM_INT, 'start: questions', VALUE_DEFAULT, 6),
@@ -211,6 +211,10 @@ final class live_host extends external_api {
             case 'mark':
                 require_capability('local/oksigeniatesape:award', $context);
                 $live = live::mark($live, $params['groupid'], $params['right'], $now);
+                break;
+            case 'argue':
+                require_capability('local/oksigeniatesape:award', $context);
+                $live = live::argue($live, $params['groupid'], (int) $USER->id, $now);
                 break;
             case 'finish':
                 require_capability('local/oksigeniatesape:award', $context);

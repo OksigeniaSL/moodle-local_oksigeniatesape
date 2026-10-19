@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.148.0 (2026-10-19)
+
+- **The spokesperson who argues** (battle aloud, with cards). The class screen names who speaks for each team in each
+  round, by turns among its members in play, and the panel of the teacher too. Next to «right» and «not», a chip
+  «Argued»: the spokesperson explained why, right or not, and each one of the team gets a gem (once a round; reason
+  `argument`). Service `live_host`, action `argue`.
+- **The sorting at the end of the mission.** The final battle won by turns, the loose threads fall from the jar, each
+  one with what a knot of the battle tangled («The cell», «Fungi are not plants»…), and the class puts each back in its
+  place of the map on the class screen, aloud and in a minute: one person touches, the class decides. Without damage
+  nor prizes; at the end, the map in order and how many went to their place at the first go.
+- **Fixed:** the class screen named a verb aimed at another team (a carry, or the glance and the trail of the talents
+  that reach another team) by the key of its text.
+
 ## 0.147.0 (2026-10-19)
 
 - **«Who is alive?» and the two circles as lanes of the battle by turns**, played by one player of the team as sorting

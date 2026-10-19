@@ -30,7 +30,7 @@ final class page {
         'game' => ['fx', 'critters', 'scene', 'minigame', 'nest', 'errors', 'whack', 'venn', 'whoami', 'stage', 'puppet', 'cast',
             'walk', 'sceneworld', 'nestworld', 'game', 'exercises', 'battle', 'huddle'],
         'teach' => ['fx', 'scene', 'workshop', 'author', 'teach'],
-        'board' => ['fx', 'critters', 'scene', 'stage', 'puppet', 'cast', 'sceneworld', 'battleworld', 'board'],
+        'board' => ['fx', 'critters', 'scene', 'stage', 'puppet', 'cast', 'sceneworld', 'battleworld', 'exercises', 'board'],
     ];
 
     /** @var string[] Prefixes of the language strings the client uses. */

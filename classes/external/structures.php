@@ -797,6 +797,8 @@ final class structures {
                 'joined' => new external_value(PARAM_INT, 'Players of the team who came in'),
                 'right' => new external_value(PARAM_INT, 'Right answers of the team so far'),
                 'mark' => new external_value(PARAM_INT, 'Aloud: marked right (1), not (0) or not yet (-1) in this round'),
+                'argued' => new external_value(PARAM_BOOL, 'Aloud: its spokesperson argued in this round', VALUE_DEFAULT, false),
+                'speaker' => new external_value(PARAM_TEXT, 'Aloud: who speaks for it in this round', VALUE_DEFAULT, ''),
             ])),
             'tokens' => new external_multiple_structure(new external_single_structure([
                 'kind' => new external_value(PARAM_ALPHA, 'glance, trail, shield or cheer'),
@@ -817,6 +819,20 @@ final class structures {
                 'right' => new external_value(PARAM_INT, 'Right answers of the team'),
                 'answered' => new external_value(PARAM_INT, 'Answers of the team'),
             ]), 'By turns: the lane of each team', VALUE_OPTIONAL),
+            'sorting' => new external_single_structure([
+                'items' => new external_multiple_structure(new external_single_structure([
+                    'id' => new external_value(PARAM_ALPHANUMEXT, 'Knot'),
+                    'label' => new external_value(PARAM_TEXT, 'What it tangled'),
+                ])),
+                'bins' => new external_multiple_structure(new external_single_structure([
+                    'id' => new external_value(PARAM_ALPHANUMEXT, 'Chapter'),
+                    'label' => new external_value(PARAM_TEXT, 'Place of the map'),
+                ])),
+                'solution' => new external_multiple_structure(new external_single_structure([
+                    'item' => new external_value(PARAM_ALPHANUMEXT, 'Knot'),
+                    'bin' => new external_value(PARAM_ALPHANUMEXT, 'Chapter'),
+                ])),
+            ], 'The final battle won: the loose threads to put back in their places', VALUE_OPTIONAL),
         ], 'Battle of the course', VALUE_OPTIONAL);
     }
 
