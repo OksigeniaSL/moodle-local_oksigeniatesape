@@ -39,7 +39,7 @@ final class events {
     private const T = 'local_oksigeniatesape_';
 
     /** @var string[] The cards of the deck. */
-    public const CARDS = ['calm', 'breeze', 'footprint', 'exchange', 'knot', 'messengers'];
+    public const CARDS = ['calm', 'breeze', 'footprint', 'exchange', 'knot', 'messengers', 'trade'];
 
     /** @var string[] The cards that go to a team. */
     public const TARGETED = ['knot', 'messengers'];
@@ -104,12 +104,15 @@ final class events {
                 // Without questions in the mission there is no footprint to follow.
                 $cards = array_values(array_diff($cards, ['footprint'])) ?: ['calm'];
             }
-            // The cards for a team, only with teams (two, for the messengers) and a sheet to tangle.
-            $out = count($teams) < 2 ? self::TARGETED : (stains::can_tangle($courseid) ? [] : ['knot']);
+            // The cards for a team, only with teams (two, for the messengers and the trade) and a sheet to tangle.
+            $out = count($teams) < 2 ? array_merge(self::TARGETED, ['trade']) : (stains::can_tangle($courseid) ? [] : ['knot']);
             $cards = array_values(array_diff($cards, $out)) ?: ['calm'];
             $code = $cards[random_int(0, count($cards) - 1)];
         }
-        if (in_array($code, self::TARGETED, true) && count($teams) < ($code === 'messengers' ? 2 : 1)) {
+        if (
+            (in_array($code, self::TARGETED, true) && count($teams) < ($code === 'messengers' ? 2 : 1))
+            || ($code === 'trade' && count($teams) < 2)
+        ) {
             throw new \moodle_exception('cardnotplayable', 'local_oksigeniatesape');
         }
         // What the card it replaces left, out: the knot of a team.
@@ -311,6 +314,90 @@ final class events {
     }
 
     /**
+     * In the trade, a team lends one of the items its members carry to another team until the day ends: the team that
+     * receives it carries it in the scenes of the day, and the one that lends it does not. Once per team that lends; a
+     * team does not lend to itself.
+     *
+     * @param int $courseid
+     * @param int $from Group of the team that lends.
+     * @param int $to Group of the team that receives.
+     * @param string $item Code of the item.
+     * @param int|null $now
+     * @return \stdClass The event.
+     */
+    public static function lend(int $courseid, int $from, int $to, string $item, ?int $now = null): \stdClass {
+        global $DB;
+        $now = $now ?? time();
+        $event = self::active($courseid, 'trade', $now);
+        if (!$event) {
+            throw new \moodle_exception('noevent', 'local_oksigeniatesape');
+        }
+        $teams = array_keys(self::teams($courseid));
+        if ($from === $to || !in_array($from, $teams) || !in_array($to, $teams)) {
+            throw new \invalid_parameter_exception('Not two teams of the course');
+        }
+        $data = json_decode($event->data, true) ?: [];
+        if (isset($data['loans'][$from])) {
+            return $event;
+        }
+        if (!in_array($item, self::team_items($courseid, $from), true)) {
+            throw new \invalid_parameter_exception('Not an item of the team');
+        }
+        $data['loans'][$from] = ['to' => $to, 'item' => $item];
+        $DB->update_record(self::T . 'event', (object) ['id' => $event->id, 'data' => json_encode($data), 'timemodified' => $now]);
+        return $DB->get_record(self::T . 'event', ['id' => $event->id], '*', MUST_EXIST);
+    }
+
+    /**
+     * The items a team carries: those of its members, once each.
+     *
+     * @param int $courseid
+     * @param int $groupid
+     * @return string[] Codes.
+     */
+    private static function team_items(int $courseid, int $groupid): array {
+        global $DB;
+        $chars = array_map(fn($m) => (int) $m->charid, teams::members($courseid, $groupid));
+        if (!$chars) {
+            return [];
+        }
+        [$insql, $params] = $DB->get_in_or_equal($chars);
+        return array_values(array_unique($DB->get_fieldset_sql(
+            'SELECT i.code
+               FROM {' . self::T . 'inventory} v
+               JOIN {' . self::T . 'item} i ON i.id = v.itemid
+              WHERE v.courseid = ? AND v.charid ' . $insql . '
+           ORDER BY i.code',
+            array_merge([$courseid], $params)
+        )));
+    }
+
+    /**
+     * The items a student carries today with the trade: theirs, without those their team lent, and with those lent to
+     * their team.
+     *
+     * @param int $courseid
+     * @param int $groupid Their team (0: none).
+     * @param string[] $items What they carry.
+     * @param int|null $now
+     * @return string[]
+     */
+    public static function traded(int $courseid, int $groupid, array $items, ?int $now = null): array {
+        $event = $groupid ? self::active($courseid, 'trade', $now) : null;
+        if (!$event) {
+            return $items;
+        }
+        foreach ((json_decode($event->data, true) ?: [])['loans'] ?? [] as $from => $loan) {
+            if ((int) $from === $groupid) {
+                $items = array_values(array_diff($items, [$loan['item']]));
+            } else if ((int) $loan['to'] === $groupid && !in_array($loan['item'], $items, true)) {
+                $items[] = $loan['item'];
+            }
+        }
+        return $items;
+    }
+
+    /**
      * The event as the class screen shows it.
      *
      * @param \stdClass|null $event
@@ -333,6 +420,22 @@ final class events {
         }
         $mission = missions::get((int) $event->courseid);
         $card = $mission ? ($mission->data['cards'][$event->code] ?? []) : [];
+        // The trade: what each team lent, and what each one that has not lent yet could lend.
+        $loans = [];
+        $offers = [];
+        if ($event->code === 'trade') {
+            $names = self::item_names();
+            foreach ($data['loans'] ?? [] as $from => $loan) {
+                $loans[] = ['from' => (int) $from, 'to' => (int) $loan['to'], 'item' => (string) $loan['item'],
+                    'name' => $names[$loan['item']] ?? (string) $loan['item']];
+            }
+            foreach (array_keys(self::teams((int) $event->courseid)) as $groupid) {
+                if (!isset($data['loans'][$groupid])) {
+                    $offers[] = ['team' => (int) $groupid, 'items' => array_map(fn($code) => ['code' => $code,
+                        'name' => $names[$code] ?? $code], self::team_items((int) $event->courseid, (int) $groupid))];
+                }
+            }
+        }
         return array_filter([
             'id' => (int) $event->id,
             'code' => $event->code,
@@ -343,9 +446,21 @@ final class events {
             'target' => (int) ($data['target'] ?? 0),
             'to' => (int) ($data['to'] ?? 0),
             'cleaned' => self::cleaned($data),
+            'loans' => $loans,
+            'offers' => $offers,
             'name' => $mission ? missions::text($card['name'] ?? '', $mission->skin, $mission->variant) : '',
             'text' => $mission ? missions::text($card['text'] ?? '', $mission->skin, $mission->variant) : '',
         ], fn($value) => $value !== null);
+    }
+
+    /**
+     * The names of the items, by code.
+     *
+     * @return array
+     */
+    private static function item_names(): array {
+        global $DB;
+        return array_map(fn($name) => format_string($name), $DB->get_records_menu(self::T . 'item', null, '', 'code, name'));
     }
 
     /**
@@ -356,7 +471,8 @@ final class events {
      */
     private static function acted(\stdClass $event): bool {
         $data = json_decode($event->data ?? '', true) ?: [];
-        return isset($data['solved']) || !empty($data['gifts']) || !empty($data['to']) || self::cleaned($data);
+        return isset($data['solved']) || !empty($data['gifts']) || !empty($data['to']) || !empty($data['loans'])
+            || self::cleaned($data);
     }
 
     /**

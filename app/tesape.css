@@ -841,6 +841,18 @@ body.tesape {
   border-color: var(--lantern);
 }
 
+/* The trade on the class screen: the team on its own line, and under it what it lends or to whom. */
+.trade .item > .grow {
+  flex: 1 1 100%;
+}
+
+/* The trade of the day, under an item: lent until tomorrow, or lent by another team. */
+.item-trade {
+  display: block;
+  color: var(--accent);
+  font-weight: 600;
+}
+
 /* The card marked, before it is kept. */
 .talent-card[aria-pressed="true"] {
   border-color: var(--lantern);

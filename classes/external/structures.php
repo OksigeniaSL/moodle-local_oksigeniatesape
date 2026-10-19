@@ -630,7 +630,7 @@ final class structures {
     public static function event(int $required = VALUE_OPTIONAL): external_single_structure {
         return new external_single_structure([
             'id' => new external_value(PARAM_INT, 'Event'),
-            'code' => new external_value(PARAM_ALPHA, 'Card: calm, breeze, footprint, exchange, knot or messengers'),
+            'code' => new external_value(PARAM_ALPHA, 'Card: calm, breeze, footprint, exchange, knot, messengers or trade'),
             'status' => new external_value(PARAM_ALPHA, 'drawn or skipped'),
             'question' => new external_single_structure([
                 'id' => new external_value(PARAM_RAW, 'Question'),
@@ -649,6 +649,19 @@ final class structures {
             'target' => new external_value(PARAM_INT, 'A card for a team: its group', VALUE_DEFAULT, 0),
             'to' => new external_value(PARAM_INT, 'Messengers: the group they took the hint to', VALUE_DEFAULT, 0),
             'cleaned' => new external_value(PARAM_BOOL, 'A knot for a team: the team cleaned it', VALUE_DEFAULT, false),
+            'loans' => new external_multiple_structure(new external_single_structure([
+                'from' => new external_value(PARAM_INT, 'Group that lends'),
+                'to' => new external_value(PARAM_INT, 'Group that receives'),
+                'item' => new external_value(PARAM_ALPHANUMEXT, 'Code of the item'),
+                'name' => new external_value(PARAM_TEXT, 'Name of the item'),
+            ]), 'Trade: what each team lent', VALUE_DEFAULT, []),
+            'offers' => new external_multiple_structure(new external_single_structure([
+                'team' => new external_value(PARAM_INT, 'Group'),
+                'items' => new external_multiple_structure(new external_single_structure([
+                    'code' => new external_value(PARAM_ALPHANUMEXT, 'Code of the item'),
+                    'name' => new external_value(PARAM_TEXT, 'Name of the item'),
+                ])),
+            ]), 'Trade: what each team that has not lent yet could lend', VALUE_DEFAULT, []),
             'name' => new external_value(PARAM_TEXT, 'Its name in the mission (empty: the one of the plugin)', VALUE_DEFAULT, ''),
             'text' => new external_value(PARAM_TEXT, 'Its text in the mission (empty: the one of the plugin)', VALUE_DEFAULT, ''),
         ], 'Event of the day', $required);

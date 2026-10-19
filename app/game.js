@@ -3093,7 +3093,9 @@
         var art = T.artUrl(['item.' + i.code]);
         return '<li class="item">' + (art ? '<img class="item-art" src="' + esc(art) + '" alt="">' :
           '<span style="width:22px;height:22px;flex:none">' + T.icon('gems') + '</span>') +
-          '<span class="grow"><b>' + esc(i.name) + '</b><small>' + esc(i.description) + '</small></span></li>';
+          '<span class="grow"><b>' + esc(i.name) + '</b><small>' + esc(i.description) + '</small>' + (i.lent ?
+          '<small class="item-trade">' + esc(t('app_item_lent', i.lent)) + '</small>' : i.borrowed ? '<small class="item-trade">' +
+          esc(t('app_item_borrowed', i.borrowed)) + '</small>' : '') + '</span></li>';
       }).join('') + '</ul></section>' : '';
     return '<div class="grid2">' + book + items + '</div>' + friendsCard() + '<section class="card" style="margin-top:16px">' +
       '<h2>' + esc(t('app_tab_log')) + '</h2>' + logList(w.log) + '</section>';

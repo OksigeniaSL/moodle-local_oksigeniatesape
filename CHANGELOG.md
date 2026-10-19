@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.136.0 (2026-10-19)
+
+- **The trade, a card of the day.** With two teams or more, each team may lend another one of the items its members
+  carry until the day ends: on the class screen, it chooses the item and then the team. The team that receives it
+  carries it in the scenes of the day (the options that ask for it open), and the team that lends it does not; in the
+  backpack of the tablet, «Lent to…» or «Lent by…» says so. Once per team; tomorrow everything is back.
+
 ## 0.135.0 (2026-10-19)
 
 - **The rite of ascent.** Once in a mission, when the student has lit the six lanterns or their class has won the final

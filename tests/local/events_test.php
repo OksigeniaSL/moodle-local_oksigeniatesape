@@ -229,6 +229,51 @@ final class events_test extends \advanced_testcase {
         events::aim($course->id, (int) $groups[1]->id, self::NOW);
     }
 
+    public function test_in_the_trade_a_team_lends_an_item_to_another_until_the_day_ends(): void {
+        global $DB;
+        $this->resetAfterTest();
+        [$course, $members, $groups] = $this->make_class();
+        // The scenes ask for the card of the day as it is now.
+        $now = time();
+        $lens = $DB->insert_record(self::T . 'item', ['code' => 'lupa', 'name' => 'La lupa', 'timecreated' => $now,
+            'timemodified' => $now]);
+        engine::item($members[0], $lens, 'challenge', 0, 0, $now);
+        $char = fn(int $i) => $DB->get_record(self::T . 'char', ['id' => $members[$i]->charid]);
+        events::draw($course->id, 'trade', $now);
+        $offers = events::export(events::today($course->id, $now))['offers'];
+        $mine = array_values(array_filter($offers, fn($o) => $o['team'] === (int) $groups[0]->id));
+        $this->assertSame([['code' => 'lupa', 'name' => 'La lupa']], $mine[0]['items']);
+        // Not an item the team carries, nor to itself.
+        try {
+            events::lend($course->id, (int) $groups[1]->id, (int) $groups[0]->id, 'lupa', $now);
+            $this->fail('An item the team does not carry');
+        } catch (\invalid_parameter_exception $e) {
+            $this->assertStringContainsString('item of the team', $e->getMessage());
+        }
+        try {
+            events::lend($course->id, (int) $groups[0]->id, (int) $groups[0]->id, 'lupa', $now);
+            $this->fail('A loan to their own team');
+        } catch (\invalid_parameter_exception $e) {
+            $this->assertStringContainsString('two teams', $e->getMessage());
+        }
+        events::lend($course->id, (int) $groups[0]->id, (int) $groups[1]->id, 'lupa', $now);
+        $loans = events::export(events::today($course->id, $now))['loans'];
+        $this->assertSame([['from' => (int) $groups[0]->id, 'to' => (int) $groups[1]->id, 'item' => 'lupa',
+            'name' => 'La lupa']], $loans);
+        // In the scenes of today: the other team carries it, and the one that lent it does not.
+        [$items] = scenes::context($char(2), $course->id);
+        $this->assertContains('lupa', $items);
+        [$items] = scenes::context($char(0), $course->id);
+        $this->assertNotContains('lupa', $items);
+        $this->assertSame(['lupa'], events::traded($course->id, (int) $groups[1]->id, [], $now));
+        // Tomorrow it is back.
+        $this->assertSame([], events::traded($course->id, (int) $groups[1]->id, [], $now + DAYSECS));
+        $this->assertSame(['lupa'], events::traded($course->id, (int) $groups[0]->id, ['lupa'], $now + DAYSECS));
+        // Once lent, the card stays.
+        $this->expectException(\moodle_exception::class);
+        events::draw($course->id, 'calm', $now);
+    }
+
     public function test_the_cards_for_a_team_need_teams(): void {
         $this->resetAfterTest();
         $course = $this->getDataGenerator()->create_course();

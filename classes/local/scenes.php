@@ -250,6 +250,8 @@ final class scenes {
                 [$insql, $params] = $DB->get_in_or_equal($mates);
                 $roles = array_merge($roles, $DB->get_fieldset_select(self::T . 'char', 'role', "userid $insql", $params));
             }
+            // With the trade of the day, what their team lent goes, and what it was lent comes.
+            $items = events::traded($courseid, (int) $group->id, $items);
         }
         $mission = missions::get($courseid);
         $flags = [];

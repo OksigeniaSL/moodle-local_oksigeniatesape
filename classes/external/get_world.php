@@ -215,6 +215,8 @@ final class get_world extends external_api {
                 'code' => new external_value(PARAM_ALPHANUMEXT, 'Code'),
                 'name' => new external_value(PARAM_TEXT, 'Name'),
                 'description' => new external_value(PARAM_TEXT, 'Description'),
+                'lent' => new external_value(PARAM_TEXT, 'Trade: the team it is lent to today', VALUE_DEFAULT, ''),
+                'borrowed' => new external_value(PARAM_TEXT, 'Trade: the team that lent it today', VALUE_DEFAULT, ''),
             ])),
             'mission' => structures::mission(),
             'log' => new external_multiple_structure(structures::entry()),

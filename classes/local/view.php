@@ -154,6 +154,7 @@ final class view {
            ORDER BY v.timecreated',
                 [$char->id, $courseid]
             )));
+        $world['items'] = self::traded_items($world['items'], $courseid, $group ? (int) $group->id : 0);
         // A lantern that waited ready for the teacher too long lights by itself.
         $installed = missions::get($courseid);
         if ($installed) {
@@ -793,6 +794,37 @@ final class view {
             'look' => (string) ($region->look ?? ''),
             'worldlook' => themes::current('', art::manifest()),
         ];
+    }
+
+    /**
+     * The items of a student with the trade of the day: those their team lent say to whom, and those lent to their team
+     * come with who lent them.
+     *
+     * @param array $items code, name, description.
+     * @param int $courseid
+     * @param int $groupid Their team (0: none).
+     * @return array The same, with lent or borrowed (the name of the other team).
+     */
+    private static function traded_items(array $items, int $courseid, int $groupid): array {
+        global $DB;
+        $event = $groupid ? events::active($courseid, 'trade') : null;
+        $loans = $event ? ((json_decode($event->data, true) ?: [])['loans'] ?? []) : [];
+        foreach ($loans as $from => $loan) {
+            if ((int) $from === $groupid) {
+                foreach ($items as $i => $item) {
+                    if ($item['code'] === $loan['item']) {
+                        $items[$i]['lent'] = groups_get_group_name((int) $loan['to']);
+                    }
+                }
+            } else if ((int) $loan['to'] === $groupid && !in_array($loan['item'], array_column($items, 'code'), true)) {
+                $item = $DB->get_record(self::T . 'item', ['code' => $loan['item']]);
+                if ($item) {
+                    $items[] = ['code' => $item->code, 'name' => format_string($item->name),
+                        'description' => (string) $item->description, 'borrowed' => groups_get_group_name((int) $from)];
+                }
+            }
+        }
+        return $items;
     }
 
     /**

@@ -20,9 +20,10 @@
   var FULL = 60000;
   var LIVE = 1500;
   var LETTERS = 'ABCD';
-  var CARD_ICON = {calm: 'energy', breeze: 'saber', footprint: 'world', exchange: 'breath', knot: 'net', messengers: 'idea'};
+  var CARD_ICON = {calm: 'energy', breeze: 'saber', footprint: 'world', exchange: 'breath', knot: 'net', messengers: 'idea',
+    trade: 'team'};
   var state = {board: null, cls: null, sel: {}, reveal: false, busy: false, sig: '', live: null, seen: 0, timer: 0,
-    battle: {mode: 'phones', count: 6, secs: 30}, auto: 0, print: '', scene: {chapter: 0, mode: 'phones'}};
+    battle: {mode: 'phones', count: 6, secs: 30}, auto: 0, print: '', scene: {chapter: 0, mode: 'phones'}, lend: {}};
   var VOTES = [
     {letter: 'A', colour: '#3f6fb5', shape: '<circle cx="50" cy="50" r="44"/>'},
     {letter: 'B', colour: '#2f8f6a', shape: '<path d="M50 4 L96 92 L4 92Z"/>'},
@@ -1240,12 +1241,14 @@
       return '<section class="card board-event">' + head + '<p class="help-soft">' + esc(t('board_skipped')) + '</p>' +
         '<div class="actions"><button class="btn btn-soft" data-draw>' + esc(t('board_draw')) + '</button></div></section>';
     }
-    var acted = e.solved || e.gifts.length || e.to || e.cleaned;
+    var acted = e.solved || e.gifts.length || e.to || e.cleaned || (e.loans && e.loans.length);
     var body = '';
     if (e.code === 'footprint' && e.question) {
       body = footprint(e);
     } else if (e.code === 'exchange') {
       body = exchange(e);
+    } else if (e.code === 'trade') {
+      body = trade(e);
     } else if (e.code === 'knot' || e.code === 'messengers') {
       body = forTeam(e, acted);
     }
@@ -1327,6 +1330,51 @@
           return '<button class="chip" data-gift="' + team.id + ':' + other.id + '"' + (can('award') ? '' : ' disabled') +
             '>' + esc(other.name) + '</button>';
         }).join('') + '</span></li>';
+    }).join('') + '</ul>';
+  }
+
+  /**
+   * The trade: each team chooses one of the items its members carry, and then the team it lends it to, until tomorrow.
+   *
+   * @param {Object} e
+   * @return {string}
+   */
+  function trade(e) {
+    var lent = {};
+    (e.loans || []).forEach(function(l) {
+      lent[l.from] = l;
+    });
+    var offers = {};
+    (e.offers || []).forEach(function(o) {
+      offers[o.team] = o.items;
+    });
+    return '<ul class="list exchange trade">' + state.cls.teams.map(function(team) {
+      var loan = lent[team.id];
+      if (loan) {
+        return '<li class="item"><span class="grow">' + esc(t('board_lent', {from: team.name, item: loan.name,
+          to: teamName(loan.to)})) + '</span></li>';
+      }
+      var items = offers[team.id] || [];
+      if (!items.length) {
+        return '<li class="item"><span class="grow help-soft">' + esc(t('board_nothing_to_lend', team.name)) + '</span></li>';
+      }
+      var chosen = items.filter(function(i) {
+        return i.code === state.lend[team.id];
+      })[0];
+      if (!chosen) {
+        return '<li class="item" style="flex-wrap:wrap"><span class="grow"><b>' + esc(t('board_lends', team.name)) +
+          '</b></span><span class="pills">' + items.map(function(i) {
+            return '<button class="chip" data-lenditem="' + team.id + ':' + esc(i.code) + '"' + (can('award') ? '' :
+              ' disabled') + '>' + esc(i.name) + '</button>';
+          }).join('') + '</span></li>';
+      }
+      return '<li class="item" style="flex-wrap:wrap"><span class="grow"><b>' + esc(team.name) + ' · ' +
+        esc(t('board_lend_to', chosen.name)) + '</b></span><span class="pills">' + state.cls.teams.filter(function(other) {
+          return other.id !== team.id;
+        }).map(function(other) {
+          return '<button class="chip" data-lend="' + team.id + ':' + other.id + '"' + (can('award') ? '' : ' disabled') + '>' +
+            esc(other.name) + '</button>';
+        }).join('') + '<button class="chip" data-lenditem="' + team.id + ':">' + esc(t('board_lend_other')) + '</button></span></li>';
     }).join('') + '</ul>';
   }
 
@@ -1737,6 +1785,15 @@
     on('[data-gift]', function(el) {
       var p = el.dataset.gift.split(':');
       act(T.api('class_event', {courseid: cfg.courseid, action: 'gift', from: +p[0], to: +p[1]}));
+    });
+    on('[data-lenditem]', function(el) {
+      var p = el.dataset.lenditem.split(':');
+      state.lend[p[0]] = p[1];
+      render();
+    });
+    on('[data-lend]', function(el) {
+      var p = el.dataset.lend.split(':');
+      act(T.api('class_event', {courseid: cfg.courseid, action: 'lend', from: +p[0], to: +p[1], item: state.lend[p[0]]}));
     });
     on('[data-aim]', function(el) {
       act(T.api('class_event', {courseid: cfg.courseid, action: 'aim', to: +el.dataset.aim}));

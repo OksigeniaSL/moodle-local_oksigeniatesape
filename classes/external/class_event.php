@@ -38,16 +38,17 @@ final class class_event extends external_api {
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
             'courseid' => new external_value(PARAM_INT, 'Course'),
-            'action' => new external_value(PARAM_ALPHA, 'draw, skip, solve, gift, aim or deliver'),
+            'action' => new external_value(PARAM_ALPHA, 'draw, skip, solve, gift, aim, deliver or lend'),
             'code' => new external_value(PARAM_ALPHA, 'draw: this card instead of a random one', VALUE_DEFAULT, ''),
             'right' => new external_value(PARAM_BOOL, 'solve: the class got it right', VALUE_DEFAULT, false),
-            'from' => new external_value(PARAM_INT, 'gift: group of the team that gives', VALUE_DEFAULT, 0),
+            'from' => new external_value(PARAM_INT, 'gift, lend: group of the team that gives or lends', VALUE_DEFAULT, 0),
             'to' => new external_value(
                 PARAM_INT,
-                'gift, deliver: group of the team that receives; aim: the team the card goes to',
+                'gift, deliver, lend: group of the team that receives; aim: the team the card goes to',
                 VALUE_DEFAULT,
                 0
             ),
+            'item' => new external_value(PARAM_ALPHANUMEXT, 'lend: code of the item', VALUE_DEFAULT, ''),
         ]);
     }
 
@@ -60,6 +61,7 @@ final class class_event extends external_api {
      * @param bool $right
      * @param int $from
      * @param int $to
+     * @param string $item
      * @return array The event.
      */
     public static function execute(
@@ -68,7 +70,8 @@ final class class_event extends external_api {
         string $code = '',
         bool $right = false,
         int $from = 0,
-        int $to = 0
+        int $to = 0,
+        string $item = ''
     ): array {
         global $USER;
         $params = self::validate_parameters(self::execute_parameters(), [
@@ -78,6 +81,7 @@ final class class_event extends external_api {
             'right' => $right,
             'from' => $from,
             'to' => $to,
+            'item' => $item,
         ]);
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
@@ -104,6 +108,10 @@ final class class_event extends external_api {
             case 'deliver':
                 require_capability('local/oksigeniatesape:award', $context);
                 $event = events::deliver($courseid, $params['to']);
+                break;
+            case 'lend':
+                require_capability('local/oksigeniatesape:award', $context);
+                $event = events::lend($courseid, $params['from'], $params['to'], $params['item']);
                 break;
             default:
                 throw new \invalid_parameter_exception('Unknown action');
