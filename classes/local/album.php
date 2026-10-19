@@ -36,20 +36,10 @@ final class album {
      */
     public static function for_student(int $courseid, int $userid): ?array {
         global $DB;
-        $guides = $DB->get_records_sql(
-            "SELECT cm.id, cm.instance, d.approval
-               FROM {course_modules} cm
-               JOIN {modules} m ON m.id = cm.module AND m.name = 'data'
-               JOIN {data} d ON d.id = cm.instance
-               JOIN {local_oksigeniatesape_challenge} c ON c.cmid = cm.id
-              WHERE cm.course = ? AND cm.deletioninprogress = 0
-           ORDER BY cm.id",
-            [$courseid]
-        );
-        if (!$guides) {
+        $guide = self::guide($courseid);
+        if (!$guide) {
             return null;
         }
-        $guide = reset($guides);
         $users = [$userid];
         $team = teams::of($courseid, $userid);
         if ($team) {
@@ -97,5 +87,26 @@ final class album {
             'class' => $DB->count_records('data_records', ['dataid' => $guide->instance] + $approvedonly),
             'cmid' => (int) $guide->id,
         ];
+    }
+
+    /**
+     * The field guide of the class in a course: the first database of the course that is a challenge of the game.
+     *
+     * @param int $courseid
+     * @return \stdClass|null id (its cmid), instance and approval; null if there is none.
+     */
+    public static function guide(int $courseid): ?\stdClass {
+        global $DB;
+        $guides = $DB->get_records_sql(
+            "SELECT cm.id, cm.instance, d.approval
+               FROM {course_modules} cm
+               JOIN {modules} m ON m.id = cm.module AND m.name = 'data'
+               JOIN {data} d ON d.id = cm.instance
+               JOIN {local_oksigeniatesape_challenge} c ON c.cmid = cm.id
+              WHERE cm.course = ? AND cm.deletioninprogress = 0
+           ORDER BY cm.id",
+            [$courseid]
+        );
+        return $guides ? reset($guides) : null;
     }
 }

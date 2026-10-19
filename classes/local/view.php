@@ -124,6 +124,10 @@ final class view {
         if ($album) {
             $world['album'] = $album;
         }
+        $museum = museum::of_course($courseid);
+        if ($museum) {
+            $world['museum'] = $museum;
+        }
         $fields = 'challengeid, status, note';
         $validations = $DB->get_records(self::T . 'validation', ['charid' => $char->id, 'courseid' => $courseid], '', $fields);
         $group = teams::of($courseid, $userid);
@@ -647,6 +651,11 @@ final class view {
             'namespending' => names::pending($courseid),
         ];
         if ($board) {
+            // The museum of the class in the Library, which the class screen shows.
+            $museum = museum::of_course($courseid);
+            if ($museum) {
+                $view['museum'] = $museum;
+            }
             return $view;
         }
         $pacts = pacts::for_teacher($courseid);

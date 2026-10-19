@@ -352,6 +352,29 @@ final class structures {
     }
 
     /**
+     * The museum of the class in the Library: a shelf for each group of living things, a book for each entry of the
+     * field guide.
+     *
+     * @return external_single_structure
+     */
+    public static function museum(): external_single_structure {
+        return new external_single_structure([
+            'shelves' => new external_multiple_structure(new external_single_structure([
+                'group' => new external_value(PARAM_TEXT, 'Group of living things (empty: without a group)'),
+                'lit' => new external_value(PARAM_BOOL, 'The shelf has its light: three entries or more'),
+                'books' => new external_multiple_structure(new external_single_structure([
+                    'name' => new external_value(PARAM_TEXT, 'Species'),
+                    'golden' => new external_value(PARAM_BOOL, 'The entry says its place in a food chain'),
+                    'looks' => new external_value(PARAM_TEXT, 'How it looks'),
+                    'lives' => new external_value(PARAM_TEXT, 'Where it lives'),
+                    'chain' => new external_value(PARAM_TEXT, 'Its place in a food chain'),
+                ])),
+            ])),
+            'entries' => new external_value(PARAM_INT, 'Entries of the whole class'),
+        ], 'The museum of the class', VALUE_OPTIONAL);
+    }
+
+    /**
      * The expeditions a course made before the current one.
      *
      * @return external_multiple_structure

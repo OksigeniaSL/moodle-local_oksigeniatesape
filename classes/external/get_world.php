@@ -139,6 +139,7 @@ final class get_world extends external_api {
             'market' => structures::market(),
             'expeditions' => structures::expeditions(),
             'album' => structures::album(),
+            'museum' => structures::museum(),
             'names' => new external_single_structure([
                 'heroes' => new external_value(PARAM_BOOL, 'Hero names allowed in the course'),
                 'own' => new external_value(PARAM_BOOL, 'Own names allowed, read by a teacher first'),

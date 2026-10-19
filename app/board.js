@@ -1525,6 +1525,22 @@
 
   /* ---------- Printable material ---------- */
 
+  /**
+   * The museum of the class in the Library: the shelves with books, for the class to read together.
+   *
+   * @return {string}
+   */
+  function museumCard() {
+    var m = state.cls.museum;
+    if (!m) {
+      return '';
+    }
+    return '<section class="card board-museum"><div class="kicker">' + esc(t('app_museum')) + '</div><p class="help-soft">' +
+      esc(t('app_museum_help', {entries: m.entries, lit: m.shelves.filter(function(s) {
+        return s.lit;
+      }).length})) + '</p>' + T.museum(m) + '</section>';
+  }
+
   function printCard() {
     return '<section class="card board-print"><div class="kicker">' + esc(t('board_print')) + '</div><p class="help-soft">' +
       esc(t('board_print_help')) + '</p><div class="actions board-small">' +
@@ -1703,8 +1719,14 @@
       '<button class="btn btn-soft" data-full>' +
       esc(t('board_fullscreen')) + '</button></div></header>' +
       '<div class="board-grid">' + map() + '<div class="board-side">' + todayCard() + openerCard() + eventCard() + battleCard() +
-      sceneCard() + teams() + printCard() + '</div></div>' + bar() + '</div>';
+      sceneCard() + teams() + museumCard() + printCard() + '</div></div>' + bar() + '</div>';
     bind();
+    var museum = app.querySelector('.board-museum');
+    if (museum) {
+      T.bindMuseum(museum, state.cls.museum, state.book, function(book) {
+        state.book = book;
+      });
+    }
     bindHuddles();
   }
 

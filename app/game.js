@@ -1178,6 +1178,8 @@
     }
   }
 
+  /** @var {string[]} The places of the map that open as a page: the market, the album and the museum. */
+  var LANDMARKS = ['market', 'album', 'museum'];
   var TABS = ['world', 'team', 'challenges', 'log', 'me'];
 
   function world() {
@@ -1242,7 +1244,7 @@
           badge = '<span class="new-glow" aria-hidden="true"></span><span class="sr-only"> (' + esc(t('app_talent_title')) +
             ')</span>';
         }
-        var on = state.tab === tab || (tab === 'world' && (state.tab === 'market' || state.tab === 'album'));
+        var on = state.tab === tab || (tab === 'world' && LANDMARKS.indexOf(state.tab) >= 0);
         return '<button type="button" data-tab="' + tab + '"' + (on ? ' aria-current="page"' : '') + '>' +
           T.icon(tab) + '<span>' + esc(t('app_tab_' + tab)) + badge + '</span></button>';
       }).join('') + '</nav><main class="content" id="content"></main></div>';
@@ -1278,8 +1280,10 @@
         return landmarkView('market');
       }, album: function() {
         return landmarkView('album');
+      }, museum: function() {
+        return landmarkView('museum');
       }})[state.tab]();
-    if (state.tab === 'me' || state.tab === 'market' || state.tab === 'album') {
+    if (state.tab === 'me' || LANDMARKS.indexOf(state.tab) >= 0) {
       bindMe();
     }
     app.querySelectorAll('[data-tab-back], [data-landmark]').forEach(function(b) {
@@ -1778,6 +1782,9 @@
     if (w.album || (w.mission && (w.mission.guide || []).length)) {
       list.push(['album', T.artUrl(['landmark.album', 'album.ave']), 'log']);
     }
+    if (w.museum) {
+      list.push(['museum', T.artUrl(['landmark.museum', 'landmark.valley.library']), 'log']);
+    }
     return list.length ? '<div class="map-landmarks">' + list.map(function(l) {
       return '<button type="button" class="landmark-btn ' + l[0] + '" data-landmark="' + l[0] + '"><span class="landmark-pic" ' +
         'aria-hidden="true">' + (l[1] ? '<img src="' + esc(l[1]) + '" alt="">' : T.icon(l[2])) + '</span><span>' +
@@ -1792,8 +1799,28 @@
    * @return {string}
    */
   function landmarkView(which) {
+    if (which === 'museum' && T.fx) {
+      T.fx.ambient('meadow', 'biblioteca');
+    }
     return '<div class="landmark-view"><button type="button" class="btn btn-soft back-map" data-tab-back="world">' +
-      T.icon('world') + ' ' + esc(t('app_back_map')) + '</button>' + (which === 'market' ? marketCard() : albumCard()) + '</div>';
+      T.icon('world') + ' ' + esc(t('app_back_map')) + '</button>' + ({market: marketCard, album: albumCard,
+      museum: museumCard})[which]() + '</div>';
+  }
+
+  /**
+   * The museum of the class in the Library: the shelves that the entries of the field guide of the whole class fill.
+   *
+   * @return {string}
+   */
+  function museumCard() {
+    var m = state.world.museum;
+    if (!m) {
+      return '';
+    }
+    return '<section class="card no-print museum-card" style="margin-top:16px"><h2>' + esc(t('app_museum')) + '</h2>' +
+      '<p class="help-soft">' + esc(t('app_museum_help', {entries: m.entries, lit: m.shelves.filter(function(s) {
+        return s.lit;
+      }).length})) + '</p>' + T.museum(m, true) + '</section>';
   }
 
   /**
@@ -3307,7 +3334,8 @@
       ['ideas', 'idea', ideasCard()],
       // Without a map, the market and the album have no place of their own: they stay here.
       ['market', 'gems', map ? '' : marketCard()],
-      ['album', 'log', map ? '' : albumCard()]
+      ['album', 'log', map ? '' : albumCard()],
+      ['museum', 'log', map ? '' : museumCard()]
     ].filter(function(p) {
       return p[2];
     });
@@ -3591,9 +3619,8 @@
     return '<section class="card no-print album-card" style="margin-top:16px"><h2>' + esc(t('app_album')) + '</h2>' +
       '<p class="help-soft">' + esc(t('app_album_help', {cards: a.cards.length, golden: golden, class: a['class']})) + '</p>' +
       (a.cards.length ? '<div class="album">' + a.cards.map(function(x) {
-        // The picture of its group, from the art pack: the name of the group without accents (Mamífero: album.mamifero).
-        var art = x.group ? T.artUrl(['album.' + String(x.group).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-          .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')]) : null;
+        // The picture of its group, from the art pack.
+        var art = T.groupArt(x.group);
         return '<div class="album-card' + (x.golden ? ' golden' : '') + '">' + (art ? '<img src="' + esc(art) + '" alt="">' : '') +
           '<b>' + esc(x.name) + '</b>' + (x.group ?
           '<small>' + esc(x.group) + '</small>' : '') + (x.mine ? '<small class="mine">' + esc(t('app_album_mine')) + '</small>' :
@@ -3666,6 +3693,12 @@
 
   function bindMe() {
     var c = state.world.character;
+    var museum = app.querySelector('.museum-card');
+    if (museum && state.world.museum) {
+      T.bindMuseum(museum, state.world.museum, state.book, function(book) {
+        state.book = book;
+      });
+    }
     app.querySelectorAll('[data-mesection]').forEach(function(b) {
       b.onclick = function() {
         state.meSection = state.meSection === b.dataset.mesection ? null : b.dataset.mesection;

@@ -134,6 +134,7 @@ final class get_class extends external_api {
             ])),
             'energymax' => new external_value(PARAM_INT, 'Most energy'),
             'breathmax' => new external_value(PARAM_INT, 'Most breath'),
+            'museum' => structures::museum(),
             'standings' => new external_multiple_structure(new external_single_structure([
                 'id' => new external_value(PARAM_INT, 'Group'),
                 'name' => new external_value(PARAM_TEXT, 'Team'),

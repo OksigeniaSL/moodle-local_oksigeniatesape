@@ -1199,6 +1199,107 @@
   };
 
   /**
+   * The picture of a group of living things in the art pack, by its name without accents (Mamífero: album.mamifero).
+   *
+   * @param {string} group
+   * @return {string|null}
+   */
+  T.groupArt = function(group) {
+    return group ? T.artUrl(['album.' + String(group).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')]) : null;
+  };
+
+  /**
+   * The shelves of the museum of the class: a shelf for each group, a book for each entry of the field guide, with a
+   * light of its own when it has three or more. A book is a button that opens its entry under its shelf.
+   *
+   * @param {Object} m The museum, as the server sends it.
+   * @param {boolean} [full] Also the empty shelves (the tablet); the class screen shows only those with books.
+   * @return {string}
+   */
+  T.museum = function(m, full) {
+    var shelves = m.shelves.map(function(shelf, s) {
+      return {shelf: shelf, s: s};
+    }).filter(function(x) {
+      return full || x.shelf.books.length;
+    });
+    if (!m.entries) {
+      return '<p class="empty">' + T.esc(T.t('app_museum_empty')) + '</p>';
+    }
+    // Dark enough for the light letters of the spine.
+    var colours = ['#7a3e33', '#335a77', '#4a6630', '#64477a', '#80552a', '#2c625c', '#76334f'];
+    return '<div class="museum">' + shelves.map(function(x) {
+      var shelf = x.shelf;
+      var art = T.groupArt(shelf.group);
+      var name = shelf.group || T.t('app_museum_nogroup');
+      return '<div class="museum-shelf' + (shelf.lit ? ' lit' : '') + (shelf.books.length ? '' : ' empty') + '"><div class="museum-label">' + (art ? '<img src="' +
+        T.esc(art) + '" alt="">' : '') + '<b>' + T.esc(name) + '</b><small>' + T.esc(T.t('app_museum_books',
+        shelf.books.length)) + '</small>' + (shelf.lit ? '<span class="museum-light" title="' + T.esc(T.t('app_museum_lit')) +
+        '">' + T.icon('lantern') + '<span class="sr-only">' + T.esc(T.t('app_museum_lit')) + '</span></span>' : '') +
+        '</div><div class="museum-books">' + shelf.books.map(function(b, i) {
+          // Each book its own height and colour, the same every time: from its name.
+          var h = 0;
+          for (var k = 0; k < b.name.length; k++) {
+            h = (h * 31 + b.name.charCodeAt(k)) % 997;
+          }
+          return '<button type="button" class="museum-book' + (b.golden ? ' golden' : '') + '" data-book="' + x.s + ':' + i +
+            '" style="height:' + (70 + h % 24) + 'px;background:' + colours[h % colours.length] + '" aria-label="' +
+            T.esc(b.name) + '"><span aria-hidden="true">' + T.esc(b.name) + '</span></button>';
+        }).join('') + '</div></div>';
+    }).join('') + '</div><div class="museum-read" aria-live="polite"><p class="help-soft">' +
+      T.esc(T.t('app_museum_pick')) + '</p></div>';
+  };
+
+  /**
+   * Opens the entry of each book of the museum under its shelf. The page is drawn again now and then: the book that
+   * was open opens again, without a sound.
+   *
+   * @param {Element} root
+   * @param {Object} m The museum.
+   * @param {string} [opened] The book open before (shelf:book).
+   * @param {Function} [onopen] Told the book opened.
+   */
+  T.bindMuseum = function(root, m, opened, onopen) {
+    var read = root.querySelector('.museum-read');
+    var show = function(btn, quiet) {
+      var at = btn.dataset.book.split(':');
+      var shelf = m.shelves[Number(at[0])];
+      var b = shelf && shelf.books[Number(at[1])];
+      if (!b) {
+        return;
+      }
+      root.querySelectorAll('[data-book]').forEach(function(o) {
+        o.setAttribute('aria-pressed', String(o === btn));
+      });
+      read.innerHTML = '<h3>' + T.esc(b.name) + '</h3><p class="museum-group"><small>' +
+        T.esc(shelf.group || T.t('app_museum_nogroup')) + (b.chain ? ' · ' + T.esc(T.t('app_museum_chain', b.chain)) : '') +
+        '</small></p>' + (b.looks ? '<p>' + T.esc(b.looks) + '</p>' : '') + (b.lives ? '<p><small>' +
+        T.esc(T.t('app_museum_lives', b.lives)) + '</small></p>' : '');
+      // Under the shelf of the book, where the eyes are.
+      btn.closest('.museum-shelf').after(read);
+      if (!quiet) {
+        read.scrollIntoView({behavior: T.moves() ? 'smooth' : 'auto', block: 'nearest'});
+        if (T.fx && !T.fx.sound('card')) {
+          T.fx.sound('tap');
+        }
+      }
+    };
+    root.querySelectorAll('[data-book]').forEach(function(btn) {
+      btn.setAttribute('aria-pressed', 'false');
+      btn.onclick = function() {
+        show(btn);
+        if (onopen) {
+          onopen(btn.dataset.book);
+        }
+      };
+    });
+    var was = opened && root.querySelector('[data-book="' + opened + '"]');
+    if (was) {
+      show(was, true);
+    }
+  };
+
+  /**
    * A picture of the valley at dusk, for the story screens and the region card: the painting of the art pack, or one
    * drawn here.
    *

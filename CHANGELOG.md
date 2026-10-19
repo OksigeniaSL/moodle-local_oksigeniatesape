@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.138.0 (2026-10-19)
+
+- **The museum of the class in the Library.** The entries of the field guide of the whole class (approved, where the
+  guide asks for approval) fill the shelves: a shelf for each group of living things of the guide, a book for each
+  entry, golden at the foot if it says its place in a food chain; a shelf with three books or more has a light of its
+  own. A touch on a book opens its entry under its shelf (how it looks, where it lives, its place in the chain), with no
+  name of who made it. On the tablet, the Library is a place of the map (in «Me» without a map), with the sound of the
+  Library; on the class screen, the shelves with books, and the book open stays open when the screen is drawn again
+  (`museum`).
+
 ## 0.137.0 (2026-10-19)
 
 - **The banner of the team** grows with the weeks the team reaches its goal: a plain cloth, then a border (1 week),
