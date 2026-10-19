@@ -2,8 +2,10 @@
  * The battle on the class screen, with movement: a clear canvas over the board draws the Embrollo where the board keeps
  * its place, floating and fraying as it loses threads, and the heroes of each team over the name of their team. Each
  * turn is seen: the right answers pull threads off it, the knot it throws flies to the team it goes for (or to all), a
- * shield stops it, a broken knot bursts, and at the end it is shut in its jar or runs away. What is read and touched is
- * the board, under it, as before; nothing of the canvas is touched or read.
+ * shield stops it, a broken knot bursts, and at the end it is shut in its jar or runs away. When the art pack brings it
+ * as a puppet (rig.boss.embrollo and its states), it takes the blow, throws itself at the team, laughs when the class
+ * fails and gets dizzy as it frays. What is read and touched is the board, under it, as before; nothing of the canvas
+ * is touched or read.
  *
  * @package    local_oksigeniatesape
  * @copyright  2026 Oksigenia <dev@oksigenia.cc>
@@ -150,6 +152,27 @@
         list.length = team.members.length;
         heroes[team.id] = list;
       };
+      /**
+       * The puppet of the Embrollo does something once (hit, attack).
+       *
+       * @param {string} clip
+       */
+      var act = function(clip) {
+        var puppet = S.boss.puppet;
+        if (puppet) {
+          puppet.play(clip, true);
+        }
+      };
+      /**
+       * The puppet of the Embrollo keeps doing something for a while (taunt, dizzy), and then goes back to waiting.
+       *
+       * @param {string} clip
+       * @param {number} ms
+       */
+      var mood = function(clip, ms) {
+        S.boss.mood = clip;
+        S.boss.moodUntil = S.time.now + ms;
+      };
       var battle = {
         /**
          * The board has been drawn again: where things are now, and what has happened.
@@ -188,6 +211,14 @@
             var b = bossAt();
             S.threads.explode(10 + Math.min(20, (l.right || 0) * 3), b.x, b.y);
             S.boss.shake = 1;
+            act('hit');
+          } else if (l.revealed && !(l.right || 0) && !l.outcome && once('taunt:' + turn)) {
+            // Nobody undid it: it laughs, bouncing.
+            mood('taunt', 2600);
+          }
+          var frayed = life <= 0.6;
+          if (frayed && !l.outcome && once('frayed:' + l.id)) {
+            mood('dizzy', 2200);
           }
           if (l.stage === 'resolve' && once('resolve:' + turn)) {
             var ids = l.intent === 'all' ? where.teams.map(function(team) {
@@ -198,6 +229,7 @@
                 knot(id, true);
               });
             } else if (l.counter && !l.recovered) {
+              act('attack');
               ids.forEach(function(id) {
                 knot(id, false);
               });
@@ -218,7 +250,9 @@
 
         /** For the tests of the browser. */
         state: function() {
-          return {ready: !!S, boss: !!(S && S.boss && S.boss.img.visible), life: S ? S.life : 1, ending: S ? S.ending || '' : '',
+          return {ready: !!S, boss: !!(S && S.boss && (S.boss.img.visible || S.boss.puppet)),
+            bossPuppet: S && S.boss && S.boss.puppet ? S.boss.puppet.clipName : '', life: S ? S.life : 1,
+            ending: S ? S.ending || '' : '',
             teams: Object.keys(heroes).length, heroes: Object.keys(heroes).reduce(function(sum, id) {
               return sum + heroes[id].filter(Boolean).length;
             }, 0), hits: count.hits, knots: count.knots, shields: count.shields, bursts: count.bursts,
@@ -242,10 +276,16 @@
           if (art) {
             this.load.image('boss', art);
           }
-          // Whole, frayed, down to its last thread, if the pack paints it so.
+          // Whole, frayed, down to its last thread, if the pack paints it so; and its puppets, if it brings them.
           [1, 2, 3].forEach(function(phase) {
             if (T.artUrl(['boss.embrollo.' + phase])) {
               this.load.image('boss.' + phase, T.artUrl(['boss.embrollo.' + phase]));
+            }
+          }, this);
+          ['', '.1', '.2', '.3'].forEach(function(phase) {
+            var rig = T.puppet && T.puppet.find('boss.embrollo' + phase, 'boss');
+            if (rig) {
+              T.puppet.load(this, 'puppet.boss' + phase, rig);
             }
           }, this);
         },
@@ -255,7 +295,14 @@
           document.body.classList.add('battle-live');
           T.cast.textures(S);
           var img = S.add.image(0, 0, S.textures.exists('boss') ? 'boss' : 'soft').setDepth(10);
-          S.boss = {img: img, shake: 0};
+          S.boss = {img: img, shake: 0, puppets: {}, puppet: null, mood: '', moodUntil: 0};
+          ['', '.1', '.2', '.3'].forEach(function(phase) {
+            var puppet = T.puppet && T.puppet.make(S, 'puppet.boss' + phase, false);
+            if (puppet) {
+              puppet.container.setDepth(10).setVisible(false);
+              S.boss.puppets[phase] = puppet;
+            }
+          });
           S.threads = S.add.particles(0, 0, 'leaf', {lifespan: 1400, speed: {min: 60, max: 260}, rotate: {min: 0, max: 360},
             scale: {start: 2.2, end: 0.6}, alpha: {start: 1, end: 0}, gravityY: 120, tint: [0x8b5cf6, 0xb9a6ff, 0x6d28d9],
             emitting: false}).setDepth(25);
@@ -283,16 +330,41 @@
           if (S.textures.exists('boss.' + phase) && boss.img.texture.key !== 'boss.' + phase) {
             boss.img.setTexture('boss.' + phase);
           }
-          // As big as its place in the board, which already grows smaller as it loses threads.
-          var size = b.size / Math.max(1, boss.img.height);
           if (S.ending === 'won') {
             boss.out = Math.min(1, (boss.out || 0) + dt * 0.8);
           } else if (S.ending) {
             boss.away = Math.min(1, (boss.away || 0) + dt * 0.6);
           }
-          boss.img.setPosition(b.x + jitter, b.y + Math.sin(time / 700) * 8 * k - (boss.away || 0) * S.scale.height * 0.6)
-            .setScale(size * (1 - (boss.out || 0) * 0.9)).setAngle(Math.sin(time / 1100) * 4 + (boss.out || 0) * 360)
-            .setAlpha(1 - Math.max(boss.out || 0, boss.away || 0));
+          var gone = 1 - Math.max(boss.out || 0, boss.away || 0);
+          var rise = (boss.away || 0) * S.scale.height * 0.6;
+          var spin = (boss.out || 0) * 360;
+          // Its puppet in the state it is in, or the one of the whole Embrollo; else, its picture.
+          var puppet = boss.puppets['.' + phase] || boss.puppets[''] || null;
+          if (puppet !== boss.puppet) {
+            if (boss.puppet) {
+              boss.puppet.container.setVisible(false);
+            }
+            boss.puppet = puppet;
+          }
+          boss.img.setVisible(!puppet);
+          if (puppet) {
+            if (boss.mood && time > boss.moodUntil) {
+              boss.mood = '';
+            }
+            if (!puppet.busy()) {
+              puppet.play(boss.mood || 'idle');
+            }
+            puppet.draw(dt);
+            // As big as its place in the board (which already grows smaller as it loses threads), standing on its feet.
+            var unit = b.size / 512;
+            var floats = phase === 1 ? Math.sin(time / 700) * 8 * k : 0;
+            puppet.container.setVisible(true).setPosition(b.x + jitter, b.y - b.size / 2 + puppet.feet[1] * unit + floats - rise)
+              .setScale(unit * (1 - (boss.out || 0) * 0.9)).setAngle(spin).setAlpha(gone);
+          } else {
+            var size = b.size / Math.max(1, boss.img.height);
+            boss.img.setPosition(b.x + jitter, b.y + Math.sin(time / 700) * 8 * k - rise)
+              .setScale(size * (1 - (boss.out || 0) * 0.9)).setAngle(Math.sin(time / 1100) * 4 + spin).setAlpha(gone);
+          }
           // The team the knot goes for, marked under its heroes.
           var target = S.target && teamAt(S.target);
           S.ring.setVisible(!!target);

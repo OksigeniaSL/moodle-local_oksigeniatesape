@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.133.0 (2026-10-19)
+
+- **The Embrollo moves by pieces** on the class screen when the art pack brings its puppet (`rig.boss.embrollo` and
+  one for each of its states, with the skeleton `rig.boss`): it takes the blow when a team undoes its knot, throws
+  itself at the team it attacks, laughs bouncing when nobody undoes it, gets dizzy as it frays, and from its second
+  state on it stays on its pile of threads.
+
 ## 0.132.0 (2026-10-19)
 
 - The battle with movement on the class screen follows the board when it moves without being drawn again (another
