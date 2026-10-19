@@ -118,7 +118,7 @@ final class huddles_test extends \advanced_testcase {
         huddles::decide($s, $c, 'b', $seq, self::NOW + 9);
         // The guide sees it to play it; the rest, that it waits.
         $this->assertSame(
-            ['by' => (int) $leo->id, 'option' => 'b', 'seq' => $seq],
+            ['by' => (int) $leo->id, 'option' => 'b', 'seq' => $seq, 'answer' => ''],
             huddles::mine($course->id, $ana->id, self::NOW + 10)['pending']
         );
         $this->assertTrue(huddles::mine($course->id, $eva->id, self::NOW + 10)['waiting']);
@@ -147,6 +147,50 @@ final class huddles_test extends \advanced_testcase {
             self::NOW + 12,
             [(int) $eva->id]
         ));
+    }
+
+    public function test_several_options_and_sorting_are_decided_whole_on_the_tablet_of_the_hand(): void {
+        $this->resetAfterTest();
+        [$course, $users, , $sceneid] = $this->make_team();
+        [$ana, $leo] = $users;
+        $huddle = huddles::open($course->id, $ana->id, $sceneid, self::NOW);
+        huddles::join($course->id, $leo->id, self::NOW + 1);
+        [$session, $char] = huddles::get($course->id, $ana->id, (int) $huddle->id, self::NOW + 2);
+        huddles::start($session, $char, self::NOW + 2);
+        $options = [['id' => 'a', 'label' => 'A'], ['id' => 'b', 'label' => 'B'], ['id' => 'c', 'label' => 'C']];
+        // Several: between the least and the most it allows, of its own options.
+        $seq = huddles::publish($session, $char, ['node' => 'n1', 'kind' => 'multi', 'prompt' => '¿Cuáles?',
+            'options' => $options, 'max' => 2, 'min' => 2, 'hand' => (int) $leo->id], self::NOW + 3);
+        $view = huddles::mine($course->id, $leo->id, self::NOW + 4);
+        $this->assertSame([2, 2], [$view['max'], $view['min']]);
+        [$s, $c] = huddles::get($course->id, $leo->id, (int) $huddle->id, self::NOW + 4);
+        foreach ([['a'], ['a', 'b', 'c'], ['a', 'z'], ['a', 'a']] as $wrong) {
+            try {
+                huddles::decide($s, $c, '', $seq, self::NOW + 4, $wrong);
+                $this->fail('Not an answer to several: ' . implode(',', $wrong));
+            } catch (\moodle_exception $e) {
+                $this->assertSame('huddlenotyours', $e->errorcode);
+            }
+        }
+        huddles::decide($s, $c, '', $seq, self::NOW + 4, ['c', 'a']);
+        $this->assertSame(['c', 'a'], json_decode(huddles::mine($course->id, $ana->id, self::NOW + 5)['pending']['answer']));
+        // To sort: every thing, each in one of its groups.
+        $seq = huddles::publish($session, $char, ['node' => 'n2', 'kind' => 'classify', 'prompt' => 'Clasifica',
+            'options' => $options, 'bins' => [['id' => 'vivo', 'label' => 'Vivo'], ['id' => 'no', 'label' => 'No vivo']],
+            'hand' => (int) $leo->id], self::NOW + 6);
+        $this->assertSame(['vivo', 'no'], array_column(huddles::mine($course->id, $leo->id, self::NOW + 7)['bins'], 'id'));
+        [$s, $c] = huddles::get($course->id, $leo->id, (int) $huddle->id, self::NOW + 7);
+        foreach ([['a' => 'vivo', 'b' => 'no'], ['a' => 'vivo', 'b' => 'no', 'c' => 'mar']] as $wrong) {
+            try {
+                huddles::decide($s, $c, '', $seq, self::NOW + 7, $wrong);
+                $this->fail('Not a sorting of every thing');
+            } catch (\moodle_exception $e) {
+                $this->assertSame('huddlenotyours', $e->errorcode);
+            }
+        }
+        $placed = ['a' => 'vivo', 'b' => 'no', 'c' => 'vivo'];
+        huddles::decide($s, $c, '', $seq, self::NOW + 7, $placed);
+        $this->assertSame($placed, json_decode(huddles::mine($course->id, $ana->id, self::NOW + 8)['pending']['answer'], true));
     }
 
     public function test_who_drops_out_stops_counting_and_a_session_without_its_guide_is_gone(): void {

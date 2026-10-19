@@ -149,7 +149,7 @@
           }));
           if (h.pending && h.pending.seq === h.seq && !applied[h.seq]) {
             applied[h.seq] = true;
-            play(h.pending.option);
+            play(h.pending.option, h.pending.answer || '');
           }
         }
       }).catch(function() {
@@ -303,6 +303,25 @@
           return '<button type="button" class="opt" data-pick="' + esc(o.id) + '"' + (mine ? '' : ' disabled') + '>' +
             esc(o.label) + '</button>';
         }).join('') + '</div>' + (h.waiting ? '<p class="help-soft">' + esc(t('app_huddle_chosen', h.guidename)) + '</p>' : '');
+    } else if (h.kind === 'multi' && h.options.length) {
+      // Several at once: picked here and sent together.
+      var picks = follow.picks && follow.picks.seq === h.seq ? follow.picks.ids : [];
+      follow.picks = {seq: h.seq, ids: picks};
+      var free = h.myturn && !h.waiting;
+      body = '<p class="huddle-turn' + (h.myturn ? ' mine' : '') + '">' + esc(h.myturn ? t('app_huddle_yourturn') :
+        t('app_huddle_theirturn', h.handname)) + '</p><p class="scene-prompt">' + esc(h.prompt) + '</p><div class="opts">' +
+        h.options.map(function(o) {
+          return '<button type="button" class="opt' + (picks.indexOf(o.id) >= 0 ? ' sel' : '') + '" data-multi="' + esc(o.id) +
+            '" aria-pressed="' + (picks.indexOf(o.id) >= 0) + '"' + (free ? '' : ' disabled') + '>' + esc(o.label) + '</button>';
+        }).join('') + '</div>' + (free ? '<p class="help-soft" data-count>' + esc(t('app_chosen', picks.length + '/' + h.max)) +
+        '</p><div class="actions"><button type="button" class="btn btn-main" data-multisend' + (picks.length < h.min ?
+        ' disabled' : '') + '>' + esc(t('app_confirm')) + '</button></div>' : '') + (h.waiting ? '<p class="help-soft">' +
+        esc(t('app_huddle_chosen', h.guidename)) + '</p>' : '');
+    } else if (h.kind === 'classify' && h.options.length && h.bins.length && T.lane) {
+      // To sort, on this tablet too: where each thing goes is sent whole.
+      body = '<p class="huddle-turn' + (h.myturn ? ' mine' : '') + '">' + esc(h.myturn ? t('app_huddle_yourturn') :
+        t('app_huddle_theirturn', h.handname)) + '</p><div class="lane-play" data-hlane></div>' + (h.waiting ?
+        '<p class="help-soft">' + esc(t('app_huddle_chosen', h.guidename)) + '</p>' : '');
     } else if (h.kind === 'story') {
       body = '<p class="help">' + esc(t('app_huddle_story', h.guidename)) + '</p>';
     } else if (h.kind === 'ending') {
@@ -321,19 +340,56 @@
           x.disabled = true;
         });
         b.classList.add('sel');
-        api('decide', {huddleid: h.id, option: b.dataset.pick, seq: h.seq}).then(function(r) {
-          follow.show(r.huddle || null);
-        }).catch(function(e) {
-          T.toast(esc(e.message), true);
-          follow.sig = '';
-        });
+        follow.decide(h, {option: b.dataset.pick});
       };
     });
+    layer.querySelectorAll('[data-multi]').forEach(function(b) {
+      b.onclick = function() {
+        var ids = follow.picks.ids;
+        var at = ids.indexOf(b.dataset.multi);
+        if (at >= 0) {
+          ids.splice(at, 1);
+        } else if (ids.length < h.max) {
+          ids.push(b.dataset.multi);
+        }
+        follow.sig = '';
+        follow.show(h);
+      };
+    });
+    var send = layer.querySelector('[data-multisend]');
+    if (send) {
+      send.onclick = function() {
+        send.disabled = true;
+        follow.decide(h, {answer: JSON.stringify(follow.picks.ids)});
+      };
+    }
+    var lane = layer.querySelector('[data-hlane]');
+    if (lane) {
+      T.lane(lane, {engine: 'classify', prompt: h.prompt, items: h.options, bins: h.bins, mine: h.myturn},
+        {key: 'huddle-' + h.id + '-' + h.seq, open: h.myturn && !h.waiting, sent: h.waiting, onsend: function(payload) {
+          follow.decide(h, {answer: JSON.stringify(payload.placed)});
+        }});
+    }
     follow.bindLeave();
-    var first = layer.querySelector('[data-pick]:not([disabled])');
+    var first = layer.querySelector('[data-pick]:not([disabled]), [data-multi]:not([disabled])');
     if (first) {
       first.focus();
     }
+  };
+
+  /**
+   * Sends what the hand decided: an option, or a whole answer (several, or a sorting).
+   *
+   * @param {Object} h The session.
+   * @param {Object} what option or answer.
+   */
+  follow.decide = function(h, what) {
+    api('decide', Object.assign({huddleid: h.id, seq: h.seq}, what)).then(function(r) {
+      follow.show(r.huddle || null);
+    }).catch(function(e) {
+      T.toast(esc(e.message), true);
+      follow.sig = '';
+    });
   };
 
   /** «Leave»: this tablet stops following; the session goes on with the others. */

@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.150.0 (2026-10-19)
+
+- **The team session, with every kind of decision on the tablet of the hand.** Besides choosing, a decision of several
+  options (pick them, then «Confirm»), putting in order (each step, as it is chosen) and sorting (each thing to its
+  group, sent whole) are decided on the tablet of whoever has the hand; the tablet of the guide plays it as if it were
+  touched there. A decision drawn otherwise (the pieces of a card) is still decided on the guide. Service `huddle`,
+  `decide` with `answer`.
+- **The stages of the creature have names, from the light**: Spark, Gleam, Flame, Blaze and Beacon (Chispa, Destello,
+  Llama, Fulgor and Faro); nouns, so that they say nothing of whether it is a he or a she. On its card and when it grows
+  («Bellota grows: a Gleam now»).
+
 ## 0.149.0 (2026-10-19)
 
 - **The battle by turns with cards, whole** (without tablets). Each team says its verb aloud and the teacher marks it on

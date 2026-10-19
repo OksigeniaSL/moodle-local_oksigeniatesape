@@ -1241,18 +1241,35 @@
       if (!n) {
         return null;
       }
-      // Using something from the backpack and saying why are choices too.
+      // Using something from the backpack and saying why are choices too; putting in order is choosing the next step.
       var chooses = ['choice', 'use', 'justify'].indexOf(n.type) >= 0;
       var max = n.type === 'justify' ? (n.select && n.select.max) || 2 : (n.select && n.select.max) || 1;
       var multi = chooses && max > 1;
-      var kind = chooses ? (multi ? 'multi' : 'choose') : n.type;
+      var kind = chooses ? (multi ? 'multi' : 'choose') : n.type === 'order' ? 'choose' : n.type;
       var options = [];
-      if (kind === 'choose') {
+      var bins = [];
+      if (kind === 'choose' || kind === 'multi') {
         layer.querySelectorAll('.opt[data-id]').forEach(function(b) {
           if (!b.hidden && !b.disabled) {
             options.push({id: b.dataset.id, label: b.textContent.trim()});
           }
         });
+      } else if (kind === 'classify') {
+        // The things still to place (those on the table and those placed this time), without what was seen with the lupa.
+        layer.querySelectorAll('.cls-thing[data-thing], .cls-thing[data-take]').forEach(function(b) {
+          var label = b.cloneNode(true);
+          label.querySelectorAll('small, .ev-tag').forEach(function(x) {
+            x.remove();
+          });
+          options.push({id: b.dataset.thing || b.dataset.take, label: label.textContent.trim()});
+        });
+        layer.querySelectorAll('.bin[data-bin]').forEach(function(b) {
+          bins.push({id: b.dataset.bin, label: b.textContent.trim()});
+        });
+      }
+      if ((kind === 'multi' || kind === 'classify') && !options.length) {
+        // Drawn some other way (the pieces of a card): it is decided on this tablet.
+        kind = n.type;
       }
       var hand = turnOf();
       // What each role sees: each tablet gets only its own piece.
@@ -1265,19 +1282,59 @@
         return tx(sc.clues[c]);
       });
       return {node: run.node, kind: kind, prompt: n.prompt ? tx(n.prompt) : '', options: options, views: views, known: known,
-        hand: hand ? Number(hand.userid) : Number(cfg.userid)};
+        hand: hand ? Number(hand.userid) : Number(cfg.userid), bins: bins, max: max,
+        min: Math.min(max, (n.select && n.select.min) || 1)};
     }
 
     /**
-     * In a team session, the option the hand chose on their tablet: played here as if it were touched here.
+     * In a team session, what the hand decided on their tablet: played here as if it were touched here. One option; or the
+     * options picked of several; or, to sort, each thing to its group; and then confirmed.
      *
      * @param {string} id
+     * @param {string} [answer] Of several or to sort, the whole answer (JSON).
      */
-    function huddlePlay(id) {
-      var b = layer.querySelector('.opt[data-id="' + id + '"]');
-      if (b && !b.disabled && !b.hidden) {
-        b.click();
+    function huddlePlay(id, answer) {
+      var tap = function(sel) {
+        var b = layer.querySelector(sel);
+        if (b && !b.disabled && !b.hidden) {
+          b.click();
+          return true;
+        }
+        return false;
+      };
+      var whole = null;
+      try {
+        whole = answer ? JSON.parse(answer) : null;
+      } catch (e) {
+        whole = null;
       }
+      if (!whole) {
+        tap('.opt[data-id="' + id + '"]');
+        return;
+      }
+      if (Array.isArray(whole)) {
+        // What was picked here and not there, off; what was picked there, on.
+        layer.querySelectorAll('.opt.sel[data-id]').forEach(function(b) {
+          if (whole.indexOf(b.dataset.id) < 0) {
+            b.click();
+          }
+        });
+        whole.forEach(function(pick) {
+          var b = layer.querySelector('.opt[data-id="' + pick + '"]');
+          if (b && !b.classList.contains('sel')) {
+            tap('.opt[data-id="' + pick + '"]');
+          }
+        });
+      } else {
+        Object.keys(whole).forEach(function(thing) {
+          // A thing placed elsewhere this time goes back to the table first.
+          tap('[data-take="' + thing + '"]');
+          if (tap('[data-thing="' + thing + '"]')) {
+            tap('[data-bin="' + whole[thing] + '"]');
+          }
+        });
+      }
+      tap('[data-confirm]');
     }
 
     /**
@@ -1290,7 +1347,8 @@
       huddleIds = ids;
       var n = sc && run ? sc.nodes[run.node] : null;
       var hand = turnOf();
-      if (!n || ['choice', 'use', 'justify'].indexOf(n.type) < 0 || !hand || ids.indexOf(Number(hand.userid)) >= 0 ||
+      if (!n || ['choice', 'use', 'justify', 'classify', 'order'].indexOf(n.type) < 0 || !hand ||
+        ids.indexOf(Number(hand.userid)) >= 0 ||
         layer.querySelector('.opt.sel')) {
         return;
       }

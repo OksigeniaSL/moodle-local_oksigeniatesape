@@ -199,38 +199,83 @@ final class huddles {
         }
         // What the answers told so far, for every tablet.
         $known = array_slice(array_map(fn($k) => clean_param((string) $k, PARAM_TEXT), (array) ($node['known'] ?? [])), 0, 12);
+        // To sort, the groups the things go to.
+        $bins = [];
+        foreach ((array) ($node['bins'] ?? []) as $bin) {
+            $bins[] = ['id' => clean_param((string) ($bin['id'] ?? ''), PARAM_ALPHANUMEXT),
+                'label' => clean_param((string) ($bin['label'] ?? ''), PARAM_TEXT)];
+        }
         $state['seq']++;
         $state['node'] = ['views' => $views, 'known' => $known,
             'node' => clean_param((string) ($node['node'] ?? ''), PARAM_ALPHANUMEXT),
             'kind' => clean_param((string) ($node['kind'] ?? ''), PARAM_ALPHA),
             'prompt' => clean_param((string) ($node['prompt'] ?? ''), PARAM_TEXT),
-            'options' => $options, 'hand' => (int) ($node['hand'] ?? 0)];
+            'options' => $options, 'hand' => (int) ($node['hand'] ?? 0), 'bins' => $bins,
+            'max' => max(1, (int) ($node['max'] ?? 1)), 'min' => max(1, (int) ($node['min'] ?? 1))];
         $state['pending'] = null;
         self::save($huddle, $state, $now);
         return $state['seq'];
     }
 
     /**
-     * Who has the hand chooses on their tablet: it waits for the guide to play it.
+     * Who has the hand decides on their tablet: it waits for the guide to play it. One option to choose; or, whole, the
+     * options picked of a decision of several, or where each thing goes in one to sort.
      *
      * @param \stdClass $huddle
      * @param \stdClass $char
      * @param string $option
      * @param int $seq The number of the decision they saw.
      * @param int $now
+     * @param array $answer Several: the ids picked; to sort: thing id => group id.
      */
-    public static function decide(\stdClass $huddle, \stdClass $char, string $option, int $seq, int $now): void {
+    public static function decide(
+        \stdClass $huddle,
+        \stdClass $char,
+        string $option,
+        int $seq,
+        int $now,
+        array $answer = []
+    ): void {
         $state = self::state($huddle);
         $node = $state['node'] ?? null;
+        $ids = $node ? array_column($node['options'], 'id') : [];
         if (
-            !$node || $node['kind'] !== 'choose' || (int) $node['hand'] !== (int) $char->userid || $seq !== (int) $state['seq']
-            || !in_array($option, array_column($node['options'], 'id'), true) || !empty($state['pending'])
+            !$node || (int) $node['hand'] !== (int) $char->userid || $seq !== (int) $state['seq'] || !empty($state['pending'])
+            || !self::answers($node, $ids, $option, $answer)
         ) {
             throw new \moodle_exception('huddlenotyours', 'local_oksigeniatesape');
         }
-        $state['pending'] = ['by' => (int) $char->userid, 'option' => $option, 'seq' => $seq];
+        $state['pending'] = ['by' => (int) $char->userid, 'option' => $option, 'seq' => $seq] +
+            ($node['kind'] === 'choose' ? [] : ['answer' => $answer]);
         // The decision of a member does not count as a sign of the guide.
         self::save($huddle, $state, (int) $huddle->timemodified);
+    }
+
+    /**
+     * Whether what the hand sends answers the decision at hand: an option of it to choose; between one and as many as it
+     * allows of its options, for several; every thing in one of its groups, to sort.
+     *
+     * @param array $node
+     * @param string[] $ids Its options (to sort, its things).
+     * @param string $option
+     * @param array $answer
+     * @return bool
+     */
+    private static function answers(array $node, array $ids, string $option, array $answer): bool {
+        if ($node['kind'] === 'choose') {
+            return in_array($option, $ids, true);
+        }
+        if ($node['kind'] === 'multi') {
+            $picked = array_values(array_unique(array_map('strval', $answer)));
+            return $picked && count($picked) === count($answer) && count($picked) <= (int) ($node['max'] ?? 1) &&
+                count($picked) >= (int) ($node['min'] ?? 1) && !array_diff($picked, $ids);
+        }
+        if ($node['kind'] === 'classify') {
+            $bins = array_column($node['bins'] ?? [], 'id');
+            return $ids && count($answer) === count($ids) && !array_diff($ids, array_map('strval', array_keys($answer))) &&
+                !array_diff(array_map('strval', $answer), $bins);
+        }
+        return false;
     }
 
     /**
@@ -329,6 +374,9 @@ final class huddles {
             'node' => $node ? (string) $node['node'] : '',
             'prompt' => $node ? (string) $node['prompt'] : '',
             'options' => $node ? $node['options'] : [],
+            'bins' => $node ? array_values($node['bins'] ?? []) : [],
+            'max' => $node ? (int) ($node['max'] ?? 1) : 1,
+            'min' => $node ? (int) ($node['min'] ?? 1) : 1,
             'hand' => $hand,
             'handname' => $names[$hand] ?? ($hand ? self::user_name($hand, (int) $huddle->courseid) : ''),
             'myturn' => $hand === (int) $char->userid,
@@ -339,7 +387,8 @@ final class huddles {
         // The choice waiting is for the guide to play.
         if ($guide && !empty($state['pending'])) {
             $view['pending'] = ['by' => (int) $state['pending']['by'], 'option' => (string) $state['pending']['option'],
-                'seq' => (int) $state['pending']['seq']];
+                'seq' => (int) $state['pending']['seq'], 'answer' => isset($state['pending']['answer']) ?
+                json_encode($state['pending']['answer']) : ''];
         }
         return $view;
     }

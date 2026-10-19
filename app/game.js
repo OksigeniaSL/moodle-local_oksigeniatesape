@@ -988,6 +988,17 @@
   }
 
   /**
+   * The name of a stage of the creature, from the light (Spark, Gleam, Flame, Blaze, Beacon): nouns, so that they say
+   * nothing of whether it is a he or a she.
+   *
+   * @param {number} n From 1 to 5.
+   * @return {string}
+   */
+  function stageName(n) {
+    return t('app_creaturestage_' + Math.max(1, Math.min(5, n || 1)));
+  }
+
+  /**
    * The creature grew: the one of before, and the one of now.
    *
    * @param {number} from Its stage before.
@@ -997,7 +1008,8 @@
   function creatureMoment(from, c, then) {
     moment('<div class="kicker">' + esc(t('app_creature_kicker')) + '</div><div class="rise"><div class="rise-from">' +
       T.creature(c.creature, from, true) + '</div><div class="rise-to">' + T.creature(c.creature, c.creaturestage, true) +
-      '</div></div><h2 id="tesape-creature-title">' + esc(t('app_creaturegrew', creatureName(c))) + '</h2><p class="help">' +
+      '</div></div><h2 id="tesape-creature-title">' + esc(t('app_creaturegrew', {name: creatureName(c),
+      stage: stageName(c.creaturestage)})) + '</h2><p class="help">' +
       esc(t('app_creature_grew_help')) + '</p>', 'tesape-creature-title', then);
     if (T.fx) {
       setTimeout(function() {
@@ -3375,7 +3387,8 @@
     var pct = c.levelneeded ? Math.round(100 * c.levelinto / c.levelneeded) : 100;
     var glow = w.page && w.page.streak >= w.page.glow ? ' glow' : '';
     var creature = c.creature ? '<div class="creature-box' + glow + '">' + T.creature(c.creature, c.creaturestage) + '<b>' +
-      esc(creatureName(c)) + '</b><small>' + esc(t('app_creaturestage', c.creaturestage)) + '</small></div>' : '';
+      esc(creatureName(c)) + '</b><small>' + esc(t('app_creaturestage', {n: c.creaturestage,
+      name: stageName(c.creaturestage)})) + '</small></div>' : '';
     var unlock = nextUnlock(c);
     return '<section class="card sheet"><div class="sheet-art">' + avatarOf(c, title(c)) + creature + '</div><div class="stats"><h2>' + esc(myName()) +
       '</h2><p style="color:var(--text-soft)">' + esc(rank(c)) + ' · ' + esc(title(c)) + '</p>' + traits(c) + talentsHtml(c) + skillsHtml(c) +

@@ -45,6 +45,12 @@ final class huddle extends external_api {
             'node' => new external_value(PARAM_RAW, 'publish: the decision at hand (JSON)', VALUE_DEFAULT, ''),
             'option' => new external_value(PARAM_ALPHANUMEXT, 'decide: the option chosen', VALUE_DEFAULT, ''),
             'seq' => new external_value(PARAM_INT, 'decide: the number of the decision seen', VALUE_DEFAULT, 0),
+            'answer' => new external_value(
+                PARAM_RAW,
+                'decide: the options picked of several, or where each thing goes to sort (JSON)',
+                VALUE_DEFAULT,
+                ''
+            ),
         ]);
     }
 
@@ -58,6 +64,7 @@ final class huddle extends external_api {
      * @param string $node
      * @param string $option
      * @param int $seq
+     * @param string $answer
      * @return array
      */
     public static function execute(
@@ -67,11 +74,13 @@ final class huddle extends external_api {
         int $huddleid = 0,
         string $node = '',
         string $option = '',
-        int $seq = 0
+        int $seq = 0,
+        string $answer = ''
     ): array {
         global $DB, $USER;
         $params = self::validate_parameters(self::execute_parameters(), ['courseid' => $courseid, 'action' => $action,
-            'sceneid' => $sceneid, 'huddleid' => $huddleid, 'node' => $node, 'option' => $option, 'seq' => $seq]);
+            'sceneid' => $sceneid, 'huddleid' => $huddleid, 'node' => $node, 'option' => $option, 'seq' => $seq,
+            'answer' => $answer]);
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
         $now = time();
@@ -106,7 +115,8 @@ final class huddle extends external_api {
                 huddles::publish($session, $char, (array) (json_decode($params['node'], true) ?: []), $now);
                 break;
             case 'decide':
-                huddles::decide($session, $char, $params['option'], $params['seq'], $now);
+                $whole = json_decode($params['answer'], true);
+                huddles::decide($session, $char, $params['option'], $params['seq'], $now, is_array($whole) ? $whole : []);
                 break;
             case 'leave':
                 huddles::leave($session, $char);
@@ -151,7 +161,13 @@ final class huddle extends external_api {
                 'options' => new external_multiple_structure(new external_single_structure([
                     'id' => new external_value(PARAM_ALPHANUMEXT, 'Option'),
                     'label' => new external_value(PARAM_TEXT, 'What it says'),
-                ]), 'The options, if it is one to choose'),
+                ]), 'The options, if it is one to choose or of several; the things, if it is one to sort'),
+                'bins' => new external_multiple_structure(new external_single_structure([
+                    'id' => new external_value(PARAM_ALPHANUMEXT, 'Group'),
+                    'label' => new external_value(PARAM_TEXT, 'What it says'),
+                ]), 'To sort: the groups', VALUE_DEFAULT, []),
+                'max' => new external_value(PARAM_INT, 'Of several: how many can be picked', VALUE_DEFAULT, 1),
+                'min' => new external_value(PARAM_INT, 'Of several: how many must be picked', VALUE_DEFAULT, 1),
                 'hand' => new external_value(PARAM_INT, 'Who decides'),
                 'handname' => new external_value(PARAM_TEXT, 'Their name'),
                 'myturn' => new external_value(PARAM_BOOL, 'This student decides'),
@@ -167,6 +183,7 @@ final class huddle extends external_api {
                     'by' => new external_value(PARAM_INT, 'Who chose'),
                     'option' => new external_value(PARAM_ALPHANUMEXT, 'What'),
                     'seq' => new external_value(PARAM_INT, 'For which decision'),
+                    'answer' => new external_value(PARAM_RAW, 'Of several or to sort: the whole answer (JSON)', VALUE_DEFAULT, ''),
                 ], 'For the guide: the choice to play', VALUE_OPTIONAL),
             ], 'The session of the team', VALUE_OPTIONAL),
         ]);
