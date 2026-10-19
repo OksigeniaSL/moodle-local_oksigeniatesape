@@ -19,7 +19,9 @@ namespace local_oksigeniatesape\local;
 /**
  * The page of the day: each day the creature asks for a page, a quick question from the chapters the student has
  * played. Answering it right feeds the creature and gives breath, never saber, so that it is not a farm; three days in
- * a row and the creature glows. One a day. Questions answered wrong come back first: spaced practice in disguise.
+ * a row and the creature glows. One a day. Questions answered wrong come back first, and then those of the minions of
+ * the Embrollo the student has not beaten yet: spaced practice in disguise. Answering right a question of a minion
+ * beats it: it is «untangled» in the bestiary of the student.
  *
  * @package    local_oksigeniatesape
  * @copyright  2026 Oksigenia <dev@oksigenia.cc>
@@ -62,6 +64,15 @@ final class daily {
         $view = ['question' => ['text' => $question['text'], 'options' => $question['options']], 'answered' => (bool) $done,
             'right' => $done && $done->success, 'mine' => $done ? (int) $done->answer : -1, 'breath' => self::BREATH,
             'streak' => self::streak($char, $courseid, $day), 'glow' => self::GLOW];
+        // The minion of the Embrollo that carries the question, and whether the answer of today untangled it.
+        $mission = missions::get($courseid);
+        $knot = $mission ? self::minion($mission, (string) $id) : null;
+        if ($knot) {
+            $view['minion'] = missions::text($knot['name'] ?? '', $mission->skin);
+            $beaten = $DB->get_field(self::T . 'found', 'timecreated', ['charid' => $char->id, 'missionid' => $mission->id,
+                'kind' => 'untangled', 'code' => (string) $knot['code']]);
+            $view['untangled'] = $done && $done->success && $beaten !== false && (int) $beaten >= $day;
+        }
         if ($done) {
             $view['correct'] = (int) $question['correct'];
             $view['why'] = (string) ($question['why'] ?? '');
@@ -108,6 +119,14 @@ final class daily {
         }
         if ($right) {
             engine::breath($member, self::BREATH, 'page', 0, 0, $now);
+            // The minion that carried it is beaten, once.
+            $mission = missions::get($courseid);
+            $knot = $mission ? self::minion($mission, (string) $id) : null;
+            $beaten = $knot ? ['charid' => $char->id, 'missionid' => $mission->id, 'kind' => 'untangled',
+                'code' => (string) $knot['code']] : null;
+            if ($beaten && !$DB->record_exists(self::T . 'found', $beaten)) {
+                $DB->insert_record(self::T . 'found', $beaten + ['courseid' => $courseid, 'timecreated' => $now]);
+            }
         }
         $transaction->allow_commit();
         return $right;
@@ -185,7 +204,15 @@ final class daily {
         }
         $wrong = array_values(array_filter($eligible, fn($q) => isset($asked[$q['id']]) && !$asked[$q['id']]));
         $fresh = array_values(array_filter($eligible, fn($q) => !isset($asked[$q['id']])));
-        $list = $wrong ?: ($fresh ?: $eligible);
+        // After what went wrong, the minions not beaten yet: a question of theirs not asked, or else any of theirs.
+        $mine = "charid = ? AND missionid = ? AND kind = 'untangled'";
+        $beaten = $DB->get_fieldset_select(self::T . 'found', 'code', $mine, [$char->id, $mission->id]);
+        $standing = function (array $q) use ($mission, $beaten): bool {
+            $knot = self::minion($mission, (string) $q['id']);
+            return $knot && !in_array((string) $knot['code'], $beaten, true);
+        };
+        $minions = array_values(array_filter($eligible, $standing));
+        $list = $wrong ?: (array_values(array_filter($fresh, $standing)) ?: ($minions ?: ($fresh ?: $eligible)));
         return $list[self::seed($char, $day) % count($list)]['id'];
     }
 
@@ -219,6 +246,61 @@ final class daily {
             $expected = (int) $when - DAYSECS;
         }
         return $streak;
+    }
+
+    /**
+     * The minion of the Embrollo that carries a question: the knot of the battle with it among its questions.
+     *
+     * @param \stdClass $mission With data.
+     * @param string $questionid
+     * @return array|null The knot (code, name, claim, weakness…).
+     */
+    public static function minion(\stdClass $mission, string $questionid): ?array {
+        foreach ($mission->data['battle']['knots'] ?? [] as $knot) {
+            if (in_array($questionid, (array) ($knot['questions'] ?? []), true)) {
+                return $knot;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * The bestiary of a student: the minions of the Embrollo of the places they have played, as cards, and whether they
+     * have beaten each one with the page of the day.
+     *
+     * @param \stdClass $char
+     * @param int $courseid
+     * @return array name, claim, weakness, untangled; in the order of the places.
+     */
+    public static function bestiary(\stdClass $char, int $courseid): array {
+        global $DB;
+        $mission = missions::get($courseid);
+        if (!$mission) {
+            return [];
+        }
+        $played = $DB->get_fieldset_sql(
+            "SELECT DISTINCT c.code
+               FROM {" . self::T . "found} f
+               JOIN {" . self::T . "scene} s ON s.missionid = f.missionid AND s.code = f.code
+               JOIN {" . self::T . "chapter} c ON c.id = s.chapterid
+              WHERE f.charid = ? AND f.missionid = ? AND f.kind = 'scene'",
+            [$char->id, $mission->id]
+        );
+        $codes = array_column($mission->data['chapters'] ?? [], 'code');
+        $mine = "charid = ? AND missionid = ? AND kind = 'untangled'";
+        $beaten = $DB->get_fieldset_select(self::T . 'found', 'code', $mine, [$char->id, $mission->id]);
+        $cards = [];
+        foreach ($mission->data['battle']['knots'] ?? [] as $knot) {
+            $place = $codes[(int) ($knot['chapter'] ?? 0) - 1] ?? '';
+            if (!in_array($place, $played, true)) {
+                continue;
+            }
+            $cards[] = ['name' => missions::text($knot['name'] ?? '', $mission->skin),
+                'claim' => missions::text($knot['claim'] ?? '', $mission->skin),
+                'weakness' => missions::text($knot['weakness'] ?? '', $mission->skin),
+                'untangled' => in_array((string) $knot['code'], $beaten, true)];
+        }
+        return $cards;
     }
 
     /**

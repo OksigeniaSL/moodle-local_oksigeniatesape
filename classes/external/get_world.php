@@ -139,6 +139,12 @@ final class get_world extends external_api {
             'market' => structures::market(),
             'expeditions' => structures::expeditions(),
             'album' => structures::album(),
+            'bestiary' => new external_multiple_structure(new external_single_structure([
+                'name' => new external_value(PARAM_TEXT, 'The minion'),
+                'claim' => new external_value(PARAM_TEXT, 'What it claims'),
+                'weakness' => new external_value(PARAM_TEXT, 'The idea that undoes it'),
+                'untangled' => new external_value(PARAM_BOOL, 'Beaten by the student with the page of the day'),
+            ]), 'The minions of the Embrollo of the places the student has played', VALUE_DEFAULT, []),
             'museum' => structures::museum(),
             'names' => new external_single_structure([
                 'heroes' => new external_value(PARAM_BOOL, 'Hero names allowed in the course'),
@@ -201,6 +207,9 @@ final class get_world extends external_api {
                 'breath' => new external_value(PARAM_INT, 'Breath it gives answered right'),
                 'streak' => new external_value(PARAM_INT, 'Days in a row answered right'),
                 'glow' => new external_value(PARAM_INT, 'Days in a row for the creature to glow'),
+                'minion' => new external_value(PARAM_TEXT, 'The minion of the Embrollo that carries it (empty: none)',
+                    VALUE_DEFAULT, ''),
+                'untangled' => new external_value(PARAM_BOOL, 'The answer of today beat that minion', VALUE_DEFAULT, false),
             ], 'The page of the day the creature asks for', VALUE_OPTIONAL),
             'challenges' => new external_multiple_structure(new external_single_structure([
                 'id' => new external_value(PARAM_INT, 'Challenge'),

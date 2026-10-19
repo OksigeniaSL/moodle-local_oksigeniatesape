@@ -1544,12 +1544,16 @@
       layer.innerHTML = '<div class="badge-card feed-card"><div class="feed-face' + (ate ? ' eating' : '') + '">' +
         T.creature(c.creature, c.creaturestage, true) + '</div><h2 id="tesape-feed-title">' + esc(title) + '</h2>' +
         (note ? '<p class="help">' + esc(note) + '</p>' : '') + (!p.answered ? '<p class="help">' + esc(t('app_page_help',
-        {name: name, breath: p.breath})) + '</p>' : '') + '<p class="page-q">' + esc(p.question.text) + '</p><div class="opts">' +
+        {name: name, breath: p.breath})) + '</p>' : '') + (p.minion && !p.untangled ? '<p class="page-minion">' +
+        minionMark(false) + '<span>' + esc(t('app_page_minion', p.minion)) + '</span></p>' : '') +
+        '<p class="page-q">' + esc(p.question.text) + '</p><div class="opts">' +
         p.question.options.map(function(o, i) {
           return '<button type="button" class="opt' + (p.answered && i === p.correct ? ' sel' : '') + '" data-feedopt="' + i +
             '"' + (p.answered ? ' disabled' : '') + '>' + esc(o) + '</button>';
         }).join('') + '</div>' + (p.answered ? (p.why ? '<p class="help">' + esc(p.why) + '</p>' : '') + '<p class="conseq said">' +
-        esc(p.right ? t('app_page_breath', p.breath) : t('app_page_tomorrow')) + '</p>' : '') +
+        esc(p.right ? t('app_page_breath', p.breath) : t('app_page_tomorrow')) + '</p>' : '') + (p.untangled ?
+        '<p class="page-minion untangled">' + minionMark(true) + '<span>' + esc(t('app_page_untangled', p.minion)) +
+        '</span></p>' : '') +
         '<div class="actions"><button class="btn ' + (p.answered ? 'btn-main' : 'btn-soft') + '" type="button" data-close>' +
         esc(t(p.answered ? 'app_continue' : 'app_later')) + '</button></div></div>';
       layer.querySelector('[data-close]').onclick = close;
@@ -3620,10 +3624,56 @@
    *
    * @return {string}
    */
+  /**
+   * A minion of the Embrollo, small: a tangle of threads, or a straight thread with a bow once untangled.
+   *
+   * @param {boolean} untangled
+   * @return {string} SVG.
+   */
+  function minionMark(untangled) {
+    if (untangled) {
+      return '<svg class="minion-mark untangled" viewBox="0 0 40 40" aria-hidden="true"><path d="M4 30 C14 30 18 10 36 10" ' +
+        'fill="none" stroke="#f2c14e" stroke-width="3" stroke-linecap="round"/><path d="M20 20 l-6 -6 m6 6 l6 -7 m-6 7 ' +
+        'l-5 8 m5 -8 l7 6" stroke="#f2c14e" stroke-width="2.4" stroke-linecap="round"/></svg>';
+    }
+    var loops = '';
+    for (var i = 0; i < 4; i++) {
+      loops += '<ellipse cx="20" cy="20" rx="' + (15 - i * 2) + '" ry="' + (7 + i * 2) + '" transform="rotate(' + (i * 47) +
+        ' 20 20)" fill="none" stroke="' + (i % 2 ? '#8e7cc3' : '#b9a6ff') + '" stroke-width="2.4"/>';
+    }
+    return '<svg class="minion-mark" viewBox="0 0 40 40" aria-hidden="true">' + loops + '<circle cx="16" cy="18" r="2" ' +
+      'fill="#fff"/><circle cx="24" cy="18" r="2" fill="#fff"/></svg>';
+  }
+
+  /**
+   * The bestiary of the Embrollo: its minions in the places the student has played, and those they have untangled with
+   * the page of the day, with the idea that undoes each one.
+   *
+   * @return {string}
+   */
+  function bestiaryCard() {
+    var list = state.world.bestiary || [];
+    if (!list.length && !state.world.mission) {
+      return '';
+    }
+    var beaten = list.filter(function(m) {
+      return m.untangled;
+    }).length;
+    return '<section class="card no-print bestiary-card" style="margin-top:16px"><h2>' + esc(t('app_bestiary')) + '</h2>' +
+      '<p class="help-soft">' + esc(t('app_bestiary_help', {untangled: beaten, all: list.length})) + '</p>' + (list.length ?
+      '<ul class="list">' + list.map(function(m) {
+        return '<li class="item minion' + (m.untangled ? ' untangled' : '') + '">' + minionMark(m.untangled) +
+          '<span class="grow"><b>' + esc(m.name) + '</b><span class="tag' + (m.untangled ? ' done' : ' todo') + '">' +
+          esc(t(m.untangled ? 'app_bestiary_untangled' : 'app_bestiary_standing')) + '</span><small>«' + esc(m.claim) +
+          '»</small>' + (m.untangled ? '<small class="minion-why">' + esc(t('app_bestiary_weakness', m.weakness)) +
+          '</small>' : '') + '</span></li>';
+      }).join('') + '</ul>' : '<p class="empty">' + esc(t('app_bestiary_empty')) + '</p>') + '</section>';
+  }
+
   function albumCard() {
     var a = state.world.album;
     if (!a) {
-      return guideCard();
+      return guideCard() + bestiaryCard();
     }
     var golden = a.cards.filter(function(x) {
       return x.golden;
@@ -3639,7 +3689,7 @@
           '') + '</div>';
       }).join('') + '</div>' : '<p class="empty">' + esc(t('app_album_empty')) + '</p>') + '<div class="actions" style="' +
       'justify-content:flex-start"><button class="btn btn-soft" data-activity="' + a.cmid + '">' + esc(t('app_album_open')) +
-      '</button></div></section>' + guideCard();
+      '</button></div></section>' + guideCard() + bestiaryCard();
   }
 
   /**

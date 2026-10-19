@@ -4781,6 +4781,46 @@ body.in-battle .badge-moment {
   color: var(--text-soft);
 }
 
+/* The minion of the Embrollo that brings the page, and the bestiary of the minions untangled. */
+.page-minion {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  margin: 6px 0;
+  color: var(--text-soft);
+}
+
+.page-minion.untangled {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.minion-mark {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+}
+
+.bestiary-card .minion b,
+.bestiary-card .minion small {
+  display: block;
+}
+
+/* The names come with their article («la Piedra que rueda»): at the head of a card, with a capital. */
+.bestiary-card .minion b::first-letter {
+  text-transform: uppercase;
+}
+
+.bestiary-card .minion .tag {
+  display: inline-block;
+  margin: 2px 0 4px;
+}
+
+.bestiary-card .minion-why {
+  color: var(--leaf-text);
+}
+
 .page-q {
   margin: 14px 0 4px;
   font-size: 18px;

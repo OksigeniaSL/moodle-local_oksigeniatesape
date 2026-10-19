@@ -128,6 +128,7 @@ final class view {
         if ($museum) {
             $world['museum'] = $museum;
         }
+        $world['bestiary'] = daily::bestiary($char, $courseid);
         $fields = 'challengeid, status, note';
         $validations = $DB->get_records(self::T . 'validation', ['charid' => $char->id, 'courseid' => $courseid], '', $fields);
         $group = teams::of($courseid, $userid);

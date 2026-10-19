@@ -104,6 +104,35 @@ final class daily_test extends \advanced_testcase {
             'resource' => 'saber']));
     }
 
+    public function test_the_minions_not_beaten_come_first_and_a_right_page_untangles_its_minion(): void {
+        global $DB;
+        $this->resetAfterTest();
+        [$course, $char, $member] = $this->make_student();
+        $mission = missions::get($course->id);
+        // The clearing played: its minion in the bestiary, still tangled.
+        $this->assertSame([['name' => 'la Piedra que rueda', 'untangled' => false]], array_map(
+            fn($m) => ['name' => $m['name'], 'untangled' => $m['untangled']],
+            daily::bestiary($char, $course->id)
+        ));
+        $page = daily::today($char, $member, self::NOW);
+        $this->assertSame('la Piedra que rueda', $page['minion']);
+        $this->assertFalse($page['untangled']);
+        daily::answer($char, $member, $this->right($char, $member, self::NOW), self::NOW);
+        $this->assertTrue(daily::today($char, $member, self::NOW)['untangled']);
+        $this->assertTrue(daily::bestiary($char, $course->id)[0]['untangled']);
+        // The Library played too: the next day, a minion not beaten yet comes first.
+        $DB->insert_record(self::T . 'found', ['charid' => $char->id, 'courseid' => $course->id, 'missionid' => $mission->id,
+            'kind' => 'scene', 'code' => 'C2-2', 'timecreated' => self::NOW]);
+        $next = daily::today($char, $member, self::NOW + DAYSECS);
+        $this->assertNotSame('la Piedra que rueda', $next['minion']);
+        $this->assertNotSame('', $next['minion']);
+        $this->assertCount(3, daily::bestiary($char, $course->id));
+        // The second one, beaten: two minions untangled, each once.
+        daily::answer($char, $member, $this->right($char, $member, self::NOW + DAYSECS), self::NOW + DAYSECS);
+        $this->assertTrue(daily::today($char, $member, self::NOW + DAYSECS)['untangled']);
+        $this->assertSame(2, $DB->count_records(self::T . 'found', ['charid' => $char->id, 'kind' => 'untangled']));
+    }
+
     public function test_three_days_in_a_row_and_a_wrong_page_comes_back(): void {
         $this->resetAfterTest();
         [, $char, $member] = $this->make_student();

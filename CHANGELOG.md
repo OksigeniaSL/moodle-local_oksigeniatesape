@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.142.0 (2026-10-19)
+
+- **The bestiary of the Embrollo and the spaced practice of the page of the day.** The page the creature asks for
+  each day comes, after the questions answered wrong, from the minions of the Embrollo the student has not beaten yet,
+  and says which minion brings it. Answered right, its minion is untangled: in the album of the tablet, the bestiary
+  shows the minions of the places the student has played, those untangled with the idea that undoes them (`daily`).
+
 ## 0.141.0 (2026-10-19)
 
 - **The verbs played on the painting of the place alive.** With the place alive behind a scene, a find, a path and a
