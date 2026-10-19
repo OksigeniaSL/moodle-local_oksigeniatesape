@@ -613,7 +613,9 @@
       '</b> ' + esc(t('teach_today_night_help', today.lostscene.title)) + '</p>' : '') +
       (sessions ? '<ol class="today-sessions">' + sessions + '</ol>' : '') +
       (today.offscreen ? '<p class="help-soft">' + esc(t('board_today_offscreen', today.offscreen)) + '</p>' : '') +
-      '</section>';
+      (today.mixup ? '<div class="note mixup-note"><b>' + esc(t('teach_today_mixup')) + '</b><br>' +
+      esc(t('board_today_mixup', today.mixup)) + (today.mixup.why ? '<br><small>' + esc(t('teach_mixup_why',
+      today.mixup.why)) + '</small>' : '') + '</div>' : '') + '</section>';
   }
 
   /**
@@ -2576,9 +2578,14 @@
               return '<div class="objective"><span><b>' + esc(o.code) + '</b> ' + esc(o.name) + '</span><span class="meter ' +
                 'level"><i style="width:' + pct + '%"></i></span><b>' + pct + '%</b></div>';
             }).join('');
+            // Each with how to lead the class back, and marked if it is the one the Embrollo boasts of today.
+            var ps = (state.data.today || {}).mixup;
             var confusions = sc.confusions.length ? '<div class="note"><b>' + esc(t('teach_confusions')) + '</b><br>' +
               sc.confusions.map(function(c) {
-                return (c.question ? '<small>' + esc(c.question) + '</small><br>' : '') + esc(c.text) + ' (' + c.count + ')';
+                var inps = ps && ps.answer === c.text && ps.question === String(c.question || '').trim().replace(/\.$/, '');
+                return (c.question ? '<small>' + esc(c.question) + '</small><br>' : '') + esc(c.text) + ' (' + c.count + ')' +
+                  (inps ? ' <span class="tag todo">' + esc(t('teach_mixup_inps')) + '</span>' : '') + (c.why ?
+                  '<br><small class="mixup-why">' + esc(t('teach_mixup_why', c.why)) + '</small>' : '');
               }).join('<br>') + '</div>' : '';
             // The decisions without a right answer: what the class chose, not how many got it right.
             var dilemmas = (sc.dilemmas || []).map(function(d) {

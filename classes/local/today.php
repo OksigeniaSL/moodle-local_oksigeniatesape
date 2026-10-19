@@ -110,7 +110,7 @@ final class today {
                 $context = nextclass::context($courseid);
                 $first = $context['mixups'][0] ?? null;
                 $found = $first ? ['question' => rtrim(trim((string) $first['question']), '.'),
-                    'answer' => (string) $first['answer']] : 0;
+                    'answer' => (string) $first['answer'], 'why' => (string) ($first['why'] ?? '')] : 0;
                 $cache->set($courseid, $found);
             }
             if ($found) {

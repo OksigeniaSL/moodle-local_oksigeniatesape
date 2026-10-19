@@ -311,6 +311,7 @@ final class structures {
             'mixup' => new external_single_structure([
                 'question' => new external_value(PARAM_TEXT, 'Question or game'),
                 'answer' => new external_value(PARAM_TEXT, 'The wrong answer most given'),
+                'why' => new external_value(PARAM_TEXT, 'Why it is not so, to lead the class back', VALUE_DEFAULT, ''),
             ], 'The mix-up that came up most', VALUE_OPTIONAL),
         ], 'Today in the valley', VALUE_OPTIONAL);
     }

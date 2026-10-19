@@ -70,6 +70,8 @@ final class nextclass_test extends \advanced_testcase {
         $this->assertSame('Paraguay', $context['place']);
         $this->assertArrayHasKey('SV-01', $context['objectives']);
         $this->assertSame('¿Qué cinco cosas llevamos al nido?', $context['mixups'][0]['question']);
+        // With why it is not so, as the scene tells it, to lead the class back.
+        $this->assertNotSame('', $context['mixups'][0]['why']);
         $this->assertNotEmpty($context['challenges']);
         $prompt = nextclass::prompt($context, 'es');
         $this->assertStringContainsString('in Spanish', $prompt);

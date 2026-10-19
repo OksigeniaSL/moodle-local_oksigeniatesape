@@ -201,7 +201,8 @@ final class nextclass {
                     $objectives[$o['code']]['total'] += $o['total'];
                 }
                 foreach ($scene['confusions'] as $c) {
-                    $mixups[] = ['question' => $c['question'], 'answer' => $c['text'], 'count' => $c['count']];
+                    $mixups[] = ['question' => $c['question'], 'answer' => $c['text'], 'count' => $c['count'],
+                        'why' => $c['why'] ?? ''];
                 }
             }
         }

@@ -667,7 +667,8 @@ final class view {
         if ($pacts) {
             $view['pacts'] = $pacts;
         }
-        $today = today::get($courseid);
+        // With the postscript of the Embrollo: the teacher sees which mix-up it is and how to lead the class back.
+        $today = today::get($courseid, true);
         if ($today) {
             $view['today'] = $today;
         }

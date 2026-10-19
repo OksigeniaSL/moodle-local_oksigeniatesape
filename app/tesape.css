@@ -5946,6 +5946,17 @@ body.in-battle .badge-moment {
   color: var(--lilac-text);
 }
 
+/* The class answers the postscript: who knows why it is not so. */
+.taunt-ask {
+  margin: 6px 0 10px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.mixup-why {
+  color: var(--leaf-text);
+}
+
 /* The «what if…?» at the end of a scene: a question to think about, alone, with the team or with the class. */
 .whatif {
   margin: 14px 0;

@@ -1194,17 +1194,19 @@
     }).join('');
     // What confuses the class most: in the letter, the Embrollo boasts of it (no names); without a letter, said plainly.
     var taunt = d.letter && d.mixup ? '<span class="taunt">' + esc(t('board_today_taunt', d.mixup)) + '</span>' : '';
+    // And the class answers it: who knows why it is not so.
+    var ask = d.mixup ? '<p class="taunt-ask">' + esc(t('board_today_ask', d.mixup)) + '</p>' : '';
     return '<section class="card board-today"><div class="kicker">' + esc(t('board_today')) + '</div><h3>' +
       esc(d.chapter) + '</h3>' + (d.gloat ? '<blockquote class="letter gloat"><small>' + esc(t('board_today_gloat')) +
       '</small>' + esc(d.gloat) + '</blockquote>' : '') + stainsList(d.stains || [], award) +
       (award && d.lostscene ? '<div class="actions board-small">' +
       '<button class="btn btn-soft" data-playscene="' + d.lostscene.id + '">' + esc(t('board_today_scene', d.lostscene.title)) +
       '</button></div>' : '') + (d.letter ? '<blockquote class="letter"><small>' + esc(t('board_today_letter',
-      d.letter.chapter)) + '</small>' + esc(d.letter.text) + taunt + '</blockquote>' + (d.letter.teaser ? '<p class="teaser">' +
+      d.letter.chapter)) + '</small>' + esc(d.letter.text) + taunt + '</blockquote>' + (taunt ? ask : '') + (d.letter.teaser ? '<p class="teaser">' +
       '<b>' + esc(t('app_teaser')) + '</b> ' + esc(d.letter.teaser) + '</p>' : '') : '') + (sessions ?
       '<ol class="today-sessions">' + sessions + '</ol>' : '') + (d.offscreen ? '<p class="help-soft">' +
       esc(t('board_today_offscreen', d.offscreen)) + '</p>' : '') + (d.mixup && !taunt ? '<p class="help-soft">' +
-      esc(t('board_today_mixup', d.mixup)) + '</p>' : '') + '</section>';
+      esc(t('board_today_mixup', d.mixup)) + '</p>' + ask : '') + '</section>';
   }
 
   /**

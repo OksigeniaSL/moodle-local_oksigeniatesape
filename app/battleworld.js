@@ -42,7 +42,9 @@
       var last = null;
       var places = {boss: null, teams: {}};
       var heroes = {};
-      var count = {hits: 0, knots: 0, shields: 0, bursts: 0};
+      var count = {hits: 0, knots: 0, shields: 0, bursts: 0, verbs: 0};
+      // The colour of each verb: the shield, the cheer, the glance and the trail.
+      var VERBS = {shield: 0xffc857, cheer: 0xe8508f, glance: 0x8fd3ff, trail: 0x7cc67f};
       var ratio = function() {
         return S.scale.height / Math.max(1, window.innerHeight);
       };
@@ -75,6 +77,60 @@
         var r = rect(places.teams[id]);
         var k = ratio();
         return r ? {x: (r.left + r.width / 2) * k, y: (r.top + r.height) * k, width: r.width * k, height: r.height * k} : null;
+      };
+      /**
+       * A verb used: an arrow of its colour goes from the heroes of the team that used it to those of the team it goes to,
+       * along a curve, with a light at its head; on the same team, a ring of its colour over them.
+       *
+       * @param {number} fromId
+       * @param {number} toId
+       * @param {string} kind shield, cheer, glance or trail.
+       */
+      var verb = function(fromId, toId, kind) {
+        var a = teamAt(fromId);
+        var b = teamAt(toId);
+        if (!a || !b) {
+          return;
+        }
+        count.verbs++;
+        var k = ratio();
+        var colour = VERBS[kind] || 0xffffff;
+        var y0 = a.y - 100 * k;
+        var y1 = b.y - 100 * k;
+        var quick = T.moves && !T.moves();
+        if (fromId === toId) {
+          var ring = S.add.ellipse(b.x, y1, b.width * 0.8, 50 * k).setStrokeStyle(5 * k, colour, 1).setDepth(35);
+          S.tweens.add({targets: ring, scaleX: 1.25, scaleY: 1.25, alpha: 0, duration: quick ? 400 : 1100,
+            onComplete: function() {
+              ring.destroy();
+            }});
+          return;
+        }
+        // A curve over the row, higher the further apart they are.
+        var mid = {x: (a.x + b.x) / 2, y: Math.min(y0, y1) - Math.min(170 * k, Math.abs(b.x - a.x) * 0.35 + 40 * k)};
+        var point = function(t) {
+          var u = 1 - t;
+          return {x: u * u * a.x + 2 * u * t * mid.x + t * t * b.x, y: u * u * y0 + 2 * u * t * mid.y + t * t * y1};
+        };
+        var line = S.add.graphics().setDepth(35);
+        var head = S.add.image(a.x, y0, 'spark').setTint(colour).setScale(1.8 * k).setDepth(36);
+        var p = {t: 0};
+        S.tweens.add({targets: p, t: 1, duration: quick ? 150 : 750, ease: 'Sine.easeInOut', onUpdate: function() {
+          line.clear().lineStyle(5 * k, colour, 0.9).beginPath().moveTo(a.x, y0);
+          for (var i = 1; i <= 24 * p.t; i++) {
+            var at = point(i / 24);
+            line.lineTo(at.x, at.y);
+          }
+          var end = point(p.t);
+          line.lineTo(end.x, end.y).strokePath();
+          head.setPosition(end.x, end.y);
+        }, onComplete: function() {
+          S.sparks.explode(10, b.x, y1);
+          S.tweens.add({targets: [line, head], alpha: 0, duration: 500, delay: 500, onComplete: function() {
+            line.destroy();
+            head.destroy();
+          }});
+        }});
       };
       /**
        * A knot flies from the Embrollo to a team: it falls on them, or a shield stops it.
@@ -206,6 +262,18 @@
           var life = l.maxhp ? l.hp / l.maxhp : 1;
           S.life = life;
           var turn = l.id + ':' + l.round;
+          // The verbs used in the turn, each once: from the team that used it to the one it goes to.
+          var ids = {};
+          (l.teams || []).forEach(function(team) {
+            ids[team.name] = team.id;
+          });
+          (l.tokens || []).forEach(function(token, i) {
+            var from = ids[token.team];
+            var to = token.target ? ids[token.target] : from;
+            if (from && to && once('verb:' + turn + ':' + i + ':' + token.kind + ':' + token.team + ':' + token.target)) {
+              verb(from, to, token.kind);
+            }
+          });
           if (l.revealed && (l.right || 0) > 0 && once('hit:' + turn)) {
             count.hits++;
             var b = bossAt();
@@ -256,6 +324,7 @@
             teams: Object.keys(heroes).length, heroes: Object.keys(heroes).reduce(function(sum, id) {
               return sum + heroes[id].filter(Boolean).length;
             }, 0), hits: count.hits, knots: count.knots, shields: count.shields, bursts: count.bursts,
+            verbs: count.verbs,
             // The teams whose heroes stand inside their place now.
             aligned: !S ? 0 : Object.keys(heroes).filter(function(id) {
               var at = teamAt(id);

@@ -93,6 +93,7 @@ final class get_results extends external_api {
                         'question' => new external_value(PARAM_TEXT, 'The question or the task'),
                         'text' => new external_value(PARAM_TEXT, 'The mix-up'),
                         'count' => new external_value(PARAM_INT, 'How many times'),
+                        'why' => new external_value(PARAM_TEXT, 'Why it is not so, to lead the class back', VALUE_DEFAULT, ''),
                     ])),
                     'dilemmas' => new external_multiple_structure(new external_single_structure([
                         'question' => new external_value(PARAM_TEXT, 'The decision'),

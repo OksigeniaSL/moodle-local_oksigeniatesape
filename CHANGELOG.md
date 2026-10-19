@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.145.0 (2026-10-19)
+
+- **The verbs of the battle, seen on the class screen.** Each verb used in a turn goes from the heroes of the team that
+  used it to those of the team it goes to, as an arrow of its colour (the shield gold, the cheer pink, the glance blue,
+  the trail green); on the same team, a ring over it.
+- **The postscript of the Embrollo, linked to the mix-up.** Under the postscript where it boasts of what confuses the
+  class most, the class screen asks who knows why it is not so. The panel of the teacher says, in «Today in the valley»,
+  which mix-up it is and how to lead the class back (what the scene tells of that option), and the results mark it in
+  its scene; each mix-up of the results carries how to lead the class back too.
+
 ## 0.144.1 (2026-10-19)
 
 - In «Its home», the creature keeps its own colour: it was drawn with the animation of a hatching, which took its hue

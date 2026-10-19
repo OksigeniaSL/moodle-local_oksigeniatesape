@@ -247,8 +247,8 @@ final class results {
         arsort($counts);
         $confusions = [];
         foreach (array_slice($counts, 0, self::CONFUSIONS, true) as $key => $count) {
-            [$question, $text] = self::describe($def, $key, $mission->skin, $mission->variant);
-            $confusions[] = ['question' => $question, 'text' => $text, 'count' => $count];
+            [$question, $text, $why] = self::describe($def, $key, $mission->skin, $mission->variant);
+            $confusions[] = ['question' => $question, 'text' => $text, 'count' => $count, 'why' => $why];
         }
         $dilemmas = [];
         foreach ($decided as $node => $picks) {
@@ -286,7 +286,7 @@ final class results {
      * @param string $key node|option or node|item|bin.
      * @param string $skin Story of the mission.
      * @param string $variant Local examples.
-     * @return string[] The question and the mix-up.
+     * @return string[] The question, the mix-up and why it is not so (empty if the scene does not say).
      */
     private static function describe(array $def, string $key, string $skin, string $variant): array {
         $parts = explode('|', $key);
@@ -299,15 +299,18 @@ final class results {
         if (count($parts) === 2) {
             foreach (array_merge($node['options'] ?? [], $node['spots'] ?? []) as $option) {
                 if ($option['id'] === $parts[1]) {
-                    return [$question, $text($option['label'])];
+                    // And why it is not so, as the scene tells it: the way to lead the class back.
+                    return [$question, $text($option['label']), $text($option['feedback'] ?? $option['say'] ?? '')];
                 }
             }
         }
         $label = $parts[1];
         $bin = $parts[2] ?? '';
+        $why = '';
         foreach ($node['items'] ?? [] as $item) {
             if ($item['id'] === $parts[1]) {
                 $label = $text($item['label']);
+                $why = $text($item['feedback'] ?? '');
             }
         }
         foreach ($node['bins'] ?? [] as $b) {
@@ -315,6 +318,6 @@ final class results {
                 $bin = $text($b['label']);
             }
         }
-        return [$question, $label . ' → ' . $bin];
+        return [$question, $label . ' → ' . $bin, $why];
     }
 }
