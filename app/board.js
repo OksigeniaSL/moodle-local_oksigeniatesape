@@ -39,6 +39,66 @@
 
   /* ---------- Loading and refreshing ---------- */
 
+  /** The books of the museum this class screen already saw pass, by course. */
+  var BOOKS = 'tesape-board-books-' + cfg.courseid;
+
+  /**
+   * A new card in the field guide of the class is a page that turns on the class screen: its name and its group, for a
+   * few seconds. Not in the middle of a battle or of something the teacher launched; the first time this screen sees
+   * the museum, it only takes note.
+   */
+  function museumNews() {
+    var m = state.cls && state.cls.museum;
+    if (!m || battling() || state.showEl) {
+      return;
+    }
+    var now = [];
+    m.shelves.forEach(function(shelf) {
+      shelf.books.forEach(function(b) {
+        now.push({key: (shelf.group || '') + '|' + b.name, name: b.name, group: shelf.group || t('app_museum_nogroup')});
+      });
+    });
+    var seen = null;
+    try {
+      seen = JSON.parse(window.localStorage.getItem(BOOKS) || 'null');
+    } catch (e) {
+      seen = null;
+    }
+    try {
+      window.localStorage.setItem(BOOKS, JSON.stringify(now.map(function(b) {
+        return b.key;
+      })));
+    } catch (e) {
+      // Without storage, the screen does not show the pages; nothing else.
+      return;
+    }
+    var fresh = seen ? now.filter(function(b) {
+      return seen.indexOf(b.key) < 0;
+    }).slice(0, 3) : [];
+    if (!fresh.length) {
+      return;
+    }
+    var el = document.createElement('div');
+    el.className = 'session-show shows-page';
+    el.setAttribute('role', 'status');
+    el.innerHTML = '<div class="show-card"><div class="kicker">' + esc(t('board_page_new')) + '</div><div class="pages">' +
+      fresh.map(function(b, i) {
+        return '<div class="page-turn" style="animation-delay:' + (i * 1.4) + 's"><small>' + esc(b.group) + '</small><b>' +
+          esc(b.name) + '</b></div>';
+      }).join('') + '</div></div>';
+    document.body.appendChild(el);
+    state.showEl = el;
+    if (T.fx && !T.fx.sound('card')) {
+      T.fx.sound('chime');
+    }
+    setTimeout(function() {
+      if (state.showEl === el) {
+        state.showEl = null;
+      }
+      el.remove();
+    }, 3500 + fresh.length * 1400);
+  }
+
   function load(first) {
     if (first) {
       app.innerHTML = '<div class="loading"><div><div class="lamp"></div>' + esc(t('app_loading')) + '</div></div>';
@@ -63,6 +123,7 @@
         state.sig = sig;
         render();
       }
+      museumNews();
     }).catch(function(e) {
       if (first) {
         app.innerHTML = '<div class="story"><h2>' + esc(t('app_error')) + '</h2><p class="help">' + esc(e.message) +

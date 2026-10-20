@@ -375,6 +375,8 @@ final class view {
                         $mission,
                         encounters::crossed($char, $mission, (string) $chapter->code)
                     ) : null) : null,
+                // A minion of the Embrollo on the road to the place the class is opening, until the class lights it.
+                'minion' => $current ? minions::on_road($char, $mission, (string) $chapter->code) : null,
                 // The Embrollo comes out when the student lights the lantern of the place with its core scene.
                 'embrollo' => isset($embrollos[$chapter->code]) ? $embrollos[$chapter->code] + ['letter' =>
                     today::letter($mission, $chapter->code)] : null,
@@ -389,7 +391,7 @@ final class view {
                 // The quests of the place, for whoever wants more, whatever their step.
                 'quests' => array_map($sceneview, scenes::quests($here)),
             ];
-            foreach (['embrollo', 'encounter'] as $optional) {
+            foreach (['embrollo', 'encounter', 'minion'] as $optional) {
                 if ($list[count($list) - 1][$optional] === null) {
                     unset($list[count($list) - 1][$optional]);
                 }

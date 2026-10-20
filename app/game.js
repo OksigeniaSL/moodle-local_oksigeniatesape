@@ -1728,6 +1728,24 @@
         'data-stain="' + s.id + '" title="' + esc(label) + '"><span aria-hidden="true">' + (page ? PAGE : BLOT) + '</span>' +
         '<span class="sr-only">' + esc(label) + '</span></button></div></foreignObject>' : '';
     }).join('');
+    // The minion of the Embrollo that stands on the road to the place the class is opening: on the way from the place
+    // before (from the first place, on the way out of it).
+    var minions = state.visit ? '' : m.chapters.map(function(ch, i) {
+      if (!ch.minion) {
+        return '';
+      }
+      var from = m.chapters[i - 1] || m.chapters[i + 1] || ch;
+      var f = m.chapters[i - 1] ? 0.62 : 0.3;
+      var x = Math.round(from.x + (ch.x - from.x) * f);
+      var y = Math.round(from.y + (ch.y - from.y) * f);
+      var art = T.artUrl([ch.minion.picture]);
+      var label = t('app_minion_road', T.capital(ch.minion.name));
+      return '<foreignObject x="' + (x - 21) + '" y="' + (y - 30) + '" width="42" height="42" class="map-minion' +
+        (ch.minion.tried ? ' tried' : '') + '"><div xmlns="http://www.w3.org/1999/xhtml"><button type="button" ' +
+        'class="minion-btn" data-minion="' + ch.id + '" title="' + esc(label) + '">' + (art ? '<img src="' + esc(art) +
+        '" alt="">' : '<span aria-hidden="true">' + T.embrollo(0.6) + '</span>') + '<span class="sr-only">' + esc(label) +
+        '</span></button></div></foreignObject>';
+    }).join('');
     var c = state.world.character;
     var reached = Math.min(lastDone + 1, m.chapters.length - 1);
     var fresh = T.mapNewRoad(cfg.courseid + '-' + cfg.userid + '-' + m.code, m.chapters, reached);
@@ -1776,7 +1794,7 @@
       '" role="group" aria-label="' + esc(m.title) + '"><defs>' + T.MAPGLOW + '</defs>' + T.mapGround(m) +
       T.mapLandmarks(m) + T.mapNight(m) + '<polyline points="' + pts + '" class="road"/>' +
       (walked ? '<polyline points="' + walked + '" class="road walked"/>' : '') + roadDrawing(fresh) +
-      (T.critters ? T.critters.fireflies(m) : '') + prints + places + crowd + blots + me + pet + hungry + '</svg></div>';
+      (T.critters ? T.critters.fireflies(m) : '') + prints + places + crowd + blots + minions + me + pet + hungry + '</svg></div>';
   }
 
   /**
@@ -1955,6 +1973,71 @@
     'fill="#f3e6c4" stroke="#b9a6ff" stroke-width="2" stroke-linejoin="round"/><path d="M26 5v6h6" fill="none" ' +
     'stroke="#b9a6ff" stroke-width="2"/><path d="M13 15h13M13 20h13M13 25h9" stroke="#8a7a5a" stroke-width="1.6" ' +
     'stroke-linecap="round"/></svg>';
+
+  /**
+   * A minion of the Embrollo on the road: its face, what it claims and a question of its knot; one try a day, and the
+   * right answer untangles it, with a gem, what undoes it and the why.
+   *
+   * @param {Object} minion code, name, claim, picture, question, options, tried.
+   */
+  function minionMoment(minion) {
+    var art = T.artUrl([minion.picture]);
+    var layer = document.createElement('div');
+    layer.className = 'badge-moment stain-moment minion-moment';
+    layer.setAttribute('role', 'dialog');
+    layer.setAttribute('aria-modal', 'true');
+    layer.setAttribute('aria-labelledby', 'tesape-minion-title');
+    layer.innerHTML = '<div class="badge-card"><div class="kicker">' + esc(t('app_minion_on_road')) + '</div>' +
+      '<div class="minion-face" aria-hidden="true">' + (art ? '<img src="' + esc(art) + '" alt="">' : T.embrollo(0.8)) +
+      '</div><h2 id="tesape-minion-title">' + esc(T.capital(minion.name)) + '</h2>' + (minion.claim ? '<p class="knot-laugh">' +
+      esc(minion.claim) + '</p>' : '') + (minion.tried ? '<p class="turn-outcome fell">' + esc(t('app_minion_tried')) +
+      '</p>' : '<p class="help">' + esc(t('app_minion_question')) + '</p><p><b>' + esc(minion.question) + '</b></p><div ' +
+      'class="page-options">' + minion.options.map(function(o, i) {
+        return '<button type="button" class="btn btn-soft" data-opt="' + i + '">' + esc(o) + '</button>';
+      }).join('') + '</div>') + '<div data-said aria-live="polite"></div><div class="actions"><button type="button" ' +
+      'class="btn btn-soft" data-close>' + esc(t('app_close')) + '</button></div></div>';
+    document.body.appendChild(layer);
+    var close = function() {
+      layer.remove();
+      refresh();
+    };
+    layer.querySelector('[data-close]').onclick = close;
+    layer.querySelectorAll('[data-opt]').forEach(function(b) {
+      b.onclick = function() {
+        layer.querySelectorAll('[data-opt]').forEach(function(x) {
+          x.disabled = true;
+        });
+        T.api('untangle_minion', {courseid: cfg.courseid, code: minion.code, answer: Number(b.dataset.opt)}).then(function(r) {
+          var said = layer.querySelector('[data-said]');
+          var right = layer.querySelector('[data-opt="' + r.correct + '"]');
+          if (right) {
+            right.classList.add('chosen');
+          }
+          if (!r.right) {
+            if (T.fx) {
+              T.fx.sound('giggle');
+            }
+            said.innerHTML = '<p class="turn-outcome fell">' + esc(t('app_minion_laughs')) + '</p>' + (r.why ? '<p class="help">' +
+              esc(r.why) + '</p>' : '');
+          } else {
+            if (T.fx) {
+              T.fx.sound('coin');
+            }
+            layer.querySelector('.minion-face').classList.add('flees');
+            said.innerHTML = '<div class="conseq good"><span class="what">' + esc(t('app_minion_untangled', T.capital(minion.name))) +
+              '</span>' + (r.gems ? esc(t(r.gems === 1 ? 'app_encounter_gem' : 'app_encounter_gems', r.gems)) : '') + '</div>' +
+              (r.weakness ? '<p><b>' + esc(t('app_minion_weakness', r.weakness)) + '</b></p>' : '') + (r.why ? '<p class="help">' +
+              esc(r.why) + '</p>' : '');
+          }
+          layer.querySelector('[data-close]').focus();
+        }).catch(function(e) {
+          T.toast(esc(e.message), true);
+          close();
+        });
+      };
+    });
+    layer.querySelector('button').focus();
+  }
 
   /**
    * A page of the Great Book the Embrollo stole: what it claims and the question of today; one try a day for each
@@ -2693,6 +2776,17 @@
           pick.classList.remove('busy');
           T.toast(esc(e.message), true);
         });
+      };
+    });
+    app.querySelectorAll('[data-minion]').forEach(function(b) {
+      b.onclick = function(ev) {
+        ev.stopPropagation();
+        var ch = (state.world.mission.chapters || []).filter(function(x) {
+          return x.id === Number(b.dataset.minion);
+        })[0];
+        if (ch && ch.minion) {
+          minionMoment(ch.minion);
+        }
       };
     });
     app.querySelectorAll('[data-stain]').forEach(function(b) {

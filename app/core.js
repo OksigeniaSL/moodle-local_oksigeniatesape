@@ -1133,6 +1133,17 @@
   }
 
   /**
+   * A name at the start of a sentence: «la Piedra que rueda» becomes «La Piedra que rueda».
+   *
+   * @param {string} text
+   * @return {string}
+   */
+  T.capital = function(text) {
+    text = String(text || '');
+    return text.charAt(0).toUpperCase() + text.slice(1);
+  };
+
+  /**
    * The mark of a creature told in words, for its sheet: «two leaves in a row on its belly».
    *
    * @param {Object|string} traits

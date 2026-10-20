@@ -11164,3 +11164,148 @@ body.still .loot-lid {
     padding: 12px 16px 22px;
   }
 }
+
+/* A new card of the field guide on the class screen: a page that turns. */
+.shows-page {
+  background: rgba(10, 24, 36, .82);
+}
+
+.shows-page .pages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  justify-content: center;
+  margin-top: 16px;
+  perspective: 900px;
+}
+
+.page-turn {
+  display: grid;
+  gap: 6px;
+  min-width: 220px;
+  padding: 28px 30px;
+  border-radius: 4px 14px 14px 4px;
+  background: linear-gradient(90deg, #e9dcc0, #f8f0dc 12%, #f8f0dc);
+  color: #3a2a18;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .45);
+  transform-origin: left center;
+  opacity: 0;
+  animation: page-turn 1.1s ease-out forwards;
+}
+
+.page-turn small {
+  font-size: clamp(16px, 1.6vw, 22px);
+  color: #7a5a30;
+}
+
+.page-turn b {
+  font-family: var(--f-title);
+  font-size: clamp(28px, 3.4vw, 48px);
+}
+
+@keyframes page-turn {
+  from {
+    opacity: 0;
+    transform: rotateY(-80deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+body.still .page-turn {
+  animation: none;
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-turn {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* A minion of the Embrollo on the road of the map: it bobs where it stands; the touch always lands. */
+.minion-btn {
+  display: block;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, .45));
+}
+
+.minion-btn > img,
+.minion-btn > span:first-child {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  animation: minion-bob 2.4s ease-in-out infinite;
+}
+
+.minion-btn > span:first-child svg,
+.minion-btn > span:first-child img {
+  width: 100%;
+  height: 100%;
+}
+
+.map-minion.tried .minion-btn {
+  opacity: .7;
+}
+
+@keyframes minion-bob {
+  0%, 100% {
+    transform: translateY(0) rotate(-4deg);
+  }
+
+  50% {
+    transform: translateY(-4px) rotate(4deg);
+  }
+}
+
+.minion-face {
+  width: 110px;
+  height: 110px;
+  margin: 4px auto 6px;
+}
+
+.minion-face img,
+.minion-face svg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Untangled: it runs away off the card. */
+.minion-face.flees {
+  animation: minion-flees 1.2s ease-in forwards;
+}
+
+@keyframes minion-flees {
+  30% {
+    transform: translateY(-10px) rotate(-10deg);
+  }
+
+  100% {
+    transform: translateX(160%) rotate(30deg) scale(.6);
+    opacity: 0;
+  }
+}
+
+body.still .minion-btn > img,
+body.still .minion-btn > span:first-child,
+body.still .minion-face.flees {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .minion-btn > img,
+  .minion-btn > span:first-child,
+  .minion-face.flees {
+    animation: none;
+  }
+}

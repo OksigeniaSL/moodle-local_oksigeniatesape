@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.160.0 (2026-10-20)
+
+- **Minions of the Embrollo on the road.** In the place the class is opening, and until the class lights its lantern,
+  the first minion of the place a student has not untangled stands on the road to it on the map. A touch: what it
+  claims and a question of its knot, once a day. Right, it is untangled (as with the page of the day), runs away and
+  gives a gem, with what undoes it and the why; wrong, it laughs and waits until tomorrow, with the why. Nothing of the
+  class waits for it. Service `local_oksigeniatesape_untangle_minion`.
+- **A new card of the field guide turns a page on the class screen**: its name and its group, for a few seconds, never
+  in the middle of a battle or of something the teacher launched.
+
 ## 0.159.0 (2026-10-20)
 
 - **The museum of the class is a room.** With the painting of the room in the art pack (`scene.museo`), the museum opens

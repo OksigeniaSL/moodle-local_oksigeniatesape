@@ -419,6 +419,13 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:play',
     ],
+    'local_oksigeniatesape_untangle_minion' => [
+        'classname' => 'local_oksigeniatesape\\external\\untangle_minion',
+        'description' => 'A student answers the minion of the Embrollo that stands on the road of the map.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:play',
+    ],
     'local_oksigeniatesape_recover_page' => [
         'classname' => 'local_oksigeniatesape\\external\\recover_page',
         'description' => 'A student answers the question of a page of the Great Book the Embrollo stole.',
