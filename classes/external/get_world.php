@@ -194,6 +194,7 @@ final class get_world extends external_api {
                 'options' => new external_multiple_structure(new external_value(PARAM_TEXT, 'Option'), 'Its options', VALUE_DEFAULT, []),
                 'tried' => new external_value(PARAM_BOOL, 'The student tried today to bring it back', VALUE_DEFAULT, false),
                 'forteam' => new external_value(PARAM_BOOL, 'A knot for the team of the student, from a card', VALUE_DEFAULT, false),
+                'picture' => new external_value(PARAM_RAW_TRIMMED, 'The drawing of the being the sheet talks about', VALUE_DEFAULT, ''),
                 'hidden' => new external_value(
                     PARAM_BOOL,
                     'A page the Embrollo hid after a battle lost: not on the map, found by opening its place',

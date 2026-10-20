@@ -114,6 +114,7 @@ final class play_minigame extends external_api {
                 VALUE_DEFAULT,
                 false
             ),
+            'training' => new external_value(PARAM_BOOL, 'Won again with the gems of the day given: training', VALUE_DEFAULT, false),
             'world' => get_world::execute_returns(),
         ]);
     }

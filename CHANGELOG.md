@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.166.0 (2026-10-20)
+
+- **The being of the sheet, tangled** (mission v69). In the hunts for mistakes of the Embrollo and in the stains of the
+  map, a sheet can say which being of the catalog it talks about (`being`): it is drawn next to its title, pale and
+  tangled with a lilac thread for each mistake left. Each mistake found drops a thread, and with none left the being
+  comes loose and shines. A sheet without a being, or a being without a drawing in the art pack, shows nothing.
+- **A prize once, then training with a cap.** A minigame gives its prize (its item, its gems, the coat) the first time
+  it is won, as before; won again, it now gives a gem, up to three times a day for all the minigames together. After
+  that it is training: the streak alone, said at the start of the minigame and at its end. The next day there are gems
+  again.
+- **A sheet for whoever stands in.** In the card of the session of today in the panel, «Sheet for whoever stands in for
+  you» opens the session on paper over the panel: the address of the class screen, what to have ready, the steps with
+  their minutes, what to say and what the class screen does, the key questions, the mistakes to watch, what to do if
+  there is time left or not enough, the teams with the first names of their members, and what to do if something does
+  not work. Printed, it is the sheet alone.
+
 ## 0.165.0 (2026-10-20)
 
 - **Guess who, the naturalist's** (mission v68), a new kind of minigame (`guesswho`), in the library. Twelve living

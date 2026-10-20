@@ -1054,6 +1054,87 @@
           return '<li>' + esc(r) + '</li>';
         }).join('') + '</ul></div>' : '';
     };
+    // The sheet for whoever stands in: the session on paper.
+    var subButton = function() {
+      return '<p class="session-sub"><button type="button" class="btn btn-soft" data-ssub>' + T.icon('log') +
+        esc(t('teach_sub_open')) + '</button></p>';
+    };
+    // What a step launches on the class screen, said on paper when the step does not say it already.
+    var onScreen = function(st) {
+      var does = (st.do || '').toLowerCase();
+      var said = [st.action, st.also].map(function(action) {
+        switch (action) {
+          case 'scene':
+            return st.scene && does.indexOf(st.scene.toLowerCase()) < 0 ? t('teach_session_act_scene', st.scene) : '';
+          case 'game':
+            return t('teach_session_act_game', st.gametitle);
+          case 'timer':
+            return t('teach_session_act_timer', st.timer);
+          case 'enter': case 'card': case 'battle': case 'pacts': case 'council': case 'light':
+            return t('teach_session_act_' + action);
+        }
+        return '';
+      }).filter(function(x) {
+        return x && does.indexOf(x.toLowerCase()) < 0;
+      });
+      return said.length ? '<small class="sub-screen">' + esc(t('teach_sub_onscreen', said.join(' · '))) + '</small>' : '';
+    };
+    var substitute = function(v) {
+      var d = state.data;
+      var list = function(title, items) {
+        return items.length ? '<h3>' + esc(title) + '</h3><ul>' + items.join('') + '</ul>' : '';
+      };
+      var loose = d.students.filter(function(x) {
+        return !x.teamid;
+      });
+      var teams = d.teams.map(function(g) {
+        return '<p><b>' + esc(g.name) + ':</b> ' + esc(d.students.filter(function(x) {
+          return x.teamid === g.id;
+        }).map(function(x) {
+          return x.firstname;
+        }).join(', ')) + '</p>';
+      }).join('') + (loose.length ? '<p><b>' + esc(t('teach_sub_noteam')) + ':</b> ' + esc(loose.map(function(x) {
+        return x.firstname;
+      }).join(', ')) + '</p>' : '');
+      var layer = document.createElement('div');
+      layer.className = 'print-layer';
+      layer.setAttribute('role', 'dialog');
+      layer.setAttribute('aria-modal', 'true');
+      layer.setAttribute('aria-label', t('teach_sub_open'));
+      layer.innerHTML = '<div class="printout"><div class="actions no-print"><button class="btn btn-main" data-doprint>' +
+        esc(t('board_print_go')) + '</button><button class="btn btn-soft" data-printback>' + esc(t('board_print_back')) +
+        '</button></div><div class="sheet-page substitute-sheet"><p class="kicker">' + esc(t('teach_sub_kicker',
+        cfg.coursename)) + '</p><h1>' + esc(name(v)) + '</h1><p class="lead">' + esc(v.title) + ' · ' +
+        esc(t('teach_session_minutes', v.minutes)) + '</p><p>' + esc(t('teach_sub_screen')) + ' <b>' +
+        esc(cfg.wwwroot + '/local/oksigeniatesape/board.php?id=' + cfg.courseid) + '</b></p>' +
+        list(t('teach_session_before'), v.before.map(function(b) {
+          return '<li>' + esc(b) + '</li>';
+        })) + '<h3>' + esc(t('teach_session_steps')) + '</h3><ol class="sub-steps">' + v.steps.map(function(st) {
+          return '<li><b>' + st.from + '–' + st.to + ' min.</b> ' + esc(st.do) + onScreen(st) + (st.say ?
+            '<blockquote>' + esc(st.say).replace(/\n/g, '<br>') + '</blockquote>' : '') + '</li>';
+        }).join('') + '</ol>' + list(t('teach_session_questions'), v.questions.map(function(q) {
+          return '<li><b>' + esc(q.ask) + '</b>' + (q.expect ? ' <i>' + esc(q.expect) + '</i>' : '') + '</li>';
+        })) + list(t('teach_session_watch'), v.watch.map(function(w) {
+          return '<li><i>' + esc(w.mistake) + '</i> → ' + esc(w.redirect) + '</li>';
+        })) + (v.spare ? '<h3>' + esc(t('teach_session_spare')) + '</h3><p>' + esc(v.spare) + '</p>' : '') +
+        (teams ? '<h3>' + esc(t('teach_sub_teams')) + '</h3>' + teams : '') + '<h3>' + esc(t('teach_sub_ifnot')) +
+        '</h3><p>' + esc(t('teach_sub_ifnot_text')) + '</p></div></div>';
+      document.body.appendChild(layer);
+      document.body.classList.add('printing-sheet');
+      var back = function() {
+        layer.remove();
+        document.body.classList.remove('printing-sheet');
+        var again = el.querySelector('[data-ssub]');
+        if (again) {
+          again.focus();
+        }
+      };
+      layer.querySelector('[data-doprint]').onclick = function() {
+        window.print();
+      };
+      layer.querySelector('[data-printback]').onclick = back;
+      layer.querySelector('[data-doprint]').focus();
+    };
     var draw = function() {
       var s = state.session;
       if (!s) {
@@ -1082,7 +1163,7 @@
           esc(t('teach_session_clear')) + '</button>' : '') + (v.shown === 'council' ? '' : '<button type="button" ' +
           'class="btn btn-soft" data-sshow="council">' + esc(t('teach_session_act_council')) + '</button>') +
           '<button type="button" class="btn btn-main" data-sclose>' +
-          esc(t('teach_session_close')) + '</button></div>';
+          esc(t('teach_session_close')) + '</button></div>' + subButton();
       } else {
         box.innerHTML = '<div class="kicker">' + esc(t('teach_session_next')) + (v.optional ? ' · ' +
           esc(t('teach_session_optional')) : '') + '</div><h2>' + esc(name(v)) + '</h2><p class="lead">' + esc(v.title) + ' · ' +
@@ -1091,7 +1172,7 @@
             return '<li>' + esc(b) + '</li>';
           }).join('') + '</ul>' : '') + folded(t('teach_session_steps'), steps(v, false)) + sheetExtras(v) +
           '<div class="actions" style="justify-content:flex-start"><button type="button" class="btn btn-main" data-sstart="' +
-          v.chapter + ':' + v.number + '">' + esc(t('teach_session_start')) + '</button></div>' + other(s);
+          v.chapter + ':' + v.number + '">' + esc(t('teach_session_start')) + '</button></div>' + subButton() + other(s);
       }
     };
     // Another session, to start it instead.
@@ -1160,6 +1241,8 @@
         }).catch(function(e) {
           T.toast(esc(e.message), true);
         });
+      } else if (d.ssub !== undefined) {
+        substitute(state.session.open || state.session.next);
       } else if (d.sgoto) {
         state.tab = d.sgoto;
         render();

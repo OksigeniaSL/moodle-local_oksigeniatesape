@@ -73,6 +73,8 @@ final class stains_test extends \advanced_testcase {
         $view = stains::view($open[0], missions::get($course->id));
         $this->assertNotSame('', $view['place']);
         $this->assertArrayNotHasKey('right', $view['parts'][1]);
+        // And the being the sheet talks about, drawn, if it has one.
+        $this->assertMatchesRegularExpression('/^(being\.[a-z]+)?$/', $view['picture']);
         // The same day, the same stain; calm, never a second one while it is there.
         $this->assertCount(1, stains::open($course->id, $this->monday + 3600));
         $this->assertCount(1, stains::open($course->id, $this->monday + DAYSECS));

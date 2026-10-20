@@ -339,7 +339,8 @@ final class stains {
      *
      * @param \stdClass $stain
      * @param \stdClass $mission
-     * @return array|null id, chapter, place, title, parts (text, mark, wrong); null if its sheet is not there any more.
+     * @return array|null id, chapter, place, title, parts (text, mark, wrong), picture (of the being it talks about); null
+     *   if its sheet is not there any more.
      */
     public static function view(\stdClass $stain, \stdClass $mission): ?array {
         if (($stain->kind ?? 'stain') === 'page') {
@@ -359,7 +360,7 @@ final class stains {
         return ['id' => (int) $stain->id, 'chapter' => (string) $stain->chapter, 'place' => $place,
             'title' => missions::text($sheet['title'] ?? '', $mission->skin, $mission->variant),
             'parts' => array_map(fn($p) => ['text' => $p['text'], 'mark' => $p['mark'], 'wrong' => $p['wrong']], $parts),
-            'kind' => 'stain', 'groupid' => (int) ($stain->groupid ?? 0)];
+            'kind' => 'stain', 'groupid' => (int) ($stain->groupid ?? 0), 'picture' => minigames::being_picture($mission, $sheet)];
     }
 
     /**

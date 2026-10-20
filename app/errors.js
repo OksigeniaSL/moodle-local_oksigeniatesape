@@ -115,7 +115,8 @@
       var html = '<div class="errors-head"><span class="kicker">' + esc(t('app_errors_sheet', {n: run.sheet + 1,
         total: game.sheets.length})) + '</span>' + m.lookButton() + blots() + '</div><section class="card errors-sheet">' +
         (reads ? '<button type="button" class="btn btn-soft read-card" data-readcard aria-label="' +
-        esc(t('app_read_aloud')) + '">' + T.icon('speak') + '</button>' : '') + '<h2>' + esc(s.title) + '</h2><p class="errors-text">' + text +
+        esc(t('app_read_aloud')) + '">' + T.icon('speak') + '</button>' : '') + '<div class="errors-title">' +
+        T.tangled(s.picture, left, !!inplace) + '<h2>' + esc(s.title) + '</h2></div><p class="errors-text">' + text +
         '</p></section>' + (why ? '<ul class="errors-why">' + why + '</ul>' : '') + '<p class="help" aria-live="polite">' +
         esc(left ? t('app_errors_left', left) : t('app_errors_clean')) + '</p>' + (left ? '' :
         '<div class="actions"><button class="btn btn-main" data-focus data-next>' + esc(last ? t('app_errors_finish') :

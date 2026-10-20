@@ -60,6 +60,30 @@
   };
 
   /**
+   * A being drawn and tangled by the Embrollo: a thread for each mistake left on the sheet that talks about it, and with
+   * none, free. Without its drawing in the art pack, nothing.
+   *
+   * @param {string} picture Key in the art pack (being.<id>).
+   * @param {number} threads Mistakes left.
+   * @param {boolean} snap A thread has just come off: it falls.
+   * @return {string}
+   */
+  T.tangled = function(picture, threads, snap) {
+    var art = picture ? T.artUrl([picture]) : null;
+    if (!art) {
+      return '';
+    }
+    var paths = [];
+    for (var i = 0; i < threads + (snap ? 1 : 0); i++) {
+      var y = 16 + (i * 23) % 64;
+      paths.push('<path' + (i >= threads ? ' class="snap"' : '') + ' d="M2 ' + y + ' C30 ' + (y - 34 + (i * 13) % 40) + ' 64 ' +
+        (y + 38 - (i * 11) % 30) + ' 94 ' + (y + 8) + '"/>');
+    }
+    return '<span class="tangled' + (threads ? '' : ' free') + '" aria-hidden="true"><img src="' + esc(art) + '" alt="">' +
+      (paths.length ? '<svg viewBox="0 0 96 96">' + paths.join('') + '</svg>' : '') + '</span>';
+  };
+
+  /**
    * What plays a minigame of a type: Defensa del nido, a hunt for mistakes of the Embrollo, Who is alive?, the two
    * circles, Who am I? or Guess who.
    *
@@ -151,8 +175,11 @@
     m.opening = function(art) {
       var game = m.game;
       var scene = game.scene || {};
+      // Won already, and the gems of the day for winning again given: training, with the streak alone.
+      var training = game.training ? '<p class="help game-training">' + T.icon('trail') + esc(t('app_training_note')) +
+        '</p>' : '';
       if (!scene.embrollo) {
-        return art + '<p class="lead">' + esc(game.intro) + '</p>';
+        return art + '<p class="lead">' + esc(game.intro) + '</p>' + training;
       }
       var c = m.world.character || {};
       var html = '<div class="game-opening"><p class="line embrollo"><span class="who" aria-hidden="true">' +
@@ -167,7 +194,7 @@
         html += '<p class="line creature"><span class="who" aria-hidden="true">' + T.creature(c.creature, c.creaturestage) +
           '</span><span>' + esc(scene.creature.replace(/\{\{creature\}\}/g, name)) + '</span></p>';
       }
-      return html + '</div><p class="help">' + esc(game.intro) + '</p>';
+      return html + '</div><p class="help">' + esc(game.intro) + '</p>' + training;
     };
 
     /* ---------- Inside the play: the streak and the passive of the role ---------- */
@@ -394,7 +421,8 @@
       var art = o.art || '<span class="battle-mini" aria-hidden="true">' + T.embrollo(result.success ? 0.2 : 1) + '</span>';
       var body = m.show('<div class="nest-end ' + (result.success ? 'won' : 'lost') + '">' + art + '<h2>' +
         esc(result.success ? o.won : o.lost) + '</h2><p class="lead">' + esc(result.success ? game.win : game.lose) +
-        '</p>' + (gifts.length ? '<ul class="gifts">' + gifts.join('') + '</ul>' : '') + (o.learn ? '<div class="card ' +
+        '</p>' + (gifts.length ? '<ul class="gifts">' + gifts.join('') + '</ul>' : '') + (result.training ? '<p class="help ' +
+        'game-training">' + esc(t('app_training_now')) + '</p>' : '') + (o.learn ? '<div class="card ' +
         'whack-learn"><h3>' + esc(t('app_whack_learn')) + '</h3><ul>' + o.learn + '</ul></div>' : '') + (o.more || '') +
         '<div class="actions">' + (result.success ? '' : '<button class="btn btn-main" data-again>' +
         esc(t('app_tryagain')) + '</button>') + '<button class="btn ' + (result.success ? 'btn-main' : 'btn-soft') +

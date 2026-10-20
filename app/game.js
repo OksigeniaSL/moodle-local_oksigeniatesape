@@ -2193,7 +2193,10 @@
     layer.setAttribute('aria-modal', 'true');
     layer.setAttribute('aria-labelledby', 'tesape-stain-title');
     layer.innerHTML = '<div class="badge-card"><div class="kicker" id="tesape-stain-title">' +
-      esc(t(stain.forteam ? 'app_stain_team' : 'app_stain_on', stain.place)) + '</div><h2>' + esc(stain.title) + '</h2><div data-sheet></div><div data-said></div><div class="actions">' +
+      esc(t(stain.forteam ? 'app_stain_team' : 'app_stain_on', stain.place)) + '</div><div class="errors-title" data-being>' +
+      T.tangled(stain.picture, (stain.parts || []).filter(function(p) {
+        return p.mark >= 0;
+      }).length, false) + '<h2>' + esc(stain.title) + '</h2></div><div data-sheet></div><div data-said></div><div class="actions">' +
       '<button type="button" class="btn btn-soft" data-close>' + esc(t('app_close')) + '</button></div></div>';
     document.body.appendChild(layer);
     var sheet = layer.querySelector('[data-sheet]');
@@ -2216,6 +2219,11 @@
           }
           lane.solution = r.solution;
           T.lane(sheet, lane, {key: key, sent: true, open: false, onsend: function() {}});
+          // The being the sheet talks about comes loose.
+          var being = layer.querySelector('[data-being] .tangled');
+          if (being) {
+            being.outerHTML = T.tangled(stain.picture, 0, true);
+          }
           said.innerHTML = '<p class="turn-outcome undone">' + esc(t('app_stain_clean', r.gems)) + '</p>' + (r.complaint ?
             '<p class="knot-laugh">«' + esc(r.complaint.replace(/^«|»$/g, '')) + '»</p>' : '');
           if (T.fx) {

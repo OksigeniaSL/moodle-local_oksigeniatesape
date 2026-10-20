@@ -96,6 +96,8 @@ final class get_minigame extends external_api {
         if (!$config) {
             throw new \moodle_exception('nominigame', 'local_oksigeniatesape');
         }
+        // Won already, and the gems of the day for winning again given: training, with the streak alone.
+        $config['training'] = minigames::training($char, $mission, $params['game']);
         return $config;
     }
 
@@ -139,6 +141,12 @@ final class get_minigame extends external_api {
                     'right' => new external_multiple_structure(new external_value(PARAM_TEXT, 'Accepted')),
                     'why' => new external_value(PARAM_TEXT, 'Why'),
                 ]), 'Of a hunt for mistakes', VALUE_DEFAULT, []),
+                'picture' => new external_value(
+                    PARAM_RAW_TRIMMED,
+                    'Of a hunt for mistakes: the drawing of the being it talks about',
+                    VALUE_DEFAULT,
+                    ''
+                ),
                 'groups' => new external_multiple_structure(
                     new external_value(PARAM_TEXT, 'Name of a circle'),
                     'The two circles',
@@ -179,6 +187,12 @@ final class get_minigame extends external_api {
             'secret' => new external_value(PARAM_ALPHANUMEXT, 'Guess who: the being that hides', VALUE_DEFAULT, ''),
             'seed' => new external_value(PARAM_INT, 'Guess who: plays kept when this one began', VALUE_DEFAULT, 0),
             'golden' => new external_value(PARAM_INT, 'Guess who: questions at most for a golden card', VALUE_DEFAULT, 0),
+            'training' => new external_value(
+                PARAM_BOOL,
+                'Won already and no gems left today for winning again',
+                VALUE_DEFAULT,
+                false
+            ),
             'misses' => new external_value(PARAM_INT, 'Slips or wrong guesses a game allows', VALUE_DEFAULT, 0),
             'goal' => new external_value(PARAM_INT, 'Animals to catch, or mistakes to find'),
             'shield' => new external_value(PARAM_INT, 'What the shield of the nest holds'),

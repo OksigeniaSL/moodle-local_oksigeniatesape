@@ -167,6 +167,39 @@ final class minigames_test extends \advanced_testcase {
         $this->assertSame(2, $again['tries']);
     }
 
+    public function test_winning_again_gives_a_gem_a_few_times_a_day_then_training(): void {
+        $this->resetAfterTest();
+        $w = $this->make_class();
+        $char = characters::get($w->user->id);
+        $game = minigames::config($w->mission, 'nestdefence', 2);
+        $now = time();
+        $first = minigames::play($w->course->id, $w->user->id, 'nestdefence', $this->events($game), $now);
+        $this->assertTrue($first['first']);
+        $this->assertFalse(minigames::training($char, $w->mission, 'nestdefence', $now));
+        // Won again: a gem each time, up to the cap of the day, in all the minigames together.
+        for ($i = 0; $i < minigames::TRAINING; $i++) {
+            $again = minigames::play($w->course->id, $w->user->id, 'nestdefence', $this->events($game), $now + $i + 1);
+            $this->assertSame(minigames::AGAIN_GEMS, $again['gems']);
+            $this->assertFalse($again['training']);
+        }
+        // Then, training: no gems, the same day, in this minigame or another one won already.
+        $this->assertTrue(minigames::training($char, $w->mission, 'nestdefence', $now + 10));
+        $more = minigames::play($w->course->id, $w->user->id, 'nestdefence', $this->events($game), $now + 10);
+        $this->assertTrue($more['success']);
+        $this->assertSame(0, $more['gems']);
+        $this->assertTrue($more['training']);
+        // A play lost gives nothing and is not training; a minigame not won yet gives its gems the first time.
+        $none = array_fill_keys(array_column($game['animals'], 'id'), '');
+        $lost = minigames::play($w->course->id, $w->user->id, 'nestdefence', $this->events($game, $none), $now + 11);
+        $this->assertFalse($lost['success']);
+        $this->assertSame(0, $lost['gems']);
+        $this->assertFalse($lost['training']);
+        $this->assertFalse(minigames::training($char, $w->mission, 'quienestavivo', $now + 12));
+        // The next day, gems again.
+        $tomorrow = minigames::play($w->course->id, $w->user->id, 'nestdefence', $this->events($game), $now + DAYSECS);
+        $this->assertSame(minigames::AGAIN_GEMS, $tomorrow['gems']);
+    }
+
     public function test_losing_keeps_the_mix_ups(): void {
         $this->resetAfterTest();
         $w = $this->make_class();
@@ -251,6 +284,10 @@ final class minigames_test extends \advanced_testcase {
         $game = minigames::config($w->mission, 'enredoclaro', (int) $member->step);
         $this->assertSame('errors', $game['type']);
         $this->assertNotEmpty($game['sheets']);
+        // Each sheet with the drawing of the being it talks about, if it has one.
+        $pictures = array_column($game['sheets'], 'picture', 'id');
+        $this->assertSame('being.girasol', $pictures['lo-que-engana']);
+        $this->assertSame('being.seta', $pictures['notas-del-rastreo']);
         // Each mistake found once, and a word touched that was right: a blot.
         $found = [];
         foreach ($game['sheets'] as $sheet) {
@@ -267,9 +304,9 @@ final class minigames_test extends \advanced_testcase {
         $this->assertSame($game['goal'], $result['caught']);
         $this->assertSame(1, $result['missed']);
         $this->assertSame(5, $result['gems']);
-        // Won once: the gems, once.
+        // Won once: its gems, once; won again, a gem.
         $again = minigames::play($w->course->id, $w->user->id, 'enredoclaro', $found);
-        $this->assertSame(0, $again['gems']);
+        $this->assertSame(minigames::AGAIN_GEMS, $again['gems']);
         // Too many blots lose, and the mistakes not found are what the teacher sees.
         $blots = array_fill(0, $game['misses'], $blot);
         $lost = minigames::play($w->course->id, $w->user->id, 'enredoclaro', array_merge($blots, [$found[0]]));
@@ -496,7 +533,7 @@ final class minigames_test extends \advanced_testcase {
         $again = minigames::play($w->course->id, $w->user->id, 'adivinabiblioteca', $events);
         $this->assertTrue($again['success']);
         $this->assertSame(count($events) - 2, $again['missed']);
-        $this->assertSame(0, $again['gems']);
+        $this->assertSame(minigames::AGAIN_GEMS, $again['gems']);
         // A play kept on the device and sent later is counted with the being that hid when it began.
         $late = minigames::play($w->course->id, $w->user->id, 'adivinabiblioteca', $this->hunt($next));
         $this->assertTrue($late['success']);

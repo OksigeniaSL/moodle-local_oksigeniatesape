@@ -4570,6 +4570,86 @@ body.in-battle .badge-moment {
   }
 }
 
+/* The sheet for whoever stands in for the teacher: the session of today on paper, over the panel. */
+.print-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  overflow: auto;
+  background: #e9e4d8;
+  color: #111;
+}
+
+.print-layer .printout {
+  padding: 16px;
+}
+
+.print-layer .actions {
+  justify-content: center;
+}
+
+.substitute-sheet {
+  min-height: 0;
+  padding: 14mm 14mm 10mm;
+  background: #fff;
+  color: #111;
+  font-size: 11pt;
+  line-height: 1.45;
+}
+
+.substitute-sheet h1 {
+  margin: 0 0 4px;
+  font-size: 20pt;
+}
+
+.substitute-sheet h3 {
+  margin: 14px 0 4px;
+  font-size: 12.5pt;
+}
+
+.substitute-sheet .kicker,
+.substitute-sheet .sub-screen {
+  color: #555;
+}
+
+.substitute-sheet .sub-screen {
+  display: block;
+  font-size: 10pt;
+}
+
+.substitute-sheet blockquote {
+  margin: 4px 0 6px;
+  padding-left: 10px;
+  border-left: 3px solid #bbb;
+  font-style: italic;
+}
+
+.substitute-sheet ol,
+.substitute-sheet ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.session-sub {
+  margin: 10px 0 0;
+}
+
+@media print {
+  body.printing-sheet > :not(.print-layer) {
+    display: none !important;
+  }
+
+  body.printing-sheet .print-layer {
+    position: static;
+    overflow: visible;
+    background: #fff;
+  }
+
+  body.printing-sheet .substitute-sheet {
+    padding: 0;
+  }
+}
+
 /* A scene played by the whole class: letters for the vote cards, the votes of the phones. */
 .opt .opt-letter {
   display: inline-grid;
@@ -6812,6 +6892,92 @@ body.adapt-colours .errors-text .fixed ins {
 .whoami-options .btn.tried {
   text-decoration: line-through;
   opacity: .55;
+}
+
+/* The being a sheet of the hunt talks about, tangled by the Embrollo: a thread for each mistake left. */
+.errors-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.errors-title h2 {
+  margin: 0;
+}
+
+.tangled {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  width: 76px;
+  height: 76px;
+}
+
+.tangled img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: saturate(.5) brightness(.85);
+  transition: filter .4s ease;
+}
+
+.tangled svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.tangled path {
+  fill: none;
+  stroke: var(--lilac);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  opacity: .9;
+}
+
+.tangled path.snap {
+  animation: thread-snap .7s ease-out forwards;
+}
+
+.tangled.free img {
+  filter: none;
+  animation: being-free .9s ease-out;
+}
+
+@keyframes thread-snap {
+  to {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+}
+
+@keyframes being-free {
+  0% {
+    transform: scale(.92);
+  }
+
+  55% {
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 12px rgba(var(--lantern-rgb), .85));
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tangled path.snap {
+    display: none;
+    animation: none;
+  }
+
+  .tangled.free img {
+    animation: none;
+  }
 }
 
 /* Guess who, the naturalist's: twelve cards face up, one hidden; those that do not fit turn over. */

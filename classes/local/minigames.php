@@ -62,6 +62,12 @@ final class minigames {
     /** @var int Right answers in a row after which the healer gets back the first slip of a play. */
     public const STREAK = 5;
 
+    /** @var int Gems for a minigame won again, after the first time. */
+    public const AGAIN_GEMS = 1;
+
+    /** @var int Minigames won again that give gems in a day, all of them together; then, training: the streak alone. */
+    public const TRAINING = 3;
+
     /** @var string[][] The questions of Guess who: trait of the catalog => values asked about. */
     public const GUESS = [
         'kind' => ['animal', 'spine'],
@@ -227,8 +233,9 @@ final class minigames {
         foreach (self::sheets_for($game, $step) as $sheet) {
             $text = $sheet['text'] ?? '';
             $text = is_array($text) ? (string) ($text[$mission->variant] ?? $text['gen'] ?? reset($text)) : (string) $text;
+            // The being it talks about, drawn and tangled: it comes loose as its mistakes are found.
             $sheets[] = ['id' => (string) $sheet['id'], 'title' => missions::text((string) ($sheet['title'] ?? ''), $mission->skin),
-                'parts' => self::parts($text)];
+                'parts' => self::parts($text), 'picture' => self::being_picture($mission, $sheet)];
         }
         $goal = 0;
         foreach ($sheets as $sheet) {
@@ -312,6 +319,18 @@ final class minigames {
             return 'being.' . preg_replace('/[^a-z]/', '', \core_text::strtolower(\core_text::specialtoascii($label)));
         }
         return ($living ? 'being.' : 'thing.') . $id;
+    }
+
+    /**
+     * The drawing of the being a sheet of a hunt for mistakes talks about (being), or nothing.
+     *
+     * @param \stdClass $mission
+     * @param array $sheet
+     * @return string
+     */
+    public static function being_picture(\stdClass $mission, array $sheet): string {
+        $id = (string) ($sheet['being'] ?? '');
+        return $id !== '' && !empty($mission->data['things'][$id]['alive']) ? self::picture($mission, $id, true) : '';
     }
 
     /**
@@ -755,9 +774,25 @@ final class minigames {
         $playrecord->id = $DB->insert_record(self::T . 'minigame', $playrecord);
         $result = ['success' => $success, 'caught' => $caught, 'missed' => $missed, 'goal' => $game['goal'],
             'tries' => $tries, 'first' => false, 'items' => [], 'coat' => false, 'gems' => 0, 'grew' => false,
-            'golden' => false, 'card' => '', 'newcard' => false];
+            'golden' => false, 'card' => '', 'newcard' => false, 'training' => false];
         $key = ['charid' => $char->id, 'missionid' => $mission->id, 'kind' => 'game', 'code' => $code];
-        if ($success && !$DB->record_exists(self::T . 'found', $key)) {
+        $won = $success && $DB->record_exists(self::T . 'found', $key);
+        if ($won) {
+            // Won again: a gem, a few times a day; then, training, with the streak alone.
+            $day = self::day($courseid, $now);
+            if (self::again_today($char, $mission, $courseid, $now) < self::TRAINING) {
+                $entry = engine::gems($member, self::AGAIN_GEMS, 'minigame', 0, 0, 0, $now);
+                if ($entry) {
+                    $DB->insert_record(self::T . 'found', (object) ['charid' => $char->id, 'courseid' => $courseid,
+                        'missionid' => $mission->id, 'kind' => 'again', 'code' => $day . ':' . $playrecord->id,
+                        'timecreated' => $now]);
+                    $result['gems'] = (int) $entry->amount;
+                }
+            } else {
+                $result['training'] = true;
+            }
+        }
+        if ($success && !$won) {
             $DB->insert_record(self::T . 'found', (object) ($key + ['courseid' => $courseid, 'timecreated' => $now]));
             $result['first'] = true;
             $reward = $mission->data['games'][$code]['reward'] ?? [];
@@ -784,6 +819,49 @@ final class minigames {
         }
         $transaction->allow_commit();
         return $result;
+    }
+
+    /**
+     * The minigames a student won again today that gave gems, all of them together.
+     *
+     * @param \stdClass $char
+     * @param \stdClass $mission
+     * @param int $courseid
+     * @param int $now
+     * @return int
+     */
+    public static function again_today(\stdClass $char, \stdClass $mission, int $courseid, int $now): int {
+        global $DB;
+        $where = "charid = ? AND missionid = ? AND kind = 'again' AND " . $DB->sql_like('code', '?');
+        return $DB->count_records_select(self::T . 'found', $where, [$char->id, $mission->id,
+            $DB->sql_like_escape(self::day($courseid, $now) . ':') . '%']);
+    }
+
+    /**
+     * Whether a minigame is training for a student today: won already, and the gems of the day for winning again given.
+     *
+     * @param \stdClass $char
+     * @param \stdClass $mission
+     * @param string $code
+     * @param int|null $now
+     * @return bool
+     */
+    public static function training(\stdClass $char, \stdClass $mission, string $code, ?int $now = null): bool {
+        global $DB;
+        $now = $now ?? time();
+        return $DB->record_exists(self::T . 'found', ['charid' => $char->id, 'missionid' => $mission->id, 'kind' => 'game',
+            'code' => $code]) && self::again_today($char, $mission, (int) $mission->courseid, $now) >= self::TRAINING;
+    }
+
+    /**
+     * The day, as yyyymmdd in the time zone of the course.
+     *
+     * @param int $courseid
+     * @param int $now
+     * @return string
+     */
+    private static function day(int $courseid, int $now): string {
+        return (new \DateTimeImmutable('@' . $now))->setTimezone(engine::timezone($courseid))->format('Ymd');
     }
 
     /**

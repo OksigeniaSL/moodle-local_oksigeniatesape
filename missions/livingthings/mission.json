@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 68,
+ "version": 69,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 69,
+   "kind": "improvement",
+   "date": "2026-10-20",
+   "text": "En «El cuaderno enredado» y en las manchas del mapa, cada ficha lleva dibujado el ser del que habla, enredado por el Embrollo: un hilo por error, que cae al encontrarlo"
+  },
   {
    "version": 68,
    "kind": "improvement",
@@ -5227,6 +5233,7 @@
     {
      "id": "tres-cosas",
      "title": "Lo que hace un ser vivo",
+     "being": "caracol",
      "steps": [
       1
      ],
@@ -5235,6 +5242,7 @@
     {
      "id": "lo-que-engana",
      "title": "Lo que engaña",
+     "being": "girasol",
      "steps": [
       2,
       3,
@@ -5245,6 +5253,7 @@
     {
      "id": "notas-del-rastreo",
      "title": "Las notas del rastreo",
+     "being": "seta",
      "steps": [
       1,
       2,
@@ -5293,6 +5302,7 @@
     {
      "id": "animal-o-planta",
      "title": "¿Animal o planta?",
+     "being": "seta",
      "steps": [
       1
      ],
@@ -5301,6 +5311,7 @@
     {
      "id": "grupos-revueltos",
      "title": "Grupos revueltos",
+     "being": "moho",
      "steps": [
       1,
       2,
@@ -5359,6 +5370,7 @@
     {
      "id": "abrigos",
      "title": "Los abrigos",
+     "being": "rana",
      "steps": [
       1
      ],
@@ -5367,6 +5379,7 @@
     {
      "id": "los-que-enganan",
      "title": "Los que engañan",
+     "being": "murcielago",
      "steps": [
       1,
       2,
@@ -5378,6 +5391,7 @@
     {
      "id": "invertebrados-del-patio",
      "title": "Los invertebrados del patio",
+     "being": "hormiga",
      "steps": [
       2,
       3,
@@ -5388,6 +5402,7 @@
     {
      "id": "claves-y-nombres",
      "title": "Claves y nombres",
+     "being": "caballitodemar",
      "steps": [
       3,
       4
@@ -5425,6 +5440,7 @@
     {
      "id": "partes-de-la-planta",
      "title": "Las partes de la planta",
+     "being": "dientedeleon",
      "steps": [
       1
      ],
@@ -5433,6 +5449,7 @@
     {
      "id": "experimento-de-la-luz",
      "title": "El experimento de la luz",
+     "being": "girasol",
      "steps": [
       2,
       3,
@@ -5443,6 +5460,7 @@
     {
      "id": "viaje-del-agua",
      "title": "El viaje del agua",
+     "being": "girasol",
      "steps": [
       1,
       2,
@@ -5454,6 +5472,7 @@
     {
      "id": "semillas-y-experimentos",
      "title": "Semillas y experimentos",
+     "being": "dientedeleon",
      "steps": [
       3,
       4
@@ -5520,6 +5539,7 @@
     {
      "id": "red-del-lago",
      "title": "La red del lago",
+     "being": "rana",
      "steps": [
       3,
       4
@@ -5557,6 +5577,7 @@
     {
      "id": "ficha-paloma",
      "title": "La ficha de la paloma",
+     "being": "paloma",
      "steps": [
       1
      ],
@@ -5565,6 +5586,7 @@
     {
      "id": "ficha-murcielago",
      "title": "La ficha del murciélago",
+     "being": "murcielago",
      "steps": [
       1,
       2,
@@ -5576,6 +5598,7 @@
     {
      "id": "ficha-arana",
      "title": "La ficha de la araña",
+     "being": "arana",
      "steps": [
       2,
       3,
