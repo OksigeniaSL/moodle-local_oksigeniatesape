@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.159.0 (2026-10-20)
+
+- **The museum of the class is a room.** With the painting of the room in the art pack (`scene.museo`), the museum opens
+  with it: each group of the field guide has one of its empty shelves, which fills up with a spine for each book of the
+  class (up to seven) and glows when it has its own light. A touch on a shelf of the painting takes to that shelf of
+  the list, where the books are read as before. On the tablet and on the class screen.
+
 ## 0.158.0 (2026-10-20)
 
 - **Each creature with its own mark.** With the art of a pack, every creature of the same stage was the same painting

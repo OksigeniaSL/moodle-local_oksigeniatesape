@@ -1393,6 +1393,13 @@
    * @param {boolean} [full] Also the empty shelves (the tablet); the class screen shows only those with books.
    * @return {string}
    */
+  /**
+   * Where the shelves of the field guide are in the painting of the room of the museum, in hundredths of the painting
+   * (left, top, width, height): the three empty cabinets with their brass plates, from the top, left to right.
+   */
+  var MUSEUM_SPOTS = [[49, 41.8, 9.5, 6.2], [49, 49, 9.5, 6.5], [49, 56.5, 9.5, 6.5], [62.5, 41, 10, 6.5],
+    [62.5, 49, 10, 6.8], [62.5, 57, 10, 6.8], [76, 39, 10.5, 7.2], [76, 47.8, 10.5, 7.8]];
+
   T.museum = function(m, full) {
     var shelves = m.shelves.map(function(shelf, s) {
       return {shelf: shelf, s: s};
@@ -1404,14 +1411,32 @@
     }
     // Dark enough for the light letters of the spine.
     var colours = ['#7a3e33', '#335a77', '#4a6630', '#64477a', '#80552a', '#2c625c', '#76334f'];
-    // The room of the museum behind the shelves, when the art pack brings it.
+    // The room of the museum, when the art pack brings it: its empty shelves fill up with the books of the class.
     var room = T.artUrl(['scene.museo']);
-    return '<div class="museum' + (room ? ' with-room' : '') + '"' + (room ? ' style="--museum-room:url(\'' + T.esc(room) +
-      '\')"' : '') + '>' + shelves.map(function(x) {
+    var spines = function(shelf) {
+      return shelf.books.slice(0, 7).map(function(b) {
+        var h = 0;
+        for (var k = 0; k < b.name.length; k++) {
+          h = (h * 31 + b.name.charCodeAt(k)) % 997;
+        }
+        return '<i style="height:' + (58 + h % 34) + '%;background:' + colours[h % colours.length] + '"></i>';
+      }).join('');
+    };
+    var spots = room ? '<div class="museum-room"><img src="' + T.esc(room) + '" alt="">' + m.shelves.slice(0,
+      MUSEUM_SPOTS.length).map(function(shelf, s) {
+        var at = MUSEUM_SPOTS[s];
+        var name = shelf.group || T.t('app_museum_nogroup');
+        return '<button type="button" class="museum-spot' + (shelf.lit ? ' lit' : '') + '" data-spot="' + s + '" style="left:' +
+          at[0] + '%;top:' + at[1] + '%;width:' + at[2] + '%;height:' + at[3] + '%" aria-label="' + T.esc(name + ': ' +
+          T.t('app_museum_books', shelf.books.length)) + '"' + (full || shelf.books.length ? '' : ' disabled') + '><span>' +
+          spines(shelf) + '</span></button>';
+      }).join('') + '</div>' : '';
+    return spots + '<div class="museum">' + shelves.map(function(x) {
       var shelf = x.shelf;
       var art = T.groupArt(shelf.group);
       var name = shelf.group || T.t('app_museum_nogroup');
-      return '<div class="museum-shelf' + (shelf.lit ? ' lit' : '') + (shelf.books.length ? '' : ' empty') + '"><div class="museum-label">' + (art ? '<img src="' +
+      return '<div class="museum-shelf' + (shelf.lit ? ' lit' : '') + (shelf.books.length ? '' : ' empty') + '" data-shelf="' +
+        x.s + '"><div class="museum-label">' + (art ? '<img src="' +
         T.esc(art) + '" alt="">' : '') + '<b>' + T.esc(name) + '</b><small>' + T.esc(T.t('app_museum_books',
         shelf.books.length)) + '</small>' + (shelf.lit ? '<span class="museum-light" title="' + T.esc(T.t('app_museum_lit')) +
         '">' + T.icon('lantern') + '<span class="sr-only">' + T.esc(T.t('app_museum_lit')) + '</span></span>' : '') +
@@ -1440,6 +1465,23 @@
    */
   T.bindMuseum = function(root, m, opened, onopen) {
     var read = root.querySelector('.museum-read');
+    // A shelf of the painting takes to its shelf of the list, and to its first book.
+    root.querySelectorAll('[data-spot]').forEach(function(spot) {
+      spot.onclick = function() {
+        var shelf = root.querySelector('.museum-shelf[data-shelf="' + spot.dataset.spot + '"]');
+        if (!shelf) {
+          return;
+        }
+        shelf.scrollIntoView({behavior: T.moves() ? 'smooth' : 'auto', block: 'center'});
+        shelf.classList.remove('called');
+        void shelf.offsetWidth;
+        shelf.classList.add('called');
+        var first = shelf.querySelector('[data-book]');
+        if (first) {
+          first.focus({preventScroll: true});
+        }
+      };
+    });
     var show = function(btn, quiet) {
       var at = btn.dataset.book.split(':');
       var shelf = m.shelves[Number(at[0])];
