@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 67,
+ "version": 68,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 68,
+   "kind": "improvement",
+   "date": "2026-10-20",
+   "text": "«Adivina quién» en la biblioteca: doce fichas de seres vivos y una escondida; se pregunta por sus rasgos, las que no cumplen se dan la vuelta y, con pocas preguntas, su cromo sale dorado en el cuaderno de campo"
+  },
   {
    "version": 67,
    "kind": "improvement",
@@ -3154,7 +3160,8 @@
    "x": 300,
    "y": 470,
    "games": [
-    "enredobiblioteca"
+    "enredobiblioteca",
+    "adivinabiblioteca"
    ],
    "spots": {
     "C2-1": [
@@ -3180,6 +3187,10 @@
     "enredobiblioteca": [
      68,
      80
+    ],
+    "adivinabiblioteca": [
+     41,
+     48
     ]
    }
   },
@@ -5139,6 +5150,53 @@
      "text": "= bacteria / bacterias\nSoy un ser vivo de una sola célula.\nEn tu intestino hay muchísimas como yo, y muchas te ayudan.\nAlgunas de nosotras convierten la leche en yogur."
     }
    ]
+  },
+  "adivinabiblioteca": {
+   "type": "guesswho",
+   "title": {
+    "valley": "Adivina quién: la ficha escondida",
+    "azara": "Adivina quién: la caja sin etiqueta"
+   },
+   "intro": {
+    "valley": "Doña Hebra sabe cómo es cada ser y te contesta sí o no: pregúntale por sus rasgos y las fichas que no cumplen se dan la vuelta. Cuando lo sepas, toca la suya.",
+    "azara": "La archivera sabe cómo es cada ser y te contesta sí o no: pregúntale por sus rasgos y las fichas que no cumplen se dan la vuelta. Cuando lo sepas, toca la suya."
+   },
+   "scene": {
+    "embrollo": {
+     "valley": "«He escondido una ficha del Gran Libro entre doce. ¡No la encontrarás sin mirar!»",
+     "azara": "Doce cajas iguales, y una ha perdido su etiqueta por el camino."
+    },
+    "creature": {
+     "valley": "{{creature}} olisquea las doce fichas, una por una, y estornuda en la última.",
+     "azara": "{{creature}} se sube a una caja y espera a ver cuál abres."
+    }
+   },
+   "win": {
+    "valley": "Doña Hebra sonríe: «Así se busca en el Gran Libro: preguntando por lo que no cambia, no por el color».",
+    "azara": "La archivera escribe la etiqueta nueva: «Preguntando por los rasgos, cada caja vuelve a su sitio»."
+   },
+   "lose": "Esta vez no ha salido. Vuelve a preguntar: aquí no se pierde.",
+   "beings": [
+    "caracol",
+    "hormiga",
+    "paloma",
+    "rana",
+    "raton",
+    "trucha",
+    "pulpo",
+    "culebra",
+    "mariposa",
+    "lombriz",
+    "murcielago",
+    "seta"
+   ],
+   "golden": {
+    "1": 5,
+    "2": 4
+   },
+   "reward": {
+    "gems": 5
+   }
   },
   "enredoclaro": {
    "type": "errors",

@@ -60,6 +60,18 @@
   };
 
   /**
+   * What plays a minigame of a type: Defensa del nido, a hunt for mistakes of the Embrollo, Who is alive?, the two
+   * circles, Who am I? or Guess who.
+   *
+   * @param {string} type
+   * @return {function} Called with code, world and onclose(world).
+   */
+  T.gamePlayer = function(type) {
+    return {errors: T.playErrors, whack: T.playWhack, venn: T.playVenn, whoami: T.playWhoami,
+      guesswho: T.playGuesswho}[type] || T.playNest;
+  };
+
+  /**
    * Opens a minigame: its layer, and its data from the server.
    *
    * @param {Object} opts code, world, onclose(world), as the map gives them.

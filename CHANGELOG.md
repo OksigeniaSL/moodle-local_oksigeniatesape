@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.165.0 (2026-10-20)
+
+- **Guess who, the naturalist's** (mission v68), a new kind of minigame (`guesswho`), in the library. Twelve living
+  things of the catalog face up and one hidden: the student asks about its traits («Does it have feathers?», «Is it
+  born from an egg?», «Does it breathe with gills?») and the cards that do not fit turn over, until they name it. The
+  questions are not written: they come from the traits of the catalog, only those every card answers and that split
+  them. A wrong name turns its card over and counts as a question. Nobody loses: the being goes to the field guide of
+  the student, golden with few questions (as many as the step says), and the game gives its gems the first time. Each
+  play hides another, all twelve before one comes back. The roles help in their own way: the sage's look (and the
+  creature's nose) turns over two cards that are not the one, the scout sees how many would stay on each side, the
+  protector has a question more for the golden card and the healer's first slip does not count. The teacher sees what
+  the class asks first. A mission chooses the beings (`beings`, of its encounters) and the questions for the golden card
+  by step (`golden`).
+
 ## 0.164.0 (2026-10-20)
 
 - **The pranks of the Embrollo** (mission v67). On the map of each student, a prank a day: a place with the name the

@@ -203,6 +203,27 @@ final class encounters {
     }
 
     /**
+     * A being found in another way (named in Guess who) goes to the field guide of the student: a card, golden if it
+     * was found so. Without gems: what the game gives, it gives. It peeks out no more in its place.
+     *
+     * @param \stdClass $char
+     * @param \stdClass $mission
+     * @param string $id Of the being.
+     * @param bool $golden
+     * @param int|null $now
+     * @return bool Whether the card is new, or golden now.
+     */
+    public static function register(\stdClass $char, \stdClass $mission, string $id, bool $golden, ?int $now = null): bool {
+        $now = $now ?? time();
+        $new = !self::found($char, $mission, 'being', $id) || ($golden && !self::found($char, $mission, 'beinggold', $id));
+        self::note($char, $mission, 'being', $id, $now);
+        if ($golden) {
+            self::note($char, $mission, 'beinggold', $id, $now);
+        }
+        return $new;
+    }
+
+    /**
      * The field guide of the beings of a student, place by place: how many there are and those they registered.
      *
      * @param \stdClass $char

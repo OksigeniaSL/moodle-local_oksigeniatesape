@@ -2856,7 +2856,7 @@
         if (n.kind === 'page') {
           feedMoment();
         } else if (n.kind === 'game') {
-          var play = {errors: T.playErrors, whack: T.playWhack, venn: T.playVenn, whoami: T.playWhoami}[n.type] || T.playNest;
+          var play = T.gamePlayer(n.type);
           play({code: n.code, world: state.world, onclose: function(world) {
             state.world = world;
             route();
@@ -3063,9 +3063,7 @@
     });
     app.querySelectorAll('[data-game]').forEach(function(b) {
       b.onclick = function() {
-        // Defensa del nido, a hunt for mistakes of the Embrollo, Who is alive?, the two circles or Who am I?
-        var play = {errors: T.playErrors, whack: T.playWhack, venn: T.playVenn, whoami: T.playWhoami}[b.dataset.gametype] ||
-          T.playNest;
+        var play = T.gamePlayer(b.dataset.gametype);
         play({code: b.dataset.game, world: state.world, onclose: function(world) {
           state.world = world;
           route();

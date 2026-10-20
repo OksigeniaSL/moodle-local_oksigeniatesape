@@ -408,6 +408,175 @@ final class minigames_test extends \advanced_testcase {
         minigames::play($w->course->id, $w->user->id, 'sombrastorre', array_merge($away, [['r' => $first['id'], 'g' => $other]]));
     }
 
+    /**
+     * The events of a play of Guess who that finds the hidden one: the question that splits best each time, then its
+     * name.
+     *
+     * @param array $game Of minigames::config().
+     * @return array
+     */
+    private function hunt(array $game): array {
+        $up = array_column($game['cards'], 'id');
+        $events = [['n' => $game['seed']]];
+        $asked = [];
+        while (count($up) > 1) {
+            $best = null;
+            $score = PHP_INT_MAX;
+            foreach ($game['questions'] as $q) {
+                $yes = count(array_intersect($up, $q['yes']));
+                if (!isset($asked[$q['id']]) && $yes > 0 && $yes < count($up) && max($yes, count($up) - $yes) < $score) {
+                    $best = $q;
+                    $score = max($yes, count($up) - $yes);
+                }
+            }
+            $asked[$best['id']] = true;
+            $events[] = ['q' => $best['id']];
+            $answer = in_array($game['secret'], $best['yes'], true);
+            $up = array_values(array_filter($up, fn($id) => in_array($id, $best['yes'], true) === $answer));
+        }
+        $events[] = ['g' => $game['secret']];
+        return $events;
+    }
+
+    public function test_guess_who(): void {
+        $this->resetAfterTest();
+        $w = $this->make_class();
+        $char = characters::get($w->user->id);
+        $step = (int) $w->member->step;
+        $config = fn($plays) => minigames::config(
+            $w->mission,
+            'adivinabiblioteca',
+            $step,
+            'scout',
+            [],
+            0,
+            [],
+            (int) $char->id,
+            $plays
+        );
+        $game = $config(0);
+        $this->assertSame('guesswho', $game['type']);
+        $this->assertCount(12, $game['cards']);
+        $this->assertSame($step <= 1 ? 5 : 4, $game['golden']);
+        $ids = array_column($game['cards'], 'id');
+        foreach ($game['questions'] as $q) {
+            // Every question splits the cards, and the catalog answers it for all of them.
+            $this->assertNotEmpty($q['yes']);
+            $this->assertLessThan(12, count($q['yes']));
+            $this->assertNotSame('', $q['text']);
+        }
+        $feathers = array_column($game['questions'], 'yes', 'id')['cover_plumas'];
+        $this->assertSame(['paloma'], $feathers);
+        // Play after play, a being after another: all twelve before one comes back.
+        $secrets = array_map(fn($n) => $config($n)['secret'], range(0, 11));
+        $this->assertEqualsCanonicalizing($ids, $secrets);
+        $this->assertSame($secrets[0], $config(12)['secret']);
+        // Found asking well: the card goes to the field guide, golden with few questions, and the gems once.
+        $events = $this->hunt($game);
+        $asked = count($events) - 2;
+        $result = minigames::play($w->course->id, $w->user->id, 'adivinabiblioteca', $events);
+        $this->assertTrue($result['success']);
+        $this->assertSame($asked, $result['missed']);
+        $this->assertSame($asked <= $game['golden'], $result['golden']);
+        $this->assertTrue($result['newcard']);
+        $this->assertSame(5, $result['gems']);
+        $guide = [];
+        foreach (encounters::guide($char, $w->mission) as $place) {
+            foreach ($place['beings'] as $being) {
+                $guide[$being['id']] = $being['golden'];
+            }
+        }
+        $this->assertSame($result['golden'], $guide[$game['secret']] ?? null);
+        // The next play hides another; a wrong name turns its card over and counts as a question.
+        $next = $config(1);
+        $this->assertNotSame($game['secret'], $next['secret']);
+        $other = array_values(array_diff($ids, [$next['secret']]))[0];
+        $events = $this->hunt($next);
+        array_splice($events, 1, 0, [['g' => $other]]);
+        $again = minigames::play($w->course->id, $w->user->id, 'adivinabiblioteca', $events);
+        $this->assertTrue($again['success']);
+        $this->assertSame(count($events) - 2, $again['missed']);
+        $this->assertSame(0, $again['gems']);
+        // A play kept on the device and sent later is counted with the being that hid when it began.
+        $late = minigames::play($w->course->id, $w->user->id, 'adivinabiblioteca', $this->hunt($next));
+        $this->assertTrue($late['success']);
+        $this->assertSame(array_column($next['cards'], 'name', 'id')[$next['secret']], $late['card']);
+        // The teacher sees what the class asks first.
+        $results = array_column(minigames::results($w->mission), null, 'code');
+        $first = array_column($game['questions'], 'text', 'id')[$this->hunt($game)[1]['q']];
+        $texts = array_column($results['adivinabiblioteca']['confusions'], 'text');
+        $this->assertContains(get_string('minigame_guesswho_first', 'local_oksigeniatesape', $first), $texts);
+    }
+
+    public function test_guess_who_refuses_what_cannot_be(): void {
+        $this->resetAfterTest();
+        $w = $this->make_class();
+        $char = characters::get($w->user->id);
+        $game = minigames::config($w->mission, 'adivinabiblioteca', (int) $w->member->step, 'scout', [], 0, [], (int) $char->id);
+        $q = $game['questions'][0];
+        $answer = in_array($game['secret'], $q['yes'], true);
+        $out = array_values(array_filter(array_column($game['cards'], 'id'), fn($id) => in_array($id, $q['yes'], true) !== $answer));
+        $bad = [
+            'the same question twice' => [['q' => $q['id']], ['q' => $q['id']]],
+            'a name of a card turned over' => [['q' => $q['id']], ['g' => $out[0]]],
+            'something after it was found' => [['g' => $game['secret']], ['q' => $q['id']]],
+            'a look without looks' => [['l' => $out[0]]],
+            'a question that is not' => [['q' => 'colour_green']],
+        ];
+        foreach ($bad as $what => $events) {
+            try {
+                minigames::play($w->course->id, $w->user->id, 'adivinabiblioteca', $events);
+                $this->fail('Accepted: ' . $what);
+            } catch (\moodle_exception $e) {
+                $this->assertSame('invalidgameplay', $e->errorcode, $what);
+            }
+        }
+    }
+
+    public function test_guess_who_with_the_passives(): void {
+        $this->resetAfterTest();
+        $w = $this->make_class();
+        $char = characters::get($w->user->id);
+        $step = (int) $w->member->step;
+        // The protector: golden with a question more. The sage: a look turns over two that are not the one.
+        $protector = minigames::config($w->mission, 'adivinabiblioteca', $step, 'protector', [], 0, [], (int) $char->id);
+        $scout = minigames::config($w->mission, 'adivinabiblioteca', $step, 'scout', [], 0, [], (int) $char->id);
+        $this->assertSame($scout['golden'] + 1, $protector['golden']);
+        global $DB;
+        $DB->set_field(self::T . 'char', 'role', 'sage', ['id' => $char->id]);
+        $sage = minigames::config($w->mission, 'adivinabiblioteca', $step, 'sage', [], 0, [], (int) $char->id);
+        $this->assertSame(1, $sage['looks']);
+        $two = array_slice(array_values(array_diff(array_column($sage['cards'], 'id'), [$sage['secret']])), 0, 2);
+        $events = [['n' => 0], ['l' => $two[0]], ['l' => $two[1]], ['g' => $sage['secret']]];
+        $result = minigames::play($w->course->id, $w->user->id, 'adivinabiblioteca', $events);
+        $this->assertTrue($result['success']);
+        $this->assertSame(0, $result['missed']);
+        // The healer: the first question that turns nothing over does not count.
+        $DB->set_field(self::T . 'char', 'role', 'healer', ['id' => $char->id]);
+        $healer = minigames::config($w->mission, 'adivinabiblioteca', $step, 'healer', [], 0, [], (int) $char->id, 1);
+        $events = $this->hunt($healer);
+        $q = $events[1]['q'];
+        $answer = in_array($healer['secret'], array_column($healer['questions'], 'yes', 'id')[$q], true);
+        // After the first question, another that answers the same for all that are left turns nothing over.
+        $left = array_values(array_filter(
+            array_column($healer['cards'], 'id'),
+            fn($id) => in_array($id, array_column($healer['questions'], 'yes', 'id')[$q], true) === $answer
+        ));
+        $idle = null;
+        foreach ($healer['questions'] as $other) {
+            $yes = count(array_intersect($left, $other['yes']));
+            if ($other['id'] !== $q && ($yes === 0 || $yes === count($left)) && !in_array(['q' => $other['id']], $events, true)) {
+                $idle = $other['id'];
+                break;
+            }
+        }
+        $this->assertNotNull($idle);
+        array_splice($events, 2, 0, [['q' => $idle]]);
+        $result = minigames::play($w->course->id, $w->user->id, 'adivinabiblioteca', $events);
+        $this->assertTrue($result['success']);
+        $this->assertSame(count($events) - 3, $result['missed']);
+    }
+
     public function test_who_is_alive(): void {
         $this->resetAfterTest();
         $w = $this->make_class('py');

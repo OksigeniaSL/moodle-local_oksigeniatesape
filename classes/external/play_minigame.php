@@ -106,6 +106,14 @@ final class play_minigame extends external_api {
             'coat' => new external_value(PARAM_BOOL, 'The creature can now be dressed'),
             'gems' => new external_value(PARAM_INT, 'Gems given the first time', VALUE_DEFAULT, 0),
             'grew' => new external_value(PARAM_BOOL, 'The creature grew (the first minigame won)', VALUE_DEFAULT, false),
+            'golden' => new external_value(PARAM_BOOL, 'Guess who: found with few questions, a golden card', VALUE_DEFAULT, false),
+            'card' => new external_value(PARAM_TEXT, 'Guess who: the being found, for the field guide', VALUE_DEFAULT, ''),
+            'newcard' => new external_value(
+                PARAM_BOOL,
+                'Guess who: its card is new in the field guide, or golden now',
+                VALUE_DEFAULT,
+                false
+            ),
             'world' => get_world::execute_returns(),
         ]);
     }

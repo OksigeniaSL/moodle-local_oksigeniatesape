@@ -6814,6 +6814,259 @@ body.adapt-colours .errors-text .fixed ins {
   opacity: .55;
 }
 
+/* Guess who, the naturalist's: twelve cards face up, one hidden; those that do not fit turn over. */
+.guesswho-intro {
+  text-align: center;
+}
+
+.gw-hidden {
+  display: inline-grid;
+  place-items: center;
+  width: 56px;
+  height: 72px;
+  border-radius: 10px;
+  background: repeating-linear-gradient(135deg, rgba(var(--leaf-rgb), .55) 0 8px, rgba(var(--leaf-rgb), .3) 8px 16px);
+  box-shadow: inset 0 0 0 3px rgba(var(--hi), .35);
+  color: var(--text);
+  font: 700 30px var(--f-title);
+}
+
+.gw-hidden.big {
+  width: 84px;
+  height: 108px;
+  font-size: 46px;
+}
+
+.gw-par {
+  color: var(--lantern-text);
+  font-size: 14px;
+}
+
+.gw-board {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 10px 0;
+}
+
+/* On a phone, the twelve cards in three rows, small, so that the questions are near. */
+@media (max-width: 520px) {
+  .gw-board {
+    gap: 6px;
+  }
+
+  .gw-card,
+  .gw-inner {
+    min-height: 76px;
+  }
+
+  .gw-face .thing-pic {
+    width: 42px;
+    height: 42px;
+  }
+
+  .gw-face .thing-name {
+    font-size: 12px;
+  }
+}
+
+.gw-card {
+  position: relative;
+  min-height: 92px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  perspective: 600px;
+}
+
+.gw-inner {
+  position: relative;
+  display: block;
+  height: 100%;
+  min-height: 92px;
+  transition: transform .45s ease;
+  transform-style: preserve-3d;
+}
+
+.gw-face,
+.gw-back {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 4px;
+  border-radius: 10px;
+  backface-visibility: hidden;
+}
+
+.gw-face {
+  background: var(--parchment);
+  color: var(--ink);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .25);
+}
+
+.gw-face .thing-name {
+  font-size: 14px;
+  line-height: 1.1;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.gw-back {
+  background: repeating-linear-gradient(135deg, rgba(var(--leaf-rgb), .5) 0 8px, rgba(var(--leaf-rgb), .28) 8px 16px);
+  box-shadow: inset 0 0 0 3px rgba(var(--hi), .25);
+  transform: rotateY(180deg);
+}
+
+.gw-card.down {
+  cursor: default;
+}
+
+.gw-card.down .gw-inner {
+  transform: rotateY(180deg);
+}
+
+.gw-card.chosen .gw-face {
+  box-shadow: 0 0 0 4px var(--lantern), 0 2px 10px rgba(var(--lantern-rgb), .5);
+}
+
+.gw-card.found .gw-face {
+  box-shadow: 0 0 0 4px var(--lantern), 0 0 24px rgba(var(--lantern-rgb), .7);
+}
+
+.gw-card:focus-visible {
+  outline: 3px solid var(--sky);
+  outline-offset: 2px;
+  border-radius: 10px;
+}
+
+.gw-say {
+  min-height: 2.6em;
+  margin: 6px 0 10px;
+  padding: 8px 12px;
+  border-radius: var(--r-s);
+  font-size: 15px;
+}
+
+.gw-say.good {
+  background: rgba(var(--leaf-rgb), .92);
+  color: #10251a;
+}
+
+.gw-say.bad {
+  background: rgba(var(--ember-rgb), .94);
+  color: #2a1209;
+}
+
+.gw-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.gw-tab {
+  min-height: 40px;
+  padding: .3em .8em;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: none;
+  color: var(--text-soft);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.gw-tab.on {
+  border-color: var(--lantern);
+  background: rgba(var(--lantern-rgb), .18);
+  color: var(--text);
+}
+
+.gw-questions {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+}
+
+.gw-q.btn {
+  min-height: 52px;
+  padding: .4em .7em;
+  font-size: 15px;
+  line-height: 1.2;
+  text-align: start;
+}
+
+.gw-q.asked {
+  opacity: .7;
+}
+
+.gw-q.asked.yes b {
+  color: var(--leaf-text);
+}
+
+.gw-q.asked.no b {
+  color: var(--ember-text);
+}
+
+.gw-split {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-soft);
+  font-size: 12px;
+}
+
+.gw-split svg {
+  width: 12px;
+  height: 12px;
+  margin-right: 3px;
+  vertical-align: -1px;
+}
+
+.gw-tip {
+  margin: 0;
+}
+
+.gw-found-card {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--parchment);
+  color: var(--ink);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .3);
+}
+
+.gw-found-card .thing-pic {
+  width: 96px;
+  height: 96px;
+}
+
+.gw-found-card.golden {
+  background: linear-gradient(160deg, #fff3c4, var(--lantern) 80%);
+  box-shadow: 0 0 0 3px rgba(var(--lantern-rgb), .8), 0 0 28px rgba(var(--lantern-rgb), .6);
+}
+
+.gw-cardnote {
+  font-weight: 600;
+}
+
+.gw-cardnote.golden {
+  color: var(--lantern-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gw-inner {
+    transition: none;
+  }
+}
+
 /* A told moment as in a role-playing game: the place behind, who speaks in big over it, the hero and the creature of
    the student in a corner, and the words in a parchment under it. */
 .dlg-stage {

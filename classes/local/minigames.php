@@ -35,6 +35,12 @@ namespace local_oksigeniatesape\local;
  * guesses who it is among four; a wrong guess shows the next clue, and with no clue left the shadow gets away.
  * Written as in Classtools: «= answer / also accepted» and a clue per line.
  *
+ * Guess who (type guesswho), the naturalist's: twelve beings of the catalog face up and one of them hidden; the student
+ * asks by traits («Does it have feathers?», «Is it born from an egg?») and the beings that do not fit are turned over,
+ * until they say who it is. The questions come from the traits of the catalog: only those that every card answers and
+ * that split them. Never lost; with few questions, the card of the being goes golden to the field guide. A wrong name
+ * turns that card over and counts as a question.
+ *
  * Who is alive? (type whack): living things and things that are not come out of the holes of the clearing for a moment;
  * the student touches only what is alive. A thing touched that is not alive is a slip, with its why; a living thing let
  * go is not caught.
@@ -56,6 +62,23 @@ final class minigames {
     /** @var int Right answers in a row after which the healer gets back the first slip of a play. */
     public const STREAK = 5;
 
+    /** @var string[][] The questions of Guess who: trait of the catalog => values asked about. */
+    public const GUESS = [
+        'kind' => ['animal', 'spine'],
+        'cover' => ['pelo', 'plumas', 'escamas', 'piel-humeda', 'concha', 'exoesqueleto', 'piel-blanda'],
+        'legs' => ['any', '2', '4', '6', '8'],
+        'breath' => ['pulmones', 'branquias', 'piel', 'traqueas'],
+        'born' => ['huevo', 'vivo', 'semilla', 'espora'],
+        'eats' => ['herbivoro', 'carnivoro', 'omnivoro', 'fotosintesis', 'descomponedor', 'parasito'],
+        'habitat' => ['tierra', 'agua-dulce', 'mar', 'subsuelo', 'casa', 'aire'],
+    ];
+
+    /** @var string[] Groups of the catalog that are not animals. */
+    private const NOTANIMALS = ['planta', 'alga', 'hongo', 'bacteria'];
+
+    /** @var string[] Groups of the catalog with a backbone. */
+    private const VERTEBRATES = ['mamifero', 'ave', 'reptil', 'anfibio', 'pez'];
+
     /**
      * A minigame of the mission of a course, as a student of a step and a role plays it: texts in the skin and the
      * local examples, what there is to play, and the passive of the role (the protector holds one slip more).
@@ -67,6 +90,8 @@ final class minigames {
      * @param string[] $talents Those of the student that act in the course.
      * @param int $sniffs Times their creature sniffs in a play (creatures::sniffs()).
      * @param string[] $worn What the hero wears (equipment::worn()): slot => item.
+     * @param int $charid Of the student, and $plays, the plays they have kept: in Guess who, which being hides.
+     * @param int $plays
      * @return array|null
      */
     public static function config(
@@ -76,9 +101,16 @@ final class minigames {
         string $role = '',
         array $talents = [],
         int $sniffs = 0,
-        array $worn = []
+        array $worn = [],
+        int $charid = 0,
+        int $plays = 0
     ): ?array {
-        $config = self::config_step($mission, $code, $step);
+        $game = $mission->data['games'][$code] ?? null;
+        if (($game['type'] ?? '') === 'guesswho') {
+            $config = self::guesswho_config($mission, $code, $game, $step, $charid, $plays);
+        } else {
+            $config = self::config_step($mission, $code, $step);
+        }
         if (!$config) {
             return null;
         }
@@ -111,6 +143,10 @@ final class minigames {
             $config['extra'] = $more;
             if (isset($config['misses'])) {
                 $config['misses'] += $more;
+            }
+            if (isset($config['golden'])) {
+                // In Guess who, the card is golden with a question more.
+                $config['golden'] += $more;
             }
             if (!empty($config['shield'])) {
                 // In the nest, each animal that gets in is one not caught: the goal comes down with the shield.
@@ -361,6 +397,124 @@ final class minigames {
     }
 
     /**
+     * Guess who as a student of a step plays it: the beings of the game (from the catalog of the mission), the questions
+     * that split them, and the one that hides this time. Each student goes through all of them, play after play, in an
+     * order of their own.
+     *
+     * @param \stdClass $mission With data.
+     * @param string $code
+     * @param array $game
+     * @param int $step
+     * @param int $charid
+     * @param int $plays Plays the student has kept.
+     * @return array
+     */
+    private static function guesswho_config(
+        \stdClass $mission,
+        string $code,
+        array $game,
+        int $step,
+        int $charid,
+        int $plays
+    ): array {
+        $catalog = $mission->data['things'] ?? [];
+        $ids = array_values(array_filter(array_map('strval', $game['beings'] ?? []), fn($id) => isset($catalog[$id])));
+        $cards = [];
+        foreach ($ids as $id) {
+            $cards[] = ['id' => $id, 'label' => self::variant($mission, $catalog[$id]['label'] ?? $id),
+                'name' => self::variant($mission, $catalog[$id]['name'] ?? $catalog[$id]['label'] ?? $id),
+                'picture' => self::picture($mission, $id, true)];
+        }
+        $questions = [];
+        foreach (self::GUESS as $trait => $values) {
+            foreach ($values as $value) {
+                $yes = [];
+                foreach ($ids as $id) {
+                    $answer = self::answer($catalog[$id], $trait, (string) $value);
+                    if ($answer === null) {
+                        // A card the catalog does not answer: the question is not asked.
+                        continue 2;
+                    }
+                    if ($answer) {
+                        $yes[] = $id;
+                    }
+                }
+                if ($yes && count($yes) < count($ids)) {
+                    $questions[] = ['id' => $trait . '_' . $value, 'trait' => $trait,
+                        'text' => get_string(
+                            'guesswho_q_' . $trait . '_' . str_replace('-', '', (string) $value),
+                            'local_oksigeniatesape'
+                        ), 'yes' => $yes];
+                }
+            }
+        }
+        // Each student, an order of their own, and a being after another: all of them before one comes back.
+        $order = $ids;
+        usort($order, fn($a, $b) => crc32($code . '|' . $charid . '|' . $a) <=> crc32($code . '|' . $charid . '|' . $b));
+        return [
+            'code' => $code,
+            'type' => 'guesswho',
+            'title' => missions::text($game['title'] ?? $code, $mission->skin),
+            'intro' => missions::text($game['intro'] ?? '', $mission->skin, $mission->variant),
+            'win' => missions::text($game['win'] ?? '', $mission->skin, $mission->variant),
+            'lose' => missions::text($game['lose'] ?? '', $mission->skin, $mission->variant),
+            'nets' => [],
+            'animals' => [],
+            'cards' => $cards,
+            'questions' => $questions,
+            'secret' => $order ? $order[$plays % count($order)] : '',
+            'seed' => $plays,
+            'golden' => self::by_step($game['golden'] ?? [], $step, 4),
+            'goal' => 1,
+            'shield' => 0,
+            'speed' => 0,
+        ];
+    }
+
+    /**
+     * What the catalog says of a being for a question of Guess who: yes, no, or null if it does not say. What only
+     * animals have (a cover, legs, a way of breathing) is a no for the rest.
+     *
+     * @param array $card Of the catalog.
+     * @param string $trait
+     * @param string $value
+     * @return bool|null
+     */
+    public static function answer(array $card, string $trait, string $value): ?bool {
+        $group = (string) ($card['group'] ?? '');
+        if ($trait === 'kind') {
+            if ($group === '') {
+                return null;
+            }
+            return $value === 'spine' ? in_array($group, self::VERTEBRATES, true) : !in_array($group, self::NOTANIMALS, true);
+        }
+        if (in_array($trait, ['cover', 'legs', 'breath'], true) && in_array($group, self::NOTANIMALS, true)) {
+            return false;
+        }
+        if (!isset($card[$trait])) {
+            return null;
+        }
+        if ($trait === 'legs') {
+            return $value === 'any' ? (int) $card['legs'] > 0 : (int) $card['legs'] === (int) $value;
+        }
+        return in_array($value, array_map('strval', (array) $card[$trait]), true);
+    }
+
+    /**
+     * A name of the catalog in the variant of the course ({es, py, gen}) or in the story ({valley, azara}).
+     *
+     * @param \stdClass $mission
+     * @param mixed $text
+     * @return string
+     */
+    private static function variant(\stdClass $mission, $text): string {
+        if (is_array($text) && (isset($text[$mission->variant]) || isset($text['gen']))) {
+            return (string) ($text[$mission->variant] ?? $text['gen']);
+        }
+        return missions::text($text, $mission->skin, $mission->variant);
+    }
+
+    /**
      * A riddle of Who am I? from its plain text: the answer (and others accepted) and the clues, hardest first.
      *
      * @param string $text
@@ -461,12 +615,27 @@ final class minigames {
      * @return int
      */
     private static function misses(array $game, int $step): int {
+        return max(1, self::by_step($game['misses'] ?? [], $step, 3));
+    }
+
+    /**
+     * A number of a game that changes with the step: that of the step, or of the nearest below, or the one given.
+     *
+     * @param mixed $map Step => number, or a number for all of them.
+     * @param int $step
+     * @param int $default
+     * @return int
+     */
+    private static function by_step($map, int $step, int $default): int {
+        if (!is_array($map)) {
+            return is_numeric($map) ? (int) $map : $default;
+        }
         for ($s = $step; $s >= 1; $s--) {
-            if (isset($game['misses'][$s]) || isset($game['misses'][(string) $s])) {
-                return max(1, (int) ($game['misses'][$s] ?? $game['misses'][(string) $s]));
+            if (isset($map[$s]) || isset($map[(string) $s])) {
+                return (int) ($map[$s] ?? $map[(string) $s]);
             }
         }
-        return 3;
+        return $default;
     }
 
     /**
@@ -537,6 +706,9 @@ final class minigames {
             }
         }
         $mission = missions::get($courseid);
+        // In Guess who, the being that hid when the play began: the device says after how many plays it began.
+        $plays = $DB->count_records(self::T . 'minigame', ['charid' => $char->id, 'courseid' => $courseid, 'game' => $code]);
+        $seed = isset($events[0]['n']) ? max(0, min($plays, (int) $events[0]['n'])) : $plays;
         $game = $mission ? self::config(
             $mission,
             $code,
@@ -544,12 +716,17 @@ final class minigames {
             (string) $char->role,
             talents::acting($char, $courseid),
             creatures::sniffs($char, $courseid),
-            equipment::worn($char, $courseid)
+            equipment::worn($char, $courseid),
+            (int) $char->id,
+            $seed
         ) : null;
         if (!$game) {
             throw new \moodle_exception('nominigame', 'local_oksigeniatesape');
         }
-        if (($game['type'] ?? '') === 'errors') {
+        $golden = false;
+        if (($game['type'] ?? '') === 'guesswho') {
+            [$caught, $missed, $wrong, $success, $golden] = self::count_guesswho($game, $events);
+        } else if (($game['type'] ?? '') === 'errors') {
             [$caught, $missed, $wrong, $success] = self::count_errors($game, $events);
         } else if (($game['type'] ?? '') === 'whack') {
             [$caught, $missed, $wrong, $success] = self::count_whack($game, $events);
@@ -562,7 +739,8 @@ final class minigames {
         }
         $transaction = $DB->start_delegated_transaction();
         $tries = $DB->count_records(self::T . 'minigame', ['charid' => $char->id, 'courseid' => $courseid, 'game' => $code]) + 1;
-        $detail = ['step' => (int) $member->step, 'caught' => $caught, 'missed' => $missed, 'wrong' => $wrong];
+        $detail = ['step' => (int) $member->step, 'caught' => $caught, 'missed' => $missed, 'wrong' => $wrong] +
+            ($golden ? ['golden' => true] : []);
         $playrecord = (object) [
             'charid' => $char->id,
             'courseid' => $courseid,
@@ -576,7 +754,8 @@ final class minigames {
         ];
         $playrecord->id = $DB->insert_record(self::T . 'minigame', $playrecord);
         $result = ['success' => $success, 'caught' => $caught, 'missed' => $missed, 'goal' => $game['goal'],
-            'tries' => $tries, 'first' => false, 'items' => [], 'coat' => false, 'gems' => 0, 'grew' => false];
+            'tries' => $tries, 'first' => false, 'items' => [], 'coat' => false, 'gems' => 0, 'grew' => false,
+            'golden' => false, 'card' => '', 'newcard' => false];
         $key = ['charid' => $char->id, 'missionid' => $mission->id, 'kind' => 'game', 'code' => $code];
         if ($success && !$DB->record_exists(self::T . 'found', $key)) {
             $DB->insert_record(self::T . 'found', (object) ($key + ['courseid' => $courseid, 'timecreated' => $now]));
@@ -592,6 +771,13 @@ final class minigames {
             }
             // The first minigame won makes the creature grow in the middle of the mission (unless the lanterns did).
             $result['grew'] = scenes::grow_mid($char, $member, $mission, $now);
+        }
+        if (($game['type'] ?? '') === 'guesswho' && $success) {
+            // The being found goes to the field guide: golden with few questions. Each play, one being.
+            $card = encounters::register($char, $mission, (string) $game['secret'], $golden, $now);
+            $result['card'] = (string) (array_column($game['cards'], 'name', 'id')[$game['secret']] ?? '');
+            $result['golden'] = $golden;
+            $result['newcard'] = $card;
         }
         if ($playid !== '') {
             $DB->set_field(self::T . 'minigame', 'detail', json_encode($detail + ['result' => $result]), ['id' => $playrecord->id]);
@@ -761,6 +947,71 @@ final class minigames {
     }
 
     /**
+     * Counts a play of Guess who: the device says after how many plays it began (n, first), and then each question
+     * asked (q), each card the sage or the creature turned over (l) and each name said (g). A question turns over the
+     * cards that do not answer as the hidden one; a wrong name turns over its card and counts as a question. Found when
+     * the hidden one is named; golden with as many questions as the game says at most. The healer's first slip (a
+     * question that turned nothing over, or a wrong name) does not count.
+     *
+     * @param array $game As the student plays it.
+     * @param array $events
+     * @return array [found, questions, wrong (the first question => first), success, golden]
+     */
+    private static function count_guesswho(array $game, array $events): array {
+        $yes = array_column($game['questions'], 'yes', 'id');
+        $secret = (string) $game['secret'];
+        $up = array_column($game['cards'], 'id');
+        $asked = [];
+        $count = 0;
+        $slips = 0;
+        $looks = 0;
+        $found = false;
+        $first = '';
+        foreach ($events as $i => $event) {
+            if ($i === 0 && isset($event['n'])) {
+                continue;
+            }
+            if ($found) {
+                throw new \moodle_exception('invalidgameplay', 'local_oksigeniatesape');
+            }
+            if (isset($event['q'])) {
+                $q = (string) $event['q'];
+                if (!isset($yes[$q]) || isset($asked[$q])) {
+                    throw new \moodle_exception('invalidgameplay', 'local_oksigeniatesape');
+                }
+                $asked[$q] = true;
+                $first = $first !== '' ? $first : $q;
+                $answer = in_array($secret, $yes[$q], true);
+                $left = array_values(array_filter($up, fn($id) => in_array($id, $yes[$q], true) === $answer));
+                $slips += count($left) === count($up) ? 1 : 0;
+                $up = $left;
+                $count++;
+                continue;
+            }
+            $id = (string) ($event['l'] ?? $event['g'] ?? '');
+            if (!in_array($id, $up, true)) {
+                throw new \moodle_exception('invalidgameplay', 'local_oksigeniatesape');
+            }
+            if (isset($event['l'])) {
+                // A look turns over two cards that are not the hidden one.
+                if ($id === $secret || ++$looks > 2 * ((int) ($game['looks'] ?? 0) + (int) ($game['sniffs'] ?? 0))) {
+                    throw new \moodle_exception('invalidgameplay', 'local_oksigeniatesape');
+                }
+                $up = array_values(array_diff($up, [$id]));
+            } else if ($id === $secret) {
+                $found = true;
+            } else {
+                $up = array_values(array_diff($up, [$id]));
+                $count++;
+                $slips++;
+            }
+        }
+        $counted = $count - (($game['passive'] ?? '') === 'healer' && $slips ? 1 : 0);
+        return [$found ? 1 : 0, $counted, $first !== '' ? [$first => 'first'] : [], $found,
+            $found && $counted <= (int) $game['golden']];
+    }
+
+    /**
      * Counts a play of a hunt for mistakes: each mistake found once (s, the sheet, and m, its number) and each blot of
      * ink (s and x, a word touched that was right).
      *
@@ -916,6 +1167,16 @@ final class minigames {
                 }
                 if (($game['type'] ?? '') === 'whoami') {
                     $confusions[] = ['text' => self::mistaken($mission, $game, (string) $key), 'count' => $count];
+                    continue;
+                }
+                if (($game['type'] ?? '') === 'guesswho') {
+                    // What the class asks first.
+                    [$trait, $value] = array_pad(explode('_', explode('|', $key)[0], 2), 2, '');
+                    $string = 'guesswho_q_' . $trait . '_' . str_replace('-', '', $value);
+                    $question = get_string_manager()->string_exists($string, 'local_oksigeniatesape') ?
+                        get_string($string, 'local_oksigeniatesape') : $key;
+                    $confusions[] = ['text' => get_string('minigame_guesswho_first', 'local_oksigeniatesape', $question),
+                        'count' => $count];
                     continue;
                 }
                 if (($game['type'] ?? '') === 'whack') {

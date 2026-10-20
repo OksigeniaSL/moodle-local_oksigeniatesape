@@ -65,7 +65,7 @@ final class get_minigame extends external_api {
         int $courseid,
         string $game
     ): array {
-        global $USER;
+        global $DB, $USER;
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
             'game' => $game,
@@ -79,6 +79,9 @@ final class get_minigame extends external_api {
             throw new \moodle_exception('nominigame', 'local_oksigeniatesape');
         }
         $member = engine::member($char, $params['courseid']);
+        // In Guess who, the being that hides depends on the plays kept.
+        $plays = $DB->count_records('local_oksigeniatesape_minigame', ['charid' => $char->id, 'courseid' => $params['courseid'],
+            'game' => $params['game']]);
         $config = minigames::config(
             $mission,
             $params['game'],
@@ -86,7 +89,9 @@ final class get_minigame extends external_api {
             (string) $char->role,
             talents::acting($char, $params['courseid']),
             creatures::sniffs($char, $params['courseid']),
-            equipment::worn($char, $params['courseid'])
+            equipment::worn($char, $params['courseid']),
+            (int) $char->id,
+            $plays
         );
         if (!$config) {
             throw new \moodle_exception('nominigame', 'local_oksigeniatesape');
@@ -104,7 +109,8 @@ final class get_minigame extends external_api {
             'code' => new external_value(PARAM_ALPHANUMEXT, 'Minigame'),
             'type' => new external_value(
                 PARAM_ALPHA,
-                'nest (Defensa del nido), errors (the hunt for mistakes), whack (Who is alive?), venn (the two circles) or whoami',
+                'nest (Defensa del nido), errors (the hunt for mistakes), whack (Who is alive?), venn (the two circles), whoami ' .
+                    'or guesswho',
                 VALUE_DEFAULT,
                 'nest'
             ),
@@ -158,6 +164,21 @@ final class get_minigame extends external_api {
                 'clues' => new external_multiple_structure(new external_value(PARAM_TEXT, 'A clue, hardest first')),
                 'options' => new external_multiple_structure(new external_value(PARAM_TEXT, 'An answer to choose')),
             ]), 'The shadows of Who am I?', VALUE_DEFAULT, []),
+            'cards' => new external_multiple_structure(new external_single_structure([
+                'id' => new external_value(PARAM_ALPHANUMEXT, 'Being of the catalog'),
+                'label' => new external_value(PARAM_TEXT, 'Name'),
+                'name' => new external_value(PARAM_TEXT, 'Name with its article'),
+                'picture' => new external_value(PARAM_RAW_TRIMMED, 'Key of its drawing in the art pack'),
+            ]), 'The beings of Guess who', VALUE_DEFAULT, []),
+            'questions' => new external_multiple_structure(new external_single_structure([
+                'id' => new external_value(PARAM_ALPHANUMEXT, 'Question'),
+                'trait' => new external_value(PARAM_ALPHA, 'What it asks about: kind, cover, legs, breath, born, eats, habitat'),
+                'text' => new external_value(PARAM_TEXT, 'The question'),
+                'yes' => new external_multiple_structure(new external_value(PARAM_ALPHANUMEXT, 'A being that answers yes')),
+            ]), 'The questions of Guess who', VALUE_DEFAULT, []),
+            'secret' => new external_value(PARAM_ALPHANUMEXT, 'Guess who: the being that hides', VALUE_DEFAULT, ''),
+            'seed' => new external_value(PARAM_INT, 'Guess who: plays kept when this one began', VALUE_DEFAULT, 0),
+            'golden' => new external_value(PARAM_INT, 'Guess who: questions at most for a golden card', VALUE_DEFAULT, 0),
             'misses' => new external_value(PARAM_INT, 'Slips or wrong guesses a game allows', VALUE_DEFAULT, 0),
             'goal' => new external_value(PARAM_INT, 'Animals to catch, or mistakes to find'),
             'shield' => new external_value(PARAM_INT, 'What the shield of the nest holds'),
