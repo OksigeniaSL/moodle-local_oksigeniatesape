@@ -189,7 +189,9 @@ final class view {
                 return $view;
             }, stains::open($courseid));
             $world['stains'] = array_values(array_filter($stained));
-            // The photos of the classroom of the team, by place: stickers of the map once the teacher approves them.
+            // The photos of the classroom of the team, by place: stickers of the map once the teacher approves them; and
+            // whether this student may send one.
+            $world['sendphoto'] = has_capability('local/oksigeniatesape:sendphoto', \context_course::instance($courseid));
             $world['photos'] = [];
             foreach ($myteam ? photos::of_team($courseid, (int) $char->userid) : [] as $code => $photo) {
                 $world['photos'][] = ['chapter' => (string) $code] + $photo;

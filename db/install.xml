@@ -650,7 +650,7 @@
         <FIELD NAME="chapter" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false" COMMENT="Code of the place, or entrada for the entry"/>
         <FIELD NAME="number" TYPE="int" LENGTH="4" NOTNULL="true" SEQUENCE="false" COMMENT="Which session of the place, from 1"/>
         <FIELD NAME="step" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The step it is at, from 0"/>
-        <FIELD NAME="shown" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="What the class screen shows for the session: enter, card, timer or pacts (none: the usual)"/>
+        <FIELD NAME="shown" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="What the class screen shows for the session, one of sessions::SHOWS (none: the usual)"/>
         <FIELD NAME="shownat" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="minutes" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Of the timer, when it shows one"/>
         <FIELD NAME="target" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The scene it opens, when it shows one"/>

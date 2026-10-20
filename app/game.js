@@ -2375,19 +2375,20 @@
    * @return {string}
    */
   function photoCard(ch, past) {
-    if (past || !state.world.team) {
-      return '';
-    }
     var p = photoOf(ch.code);
     var status = p ? p.status : '';
+    // Who may not send photos sees the one of the team on the map and in the place, without the button.
+    if (past || !state.world.team || (!state.world.sendphoto && status !== 'approved')) {
+      return '';
+    }
     var note = {pending: 'app_photo_pending', rejected: 'app_photo_rejected', approved: 'app_photo_approved'}[status] ||
       'app_photo_help';
     return '<div class="photo-card' + (status ? ' ' + status : '') + '">' + (status === 'approved' && p.url ?
       '<img class="photo-print" src="' + esc(p.url) + '" alt="' + esc(t('app_photo_alt', ch.name)) + '">' : '') +
       '<div class="grow"><b>' + esc(t('app_photo_title')) + '</b><p class="help-soft">' + esc(t(note)) + '</p>' +
-      '<label class="btn btn-soft photo-pick">' + T.icon('camera') + ' ' + esc(t(status ? 'app_photo_again' :
-      'app_photo_send')) + '<input type="file" accept="image/*" capture="environment" class="sr-only" data-photo="' +
-      esc(ch.code) + '"></label></div></div>';
+      (state.world.sendphoto ? '<label class="btn btn-soft photo-pick">' + T.icon('camera') + ' ' + esc(t(status ?
+      'app_photo_again' : 'app_photo_send')) + '<input type="file" accept="image/*" capture="environment" class="sr-only" ' +
+      'data-photo="' + esc(ch.code) + '"></label>' : '') + '</div></div>';
   }
 
   /**

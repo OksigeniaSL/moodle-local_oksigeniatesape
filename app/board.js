@@ -186,10 +186,14 @@
     var key = s ? s.id + ':' + s.shown + ':' + s.shownat : '';
     if (key === state.sessionkey) {
       // The same thing shown: only how many have chosen their commitment, by team, may change.
-      if (s && (s.pacts || s.council) && state.showEl) {
+      if (s && (s.pacts || s.council || s.expedition) && state.showEl) {
         var list = state.showEl.querySelector('[data-steams]');
         if (list) {
-          list.innerHTML = s.pacts ? pactTeams(s.pacts) : councilTeams(s.council);
+          list.innerHTML = s.pacts ? pactTeams(s.pacts) : s.council ? councilTeams(s.council) : expeditionTeams(s.expedition);
+        }
+        var flies = state.showEl.querySelector('[data-sflies]');
+        if (flies && s.expedition) {
+          flies.innerHTML = fireflies(s.expedition);
         }
       }
       return;
@@ -211,6 +215,61 @@
       return '<li class="' + (team.first ? 'ready' : '') + '"><b>' + esc(team.name) + '</b><span>' + esc(team.first ?
         t('board_council_first', T.roleName(T.family, team.first, 'm')) : t('board_council_on')) + '</span></li>';
     }).join('');
+  }
+
+  /**
+   * The teams on the expedition, on the class screen: a firefly lit by each one that has come into the game since the
+   * session started. No names of students.
+   *
+   * @param {Object} x teams (name, in).
+   * @return {string}
+   */
+  function expeditionTeams(x) {
+    return x.teams.map(function(team) {
+      return '<li class="' + (team.in ? 'ready' : '') + '"><span class="fly-dot" aria-hidden="true"></span><b>' +
+        esc(team.name) + '</b><span>' + esc(t(team.in ? 'board_expedition_in' : 'board_expedition_out')) + '</span></li>';
+    }).join('');
+  }
+
+  /**
+   * The fireflies over the place of the expedition, one by team that has come in, each one where it always is.
+   *
+   * @param {Object} x teams (name, in).
+   * @return {string}
+   */
+  function fireflies(x) {
+    return x.teams.map(function(team, i) {
+      return team.in ? '<span class="expedition-fly" style="left:' + (8 + (i * 37) % 84) + '%;top:' + (12 + (i * 23) % 56) +
+        '%;animation-delay:-' + ((i * 1.3) % 5).toFixed(1) + 's"></span>' : '';
+    }).join('');
+  }
+
+  /**
+   * The map of the mission at dawn, still at night and lighting up: the lanterns the class lit and, by the places
+   * stained, the ink of the Embrollo.
+   *
+   * @param {Object|null} m The mission of the board.
+   * @param {Object} d What the Embrollo did (did: chapter of each).
+   * @return {string}
+   */
+  function dawnMap(m, d) {
+    if (!m || !m.chapters || !m.chapters.length) {
+      return '';
+    }
+    var stained = {};
+    d.did.forEach(function(x) {
+      if (x.chapter) {
+        stained[x.chapter] = true;
+      }
+    });
+    var pts = m.chapters.map(function(ch) {
+      return ch.x + ',' + ch.y;
+    }).join(' ');
+    return '<svg class="dawn-map" viewBox="0 0 400 ' + T.mapHeight(m) + '" aria-hidden="true">' + T.mapGround(m) +
+      T.mapLandmarks(m) + '<polyline points="' + pts + '" class="road"/>' + m.chapters.map(function(ch) {
+        return '<circle cx="' + ch.x + '" cy="' + ch.y + '" r="10" class="dawn-lamp' + (ch.lit ? ' lit' : '') + '"/>' +
+          (stained[ch.code] ? '<circle cx="' + (ch.x + 22) + '" cy="' + (ch.y - 20) + '" r="13" class="dawn-blot"/>' : '');
+      }).join('') + '</svg>';
   }
 
   function pactTeams(p) {
@@ -318,6 +377,96 @@
         }).join('') + '</ol><p class="lead">' + esc(t('board_campfire_help')) + '</p></div>';
       if (T.fx) {
         T.fx.sound('lantern');
+      }
+    } else if (s.shown === 'dawn') {
+      // Dawn in the valley: the map still at night, lighting up, and what the Embrollo did in the night, told by itself.
+      var night = s.dawn || {did: [], prints: 0};
+      var said = night.did.map(function(x) {
+        if (x.kind === 'page') {
+          return x.hidden ? t('board_dawn_hid', x.title) : t('board_dawn_page', {place: x.place, title: x.title});
+        }
+        return t('board_dawn_stain', {place: x.place, title: x.title});
+      });
+      if (night.prints) {
+        said.push(t(night.prints === 1 ? 'board_dawn_print' : 'board_dawn_prints', {n: night.prints, place: night.towards}));
+      }
+      if (!said.length) {
+        said.push(t('board_dawn_quiet'));
+      }
+      html = '<div class="show-card dawn"><div class="kicker">' + esc(t('board_dawn')) + '</div><h1>' +
+        esc(t('board_dawn_title')) + '</h1>' + dawnMap(state.board && state.board.mission, night) +
+        '<div class="show-letter"><span class="battle-mini" aria-hidden="true">' + T.embrollo(1) + '</span><div>' +
+        said.map(function(line, i) {
+          return '<p style="animation-delay:' + (1.5 + i * 2.2) + 's">' + esc(line) + '</p>';
+        }).join('') + '</div></div></div>';
+      if (T.fx) {
+        T.fx.sound('giggle');
+      }
+    } else if (s.shown === 'expedition') {
+      // The expedition: the place of the session, a firefly by each team that has come in, and a soft hourglass.
+      var land = T.artUrl(['scene.' + s.chapter]);
+      if (land) {
+        el.style.backgroundImage = 'linear-gradient(rgba(0,0,0,.1), rgba(0,0,0,.6)), url("' + land + '")';
+      }
+      var trip = s.expedition || {teams: []};
+      end = (s.shownat + s.minutes * 60) * 1000 - state.sessionoffset;
+      html = '<div class="expedition-flies" data-sflies aria-hidden="true">' + fireflies(trip) + '</div><div ' +
+        'class="show-card expedition"><div class="kicker">' + esc(t('board_expedition')) + '</div><h1>' +
+        esc(s.place || '') + '</h1><ul class="show-teams" data-steams>' + expeditionTeams(trip) + '</ul><div ' +
+        'class="meter show-sand" role="img" aria-label="' + esc(t('board_expedition_sand')) + '"><i data-ssand ' +
+        'style="width:100%"></i></div></div>';
+      if (T.fx) {
+        T.fx.sound('path');
+      }
+    } else if (s.shown === 'encounter') {
+      // The encounter of the class: who peeks out today, in silhouette, with its clues one after another and four names
+      // to guess aloud; the teacher reveals it from the remote.
+      var e = s.encounter;
+      var pic = e && T.artUrl([e.picture]);
+      html = e ? '<div class="show-card encounter' + (e.revealed ? ' revealed' : '') + '"><div class="kicker">' +
+        esc(t('board_encounter', e.place)) + '</div><h1>' + esc(t(e.revealed ? 'board_encounter_was' :
+        'board_encounter_title')) + '</h1><div class="encounter-show">' + (pic ? '<img class="encounter-being" src="' +
+        esc(pic) + '" alt="' + esc(e.revealed ? e.options.filter(function(o) {
+          return o.id === e.answer;
+        }).map(function(o) {
+          return o.name;
+        }).join('') : t('board_encounter_hidden')) + '">' : '') + '<ol class="encounter-clues">' +
+        e.clues.map(function(c, i) {
+          return '<li style="animation-delay:' + (e.revealed ? 0 : 1 + i * 2.5) + 's">' + esc(c) + '</li>';
+        }).join('') + '</ol></div><p class="lead">' + esc(t('app_encounter_sniff', {creature: t('board_encounter_pet'),
+        group: t('app_group_' + e.group)})) + '</p><ul class="encounter-names">' + e.options.map(function(o) {
+          return '<li class="' + (e.revealed && o.id === e.answer ? 'right' : '') + '">' + esc(o.name) + '</li>';
+        }).join('') + '</ul></div>' : '<div class="show-card"><div class="kicker">' + esc(t('board_encounter', s.place)) +
+        '</div><p class="lead">' + esc(t('board_encounter_none')) + '</p></div>';
+      if (T.fx) {
+        T.fx.sound(e && e.revealed ? 'right' : 'chirp');
+      }
+    } else if (s.shown === 'loot') {
+      // The loot of the session: the chest of each team, opened one after another, with what its members earned. Nothing
+      // by chance.
+      var loot = s.loot || {teams: [], lit: []};
+      html = '<div class="show-card loot"><div class="kicker">' + esc(t('board_loot')) + '</div><h1>' +
+        esc(t('board_loot_title')) + '</h1>' + (loot.lit.length ? '<p class="lead">' + esc(t('board_loot_lit',
+        loot.lit.join(', '))) + '</p>' : '') + '<ul class="loot-chests">' + loot.teams.map(function(team, i) {
+          var inside = [];
+          if (team.saber) {
+            inside.push('<li>' + T.icon('saber') + ' ' + esc(t('board_loot_saber', team.saber)) + '</li>');
+          }
+          if (team.gems) {
+            inside.push('<li>' + T.icon('gems') + ' ' + esc(team.gems === 1 ? t('board_loot_gem') : t('board_loot_gems', team.gems)) + '</li>');
+          }
+          team.beings.forEach(function(b) {
+            inside.push('<li>' + T.icon('lens') + ' ' + esc(b) + '</li>');
+          });
+          if (team.more) {
+            inside.push('<li>' + esc(t('board_loot_more', team.more)) + '</li>');
+          }
+          return '<li class="loot-chest" style="animation-delay:' + (0.6 + i * 1.4) + 's"><span class="loot-lid" ' +
+            'aria-hidden="true"></span><b>' + esc(team.name) + '</b><ul>' + (inside.length ? inside.join('') : '<li>' +
+            esc(t('board_loot_empty')) + '</li>') + '</ul></li>';
+        }).join('') + '</ul></div>';
+      if (T.fx) {
+        T.fx.sound('coin');
       }
     } else if (s.shown === 'council') {
       // The teams in council: each one, on a tablet, looks at its task and chooses who starts the hand.
@@ -1817,12 +1966,19 @@
       }).length})) + '</p>' + T.museum(m) + '</section>';
   }
 
-  function printCard() {
-    return '<section class="card board-print"><div class="kicker">' + esc(t('board_print')) + '</div><p class="help-soft">' +
+  /**
+   * The desk of the teacher, folded at the end of the class screen: what the class plays with and what to print. The
+   * class looks at the stage, not at the desk.
+   *
+   * @return {string}
+   */
+  function deskCard() {
+    return '<details class="card board-desk board-print"' + (state.desk ? ' open' : '') + '><summary>' +
+      esc(t('board_desk')) + '</summary>' + devicesPicker() + '<h3>' + esc(t('board_print')) + '</h3><p class="help-soft">' +
       esc(t('board_print_help')) + '</p><div class="actions board-small">' +
       ['votes', 'teams', 'chars', 'heroes', 'knots', 'diplomas'].map(function(k) {
         return '<button class="btn btn-soft" data-print="' + k + '">' + esc(t('board_print_' + k)) + '</button>';
-      }).join('') + '</div></section>';
+      }).join('') + '</div></details>';
   }
 
   function voteSet(team) {
@@ -1991,11 +2147,11 @@
       '<div class="board-tools">' + (pending && can('approvepowers') ? '<a class="btn btn-soft" href="' +
       esc(cfg.wwwroot + '/local/oksigeniatesape/teach.php?id=' + cfg.courseid) + '">' + esc(t('board_powers', pending)) +
       '</a>' : '') + '<a class="btn btn-soft" href="' + esc(cfg.wwwroot + '/local/oksigeniatesape/teach.php?id=' +
-      cfg.courseid) + '">' + esc(t('board_panel')) + '</a>' + devicesPicker() + musicButton() + lightButton() +
+      cfg.courseid) + '">' + esc(t('board_panel')) + '</a>' + musicButton() + lightButton() +
       '<button class="btn btn-soft" data-full>' +
       esc(t('board_fullscreen')) + '</button></div></header>' +
       '<div class="board-grid">' + map() + '<div class="board-side">' + todayCard() + openerCard() + eventCard() + battleCard() +
-      sceneCard() + teams() + museumCard() + printCard() + '</div></div>' + bar() + '</div>';
+      sceneCard() + teams() + museumCard() + deskCard() + '</div></div>' + bar() + '</div>';
     bind();
     var museum = app.querySelector('.board-museum');
     if (museum) {
@@ -2014,6 +2170,13 @@
         };
       });
     };
+    // The desk stays open or folded as the teacher left it when the class screen is drawn again.
+    var desk = app.querySelector('.board-desk');
+    if (desk) {
+      desk.ontoggle = function() {
+        state.desk = desk.open;
+      };
+    }
     on('[data-full]', fullscreen);
     on('[data-light]', switchLight);
     on('[data-music]', switchMusic);

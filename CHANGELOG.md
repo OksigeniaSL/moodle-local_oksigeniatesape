@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.157.0 (2026-10-20)
+
+- **The class screen by phases.** In the session going on, the remote of the teacher has «The class screen, by phases»:
+  - **Dawn**: the map of the mission at night, lighting up, and what the Embrollo did in the night, told by itself (the
+    stains and pages it keeps, the steps it took towards the next place; not the knots of a team, nor where it hid a
+    page).
+  - **Expedition**: the place of the session on the whole screen, a firefly for each team once one of its members has
+    come into the game, and a soft hourglass (the timer of the sheet, or 20 minutes).
+  - **Encounter**: the being that peeks out in the place for the whole class today, in silhouette, with its clues one
+    after another and four names to guess aloud; «Reveal the encounter» shows it in colour with its name. Nothing is
+    kept: the cards are each student's.
+  - **Loot**: the chest of each team, opened one after another, with what its members earned since the session started
+    (saber, gems and the beings registered in the field guide), and the lanterns lit. Nothing by chance.
+  - **Campfire**, as in 0.155.0.
+  - The desk of the teacher (what the class plays with, and what to print) leaves the stage: folded at the end of the
+    class screen, it stays open or closed as the teacher left it.
+- **A capability of its own to send photos of the classroom**, `local/oksigeniatesape:sendphoto` (students, by
+  default), so that a site can keep the game without the photos. Without it there is no button to send one; the photo
+  of the team, once approved, is still on the map.
+
 ## 0.156.0 (2026-10-20)
 
 - **The photos of the classroom, stickers of the map.** In the panel of a place, a team can send one photo of what it

@@ -39,6 +39,16 @@ $capabilities = [
             'student' => CAP_ALLOW,
         ],
     ],
+    // Send a photo of the classroom for a place of the map, for the teacher to approve. Apart from playing, so that a site
+    // (a public demo, for instance) can keep the game and not the photos.
+    'local/oksigeniatesape:sendphoto' => [
+        'riskbitmask' => RISK_SPAM,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => [
+            'student' => CAP_ALLOW,
+        ],
+    ],
     // Turn the game on in a course and set it up: family, teams, caps, rules, powers and the mission.
     'local/oksigeniatesape:manageregion' => [
         'riskbitmask' => RISK_PERSONAL,

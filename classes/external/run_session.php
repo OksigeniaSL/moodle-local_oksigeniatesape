@@ -50,12 +50,18 @@ final class run_session extends external_api {
             'step' => new external_value(PARAM_INT, 'The step to go to', VALUE_DEFAULT, 0),
             'show' => new external_value(
                 PARAM_ALPHA,
-                'What the class screen shows: enter, card, timer, pacts or nothing',
+                'What the class screen shows: one of the shows of a session (enter, card, timer, pacts, scene, council, dawn, '
+                    . 'expedition, encounter, loot, campfire) or nothing',
                 VALUE_DEFAULT,
                 ''
             ),
-            'minutes' => new external_value(PARAM_INT, 'Of the timer', VALUE_DEFAULT, 0),
-            'target' => new external_value(PARAM_INT, 'The scene to play with the class', VALUE_DEFAULT, 0),
+            'minutes' => new external_value(PARAM_INT, 'Of the timer, or of the hourglass of the expedition', VALUE_DEFAULT, 0),
+            'target' => new external_value(
+                PARAM_INT,
+                'The scene to play with the class; for the encounter, 1 to reveal it',
+                VALUE_DEFAULT,
+                0
+            ),
             'review' => new external_multiple_structure(
                 new external_value(PARAM_TEXT, 'Something to review'),
                 'To close: what to review at the start of the next session',

@@ -42,7 +42,11 @@ final class sessions {
      * @var string[] What the class screen shows for a session: the place entered, the card, a timer, the commitments, a
      * scene, the lantern lit, or the teams in council.
      */
-    public const SHOWS = ['enter', 'card', 'timer', 'pacts', 'scene', 'light', 'council', 'campfire'];
+    public const SHOWS = ['enter', 'card', 'timer', 'pacts', 'scene', 'light', 'council', 'campfire', 'dawn', 'expedition',
+        'encounter', 'loot'];
+
+    /** @var int Minutes of the soft hourglass of the expedition, when the teacher does not say. */
+    public const EXPEDITION = 20;
 
     /** @var int Minutes of the council of the teams. */
     public const COUNCIL = 2;
@@ -263,8 +267,14 @@ final class sessions {
         }
         $open->shown = $show !== '' ? $show : null;
         $open->shownat = $now ?? time();
-        $open->minutes = $show === 'timer' ? max(1, min(90, $minutes)) : ($show === 'council' ? self::COUNCIL : 0);
-        $open->target = $table ? $target : 0;
+        $open->minutes = match ($show) {
+            'timer' => max(1, min(90, $minutes)),
+            'council' => self::COUNCIL,
+            'expedition' => max(1, min(90, $minutes ?: self::EXPEDITION)),
+            default => 0,
+        };
+        // The encounter of the class: 0 while the class guesses, 1 once the teacher reveals it.
+        $open->target = $table ? $target : ($show === 'encounter' ? min(1, max(0, $target)) : 0);
         $DB->update_record(self::T . 'session', (object) ['id' => $open->id, 'shown' => $open->shown,
             'shownat' => $open->shownat, 'minutes' => $open->minutes, 'target' => $open->target]);
         return $open;
@@ -450,7 +460,151 @@ final class sessions {
         if ($open->shown === 'council') {
             $out['council'] = self::council($courseid, $mission, $now ?? time());
         }
+        if ($open->shown === 'dawn') {
+            $out['dawn'] = self::dawn($courseid, $mission, $now ?? time());
+        }
+        if ($open->shown === 'expedition') {
+            $out['expedition'] = self::expedition($courseid, $open);
+        }
+        if ($open->shown === 'encounter') {
+            $out['encounter'] = self::encounter($mission, $open, $now ?? time());
+        }
+        if ($open->shown === 'loot') {
+            $out['loot'] = self::loot($courseid, $mission, $open, $now ?? time());
+        }
         return $out;
+    }
+
+    /**
+     * Dawn in the valley, for the class screen: what the Embrollo did in the night (the stains and the pages it still
+     * keeps, the steps it took towards the next place), told by itself. Not the knots of a team, which only the team
+     * sees, nor where it hid a page.
+     *
+     * @param int $courseid
+     * @param \stdClass $mission
+     * @param int $now
+     * @return array did (kind, place, title, hidden), prints, towards (the next place).
+     */
+    private static function dawn(int $courseid, \stdClass $mission, int $now): array {
+        $did = [];
+        foreach (stains::open($courseid, $now) as $stain) {
+            $view = (int) ($stain->groupid ?? 0) ? null : stains::view($stain, $mission);
+            if ($view) {
+                $hidden = !empty($view['hidden']);
+                $did[] = ['kind' => $view['kind'], 'place' => $hidden ? '' : (string) $view['place'],
+                    'chapter' => $hidden ? '' : (string) $view['chapter'], 'title' => (string) $view['title'],
+                    'hidden' => $hidden];
+            }
+        }
+        $codes = array_column($mission->data['chapters'] ?? [], 'code');
+        $today = pacts::chapter($mission);
+        $at = $today ? array_search((string) $today->code, $codes, true) : false;
+        $next = $at !== false && isset($codes[$at + 1]) ? self::place($mission, $codes[$at + 1]) : '';
+        return ['did' => $did, 'prints' => $next ? stains::prints($mission, $now) : 0, 'towards' => $next];
+    }
+
+    /**
+     * The expedition, for the class screen: the place of the session and, by team, whether any of its members has come
+     * into the game since the session started (a firefly for each one that has). No names of students.
+     *
+     * @param int $courseid
+     * @param \stdClass $open The session.
+     * @return array teams (name, in).
+     */
+    private static function expedition(int $courseid, \stdClass $open): array {
+        $teams = [];
+        $grouping = (int) (regions::get($courseid)->groupingid ?? 0);
+        foreach (groups_get_all_groups($courseid, 0, $grouping) as $group) {
+            $in = false;
+            foreach (teams::members($courseid, (int) $group->id) as $member) {
+                $in = $in || (int) $member->lastseen >= (int) $open->startedat;
+            }
+            $teams[] = ['name' => format_string($group->name), 'in' => $in];
+        }
+        return ['teams' => $teams];
+    }
+
+    /**
+     * The encounter of the day for the whole class, on the class screen: the being that peeks out in the place of the
+     * session, the same all day, with its clues and four names to guess aloud; its name, only once the teacher reveals
+     * it. Nothing is kept: the cards are each student's, in their tablet.
+     *
+     * @param \stdClass $mission
+     * @param \stdClass $open The session.
+     * @param int $now
+     * @return array|null place, clues, group, options (id, name), picture, revealed, answer (once revealed).
+     */
+    private static function encounter(\stdClass $mission, \stdClass $open, int $now): ?array {
+        $place = (string) $open->chapter;
+        if ($place === self::ENTRY) {
+            $place = (string) ($mission->data['chapters'][0]['code'] ?? '');
+        }
+        $being = encounters::for_class($mission, $place, $now);
+        if (!$being) {
+            return null;
+        }
+        $view = encounters::view($being, $mission);
+        unset($view['crossed']);
+        $view['place'] = self::place($mission, $place);
+        $view['revealed'] = (int) $open->target === 1;
+        $view['answer'] = $view['revealed'] ? (string) $being['id'] : '';
+        return $view;
+    }
+
+    /**
+     * The loot of the session, for the class screen: by team, what its members earned since the session started (saber
+     * and gems, and the beings they registered in the field guide). Nothing by chance: the chest holds what was earned,
+     * and the class screen opens it.
+     *
+     * @param int $courseid
+     * @param \stdClass $mission
+     * @param \stdClass $open The session.
+     * @param int $now Up to when.
+     * @return array teams (name, saber, gems, beings (names), more (beings not named)), lit (places lit in the session).
+     */
+    private static function loot(int $courseid, \stdClass $mission, \stdClass $open, int $now): array {
+        global $DB;
+        $since = (int) $open->startedat;
+        $names = [];
+        foreach ($mission->data['encounters'] ?? [] as $being) {
+            $names[(string) ($being['id'] ?? '')] = missions::text($being['name'] ?? '', $mission->skin, $mission->variant);
+        }
+        $teams = [];
+        $grouping = (int) (regions::get($courseid)->groupingid ?? 0);
+        foreach (groups_get_all_groups($courseid, 0, $grouping) as $group) {
+            $charids = array_map(fn($m) => (int) $m->charid, teams::members($courseid, (int) $group->id, true));
+            $chest = ['name' => format_string($group->name), 'saber' => 0, 'gems' => 0, 'beings' => [], 'more' => 0];
+            if ($charids) {
+                [$insql, $params] = $DB->get_in_or_equal($charids);
+                $sums = $DB->get_records_sql_menu(
+                    'SELECT resource, SUM(amount)
+                       FROM {' . self::T . "ledger}
+                      WHERE charid $insql AND courseid = ? AND timecreated BETWEEN ? AND ? AND amount > 0
+                            AND undoneby = 0 AND resource IN ('saber', 'gems')
+                   GROUP BY resource",
+                    array_merge($params, [$courseid, $since, $now])
+                );
+                $chest['saber'] = (int) ($sums['saber'] ?? 0);
+                $chest['gems'] = (int) ($sums['gems'] ?? 0);
+                $codes = array_unique($DB->get_fieldset_select(
+                    self::T . 'found',
+                    'code',
+                    "charid $insql AND missionid = ? AND kind = 'being' AND timecreated BETWEEN ? AND ?",
+                    array_merge($params, [$mission->id, $since, $now])
+                ));
+                $found = array_values(array_filter(array_map(fn($c) => $names[$c] ?? '', $codes)));
+                $chest['beings'] = array_slice($found, 0, 3);
+                $chest['more'] = max(0, count($found) - 3);
+            }
+            $teams[] = $chest;
+        }
+        $lit = $DB->get_fieldset_select(
+            self::T . 'chapter',
+            'code',
+            'missionid = ? AND litat BETWEEN ? AND ?',
+            [$mission->id, $since, $now]
+        );
+        return ['teams' => $teams, 'lit' => array_map(fn($c) => self::place($mission, (string) $c), $lit)];
     }
 
     /**

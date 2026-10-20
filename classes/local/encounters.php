@@ -74,6 +74,20 @@ final class encounters {
     }
 
     /**
+     * The being that peeks out in a place for the whole class today, on the class screen: the same all day, another the
+     * next day. None if the mission has no encounters there.
+     *
+     * @param \stdClass $mission
+     * @param string $place Code of the place.
+     * @param int|null $now
+     * @return array|null The being, as in the mission.
+     */
+    public static function for_class(\stdClass $mission, string $place, ?int $now = null): ?array {
+        $candidates = array_values(array_filter($mission->data['encounters'] ?? [], fn($b) => ($b['place'] ?? '') === $place));
+        return $candidates ? $candidates[self::day((int) $mission->courseid, $now) % count($candidates)] : null;
+    }
+
+    /**
      * A being as the student meets it: its clues, its group (what the creature sniffs) and four names to choose from,
      * its own and three of the same group (the creature already said the group): other beings of the mission first,
      * then the decoys of the group. Not which one is right.

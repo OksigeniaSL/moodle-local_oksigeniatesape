@@ -77,6 +77,7 @@ final class photo extends external_api {
         switch ($params['action']) {
             case 'upload':
                 require_capability('local/oksigeniatesape:play', $context);
+                require_capability('local/oksigeniatesape:sendphoto', $context);
                 photos::upload($courseid, $userid, $params['chapter'], $params['picture']);
                 // No break: it answers with the photos of the team.
             case 'mine':

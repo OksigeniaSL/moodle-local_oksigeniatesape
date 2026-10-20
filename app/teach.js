@@ -1035,6 +1035,19 @@
           '</div>' : '') + '</div></li>';
       }).join('') + '</ol>';
     };
+    // The class screen by phases, from dawn to the campfire: each one, a touch; the encounter, revealed with another.
+    var phases = function(v) {
+      var timer = v.steps.filter(function(st) {
+        return st.timer;
+      })[0];
+      return '<div class="session-phases"><span class="kicker">' + esc(t('teach_session_phases')) + '</span><div ' +
+        'class="chips">' + ['dawn', 'expedition', 'encounter', 'loot', 'campfire'].map(function(p) {
+          return '<button type="button" class="chip' + (v.shown === p ? ' on' : '') + '" aria-pressed="' +
+            String(v.shown === p) + '" ' + (p === 'expedition' ? 'data-sexpedition="' + (timer ? timer.timer : 0) + '"' :
+            'data-sshow="' + p + '"') + '>' + esc(t('teach_session_act_' + p)) + '</button>';
+        }).join('') + (v.shown === 'encounter' ? '<button type="button" class="chip" data-sreveal>' +
+        esc(t('teach_session_act_reveal')) + '</button>' : '') + '</div></div>';
+    };
     var review = function(v) {
       return v.review && v.review.length ? '<div class="session-review"><b>' + esc(t('teach_session_review')) + '</b><ul>' +
         v.review.map(function(r) {
@@ -1064,11 +1077,10 @@
           esc(t('teach_session_act_light')) + '</button></div>' : '';
         box.innerHTML = '<div class="kicker">' + esc(t('teach_session_now')) + ' · <span data-sclock>' +
           esc(t('teach_session_clock', mins)) + '</span></div><h2>' + esc(name(v)) + '</h2><p class="lead">' + esc(v.title) +
-          '</p>' + ready + review(v) + steps(v, true) + sheetExtras(v) + '<div class="actions" style="justify-content:flex-start">' +
-          (v.shown ? '<button type="button" class="btn btn-soft" data-sshow="">' + esc(t('teach_session_clear')) + '</button>' :
-          '') + (v.shown === 'council' ? '' : '<button type="button" class="btn btn-soft" data-sshow="council">' +
-          esc(t('teach_session_act_council')) + '</button>') + (v.shown === 'campfire' ? '' : '<button type="button" ' +
-          'class="btn btn-soft" data-sshow="campfire">' + esc(t('teach_session_act_campfire')) + '</button>') +
+          '</p>' + ready + review(v) + steps(v, true) + sheetExtras(v) + phases(v) + '<div class="actions" ' +
+          'style="justify-content:flex-start">' + (v.shown ? '<button type="button" class="btn btn-soft" data-sshow="">' +
+          esc(t('teach_session_clear')) + '</button>' : '') + (v.shown === 'council' ? '' : '<button type="button" ' +
+          'class="btn btn-soft" data-sshow="council">' + esc(t('teach_session_act_council')) + '</button>') +
           '<button type="button" class="btn btn-main" data-sclose>' +
           esc(t('teach_session_close')) + '</button></div>';
       } else {
@@ -1124,6 +1136,10 @@
         run('show', {show: d.sshow});
       } else if (d.stimer) {
         run('show', {show: 'timer', minutes: Number(d.stimer)});
+      } else if (d.sexpedition !== undefined) {
+        run('show', {show: 'expedition', minutes: Number(d.sexpedition)});
+      } else if (d.sreveal !== undefined) {
+        run('show', {show: 'encounter', target: 1});
       } else if (d.slight !== undefined) {
         run('light');
       } else if (d.sscene) {

@@ -194,4 +194,58 @@ final class sessions_test extends \advanced_testcase {
         sessions::start($course->id, 'biblioteca', 1, $now + 4100);
         $this->assertSame('biblioteca', sessions::open($course->id)->chapter);
     }
+
+    public function test_the_class_screen_by_phases_from_dawn_to_the_loot(): void {
+        global $DB;
+        [$course, $teacher] = $this->make_class();
+        $mission = missions::get($course->id);
+        $now = time();
+        sessions::start($course->id, 'claro', 1, $now);
+        // Dawn: what the Embrollo did in the night, told by itself, and the steps it takes towards the next place.
+        sessions::show($course->id, 'dawn', 0, 0, $now + 10);
+        $dawn = sessions::board($course->id, $now + 11)['dawn'];
+        $this->assertIsArray($dawn['did']);
+        $this->assertSame('Biblioteca de los Reinos', $dawn['towards']);
+        foreach ($dawn['did'] as $did) {
+            $this->assertContains($did['kind'], ['stain', 'page']);
+        }
+        // The expedition: twenty minutes of hourglass, and a firefly by each team once one of its members comes in.
+        sessions::show($course->id, 'expedition', 0, 0, $now + 20);
+        $board = sessions::board($course->id, $now + 21);
+        $this->assertSame(sessions::EXPEDITION, $board['minutes']);
+        $this->assertSame([['name' => 'Los Linces', 'in' => false]], $board['expedition']['teams']);
+        $members = [];
+        $teams = groups_get_all_groups($course->id);
+        foreach (groups_get_members((int) reset($teams)->id, 'u.id') as $user) {
+            $members[] = engine::member(characters::get((int) $user->id), $course->id, $now);
+        }
+        $DB->set_field(self::T . 'member', 'lastseen', $now + 30, ['id' => $members[0]->id]);
+        $this->assertTrue(sessions::board($course->id, $now + 31)['expedition']['teams'][0]['in']);
+        // The encounter of the class: the same being while the class guesses and once revealed, its name only then.
+        sessions::show($course->id, 'encounter', 0, 0, $now + 40);
+        $guess = sessions::board($course->id, $now + 41)['encounter'];
+        $this->assertSame(['Claro del Despertar', false, ''], [$guess['place'], $guess['revealed'], $guess['answer']]);
+        $this->assertCount(4, $guess['options']);
+        $this->assertNotEmpty($guess['clues']);
+        sessions::show($course->id, 'encounter', 0, 1, $now + 50);
+        $seen = sessions::board($course->id, $now + 51)['encounter'];
+        $this->assertTrue($seen['revealed']);
+        $this->assertSame($guess['picture'], $seen['picture']);
+        $this->assertContains($seen['answer'], array_column($seen['options'], 'id'));
+        // The loot: what the members of each team earned since the session started, and nothing from before.
+        engine::saber($members[0], 4, 'manual', (int) $teacher->id, 0, 0, $now - 100);
+        engine::saber($members[0], 6, 'manual', (int) $teacher->id, 0, 0, $now + 60);
+        engine::gems($members[1], 1, 'manual', (int) $teacher->id, 0, 0, $now + 61);
+        $being = $mission->data['encounters'][0];
+        $DB->insert_record(self::T . 'found', (object) ['charid' => $members[1]->charid, 'courseid' => $course->id,
+            'missionid' => $mission->id, 'kind' => 'being', 'code' => $being['id'], 'timecreated' => $now + 62]);
+        // What is dated after the moment the class screen asks does not count.
+        engine::saber($members[1], 9, 'manual', (int) $teacher->id, 0, 0, $now + 500);
+        sessions::show($course->id, 'loot', 0, 0, $now + 70);
+        $loot = sessions::board($course->id, $now + 71)['loot'];
+        $this->assertSame('Los Linces', $loot['teams'][0]['name']);
+        $this->assertSame([6, 1, 0], [$loot['teams'][0]['saber'], $loot['teams'][0]['gems'], $loot['teams'][0]['more']]);
+        $this->assertCount(1, $loot['teams'][0]['beings']);
+        $this->assertSame([], $loot['lit']);
+    }
 }

@@ -206,4 +206,16 @@ final class photos_test extends \advanced_testcase {
         // The place by its name, not its code.
         $this->assertNotSame('claro', $out['photos'][0]['place']);
     }
+
+    public function test_a_site_can_keep_the_game_without_the_photos(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $w = $this->make_class();
+        $student = (int) $DB->get_field('role', 'id', ['shortname' => 'student']);
+        assign_capability('local/oksigeniatesape:sendphoto', CAP_PROHIBIT, $student, $w->context->id);
+        $this->setUser($w->users[0]);
+        $this->assertFalse(view::world($w->course->id, (int) $w->users[0]->id)['sendphoto']);
+        $this->expectException(\required_capability_exception::class);
+        photo::execute($w->course->id, 'upload', 'claro', self::PIXEL);
+    }
 }
