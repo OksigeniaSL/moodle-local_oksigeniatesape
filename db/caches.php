@@ -52,4 +52,10 @@ $definitions = [
         'simplekeys' => true,
         'ttl' => 600,
     ],
+    // The remote of a scene played by the class: the buttons of the class screen and what the phone pressed.
+    'remote' => [
+        'mode' => cache_store::MODE_APPLICATION,
+        'simplekeys' => true,
+        'ttl' => 3600,
+    ],
 ];

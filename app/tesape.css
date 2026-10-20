@@ -4648,6 +4648,15 @@ body.in-battle .badge-moment {
   margin: 10px 0 0;
 }
 
+.session-sub .btn svg,
+.session-sub .btn img.icon {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin-right: 6px;
+  vertical-align: -4px;
+}
+
 @media print {
   body.printing-sheet > :not(.print-layer) {
     display: none !important;

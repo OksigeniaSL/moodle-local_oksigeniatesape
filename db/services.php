@@ -369,6 +369,14 @@ $functions = [
         'readonlysession' => true,
         'capabilities' => 'local/oksigeniatesape:runclassscreen',
     ],
+    'local_oksigeniatesape_scene_remote' => [
+        'classname' => 'local_oksigeniatesape\\external\\scene_remote',
+        'description' => 'The remote of a scene played by the class: the buttons of the class screen, pressed from the phone.',
+        'type' => 'write',
+        'ajax' => true,
+        'readonlysession' => true,
+        'capabilities' => 'local/oksigeniatesape:runclassscreen',
+    ],
     'local_oksigeniatesape_next_class' => [
         'classname' => 'local_oksigeniatesape\\external\\next_class',
         'description' => 'The plan for the next class, made by the AI of the site from what confuses the class.',

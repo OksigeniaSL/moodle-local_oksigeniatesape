@@ -1320,7 +1320,8 @@
 
   function remoteCard() {
     return can('runclassscreen') ? '<section class="card remote-card"><div class="kicker">' + esc(t('teach_command')) +
-      '</div><div data-remote-body><p class="help-soft">' + esc(t('teach_command_loading')) + '</p></div></section>' : '';
+      '</div><div data-remote-body><p class="help-soft">' + esc(t('teach_command_loading')) + '</p></div>' +
+      '<div class="scene-remote" data-scene-remote aria-live="polite"></div></section>' : '';
   }
 
   function bindRemote(el) {
@@ -1462,6 +1463,45 @@
         };
       });
     };
+    // A scene played by the class on the class screen: its buttons, to press them from here.
+    var scenebox = el.querySelector('[data-scene-remote]');
+    var scenedrawn = '';
+    var drawScene = function(r) {
+      var sig = JSON.stringify(r && r.on ? [r.title, r.text, r.buttons] : null);
+      if (!scenebox || sig === scenedrawn) {
+        return;
+      }
+      scenedrawn = sig;
+      scenebox.innerHTML = r && r.on ? '<div class="kicker">' + esc(t('teach_scene_remote', r.title)) + '</div>' +
+        (r.text ? '<p><b>' + esc(r.text) + '</b></p>' : '') + '<div class="opts">' + r.buttons.map(function(b) {
+          return '<button type="button" class="opt" data-sremote="' + esc(b.key) + '">' + esc(b.label) + '</button>';
+        }).join('') + '</div>' : '';
+      scenebox.querySelectorAll('[data-sremote]').forEach(function(b) {
+        b.onclick = function() {
+          scenebox.querySelectorAll('[data-sremote]').forEach(function(x) {
+            x.disabled = true;
+          });
+          T.api('scene_remote', {courseid: cfg.courseid, action: 'press', key: b.dataset.sremote}).then(function() {
+            T.toast(esc(t('teach_scene_remote_done')));
+            // What the class screen shows after it, in a moment.
+            setTimeout(pollScene, 1800);
+          }).catch(function(e) {
+            scenedrawn = '';
+            T.toast(esc(e.message), true);
+            pollScene();
+          });
+        };
+      });
+    };
+    var pollScene = function() {
+      T.api('scene_remote', {courseid: cfg.courseid, action: 'read'}).then(function(r) {
+        if (document.body.contains(scenebox)) {
+          drawScene(r);
+        }
+      }).catch(function() {
+        // The next poll tries again.
+      });
+    };
     var poll = function() {
       host('state').then(function(r) {
         if (document.body.contains(box)) {
@@ -1470,6 +1510,7 @@
       }).catch(function() {
         // The next poll tries again.
       });
+      pollScene();
     };
     poll();
     state.remotetimer = setInterval(poll, 4000);

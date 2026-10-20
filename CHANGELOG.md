@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.170.0 (2026-10-20)
+
+- **The remote of a scene played by the class, with or without devices.** While the class screen plays a scene with
+  the class, it says which buttons it shows (going on, the options of a decision, reading aloud, closing a vote), and
+  the panel of the teacher shows them under «On the class screen»: a touch on the phone presses it on the class screen.
+  Played aloud with cards, the teacher no longer has to go back to the computer. It lives in a cache while the scene is
+  open (service `local_oksigeniatesape_scene_remote`, cache `remote`); nothing is kept.
+- The icon of «Sheet for whoever stands in for you» had no size on phones.
+
 ## 0.169.0 (2026-10-20)
 
 - **The first day on the class screen** (mission v70). A new phase of the class screen for the entry session

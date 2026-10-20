@@ -2021,6 +2021,119 @@
       }).join('') + '</ul></section>';
   }
 
+  /**
+   * The remote of a scene played by the class: what the class screen shows to press (the options, «Go on», closing a
+   * vote…) goes to the phone of the teacher, and what they press there is pressed here. While the scene is open.
+   *
+   * @return {function} Stops it.
+   */
+  function relay() {
+    var api = function(action, extra) {
+      return T.api('scene_remote', Object.assign({courseid: cfg.courseid, action: action}, extra || {}));
+    };
+    var layer = null;
+    var sent = '';
+    var seen = -1;
+    var timer = 0;
+    var observer = null;
+    var later = 0;
+    // The buttons a person could press now in the scene: visible, enabled, with something to say; not the close.
+    var buttons = function() {
+      return layer ? Array.prototype.filter.call(layer.querySelectorAll('button'), function(b) {
+        return !b.disabled && b.offsetParent !== null && !b.closest('.scene-close') && !b.hasAttribute('data-still') &&
+          (b.getAttribute('aria-label') || b.textContent).trim() !== '';
+      }).slice(0, 12) : [];
+    };
+    // What a button says, as it reads: each of its pieces apart (the letter of an option, then its text).
+    var label = function(b) {
+      var said = Array.prototype.map.call(b.childNodes, function(n) {
+        return n.textContent.trim();
+      }).filter(function(x) {
+        return x;
+      }).join(' ');
+      return (said || b.getAttribute('aria-label') || '').replace(/\s+/g, ' ');
+    };
+    // The key of a button: its place and what it says, so that a press made on what was shown is not done on another.
+    var keyOf = function(b, i) {
+      var text = label(b);
+      var hash = 0;
+      for (var k = 0; k < text.length; k++) {
+        hash = (hash * 31 + text.charCodeAt(k)) % 1000003;
+      }
+      return 'b' + i + '-' + hash;
+    };
+    var publish = function() {
+      if (!layer) {
+        return;
+      }
+      var list = buttons().map(function(b, i) {
+        return {key: keyOf(b, i), label: label(b)};
+      });
+      var title = layer.querySelector('.scene-title');
+      var ask = layer.querySelector('.scene-body .scene-prompt');
+      var payload = {title: title ? title.textContent.trim() : '', text: ask ? ask.textContent.trim().slice(0, 400) : '',
+        buttons: JSON.stringify(list)};
+      var sig = JSON.stringify(payload);
+      if (sig === sent) {
+        return;
+      }
+      sent = sig;
+      api('publish', payload).catch(function() {
+        sent = '';
+      });
+    };
+    var poll = function() {
+      if (!layer) {
+        layer = document.querySelector('.scene-layer');
+        if (layer) {
+          observer = new MutationObserver(function() {
+            clearTimeout(later);
+            later = setTimeout(publish, 300);
+          });
+          observer.observe(layer, {childList: true, subtree: true, attributes: true, attributeFilter: ['disabled', 'class']});
+          publish();
+        }
+        return;
+      }
+      api('alive').then(function(r) {
+        if (!r.on) {
+          sent = '';
+          publish();
+          return;
+        }
+        // What was pressed before the scene opened is not done again.
+        if (seen < 0) {
+          seen = r.seq;
+          return;
+        }
+        if (r.seq > seen) {
+          seen = r.seq;
+          var match = buttons().filter(function(b, i) {
+            return keyOf(b, i) === r.pressed;
+          })[0];
+          if (match) {
+            match.click();
+          }
+        }
+      }).catch(function() {
+        // The next poll tries again.
+      });
+    };
+    timer = setInterval(poll, 1500);
+    poll();
+    return function() {
+      clearInterval(timer);
+      clearTimeout(later);
+      if (observer) {
+        observer.disconnect();
+      }
+      layer = null;
+      api('clear').catch(function() {
+        return null;
+      });
+    };
+  }
+
   function playScene(sceneid) {
     // A double tap on «Play» opens one scene and one vote, not two.
     if (state.opening || document.querySelector('.scene-layer')) {
@@ -2066,7 +2179,9 @@
     var world = {family: state.cls.region.family, character: {role: 'sage', creature: '{}'}, items: [], team: null};
     var go = function() {
       state.opening = false;
+      var unrelay = relay();
       T.playScene({sceneid: sceneid, world: world, classmode: classmode, onclose: function() {
+        unrelay();
         if (phones) {
           host('state').then(function(live) {
             if (live && live.kind === 'vote' && !live.outcome) {
