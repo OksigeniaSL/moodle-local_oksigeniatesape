@@ -195,6 +195,25 @@ final class sessions_test extends \advanced_testcase {
         $this->assertSame('biblioteca', sessions::open($course->id)->chapter);
     }
 
+    public function test_the_first_day_on_the_class_screen(): void {
+        [$course] = $this->make_class();
+        $now = time();
+        // The entry session launches the first day from the step where the heroes are made.
+        $mission = missions::get($course->id);
+        $steps = sessions::view($course->id, $mission, sessions::ENTRY, 1)['steps'];
+        $this->assertContains('firstday', array_column($steps, 'action'));
+        sessions::start($course->id, sessions::ENTRY, 1, $now);
+        sessions::show($course->id, 'firstday', 0, 0, $now + 10);
+        $first = sessions::board($course->id, $now + 11)['firstday'];
+        // Two heroes made of the two students, a spark of the colour of each role, in the order they were made; no names.
+        $this->assertSame(['made' => 2, 'total' => 2, 'sparks' => ['healer', 'sage']], $first);
+        $late = $this->getDataGenerator()->create_and_enrol($course, 'student');
+        $board = sessions::board($course->id, $now + 12)['firstday'];
+        $this->assertSame([2, 3], [$board['made'], $board['total']]);
+        characters::create($late->id, 'scout', 'm');
+        $this->assertSame(['healer', 'sage', 'scout'], sessions::board($course->id, $now + 13)['firstday']['sparks']);
+    }
+
     public function test_the_class_screen_by_phases_from_dawn_to_the_loot(): void {
         global $DB;
         [$course, $teacher] = $this->make_class();

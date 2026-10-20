@@ -11063,6 +11063,90 @@ body.still .class-row-team.cheer {
 }
 
 /* The campfire on the class screen, to close a session: the creatures of the class asleep around the fire. */
+/* The first day: the steps to make a hero, and a spark for each one already in the valley, of the colour of its role. */
+.firstday-steps {
+  margin: 10px auto 0;
+  padding-left: 1.4em;
+  font-size: 1.5rem;
+  line-height: 1.5;
+  text-align: start;
+}
+
+.firstday-sky {
+  position: relative;
+  height: 34vh;
+  min-height: 180px;
+  margin: 14px 0 6px;
+  border-radius: var(--r);
+  background: radial-gradient(ellipse at 50% 60%, rgba(var(--lantern-rgb), .12), transparent 70%);
+}
+
+.first-spark {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0 18%, var(--spark) 45%, transparent 72%);
+  box-shadow: 0 0 14px var(--spark);
+  --spark: var(--lantern);
+}
+
+.firstday-sky .first-spark {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  animation: spark-born 1.2s ease-out;
+}
+
+.first-spark.role-protector {
+  --spark: #8fd3ff;
+}
+
+.first-spark.role-healer {
+  --spark: #7cc67f;
+}
+
+.first-spark.role-sage {
+  --spark: #b9a6ff;
+}
+
+.first-spark.role-scout {
+  --spark: #ffc857;
+}
+
+.firstday-roles {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px 22px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 1.25rem;
+}
+
+.firstday-roles .first-spark {
+  margin-right: 6px;
+  vertical-align: -2px;
+}
+
+@keyframes spark-born {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(2.6);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .firstday-sky .first-spark {
+    animation: none;
+  }
+}
+
 .campfire-ring {
   position: relative;
   height: 230px;

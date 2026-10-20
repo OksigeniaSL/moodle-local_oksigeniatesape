@@ -246,7 +246,10 @@
     }
     var key = s ? s.id + ':' + s.shown + ':' + s.shownat : '';
     if (key === state.sessionkey) {
-      // The same thing shown: only how many have chosen their commitment, by team, may change.
+      // The same thing shown: on the first day, the heroes made; otherwise, only how the teams are doing.
+      if (s && s.firstday && state.showEl) {
+        firstSparks(state.showEl, s.firstday);
+      }
       if (s && (s.pacts || s.council || s.expedition) && state.showEl) {
         var list = state.showEl.querySelector('[data-steams]');
         if (list) {
@@ -263,6 +266,39 @@
     // The clock of the server, to count a timer from when the teacher launched it.
     state.sessionoffset = s ? s.now * 1000 - Date.now() : 0;
     showSession(s);
+  }
+
+  /**
+   * The heroes made on the first day: a spark for each new one, where it always is (the old ones stay, so that only the
+   * new ones light up), how many of the class there are already, and how many of each role.
+   *
+   * @param {Element} el The show.
+   * @param {Object} f made, total, sparks (roles in the order they were made).
+   */
+  function firstSparks(el, f) {
+    var sky = el.querySelector('[data-ssparks]');
+    if (!sky) {
+      return;
+    }
+    for (var i = sky.children.length; i < f.sparks.length; i++) {
+      // Spread like the seeds of a sunflower: each one in its place, none over another.
+      var r = 46 * Math.sqrt((i + 0.5) / Math.max(f.total, f.sparks.length, 1));
+      var a = i * 2.39996;
+      var spark = document.createElement('i');
+      spark.className = 'first-spark role-' + f.sparks[i];
+      spark.style.left = (50 + r * Math.cos(a)).toFixed(1) + '%';
+      spark.style.top = (50 + r * Math.sin(a)).toFixed(1) + '%';
+      sky.appendChild(spark);
+    }
+    el.querySelector('[data-sfirst]').textContent = t('board_firstday_count', {made: f.made, total: f.total});
+    var count = {};
+    f.sparks.forEach(function(role) {
+      count[role] = (count[role] || 0) + 1;
+    });
+    el.querySelector('[data-sroles]').innerHTML = ['protector', 'healer', 'sage', 'scout'].map(function(role) {
+      return '<li class="role-' + role + '"><i class="first-spark role-' + role + '" aria-hidden="true"></i>' +
+        esc(T.roleName(T.family, role, 'm')) + ': <b>' + (count[role] || 0) + '</b></li>';
+    }).join('');
   }
 
   /**
@@ -439,6 +475,18 @@
       if (T.fx) {
         T.fx.sound('lantern');
       }
+    } else if (s.shown === 'firstday') {
+      // The first day: the four steps to make a hero, and a spark for each one already in the valley, of the colour of
+      // their role. No names.
+      var first = s.firstday || {made: 0, total: 0, sparks: []};
+      html = '<div class="show-card firstday"><div class="kicker">' + esc(t('board_firstday')) + '</div><h1>' +
+        esc(t('board_firstday_title')) + '</h1><ol class="firstday-steps">' + [1, 2, 3, 4].map(function(n) {
+          return '<li>' + esc(t('board_firstday_' + n)) + '</li>';
+        }).join('') + '</ol><div class="firstday-sky" data-ssparks aria-hidden="true"></div><p class="lead" data-sfirst>' +
+        '</p><ul class="firstday-roles" data-sroles></ul></div>';
+      if (T.fx) {
+        T.fx.sound('chime');
+      }
     } else if (s.shown === 'dawn') {
       // Dawn in the valley: the map still at night, lighting up, and what the Embrollo did in the night, told by itself.
       var night = s.dawn || {did: [], prints: 0};
@@ -549,6 +597,9 @@
     };
     document.body.appendChild(el);
     state.showEl = el;
+    if (s.firstday) {
+      firstSparks(el, s.firstday);
+    }
     if (end) {
       var total = end - Date.now();
       var tick = function() {

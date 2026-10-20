@@ -1036,6 +1036,9 @@
         case 'council':
           return '<button type="button" class="btn btn-main" data-sshow="council">' + esc(t('teach_session_act_council')) +
             '</button>';
+        case 'firstday':
+          return '<button type="button" class="btn btn-main" data-sshow="firstday">' + esc(t('teach_session_act_firstday')) +
+            '</button>';
         case 'challenge':
           return '<button type="button" class="btn btn-soft" data-sgoto="challenges">' + esc(t('teach_session_act_challenge')) +
             '</button>';
@@ -1093,7 +1096,7 @@
             return t('teach_session_act_game', st.gametitle);
           case 'timer':
             return t('teach_session_act_timer', st.timer);
-          case 'enter': case 'card': case 'battle': case 'pacts': case 'council': case 'light':
+          case 'enter': case 'card': case 'battle': case 'pacts': case 'council': case 'light': case 'firstday':
             return t('teach_session_act_' + action);
         }
         return '';

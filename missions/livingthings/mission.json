@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 69,
+ "version": 70,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 70,
+   "kind": "improvement",
+   "date": "2026-10-20",
+   "text": "En la sesión de entrada, «Primer día» en la pizarra: los cuatro pasos para hacer el héroe y una chispa por cada uno que ya está en el valle, del color de su papel"
+  },
   {
    "version": 69,
    "kind": "improvement",
@@ -6738,7 +6744,7 @@
     "to": 25,
     "do": "Cada alumno entra desde la portada del curso («Entrar en el valle»). El juego le cuenta la historia y le pregunta «¿Quién eres?»: elige su papel, la forma de su nombre (Maga o Mago), su linaje y su aspecto. Explica el papel así: «Tu papel es cómo ayudas a tu equipo. Si un día quieres cambiarlo, pídeselo a tu docente.»",
     "say": "Tu papel es cómo ayudas a tu equipo. Si un día quieres cambiarlo, pídeselo a tu docente.",
-    "action": "none"
+    "action": "firstday"
    },
    {
     "from": 25,

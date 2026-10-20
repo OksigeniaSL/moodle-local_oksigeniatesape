@@ -36,14 +36,14 @@ final class sessions {
 
     /** @var string[] What a step launches. */
     public const ACTIONS = ['enter', 'card', 'scene', 'game', 'battle', 'timer', 'pacts', 'light', 'challenge', 'council',
-        'none'];
+        'firstday', 'none'];
 
     /**
      * @var string[] What the class screen shows for a session: the place entered, the card, a timer, the commitments, a
-     * scene, the lantern lit, or the teams in council.
+     * scene, the lantern lit, the teams in council, the phases of a session, or the first day (the heroes being made).
      */
     public const SHOWS = ['enter', 'card', 'timer', 'pacts', 'scene', 'light', 'council', 'campfire', 'dawn', 'expedition',
-        'encounter', 'loot'];
+        'encounter', 'loot', 'firstday'];
 
     /** @var int Minutes of the soft hourglass of the expedition, when the teacher does not say. */
     public const EXPEDITION = 20;
@@ -472,7 +472,29 @@ final class sessions {
         if ($open->shown === 'loot') {
             $out['loot'] = self::loot($courseid, $mission, $open, $now ?? time());
         }
+        if ($open->shown === 'firstday') {
+            $out['firstday'] = self::firstday($courseid);
+        }
         return $out;
+    }
+
+    /**
+     * The first day, for the class screen: how many of the class have made their hero, and the role of each one in the
+     * order they were made, for a spark of its colour. No names.
+     *
+     * @param int $courseid
+     * @return array made, total, sparks (the role of each hero made).
+     */
+    private static function firstday(int $courseid): array {
+        global $DB;
+        $students = view::students($courseid);
+        $sparks = [];
+        if ($students) {
+            [$insql, $params] = $DB->get_in_or_equal(array_keys($students));
+            $chars = $DB->get_records_select(self::T . 'char', "userid $insql", $params, 'timecreated, id', 'id, role');
+            $sparks = array_values(array_column($chars, 'role'));
+        }
+        return ['made' => count($sparks), 'total' => count($students), 'sparks' => array_map('strval', $sparks)];
     }
 
     /**

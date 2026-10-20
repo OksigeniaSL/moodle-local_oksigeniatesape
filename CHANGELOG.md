@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.169.0 (2026-10-20)
+
+- **The first day on the class screen** (mission v70). A new phase of the class screen for the entry session
+  (`firstday`, also an action of the session sheets): the four steps to make a hero, and a spark for each hero already
+  in the valley, of the colour of their role, lighting up as they are made; how many of the class are in already, and
+  how many of each role. No names. In the pilot mission, the step where the students make their hero launches it.
+
 ## 0.168.0 (2026-10-20)
 
 - **To look at, only for the teacher.** In the panel, folded (open when someone is stuck today), who the teacher may
