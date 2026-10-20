@@ -1667,6 +1667,7 @@
       }
     });
     var mates = matesAt();
+    var prank = state.prank = prankToday(m);
     var places = m.chapters.map(function(ch, i) {
       var today = m.today && ch.code === m.today;
       var here = mates[ch.id] || 0;
@@ -1675,7 +1676,7 @@
         return s.chapter === ch.code && !s.forteam && s.kind !== 'page';
       });
       var cls = 'place' + (ch.mine ? ' mine' : '') + (lighting[String(ch.id)] ? ' lighting' : '') + (ch.lit ? ' lit' : '') +
-        (back ? ' flicker' : '') +
+        (back ? ' flicker' : '') + (prank.name && prank.name.chapter === ch.code ? ' pranked' : '') +
         (ch.id === current.id ? ' here' : '') +
         (ch.id === state.chapter ? ' selected' : '') + (today ? ' today' : '');
       return '<g class="' + cls + '" data-chapter="' + ch.id + '" data-art="' + esc(ch.art || ch.code) + '" tabindex="0" ' +
@@ -1693,7 +1694,8 @@
         '<rect x="' + (ch.x - 2) + '" y="' + (ch.y - 4) + '" width="4" height="17" rx="1" fill="#2b2219"/>' +
         '<circle cx="' + ch.x + '" cy="' + (ch.y - 7) + '" r="7" class="flame"/>') +
         (i > opened && !today ? '<ellipse cx="' + ch.x + '" cy="' + (ch.y + 6) + '" rx="62" ry="34" class="fog"/>' : '') +
-        (state.visit ? '' : T.photoSticker(photoOf(ch.code), ch.x, ch.y, i)) + T.mapLabel(ch.x, ch.y + 44, ch.name) + '</g>';
+        (state.visit ? '' : T.photoSticker(photoOf(ch.code), ch.x, ch.y, i)) + T.mapLabel(ch.x, ch.y + 44, prank.name &&
+        prank.name.chapter === ch.code ? prank.name.name : ch.name) + '</g>';
     }).join('');
     // The team, beside the lanterns but outside the places: the name of a place is what it says, and the team is in it.
     var crowd = m.chapters.map(function(ch) {
@@ -1732,6 +1734,17 @@
         (page ? ' stolen' : '') + (s.forteam ? ' team-knot' : '') + '"><div xmlns="http://www.w3.org/1999/xhtml"><button type="button" class="blot-btn" ' +
         'data-stain="' + s.id + '" title="' + esc(label) + '"><span aria-hidden="true">' + (page ? PAGE : BLOT) + '</span>' +
         '<span class="sr-only">' + esc(label) + '</span></button></div></foreignObject>' : '';
+    }).join('');
+    // The thread the Embrollo hung from a lantern today, outside the place: a pull takes it away.
+    var thread = m.chapters.filter(function(ch) {
+      return prank.thread === ch.code;
+    }).map(function(ch) {
+      return '<foreignObject x="' + (ch.x + 3) + '" y="' + (ch.y - 14) + '" width="22" height="46" class="prank-thread"><div ' +
+        'xmlns="http://www.w3.org/1999/xhtml"><button type="button" class="thread-btn" data-thread title="' +
+        esc(t('app_prank_thread_pull')) + '"><svg viewBox="0 0 22 46" aria-hidden="true"><path d="M11 2c-6 6 6 10 0 16s6 10 ' +
+        '0 16" fill="none" stroke="#b07cd8" stroke-width="2.4" stroke-linecap="round"/><circle cx="11" cy="40" r="4" ' +
+        'fill="#8a5bb0"/></svg><span class="sr-only">' + esc(t('app_prank_thread_pull')) + '</span></button></div>' +
+        '</foreignObject>';
     }).join('');
     // The minion of the Embrollo that stands on the road to the place the class is opening: on the way from the place
     // before (from the first place, on the way out of it).
@@ -1802,7 +1815,7 @@
       '" role="group" aria-label="' + esc(m.title) + '"><defs>' + T.MAPGLOW + '</defs>' + T.mapGround(m) +
       T.mapLandmarks(m) + T.mapNight(m) + '<polyline points="' + pts + '" class="road"/>' +
       (walked ? '<polyline points="' + walked + '" class="road walked"/>' : '') + roadDrawing(fresh) +
-      (T.critters ? T.critters.fireflies(m) : '') + prints + places + crowd + blots + minions + me + pet + hungry + '</svg></div>' + (card ? '</div>' : '');
+      (T.critters ? T.critters.fireflies(m) : '') + prints + places + crowd + blots + minions + thread + me + pet + hungry + '</svg></div>' + (card ? '</div>' : '');
   }
 
   /**
@@ -1830,6 +1843,61 @@
    *
    * @return {string}
    */
+  /**
+   * The pranks of the Embrollo on the map of this device today: the place it renamed (fixed on going into it) and the
+   * lantern it hung a thread on (fixed with a pull). Nothing counts; the day after, another one.
+   *
+   * @param {Object} m The mission.
+   * @return {Object} key, done, name (chapter, name) and thread (code of the place), the last two if not fixed.
+   */
+  function prankToday(m) {
+    var list = m.pranks || [];
+    if (state.visit || !list.length) {
+      return {};
+    }
+    var d = new Date();
+    var day = d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+    var key = 'tesape-prank-' + cfg.courseid + '-' + cfg.userid;
+    var done = {};
+    try {
+      done = JSON.parse(window.localStorage.getItem(key) || '{}') || {};
+    } catch (e) {
+      done = {};
+    }
+    if (done.day !== day) {
+      done = {day: day};
+    }
+    var h = 0;
+    var seed = day + '-' + cfg.userid;
+    for (var i = 0; i < seed.length; i++) {
+      h = (h * 31 + seed.charCodeAt(i)) % 9973;
+    }
+    var lit = m.chapters.filter(function(c) {
+      return c.lit || c.mine;
+    });
+    return {key: key, done: done, name: done.name ? null : list[h % list.length],
+      thread: done.thread || !lit.length ? null : lit[(h >> 2) % lit.length].code};
+  }
+
+  /**
+   * A prank of today put right, on this device.
+   *
+   * @param {string} what name or thread.
+   */
+  function prankFixed(what) {
+    var p = state.prank;
+    if (!p || !p.key) {
+      return;
+    }
+    p.done[what] = true;
+    p[what] = null;
+    try {
+      window.localStorage.setItem(p.key, JSON.stringify(p.done));
+    } catch (e) {
+      // Without storage, the prank comes back next time; nothing else.
+    }
+  }
+
   /**
    * The card the teacher drew today, over the map: its name, and what it does at a touch.
    *
@@ -2855,6 +2923,23 @@
         });
       };
     });
+    app.querySelectorAll('[data-thread]').forEach(function(b) {
+      b.onclick = function(ev) {
+        ev.stopPropagation();
+        prankFixed('thread');
+        var fo = b.closest('foreignObject');
+        if (fo) {
+          fo.classList.add('pulled');
+          setTimeout(function() {
+            fo.remove();
+          }, 600);
+        }
+        if (T.fx) {
+          T.fx.sound('tap');
+        }
+        T.toast(esc(t('app_prank_thread')));
+      };
+    });
     app.querySelectorAll('[data-secret]').forEach(function(b) {
       b.onclick = function(ev) {
         ev.stopPropagation();
@@ -2912,6 +2997,16 @@
         var ch = m && m.chapters.filter(function(c) {
           return c.id === state.chapter;
         })[0];
+        // The name the Embrollo put to the place comes off on going into it.
+        if (ch && state.prank && state.prank.name && state.prank.name.chapter === ch.code) {
+          prankFixed('name');
+          var label = g.querySelector('text.place-label');
+          if (label) {
+            label.outerHTML = T.mapLabel(ch.x, ch.y + 44, ch.name);
+          }
+          g.classList.remove('pranked');
+          T.toast(esc(t('app_prank_name', ch.name)));
+        }
         var old = app.querySelector('.mission-grid .chapter');
         if (ch && old) {
           // Only the panel of the place changes: the map stays as it is, without a flash, its fireflies where they were.
@@ -3663,10 +3758,11 @@
     }
     var pct = c.levelneeded ? Math.round(100 * c.levelinto / c.levelneeded) : 100;
     var glow = w.page && w.page.streak >= w.page.glow ? ' glow' : '';
-    var creature = c.creature ? '<div class="creature-box' + glow + '">' + T.creature(c.creature, c.creaturestage) + '<b>' +
+    var creature = c.creature ? '<div class="creature-box' + glow + '"><button type="button" class="pet-me" data-petme ' +
+      'aria-label="' + esc(t('app_pet_pat', creatureName(c))) + '">' + T.creature(c.creature, c.creaturestage) + '</button><b>' +
       esc(creatureName(c)) + '</b><small>' + esc(t('app_creaturestage', {n: c.creaturestage,
       name: stageName(c.creaturestage)})) + '</small>' + (T.creatureMark(c.creature) ? '<small class="creature-mark-says">' +
-      esc(T.creatureMark(c.creature)) + '</small>' : '') + '</div>' : '';
+      esc(T.creatureMark(c.creature)) + '</small>' : '') + petCare(c) + '</div>' : '';
     var unlock = nextUnlock(c);
     return '<section class="card sheet"><div class="sheet-art">' + avatarOf(c, title(c)) + creature + '</div><div class="stats"><h2>' + esc(myName()) +
       '</h2><p style="color:var(--text-soft)">' + esc(rank(c)) + ' · ' + esc(title(c)) + '</p>' + traits(c) + talentsHtml(c) + skillsHtml(c) +
@@ -4240,8 +4336,116 @@
     }
   }
 
+  /**
+   * Caring for the creature, with nothing to win: the card it remembers from some days ago, and a card of the field
+   * guide to show it, once a day.
+   *
+   * @param {Object} c The character.
+   * @return {string}
+   */
+  function petCare(c) {
+    var care = state.world.petcare;
+    if (!care) {
+      return '';
+    }
+    var beings = petBeings();
+    return (care.remembers ? '<p class="pet-remembers">' + esc(t('app_pet_remembers', {creature: creatureName(c),
+      being: ofName(care.remembers)})) + '</p>' : '') + (beings.length ? (care.shown ? '<small class="pet-shown">' +
+      esc(t('app_pet_shown_today', creatureName(c))) + '</small>' : '<button type="button" class="btn btn-soft pet-show" ' +
+      'data-petshow>' + esc(t('app_pet_show', creatureName(c))) + '</button>') : '');
+  }
+
+  /**
+   * The beings of the field guide of the student, to show one to the creature.
+   *
+   * @return {Object[]} id, name.
+   */
+  function petBeings() {
+    var out = [];
+    ((state.world.mission && state.world.mission.guide) || []).forEach(function(g) {
+      g.beings.forEach(function(b) {
+        out.push(b);
+      });
+    });
+    return out;
+  }
+
+  /**
+   * «de» before a name with its article: «el búho» becomes «del búho».
+   *
+   * @param {string} name
+   * @return {string}
+   */
+  function ofName(name) {
+    return /^el /i.test(name) ? 'del ' + name.slice(3) : 'de ' + name;
+  }
+
+  /**
+   * The cards of the field guide to show the creature: a touch on one, and it looks at it.
+   *
+   * @param {Object} c The character.
+   */
+  function showCardMoment(c) {
+    var layer = document.createElement('div');
+    layer.className = 'badge-moment pet-show-moment';
+    layer.setAttribute('role', 'dialog');
+    layer.setAttribute('aria-modal', 'true');
+    layer.setAttribute('aria-labelledby', 'tesape-petshow-title');
+    layer.innerHTML = '<div class="badge-card"><h2 id="tesape-petshow-title">' + esc(t('app_pet_show', creatureName(c))) +
+      '</h2><div class="album">' + petBeings().map(function(b) {
+        var art = beingArt(b.id);
+        return '<button type="button" class="album-card" data-petcard="' + esc(b.id) + '">' + (art ? '<img src="' +
+          esc(art) + '" alt="">' : '') + '<b>' + esc(b.name) + '</b></button>';
+      }).join('') + '</div><div class="actions"><button type="button" class="btn btn-soft" data-close>' + esc(t('app_close')) +
+      '</button></div></div>';
+    document.body.appendChild(layer);
+    layer.querySelector('[data-close]').onclick = function() {
+      layer.remove();
+    };
+    layer.querySelectorAll('[data-petcard]').forEach(function(b) {
+      b.onclick = function() {
+        var being = petBeings().filter(function(x) {
+          return x.id === b.dataset.petcard;
+        })[0];
+        T.api('show_card', {courseid: cfg.courseid, being: b.dataset.petcard}).then(function() {
+          layer.remove();
+          state.world.petcare.shown = true;
+          if (T.fx) {
+            T.fx.sound('heart');
+            T.fx.hearts();
+          }
+          T.toast(esc(t('app_pet_shown', {creature: creatureName(c), being: ofName(being ? being.name : '')})));
+          world();
+        }).catch(function(e) {
+          T.toast(esc(e.message), true);
+        });
+      };
+    });
+    layer.querySelector('button').focus();
+  }
+
   function bindMe() {
     var c = state.world.character;
+    // A pat for the creature: it is happy, and that is all.
+    var pet = app.querySelector('[data-petme]');
+    if (pet) {
+      pet.onclick = function() {
+        pet.classList.remove('patted');
+        void pet.offsetWidth;
+        pet.classList.add('patted');
+        if (T.fx) {
+          T.fx.sound('heart');
+          T.fx.hearts();
+        }
+        T.toast(esc(t('app_pet_happy_' + (1 + Math.floor(Math.random() * 3)), creatureName(c))));
+      };
+    }
+    var showcard = app.querySelector('[data-petshow]');
+    if (showcard) {
+      showcard.onclick = function() {
+        showCardMoment(c);
+      };
+    }
     // The outing: each step opens what it is.
     app.querySelectorAll('[data-outing]').forEach(function(b) {
       b.onclick = function() {

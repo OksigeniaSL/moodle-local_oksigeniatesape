@@ -202,6 +202,10 @@ final class get_world extends external_api {
                 ),
             ]), 'What the Embrollo stained or stole in the valley', VALUE_DEFAULT, []),
             'sendphoto' => new external_value(PARAM_BOOL, 'The student may send photos of the classroom', VALUE_DEFAULT, false),
+            'petcare' => new external_single_structure([
+                'shown' => new external_value(PARAM_BOOL, 'The creature was shown a card today'),
+                'remembers' => new external_value(PARAM_TEXT, 'The being of a card it was shown some days ago, or empty'),
+            ], 'Caring for the creature', VALUE_OPTIONAL),
             'card' => new external_single_structure([
                 'code' => new external_value(PARAM_ALPHANUMEXT, 'The card'),
                 'name' => new external_value(PARAM_TEXT, 'Its name'),

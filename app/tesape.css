@@ -11453,3 +11453,124 @@ body.still .place.flicker .classglow {
     opacity: .5;
   }
 }
+
+/* The pranks of the Embrollo on the map: a name in its colour, a thread to pull. */
+.place.pranked text {
+  fill: #e0c4ff;
+  font-style: italic;
+}
+
+.thread-btn {
+  display: block;
+  width: 22px;
+  height: 46px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.thread-btn svg {
+  width: 100%;
+  height: 100%;
+  transform-origin: top center;
+  animation: thread-sway 2.6s ease-in-out infinite;
+}
+
+.prank-thread.pulled {
+  transition: transform .5s ease-in, opacity .5s ease-in;
+  transform: translateY(30px);
+  opacity: 0;
+}
+
+@keyframes thread-sway {
+  0%, 100% {
+    transform: rotate(-6deg);
+  }
+
+  50% {
+    transform: rotate(6deg);
+  }
+}
+
+/* The skein of the Embrollo on the class screen, saying something about the class. */
+.quip {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 10px 0 0;
+  font-style: italic;
+}
+
+.quip .battle-mini {
+  flex: none;
+  width: 40px;
+  height: 40px;
+}
+
+body.still .thread-btn svg {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thread-btn svg {
+    animation: none;
+  }
+}
+
+/* Caring for the creature: a pat, a card it was shown and the one it remembers. */
+.pet-me {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.pet-me.patted .creature {
+  animation: pet-pat .6s ease;
+}
+
+@keyframes pet-pat {
+  40% {
+    transform: scale(1.08, .92);
+  }
+
+  70% {
+    transform: scale(.96, 1.04);
+  }
+}
+
+.pet-remembers {
+  margin: 6px 0 0;
+  font-size: .92em;
+  font-style: italic;
+  text-align: center;
+}
+
+.creature-box .pet-show {
+  margin-top: 8px;
+}
+
+.creature-box .pet-shown {
+  display: block;
+  margin-top: 6px;
+  text-align: center;
+}
+
+.pet-show-moment .album-card {
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+body.still .pet-me.patted .creature {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pet-me.patted .creature {
+    animation: none;
+  }
+}

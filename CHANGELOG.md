@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.164.0 (2026-10-20)
+
+- **The pranks of the Embrollo** (mission v67). On the map of each student, a prank a day: a place with the name the
+  Embrollo put to it («Clearing of the Muddle»), which comes off on going into the place, and a thread hanging from a
+  lantern, which goes with a pull. They live on the device and count for nothing. On the class screen, the skein of the
+  Embrollo says something about the class with humour (its stains, the lanterns left, the cards of the field guide),
+  never names. A mission names its places for the pranks (`pranks`).
+- **Caring for the creature, with nothing to win.** In «Me», a touch pats the creature (it is happy, and that is all),
+  and once a day it can be shown a card of the field guide of the student; some days later it remembers it («Acorn
+  remembers the card of the owl you showed it»). Service `local_oksigeniatesape_show_card`.
+
 ## 0.163.0 (2026-10-20)
 
 - **The Embrollo comes back in the middle of the mission** (mission v66). From the third lantern the class lights, the

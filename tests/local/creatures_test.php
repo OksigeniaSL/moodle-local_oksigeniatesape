@@ -81,4 +81,44 @@ final class creatures_test extends \advanced_testcase {
         // In the minigames, from its second stage, it sniffs once a play.
         $this->assertSame(1, minigames::config(missions::get($course->id), 'enredobosque', 2, 'scout', [], 1)['sniffs']);
     }
+
+    public function test_the_creature_is_shown_a_card_once_a_day_and_remembers_it_days_later(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $gen = $this->getDataGenerator();
+        $course = $gen->create_course();
+        regions::save($course->id, ['enabled' => 1]);
+        missions::install($course->id, 'livingthings', 'valley', 'es');
+        $mission = missions::get($course->id);
+        $user = $gen->create_and_enrol($course, 'student');
+        $char = characters::create($user->id, 'scout', 'f');
+        $DB->set_field('local_oksigeniatesape_char', 'creature', json_encode(scenes::creature($char)), ['id' => $char->id]);
+        $char = characters::get($user->id);
+        $member = engine::member($char, $course->id);
+        $now = time();
+        $being = $mission->data['encounters'][0];
+        // Only a card of its own field guide.
+        try {
+            creatures::show_card($char, $member, $being['id'], $now);
+            $this->fail('A card that is not in the guide');
+        } catch (\moodle_exception $e) {
+            $this->assertSame('nocard', $e->errorcode);
+        }
+        $DB->insert_record('local_oksigeniatesape_found', (object) ['charid' => $char->id, 'courseid' => $course->id,
+            'missionid' => $mission->id, 'kind' => 'being', 'code' => $being['id'], 'timecreated' => $now]);
+        $this->assertFalse(creatures::shown_today($char, $mission, $now));
+        creatures::show_card($char, $member, $being['id'], $now);
+        $this->assertTrue(creatures::shown_today($char, $mission, $now));
+        // Once a day; and it remembers it some days later, not before.
+        try {
+            creatures::show_card($char, $member, $being['id'], $now + 60);
+            $this->fail('Two cards the same day');
+        } catch (\moodle_exception $e) {
+            $this->assertSame('cardshown', $e->errorcode);
+        }
+        $this->assertSame('', creatures::remembers($char, $mission, $now + DAYSECS));
+        $this->assertNotSame('', creatures::remembers($char, $mission, $now + creatures::REMEMBERS * DAYSECS));
+        // Nothing given for it.
+        $this->assertSame(0, (int) $DB->count_records('local_oksigeniatesape_ledger', ['charid' => $char->id]));
+    }
 }

@@ -660,6 +660,29 @@
   }
 
   /**
+   * The skein of the Embrollo comments on how the class is doing, with humour: its stains, its lanterns, its field
+   * guide. Never names; only the class.
+   *
+   * @param {Object} d What is on today.
+   * @return {string}
+   */
+  function quip(d) {
+    var m = state.board.mission;
+    if (!m) {
+      return '';
+    }
+    var lit = m.chapters.filter(function(ch) {
+      return ch.lit;
+    }).length;
+    var stains = (d.stains || []).length;
+    var books = state.cls && state.cls.museum ? state.cls.museum.entries : 0;
+    var line = stains >= 2 ? t('board_quip_stains', stains) : lit === m.chapters.length - 1 ? t('board_quip_last') :
+      !lit ? t('board_quip_none') : books >= 10 ? t('board_quip_books', books) : t('board_quip_idle');
+    return '<p class="quip"><span class="battle-mini" aria-hidden="true">' + T.embrollo(1) + '</span><span>' + esc(line) +
+      '</span></p>';
+  }
+
+  /**
    * The strength of the expedition: what the class did weakens the Embrollo before the final battle.
    *
    * @param {Object} m The mission.
@@ -1684,7 +1707,7 @@
     var ask = d.mixup ? '<p class="taunt-ask">' + esc(t('board_today_ask', d.mixup)) + '</p>' : '';
     return '<section class="card board-today"><div class="kicker">' + esc(t('board_today')) + '</div><h3>' +
       esc(d.chapter) + '</h3>' + (d.gloat ? '<blockquote class="letter gloat"><small>' + esc(t('board_today_gloat')) +
-      '</small>' + esc(d.gloat) + '</blockquote>' : '') + stainsList(d.stains || [], award) +
+      '</small>' + esc(d.gloat) + '</blockquote>' : '') + stainsList(d.stains || [], award) + quip(d) +
       (award && d.lostscene ? '<div class="actions board-small">' +
       '<button class="btn btn-soft" data-playscene="' + d.lostscene.id + '">' + esc(t('board_today_scene', d.lostscene.title)) +
       '</button></div>' : '') + (d.letter ? '<blockquote class="letter"><small>' + esc(t('board_today_letter',

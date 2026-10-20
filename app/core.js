@@ -259,7 +259,7 @@
       return l.length;
     })) * 4.2;
     var at = Math.round(Math.max(half + 4, Math.min(396 - half, x)));
-    return '<text x="' + at + '" y="' + y + '" text-anchor="middle">' + lines.map(function(l, i) {
+    return '<text class="place-label" x="' + at + '" y="' + y + '" text-anchor="middle">' + lines.map(function(l, i) {
       return '<tspan x="' + at + '" dy="' + (i ? '1.1em' : '0') + '">' + T.esc(l) + '</tspan>';
     }).join('') + '</text>';
   };

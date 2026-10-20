@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 66,
+ "version": 67,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 67,
+   "kind": "improvement",
+   "date": "2026-10-20",
+   "text": "Las gamberradas del Embrollo: un día cualquiera le cambia el nombre a un lugar del mapa o cuelga un hilo de una linterna, y se arregla con un toque"
+  },
   {
    "version": 66,
    "kind": "improvement",
@@ -1705,6 +1711,7 @@
  "texts": {
   "azara": {
    "app_backtovalley": "Volver al campamento",
+   "board_quip_none": "Ni una linterna encendida. Este cuaderno es mío.",
    "app_secret_page": "Una nota del cuaderno",
    "app_secrets": "Secretos de la expedición",
    "app_secrets_help": "Has encontrado {$a->found} de {$a->all}. Están en los dibujos de cada lugar, para quien mira con calma.",
@@ -1832,7 +1839,7 @@
    },
    "text": {
     "valley": "El Embrollo ha vuelto a un lugar que la clase ya iluminó y lo ha manchado. Su linterna parpadea hasta que la clase limpie la mancha.",
-    "azara": "Una página que ya estaba en orden se ha vuelto a revolver. Su farol parpadea hasta que la clase la ponga en orden otra vez."
+    "azara": "Una página que ya estaba en orden se ha vuelto a revolver. Su linterna parpadea hasta que la clase la ponga en orden otra vez."
    }
   }
  },
@@ -2312,6 +2319,32 @@
     "¡Hasta la revancha! Prometo enredar con cariño.",
     "Me voy, pero la próxima vez esta clase vendrá con más ganas. Y yo, con más hilos."
    ]
+  }
+ },
+ "pranks": {
+  "claro": {
+   "valley": "Claro del Despistar",
+   "azara": "El campamento de los despistes"
+  },
+  "biblioteca": {
+   "valley": "Biblioteca de los Ratones",
+   "azara": "Las cajas de los ratones"
+  },
+  "bosque": {
+   "valley": "Bosque de las Pelusas",
+   "azara": "El monte de las pelusas"
+  },
+  "jardin": {
+   "valley": "Jardín de la Sombra",
+   "azara": "El huerto de las ortigas"
+  },
+  "lago": {
+   "valley": "El Gran Charco",
+   "azara": "La orilla del charco"
+  },
+  "torre": {
+   "valley": "La Torre Torcida",
+   "azara": "El cuaderno de los borrones"
   }
  },
  "secrets": [

@@ -189,6 +189,11 @@ final class view {
                 return $view;
             }, stains::open($courseid));
             $world['stains'] = array_values(array_filter($stained));
+            // Caring for the creature: whether it was shown a card today, and the one it remembers from some days ago.
+            if (creatures::traits($char)) {
+                $world['petcare'] = ['shown' => creatures::shown_today($char, $installed, time()),
+                    'remembers' => creatures::remembers($char, $installed, time())];
+            }
             // The card of the day, once the teacher drew it.
             $card = events::for_students($courseid);
             if ($card) {
@@ -429,6 +434,12 @@ final class view {
             'chapters' => $list,
             'pages' => $pages,
             'secrets' => secrets::album($mission, $secretsfound),
+            // The names the Embrollo puts to the places, a prank a day on the map of each student.
+            'pranks' => array_map(fn($code, $name) => ['chapter' => (string) $code, 'name' => missions::text(
+                $name,
+                $skin,
+                $mission->variant
+            )], array_keys($data['pranks'] ?? []), array_values($data['pranks'] ?? [])),
             // The friends of the expedition: what each one tells the student, by the pages given back from what is theirs.
             'friends' => friends::view($mission, $found),
             // The field guide of the beings met: place by place, how many there are and which the student has.

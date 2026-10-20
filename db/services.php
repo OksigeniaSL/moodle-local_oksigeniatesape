@@ -419,6 +419,13 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:play',
     ],
+    'local_oksigeniatesape_show_card' => [
+        'classname' => 'local_oksigeniatesape\\external\\show_card',
+        'description' => 'A student shows their creature a card of their field guide, once a day.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:play',
+    ],
     'local_oksigeniatesape_find_secret' => [
         'classname' => 'local_oksigeniatesape\\external\\find_secret',
         'description' => 'A student finds a secret in the painting of a place.',

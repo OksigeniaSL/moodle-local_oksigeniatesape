@@ -261,6 +261,10 @@ final class structures {
                 ])),
                 'total' => new external_value(PARAM_INT, 'Secrets in the mission'),
             ], 'The secrets of the places the student found, for the album', VALUE_OPTIONAL),
+            'pranks' => new external_multiple_structure(new external_single_structure([
+                'chapter' => new external_value(PARAM_ALPHANUMEXT, 'Code of the place'),
+                'name' => new external_value(PARAM_TEXT, 'The name the Embrollo puts to it'),
+            ]), 'The names the Embrollo puts to the places, a prank a day', VALUE_DEFAULT, []),
             'friends' => new external_multiple_structure(new external_single_structure([
                 'code' => new external_value(PARAM_ALPHANUMEXT, 'Who speaks, as in the mission'),
                 'name' => new external_value(PARAM_TEXT, 'Their name'),

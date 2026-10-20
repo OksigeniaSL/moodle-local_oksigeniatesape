@@ -108,6 +108,91 @@ final class creatures {
         );
     }
 
+    /** @var int Days before the creature brings up again a card it was shown. */
+    public const REMEMBERS = 2;
+
+    /**
+     * A student shows their creature a card of their field guide, once a day: a being they registered. Days later, it
+     * remembers it. Nothing is given for it.
+     *
+     * @param \stdClass $char
+     * @param \stdClass $member
+     * @param string $being The being of the card.
+     * @param int|null $now
+     */
+    public static function show_card(\stdClass $char, \stdClass $member, string $being, ?int $now = null): void {
+        global $DB;
+        $now = $now ?? time();
+        $mission = missions::get((int) $member->courseid);
+        $mine = ['charid' => $char->id, 'missionid' => $mission->id ?? 0, 'kind' => 'being', 'code' => $being];
+        if (!$mission || !self::traits($char) || !$DB->record_exists(self::T . 'found', $mine)) {
+            throw new \moodle_exception('nocard', 'local_oksigeniatesape');
+        }
+        if (self::shown_today($char, $mission, $now)) {
+            throw new \moodle_exception('cardshown', 'local_oksigeniatesape');
+        }
+        $DB->insert_record(self::T . 'found', (object) ['charid' => $char->id, 'courseid' => $member->courseid,
+            'missionid' => $mission->id, 'kind' => 'shown', 'code' => $being . '@' . self::today_code($mission, $now),
+            'timecreated' => $now]);
+    }
+
+    /**
+     * Whether a student showed a card to their creature today.
+     *
+     * @param \stdClass $char
+     * @param \stdClass $mission
+     * @param int $now
+     * @return bool
+     */
+    public static function shown_today(\stdClass $char, \stdClass $mission, int $now): bool {
+        global $DB;
+        return $DB->record_exists_select(self::T . 'found', "charid = ? AND missionid = ? AND kind = 'shown' AND " .
+            $DB->sql_like('code', '?'), [$char->id, $mission->id, '%@' . self::today_code($mission, $now)]);
+    }
+
+    /**
+     * The card the creature remembers: the last one it was shown, if that was some days ago.
+     *
+     * @param \stdClass $char
+     * @param \stdClass $mission
+     * @param int $now
+     * @return string Name of the being, or empty.
+     */
+    public static function remembers(\stdClass $char, \stdClass $mission, int $now): string {
+        global $DB;
+        $last = $DB->get_records_select(
+            self::T . 'found',
+            "charid = ? AND missionid = ? AND kind = 'shown'",
+            [$char->id, $mission->id],
+            'timecreated DESC',
+            'id, code, timecreated',
+            0,
+            1
+        );
+        $last = reset($last);
+        if (!$last || $now - (int) $last->timecreated < self::REMEMBERS * DAYSECS) {
+            return '';
+        }
+        $id = explode('@', (string) $last->code)[0];
+        foreach ($mission->data['encounters'] ?? [] as $being) {
+            if ((string) ($being['id'] ?? '') === $id) {
+                return missions::text($being['name'] ?? '', $mission->skin, $mission->variant);
+            }
+        }
+        return '';
+    }
+
+    /**
+     * The day of a moment, in the calendar of the course of a mission.
+     *
+     * @param \stdClass $mission
+     * @param int $now
+     * @return string
+     */
+    private static function today_code(\stdClass $mission, int $now): string {
+        return (new \DateTimeImmutable('@' . $now))->setTimezone(engine::timezone((int) $mission->courseid))->format('Ymd');
+    }
+
     /**
      * Whether the creature of a student sniffs in the minigames: from its second stage, once a play; once more with
      * «A good nose» as the card of the day of the course.
