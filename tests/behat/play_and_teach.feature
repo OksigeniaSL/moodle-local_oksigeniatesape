@@ -59,6 +59,7 @@ Feature: A teacher runs the game from the panel and a student plays the mission
       | student1 | TA    |
     And I log in as "teacher1"
     When I open the Tesapé class screen of course "C1"
+    And I click on ".board-desk summary" "css_element"
     And I click on "[data-devices='0']" "css_element"
     And I click on "[data-battlestart]" "css_element"
     Then I should see "First turn"

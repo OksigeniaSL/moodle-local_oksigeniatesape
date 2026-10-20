@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.157.1 (2026-10-20)
+
+- The browser test of the battle by turns aloud opens the desk of the teacher before choosing «without devices».
+
 ## 0.157.0 (2026-10-20)
 
 - **The class screen by phases.** In the session going on, the remote of the teacher has «The class screen, by phases»:
