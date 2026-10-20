@@ -1780,9 +1780,64 @@
   function stainsList(stains, award) {
     return stains.length ? '<ul class="stains">' + stains.map(function(s) {
       return '<li><span class="stain-dot" aria-hidden="true"></span><span>' + esc(t(s.kind === 'page' ? 'board_today_page' : 'board_today_stain', s)) + '</span>' +
+        (award && s.kind !== 'page' && (s.parts || []).length ? '<button type="button" class="btn btn-main" data-cleanclass="' +
+        s.id + '">' + esc(t('board_stain_clean')) + '</button>' : '') +
         (award ? '<button type="button" class="btn btn-soft" data-erasestain="' + s.id + '">' + esc(t(s.kind === 'page' ? 'board_page_erase' : 'board_stain_erase')) +
         '</button>' : '') + '</li>';
     }).join('') + '</ul>' : '';
+  }
+
+  /**
+   * A stain cleaned by the whole class, aloud: its sheet on the class screen, the class says which words are wrong and
+   * the teacher touches them. Every mistake found, it is clean for the class (nobody gets a gem) and the Embrollo
+   * complains; if not, the ink stays and it is tried again.
+   *
+   * @param {Object} stain id, place, title, parts.
+   */
+  function cleanWithClass(stain) {
+    var layer = document.createElement('div');
+    layer.className = 'session-show shows-cleanclass';
+    layer.setAttribute('role', 'dialog');
+    layer.setAttribute('aria-modal', 'true');
+    layer.setAttribute('aria-labelledby', 'tesape-cleanclass');
+    layer.innerHTML = '<button type="button" class="btn btn-soft scene-close" aria-label="' + esc(t('app_close')) + '">' +
+      T.icon('close') + '</button><div class="show-card cleanclass"><div class="kicker">' + esc(t('app_stain_on', stain.place)) +
+      '</div><h1 id="tesape-cleanclass">' + esc(stain.title) + '</h1><p class="lead">' + esc(t('board_stain_clean_help')) +
+      '</p><div class="cleanclass-sheet" data-sheet></div><div data-said aria-live="polite"></div></div>';
+    document.body.appendChild(layer);
+    var key = 'board-stain-' + stain.id;
+    var lane = {engine: 'errors', parts: stain.parts, mine: true};
+    var close = function() {
+      layer.remove();
+      load(false);
+    };
+    layer.querySelector('.scene-close').onclick = close;
+    var sheet = layer.querySelector('[data-sheet]');
+    var draw = function() {
+      T.lane(sheet, lane, {key: key, sent: false, open: true, onsend: function(payload) {
+        T.api('erase_stain', {courseid: cfg.courseid, stainid: stain.id, payload: JSON.stringify(payload)}).then(function(r) {
+          var said = layer.querySelector('[data-said]');
+          if (!r.clean) {
+            delete T.lane.kept[key];
+            said.innerHTML = '<p class="turn-outcome fell">' + esc(t('app_stain_still')) + '</p>';
+            draw();
+            return;
+          }
+          lane.solution = r.solution;
+          T.lane(sheet, lane, {key: key, sent: true, open: false, onsend: function() {}});
+          said.innerHTML = '<p class="turn-outcome undone">' + esc(t('board_stain_cleaned')) + '</p>' + (r.complaint ?
+            '<p class="knot-laugh">«' + esc(r.complaint.replace(/^«|»$/g, '')) + '»</p>' : '');
+          if (T.fx) {
+            T.fx.sound('lantern');
+          }
+        }).catch(function(e) {
+          T.toast(esc(e.message), true);
+          close();
+        });
+      }});
+    };
+    draw();
+    layer.querySelector('.scene-close').focus();
   }
 
   function openerCard() {
@@ -2472,6 +2527,14 @@
     on('[data-erasestain]', function(el) {
       el.disabled = true;
       act(T.api('erase_stain', {courseid: cfg.courseid, stainid: +el.dataset.erasestain}));
+    });
+    on('[data-cleanclass]', function(el) {
+      var stain = ((state.board && state.board.today && state.board.today.stains) || []).filter(function(x) {
+        return x.id === +el.dataset.cleanclass;
+      })[0];
+      if (stain) {
+        cleanWithClass(stain);
+      }
     });
     on('[data-print]', function(el) {
       state.print = el.dataset.print;

@@ -335,6 +335,11 @@ final class structures {
                 'title' => new external_value(PARAM_TEXT, 'The title of the sheet, or of the page stolen'),
                 'kind' => new external_value(PARAM_ALPHA, 'stain, or page: a page of the Great Book stolen', VALUE_DEFAULT, 'stain'),
                 'chapter' => new external_value(PARAM_ALPHANUMEXT, 'Code of the place', VALUE_DEFAULT, ''),
+                'parts' => new external_multiple_structure(new external_single_structure([
+                    'text' => new external_value(PARAM_RAW, 'Plain text'),
+                    'mark' => new external_value(PARAM_INT, 'A mistake (-1: plain text)'),
+                    'wrong' => new external_value(PARAM_TEXT, 'What it says'),
+                ]), 'A stain: its words, to clean it with the class', VALUE_DEFAULT, []),
             ]), 'What the Embrollo stained or stole, not cleaned or brought back yet', VALUE_DEFAULT, []),
             'lostscene' => new external_single_structure([
                 'id' => new external_value(PARAM_INT, 'Scene'),

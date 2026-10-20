@@ -566,6 +566,37 @@ final class stains {
     }
 
     /**
+     * The class cleans a stain on the class screen, aloud: the teacher touches what the class says. Right, it is clean
+     * for the whole class, as when the teacher takes it as cleaned, and the Embrollo complains; nobody gets a gem.
+     *
+     * @param int $courseid
+     * @param int $stainid
+     * @param array $payload marks (the mistakes touched), misses (words right touched).
+     * @param int|null $now
+     * @return array clean, complaint, solution (mark, right, why) once clean.
+     */
+    public static function clean_class(int $courseid, int $stainid, array $payload, ?int $now = null): array {
+        global $DB;
+        $mission = missions::get($courseid);
+        $stain = $DB->get_record(self::T . 'stain', ['id' => $stainid, 'courseid' => $courseid]);
+        $sheet = $stain && $mission && !(int) $stain->groupid ? self::sheet($stain, $mission) : null;
+        if (!$sheet || (int) $stain->cleanedat) {
+            throw new \moodle_exception('nostain', 'local_oksigeniatesape');
+        }
+        $parts = minigames::parts(missions::text($sheet['text'] ?? '', $mission->skin, $mission->variant));
+        $lane = ['engine' => 'errors', 'solution' => array_map(fn($p) => ['mark' => $p['mark'], 'right' => $p['right'],
+            'why' => $p['why']], array_values(array_filter($parts, fn($p) => $p['mark'] >= 0)))];
+        if (!live::lane_right($lane, $payload)) {
+            return ['clean' => false, 'complaint' => '', 'solution' => []];
+        }
+        self::erase($courseid, $stainid, $now);
+        $complaints = (array) ($mission->data['stains']['complaints'] ?? []);
+        $complaint = $complaints ? missions::text($complaints[$stainid % count($complaints)], $mission->skin, $mission->variant) :
+            get_string('app_stain_complaint', 'local_oksigeniatesape');
+        return ['clean' => true, 'complaint' => $complaint, 'solution' => $lane['solution']];
+    }
+
+    /**
      * The footprints of the Embrollo on the way to the next place: one for each school day (Monday to Friday) since the
      * class lit its last lantern (or since the mission came, before the first), up to five. They go when the lantern of
      * the place of today is lit.

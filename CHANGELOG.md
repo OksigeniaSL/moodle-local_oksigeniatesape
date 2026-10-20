@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.172.0 (2026-10-20)
+
+- **A stain cleaned by the whole class on the class screen.** Under «Today in the valley», «Clean it with the class»
+  opens the sheet of a stain big on the class screen: the class says aloud which words the Embrollo changed and the
+  teacher touches them. With every mistake found, it is clean for the class (nobody gets a gem) and the Embrollo
+  complains; if not, the ink stays and it is tried again. The comeback of the Embrollo is undone the same way.
+  `local_oksigeniatesape_erase_stain` takes what was touched (`payload`); without it, the stain is taken as cleaned, as
+  before.
+
 ## 0.171.0 (2026-10-20)
 
 - **Another prank of the Embrollo: a word of the Book** (mission v71). Some days, in a page of the Book the student has,

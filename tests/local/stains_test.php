@@ -188,6 +188,29 @@ final class stains_test extends \advanced_testcase {
         $this->assertSame(['stain'], array_column($next, 'kind'));
     }
 
+    public function test_the_class_cleans_it_aloud_on_the_class_screen(): void {
+        global $DB;
+        [$course] = $this->make_class();
+        $stain = stains::open($course->id, $this->monday)[0];
+        // The words of the sheet go to the class screen too, without what is right.
+        $shown = array_column(today::get($course->id)['stains'], null, 'id')[$stain->id];
+        $this->assertNotEmpty($shown['parts']);
+        $this->assertArrayNotHasKey('right', $shown['parts'][0]);
+        // With a mistake left, the ink stays; with all of them, clean for the class, and nobody gets a gem.
+        $done = $this->cleaning($stain, $course->id);
+        $missing = ['marks' => array_slice($done['marks'], 1), 'misses' => 0];
+        $this->assertFalse(stains::clean_class($course->id, (int) $stain->id, $missing, $this->monday)['clean']);
+        $result = stains::clean_class($course->id, (int) $stain->id, $done, $this->monday);
+        $this->assertTrue($result['clean']);
+        $this->assertNotSame('', $result['complaint']);
+        $this->assertNotEmpty($result['solution'][0]['right']);
+        $this->assertSame([], stains::open($course->id, $this->monday + 60));
+        $this->assertEquals(0, $DB->count_records(self::T . 'ledger', ['reason' => 'stain']));
+        // Clean, it is not cleaned again.
+        $this->expectException(\moodle_exception::class);
+        stains::clean_class($course->id, (int) $stain->id, $done, $this->monday + 60);
+    }
+
     public function test_the_teacher_takes_it_as_cleaned_by_the_class(): void {
         global $DB;
         [$course, $member] = $this->make_class();

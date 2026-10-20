@@ -6917,6 +6917,17 @@ body.adapt-colours .errors-text .fixed ins {
   opacity: .55;
 }
 
+/* A stain cleaned by the whole class on the class screen: its sheet, big enough to read from the back. */
+.cleanclass-sheet {
+  margin: 14px 0 6px;
+  text-align: start;
+}
+
+.cleanclass-sheet .lane-sheet {
+  font-size: 1.6rem;
+  line-height: 1.8;
+}
+
 /* A word of the Book with the Embrollo's own written over it: the right one crossed out but there, its own above in
    lilac ink. A touch puts it right. */
 .prank-word {
