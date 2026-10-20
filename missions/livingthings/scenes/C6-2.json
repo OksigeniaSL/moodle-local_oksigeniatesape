@@ -24,6 +24,28 @@
     "valley": "La víspera de subir a la torre, la druida mayor reúne a la expedición en la biblioteca. Trae un frasco lleno de hilos revueltos. «Antes de enfrentarnos al Embrollo, entrenamos con enredos viejos: los que ya lanzó otras veces. ¿Qué nos deja más listos: deshacer un enredo o saber por qué estaba mal?». Doña Hebra, a su lado, cuenta páginas con los dedos y no mira a nadie.",
     "azara": "Antes de entregar el cuaderno, el naturalista repasa con la expedición las notas que se mezclaron en el viaje. «¿Qué deja más listo un cuaderno: tachar un error o saber por qué estaba mal?». La archivera, a su lado, cuenta páginas con los dedos y no mira a nadie."
    },
+   "next": "tarro"
+  },
+  "tarro": {
+   "type": "branch",
+   "rules": [
+    {
+     "if": {
+      "flag": "frasco-vacio"
+     },
+     "next": "frasco"
+    }
+   ],
+   "else": "memoria"
+  },
+  "frasco": {
+   "type": "story",
+   "speaker": "bibliotecaria",
+   "image": "torre-ensayo",
+   "text": {
+    "valley": "Doña Hebra levanta el frasco hacia la luz. Es el frasco vacío de la biblioteca, el que tapó con un libro sin mirar. «Ya lo dije: todavía no. Ahora sí.» Dentro, los hilos revueltos se mueven solos.",
+    "azara": "La archivera saca de una caja un frasco: el vacío, el que apartó sin mirar. Ahora está lleno de notas revueltas. «Ya lo dije: todavía no. Ahora sí.»"
+   },
    "next": "memoria"
   },
   "memoria": {
@@ -68,7 +90,7 @@
     "valley": "El búho guardián está en la ventana. Le preguntamos si viene a la torre y esta vez no contesta, ni sí ni no: solo cierra los ojos, muy despacio. Las respuestas de mañana tendremos que encontrarlas nosotros.",
     "azara": "El baqueano está en la puerta. Le preguntamos si nos acompaña en la revisión y esta vez no contesta, ni sí ni no: solo se baja el sombrero sobre los ojos. Las respuestas de mañana tendremos que encontrarlas nosotros."
    },
-   "next": "e1"
+   "next": "huellas-q"
   },
   "buho": {
    "type": "story",
@@ -77,6 +99,28 @@
    "text": {
     "valley": "El búho guardián está en la ventana. Reconoce a quienes preguntaron bien en el bosque. Le preguntamos si viene a la torre y esta vez no contesta, ni sí ni no: solo cierra los ojos, muy despacio. A preguntar bien ya hemos aprendido. Ahora nos toca comprobar.",
     "azara": "El baqueano está en la puerta. Reconoce a quienes preguntaron bien junto al rastro. Le preguntamos si nos acompaña en la revisión y esta vez no contesta, ni sí ni no: solo se baja el sombrero sobre los ojos. A preguntar bien ya hemos aprendido. Ahora nos toca comprobar."
+   },
+   "next": "huellas-q"
+  },
+  "huellas-q": {
+   "type": "branch",
+   "rules": [
+    {
+     "if": {
+      "flag": "seis-huellas"
+     },
+     "next": "huellas"
+    }
+   ],
+   "else": "e1"
+  },
+  "huellas": {
+   "type": "story",
+   "speaker": "buho",
+   "image": "torre-ensayo",
+   "text": {
+    "valley": "Antes de irse, el búho abre un ojo y nos mira: «Ya lo sabían». Seguimos las seis huellas de tinta, del claro a la torre: el Embrollo está hecho de lo que se da por cierto sin comprobar.",
+    "azara": "Antes de irse, el baqueano nos mira por debajo del sombrero: «Ya lo sabían». Seguimos las seis huellas de tinta, del campamento al cuaderno: lo que lo enreda todo es lo que se da por cierto sin comprobar."
    },
    "next": "e1"
   },

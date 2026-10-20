@@ -419,6 +419,13 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:play',
     ],
+    'local_oksigeniatesape_find_secret' => [
+        'classname' => 'local_oksigeniatesape\\external\\find_secret',
+        'description' => 'A student finds a secret in the painting of a place.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:play',
+    ],
     'local_oksigeniatesape_untangle_minion' => [
         'classname' => 'local_oksigeniatesape\\external\\untangle_minion',
         'description' => 'A student answers the minion of the Embrollo that stands on the road of the map.',

@@ -2346,7 +2346,63 @@
         (c.creature ? '<span class="spot-pet" aria-hidden="true">' + T.creature(c.creature, c.creaturestage) + '</span>' : '') : '') +
         '<span class="spot-icon" aria-hidden="true">' + T.icon(sp.done ? 'lantern' : sp.icon) + '</span><span class="spot-name">' +
         esc(short || sp.title) + '</span></button>';
+    }).join('') + (ch.secrets || []).map(function(x) {
+      // Something to find, in the painting: a print of ink, or a glint.
+      return '<button type="button" class="secret ' + esc(x.kind) + '" style="--x:' + x.x + ';--y:' + x.y + '" data-secret="' +
+        esc(x.id) + '" data-secretplace="' + ch.id + '" aria-label="' + esc(t('app_secret_look')) + '"><span aria-hidden="true">' + (x.kind === 'print' ?
+        INKPRINT : '✦') + '</span></button>';
     }).join('') + '</div>';
+  }
+
+  /** A print of ink that is no animal's: a sole and three toes, run. */
+  var INKPRINT = '<svg viewBox="0 0 40 40" width="100%" height="100%"><path d="M20 15c6 0 9 6 9 12s-4 9-9 9-9-3-9-9 3-12 ' +
+    '9-12z" fill="#2c1f3d"/><circle cx="11" cy="10" r="3.5" fill="#2c1f3d"/><circle cx="20" cy="6" r="3.5" fill="#2c1f3d"/>' +
+    '<circle cx="29" cy="10" r="3.5" fill="#2c1f3d"/><path d="M27 33c3 1 6 1 8 3" stroke="#2c1f3d" stroke-width="2" ' +
+    'fill="none" stroke-linecap="round"/></svg>';
+
+  /**
+   * A secret found in the painting of a place: what it says, the page of the Great Book it gave, and what the whole set
+   * says if it was its last one. It goes to the album.
+   *
+   * @param {Object} ch The place.
+   * @param {Element} btn
+   */
+  function secretMoment(ch, btn) {
+    var id = btn.dataset.secret;
+    btn.disabled = true;
+    T.api('find_secret', {courseid: cfg.courseid, id: id}).then(function(r) {
+      // Out of the painting, and into the album.
+      ch.secrets = (ch.secrets || []).filter(function(x) {
+        return x.id !== id;
+      });
+      var m = state.world.mission;
+      if (m && m.secrets) {
+        m.secrets.found.push({id: id, kind: btn.classList.contains('print') ? 'print' : 'thing', text: r.text});
+      }
+      btn.remove();
+      if (T.fx && !T.fx.sound('clue')) {
+        T.fx.sound('chime');
+      }
+      var layer = document.createElement('div');
+      layer.className = 'badge-moment secret-moment';
+      layer.setAttribute('role', 'dialog');
+      layer.setAttribute('aria-modal', 'true');
+      layer.setAttribute('aria-labelledby', 'tesape-secret-title');
+      layer.innerHTML = '<div class="badge-card"><div class="kicker" id="tesape-secret-title">' + esc(t('app_secret_found')) +
+        '</div><p class="secret-text">' + esc(r.text) + '</p>' + (r.page.title ? '<div class="book-page"><small>' +
+        esc(t('app_secret_page')) + '</small><b>' + esc(r.page.title) + '</b><p>' + esc(r.page.text) + '</p></div>' : '') +
+        (r.set ? '<div class="conseq good"><span class="what">' + esc(r.set) + '</span></div>' : '') + '<div class="actions">' +
+        '<button type="button" class="btn btn-main" data-close>' + esc(t('app_continue')) + '</button></div></div>';
+      document.body.appendChild(layer);
+      var close = layer.querySelector('[data-close]');
+      close.onclick = function() {
+        layer.remove();
+      };
+      close.focus();
+    }).catch(function(e) {
+      btn.disabled = false;
+      T.toast(esc(e.message), true);
+    });
   }
 
   function isNext(kind, id) {
@@ -2776,6 +2832,17 @@
           pick.classList.remove('busy');
           T.toast(esc(e.message), true);
         });
+      };
+    });
+    app.querySelectorAll('[data-secret]').forEach(function(b) {
+      b.onclick = function(ev) {
+        ev.stopPropagation();
+        var ch = (state.world.mission.chapters || []).filter(function(x) {
+          return x.id === Number(b.dataset.secretplace);
+        })[0];
+        if (ch) {
+          secretMoment(ch, b);
+        }
       };
     });
     app.querySelectorAll('[data-minion]').forEach(function(b) {
@@ -4050,10 +4117,29 @@
       }).join('') + '</ul>' : '<p class="empty">' + esc(t('app_bestiary_empty')) + '</p>') + '</section>';
   }
 
+  /**
+   * The secrets of the places the student found, in the album: what each one says; and how many there are, without
+   * saying where.
+   *
+   * @return {string}
+   */
+  function secretsCard() {
+    var x = state.world.mission && state.world.mission.secrets;
+    if (!x || !x.total) {
+      return '';
+    }
+    return '<section class="card no-print secrets-card" style="margin-top:16px"><h2>' + esc(t('app_secrets')) + '</h2>' +
+      '<p class="help-soft">' + esc(t('app_secrets_help', {found: x.found.length, all: x.total})) + '</p>' + (x.found.length ?
+      '<ul class="list">' + x.found.map(function(f) {
+        return '<li class="item secret-found ' + esc(f.kind) + '"><span class="secret-icon" aria-hidden="true">' +
+          (f.kind === 'print' ? INKPRINT : '✦') + '</span><span class="grow">' + esc(f.text) + '</span></li>';
+      }).join('') + '</ul>' : '') + '</section>';
+  }
+
   function albumCard() {
     var a = state.world.album;
     if (!a) {
-      return guideCard() + bestiaryCard();
+      return guideCard() + bestiaryCard() + secretsCard();
     }
     var golden = a.cards.filter(function(x) {
       return x.golden;
@@ -4069,7 +4155,7 @@
           '') + '</div>';
       }).join('') + '</div>' : '<p class="empty">' + esc(t('app_album_empty')) + '</p>') + '<div class="actions" style="' +
       'justify-content:flex-start"><button class="btn btn-soft" data-activity="' + a.cmid + '">' + esc(t('app_album_open')) +
-      '</button></div></section>' + guideCard() + bestiaryCard();
+      '</button></div></section>' + guideCard() + bestiaryCard() + secretsCard();
   }
 
   /**

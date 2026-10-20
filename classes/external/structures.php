@@ -190,6 +190,12 @@ final class structures {
                     VALUE_DEFAULT,
                     ''
                 ),
+                'secrets' => new external_multiple_structure(new external_single_structure([
+                    'id' => new external_value(PARAM_ALPHANUMEXT, 'The secret'),
+                    'kind' => new external_value(PARAM_ALPHA, 'print (of ink) or thing'),
+                    'x' => new external_value(PARAM_INT, 'Where in the painting, in percent'),
+                    'y' => new external_value(PARAM_INT, 'Where in the painting, in percent'),
+                ]), 'The secrets still hidden in the painting of the place', VALUE_DEFAULT, []),
                 'minion' => new external_single_structure([
                     'code' => new external_value(PARAM_ALPHANUMEXT, 'The minion'),
                     'name' => new external_value(PARAM_TEXT, 'Its name'),
@@ -247,6 +253,14 @@ final class structures {
                 'title' => new external_value(PARAM_TEXT, 'Title'),
                 'text' => new external_value(PARAM_TEXT, 'Text'),
             ])),
+            'secrets' => new external_single_structure([
+                'found' => new external_multiple_structure(new external_single_structure([
+                    'id' => new external_value(PARAM_ALPHANUMEXT, 'The secret'),
+                    'kind' => new external_value(PARAM_ALPHA, 'print (of ink) or thing'),
+                    'text' => new external_value(PARAM_TEXT, 'What it says'),
+                ])),
+                'total' => new external_value(PARAM_INT, 'Secrets in the mission'),
+            ], 'The secrets of the places the student found, for the album', VALUE_OPTIONAL),
             'friends' => new external_multiple_structure(new external_single_structure([
                 'code' => new external_value(PARAM_ALPHANUMEXT, 'Who speaks, as in the mission'),
                 'name' => new external_value(PARAM_TEXT, 'Their name'),

@@ -336,6 +336,7 @@ final class view {
                     'weakness' => missions::text($knot['weakness'] ?? '', $skin)];
             }
         }
+        $secretsfound = secrets::found($char, $mission);
         $list = [];
         foreach ($chapters as $chapter) {
             $meta = $info[$chapter->code] ?? [];
@@ -375,6 +376,8 @@ final class view {
                         $mission,
                         encounters::crossed($char, $mission, (string) $chapter->code)
                     ) : null) : null,
+                // The secrets of the place still hidden for the student, in its painting.
+                'secrets' => secrets::in_place($char, $mission, (string) $chapter->code, $secretsfound),
                 // A minion of the Embrollo on the road to the place the class is opening, until the class lights it.
                 'minion' => $current ? minions::on_road($char, $mission, (string) $chapter->code) : null,
                 // The Embrollo comes out when the student lights the lantern of the place with its core scene.
@@ -420,6 +423,7 @@ final class view {
             'mapheight' => (int) ($data['maplayers']['height'] ?? 0),
             'chapters' => $list,
             'pages' => $pages,
+            'secrets' => secrets::album($mission, $secretsfound),
             // The friends of the expedition: what each one tells the student, by the pages given back from what is theirs.
             'friends' => friends::view($mission, $found),
             // The field guide of the beings met: place by place, how many there are and which the student has.

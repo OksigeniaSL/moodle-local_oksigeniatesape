@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.161.0 (2026-10-20)
+
+- **Touchable secrets in the paintings of the places** (mission v64). Things found without anybody asking for them: six
+  prints of ink that are no animal's, one in each place, an empty jar in the library and a page under a leaf of the
+  garden. Each one says what it is and goes to the album («Secrets of the valley», how many of how many, without saying
+  where); a secret can leave a mark the scenes read, or give a page of the Great Book; whoever finds the six prints
+  reads what the Embrollo is made of, before the tower. In the rehearsal, the elder druid recognises the jar and the owl
+  whoever followed the prints. No saber nor gems: the world, not a reward. Service `local_oksigeniatesape_find_secret`.
+
 ## 0.160.0 (2026-10-20)
 
 - **Minions of the Embrollo on the road.** In the place the class is opening, and until the class lights its lantern,

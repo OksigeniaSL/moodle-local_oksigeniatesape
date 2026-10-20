@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 63,
+ "version": 64,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 64,
+   "kind": "improvement",
+   "date": "2026-10-20",
+   "text": "Secretos en los cuadros de los lugares: seis huellas de tinta que no son de ningún animal, un frasco vacío en la biblioteca y una página bajo una hoja del jardín; en el ensayo, la druida reconoce el frasco y el búho a quien juntó las seis huellas"
+  },
   {
    "version": 63,
    "kind": "improvement",
@@ -1687,6 +1693,9 @@
  "texts": {
   "azara": {
    "app_backtovalley": "Volver al campamento",
+   "app_secret_page": "Una nota del cuaderno",
+   "app_secrets": "Secretos de la expedición",
+   "app_secrets_help": "Has encontrado {$a->found} de {$a->all}. Están en los dibujos de cada lugar, para quien mira con calma.",
    "app_battle_call": "¡El Embrollo revuelve las notas del cuaderno antes de que zarpe el barco! Entra en la batalla con tu clase.",
    "app_battle_escaped": "El Embrollo se ha escapado por la ventana esta vez",
    "app_battle_lost_turns": "Se ha escapado por la ventana con una página del cuaderno. Nadie pierde nada; el barco espera a la revancha, que sigue donde quedó.",
@@ -2216,6 +2225,113 @@
     "¡Hasta la revancha! Prometo enredar con cariño.",
     "Me voy, pero la próxima vez esta clase vendrá con más ganas. Y yo, con más hilos."
    ]
+  }
+ },
+ "secrets": [
+  {
+   "id": "huella-1",
+   "place": "claro",
+   "kind": "print",
+   "x": 30,
+   "y": 88,
+   "set": "huellas",
+   "text": {
+    "valley": "En el barro, junto a las raíces, una mancha de tinta con forma de pisada. No es de ningún animal del claro: ni pezuña, ni garra, ni pata. Huella 1 de 6.",
+    "azara": "En el barro del campamento, una mancha de tinta con forma de pisada. No es de ningún animal que conozcamos. Huella 1 de 6."
+   }
+  },
+  {
+   "id": "huella-2",
+   "place": "biblioteca",
+   "kind": "print",
+   "x": 32,
+   "y": 92,
+   "set": "huellas",
+   "text": {
+    "valley": "En el suelo de la biblioteca, otra pisada de tinta, y enganchado en ella, un hilo lila. Huella 2 de 6.",
+    "azara": "Junto a las cajas de la expedición, otra pisada de tinta con un hilo lila enganchado. Huella 2 de 6."
+   }
+  },
+  {
+   "id": "huella-3",
+   "place": "bosque",
+   "kind": "print",
+   "x": 50,
+   "y": 95,
+   "set": "huellas",
+   "text": {
+    "valley": "Entre las huellas de los animales del barro, una que no se parece a ninguna: tinta, y debajo, un trozo de papel con una palabra tachada. Huella 3 de 6.",
+    "azara": "Entre las huellas del barro, una que no es de ningún animal: tinta, y debajo, un trozo de papel con una palabra tachada. Huella 3 de 6."
+   }
+  },
+  {
+   "id": "huella-4",
+   "place": "jardin",
+   "kind": "print",
+   "x": 38,
+   "y": 92,
+   "set": "huellas",
+   "text": {
+    "valley": "Junto al camino del jardín, otra pisada de tinta. Huele a papel mojado y a prisa. Huella 4 de 6.",
+    "azara": "Junto al camino del huerto, otra pisada de tinta. Huele a papel mojado y a prisa. Huella 4 de 6."
+   }
+  },
+  {
+   "id": "huella-5",
+   "place": "lago",
+   "kind": "print",
+   "x": 62,
+   "y": 92,
+   "set": "huellas",
+   "text": {
+    "valley": "En las tablas del muelle, una pisada de tinta corrida, como una nota que alguien escribió sin mirar. Huella 5 de 6.",
+    "azara": "En las tablas del embarcadero, una pisada de tinta corrida, como una nota escrita sin mirar. Huella 5 de 6."
+   }
+  },
+  {
+   "id": "huella-6",
+   "place": "torre",
+   "kind": "print",
+   "x": 66,
+   "y": 94,
+   "set": "huellas",
+   "text": {
+    "valley": "Al pie de la torre, entre los hilos del suelo, la última pisada: tinta, hilo lila y un papel tachado que dice «seguro que sí». Huella 6 de 6.",
+    "azara": "Entre las páginas del cuaderno, la última pisada: tinta, hilo lila y un papel tachado que dice «seguro que sí». Huella 6 de 6."
+   }
+  },
+  {
+   "id": "frasco",
+   "place": "biblioteca",
+   "kind": "thing",
+   "x": 28,
+   "y": 24,
+   "mark": "frasco-vacio",
+   "text": {
+    "valley": "Entre los libros, un frasco vacío con la tapa puesta y sin etiqueta. Doña Hebra lo tapa con un libro sin mirar: «Todavía no».",
+    "azara": "En una de las cajas, un frasco vacío con la tapa puesta y sin etiqueta. La archivera lo aparta sin mirar: «Todavía no»."
+   }
+  },
+  {
+   "id": "pagina-hoja",
+   "place": "jardin",
+   "kind": "thing",
+   "x": 60,
+   "y": 93,
+   "page": "descomponedores",
+   "text": {
+    "valley": "Bajo una hoja grande y medio podrida asoma una página suelta del Gran Libro, húmeda por los bordes. Debajo, la tierra está llena de bichitos.",
+    "azara": "Bajo una hoja grande y medio podrida asoma una nota suelta del cuaderno, húmeda por los bordes. Debajo, la tierra está llena de bichitos."
+   }
+  }
+ ],
+ "secretsets": {
+  "huellas": {
+   "mark": "seis-huellas",
+   "text": {
+    "valley": "Seis huellas: tinta, hilo lila y papel tachado. El Embrollo no es un animal. Está hecho de notas escritas sin mirar, de lo que se da por cierto sin comprobar.",
+    "azara": "Seis huellas: tinta, hilo y papel tachado. Lo que enreda el cuaderno no es un animal: son notas escritas sin mirar, lo que se da por cierto sin comprobar."
+   }
   }
  },
  "pages": {
