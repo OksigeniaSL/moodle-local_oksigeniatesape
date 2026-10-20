@@ -1,0 +1,262 @@
+{
+ "id": "C2-5",
+ "mission": "livingthings",
+ "chapter": "biblioteca",
+ "title": "Los dos círculos de la biblioteca",
+ "quest": true,
+ "step": 3,
+ "mode": "both",
+ "objectives": [
+  "SV-05",
+  "SV-02"
+ ],
+ "minutes": 5,
+ "whatif": "¿Y si un ser vivo cupiera en tres círculos a la vez? ¿Qué tres círculos dibujarías para él?",
+ "locals": {
+  "arbol": {
+   "es": "la encina",
+   "py": "el lapacho",
+   "gen": "el árbol"
+  },
+  "flota": {
+   "es": "el nenúfar",
+   "py": "el irupé",
+   "gen": "el nenúfar"
+  },
+  "pez": {
+   "es": "la trucha",
+   "py": "el dorado",
+   "gen": "la trucha"
+  }
+ },
+ "start": "intro",
+ "nodes": {
+  "intro": {
+   "type": "story",
+   "speaker": "bibliotecaria",
+   "image": "biblioteca-torre",
+   "text": {
+    "valley": "Sobre la mesa grande de la biblioteca flotan dos círculos de luz que se cruzan por el centro, y el Embrollo ha tirado sus fichas por el suelo: «Dos círculos y un montón de fichas sueltas. ¿Y si alguna va en los dos? ¡Eso no lo adivinas!». Doña Hebra recoge una sin mirarla: «Cada ficha, a su círculo. La que es de los dos, al centro, donde se cruzan». {{creature}} salta de un círculo al otro, como si probara dónde cabe.",
+    "azara": "Las fichas de la colección se han desordenado sobre la mesa de trabajo. La archivera dibuja con tiza dos círculos que se cruzan: «Cada ficha, a su círculo. La que es de los dos, en medio, donde se cruzan». {{creature}} empuja una ficha con el hocico hacia el centro de la mesa."
+   },
+   "next": "luz"
+  },
+  "luz": {
+   "type": "classify",
+   "mode": "venn",
+   "prompt": "La luz y el agua: cada ficha, a su círculo; si es de los dos, al centro.",
+   "aid": "En el cuaderno: las plantas y las algas fabrican su alimento con la luz; los animales no, aunque vivan en el agua.",
+   "retry": "item",
+   "hints": [
+    "Para el primer círculo: ¿fabrica su alimento con la luz, o come otros seres?",
+    "Para el segundo: ¿vive dentro del agua, o solo le gusta la humedad?"
+   ],
+   "bins": [
+    {
+     "id": "a",
+     "label": "Fabrica su alimento con la luz"
+    },
+    {
+     "id": "ab",
+     "label": "En los dos"
+    },
+    {
+     "id": "b",
+     "label": "Vive en el agua"
+    }
+   ],
+   "items": [
+    {
+     "id": "arbol",
+     "thing": "arbol",
+     "label": "{{local:arbol}}",
+     "bin": "a",
+     "objective": "SV-05"
+    },
+    {
+     "id": "musgo",
+     "thing": "musgo",
+     "label": "el musgo",
+     "bin": "a",
+     "objective": "SV-05",
+     "why": "Es una planta; le gusta la humedad, pero no vive dentro del agua."
+    },
+    {
+     "id": "cactus",
+     "thing": "cactus",
+     "label": "el cactus",
+     "bin": "a",
+     "objective": "SV-05"
+    },
+    {
+     "id": "alga",
+     "thing": "alga",
+     "label": "el alga",
+     "bin": "ab",
+     "objective": "SV-05",
+     "why": "Vive en el agua y fabrica su alimento con la luz, como las plantas."
+    },
+    {
+     "id": "flota",
+     "thing": "nenufar",
+     "label": "{{local:flota}}",
+     "bin": "ab",
+     "objective": "SV-05",
+     "why": "Es una planta que flota en el agua: fabrica su alimento con la luz."
+    },
+    {
+     "id": "pez",
+     "thing": "pezrio",
+     "label": "{{local:pez}}",
+     "bin": "b",
+     "objective": "SV-05"
+    },
+    {
+     "id": "pulpo",
+     "thing": "pulpo",
+     "label": "el pulpo",
+     "bin": "b",
+     "objective": "SV-05"
+    },
+    {
+     "id": "medusa",
+     "label": "la medusa",
+     "bin": "b",
+     "objective": "SV-05",
+     "why": "Vive en el agua, pero es un animal: no fabrica su alimento."
+    }
+   ],
+   "next": "celula"
+  },
+  "celula": {
+   "type": "classify",
+   "mode": "venn",
+   "prompt": "Una célula o muchas: y ahora, las que solo se ven con lupa.",
+   "aid": "En el cuaderno: hay seres de una sola célula, que no se ven sin lupa; los hongos se alimentan de restos.",
+   "retry": "item",
+   "bins": [
+    {
+     "id": "a",
+     "label": "Tiene una sola célula"
+    },
+    {
+     "id": "ab",
+     "label": "En los dos"
+    },
+    {
+     "id": "b",
+     "label": "Es un hongo"
+    }
+   ],
+   "items": [
+    {
+     "id": "bacteria",
+     "thing": "bacteria",
+     "label": "la bacteria",
+     "bin": "a",
+     "objective": "SV-02",
+     "hard": true
+    },
+    {
+     "id": "ameba",
+     "label": "la ameba",
+     "bin": "a",
+     "objective": "SV-02",
+     "hard": true,
+     "why": "Tiene una sola célula, pero no es un hongo."
+    },
+    {
+     "id": "levadura",
+     "thing": "levadura",
+     "label": "la levadura",
+     "bin": "ab",
+     "objective": "SV-02",
+     "hard": true,
+     "why": "Es un hongo de una sola célula: por eso no se ve sin microscopio."
+    },
+    {
+     "id": "seta",
+     "thing": "seta",
+     "label": "la seta",
+     "bin": "b",
+     "objective": "SV-02",
+     "hard": true
+    },
+    {
+     "id": "champinon",
+     "label": "el champiñón",
+     "bin": "b",
+     "objective": "SV-02",
+     "hard": true
+    },
+    {
+     "id": "moho",
+     "thing": "moho",
+     "label": "el moho del pan",
+     "bin": "b",
+     "objective": "SV-02",
+     "hard": true,
+     "why": "Es un hongo: forma esa pelusa que sale en el pan viejo."
+    }
+   ],
+   "next": "cuenta"
+  },
+  "cuenta": {
+   "type": "branch",
+   "rules": [
+    {
+     "if": {
+      "correct_at_least": 6,
+      "in": "luz"
+     },
+     "next": "brillan"
+    },
+    {
+     "if": {
+      "correct_at_least": 4,
+      "in": "luz"
+     },
+     "next": "medias"
+    }
+   ],
+   "else": "otra"
+  },
+  "brillan": {
+   "type": "ending",
+   "outcome": "success",
+   "text": {
+    "valley": "Los dos círculos brillan en orden y el Embrollo recoge su última ficha del suelo, de mala gana. «Un mismo ser vivo puede estar en dos grupos a la vez», dice Doña Hebra. «El alga no tiene que elegir.» {{creature}} se sienta justo en el centro, donde se cruzan.",
+    "azara": "Las fichas quedan en orden y la archivera borra la tiza con la manga. «Un mismo ser vivo puede estar en dos grupos a la vez. El alga no tiene que elegir.» {{creature}} se sienta justo en el centro, donde se cruzaban."
+   },
+   "effects": [
+    {
+     "gems": 3
+    }
+   ]
+  },
+  "medias": {
+   "type": "ending",
+   "outcome": "partial",
+   "text": {
+    "valley": "Casi todas las fichas brillan en su círculo; un par se quedan temblando en el borde. «Las del centro son las más difíciles», dice Doña Hebra. «Otro día las miramos con calma.» {{creature}} sopla una ficha hacia el centro.",
+    "azara": "Casi todas las fichas están en su sitio; un par se quedan en el borde de la tiza. «Las del centro son las más difíciles», dice la archivera. «Otro día las miramos con calma.» {{creature}} sopla una ficha hacia el centro."
+   },
+   "effects": [
+    {
+     "gems": 1
+    }
+   ]
+  },
+  "otra": {
+   "type": "ending",
+   "outcome": "retry",
+   "text": {
+    "valley": "Los círculos se apagan y las fichas vuelven al suelo. El Embrollo aplaude. Doña Hebra las recoge una a una: «Dos preguntas para cada ficha: ¿fabrica su alimento con la luz? ¿Vive dentro del agua?».",
+    "azara": "Las fichas vuelven a mezclarse sobre la mesa. La archivera las recoge una a una: «Dos preguntas para cada ficha: ¿fabrica su alimento con la luz? ¿Vive dentro del agua?»."
+   },
+   "retry": "luz",
+   "keep": "Dos preguntas para cada ficha: ¿fabrica su alimento con la luz? ¿Vive dentro del agua?"
+  }
+ },
+ "method": "SV-07"
+}

@@ -2005,6 +2005,11 @@
       var locked = n.items.filter(function(it) {
         return !has(it.requires);
       });
+      // A table left empty by the aids (all its things are hard): nothing to place, the scene goes on.
+      if (!items.length && !locked.length) {
+        go(n.next);
+        return;
+      }
       var place = {};
       var right = {};
       var chosen = null;
@@ -2041,11 +2046,12 @@
           }).join('') + locked.map(function(it) {
             return '<button type="button" class="cls-thing locked" disabled>' + esc(tx(it.label)) + '<small>' +
               esc(it.locked ? tx(it.locked) : missing(it.requires)) + '</small></button>';
-          }).join('') + '</div>' + lookArea() + '<div class="bins">' + n.bins.map(function(b) {
+          }).join('') + '</div>' + lookArea() + '<div class="bins' + (n.mode === 'venn' ? ' venn' : '') + '">' + n.bins.map(function(b) {
             var inside = items.filter(function(it) {
               return (right[it.id] || place[it.id]) === b.id;
             });
-            return '<div class="cls-bin"><button type="button" class="bin" data-bin="' + esc(b.id) + '"' +
+            return '<div class="cls-bin' + (n.mode === 'venn' ? ' zone-' + esc(b.id) : '') + '"><button type="button" ' +
+              'class="bin" data-bin="' + esc(b.id) + '"' +
               (chosen ? '' : ' disabled') + '>' + esc(tx(b.label)) + '</button><span class="cls-in">' +
               inside.map(function(it) {
                 return right[it.id] ? '<span class="cls-thing kept">' + esc(tx(it.label)) + '</span>' :
@@ -2153,7 +2159,8 @@
         var general = false;
         moved.forEach(function(it) {
           if (put[it.id] !== it.bin) {
-            var own = it.feedback && it.feedback[put[it.id]];
+            // Its own line for the group where it went, or the why of the thing, whatever the group.
+            var own = it.feedback && it.feedback[put[it.id]] || it.why;
             general = general || !own;
             lines += '<li><b>' + esc(tx(it.label)) + '</b> ' + esc(own ? tx(own) : t('app_classify_back')) + '</li>';
           }

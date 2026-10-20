@@ -197,10 +197,10 @@ final class talents_test extends \advanced_testcase {
         missions::install($course->id, 'livingthings', 'valley', 'es');
         $mission = missions::get($course->id);
         // In the minigames, as the client and the server read it.
-        $plain = minigames::config($mission, 'circulosbosque', 2, 'protector');
+        $plain = minigames::config($mission, 'enredobosque', 2, 'protector');
         $this->assertSame($plain['misses'] + 1, minigames::config(
             $mission,
-            'circulosbosque',
+            'enredobosque',
             2,
             'protector',
             ['endurance']
@@ -209,13 +209,13 @@ final class talents_test extends \advanced_testcase {
         $tough = minigames::config($mission, 'nestdefence', 2, 'protector', ['endurance']);
         $this->assertSame($nest['shield'] + 1, $tough['shield']);
         $this->assertSame(max(1, $nest['goal'] - 1), $tough['goal']);
-        $this->assertSame(3, minigames::config($mission, 'circulosbosque', 2, 'healer', ['secondwind'])['streak']);
-        $this->assertSame(minigames::STREAK, minigames::config($mission, 'circulosbosque', 2, 'healer')['streak']);
-        $this->assertSame(2, minigames::config($mission, 'circulosbosque', 2, 'sage', ['keeneye'])['looks']);
-        $this->assertSame(1, minigames::config($mission, 'circulosbosque', 2, 'sage')['looks']);
-        $this->assertSame(2, minigames::config($mission, 'circulosbosque', 2, 'scout', ['farsight'])['ahead']);
+        $this->assertSame(3, minigames::config($mission, 'enredobosque', 2, 'healer', ['secondwind'])['streak']);
+        $this->assertSame(minigames::STREAK, minigames::config($mission, 'enredobosque', 2, 'healer')['streak']);
+        $this->assertSame(2, minigames::config($mission, 'enredobosque', 2, 'sage', ['keeneye'])['looks']);
+        $this->assertSame(1, minigames::config($mission, 'enredobosque', 2, 'sage')['looks']);
+        $this->assertSame(2, minigames::config($mission, 'enredobosque', 2, 'scout', ['farsight'])['ahead']);
         // A talent of another role does nothing.
-        $this->assertSame(0, minigames::config($mission, 'circulosbosque', 2, 'healer', ['farsight'])['ahead']);
+        $this->assertSame(0, minigames::config($mission, 'enredobosque', 2, 'healer', ['farsight'])['ahead']);
         // In the powers: «Light cheer» and «Light shortcut», a breath less.
         $group = $dg->create_group(['courseid' => $course->id]);
         $chars = [];

@@ -1011,6 +1011,153 @@
     'paint-snow': {filter: 'grayscale(.92) brightness(1.25)', hue: 205}
   };
 
+  /** The images of the creatures with their mark drawn in, by image and mark: addresses of the device, or who waits. */
+  var MARKED = {};
+
+  /**
+   * The mark of a creature with the art of a pack, its own among those of the class: a small sign on its belly, its shape
+   * from its ears, how many from its eyes and how they sit from its roundness. Drawn in blue on the orange of the
+   * painting: the colour of each creature turns both, so the mark always has the colour opposite to its own.
+   *
+   * @param {CanvasRenderingContext2D} g
+   * @param {string} key ears, eyes, round and stage.
+   * @param {number} k Pixels for a hundredth of the image.
+   */
+  function drawMark(g, key, k) {
+    var v = key.split(',').map(Number);
+    var ears = v[0] || 0;
+    var n = (v[1] || 0) + 1;
+    var round = v[2] || 0;
+    // Where the belly is in the paintings: the first stage sits, the others stand.
+    var cx = v[3] === 1 ? 40 : 50;
+    var cy = v[3] === 1 ? 62 : 68;
+    var r = 3.1 + round * 0.6;
+    g.fillStyle = 'hsl(205 65% 40%)';
+    g.strokeStyle = '#fdfaf2';
+    g.lineWidth = 0.7 * k;
+    for (var i = 0; i < n; i++) {
+      var d = (i - (n - 1) / 2) * (r * 2.1);
+      // In a row, in an arc, or one above the other.
+      var x = (round === 2 ? cx : cx + d) * k;
+      var y = (round === 2 ? cy + d : round === 1 ? cy - Math.abs(d) * 0.5 : cy) * k;
+      var s = r * k;
+      g.beginPath();
+      if (ears === 0) {
+        // A leaf.
+        g.moveTo(x, y - s);
+        g.quadraticCurveTo(x + s, y, x, y + s);
+        g.quadraticCurveTo(x - s, y, x, y - s);
+      } else if (ears === 1) {
+        // A spot.
+        g.arc(x, y, s * 0.75, 0, Math.PI * 2);
+      } else {
+        // A spark.
+        var q = s * 0.32;
+        [[0, -s], [q, -q], [s, 0], [q, q], [0, s], [-q, q], [-s, 0], [-q, -q]].forEach(function(p, j) {
+          g[j ? 'lineTo' : 'moveTo'](x + p[0], y + p[1]);
+        });
+      }
+      g.closePath();
+      g.fill();
+      g.stroke();
+    }
+  }
+
+  /**
+   * Draws its mark into the image of a creature, once for each image and mark: the element stays the same image, so
+   * every place that shows a creature keeps its size and its colour.
+   *
+   * @param {HTMLImageElement} img With data-mark.
+   */
+  function markCreature(img) {
+    var key = img.getAttribute('data-mark');
+    var art = img.getAttribute('src');
+    img.removeAttribute('data-mark');
+    var id = art + '|' + key;
+    if (typeof MARKED[id] === 'string') {
+      img.src = MARKED[id];
+      return;
+    }
+    if (MARKED[id]) {
+      MARKED[id].push(img);
+      return;
+    }
+    MARKED[id] = [img];
+    var done = function(url) {
+      var waiting = MARKED[id];
+      MARKED[id] = url;
+      if (url !== art) {
+        waiting.forEach(function(el) {
+          el.src = url;
+        });
+      }
+    };
+    var pic = new Image();
+    pic.onload = function() {
+      try {
+        var c = document.createElement('canvas');
+        c.width = pic.naturalWidth;
+        c.height = pic.naturalHeight;
+        var g = c.getContext('2d');
+        g.drawImage(pic, 0, 0);
+        drawMark(g, key, c.width / 100);
+        c.toBlob(function(blob) {
+          done(blob ? URL.createObjectURL(blob) : art);
+        }, 'image/png');
+      } catch (e) {
+        // Without a canvas, the creature without its mark.
+        done(art);
+      }
+    };
+    pic.onerror = function() {
+      done(art);
+    };
+    pic.src = art;
+  }
+
+  // The images of creatures that come into the page, with their mark.
+  if (window.MutationObserver && window.HTMLCanvasElement) {
+    new MutationObserver(function(list) {
+      list.forEach(function(m) {
+        m.addedNodes.forEach(function(node) {
+          if (node.nodeType !== 1) {
+            return;
+          }
+          if (node.matches('img[data-mark]')) {
+            markCreature(node);
+          }
+          node.querySelectorAll('img[data-mark]').forEach(markCreature);
+        });
+      });
+    }).observe(document.documentElement, {childList: true, subtree: true});
+  }
+
+  /**
+   * The mark of a creature told in words, for its sheet: «two leaves in a row on its belly».
+   *
+   * @param {Object|string} traits
+   * @return {string} Empty for a creature without the art of a pack (its drawing is its own already).
+   */
+  T.creatureMark = function(traits) {
+    var c = traits;
+    if (typeof c === 'string') {
+      try {
+        c = JSON.parse(c || 'null');
+      } catch (e) {
+        c = null;
+      }
+    }
+    if (!c || !T.artUrl(['creature.1', 'creature'])) {
+      return '';
+    }
+    var shape = ['leaf', 'spot', 'spark'][Number(c.ears) || 0];
+    var n = (Number(c.eyes) || 0) + 1;
+    var round = Number(c.round) || 0;
+    return n === 1 ? T.t('app_mark_one', {shape: T.t('app_mark_' + shape), size: T.t('app_mark_size_' + round)}) :
+      T.t('app_mark_many', {count: T.t('app_mark_count_' + n), shapes: T.t('app_mark_' + shape + 's'),
+        way: T.t('app_mark_way_' + round)});
+  };
+
   T.creature = function(traits, stage, big) {
     var c = traits;
     if (typeof c === 'string') {
@@ -1031,8 +1178,12 @@
     var art = T.artUrl(['creature.' + st + '.' + (c.coat || 'none'), 'creature.' + st, 'creature.' + low + '.' +
       (c.coat || 'none'), 'creature.' + low, 'creature']);
     if (art) {
-      // One image for every creature: its own hue makes it unique, or the paint bought in the market.
-      return '<img class="creature art' + (big ? ' born' : '') + '" src="' + T.esc(art) + '" alt="' + T.esc(c.name || '') +
+      // One image for every creature: its own hue, or the paint bought in the market; and its own mark on the belly,
+      // drawn into the image on the device (at once, when this device already drew it).
+      var mark = [Number(c.ears) || 0, Number(c.eyes) || 0, Number(c.round) || 0, low].join(',');
+      var marked = MARKED[art + '|' + mark];
+      return '<img class="creature art' + (big ? ' born' : '') + '" src="' + T.esc(typeof marked === 'string' ? marked :
+        art) + '"' + (typeof marked === 'string' ? '' : ' data-mark="' + mark + '"') + ' alt="' + T.esc(c.name || '') +
         '" style="filter:' + (paint ? paint.filter : 'hue-rotate(' + h + 'deg)') + '">';
     }
     var s = 1 + (st - 1) * 0.12;

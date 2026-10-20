@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.158.0 (2026-10-20)
+
+- **Each creature with its own mark.** With the art of a pack, every creature of the same stage was the same painting
+  in another colour. Now each one has a mark on its belly made from its traits: a leaf, a spot or a spark (its ears),
+  one, two or three of them (its eyes), in a row, in an arc or one above the other (its roundness), drawn into the
+  image on the device, so every place that shows a creature keeps its size, and its colour turns the mark too. Its
+  sheet says it in words («Its mark: two leaves in an arc on its belly»).
+- **The two circles as a scene** (mission v63): a classification can be two circles that meet (`classify` with
+  `mode: venn`, its groups `a`, `ab` and `b`; on a phone, one over the other), and a thing can carry its `why` for any
+  wrong group. «The two circles» of the library, the forest and the lake are no longer loose minigames: each is a quest
+  of its place, open to everybody, with the same cards and their whys; its second classification is left out with the
+  aids of the first steps. The engine of the minigame stays for the missions that want it. The workshop edits the
+  `why` of a thing.
+
 ## 0.157.1 (2026-10-20)
 
 - The browser test of the battle by turns aloud opens the desk of the teacher before choosing «without devices».

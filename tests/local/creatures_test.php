@@ -79,6 +79,6 @@ final class creatures_test extends \advanced_testcase {
             'missionid' => $mission->id, 'kind' => 'lantern', 'code' => 'claro', 'timecreated' => time()]);
         $this->assertSame(['claro'], creatures::known($char, $mission));
         // In the minigames, from its second stage, it sniffs once a play.
-        $this->assertSame(1, minigames::config(missions::get($course->id), 'circulosbosque', 2, 'scout', [], 1)['sniffs']);
+        $this->assertSame(1, minigames::config(missions::get($course->id), 'enredobosque', 2, 'scout', [], 1)['sniffs']);
     }
 }

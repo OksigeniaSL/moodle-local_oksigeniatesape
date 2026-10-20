@@ -70,7 +70,7 @@ final class packages_test extends \advanced_testcase {
         $mission = missions::upload($this->package(['code' => 'pruebas', 'version' => 1, 'licence' => 'paid']));
         $this->assertSame('pruebas', $mission['code']);
         $this->assertSame('site', missions::package_origin('pruebas'));
-        $this->assertCount(28, missions::package_scenes('pruebas'));
+        $this->assertCount(31, missions::package_scenes('pruebas'));
         missions::install($course->id, 'pruebas', 'valley', 'gen');
         $this->assertSame('pruebas', missions::get($course->id)->code);
     }

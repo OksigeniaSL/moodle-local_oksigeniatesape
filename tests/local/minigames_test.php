@@ -291,9 +291,41 @@ final class minigames_test extends \advanced_testcase {
         $this->assertSame('pone huevos y tiene pelo', $venn['items'][1]['why']);
     }
 
+    /**
+     * A game of the two circles in the mission of a class: the pilot mission has them as scenes now, and the engine of
+     * the minigame stays for the missions that want one.
+     *
+     * @param \stdClass $w The class, whose mission is read again.
+     */
+    private function with_two_circles(\stdClass $w): void {
+        global $DB;
+        $data = json_decode($DB->get_field('local_oksigeniatesape_mission', 'definition', ['id' => $w->mission->id]), true);
+        $data['games']['circuloslago'] = [
+            'type' => 'venn',
+            'title' => 'Los dos círculos del lago',
+            'intro' => 'Lleva cada ficha a su círculo. Si es de los dos, va al centro, donde se cruzan.',
+            'misses' => [1 => 4, 2 => 3, 3 => 3, 4 => 3],
+            'reward' => ['gems' => 5],
+            'sheets' => [
+                ['id' => 'que-come', 'title' => '¿Qué come?', 'steps' => [1, 2, 3, 4], 'text' => [
+                    'es' => "Come plantas: conejo, caracol, jabalí, ser humano\nCome animales: búho, lince ibérico, jabalí, " .
+                        "ser humano\n? jabalí: come raíces y también lombrices: es omnívoro.",
+                    'py' => "Come plantas: conejo, caracol, pecarí, ser humano\nCome animales: búho, yaguareté, pecarí, " .
+                        "ser humano\n? pecarí: come raíces y también pequeños animales: es omnívoro.",
+                ]],
+                ['id' => 'productores', 'title' => 'Los productores', 'steps' => [1, 2, 3, 4], 'text' =>
+                    "Fabrica su alimento: alga, hierba\nVive en el agua: alga, renacuajo"],
+            ],
+        ];
+        $DB->set_field('local_oksigeniatesape_mission', 'definition', json_encode($data), ['id' => $w->mission->id]);
+        \cache::make_from_params(\cache_store::MODE_REQUEST, 'local_oksigeniatesape', 'missions')->purge();
+        $w->mission = missions::get($w->course->id);
+    }
+
     public function test_the_two_circles(): void {
         $this->resetAfterTest();
         $w = $this->make_class('py');
+        $this->with_two_circles($w);
         $member = engine::member(characters::get($w->user->id), $w->course->id);
         $game = minigames::config($w->mission, 'circuloslago', (int) $member->step);
         $this->assertSame('venn', $game['type']);

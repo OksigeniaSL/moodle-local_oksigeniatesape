@@ -1,0 +1,289 @@
+{
+ "id": "C5-6",
+ "mission": "livingthings",
+ "chapter": "lago",
+ "title": "Los dos círculos del lago",
+ "quest": true,
+ "step": 3,
+ "mode": "both",
+ "objectives": [
+  "SV-06"
+ ],
+ "minutes": 5,
+ "whatif": "¿Y si un día solo hubiera plantas en el lago, y al siguiente solo animales? ¿Quién lo pasaría peor, y por qué?",
+ "locals": {
+  "ciervo": {
+   "es": "el ciervo",
+   "py": "el ciervo de los pantanos",
+   "gen": "el ciervo"
+  },
+  "omnivoro": {
+   "es": "el jabalí",
+   "py": "el pecarí",
+   "gen": "el jabalí"
+  },
+  "omnivoro_why": {
+   "es": "Come bellotas y raíces, y también lombrices y huevos: es omnívoro.",
+   "py": "Come frutos y raíces, y también pequeños animales: es omnívoro.",
+   "gen": "Come bellotas y raíces, y también lombrices y huevos: es omnívoro."
+  },
+  "felino": {
+   "es": "el lince ibérico",
+   "py": "el yaguareté",
+   "gen": "el gato montés"
+  },
+  "arbol": {
+   "es": "la encina",
+   "py": "el lapacho",
+   "gen": "el árbol"
+  },
+  "flota": {
+   "es": "el nenúfar",
+   "py": "el irupé",
+   "gen": "el nenúfar"
+  },
+  "pez": {
+   "es": "la trucha",
+   "py": "el dorado",
+   "gen": "la trucha"
+  }
+ },
+ "start": "intro",
+ "nodes": {
+  "intro": {
+   "type": "story",
+   "speaker": "garza",
+   "image": "lago-cadenas",
+   "text": {
+    "valley": "En la orilla del Gran Lago, dos círculos de luz ordenan quién come qué, y el Embrollo los ha mezclado: «¿Quién se come a quién? En la orilla lo he liado todo, ¡ji, ji!». La garza no se mueve: «El que come de los dos, al centro, donde se cruzan». {{creature}} mira el agua y retrocede un paso: algo grande nada ahí.",
+    "azara": "Las notas de quién come qué en la orilla del río están revueltas. La garza mira desde el agua mientras dibujamos dos círculos en la arena: uno para quien come plantas y otro para quien come animales. {{creature}} se queda junto al agua, con las orejas tiesas."
+   },
+   "next": "come"
+  },
+  "come": {
+   "type": "classify",
+   "mode": "venn",
+   "prompt": "¿Qué come? Cada animal, a su círculo; quien come de los dos, al centro.",
+   "aid": "En el cuaderno: los herbívoros comen plantas; los carnívoros, otros animales; los omnívoros, de los dos.",
+   "retry": "item",
+   "hints": [
+    "Piensa en lo que come de verdad, no en lo grande o lo fiero que parece.",
+    "Hay dos que comen plantas y también animales: uno de ellos eres tú."
+   ],
+   "bins": [
+    {
+     "id": "a",
+     "label": "Come plantas"
+    },
+    {
+     "id": "ab",
+     "label": "En los dos"
+    },
+    {
+     "id": "b",
+     "label": "Come animales"
+    }
+   ],
+   "items": [
+    {
+     "id": "conejo",
+     "label": "el conejo",
+     "bin": "a",
+     "objective": "SV-06"
+    },
+    {
+     "id": "saltamontes",
+     "label": "el saltamontes",
+     "bin": "a",
+     "objective": "SV-06"
+    },
+    {
+     "id": "caracol",
+     "thing": "caracol",
+     "label": "el caracol",
+     "bin": "a",
+     "objective": "SV-06",
+     "why": "Come hojas: es herbívoro."
+    },
+    {
+     "id": "ciervo",
+     "thing": "ciervo",
+     "label": "{{local:ciervo}}",
+     "bin": "a",
+     "objective": "SV-06"
+    },
+    {
+     "id": "omnivoro",
+     "label": "{{local:omnivoro}}",
+     "bin": "ab",
+     "objective": "SV-06",
+     "why": "{{local:omnivoro_why}}"
+    },
+    {
+     "id": "humano",
+     "label": "el ser humano",
+     "bin": "ab",
+     "objective": "SV-06",
+     "why": "Comemos plantas y animales: somos omnívoros."
+    },
+    {
+     "id": "buho",
+     "label": "el búho",
+     "bin": "b",
+     "objective": "SV-06"
+    },
+    {
+     "id": "felino",
+     "thing": "felino",
+     "label": "{{local:felino}}",
+     "bin": "b",
+     "objective": "SV-06"
+    },
+    {
+     "id": "garza",
+     "label": "la garza",
+     "bin": "b",
+     "objective": "SV-06"
+    },
+    {
+     "id": "arana",
+     "thing": "arana",
+     "label": "la araña",
+     "bin": "b",
+     "objective": "SV-06",
+     "why": "Caza insectos: es carnívora."
+    }
+   ],
+   "next": "productores"
+  },
+  "productores": {
+   "type": "classify",
+   "mode": "venn",
+   "prompt": "Los productores del lago: quién fabrica su alimento y quién vive en el agua.",
+   "aid": "En el cuaderno: las plantas y las algas fabrican su alimento con la luz, vivan en el agua o en la tierra.",
+   "retry": "item",
+   "bins": [
+    {
+     "id": "a",
+     "label": "Fabrica su alimento"
+    },
+    {
+     "id": "ab",
+     "label": "En los dos"
+    },
+    {
+     "id": "b",
+     "label": "Vive en el agua del lago"
+    }
+   ],
+   "items": [
+    {
+     "id": "arbol",
+     "thing": "arbol",
+     "label": "{{local:arbol}}",
+     "bin": "a",
+     "objective": "SV-06",
+     "hard": true
+    },
+    {
+     "id": "hierba",
+     "label": "la hierba del prado",
+     "bin": "a",
+     "objective": "SV-06",
+     "hard": true
+    },
+    {
+     "id": "alga",
+     "thing": "alga",
+     "label": "el alga",
+     "bin": "ab",
+     "objective": "SV-06",
+     "hard": true
+    },
+    {
+     "id": "flota",
+     "thing": "nenufar",
+     "label": "{{local:flota}}",
+     "bin": "ab",
+     "objective": "SV-06",
+     "hard": true,
+     "why": "Es una planta: fabrica su alimento con la luz, con las raíces en el fondo del lago."
+    },
+    {
+     "id": "pez",
+     "thing": "pezrio",
+     "label": "{{local:pez}}",
+     "bin": "b",
+     "objective": "SV-06",
+     "hard": true
+    },
+    {
+     "id": "renacuajo",
+     "label": "el renacuajo",
+     "bin": "b",
+     "objective": "SV-06",
+     "hard": true,
+     "why": "Vive en el agua, pero no fabrica su alimento: come algas y restos."
+    }
+   ],
+   "next": "cuenta"
+  },
+  "cuenta": {
+   "type": "branch",
+   "rules": [
+    {
+     "if": {
+      "correct_at_least": 8,
+      "in": "come"
+     },
+     "next": "brillan"
+    },
+    {
+     "if": {
+      "correct_at_least": 5,
+      "in": "come"
+     },
+     "next": "medias"
+    }
+   ],
+   "else": "otra"
+  },
+  "brillan": {
+   "type": "ending",
+   "outcome": "success",
+   "text": {
+    "valley": "Los dos círculos brillan en orden sobre el agua. «Quien come plantas y también animales va en el centro: es omnívoro», dice la garza, y mira a la clase de reojo. «Como ustedes.» {{creature}} se sienta justo en el centro.",
+    "azara": "Las notas quedan en orden en la arena. Quien come plantas y también animales va en el centro: es omnívoro, como nosotros. La garza levanta el vuelo. {{creature}} se sienta justo en el centro."
+   },
+   "effects": [
+    {
+     "gems": 3
+    }
+   ]
+  },
+  "medias": {
+   "type": "ending",
+   "outcome": "partial",
+   "text": {
+    "valley": "Casi todos están en su círculo; alguno se ha quedado a medio camino del centro. «El centro es lo difícil», dice la garza. «Otro día lo miramos con calma.» {{creature}} mira el agua sin moverse.",
+    "azara": "Casi todas las notas están en su sitio; alguna se ha quedado a medio camino. «El centro es lo difícil», dice la garza desde el agua. {{creature}} mira la arena, sin moverse."
+   },
+   "effects": [
+    {
+     "gems": 1
+    }
+   ]
+  },
+  "otra": {
+   "type": "ending",
+   "outcome": "retry",
+   "text": {
+    "valley": "Los círculos se apagan y se mezclan con el agua. La garza da un paso: «Una pregunta para cada uno: ¿qué come de verdad? Plantas, animales o de los dos».",
+    "azara": "Las notas se mezclan otra vez. La garza da un paso en el agua: «Una pregunta para cada uno: ¿qué come de verdad? Plantas, animales o de los dos»."
+   },
+   "retry": "come",
+   "keep": "Una pregunta para cada uno: ¿qué come de verdad? Plantas, animales o de los dos."
+  }
+ },
+ "method": "SV-07"
+}

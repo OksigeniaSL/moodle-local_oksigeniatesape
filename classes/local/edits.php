@@ -419,7 +419,7 @@ final class edits {
                         continue;
                     }
                     $at = $base . '/' . $list . '/' . $element['id'];
-                    self::field($texts, $at, $element, ['label', 'say', 'after']);
+                    self::field($texts, $at, $element, ['label', 'say', 'after', 'why']);
                     $feedback = $element['feedback'] ?? null;
                     if (self::is_text($feedback)) {
                         $texts[$at . '/feedback'] = $feedback;

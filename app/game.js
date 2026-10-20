@@ -3483,7 +3483,8 @@
     var glow = w.page && w.page.streak >= w.page.glow ? ' glow' : '';
     var creature = c.creature ? '<div class="creature-box' + glow + '">' + T.creature(c.creature, c.creaturestage) + '<b>' +
       esc(creatureName(c)) + '</b><small>' + esc(t('app_creaturestage', {n: c.creaturestage,
-      name: stageName(c.creaturestage)})) + '</small></div>' : '';
+      name: stageName(c.creaturestage)})) + '</small>' + (T.creatureMark(c.creature) ? '<small class="creature-mark-says">' +
+      esc(T.creatureMark(c.creature)) + '</small>' : '') + '</div>' : '';
     var unlock = nextUnlock(c);
     return '<section class="card sheet"><div class="sheet-art">' + avatarOf(c, title(c)) + creature + '</div><div class="stats"><h2>' + esc(myName()) +
       '</h2><p style="color:var(--text-soft)">' + esc(rank(c)) + ' · ' + esc(title(c)) + '</p>' + traits(c) + talentsHtml(c) + skillsHtml(c) +

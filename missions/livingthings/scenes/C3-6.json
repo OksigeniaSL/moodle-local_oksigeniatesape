@@ -1,0 +1,260 @@
+{
+ "id": "C3-6",
+ "mission": "livingthings",
+ "chapter": "bosque",
+ "title": "Los dos círculos del bosque",
+ "quest": true,
+ "step": 3,
+ "mode": "both",
+ "objectives": [
+  "SV-04"
+ ],
+ "minutes": 5,
+ "whatif": "¿Y si encontraras un animal que vuela, tiene pelo y pone huevos? ¿En qué círculo lo pondrías, y qué le preguntarías primero?",
+ "locals": {
+  "felino": {
+   "es": "el lince ibérico",
+   "py": "el yaguareté",
+   "gen": "el gato montés"
+  },
+  "corredora": {
+   "es": "el avestruz",
+   "py": "el ñandú",
+   "gen": "el avestruz"
+  }
+ },
+ "start": "intro",
+ "nodes": {
+  "intro": {
+   "type": "story",
+   "speaker": "buho",
+   "image": "bosque-abrigos",
+   "text": {
+    "valley": "En el claro del bosque, dos círculos de luz esperan a los animales que el Embrollo ha revuelto: «He revuelto a los animales del bosque. ¡Que cada uno busque su círculo, si puede!». El búho guardián abre un ojo: «El que es de los dos, al centro, donde se cruzan». {{creature}} se sienta entre los dos círculos y espera a ver qué haces.",
+    "azara": "Las notas sobre los animales del bosque se han mezclado en el cuaderno. El baqueano dibuja en el barro dos círculos que se cruzan: «Cada animal, a su círculo. El que es de los dos, en medio». {{creature}} sigue con la mirada a un escarabajo que cruza la libreta."
+   },
+   "next": "huevos"
+  },
+  "huevos": {
+   "type": "classify",
+   "mode": "venn",
+   "prompt": "Huevos y pelo: cada animal, a su círculo; si es de los dos, al centro.",
+   "aid": "En el cuaderno: los mamíferos tienen pelo y casi todos nacen del vientre de su madre; las aves, los reptiles, los anfibios y los insectos ponen huevos.",
+   "retry": "item",
+   "hints": [
+    "Para el primer círculo: ¿sus crías salen de un huevo?",
+    "Uno de ellos tiene pelo y pone huevos: hay muy pocos animales así."
+   ],
+   "bins": [
+    {
+     "id": "a",
+     "label": "Pone huevos"
+    },
+    {
+     "id": "ab",
+     "label": "En los dos"
+    },
+    {
+     "id": "b",
+     "label": "Tiene pelo"
+    }
+   ],
+   "items": [
+    {
+     "id": "gallina",
+     "label": "la gallina",
+     "bin": "a",
+     "objective": "SV-04"
+    },
+    {
+     "id": "tortuga",
+     "thing": "tortuga",
+     "label": "la tortuga",
+     "bin": "a",
+     "objective": "SV-04"
+    },
+    {
+     "id": "rana",
+     "thing": "rana",
+     "label": "la rana",
+     "bin": "a",
+     "objective": "SV-04"
+    },
+    {
+     "id": "mariposa",
+     "thing": "mariposa",
+     "label": "la mariposa",
+     "bin": "a",
+     "objective": "SV-04"
+    },
+    {
+     "id": "ornitorrinco",
+     "label": "el ornitorrinco",
+     "bin": "ab",
+     "objective": "SV-04",
+     "why": "Es un mamífero con pelo, pero pone huevos. Hay muy pocos animales así."
+    },
+    {
+     "id": "conejo",
+     "label": "el conejo",
+     "bin": "b",
+     "objective": "SV-04"
+    },
+    {
+     "id": "murcielago",
+     "thing": "murcielago",
+     "label": "el murciélago",
+     "bin": "b",
+     "objective": "SV-04",
+     "why": "Vuela, pero no pone huevos: sus crías nacen y toman leche de su madre."
+    },
+    {
+     "id": "felino",
+     "thing": "felino",
+     "label": "{{local:felino}}",
+     "bin": "b",
+     "objective": "SV-04"
+    }
+   ],
+   "next": "alas"
+  },
+  "alas": {
+   "type": "classify",
+   "mode": "venn",
+   "prompt": "Alas y plumas: lo que hace un animal no siempre dice a qué grupo pertenece.",
+   "aid": "En el cuaderno: solo las aves tienen plumas; vuelan aves, murciélagos y muchos insectos.",
+   "retry": "item",
+   "bins": [
+    {
+     "id": "a",
+     "label": "Vuela"
+    },
+    {
+     "id": "ab",
+     "label": "En los dos"
+    },
+    {
+     "id": "b",
+     "label": "Tiene plumas"
+    }
+   ],
+   "items": [
+    {
+     "id": "abeja",
+     "thing": "abeja",
+     "label": "la abeja",
+     "bin": "a",
+     "objective": "SV-04",
+     "hard": true
+    },
+    {
+     "id": "mariposa2",
+     "thing": "mariposa",
+     "label": "la mariposa",
+     "bin": "a",
+     "objective": "SV-04",
+     "hard": true
+    },
+    {
+     "id": "murcielago2",
+     "thing": "murcielago",
+     "label": "el murciélago",
+     "bin": "a",
+     "objective": "SV-04",
+     "hard": true,
+     "why": "Vuela, pero tiene pelo, no plumas: es un mamífero."
+    },
+    {
+     "id": "paloma",
+     "thing": "paloma",
+     "label": "la paloma",
+     "bin": "ab",
+     "objective": "SV-04",
+     "hard": true
+    },
+    {
+     "id": "aguila",
+     "label": "el águila",
+     "bin": "ab",
+     "objective": "SV-04",
+     "hard": true
+    },
+    {
+     "id": "pinguino",
+     "thing": "pinguino",
+     "label": "el pingüino",
+     "bin": "b",
+     "objective": "SV-04",
+     "hard": true,
+     "why": "Tiene plumas, pero no vuela: nada."
+    },
+    {
+     "id": "corredora",
+     "label": "{{local:corredora}}",
+     "bin": "b",
+     "objective": "SV-04",
+     "hard": true,
+     "why": "Tiene plumas, pero no vuela: corre muy deprisa."
+    }
+   ],
+   "next": "cuenta"
+  },
+  "cuenta": {
+   "type": "branch",
+   "rules": [
+    {
+     "if": {
+      "correct_at_least": 6,
+      "in": "huevos"
+     },
+     "next": "brillan"
+    },
+    {
+     "if": {
+      "correct_at_least": 4,
+      "in": "huevos"
+     },
+     "next": "medias"
+    }
+   ],
+   "else": "otra"
+  },
+  "brillan": {
+   "type": "ending",
+   "outcome": "success",
+   "text": {
+    "valley": "Los dos círculos brillan en orden. «Lo que hace un animal no siempre dice a qué grupo pertenece», dice el búho. «El murciélago vuela y no es un pájaro; el ornitorrinco pone huevos y es un mamífero.» {{creature}} se sienta justo en el centro, donde se cruzan.",
+    "azara": "Las notas quedan en orden en el cuaderno. «Lo que hace un animal no siempre dice a qué grupo pertenece», dice el baqueano. «El murciélago vuela y no es un pájaro.» {{creature}} se sienta justo en el centro de los dos círculos de barro."
+   },
+   "effects": [
+    {
+     "gems": 3
+    }
+   ]
+  },
+  "medias": {
+   "type": "ending",
+   "outcome": "partial",
+   "text": {
+    "valley": "Casi todos los animales están en su círculo; alguno se ha quedado en el borde, sin decidirse. «El centro es lo difícil», dice el búho. «Mañana lo miramos otra vez.» {{creature}} empuja al último hacia el centro.",
+    "azara": "Casi todas las notas están en su sitio; alguna se ha quedado en el borde. «El centro es lo difícil», dice el baqueano. «Mañana lo miramos otra vez.» {{creature}} empuja la última hacia el centro."
+   },
+   "effects": [
+    {
+     "gems": 1
+    }
+   ]
+  },
+  "otra": {
+   "type": "ending",
+   "outcome": "retry",
+   "text": {
+    "valley": "Los círculos se apagan y los animales vuelven a revolverse. El búho cierra los ojos: «Dos preguntas para cada uno: ¿sus crías salen de un huevo? ¿Tiene pelo?».",
+    "azara": "Las notas se mezclan otra vez. El baqueano borra el barro con el pie: «Dos preguntas para cada animal: ¿sus crías salen de un huevo? ¿Tiene pelo?»."
+   },
+   "retry": "huevos",
+   "keep": "Dos preguntas para cada animal: ¿sus crías salen de un huevo? ¿Tiene pelo?"
+  }
+ },
+ "method": "SV-07"
+}

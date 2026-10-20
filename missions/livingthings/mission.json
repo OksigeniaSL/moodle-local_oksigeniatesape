@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 62,
+ "version": 63,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 63,
+   "kind": "improvement",
+   "date": "2026-10-20",
+   "text": "Los dos círculos dejan de ser un minijuego suelto: en la biblioteca, el bosque y el lago son una gesta con dos clasificaciones en dos círculos que se cruzan, abierta a todos"
+  },
   {
    "version": 62,
    "kind": "improvement",
@@ -2912,7 +2918,6 @@
    "x": 300,
    "y": 470,
    "games": [
-    "circulosbiblioteca",
     "enredobiblioteca"
    ],
    "spots": {
@@ -2932,7 +2937,7 @@
      68,
      56
     ],
-    "circulosbiblioteca": [
+    "C2-5": [
      46,
      82
     ],
@@ -3152,7 +3157,6 @@
    "y": 360,
    "games": [
     "nestdefence",
-    "circulosbosque",
     "enredobosque"
    ],
    "spots": {
@@ -3176,13 +3180,13 @@
      50,
      30
     ],
+    "C3-6": [
+     34,
+     74
+    ],
     "nestdefence": [
      66,
      46
-    ],
-    "circulosbosque": [
-     34,
-     74
     ],
     "enredobosque": [
      64,
@@ -3643,7 +3647,6 @@
    "x": 150,
    "y": 165,
    "games": [
-    "circuloslago",
     "enredolago"
    ],
    "spots": {
@@ -3667,7 +3670,7 @@
      68,
      30
     ],
-    "circuloslago": [
+    "C5-6": [
      36,
      82
     ],
@@ -4662,170 +4665,6 @@
      "speed": 4
     }
    }
-  },
-  "circulosbiblioteca": {
-   "type": "venn",
-   "title": "Los dos círculos de la biblioteca",
-   "intro": "Sobre la mesa grande de la biblioteca flotan dos círculos de luz, y el Embrollo ha soltado sus fichas por el suelo. Devuelve cada ficha a su círculo. Si es de los dos, va al centro, donde se cruzan.",
-   "scene": {
-    "embrollo": {
-     "valley": "«Dos círculos y un montón de fichas sueltas. ¿Y si alguna va en los dos? ¡Eso no lo adivinas!»",
-     "azara": "Las fichas de la colección se han desordenado sobre la mesa de trabajo."
-    },
-    "creature": {
-     "valley": "{{creature}} salta de un círculo al otro, como si probara dónde cabe.",
-     "azara": "{{creature}} empuja una ficha con el hocico hacia el centro de la mesa."
-    }
-   },
-   "win": "Los dos círculos brillan en orden. Ya sabes que un mismo ser vivo puede estar en dos grupos a la vez.",
-   "lose": "Esta vez los círculos se han enredado. Abajo tienes las fichas que se fueron a otro sitio, con su porqué: léelas y vuelve a intentarlo.",
-   "misses": {
-    "1": 4,
-    "2": 3,
-    "3": 3,
-    "4": 3
-   },
-   "reward": {
-    "gems": 5
-   },
-   "sheets": [
-    {
-     "id": "luz-agua",
-     "title": "La luz y el agua",
-     "steps": [
-      1,
-      2,
-      3,
-      4
-     ],
-     "text": {
-      "es": "Fabrica su alimento con la luz: encina, musgo, cactus, alga, nenúfar\nVive en el agua: trucha, pulpo, medusa, alga, nenúfar\n? alga: vive en el agua y fabrica su alimento con la luz, como las plantas.\n? nenúfar: es una planta que flota en el agua: fabrica su alimento con la luz.\n? medusa: vive en el agua, pero es un animal: no fabrica su alimento.\n? musgo: es una planta; le gusta la humedad, pero no vive dentro del agua.",
-      "py": "Fabrica su alimento con la luz: lapacho, musgo, cactus, alga, irupé\nVive en el agua: dorado, pulpo, medusa, alga, irupé\n? alga: vive en el agua y fabrica su alimento con la luz, como las plantas.\n? irupé: es una planta del agua, de hojas enormes que flotan: fabrica su alimento con la luz.\n? medusa: vive en el agua, pero es un animal: no fabrica su alimento.\n? musgo: es una planta; le gusta la humedad, pero no vive dentro del agua.",
-      "gen": "Fabrica su alimento con la luz: árbol, musgo, cactus, alga, nenúfar\nVive en el agua: trucha, pulpo, medusa, alga, nenúfar\n? alga: vive en el agua y fabrica su alimento con la luz, como las plantas.\n? nenúfar: es una planta que flota en el agua: fabrica su alimento con la luz.\n? medusa: vive en el agua, pero es un animal: no fabrica su alimento.\n? musgo: es una planta; le gusta la humedad, pero no vive dentro del agua."
-     }
-    },
-    {
-     "id": "una-celula",
-     "title": "Una célula o muchas",
-     "steps": [
-      3,
-      4
-     ],
-     "text": "Tiene una sola célula: bacteria, levadura, ameba\nEs un hongo: seta, champiñón, moho del pan, levadura\n? levadura: es un hongo de una sola célula: por eso no se ve sin microscopio.\n? ameba: tiene una sola célula, pero no es un hongo.\n? moho del pan: es un hongo: forma esa pelusa que sale en el pan viejo."
-    }
-   ]
-  },
-  "circulosbosque": {
-   "type": "venn",
-   "title": "Los dos círculos del bosque",
-   "intro": "En el claro del bosque, dos círculos de luz esperan a los animales que el Embrollo ha revuelto. Lleva cada ficha a su círculo. Si es de los dos, va al centro, donde se cruzan.",
-   "scene": {
-    "embrollo": {
-     "valley": "«He revuelto a los animales del bosque. ¡Que cada uno busque su círculo, si puede!»",
-     "azara": "Las notas sobre los animales del bosque se han mezclado en el cuaderno."
-    },
-    "creature": {
-     "valley": "{{creature}} se sienta entre los dos círculos y espera a ver qué haces.",
-     "azara": "{{creature}} sigue con la mirada a un escarabajo que cruza la libreta."
-    }
-   },
-   "win": "Los dos círculos brillan en orden. Has visto que lo que hace un animal no siempre dice a qué grupo pertenece.",
-   "lose": "Esta vez los círculos se han enredado. Abajo tienes las fichas que se fueron a otro sitio, con su porqué: léelas y vuelve a intentarlo.",
-   "misses": {
-    "1": 4,
-    "2": 3,
-    "3": 3,
-    "4": 3
-   },
-   "reward": {
-    "gems": 5
-   },
-   "sheets": [
-    {
-     "id": "huevos-pelo",
-     "title": "Huevos y pelo",
-     "steps": [
-      1,
-      2,
-      3,
-      4
-     ],
-     "text": {
-      "es": "Pone huevos: gallina, tortuga, rana, mariposa, ornitorrinco\nTiene pelo: conejo, murciélago, lince ibérico, ornitorrinco\n? ornitorrinco: es un mamífero con pelo, pero pone huevos. Hay muy pocos animales así.\n? murciélago: vuela, pero no pone huevos: sus crías nacen y toman leche de su madre.",
-      "py": "Pone huevos: gallina, tortuga, rana, mariposa, ornitorrinco\nTiene pelo: conejo, murciélago, yaguareté, ornitorrinco\n? ornitorrinco: es un mamífero con pelo, pero pone huevos. Hay muy pocos animales así.\n? murciélago: vuela, pero no pone huevos: sus crías nacen y toman leche de su madre.",
-      "gen": "Pone huevos: gallina, tortuga, rana, mariposa, ornitorrinco\nTiene pelo: conejo, murciélago, gato montés, ornitorrinco\n? ornitorrinco: es un mamífero con pelo, pero pone huevos. Hay muy pocos animales así.\n? murciélago: vuela, pero no pone huevos: sus crías nacen y toman leche de su madre."
-     }
-    },
-    {
-     "id": "vuela-plumas",
-     "title": "Alas y plumas",
-     "steps": [
-      2,
-      3,
-      4
-     ],
-     "text": {
-      "es": "Vuela: paloma, águila, murciélago, mariposa, abeja\nTiene plumas: paloma, águila, pingüino, avestruz\n? pingüino: tiene plumas, pero no vuela: nada.\n? avestruz: tiene plumas, pero no vuela: corre muy deprisa.\n? murciélago: vuela, pero tiene pelo, no plumas: es un mamífero.",
-      "py": "Vuela: paloma, águila, murciélago, mariposa, abeja\nTiene plumas: paloma, águila, pingüino, ñandú\n? pingüino: tiene plumas, pero no vuela: nada.\n? ñandú: tiene plumas, pero no vuela: corre muy deprisa.\n? murciélago: vuela, pero tiene pelo, no plumas: es un mamífero."
-     }
-    }
-   ]
-  },
-  "circuloslago": {
-   "type": "venn",
-   "title": "Los dos círculos del lago",
-   "intro": "En la orilla del Gran Lago, dos círculos de luz ordenan quién come qué, y el Embrollo los ha mezclado. Lleva cada ficha a su círculo. Si es de los dos, va al centro, donde se cruzan.",
-   "scene": {
-    "embrollo": {
-     "valley": "«¿Quién se come a quién? En la orilla lo he liado todo, ¡ji, ji!»",
-     "azara": "Las notas de quién come qué en la orilla del río están revueltas."
-    },
-    "creature": {
-     "valley": "{{creature}} mira el agua y retrocede un paso: algo grande nada ahí.",
-     "azara": "{{creature}} se queda junto al agua, con las orejas tiesas."
-    }
-   },
-   "win": "Los dos círculos brillan en orden. Quien come plantas y también animales va en el centro: es omnívoro.",
-   "lose": "Esta vez los círculos se han enredado. Abajo tienes las fichas que se fueron a otro sitio, con su porqué: léelas y vuelve a intentarlo.",
-   "misses": {
-    "1": 4,
-    "2": 3,
-    "3": 3,
-    "4": 3
-   },
-   "reward": {
-    "gems": 5
-   },
-   "sheets": [
-    {
-     "id": "que-come",
-     "title": "¿Qué come?",
-     "steps": [
-      1,
-      2,
-      3,
-      4
-     ],
-     "text": {
-      "es": "Come plantas: conejo, saltamontes, caracol, ciervo, jabalí, ser humano\nCome animales: búho, lince ibérico, garza, araña, jabalí, ser humano\n? jabalí: come bellotas y raíces, y también lombrices y huevos: es omnívoro.\n? ser humano: comemos plantas y animales: somos omnívoros.\n? araña: caza insectos: es carnívora.\n? caracol: come hojas: es herbívoro.",
-      "py": "Come plantas: conejo, saltamontes, caracol, ciervo de los pantanos, pecarí, ser humano\nCome animales: búho, yaguareté, garza, araña, pecarí, ser humano\n? pecarí: come frutos y raíces, y también pequeños animales: es omnívoro.\n? ser humano: comemos plantas y animales: somos omnívoros.\n? araña: caza insectos: es carnívora.\n? caracol: come hojas: es herbívoro.",
-      "gen": "Come plantas: conejo, saltamontes, caracol, ciervo, jabalí, ser humano\nCome animales: búho, gato montés, garza, araña, jabalí, ser humano\n? jabalí: come bellotas y raíces, y también lombrices y huevos: es omnívoro.\n? ser humano: comemos plantas y animales: somos omnívoros.\n? araña: caza insectos: es carnívora.\n? caracol: come hojas: es herbívoro."
-     }
-    },
-    {
-     "id": "productores-del-lago",
-     "title": "Los productores del lago",
-     "steps": [
-      3,
-      4
-     ],
-     "text": {
-      "es": "Fabrica su alimento: alga, nenúfar, encina, hierba del prado\nVive en el agua del lago: alga, nenúfar, trucha, renacuajo\n? renacuajo: vive en el agua, pero no fabrica su alimento: come algas y restos.\n? nenúfar: es una planta: fabrica su alimento con la luz, con las raíces en el fondo del lago.",
-      "py": "Fabrica su alimento: alga, irupé, lapacho, hierba del prado\nVive en el agua del lago: alga, irupé, dorado, renacuajo\n? renacuajo: vive en el agua, pero no fabrica su alimento: come algas y restos.\n? irupé: es una planta: fabrica su alimento con la luz, con las raíces en el fondo del agua.",
-      "gen": "Fabrica su alimento: alga, nenúfar, árbol, hierba del prado\nVive en el agua del lago: alga, nenúfar, trucha, renacuajo\n? renacuajo: vive en el agua, pero no fabrica su alimento: come algas y restos.\n? nenúfar: es una planta: fabrica su alimento con la luz, con las raíces en el fondo del lago."
-     }
-    }
-   ]
   },
   "sombrasjardin": {
    "type": "whoami",
@@ -6633,11 +6472,13 @@
   "C2-2",
   "C2-3",
   "C2-4",
+  "C2-5",
   "C3-1",
   "C3-2",
   "C3-3",
   "C3-4",
   "C3-5",
+  "C3-6",
   "C4-1",
   "C4-2",
   "C4-3",
@@ -6648,6 +6489,7 @@
   "C5-3",
   "C5-4",
   "C5-5",
+  "C5-6",
   "C6-1",
   "C6-2",
   "C6-3",
