@@ -265,6 +265,10 @@ final class structures {
                 'chapter' => new external_value(PARAM_ALPHANUMEXT, 'Code of the place'),
                 'name' => new external_value(PARAM_TEXT, 'The name the Embrollo puts to it'),
             ]), 'The names the Embrollo puts to the places, a prank a day', VALUE_DEFAULT, []),
+            'prankwords' => new external_multiple_structure(new external_single_structure([
+                'from' => new external_value(PARAM_TEXT, 'A word of the pages of the Book'),
+                'to' => new external_value(PARAM_TEXT, 'What the Embrollo writes over it'),
+            ]), 'The words the Embrollo writes over others in the Book, a prank', VALUE_DEFAULT, []),
             'friends' => new external_multiple_structure(new external_single_structure([
                 'code' => new external_value(PARAM_ALPHANUMEXT, 'Who speaks, as in the mission'),
                 'name' => new external_value(PARAM_TEXT, 'Their name'),

@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 70,
+ "version": 71,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 71,
+   "kind": "improvement",
+   "date": "2026-10-20",
+   "text": "Otra gamberrada del Embrollo: un día cualquiera escribe su palabra encima de una del Libro («semillota» sobre «semilla»), que se arregla con un toque"
+  },
   {
    "version": 70,
    "kind": "improvement",
@@ -2365,6 +2371,68 @@
    "azara": "El cuaderno de los borrones"
   }
  },
+ "prankwords": [
+  {
+   "from": "plantas",
+   "to": "plantillas"
+  },
+  {
+   "from": "agua",
+   "to": "agüita"
+  },
+  {
+   "from": "vivo",
+   "to": "vivaracho"
+  },
+  {
+   "from": "luz",
+   "to": "lucecita"
+  },
+  {
+   "from": "seres",
+   "to": "señores"
+  },
+  {
+   "from": "alimento",
+   "to": "alimentazo"
+  },
+  {
+   "from": "semilla",
+   "to": "semillota"
+  },
+  {
+   "from": "célula",
+   "to": "celulita"
+  },
+  {
+   "from": "animal",
+   "to": "animalote"
+  },
+  {
+   "from": "pelo",
+   "to": "pelusa"
+  },
+  {
+   "from": "sol",
+   "to": "solecito"
+  },
+  {
+   "from": "raíz",
+   "to": "raíz cuadrada"
+  },
+  {
+   "from": "plumas",
+   "to": "plumeros"
+  },
+  {
+   "from": "tallo",
+   "to": "tallarín"
+  },
+  {
+   "from": "flor",
+   "to": "florero"
+  }
+ ],
  "secrets": [
   {
    "id": "huella-1",

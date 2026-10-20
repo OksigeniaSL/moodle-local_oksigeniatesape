@@ -6917,6 +6917,41 @@ body.adapt-colours .errors-text .fixed ins {
   opacity: .55;
 }
 
+/* A word of the Book with the Embrollo's own written over it: the right one crossed out but there, its own above in
+   lilac ink. A touch puts it right. */
+.prank-word {
+  position: relative;
+  display: inline-block;
+  margin: 0 1px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+  cursor: pointer;
+}
+
+.prank-word del {
+  text-decoration-color: #7b5cc9;
+  text-decoration-thickness: 2px;
+}
+
+.prank-ink {
+  position: absolute;
+  bottom: 78%;
+  left: 50%;
+  color: #7b5cc9;
+  font: 600 .8em var(--f-title);
+  white-space: nowrap;
+  transform: translateX(-50%) rotate(-4deg);
+}
+
+.prank-word:focus-visible {
+  outline: 2px solid var(--sky);
+  outline-offset: 2px;
+}
+
 /* The being a sheet of the hunt talks about, tangled by the Embrollo: a thread for each mistake left. */
 .errors-title {
   display: flex;

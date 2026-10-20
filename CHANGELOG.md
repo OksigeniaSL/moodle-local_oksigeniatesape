@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.171.0 (2026-10-20)
+
+- **Another prank of the Embrollo: a word of the Book** (mission v71). Some days, in a page of the Book the student has,
+  the Embrollo writes its own word over one of them («lucecita» over «luz»): the right one stays, crossed out but
+  readable, and a touch puts it right. It lives on the device, like the other pranks, and counts for nothing. A mission
+  gives its words and the Embrollo's own (`prankwords`); only those that are in some page come out.
+
 ## 0.170.0 (2026-10-20)
 
 - **The remote of a scene played by the class, with or without devices.** While the class screen plays a scene with

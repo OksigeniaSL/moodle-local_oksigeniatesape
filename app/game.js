@@ -1318,7 +1318,29 @@
     if (state.tab === 'log') {
       bindFriends();
       bindWear();
+      bindPrankWord();
     }
+  }
+
+  /**
+   * The word the Embrollo wrote over another in the Book, put right with a touch: the right one comes back.
+   */
+  function bindPrankWord() {
+    var b = app.querySelector('[data-prankword]');
+    if (!b) {
+      return;
+    }
+    b.onclick = function() {
+      var w = state.prank.word;
+      prankFixed('word');
+      var right = document.createTextNode(b.querySelector('del').textContent);
+      // The word put right, as the page said it.
+      b.replaceWith(right);
+      if (T.fx) {
+        T.fx.sound('chime');
+      }
+      T.toast(esc(t('app_prank_word_fixed', {wrong: w.to, right: right.textContent})));
+    };
   }
 
   /**
@@ -1875,8 +1897,55 @@
     var lit = m.chapters.filter(function(c) {
       return c.lit || c.mine;
     });
+    // And a word of a page of the Book the student has, with the Embrollo's own written over it.
+    var words = [];
+    (m.pages || []).forEach(function(pg) {
+      (m.prankwords || []).forEach(function(w) {
+        if (wordAt(pg.text, w.from) >= 0) {
+          words.push({title: pg.title, from: w.from, to: w.to});
+        }
+      });
+    });
     return {key: key, done: done, name: done.name ? null : list[h % list.length],
-      thread: done.thread || !lit.length ? null : lit[(h >> 2) % lit.length].code};
+      thread: done.thread || !lit.length ? null : lit[(h >> 2) % lit.length].code,
+      word: done.word || !words.length ? null : words[(h >> 4) % words.length]};
+  }
+
+  /**
+   * Where a whole word is in a text, without minding capitals: -1 if it is not.
+   *
+   * @param {string} text
+   * @param {string} word
+   * @return {number}
+   */
+  function wordAt(text, word) {
+    var re = new RegExp('(^|[^\\p{L}])(' + word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')(?![\\p{L}])', 'iu');
+    var found = re.exec(text || '');
+    return found ? found.index + found[1].length : -1;
+  }
+
+  /**
+   * The text of a page of the Book, with the word the Embrollo wrote over today, if it is this page: the right one,
+   * crossed out but still there, and the Embrollo's above it; a touch puts it right.
+   *
+   * @param {Object} pg title and text.
+   * @return {string}
+   */
+  function pageText(pg) {
+    if (!state.prank && state.world.mission) {
+      state.prank = prankToday(state.world.mission);
+    }
+    var w = state.prank && state.prank.word;
+    var at = w && w.title === pg.title ? wordAt(pg.text, w.from) : -1;
+    if (at < 0) {
+      return esc(pg.text);
+    }
+    var word = pg.text.substr(at, w.from.length);
+    // Read aloud as it shows: the Embrollo's word, then the right one under it, and what a touch does.
+    return esc(pg.text.slice(0, at)) + '<button type="button" class="prank-word" data-prankword><span class="prank-ink">' +
+      esc(w.to) + '</span><span class="sr-only"> ' + esc(t('app_prank_word_over')) + ' </span><del>' + esc(word) +
+      '</del><span class="sr-only">. ' + esc(t('app_prank_word_touch')) + '</span></button>' +
+      esc(pg.text.slice(at + w.from.length));
   }
 
   /**
@@ -3634,7 +3703,7 @@
       book = '<section class="card parchment book"><h2>' + esc(w.mission.book || t('app_book')) + '</h2><p class="book-count">' +
         esc(t('app_pages', w.mission.pages.length + '/' + w.mission.pagecount)) + '</p>' + (w.mission.pages.length ?
         w.mission.pages.map(function(pg) {
-          return '<article class="page"><h3>' + esc(pg.title) + '</h3><p>' + esc(pg.text) + '</p></article>';
+          return '<article class="page"><h3>' + esc(pg.title) + '</h3><p>' + pageText(pg) + '</p></article>';
         }).join('') : '<p>' + esc(t('app_nopages')) + '</p>') + '</section>';
     }
     var items = w.items.length ? '<section class="card items-card"><h2>' + esc(t('app_items')) + '</h2>' + wornLine() +

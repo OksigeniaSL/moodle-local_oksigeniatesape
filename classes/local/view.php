@@ -440,6 +440,8 @@ final class view {
                 $skin,
                 $mission->variant
             )], array_keys($data['pranks'] ?? []), array_values($data['pranks'] ?? [])),
+            // The words the Embrollo writes over others in the Book, another prank: the word and its own.
+            'prankwords' => self::prank_words($data, $skin, (string) $mission->variant),
             // The friends of the expedition: what each one tells the student, by the pages given back from what is theirs.
             'friends' => friends::view($mission, $found),
             // The field guide of the beings met: place by place, how many there are and which the student has.
@@ -453,6 +455,26 @@ final class view {
             // lantern, up to five.
             'prints' => $current ? stains::prints($mission) : 0,
         ];
+    }
+
+    /**
+     * The words the Embrollo writes over others in the Book: each word and its own, in the voice of the story.
+     *
+     * @param array $data Of the mission.
+     * @param string $skin
+     * @param string $variant
+     * @return array Of from and to.
+     */
+    private static function prank_words(array $data, string $skin, string $variant): array {
+        $words = [];
+        foreach ((array) ($data['prankwords'] ?? []) as $w) {
+            $from = trim((string) ($w['from'] ?? ''));
+            $to = trim(missions::text($w['to'] ?? '', $skin, $variant));
+            if ($from !== '' && $to !== '') {
+                $words[] = ['from' => $from, 'to' => $to];
+            }
+        }
+        return $words;
     }
 
     /**
