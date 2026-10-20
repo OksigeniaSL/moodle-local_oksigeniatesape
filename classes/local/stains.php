@@ -188,6 +188,98 @@ final class stains {
         return $DB->get_record(self::T . 'stain', ['id' => $id], '*', MUST_EXIST);
     }
 
+    /** @var int Lanterns the class must have lit for the Embrollo to come back. */
+    public const COMEBACK = 3;
+
+    /**
+     * The places the class lit that the Embrollo can come back to: with their hunt for mistakes, and not stained now.
+     *
+     * @param int $courseid
+     * @return array [mission, codes]
+     */
+    private static function lit_places(int $courseid): array {
+        global $DB;
+        $mission = missions::get($courseid);
+        if (!$mission) {
+            return [null, []];
+        }
+        $lit = $DB->get_fieldset_select(self::T . 'chapter', 'code', 'missionid = ? AND litat > 0', [$mission->id]);
+        if (count($lit) < self::COMEBACK) {
+            return [$mission, []];
+        }
+        $stained = $DB->get_fieldset_select(
+            self::T . 'stain',
+            'chapter',
+            'courseid = ? AND cleanedat = 0 AND groupid = 0',
+            [$courseid]
+        );
+        $out = array_values(array_filter($lit, fn($code) => !in_array($code, $stained, true)
+            && self::next_sheet($mission, (string) $code, $courseid) !== null));
+        return [$mission, $out];
+    }
+
+    /**
+     * Whether the Embrollo can come back today: the class lit three places at least, one of them can be stained, and
+     * the Embrollo has not stained nor stolen anything for the class today (coming back is what it does today).
+     *
+     * @param int $courseid
+     * @param int|null $now
+     * @return bool
+     */
+    public static function can_come_back(int $courseid, ?int $now = null): bool {
+        global $DB;
+        $today = $DB->get_record(self::T . 'stain', ['courseid' => $courseid, 'day' => self::day($courseid, $now ?? time()),
+            'groupid' => 0]);
+        return (!$today || (string) $today->chapter === '') && self::lit_places($courseid)[1];
+    }
+
+    /**
+     * The Embrollo comes back to a place the class already lit, from a card of the day: the next sheet of its hunt for
+     * mistakes stains it for the whole class, and its lantern flickers until it is cleaned.
+     *
+     * @param int $courseid
+     * @param int|null $now
+     * @return \stdClass|null The stain.
+     */
+    public static function come_back(int $courseid, ?int $now = null): ?\stdClass {
+        global $DB;
+        $now = $now ?? time();
+        if (!self::can_come_back($courseid, $now)) {
+            return null;
+        }
+        [$mission, $places] = self::lit_places($courseid);
+        $code = $places[random_int(0, count($places) - 1)];
+        $sheet = self::next_sheet($mission, $code, $courseid);
+        $record = (object) ['courseid' => $courseid, 'day' => self::day($courseid, $now), 'chapter' => $code,
+            'game' => $sheet['game'], 'sheet' => $sheet['sheet'], 'kind' => 'stain', 'cleanedat' => 0, 'erased' => 0,
+            'groupid' => 0, 'timecreated' => $now];
+        // The day was decided already without a stain: coming back takes its place.
+        $today = $DB->get_record(self::T . 'stain', ['courseid' => $courseid, 'day' => $record->day, 'groupid' => 0]);
+        if ($today) {
+            $record->id = $today->id;
+            $DB->update_record(self::T . 'stain', $record);
+        } else {
+            $record->id = $DB->insert_record(self::T . 'stain', $record);
+        }
+        return $DB->get_record(self::T . 'stain', ['id' => $record->id], '*', MUST_EXIST);
+    }
+
+    /**
+     * The stain of a card of the Embrollo coming back goes away with the card, if nobody cleaned it: the day stays
+     * decided, with nothing stained.
+     *
+     * @param int $courseid
+     * @param int $stainid
+     */
+    public static function go_back(int $courseid, int $stainid): void {
+        global $DB;
+        $where = 'id = ? AND courseid = ? AND groupid = 0 AND cleanedat = 0';
+        if ($DB->record_exists_select(self::T . 'stain', $where, [$stainid, $courseid])) {
+            $DB->update_record(self::T . 'stain', (object) ['id' => $stainid, 'chapter' => '', 'game' => '', 'sheet' => '',
+                'cleanedat' => time()]);
+        }
+    }
+
     /**
      * Whether a card can tangle a sheet for a team today: the place of today has a hunt for mistakes.
      *

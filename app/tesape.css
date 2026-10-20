@@ -11408,3 +11408,48 @@ body.still .place-view .secret > span {
   animation-duration: 1.6s;
   filter: drop-shadow(0 0 5px #fff3b0);
 }
+
+/* The Embrollo came back to a place the class lit: its lantern flickers until the stain is cleaned. */
+.place.flicker .lamp-on,
+.place.flicker .flame,
+.place.flicker .classglow {
+  animation: lantern-flicker 1.7s steps(1, end) infinite;
+}
+
+@keyframes lantern-flicker {
+  0%, 100% {
+    opacity: 1;
+  }
+
+  12% {
+    opacity: .25;
+  }
+
+  18% {
+    opacity: .9;
+  }
+
+  46% {
+    opacity: .4;
+  }
+
+  52% {
+    opacity: 1;
+  }
+}
+
+body.still .place.flicker .lamp-on,
+body.still .place.flicker .flame,
+body.still .place.flicker .classglow {
+  animation: none;
+  opacity: .5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .place.flicker .lamp-on,
+  .place.flicker .flame,
+  .place.flicker .classglow {
+    animation: none;
+    opacity: .5;
+  }
+}

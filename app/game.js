@@ -1670,7 +1670,12 @@
     var places = m.chapters.map(function(ch, i) {
       var today = m.today && ch.code === m.today;
       var here = mates[ch.id] || 0;
+      // A place the class lit that the Embrollo came back to: its lantern flickers until the stain is cleaned.
+      var back = ch.lit && (state.world.stains || []).some(function(s) {
+        return s.chapter === ch.code && !s.forteam && s.kind !== 'page';
+      });
       var cls = 'place' + (ch.mine ? ' mine' : '') + (lighting[String(ch.id)] ? ' lighting' : '') + (ch.lit ? ' lit' : '') +
+        (back ? ' flicker' : '') +
         (ch.id === current.id ? ' here' : '') +
         (ch.id === state.chapter ? ' selected' : '') + (today ? ' today' : '');
       return '<g class="' + cls + '" data-chapter="' + ch.id + '" data-art="' + esc(ch.art || ch.code) + '" tabindex="0" ' +

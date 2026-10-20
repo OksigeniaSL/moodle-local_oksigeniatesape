@@ -93,7 +93,7 @@ final class events_test extends \advanced_testcase {
         [$plain] = $this->make_class();
         $this->assertSame(events::CORE, events::deck($plain->id));
         [$course, $members] = $this->make_class(true);
-        $this->assertCount(12, events::deck($course->id));
+        $this->assertCount(13, events::deck($course->id));
         $drawn = [];
         for ($i = 0; $i < 60; $i++) {
             $drawn[events::draw($course->id, '', self::NOW)->code] = true;
@@ -125,6 +125,38 @@ final class events_test extends \advanced_testcase {
         // Without a card, nothing to see.
         events::skip($course->id, self::NOW);
         $this->assertNull(events::for_students($course->id, self::NOW));
+    }
+
+    public function test_the_embrollo_comes_back_from_the_third_lantern_to_a_place_already_lit(): void {
+        global $DB;
+        $this->resetAfterTest();
+        [$course] = $this->make_class(true);
+        $mission = missions::get($course->id);
+        // Before the third lantern, it does not come back.
+        $this->assertFalse(stains::can_come_back($course->id));
+        try {
+            events::draw($course->id, 'comeback', self::NOW);
+            $this->fail('The Embrollo came back too early');
+        } catch (\moodle_exception $e) {
+            $this->assertSame('cardnotplayable', $e->errorcode);
+        }
+        foreach (['claro', 'biblioteca', 'bosque'] as $code) {
+            $DB->set_field(self::T . 'chapter', 'litat', self::NOW - DAYSECS, ['missionid' => $mission->id, 'code' => $code]);
+        }
+        $this->assertTrue(stains::can_come_back($course->id));
+        $event = events::draw($course->id, 'comeback', self::NOW);
+        $stain = $DB->get_record(self::T . 'stain', ['id' => json_decode($event->data, true)['comeback']]);
+        $this->assertContains($stain->chapter, ['claro', 'biblioteca', 'bosque']);
+        $this->assertSame(0, (int) $stain->groupid);
+        // The class sees it in «Today in the valley», on its place.
+        $this->assertContains($stain->chapter, array_column(today::get($course->id)['stains'] ?? [], 'chapter'));
+        // Another card instead: the stain goes with it, and the day stays decided without a stain.
+        events::draw($course->id, 'calm', self::NOW);
+        $this->assertSame('', $DB->get_field(self::T . 'stain', 'chapter', ['id' => $stain->id]));
+        // It comes back in the place of today's decision, if that decision stained nothing; not if it stained something.
+        $again = events::draw($course->id, 'comeback', self::NOW);
+        $this->assertSame((int) $stain->id, json_decode($again->data, true)['comeback']);
+        $this->assertFalse(stains::can_come_back($course->id, self::NOW));
     }
 
     public function test_calm_stops_losses_of_energy_for_the_day(): void {

@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 65,
+ "version": 66,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 66,
+   "kind": "improvement",
+   "date": "2026-10-20",
+   "text": "El contraataque a mitad de misión: desde la tercera linterna, la carta «El Embrollo vuelve» mancha un lugar ya iluminado y su linterna parpadea hasta que la clase limpie la mancha"
+  },
   {
    "version": 65,
    "kind": "improvement",
@@ -1818,6 +1824,16 @@
     "valley": "La criatura se ha despertado con hambre de páginas. Hoy, la página del día da el doble de aliento.",
     "azara": "Hoy toca repasar el cuaderno. La página del día da el doble de aliento."
    }
+  },
+  "comeback": {
+   "name": {
+    "valley": "El Embrollo vuelve",
+    "azara": "Las notas se revuelven"
+   },
+   "text": {
+    "valley": "El Embrollo ha vuelto a un lugar que la clase ya iluminó y lo ha manchado. Su linterna parpadea hasta que la clase limpie la mancha.",
+    "azara": "Una página que ya estaba en orden se ha vuelto a revolver. Su farol parpadea hasta que la clase la ponga en orden otra vez."
+   }
   }
  },
  "deck": [
@@ -1832,7 +1848,8 @@
   "owlnight",
   "glowworms",
   "sniff",
-  "pageday"
+  "pageday",
+  "comeback"
  ],
  "battle": {
   "reward": "thread",

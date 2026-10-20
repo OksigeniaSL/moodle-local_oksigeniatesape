@@ -36,6 +36,8 @@ namespace local_oksigeniatesape\local;
  * - Night of fireflies: the secrets of the places glow more.
  * - A good nose: the creature sniffs once more in each minigame.
  * - Hungry for pages: the page of the day gives twice the breath.
+ * - The Embrollo comes back (from the third lantern lit on): it stains a place the class already lit, whose lantern
+ *   flickers until the class cleans it.
  *
  * @package    local_oksigeniatesape
  * @copyright  2026 Oksigenia <dev@oksigenia.cc>
@@ -47,7 +49,7 @@ final class events {
 
     /** @var string[] The cards there are. */
     public const CARDS = ['calm', 'breeze', 'footprint', 'exchange', 'knot', 'messengers', 'trade', 'minionday', 'owlnight',
-        'glowworms', 'sniff', 'pageday'];
+        'glowworms', 'sniff', 'pageday', 'comeback'];
 
     /** @var string[] The deck of a mission that does not choose its own. */
     public const CORE = ['calm', 'breeze', 'footprint', 'exchange', 'knot', 'messengers', 'trade'];
@@ -118,6 +120,10 @@ final class events {
             }
             // The cards for a team, only with teams (two, for the messengers and the trade) and a sheet to tangle.
             $out = count($teams) < 2 ? array_merge(self::TARGETED, ['trade']) : (stains::can_tangle($courseid) ? [] : ['knot']);
+            // The Embrollo comes back only from the middle of the mission on.
+            if (!stains::can_come_back($courseid, $now)) {
+                $out[] = 'comeback';
+            }
             $cards = array_values(array_diff($cards, $out)) ?: ['calm'];
             $code = $cards[random_int(0, count($cards) - 1)];
         }
@@ -139,6 +145,13 @@ final class events {
                 throw new \moodle_exception('cardnotplayable', 'local_oksigeniatesape');
             }
             $data['stain'] = (int) $stain->id;
+        }
+        if ($code === 'comeback') {
+            $stain = stains::come_back($courseid, $now);
+            if (!$stain) {
+                throw new \moodle_exception('cardnotplayable', 'local_oksigeniatesape');
+            }
+            $data['comeback'] = (int) $stain->id;
         }
         if ($code === 'footprint') {
             $previous = json_decode($event->data ?? '', true) ?: [];
@@ -532,8 +545,8 @@ final class events {
      */
     private static function cleaned(array $data): bool {
         global $DB;
-        return !empty($data['stain']) &&
-            (int) $DB->get_field(self::T . 'stain', 'cleanedat', ['id' => (int) $data['stain']]) > 0;
+        $stain = (int) ($data['stain'] ?? $data['comeback'] ?? 0);
+        return $stain && (int) $DB->get_field(self::T . 'stain', 'cleanedat', ['id' => $stain]) > 0;
     }
 
     /**
@@ -545,6 +558,9 @@ final class events {
         $data = $event ? (json_decode($event->data ?? '', true) ?: []) : [];
         if (!empty($data['stain'])) {
             stains::move_team((int) $event->courseid, (int) $data['stain'], 0);
+        }
+        if (!empty($data['comeback'])) {
+            stains::go_back((int) $event->courseid, (int) $data['comeback']);
         }
     }
 

@@ -1531,8 +1531,12 @@
       var here = photos.filter(function(p) {
         return p.chapter === ch.code;
       }).slice(0, 3);
-      return '<g class="place' + (ch.lit ? ' mine lit' : '') + '" data-art="' + esc(ch.art || ch.code) + '" aria-label="' +
-        esc(ch.name) + '">' + here.map(function(p, k) {
+      // A place the class lit that the Embrollo came back to: its lantern flickers until the stain is cleaned.
+      var back = ch.lit && ((state.board.today && state.board.today.stains) || []).some(function(s) {
+        return s.chapter === ch.code && s.kind !== 'page';
+      });
+      return '<g class="place' + (ch.lit ? ' mine lit' : '') + (back ? ' flicker' : '') + '" data-art="' +
+        esc(ch.art || ch.code) + '" aria-label="' + esc(ch.name) + '">' + here.map(function(p, k) {
           return T.photoSticker(p, ch.x, ch.y, i, k);
         }).join('') +
         (ch.lit ? '<circle cx="' + ch.x + '" cy="' + ch.y + '" r="40" class="classglow"/>' : '') +

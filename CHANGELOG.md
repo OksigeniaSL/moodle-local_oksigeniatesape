@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.163.0 (2026-10-20)
+
+- **The Embrollo comes back in the middle of the mission** (mission v66). From the third lantern the class lights, the
+  card «The Embrollo comes back» can be drawn: it stains a place the class already lit with the next sheet of its hunt
+  for mistakes, and the lantern of that place flickers, on the map of each student and on the class screen, until the
+  class cleans the stain, as any other. Coming back is what the Embrollo does that day: not on a day it already stained
+  or stole something. Another card instead leaves the day without a stain.
+
 ## 0.162.0 (2026-10-20)
 
 - **The deck of the cards of the day, from seven to twelve** (mission v65). A mission chooses its deck (`deck`) and
