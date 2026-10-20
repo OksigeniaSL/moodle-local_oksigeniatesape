@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.156.0 (2026-10-20)
+
+- **The photos of the classroom, stickers of the map.** In the panel of a place, a team can send one photo of what it
+  found, its drawings or its notebook, never people («Classroom photo»). The tablet makes it smaller (1024 px at most)
+  and draws it again before sending it, so it loses what the camera writes in the file. It waits in the tray of the
+  teacher, who sends it to the map or turns it down (then it is deleted). Once approved, it is a sticker beside the
+  lantern of the place, on the map of the team and on the class screen (one for each team, three at most). It never
+  leaves the Moodle: a file of the course, served only to the teacher, the class screen and the team. New table
+  `local_oksigeniatesape_photo`, service `local_oksigeniatesape_photo`; covered by the privacy provider (export with the
+  pictures, deletion) and deleted with the rest of what was played when a course is reset.
+
 ## 0.155.0 (2026-10-19)
 
 - **A scene with the class, driven from the teacher's phone.** While the class votes a decision with its phones on the

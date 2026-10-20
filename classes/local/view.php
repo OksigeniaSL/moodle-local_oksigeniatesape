@@ -189,6 +189,11 @@ final class view {
                 return $view;
             }, stains::open($courseid));
             $world['stains'] = array_values(array_filter($stained));
+            // The photos of the classroom of the team, by place: stickers of the map once the teacher approves them.
+            $world['photos'] = [];
+            foreach ($myteam ? photos::of_team($courseid, (int) $char->userid) : [] as $code => $photo) {
+                $world['photos'][] = ['chapter' => (string) $code] + $photo;
+            }
             if (!empty($world['team'])) {
                 // Where each one of the team is: the place where they last played, for the map (without names).
                 $at = self::team_places($courseid, (int) $mission['id'], array_column($world['team']['members'], 'userid'));
@@ -654,6 +659,8 @@ final class view {
             'ideasunread' => ideas::unread($courseid),
             'pactspending' => pacts::pending($courseid),
             'namespending' => names::pending($courseid),
+            // The photos of the classroom: those waiting for the teacher and those on the map; the class screen, only these.
+            'photos' => photos::of_course($courseid, $board),
         ];
         if ($board) {
             // The museum of the class in the Library, which the class screen shows.

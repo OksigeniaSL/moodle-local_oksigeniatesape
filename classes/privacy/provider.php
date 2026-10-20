@@ -46,7 +46,7 @@ class provider implements
 
     /** @var string[] Tables of a character in a course, all with charid and courseid. */
     public const COURSE_TABLES = ['member', 'ledger', 'inventory', 'sceneattempt', 'minigame', 'validation', 'found', 'idea',
-        'livein', 'livetoken', 'pact', 'daily', 'purchase', 'huddle', 'huddlein', 'challengepart', 'teamspend'];
+        'livein', 'livetoken', 'pact', 'daily', 'purchase', 'huddle', 'huddlein', 'challengepart', 'teamspend', 'photo'];
 
     /**
      * What is stored.
@@ -81,6 +81,7 @@ class provider implements
             'huddlein' => ['huddleid', 'courseid', 'charid', 'lastseen', 'timecreated'],
             'challengepart' => ['challengeid', 'courseid', 'groupid', 'part', 'charid', 'timecreated'],
             'teamspend' => ['courseid', 'groupid', 'kind', 'charid', 'confirmedby', 'status', 'timecreated'],
+            'photo' => ['courseid', 'groupid', 'chapter', 'charid', 'status', 'reviewedby', 'timecreated', 'timemodified'],
         ];
         foreach ($fields as $table => $names) {
             $described = [];
@@ -89,6 +90,8 @@ class provider implements
             }
             $collection->add_database_table(self::T . $table, $described, "privacy:metadata:$table");
         }
+        // The picture of a photo of the classroom is a file of the course.
+        $collection->add_subsystem_link('core_files', [], 'privacy:metadata:core_files');
         // The plan for the next class goes to the AI of the site with counts and the content of the mission only; the
         // AI subsystem keeps who asked for it.
         $collection->add_subsystem_link('core_ai', [], 'privacy:metadata:core_ai');
@@ -160,6 +163,13 @@ class provider implements
         $contextlist->add_from_sql(
             'SELECT ctx.id
                FROM {context} ctx
+               JOIN {' . self::T . 'photo} p ON p.courseid = ctx.instanceid AND ctx.contextlevel = :level
+              WHERE p.reviewedby = :userid',
+            ['level' => CONTEXT_COURSE, 'userid' => $userid]
+        );
+        $contextlist->add_from_sql(
+            'SELECT ctx.id
+               FROM {context} ctx
                JOIN {' . self::T . 'pact} p ON p.courseid = ctx.instanceid AND ctx.contextlevel = :level
               WHERE p.decidedby = :userid',
             ['level' => CONTEXT_COURSE, 'userid' => $userid]
@@ -209,6 +219,11 @@ class provider implements
         $userlist->add_from_sql(
             'validatedby',
             'SELECT validatedby FROM {' . self::T . 'validation} WHERE courseid = :courseid AND validatedby > 0',
+            $params
+        );
+        $userlist->add_from_sql(
+            'reviewedby',
+            'SELECT reviewedby FROM {' . self::T . 'photo} WHERE courseid = :courseid AND reviewedby > 0',
             $params
         );
         $userlist->add_from_sql(
@@ -319,7 +334,13 @@ class provider implements
             'timemodified',
             'id, status, timemodified'
         );
-        if (!$given && !$paused && !$powers && !$pacts && !$validations) {
+        $photos = $DB->get_records(
+            self::T . 'photo',
+            ['courseid' => $courseid, 'reviewedby' => $userid],
+            'timemodified',
+            'id, status, timemodified'
+        );
+        if (!$given && !$paused && !$powers && !$pacts && !$validations && !$photos) {
             return;
         }
         $when = fn($time) => $time ? transform::datetime($time) : null;
@@ -335,6 +356,10 @@ class provider implements
             'challenges' => array_values(array_map(
                 fn($v) => ['status' => $v->status, 'time' => $when($v->timemodified)],
                 $validations
+            )),
+            'photos' => array_values(array_map(
+                fn($p) => ['status' => $p->status, 'time' => $when($p->timemodified)],
+                $photos
             )),
         ]);
     }
@@ -492,6 +517,19 @@ class provider implements
                     'timecreated' => transform::datetime($p->timecreated),
                 ], $parts)),
             ]);
+        }
+        $photos = $DB->get_records(self::T . 'photo', ['charid' => $charid, 'courseid' => $courseid], 'timecreated');
+        if ($photos) {
+            $writer->export_data(self::path('photos'), (object) [
+                'photos' => array_values(array_map(fn($p) => [
+                    'place' => $p->chapter,
+                    'status' => $p->status,
+                    'timecreated' => transform::datetime($p->timecreated),
+                ], $photos)),
+            ]);
+            foreach ($photos as $p) {
+                $writer->export_area_files(self::path('photos'), 'local_oksigeniatesape', 'photo', (int) $p->id);
+            }
         }
         $spends = $DB->get_records_select(
             self::T . 'teamspend',
@@ -693,6 +731,10 @@ class provider implements
             array_merge([$courseid], $params)
         );
         $DB->execute(
+            'UPDATE {' . self::T . "photo} SET reviewedby = 0 WHERE courseid = ? AND reviewedby $insql",
+            array_merge([$courseid], $params)
+        );
+        $DB->execute(
             'UPDATE {' . self::T . "pact} SET decidedby = 0 WHERE courseid = ? AND decidedby $insql",
             array_merge([$courseid], $params)
         );
@@ -731,6 +773,8 @@ class provider implements
         // What others proposed to the reserve and they confirmed stays, without who confirmed it.
         $confirmed = str_replace('charid', 'confirmedby', $where);
         $DB->set_field_select(self::T . 'teamspend', 'confirmedby', 0, $confirmed, $params);
+        // The photos go with their pictures.
+        \local_oksigeniatesape\local\photos::remove_in_course($courseid, $charids);
         foreach (self::COURSE_TABLES as $table) {
             $DB->delete_records_select(self::T . $table, $where, $params);
         }
@@ -763,6 +807,7 @@ class provider implements
         $DB->set_field(self::T . 'validation', 'validatedby', 0, ['validatedby' => $userid]);
         $DB->set_field(self::T . 'pact', 'decidedby', 0, ['decidedby' => $userid]);
         $DB->set_field(self::T . 'powerreq', 'decidedby', 0, ['decidedby' => $userid]);
+        $DB->set_field(self::T . 'photo', 'reviewedby', 0, ['reviewedby' => $userid]);
     }
 
     /**

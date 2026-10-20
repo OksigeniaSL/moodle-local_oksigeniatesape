@@ -175,6 +175,11 @@ function local_oksigeniatesape_coursemodule_edit_post_actions($data, $course) {
  * @return bool False when there is nothing to serve.
  */
 function local_oksigeniatesape_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = []) {
+    if ($context->contextlevel == CONTEXT_COURSE && $filearea === \local_oksigeniatesape\local\photos::FILEAREA) {
+        // A photo of the classroom: only to who may see it.
+        require_login($course, false);
+        return \local_oksigeniatesape\local\photos::serve($context, $args, $options);
+    }
     if ($context->contextlevel != CONTEXT_SYSTEM || $filearea !== art::FILEAREA) {
         return false;
     }

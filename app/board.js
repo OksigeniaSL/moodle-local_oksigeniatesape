@@ -1313,9 +1313,18 @@
     // The lanterns painted for the map, if the art pack has them: lit, those the class lit.
     var lampOff = T.artUrl(['map.lantern.off']);
     var lampOn = T.artUrl(['map.lantern.on']);
-    var places = m.chapters.map(function(ch) {
+    // The photos of the classroom the teacher approved, a sticker for each team beside the lantern of its place.
+    var photos = (state.cls && state.cls.photos || []).filter(function(p) {
+      return p.status === 'approved';
+    });
+    var places = m.chapters.map(function(ch, i) {
+      var here = photos.filter(function(p) {
+        return p.chapter === ch.code;
+      }).slice(0, 3);
       return '<g class="place' + (ch.lit ? ' mine lit' : '') + '" data-art="' + esc(ch.art || ch.code) + '" aria-label="' +
-        esc(ch.name) + '">' +
+        esc(ch.name) + '">' + here.map(function(p, k) {
+          return T.photoSticker(p, ch.x, ch.y, i, k);
+        }).join('') +
         (ch.lit ? '<circle cx="' + ch.x + '" cy="' + ch.y + '" r="40" class="classglow"/>' : '') +
         '<circle cx="' + ch.x + '" cy="' + ch.y + '" r="25" class="ring' + (lampOff && lampOn ? ' painted' : '') + '"/>' +
         (lampOff && lampOn ? '<image href="' + esc(ch.lit ? lampOn : lampOff) + '" x="' + (ch.x - 20) + '" y="' + (ch.y - 30) +

@@ -201,6 +201,8 @@ final class observer {
             [$insql, $params] = $DB->get_in_or_equal($powers);
             $DB->delete_records_select(self::T . 'powerreq', "powerid $insql", $params);
         }
+        // The photos of the classroom go with their pictures.
+        \local_oksigeniatesape\local\photos::remove_in_course($courseid);
         foreach (self::PLAYED_TABLES as $table) {
             $DB->delete_records(self::T . $table, ['courseid' => $courseid]);
         }

@@ -1688,7 +1688,7 @@
         '<rect x="' + (ch.x - 2) + '" y="' + (ch.y - 4) + '" width="4" height="17" rx="1" fill="#2b2219"/>' +
         '<circle cx="' + ch.x + '" cy="' + (ch.y - 7) + '" r="7" class="flame"/>') +
         (i > opened && !today ? '<ellipse cx="' + ch.x + '" cy="' + (ch.y + 6) + '" rx="62" ry="34" class="fog"/>' : '') +
-        T.mapLabel(ch.x, ch.y + 44, ch.name) + '</g>';
+        (state.visit ? '' : T.photoSticker(photoOf(ch.code), ch.x, ch.y, i)) + T.mapLabel(ch.x, ch.y + 44, ch.name) + '</g>';
     }).join('');
     // The team, beside the lanterns but outside the places: the name of a place is what it says, and the team is in it.
     var crowd = m.chapters.map(function(ch) {
@@ -2351,7 +2351,71 @@
       }).join('') + '</div>' : '') + (ch.letter ? '<blockquote class="letter"><small>' + esc(t('app_letter')) +
       '</small>' + esc(ch.letter) + '</blockquote>' : '') + (ch.teaser ? '<p class="teaser"><b>' + esc(t('app_teaser')) +
       '</b> ' + esc(ch.teaser) + '</p>' : '') + peek + night + (scenes ? '<ul class="list">' + scenes + '</ul>' : '') +
-      more(games, quests, acts, challenge) + '</section>';
+      photoCard(ch, past) + more(games, quests, acts, challenge) + '</section>';
+  }
+
+  /**
+   * The photo of the classroom a team sent for a place, if any.
+   *
+   * @param {string} code Code of the place.
+   * @return {Object|null} chapter, status, url, mine.
+   */
+  function photoOf(code) {
+    return (state.world.photos || []).filter(function(p) {
+      return p.chapter === code;
+    })[0] || null;
+  }
+
+  /**
+   * The photo of the classroom of a place: once the teacher approves it, a sticker of the map of the team and of the
+   * class screen. Never people: what they found, their drawings, the notebook.
+   *
+   * @param {Object} ch
+   * @param {boolean} past
+   * @return {string}
+   */
+  function photoCard(ch, past) {
+    if (past || !state.world.team) {
+      return '';
+    }
+    var p = photoOf(ch.code);
+    var status = p ? p.status : '';
+    var note = {pending: 'app_photo_pending', rejected: 'app_photo_rejected', approved: 'app_photo_approved'}[status] ||
+      'app_photo_help';
+    return '<div class="photo-card' + (status ? ' ' + status : '') + '">' + (status === 'approved' && p.url ?
+      '<img class="photo-print" src="' + esc(p.url) + '" alt="' + esc(t('app_photo_alt', ch.name)) + '">' : '') +
+      '<div class="grow"><b>' + esc(t('app_photo_title')) + '</b><p class="help-soft">' + esc(t(note)) + '</p>' +
+      '<label class="btn btn-soft photo-pick">' + T.icon('camera') + ' ' + esc(t(status ? 'app_photo_again' :
+      'app_photo_send')) + '<input type="file" accept="image/*" capture="environment" class="sr-only" data-photo="' +
+      esc(ch.code) + '"></label></div></div>';
+  }
+
+  /**
+   * A photo made smaller on the device before it leaves it: drawn again on a canvas, it also loses what the camera
+   * writes in the file (where and when it was taken).
+   *
+   * @param {File} file
+   * @return {Promise<string>} The picture, as a data URL.
+   */
+  function shrinkPhoto(file) {
+    return new Promise(function(resolve, reject) {
+      var src = URL.createObjectURL(file);
+      var img = new Image();
+      img.onload = function() {
+        var k = Math.min(1, 1024 / Math.max(img.naturalWidth, img.naturalHeight));
+        var c = document.createElement('canvas');
+        c.width = Math.max(1, Math.round(img.naturalWidth * k));
+        c.height = Math.max(1, Math.round(img.naturalHeight * k));
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(src);
+        resolve(c.toDataURL('image/jpeg', 0.82));
+      };
+      img.onerror = function() {
+        URL.revokeObjectURL(src);
+        reject(new Error(t('app_photo_bad')));
+      };
+      img.src = src;
+    });
   }
 
   /**
@@ -2598,6 +2662,36 @@
         if (ch && ch.encounter) {
           meet(ch);
         }
+      };
+    });
+    app.querySelectorAll('[data-photo]').forEach(function(input) {
+      input.onchange = function() {
+        var file = input.files && input.files[0];
+        var pick = input.closest('.photo-pick');
+        if (!file || pick.classList.contains('busy')) {
+          return;
+        }
+        pick.classList.add('busy');
+        shrinkPhoto(file).then(function(picture) {
+          return T.api('photo', {courseid: cfg.courseid, action: 'upload', chapter: input.dataset.photo, picture: picture});
+        }).then(function(r) {
+          state.world.photos = r.photos;
+          T.toast(esc(t('app_photo_sent')));
+          var card = app.querySelector('.photo-card');
+          var m = state.world.mission;
+          var ch = m && m.chapters.filter(function(c) {
+            return c.code === input.dataset.photo;
+          })[0];
+          if (card && ch) {
+            var box = document.createElement('div');
+            box.innerHTML = photoCard(ch, false);
+            card.replaceWith(box.firstElementChild);
+            bindWorld(true);
+          }
+        }).catch(function(e) {
+          pick.classList.remove('busy');
+          T.toast(esc(e.message), true);
+        });
       };
     });
     app.querySelectorAll('[data-stain]').forEach(function(b) {

@@ -648,6 +648,20 @@
             'type="button" data-inboxname="' + key + ':0">' + esc(t('teach_name_no')) + '</button></span>' : '') + '</li>';
         })));
     }
+    // The photos of the classroom a team sent: nobody sees them before the teacher.
+    var photos = (d.photos || []).filter(function(p) {
+      return p.status === 'pending';
+    });
+    if (photos.length && marks) {
+      groups.push(group(t('teach_inbox_photos', photos.length), t('teach_photos_help'), '', photos.map(function(p) {
+        return '<li class="item photo-item"><a href="' + esc(p.url) + '" target="_blank" rel="noopener" class="photo-thumb">' +
+          '<img src="' + esc(p.url) + '" alt="' + esc(t('teach_photo_alt', {team: p.team, place: p.place})) + '"></a>' +
+          '<span class="grow"><b>' + esc(p.team) + '</b><small>' + esc(p.place) + '</small></span><span class="row-actions">' +
+          '<button class="chip" type="button" data-inboxphoto="' + p.id + ':1">' + esc(t('teach_photo_ok')) + '</button>' +
+          '<button class="chip" type="button" data-inboxphoto="' + p.id + ':0">' + esc(t('teach_photo_no')) + '</button>' +
+          '</span></li>';
+      })));
+    }
     var queue = d.powersqueue || [];
     if (queue.length) {
       groups.push(group(t('teach_inbox_powers', queue.length), '', queue.length > 1 ? '<button class="btn btn-soft" ' +
@@ -774,6 +788,18 @@
         T.toast(esc(t(left ? 'teach_inbox_names_left' : 'app_saved')));
       }).catch(failed);
     };
+    el.querySelectorAll('[data-inboxphoto]').forEach(function(b) {
+      b.onclick = function() {
+        var parts = b.dataset.inboxphoto.split(':');
+        busy();
+        T.api('photo', {courseid: cfg.courseid, action: 'review', photoid: Number(parts[0]), ok: parts[1] === '1'})
+          .then(function(res) {
+            d.photos = res.photos;
+            refreshInbox();
+            T.toast(esc(t(parts[1] === '1' ? 'teach_photo_done' : 'app_saved')));
+          }).catch(failed);
+      };
+    });
     el.querySelectorAll('[data-inboxname]').forEach(function(b) {
       b.onclick = function() {
         var parts = b.dataset.inboxname.split(':');

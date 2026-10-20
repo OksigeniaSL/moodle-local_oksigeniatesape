@@ -205,6 +205,28 @@
    * @return {{from: (Object|null), delay: number}} The place it comes from, and how far its walk already went.
    */
   /**
+   * The photo of the classroom of a place, once the teacher approved it: a sticker beside its lantern, a little crooked,
+   * on its left (on the right go the blots of the Embrollo and the teammates), unless the map ends there.
+   *
+   * @param {Object|null} photo status and url.
+   * @param {number} x
+   * @param {number} y Where the lantern is.
+   * @param {number} i The place, to tilt each sticker its own way.
+   * @param {number} [k] On the class screen, the photo of the place (one per team), a little further each one.
+   * @return {string} SVG.
+   */
+  T.photoSticker = function(photo, x, y, i, k) {
+    if (!photo || photo.status !== 'approved' || !photo.url) {
+      return '';
+    }
+    k = k || 0;
+    var left = x < 100 ? x + 34 + k * 16 : x - 88 - k * 16;
+    return '<g class="photo-sticker" aria-hidden="true" transform="translate(' + left + ' ' + Math.max(4, y - 44 + k * 6) +
+      ') rotate(' + ((i + k) % 2 ? 6 : -5) + ' 26 29)"><rect width="52" height="58" rx="3"/><image href="' +
+      T.esc(photo.url) + '" x="5" y="5" width="42" height="42" preserveAspectRatio="xMidYMid slice"/></g>';
+  };
+
+  /**
    * The name of a place under its lantern on a map: in two lines when it is long, and never out of the map.
    *
    * @param {number} x
@@ -1106,6 +1128,9 @@
         'stroke-width="2" stroke-linecap="round"/>',
       speak: '<path d="M5 4h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-8l-5 4v-4H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" fill="currentColor"/>' +
         '<path d="M7 9h10M7 12.5h7" stroke="#0f2131" stroke-width="1.8" stroke-linecap="round"/>',
+      camera: '<path d="M4 8h3.2l1.6-2.4h6.4L16.8 8H20a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z" ' +
+        'fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="13.5" r="3.4" ' +
+        'fill="none" stroke="currentColor" stroke-width="2"/>',
       lens: '<circle cx="10" cy="10" r="6" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M14.5 14.5 L21 21" ' +
         'stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="10" cy="10" r="3.2" fill="currentColor" ' +
         'opacity=".25"/>',

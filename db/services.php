@@ -447,6 +447,13 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:play',
     ],
+    'local_oksigeniatesape_photo' => [
+        'classname' => 'local_oksigeniatesape\\external\\photo',
+        'description' => 'The photos of the classroom as stickers of the map: a team sends them, the teacher approves them.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:play, local/oksigeniatesape:award',
+    ],
     'local_oksigeniatesape_choose_branch' => [
         'classname' => 'local_oksigeniatesape\\external\\choose_branch',
         'description' => 'A student chooses the branch of their creature when it reaches its second stage.',

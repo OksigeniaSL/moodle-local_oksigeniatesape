@@ -10682,3 +10682,78 @@ body.still .campfire-fire i {
     animation: none;
   }
 }
+
+/* The photo of the classroom of a place: a print once the teacher approves it, and the button to send one. */
+.photo-card {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin: 12px 0;
+  padding: 12px 14px;
+  border: 1px dashed var(--line);
+  border-radius: var(--r-s);
+}
+
+.photo-card p {
+  margin: 4px 0 8px;
+}
+
+.photo-card.approved {
+  border-style: solid;
+}
+
+.photo-print {
+  flex: none;
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  padding: 5px;
+  background: #fdfaf2;
+  border-radius: 3px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, .3);
+  transform: rotate(-3deg);
+}
+
+.photo-pick {
+  position: relative;
+  cursor: pointer;
+}
+
+.photo-pick:focus-within {
+  outline: 3px solid var(--lantern);
+  outline-offset: 2px;
+}
+
+.photo-pick.busy {
+  opacity: .6;
+  pointer-events: none;
+}
+
+.photo-pick .icon,
+.photo-pick svg {
+  width: 18px;
+  height: 18px;
+  vertical-align: -3px;
+}
+
+/* On the map: a print with its white frame, a little crooked, beside the lantern. */
+.photo-sticker rect {
+  fill: #fdfaf2;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .35));
+}
+
+/* In the tray of the teacher: the photo, big enough to see what there is in it. */
+.photo-item .photo-thumb {
+  flex: none;
+  display: block;
+  width: 72px;
+  height: 72px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.photo-item .photo-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

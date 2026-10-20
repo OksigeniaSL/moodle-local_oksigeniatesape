@@ -164,6 +164,14 @@ final class get_class extends external_api {
             'pacts' => structures::teacher_pacts(),
             'pactspending' => new external_value(PARAM_INT, 'Commitments still to mark'),
             'namespending' => structures::names_pending(),
+            'photos' => new external_multiple_structure(new external_single_structure([
+                'id' => new external_value(PARAM_INT, 'The photo'),
+                'team' => new external_value(PARAM_TEXT, 'The team that sent it'),
+                'chapter' => new external_value(PARAM_ALPHANUMEXT, 'Code of the place'),
+                'place' => new external_value(PARAM_TEXT, 'Name of the place'),
+                'status' => new external_value(PARAM_ALPHA, 'pending or approved'),
+                'url' => new external_value(PARAM_URL, 'The picture'),
+            ]), 'The photos of the classroom: waiting for the teacher, and on the map', VALUE_DEFAULT, []),
             'powersqueue' => new external_multiple_structure(
                 structures::power_request(),
                 'Requests of powers waiting, for who approves them',
