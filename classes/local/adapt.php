@@ -22,7 +22,7 @@ namespace local_oksigeniatesape\local;
  * hurry, more help) only the teacher. Only the student and their teachers see them.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class adapt {

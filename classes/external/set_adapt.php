@@ -30,7 +30,7 @@ use local_oksigeniatesape\local\view;
  * Keeps what the game adapts for a student: the adaptations the teacher marks, never a diagnosis.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class set_adapt extends external_api {

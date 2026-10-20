@@ -28,7 +28,7 @@ use local_oksigeniatesape\local\view;
  * A teacher takes or turns down the own name a student proposed for their hero or their creature.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class decide_name extends external_api {

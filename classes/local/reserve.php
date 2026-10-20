@@ -23,7 +23,7 @@ namespace local_oksigeniatesape\local;
  * worn-out member who asks for it (without the healer). Proposals are open the day they are made.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class reserve {

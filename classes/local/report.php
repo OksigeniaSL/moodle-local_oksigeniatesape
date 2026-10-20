@@ -22,7 +22,7 @@ namespace local_oksigeniatesape\local;
  * mission, the share right at the first try of each scene. Nothing about behaviour (energy, commitments, powers).
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class report {

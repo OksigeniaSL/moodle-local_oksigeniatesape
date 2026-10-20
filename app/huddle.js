@@ -4,7 +4,7 @@
  * tablet. Here: the waiting room of the guide, what the scene of the guide sends and takes, and the call and the view of
  * the rest of the team, which ask the server every second and a half while inside and less and less often otherwise.
  *
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 (function() {

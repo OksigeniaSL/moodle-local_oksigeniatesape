@@ -7,7 +7,7 @@
  * the protector holds one slip more (the server gives it), the healer gets the first slip back after a streak (the
  * server counts it the same way), the sage has one look and the scout sees what comes next.
  *
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 (function() {

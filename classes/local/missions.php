@@ -23,7 +23,7 @@ namespace local_oksigeniatesape\local;
  * A package is a folder in missions/ with mission.json (chapters, pages of the book, items, texts) and scenes/*.json.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class missions {

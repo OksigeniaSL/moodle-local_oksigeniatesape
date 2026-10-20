@@ -5,7 +5,7 @@
  * its own in its art pack (theme.critters), with their pictures, how they move and their texts; without them, those of
  * the valley, drawn here. Few and slow, never during a scene, and none with «less motion».
  *
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 (function() {

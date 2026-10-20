@@ -22,7 +22,7 @@ namespace local_oksigeniatesape\local;
  * entry says what place the species takes in a food chain. It reads the database: nothing is kept apart.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class album {

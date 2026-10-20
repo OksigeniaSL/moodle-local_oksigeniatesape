@@ -30,7 +30,7 @@ use local_oksigeniatesape\local\view;
  * What the class did in the scenes of the mission: plays, objectives and the most common mix-ups.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class get_results extends external_api {

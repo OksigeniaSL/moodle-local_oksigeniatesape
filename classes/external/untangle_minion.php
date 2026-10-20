@@ -28,7 +28,7 @@ use local_oksigeniatesape\local\minions;
  * A student answers the minion of the Embrollo that stands on the road of the map.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class untangle_minion extends external_api {

@@ -30,7 +30,7 @@ use local_oksigeniatesape\local\view;
  * comes in one day, they find it ready and can change how it looks.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class make_character extends external_api {

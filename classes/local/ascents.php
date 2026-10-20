@@ -22,7 +22,7 @@ namespace local_oksigeniatesape\local;
  * time a change of role has to wait otherwise. Out of the rite, the teacher changes roles as always.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class ascents {

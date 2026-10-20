@@ -22,7 +22,7 @@ namespace local_oksigeniatesape\local;
  * team and on the class screen. It never leaves the Moodle: it is a file of the course, served only to who may see it.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class photos {

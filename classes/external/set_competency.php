@@ -25,7 +25,7 @@ use local_oksigeniatesape\local\competencies;
  * The teacher chooses the Moodle competency an objective of the mission leaves evidence in.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class set_competency extends external_api {

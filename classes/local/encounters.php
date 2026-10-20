@@ -26,7 +26,7 @@ namespace local_oksigeniatesape\local;
  * student, never with saber. Some only peek out with an item or a role in the team.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class encounters {

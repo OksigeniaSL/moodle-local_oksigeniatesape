@@ -26,7 +26,7 @@ use local_oksigeniatesape\local\teamplay;
  * The teacher takes back a team play a classmate made for a student who was not there.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class undo_teamplay extends external_api {

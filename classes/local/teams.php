@@ -21,7 +21,7 @@ namespace local_oksigeniatesape\local;
  * when it is full, everybody in the team gets gems. The teacher can make the teams in one go, with the roles spread.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class teams {

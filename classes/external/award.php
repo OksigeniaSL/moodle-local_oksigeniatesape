@@ -31,7 +31,7 @@ use local_oksigeniatesape\local\view;
  * Gives knowledge, gems or breath to some students, or takes energy for a commitment not kept.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class award extends external_api {

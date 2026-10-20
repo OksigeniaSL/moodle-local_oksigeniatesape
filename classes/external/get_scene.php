@@ -35,7 +35,7 @@ use local_oksigeniatesape\local\view;
  * A scene of the mission of the course, to play it.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class get_scene extends external_api {

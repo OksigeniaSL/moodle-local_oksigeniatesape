@@ -29,7 +29,7 @@ use local_oksigeniatesape\local\sessions;
  * one, goes to a step, launches on the class screen what a step launches, and closes it.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class run_session extends external_api {

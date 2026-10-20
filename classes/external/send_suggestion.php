@@ -26,7 +26,7 @@ use local_oksigeniatesape\local\suggestions;
  * Sends a suggestion of a teacher or an administrator to Oksigenia, when the site has suggestions on.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class send_suggestion extends external_api {

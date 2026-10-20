@@ -3,7 +3,7 @@
  * place; the student reads each sheet and touches what is wrong, and is shown what is right and why. A word touched that
  * was right is a blot of ink; with too many, the notebook is lost this time. The server counts it all again.
  *
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 (function() {

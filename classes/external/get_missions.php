@@ -30,7 +30,7 @@ use local_oksigeniatesape\local\view;
  * The missions that come with the plugin, and the one of the course.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class get_missions extends external_api {

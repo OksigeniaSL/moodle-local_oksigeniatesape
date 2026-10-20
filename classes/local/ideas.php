@@ -21,7 +21,7 @@ namespace local_oksigeniatesape\local;
  * read them; nothing leaves Moodle. A student can send it without their name: the teacher does not see who sent it.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class ideas {

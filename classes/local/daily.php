@@ -24,7 +24,7 @@ namespace local_oksigeniatesape\local;
  * beats it: it is «untangled» in the bestiary of the student.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class daily {

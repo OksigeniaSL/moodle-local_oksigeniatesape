@@ -25,7 +25,7 @@ use local_oksigeniatesape\local\regions;
  *
  * @package    local_oksigeniatesape
  * @category   test
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \local_oksigeniatesape\external\get_world
  * @covers     \local_oksigeniatesape\external\create_character

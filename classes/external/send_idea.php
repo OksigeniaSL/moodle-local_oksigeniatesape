@@ -35,7 +35,7 @@ use local_oksigeniatesape\local\view;
  * Sends an idea of the current student to the teachers of the course.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class send_idea extends external_api {

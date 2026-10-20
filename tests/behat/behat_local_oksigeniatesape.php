@@ -23,7 +23,7 @@ require_once(__DIR__ . '/../../../../lib/behat/behat_base.php');
  *
  * @package    local_oksigeniatesape
  * @category   test
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class behat_local_oksigeniatesape extends behat_base {

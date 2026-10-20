@@ -28,7 +28,7 @@ use local_oksigeniatesape\local\view;
  * The teacher rates a student in the competency of an objective of the mission, in the course.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class rate_competency extends external_api {

@@ -20,7 +20,7 @@ namespace local_oksigeniatesape\task;
  * Deletes the battles of more than a day ago and what was answered in them: what anybody won stays in the log.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class cleanup_live extends \core\task\scheduled_task {

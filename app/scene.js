@@ -2,7 +2,7 @@
  * Tesapé: the player of decision scenes. It shows each node with the art of the game, notes what the student does
  * and, at an ending, sends it to the server, which plays the scene again and decides the ending and the rewards.
  *
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 (function() {

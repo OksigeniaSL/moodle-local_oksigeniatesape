@@ -27,7 +27,7 @@ use local_oksigeniatesape\local\regions;
  * The battle on the phone of a student: whether there is one, come in, answer.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class live_play extends external_api {

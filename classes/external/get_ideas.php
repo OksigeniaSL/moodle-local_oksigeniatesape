@@ -35,7 +35,7 @@ use local_oksigeniatesape\local\view;
  * The ideas the students of the course have sent, for its teachers.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class get_ideas extends external_api {

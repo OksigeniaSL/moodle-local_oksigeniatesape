@@ -27,7 +27,7 @@ use local_oksigeniatesape\local\scenes;
  * A scene played by the whole class on the class screen: the decisions of the class, and what each player gets.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class class_scene extends external_api {

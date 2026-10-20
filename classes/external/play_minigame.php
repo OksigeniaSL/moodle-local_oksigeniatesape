@@ -35,7 +35,7 @@ use local_oksigeniatesape\local\view;
  * Plays a minigame with what the student did: the server counts it and gives what it gives, once.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class play_minigame extends external_api {

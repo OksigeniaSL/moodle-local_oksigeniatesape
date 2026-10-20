@@ -3,7 +3,7 @@
  * places of the map, the guided scenes of each place and the questions of the battle; then the checker, and making it
  * the mission of the course. What the teacher writes is saved by itself a moment after they stop.
  *
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 (function() {

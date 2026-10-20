@@ -28,7 +28,7 @@ use local_oksigeniatesape\local\secrets;
  * A student finds a secret in the painting of a place.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class find_secret extends external_api {

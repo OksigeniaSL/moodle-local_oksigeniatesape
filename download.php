@@ -18,7 +18,7 @@
  * The report of the class, downloaded in the format the teacher chooses (Excel, ODS, CSV, PDF…).
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

@@ -31,7 +31,7 @@ use local_oksigeniatesape\local\view;
  * The world of the current student in a course: their character, team, classroom challenges and log.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class get_world extends external_api {

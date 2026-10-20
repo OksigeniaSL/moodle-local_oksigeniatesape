@@ -4,7 +4,7 @@
  * they are quiet, wait for the first touch of the student (browsers ask for it) and stop with the button of silence,
  * which is remembered. The movement respects «less motion» of the device.
  *
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 (function() {

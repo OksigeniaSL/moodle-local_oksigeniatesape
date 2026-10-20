@@ -5,7 +5,7 @@
  * shows up here too. Only good news on this screen: nothing that takes something away from a student in front of the
  * class.
  *
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 (function() {

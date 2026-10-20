@@ -23,7 +23,7 @@ namespace local_oksigeniatesape\local;
  * The badge is found by its name in the course: a copy of the course restores its badges with other ids.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class badges {

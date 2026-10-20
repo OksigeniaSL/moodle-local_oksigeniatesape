@@ -23,7 +23,7 @@ namespace local_oksigeniatesape\local;
  * and never why someone fell or was paused; the teacher sees everything of their course.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class view {

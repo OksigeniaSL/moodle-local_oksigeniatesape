@@ -30,7 +30,7 @@ use local_oksigeniatesape\local\view;
  * Installs a mission in the course, or changes its skin or local examples keeping what the students did.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class install_mission extends external_api {

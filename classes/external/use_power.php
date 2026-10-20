@@ -35,7 +35,7 @@ use local_oksigeniatesape\local\view;
  * Asks to use a power, spending its breath; it acts when a teacher approves it (or at once if it approves itself).
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class use_power extends external_api {

@@ -23,7 +23,7 @@ namespace local_oksigeniatesape\local;
  * scene gives 15 to 30) and the later ones ask for weeks. The numbers are a first guess, to be tuned with classes.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class progress {

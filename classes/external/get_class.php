@@ -31,7 +31,7 @@ use local_oksigeniatesape\local\view;
  * The class of a course for its teachers: settings, students and their characters, teams and challenges.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class get_class extends external_api {

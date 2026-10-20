@@ -6,7 +6,7 @@
  * Once the turn is resolved, it shows the solution: each thing in its group, the steps in their order, each mistake
  * with the right word and why, what was alive.
  *
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 (function() {

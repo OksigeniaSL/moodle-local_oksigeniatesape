@@ -3,7 +3,7 @@
  * guesses who it is among four. A wrong guess shows the next clue; with no clue left, the shadow gets away. The fewer
  * clues needed, the more stars. The server counts it all again.
  *
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 (function() {

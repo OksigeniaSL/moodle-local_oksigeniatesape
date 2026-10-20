@@ -22,7 +22,7 @@ namespace local_oksigeniatesape\local;
  * never send anything out: their ideas stay in the box of ideas of their course.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class suggestions {

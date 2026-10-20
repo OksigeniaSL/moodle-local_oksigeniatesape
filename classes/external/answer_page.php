@@ -29,7 +29,7 @@ use local_oksigeniatesape\local\view;
  * The current student answers the page of the day their creature asks for.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class answer_page extends external_api {

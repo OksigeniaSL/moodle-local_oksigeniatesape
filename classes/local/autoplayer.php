@@ -21,7 +21,7 @@ namespace local_oksigeniatesape\local;
  * a child makes and puts right on the way. For the demo class and the tests.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class autoplayer {

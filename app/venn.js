@@ -3,7 +3,7 @@
  * its circle, or to the middle, where they meet, if it belongs to both. A card in the wrong place is a slip, and shows
  * where it went and why; with too many slips the circles get tangled this time. The server counts it all again.
  *
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 (function() {

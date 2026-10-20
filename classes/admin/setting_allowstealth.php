@@ -27,7 +27,7 @@ require_once($CFG->libdir . '/adminlib.php');
  * is what the site already has, so that installing from the command line, which takes the defaults, changes nothing.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class setting_allowstealth extends \admin_setting_configcheckbox {

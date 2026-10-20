@@ -27,7 +27,7 @@ use local_oksigeniatesape\local\view;
  * The class screen: the map of the mission with the lanterns of the class, and the event of the day.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class get_board extends external_api {

@@ -31,7 +31,7 @@ use local_oksigeniatesape\local\view;
  * Turns the game on or off in a course and changes its settings; what is not given keeps its value.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class save_region extends external_api {

@@ -28,7 +28,7 @@ use local_oksigeniatesape\local\missions;
  * goes back to the original. The texts go as JSON: they are many, and of many shapes.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class edit_mission extends external_api {

@@ -4,7 +4,7 @@
  * hides again. There is a mode without hurry, one thing at a time with two answers, and a pause. At the end, what was
  * mixed up, with its why. The server counts it all again.
  *
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 (function() {

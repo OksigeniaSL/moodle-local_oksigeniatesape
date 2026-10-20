@@ -20,7 +20,7 @@ namespace local_oksigeniatesape\local;
  * Regions: the game in a course, with the settings its teacher chooses.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class regions {

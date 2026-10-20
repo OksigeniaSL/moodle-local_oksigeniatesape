@@ -22,7 +22,7 @@ namespace local_oksigeniatesape\local;
  * of several students pay for). Nothing is bought with money and nothing changes how the game plays.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class market {

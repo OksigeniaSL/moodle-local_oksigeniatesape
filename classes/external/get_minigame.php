@@ -38,7 +38,7 @@ use local_oksigeniatesape\local\view;
  * A minigame of the mission of the course, as the current student plays it.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class get_minigame extends external_api {

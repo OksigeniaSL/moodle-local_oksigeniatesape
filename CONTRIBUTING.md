@@ -6,7 +6,7 @@ the approach.
 ## Code style
 
 - PHP follows the Moodle Coding Style: <https://moodledev.io/general/development/policies/codingstyle>.
-- License header: GPL v3 or later, copyright `Oksigenia <dev@oksigenia.cc>`.
+- License header: GPL v3 or later, copyright `Oksigenia SL <dev@oksigenia.cc>`.
 - Code, comments and commit messages in **English**. Lang files carry the localised strings.
 - No commit message carries the signature of an AI tool. Turn on the hook once in your clone:
   `git config core.hooksPath .githooks`; CI checks the new commits too.

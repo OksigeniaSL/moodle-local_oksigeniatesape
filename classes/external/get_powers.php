@@ -35,7 +35,7 @@ use local_oksigeniatesape\local\view;
  * The powers of the course and the requests of the students, for its teachers.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class get_powers extends external_api {

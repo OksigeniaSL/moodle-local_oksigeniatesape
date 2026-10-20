@@ -27,7 +27,7 @@ use local_oksigeniatesape\local\regions;
  * Hook callbacks: the ways into the game from Moodle: the cover of the course page, the course bar and the top bar.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class hook_callbacks {

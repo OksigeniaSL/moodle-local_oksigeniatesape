@@ -31,7 +31,7 @@ use local_oksigeniatesape\local\regions;
  * The current student says who the being that peeked out in a place is, with the clues they opened.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class answer_encounter extends external_api {

@@ -21,7 +21,7 @@ namespace local_oksigeniatesape\local;
  * exam. In the package the first option is the right one; they are shown shuffled.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class questions {

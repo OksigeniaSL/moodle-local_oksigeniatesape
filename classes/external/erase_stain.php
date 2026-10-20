@@ -27,7 +27,7 @@ use local_oksigeniatesape\local\stains;
  * The teacher takes a stain of the Embrollo as cleaned by the class (aloud, on the class screen), or rubs it out.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class erase_stain extends external_api {

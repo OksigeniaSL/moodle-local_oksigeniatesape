@@ -18,7 +18,7 @@
  * A mission the teacher made, downloaded as a package (a zip, as those of the catalog), with its draft inside.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

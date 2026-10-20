@@ -28,7 +28,7 @@ use local_oksigeniatesape\local\regions;
  * A student chooses the branch of their creature when it reaches its second stage: land, air or water.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class choose_branch extends external_api {

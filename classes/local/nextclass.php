@@ -25,7 +25,7 @@ use core_ai\aiactions\generate_text;
  * Only counts and the content of the mission go to the AI, never a name. Without AI on the site, nothing changes.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class nextclass {

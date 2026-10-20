@@ -26,7 +26,7 @@ use local_oksigeniatesape\local\view;
  * The current student names their hero or their creature: from the list, at once, or their own, for a teacher to read.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class set_name extends external_api {

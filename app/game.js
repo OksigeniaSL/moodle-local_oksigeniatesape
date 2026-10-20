@@ -3,7 +3,7 @@
  * world: the map of the mission with its places (scenes, Moodle activities and minigames), the team with its powers,
  * the challenges, the diary and the character sheet with the box of ideas.
  *
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 (function() {

@@ -28,7 +28,7 @@ use local_oksigeniatesape\local\engine;
  * A student shows their creature a card of their field guide.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class show_card extends external_api {

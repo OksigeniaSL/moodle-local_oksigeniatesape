@@ -26,7 +26,7 @@ use local_oksigeniatesape\local\view;
  * The current student chooses their commitment for the chapter the class is in, or changes it while it is not marked.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class choose_pact extends external_api {

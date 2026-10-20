@@ -31,7 +31,7 @@ use local_oksigeniatesape\local\view;
  * Deletes a classroom challenge; what it gave stays in the log.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class delete_challenge extends external_api {

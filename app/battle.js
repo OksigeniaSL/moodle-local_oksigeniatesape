@@ -5,7 +5,7 @@
  * and a half while playing (or just when the question closes); otherwise, less and less often while there is no battle,
  * and never while the page is hidden.
  *
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 (function() {

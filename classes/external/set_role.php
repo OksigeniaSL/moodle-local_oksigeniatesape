@@ -27,7 +27,7 @@ use local_oksigeniatesape\local\view;
  * The teacher changes the role of a student who asks for it.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class set_role extends external_api {

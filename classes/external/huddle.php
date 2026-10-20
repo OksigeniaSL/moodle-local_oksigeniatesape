@@ -27,7 +27,7 @@ use local_oksigeniatesape\local\huddles;
  * The team session of a student: what their tablet sees, and what it does in it.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class huddle extends external_api {

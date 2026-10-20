@@ -3,7 +3,7 @@
  * group to catch them, look at them and let them go far away. A wrong net, or none, lets the animal pass and hurts
  * the shield. There is a mode without hurry, by turns, and a pause. The server counts it all again.
  *
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 (function() {

@@ -3,7 +3,7 @@
  * questions of the battle. The changes are kept apart from the mission (a newer version of it does not take them away);
  * an empty text, or «Back to the original», takes a change away.
  *
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 (function() {

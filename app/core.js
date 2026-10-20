@@ -2,7 +2,7 @@
  * Tesapé: what the game client and the teacher panel share. Web services, texts, little helpers and the drawing of
  * the characters (placeholder art: modular and by parameters, as the character workshop will need).
  *
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 (function() {

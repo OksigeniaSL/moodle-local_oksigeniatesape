@@ -23,7 +23,7 @@ namespace local_oksigeniatesape\local;
  * lights the lantern of the place, its minions are gone. Nothing of the class waits for them.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class minions {

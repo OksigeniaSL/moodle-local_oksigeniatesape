@@ -4,7 +4,7 @@
  * who it is. A dichotomous key, played. Never lost; with few questions, the card of the being goes golden to the field
  * guide. The server counts it all again.
  *
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 (function() {

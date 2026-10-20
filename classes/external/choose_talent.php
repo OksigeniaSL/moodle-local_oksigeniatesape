@@ -29,7 +29,7 @@ use local_oksigeniatesape\local\talents;
  * A student chooses the talent that a level brought them, one of the two of their role.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class choose_talent extends external_api {

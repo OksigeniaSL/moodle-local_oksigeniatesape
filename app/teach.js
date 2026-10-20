@@ -4,7 +4,7 @@
  * challenges, also without connection; the mission and how the class is doing; the box of ideas; pause and recovery;
  * the log with undo; and the settings of the course.
  *
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 (function() {

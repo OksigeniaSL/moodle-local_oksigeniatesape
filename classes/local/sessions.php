@@ -24,7 +24,7 @@ namespace local_oksigeniatesape\local;
  * confused the class to review it at the start of the next one. Without a session everything goes on as before.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class sessions {

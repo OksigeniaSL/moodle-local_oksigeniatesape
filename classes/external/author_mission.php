@@ -28,7 +28,7 @@ use local_oksigeniatesape\local\missions;
  * missing in it, and making it the mission of the course. Drafts go as JSON: they are many texts, of many shapes.
  *
  * @package    local_oksigeniatesape
- * @copyright  2026 Oksigenia <dev@oksigenia.cc>
+ * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class author_mission extends external_api {
