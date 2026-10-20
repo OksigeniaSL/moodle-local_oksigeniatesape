@@ -64,6 +64,7 @@ final class award extends external_api {
      * @param string $resource
      * @param int $amount
      * @param string $note
+     * @param string $opid Made by the device for this touch.
      * @return array
      */
     public static function execute(

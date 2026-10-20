@@ -4570,6 +4570,20 @@ body.in-battle .badge-moment {
   }
 }
 
+/* Who to look at, in the panel of the teacher: the text first; the button under it when it does not fit. */
+.signals-card .item {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.signals-card .item .grow {
+  flex: 1 1 220px;
+}
+
+.signals-card .item .btn {
+  margin-left: auto;
+}
+
 /* The sheet for whoever stands in for the teacher: the session of today on paper, over the panel. */
 .print-layer {
   position: fixed;

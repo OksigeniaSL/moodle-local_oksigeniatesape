@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.168.0 (2026-10-20)
+
+- **To look at, only for the teacher.** In the panel, folded (open when someone is stuck today), who the teacher may
+  want to look at: a student with three tries today at the same scene, none ended well, or three plays of the same
+  minigame lost; and, from their last four scenes, a student whose step may weigh on them (three of them not ended
+  well, from the second step on) or fall short (all of them well at the first try, below the fourth step). Each one
+  with «See their sheet». Worked out when the panel asks: nothing is kept, and the class screen never shows it.
+
 ## 0.167.0 (2026-10-20)
 
 - **Touches of knowledge and gems without a connection.** A touch given from the panel of the teacher with no

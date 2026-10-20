@@ -172,6 +172,11 @@ final class get_class extends external_api {
                 'status' => new external_value(PARAM_ALPHA, 'pending or approved'),
                 'url' => new external_value(PARAM_URL, 'The picture'),
             ]), 'The photos of the classroom: waiting for the teacher, and on the map', VALUE_DEFAULT, []),
+            'signals' => new external_multiple_structure(new external_single_structure([
+                'userid' => new external_value(PARAM_INT, 'Student'),
+                'kind' => new external_value(PARAM_ALPHA, 'stuck (today), hard or easy (their step)'),
+                'text' => new external_value(PARAM_TEXT, 'What to look at'),
+            ]), 'Who the teacher may want to look at, only in their panel', VALUE_DEFAULT, []),
             'powersqueue' => new external_multiple_structure(
                 structures::power_request(),
                 'Requests of powers waiting, for who approves them',

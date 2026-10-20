@@ -703,6 +703,8 @@ final class view {
         if ($today) {
             $view['today'] = $today;
         }
+        // Who to look at: stuck today, or with a step that may weigh or fall short. Only here, never on the class screen.
+        $view['signals'] = signals::of_course($courseid);
         // The requests of powers waiting, for the tray of what is waiting in the panel.
         if ($view['powerspending'] && has_capability('local/oksigeniatesape:approvepowers', \context_course::instance($courseid))) {
             $view['powersqueue'] = powers::requests($courseid, 0)['pending'];

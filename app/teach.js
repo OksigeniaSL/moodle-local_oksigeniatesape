@@ -532,6 +532,26 @@
     });
   }
 
+  /**
+   * Who to look at, only here: a student stuck today on the same thing, or whose step may weigh on them or fall short.
+   * Folded, without a colour that shouts: a hint for the teacher, not a mark.
+   *
+   * @return string
+   */
+  function signalsCard() {
+    var list = state.data.signals || [];
+    if (!list.length) {
+      return '';
+    }
+    return '<section class="card signals-card"><details' + (list.some(function(x) {
+      return x.kind === 'stuck';
+    }) ? ' open' : '') + '><summary><b>' + esc(t('teach_signals', list.length)) + '</b></summary><ul class="list">' +
+      list.map(function(x) {
+        return '<li class="item signal-' + esc(x.kind) + '"><span class="grow">' + esc(x.text) + '</span><button type="button" ' +
+          'class="btn btn-soft" data-signal="' + x.userid + '">' + esc(t('teach_signals_look')) + '</button></li>';
+      }).join('') + '</ul><p class="help-soft">' + esc(t('teach_signals_help')) + '</p></details></section>';
+  }
+
   /* ---------- The class ---------- */
 
   function studentsShown() {
@@ -1462,7 +1482,8 @@
           '" aria-label="' + esc(t('app_teamstate_' + g.state)) + '"></span>' : '') + '</button>';
       }).join('') + '</div>';
     var shown = studentsShown();
-    var el = content(firstCard() + sessionCard() + remoteCard() + inboxCard() + todayCard() + teamsCard() + farCard() + '<section class="card"><div class="section-title"><h2>' +
+    var el = content(firstCard() + sessionCard() + remoteCard() + inboxCard() + signalsCard() + todayCard() + teamsCard() +
+      farCard() + '<section class="card"><div class="section-title"><h2>' +
       esc(t('teach_tab_class')) +
       '</h2><span class="section-tools"><label class="chip"><input type="checkbox" data-showres' + (state.showres ? ' checked' :
       '') + '> ' + esc(t('teach_showres')) + '</label><button class="btn btn-soft" data-all>' + esc(t('teach_selectall')) +
@@ -1522,6 +1543,11 @@
         ev.stopPropagation();
         state.selected[box.dataset.check] = box.checked;
         render();
+      };
+    });
+    el.querySelectorAll('[data-signal]').forEach(function(b) {
+      b.onclick = function() {
+        openStudent(Number(b.dataset.signal));
       };
     });
     el.querySelectorAll('[data-student]').forEach(function(li) {
