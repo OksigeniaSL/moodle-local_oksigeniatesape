@@ -47,6 +47,12 @@ final class award extends external_api {
             'resource' => new external_value(PARAM_ALPHA, 'saber, gems, breath or energy'),
             'amount' => new external_value(PARAM_INT, 'How much; negative only for energy'),
             'note' => new external_value(PARAM_TEXT, 'Why, as the teacher chose it: the student sees it', VALUE_DEFAULT, ''),
+            'opid' => new external_value(
+                PARAM_ALPHANUMEXT,
+                'Made by the device for this touch: sent again without a connection, it counts once',
+                VALUE_DEFAULT,
+                ''
+            ),
         ]);
     }
 
@@ -65,7 +71,8 @@ final class award extends external_api {
         array $userids,
         string $resource,
         int $amount,
-        string $note = ''
+        string $note = '',
+        string $opid = ''
     ): array {
         global $DB, $USER;
         $params = self::validate_parameters(self::execute_parameters(), [
@@ -74,6 +81,7 @@ final class award extends external_api {
             'resource' => $resource,
             'amount' => $amount,
             'note' => $note,
+            'opid' => $opid,
         ]);
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
@@ -95,10 +103,16 @@ final class award extends external_api {
             $member = engine::member($char, $params['courseid']);
             $reason = $params['resource'] === 'energy' && $params['amount'] < 0 ? 'commitment' : 'manual';
             $method = $params['resource'];
-            $entry = engine::$method($member, $params['amount'], $reason, (int) $USER->id);
-            $note = \core_text::substr(trim($params['note']), 0, 255);
-            if ($entry && !empty($entry->id) && $note !== '') {
-                $DB->set_field('local_oksigeniatesape_ledger', 'note', $note, ['id' => $entry->id]);
+            // The same touch, sent again because the answer was lost on the way: given once.
+            $entry = $params['opid'] !== '' ? $DB->get_record('local_oksigeniatesape_ledger', ['opid' => $params['opid'],
+                'charid' => $char->id]) : null;
+            if (!$entry) {
+                $entry = engine::$method($member, $params['amount'], $reason, (int) $USER->id);
+                $note = \core_text::substr(trim($params['note']), 0, 255);
+                if ($entry && !empty($entry->id) && ($note !== '' || $params['opid'] !== '')) {
+                    $DB->update_record('local_oksigeniatesape_ledger', (object) ['id' => $entry->id,
+                        'note' => $note !== '' ? $note : null, 'opid' => $params['opid'] !== '' ? $params['opid'] : null]);
+                }
             }
             if (!$entry) {
                 $results[] = ['userid' => $userid, 'status' => $member->status === 'paused' ? 'paused' : 'capped'];

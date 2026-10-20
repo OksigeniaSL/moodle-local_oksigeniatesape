@@ -152,6 +152,7 @@
         <FIELD NAME="undoneby" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Ledger entry that undid it (0: it stands)"/>
         <FIELD NAME="timeundone" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="note" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Why the teacher gave it, as they chose it (a touch with a reason)"/>
+        <FIELD NAME="opid" TYPE="char" LENGTH="40" NOTNULL="false" SEQUENCE="false" COMMENT="The touch of the teacher it came from, named by their device: sent again without a connection, it counts once"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
@@ -162,6 +163,7 @@
         <INDEX NAME="charid-courseid-timecreated" UNIQUE="false" FIELDS="charid, courseid, timecreated"/>
         <INDEX NAME="courseid-timecreated" UNIQUE="false" FIELDS="courseid, timecreated"/>
         <INDEX NAME="refid-reason" UNIQUE="false" FIELDS="refid, reason"/>
+        <INDEX NAME="opid" UNIQUE="false" FIELDS="opid"/>
       </INDEXES>
     </TABLE>
     <TABLE NAME="local_oksigeniatesape_power" COMMENT="The powers of a course: real classroom privileges, editable by the teacher">

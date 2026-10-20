@@ -998,5 +998,19 @@ function xmldb_local_oksigeniatesape_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026102000, 'local', 'oksigeniatesape');
     }
 
+    if ($oldversion < 2026102014) {
+        // The touch of the teacher a ledger entry came from: sent again without a connection, it counts once.
+        $table = new xmldb_table('local_oksigeniatesape_ledger');
+        $field = new xmldb_field('opid', XMLDB_TYPE_CHAR, '40', null, null, null, null, 'note');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        $index = new xmldb_index('opid', XMLDB_INDEX_NOTUNIQUE, ['opid']);
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+        upgrade_plugin_savepoint(true, 2026102014, 'local', 'oksigeniatesape');
+    }
+
     return true;
 }

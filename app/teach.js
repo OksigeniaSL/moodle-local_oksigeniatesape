@@ -80,7 +80,8 @@
   }
 
   /**
-   * Sends the word on a classroom challenge; without connection it waits in the queue (saying it again is harmless).
+   * Sends the word on a classroom challenge; without connection it waits in the queue (saying it again is harmless, and
+   * a touch of saber or gems waits there too, with its name so that it is given once).
    *
    * @param {Object} args
    * @return {Promise}
@@ -123,7 +124,9 @@
     }
     flushing = true;
     var next = list[0];
-    T.api('validate', next).then(function() {
+    // A touch of saber or gems, or the word on a classroom challenge (what the queue kept first).
+    var call = next.kind === 'award' ? T.api('award', next.args) : T.api('validate', next);
+    call.then(function() {
       flushing = false;
       unqueue(next);
       if (queued().length) {
@@ -1692,8 +1695,9 @@
   }
 
   function award(ids, resource, amount, note) {
-    return T.api('award', {courseid: cfg.courseid, userids: ids, resource: resource, amount: amount,
-      note: note || ''}).then(function(results) {
+    // Named by this device: sent again from the queue, it is given once.
+    var args = {courseid: cfg.courseid, userids: ids, resource: resource, amount: amount, note: note || '', opid: T.playId()};
+    return T.api('award', args).then(function(results) {
       var given = results.filter(function(r) {
         return r.status === 'given';
       }).length;
@@ -1718,7 +1722,17 @@
         refreshStandings();
       }
     }).catch(function(e) {
-      T.toast(esc(e.message), true);
+      if (!e.network && navigator.onLine !== false) {
+        T.toast(esc(e.message), true);
+        return;
+      }
+      // Without a connection, in the patio: it waits on this device and goes when the connection comes back.
+      var list = queued();
+      list.push({kind: 'award', args: args});
+      setQueue(list);
+      T.toast(esc(t('teach_queued')));
+      state.selected = {};
+      render();
     });
   }
 

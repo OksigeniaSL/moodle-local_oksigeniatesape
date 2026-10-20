@@ -157,6 +157,13 @@ final class externals_test extends \advanced_testcase {
             ['gems', 1, 'manual', 'Ha comprobado antes de afirmar'],
             [$touch['resource'], $touch['amount'], $touch['reason'], $touch['note']]
         );
+        // A touch sent again from the queue of a phone without a connection, with the same name: given once.
+        $gems = (int) characters::get($w->ana->id)->gems;
+        $patio = [$w->course->id, [$w->ana->id], 'gems', 2, '', 'touch-abc123'];
+        $first = $this->call('award', $w->teacher, $patio);
+        $again = $this->call('award', $w->teacher, $patio);
+        $this->assertSame(['given', 'given'], [$first[0]['status'], $again[0]['status']]);
+        $this->assertSame($gems + 2, (int) characters::get($w->ana->id)->gems);
         // How each one is left, for the panel to draw it at once.
         $this->assertEquals((int) characters::get($w->ana->id)->level, $results[0]['level']);
         $this->assertEquals('active', $results[0]['state']);

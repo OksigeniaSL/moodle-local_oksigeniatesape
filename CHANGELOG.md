@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.167.0 (2026-10-20)
+
+- **Touches of knowledge and gems without a connection.** A touch given from the panel of the teacher with no
+  connection (in the patio, say) waits on the phone, with the classroom challenges, and goes when the connection comes
+  back. Each touch carries a name made by the phone (`opid` in `local_oksigeniatesape_award`, kept in the ledger), so
+  that sent again it is given once.
+
 ## 0.166.0 (2026-10-20)
 
 - **The being of the sheet, tangled** (mission v69). In the hunts for mistakes of the Embrollo and in the stains of the
