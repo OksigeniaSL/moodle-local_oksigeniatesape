@@ -848,6 +848,7 @@ final class view {
             'completionrule' => $region ? regions::rule($region, 'completion') : regions::RULES['completion'],
             'talentson' => !$region || regions::rule($region, 'talents') > 0,
             'skillson' => !$region || regions::rule($region, 'skills') > 0,
+            'secretsshown' => $region ? regions::rule($region, 'secrets') : 0,
             'portal' => (string) ($region->portal ?? 'door'),
             'hideacts' => (bool) ($region->hideacts ?? false),
             'allowstealth' => !empty($GLOBALS['CFG']->allowstealth),

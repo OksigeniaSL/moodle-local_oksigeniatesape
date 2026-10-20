@@ -54,6 +54,8 @@ final class regions {
         'talents' => 1,
         // The named skills show on the sheet of the students (0: not in this course).
         'skills' => 1,
+        // Secrets shown at a time in the painting of a place (0: all of them), the next one once one is found.
+        'secrets' => 0,
     ];
 
     /**

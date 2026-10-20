@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.173.0 (2026-10-20)
+
+- **How many secrets at a time.** In the settings of the course, «Secrets in the paintings»: all at once (as before),
+  one at a time or two at a time. With few, the next one shows once one is found, and one not shown yet cannot be
+  found. It is a rule of the course (`secrets`), without a new field.
+- A test of a team of four playing a whole scene from their tablets: each decision on the tablet of the hand, half of
+  them with the information shared out, and the play for the four as one team play.
+- From this version on, the files say «Oksigenia SL» as the holder of the copyright, and the commits of the workflows
+  are made as «Oksigenia SL».
+
 ## 0.172.0 (2026-10-20)
 
 - **A stain cleaned by the whole class on the class screen.** Under «Today in the valley», «Clean it with the class»

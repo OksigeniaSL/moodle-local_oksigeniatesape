@@ -47,7 +47,9 @@ final class secrets {
                     'x' => (int) ($secret['x'] ?? 50), 'y' => (int) ($secret['y'] ?? 50)];
             }
         }
-        return $out;
+        // As many at a time as the teacher says (0: all of them): the next one, once one is found.
+        $limit = ($region = regions::get((int) $mission->courseid)) ? regions::rule($region, 'secrets') : 0;
+        return $limit > 0 ? array_slice($out, 0, $limit) : $out;
     }
 
     /**
@@ -88,6 +90,12 @@ final class secrets {
             }
         }
         if (!$secret || $member->status === 'paused') {
+            throw new \moodle_exception('nosecret', 'local_oksigeniatesape');
+        }
+        // One the painting does not show yet, while the teacher shows few at a time, is not there to find.
+        $found = self::found($char, $mission);
+        $shown = array_column(self::in_place($char, $mission, (string) ($secret['place'] ?? ''), $found), 'id');
+        if (!in_array($id, $found, true) && !in_array($id, $shown, true)) {
             throw new \moodle_exception('nosecret', 'local_oksigeniatesape');
         }
         $text = fn($t) => missions::text($t ?? '', $mission->skin, $mission->variant);

@@ -81,4 +81,38 @@ final class secrets_test extends \advanced_testcase {
         $this->expectException(\moodle_exception::class);
         secrets::find($char, $member, 'nada');
     }
+
+    public function test_the_teacher_shows_few_at_a_time(): void {
+        $this->resetAfterTest();
+        $gen = $this->getDataGenerator();
+        $course = $gen->create_course();
+        regions::save($course->id, ['enabled' => 1, 'rules' => ['secrets' => 1]]);
+        missions::install($course->id, 'livingthings', 'valley', 'es');
+        $mission = missions::get($course->id);
+        $user = $gen->create_and_enrol($course, 'student');
+        $char = characters::create($user->id, 'scout', 'f');
+        $member = engine::member($char, $course->id);
+        // One at a time: in the library, only the first; the other is not there to find yet.
+        $shown = array_column(secrets::in_place($char, $mission, 'biblioteca', []), 'id');
+        $this->assertCount(1, $shown);
+        $other = array_values(array_diff(['huella-2', 'frasco'], $shown))[0];
+        try {
+            secrets::find($char, $member, $other);
+            $this->fail('A secret the painting does not show yet is found');
+        } catch (\moodle_exception $e) {
+            $this->assertSame('nosecret', $e->errorcode);
+        }
+        // Found the one shown, the next one shows.
+        secrets::find($char, $member, $shown[0]);
+        $this->assertSame([$other], array_column(secrets::in_place(
+            $char,
+            $mission,
+            'biblioteca',
+            secrets::found($char, $mission)
+        ), 'id'));
+        $this->assertNotSame('', secrets::find($char, $member, $other)['text']);
+        // All at once again, as it came.
+        regions::save($course->id, ['rules' => ['secrets' => 0]]);
+        $this->assertCount(2, secrets::in_place($char, $mission, 'jardin', []));
+    }
 }

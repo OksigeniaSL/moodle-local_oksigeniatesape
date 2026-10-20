@@ -3500,6 +3500,9 @@
       }) + '<h3>' + esc(t('teach_set_mischief')) + '</h3><p class="help-soft">' + esc(t('teach_set_mischief_help')) +
       '</p>' + choice('mischief', ['off', 'calm', 'naughty'], r.mischief || 'calm', function(m) {
         return t('teach_set_mischief_' + m);
+      }) + '<h3>' + esc(t('teach_set_secrets')) + '</h3><p class="help-soft">' + esc(t('teach_set_secrets_help')) +
+      '</p>' + choice('secretsshown', [0, 1, 2], r.secretsshown || 0, function(m) {
+        return t('teach_set_secrets_' + m);
       }) + coverCard;
     var advanced = '<details class="settings-advanced"' + (state.advanced ? ' open' : '') + '><summary><b>' +
       esc(t('teach_set_advanced')) + '</b><small>' + esc(t('teach_set_advanced_help')) + '</small></summary>' +
@@ -3564,6 +3567,7 @@
         devices: f.querySelector('[name="devices"]:checked').value === '1',
         devicemusic: Number(f.querySelector('[name="devicemusic"]:checked').value),
         mischief: f.querySelector('[name="mischief"]:checked').value,
+        secretsshown: Number(f.querySelector('[name="secretsshown"]:checked').value),
         nicknames: picked ? Number(picked.value) : 0,
         timezone: f.timezone.value,
         portal: cover ? cover.value : 'door',

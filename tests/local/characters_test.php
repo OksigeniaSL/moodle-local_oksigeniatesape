@@ -100,7 +100,7 @@ final class characters_test extends \advanced_testcase {
         $this->assertEquals(20, $region->dailymanualcap);
         $this->assertEquals(10, regions::rule($region, 'completion'));
         $region = regions::save($course->id, ['rules' => ['completion' => 5, 'unknown' => 9]]);
-        $this->assertEquals(['completion' => 5, 'talents' => 1, 'skills' => 1], json_decode($region->rules, true));
+        $this->assertEquals(['completion' => 5, 'talents' => 1, 'skills' => 1, 'secrets' => 0], json_decode($region->rules, true));
         $this->assertEquals('animals', $region->family);
         $this->expectException(\invalid_parameter_exception::class);
         regions::save($course->id, ['family' => 'robots']);

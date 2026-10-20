@@ -154,6 +154,65 @@ final class huddles_test extends \advanced_testcase {
         ));
     }
 
+    public function test_a_team_of_four_plays_a_whole_scene_from_their_tablets(): void {
+        global $DB;
+        $this->resetAfterTest();
+        [$course, $users, $group, $sceneid] = $this->make_team();
+        $gen = $this->getDataGenerator();
+        $fourth = $gen->create_and_enrol($course, 'student');
+        $gen->create_group_member(['groupid' => $group->id, 'userid' => $fourth->id]);
+        engine::member(characters::create($fourth->id, 'protector', 'f'), $course->id, self::NOW);
+        $users[] = $fourth;
+        $guide = $users[0];
+        $ids = array_map(fn($u) => (int) $u->id, $users);
+        $huddle = huddles::open($course->id, $guide->id, $sceneid, self::NOW);
+        foreach (array_slice($users, 1) as $i => $user) {
+            $this->assertTrue(huddles::join($course->id, $user->id, self::NOW + 1 + $i)['joined']);
+        }
+        [$session, $char] = huddles::get($course->id, $guide->id, (int) $huddle->id, self::NOW + 5);
+        $this->assertSame($ids, huddles::start($session, $char, self::NOW + 5));
+        // The scene, played the right way by the team of four: each decision on the tablet of the hand, which goes
+        // round, once everybody told their piece; the guide's tablet sees what was chosen.
+        $scene = scenes::playable($course->id, $sceneid);
+        $events = autoplayer::play($scene->data, [], ['sage', 'scout', 'healer', 'protector'], [], 'sage');
+        $hand = 0;
+        $at = self::NOW + 10;
+        foreach ($events as $event) {
+            if (count((array) ($event['pick'] ?? [])) !== 1) {
+                continue;
+            }
+            $option = (string) $event['pick'][0];
+            $who = $users[$hand % 4];
+            [$session, $char] = huddles::get($course->id, $guide->id, (int) $huddle->id, $at);
+            // Every other decision, with the information shared out: everybody tells their piece first.
+            $shared = $hand % 2 === 0;
+            $seq = huddles::publish($session, $char, ['node' => $event['n'], 'kind' => 'choose', 'prompt' => '?',
+                'options' => [['id' => $option, 'label' => $option]], 'hand' => (int) $who->id,
+                'views' => $shared ? ['scout' => 'Un rastro', 'healer' => 'Un olor', 'protector' => 'Un ruido'] : []], $at);
+            foreach ($shared ? array_slice($users, 1) : [] as $user) {
+                [$s, $c] = huddles::get($course->id, $user->id, (int) $huddle->id, $at + 1);
+                huddles::tell($s, $c, $seq);
+            }
+            [$s, $c] = huddles::get($course->id, $who->id, (int) $huddle->id, $at + 2);
+            huddles::decide($s, $c, $option, $seq, $at + 2);
+            $pending = huddles::mine($course->id, $guide->id, $at + 3)['pending'];
+            $this->assertSame([(int) $who->id, $option], [$pending['by'], $pending['option']]);
+            $hand++;
+            $at += 10;
+        }
+        $this->assertGreaterThanOrEqual(4, $hand);
+        // The guide sends the play of the team: the four have it, as one team play, ended well.
+        $result = scenes::play($course->id, $guide->id, $sceneid, $events, null, $at, array_slice($ids, 1));
+        $this->assertSame('success', $result['outcome']);
+        $plays = $DB->get_records(self::T . 'sceneattempt', ['sceneid' => $sceneid]);
+        $this->assertCount(4, $plays);
+        $this->assertCount(1, array_unique(array_column($plays, 'teamplay')));
+        $this->assertEqualsCanonicalizing(
+            array_map(fn($u) => (int) characters::get($u)->id, $ids),
+            array_map('intval', array_column($plays, 'charid'))
+        );
+    }
+
     public function test_several_options_and_sorting_are_decided_whole_on_the_tablet_of_the_hand(): void {
         $this->resetAfterTest();
         [$course, $users, , $sceneid] = $this->make_team();

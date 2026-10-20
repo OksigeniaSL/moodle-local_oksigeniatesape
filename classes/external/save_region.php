@@ -108,6 +108,13 @@ final class save_region extends external_api {
                 null,
                 NULL_ALLOWED,
             ),
+            'secretsshown' => new external_value(
+                PARAM_INT,
+                'Secrets shown at a time in the painting of a place (0: all of them)',
+                VALUE_DEFAULT,
+                null,
+                NULL_ALLOWED
+            ),
         ]);
     }
 
@@ -137,6 +144,7 @@ final class save_region extends external_api {
      * @param string|null $reasons
      * @param bool|null $talentson
      * @param bool|null $skillson
+     * @param int|null $secretsshown
      * @return array
      */
     public static function execute(
@@ -162,7 +170,8 @@ final class save_region extends external_api {
         ?int $setup = null,
         ?string $reasons = null,
         ?bool $talentson = null,
-        ?bool $skillson = null
+        ?bool $skillson = null,
+        ?int $secretsshown = null
     ): array {
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
@@ -188,6 +197,7 @@ final class save_region extends external_api {
             'reasons' => $reasons,
             'talentson' => $talentson,
             'skillson' => $skillson,
+            'secretsshown' => $secretsshown,
         ]);
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
@@ -198,7 +208,8 @@ final class save_region extends external_api {
             $settings['completionrule'],
             $settings['reasons'],
             $settings['talentson'],
-            $settings['skillson']
+            $settings['skillson'],
+            $settings['secretsshown']
         );
         if ($params['reasons'] !== null) {
             $list = $params['reasons'] === 'default' ? null : json_decode($params['reasons'], true);
@@ -209,6 +220,9 @@ final class save_region extends external_api {
         }
         if ($params['completionrule'] !== null) {
             $settings['rules'] = ['completion' => $params['completionrule']];
+        }
+        if ($params['secretsshown'] !== null) {
+            $settings['rules'] = ($settings['rules'] ?? []) + ['secrets' => max(0, min(3, $params['secretsshown']))];
         }
         if ($params['talentson'] !== null) {
             $settings['rules'] = ($settings['rules'] ?? []) + ['talents' => $params['talentson'] ? 1 : 0];
