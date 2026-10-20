@@ -1789,12 +1789,15 @@
     if (T.fx) {
       T.fx.ambient(T.fx.place(current.art || current.code), current.code);
     }
-    return '<div class="map-wrap' + (height > 640 ? ' tall' : '') + '" data-herox="' + current.x + '" data-heroy="' + current.y +
+    // The card of the day goes over the map, outside it (the landmarks sit on its top edge), both in one column.
+    var card = state.visit ? '' : cardToday();
+    return (card ? '<div class="map-col">' + card : '') + '<div class="map-wrap' + (height > 640 ? ' tall' : '') +
+      '" data-herox="' + current.x + '" data-heroy="' + current.y +
       '">' + (state.visit ? '' : landmarks() + asleep()) + '<svg class="map" viewBox="0 0 400 ' + height +
       '" role="group" aria-label="' + esc(m.title) + '"><defs>' + T.MAPGLOW + '</defs>' + T.mapGround(m) +
       T.mapLandmarks(m) + T.mapNight(m) + '<polyline points="' + pts + '" class="road"/>' +
       (walked ? '<polyline points="' + walked + '" class="road walked"/>' : '') + roadDrawing(fresh) +
-      (T.critters ? T.critters.fireflies(m) : '') + prints + places + crowd + blots + minions + me + pet + hungry + '</svg></div>';
+      (T.critters ? T.critters.fireflies(m) : '') + prints + places + crowd + blots + minions + me + pet + hungry + '</svg></div>' + (card ? '</div>' : '');
   }
 
   /**
@@ -1822,6 +1825,17 @@
    *
    * @return {string}
    */
+  /**
+   * The card the teacher drew today, over the map: its name, and what it does at a touch.
+   *
+   * @return {string}
+   */
+  function cardToday() {
+    var c = state.world.card;
+    return c ? '<details class="card-today"><summary><span class="kicker">' + esc(t('app_card_today')) + '</span> ' +
+      esc(c.name) + '</summary><p>' + esc(c.text) + '</p></details>' : '';
+  }
+
   function asleep() {
     var c = state.world.character || {};
     if (mood() !== 'asleep' || !c.creature) {
@@ -2335,7 +2349,9 @@
     var c = state.world.character;
     // What a phone shows of the painting: near its left edge, the hero goes to the other side of what comes next.
     var narrow = window.innerWidth <= 600;
-    return '<div class="place-view" style="background-image:url(\'' + esc(art) + '\')">' + spots.map(function(sp) {
+    // With «Night of fireflies» as the card of the day, the secrets glow more.
+    var glow = state.world.card && state.world.card.code === 'glowworms' ? ' glowday' : '';
+    return '<div class="place-view' + glow + '" style="background-image:url(\'' + esc(art) + '\')">' + spots.map(function(sp) {
       var left = narrow ? (sp.at[0] - 21.875) / 0.5625 : (sp.at[0] - 12.5) / 0.75;
       // On the painting, the name before its colon («Bajo la lupa»); the whole of it, for who listens.
       var short = sp.title.split(':')[0].trim();

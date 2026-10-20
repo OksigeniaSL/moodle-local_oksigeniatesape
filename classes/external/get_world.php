@@ -202,6 +202,11 @@ final class get_world extends external_api {
                 ),
             ]), 'What the Embrollo stained or stole in the valley', VALUE_DEFAULT, []),
             'sendphoto' => new external_value(PARAM_BOOL, 'The student may send photos of the classroom', VALUE_DEFAULT, false),
+            'card' => new external_single_structure([
+                'code' => new external_value(PARAM_ALPHANUMEXT, 'The card'),
+                'name' => new external_value(PARAM_TEXT, 'Its name'),
+                'text' => new external_value(PARAM_TEXT, 'What it does'),
+            ], 'The card of the day, once the teacher drew it', VALUE_OPTIONAL),
             'photos' => new external_multiple_structure(new external_single_structure([
                 'chapter' => new external_value(PARAM_ALPHANUMEXT, 'Code of the place'),
                 'status' => new external_value(PARAM_ALPHA, 'pending, approved or rejected'),

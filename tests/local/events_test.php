@@ -87,6 +87,46 @@ final class events_test extends \advanced_testcase {
         $this->assertNull(events::active($course->id, $event->code, self::NOW));
     }
 
+    public function test_the_deck_of_the_mission_and_its_five_new_cards(): void {
+        global $DB;
+        $this->resetAfterTest();
+        [$plain] = $this->make_class();
+        $this->assertSame(events::CORE, events::deck($plain->id));
+        [$course, $members] = $this->make_class(true);
+        $this->assertCount(12, events::deck($course->id));
+        $drawn = [];
+        for ($i = 0; $i < 60; $i++) {
+            $drawn[events::draw($course->id, '', self::NOW)->code] = true;
+        }
+        $this->assertNotEmpty(array_intersect(array_keys($drawn), ['minionday', 'owlnight', 'glowworms', 'sniff', 'pageday']));
+        // The students see the card of today, with the name of the mission.
+        events::draw($course->id, 'glowworms', self::NOW);
+        $this->assertSame(
+            ['code' => 'glowworms', 'name' => 'Noche de luciérnagas'],
+            array_intersect_key(events::for_students($course->id, self::NOW), ['code' => 1, 'name' => 1])
+        );
+        // A good nose: the creature sniffs once more, if it has hatched.
+        $char = characters::get($DB->get_field(self::T . 'char', 'userid', ['id' => $members[0]->charid]));
+        $this->assertSame(0, creatures::sniffs($char, $course->id, self::NOW));
+        $DB->set_field(self::T . 'char', 'creature', json_encode(scenes::creature($char)), ['id' => $char->id]);
+        $char = characters::get((int) $char->userid);
+        $base = creatures::sniffs($char, $course->id, self::NOW);
+        events::draw($course->id, 'sniff', self::NOW);
+        $this->assertSame($base + 1, creatures::sniffs($char, $course->id, self::NOW));
+        // Minions out walking: the minion on the road gives twice the gems.
+        events::draw($course->id, 'minionday', self::NOW);
+        $mission = missions::get($course->id);
+        $minion = minions::on_road($char, $mission, 'claro', self::NOW);
+        $method = new \ReflectionMethod(minions::class, 'question');
+        $knot = array_values(array_filter($mission->data['battle']['knots'], fn($k) => $k['code'] === $minion['code']))[0];
+        $right = (int) $method->invoke(null, $char, $mission, $knot, engine::day_start(self::NOW, $course->id))['correct'];
+        $done = minions::answer($char, $this->member($members[0]), $minion['code'], $right, self::NOW);
+        $this->assertSame(2 * minions::GEMS, $done['gems']);
+        // Without a card, nothing to see.
+        events::skip($course->id, self::NOW);
+        $this->assertNull(events::for_students($course->id, self::NOW));
+    }
+
     public function test_calm_stops_losses_of_energy_for_the_day(): void {
         $this->resetAfterTest();
         [$course, $members] = $this->make_class();

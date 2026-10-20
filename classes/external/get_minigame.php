@@ -85,7 +85,7 @@ final class get_minigame extends external_api {
             (int) $member->step,
             (string) $char->role,
             talents::acting($char, $params['courseid']),
-            creatures::sniffs($char),
+            creatures::sniffs($char, $params['courseid']),
             equipment::worn($char, $params['courseid'])
         );
         if (!$config) {

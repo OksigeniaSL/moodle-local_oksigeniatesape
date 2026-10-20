@@ -543,7 +543,7 @@ final class minigames {
             (int) $member->step,
             (string) $char->role,
             talents::acting($char, $courseid),
-            creatures::sniffs($char),
+            creatures::sniffs($char, $courseid),
             equipment::worn($char, $courseid)
         ) : null;
         if (!$game) {

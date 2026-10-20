@@ -189,6 +189,11 @@ final class view {
                 return $view;
             }, stains::open($courseid));
             $world['stains'] = array_values(array_filter($stained));
+            // The card of the day, once the teacher drew it.
+            $card = events::for_students($courseid);
+            if ($card) {
+                $world['card'] = $card;
+            }
             // The photos of the classroom of the team, by place: stickers of the map once the teacher approves them; and
             // whether this student may send one.
             $world['sendphoto'] = has_capability('local/oksigeniatesape:sendphoto', \context_course::instance($courseid));
@@ -480,7 +485,7 @@ final class view {
      */
     public static function board(int $courseid, ?int $now = null): array {
         global $DB;
-        $board = ['cards' => events::CARDS];
+        $board = ['cards' => events::deck($courseid)];
         $mission = missions::get($courseid);
         if ($mission) {
             $info = [];

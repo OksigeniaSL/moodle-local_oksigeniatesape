@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.162.0 (2026-10-20)
+
+- **The deck of the cards of the day, from seven to twelve** (mission v65). A mission chooses its deck (`deck`) and
+  names its cards; the pilot mission plays twelve. The five new ones make more of what is already there: minions out
+  walking (a minion untangled gives twice the gems), the owl flies (encounters give twice the gems), night of fireflies
+  (the secrets of the places glow more), a good nose (the creature sniffs once more in each minigame) and hungry for
+  pages (the page of the day gives twice the breath). A mission without a deck keeps the seven of always.
+- **The students see the card of the day** over their map, once the teacher drew it: its name, and what it does at a
+  touch.
+
 ## 0.161.0 (2026-10-20)
 
 - **Touchable secrets in the paintings of the places** (mission v64). Things found without anybody asking for them: six

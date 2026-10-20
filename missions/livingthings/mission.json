@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 64,
+ "version": 65,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 65,
+   "kind": "improvement",
+   "date": "2026-10-20",
+   "text": "El mazo de cartas del día pasa de siete a doce: esbirros de paseo, vuela la lechuza, noche de luciérnagas, buen olfato y hambre de páginas"
+  },
   {
    "version": 64,
    "kind": "improvement",
@@ -1762,8 +1768,72 @@
     "valley": "Una huella que no es de ningún animal conocido trae una pregunta para toda la clase. Si la clase acierta, saber para todos.",
     "azara": "El baqueano señala un rastro en el barro y hace una pregunta para toda la clase. Si la clase acierta, saber para todos."
    }
+  },
+  "minionday": {
+   "name": {
+    "valley": "Esbirros de paseo",
+    "azara": "Enredos en el camino"
+   },
+   "text": {
+    "valley": "Los esbirros del Embrollo salen de paseo. Hoy, el que te corta el camino da el doble de gemas si lo desenredas.",
+    "azara": "Hoy hay más enredos por el camino. El que te corta el paso da el doble de gemas si lo deshaces."
+   }
+  },
+  "owlnight": {
+   "name": {
+    "valley": "Vuela la lechuza",
+    "azara": "Noche de lechuzas"
+   },
+   "text": {
+    "valley": "La lechuza vuela bajo y espanta a los seres de sus escondites. Hoy, reconocerlos da el doble de gemas.",
+    "azara": "Las lechuzas cazan bajo y los animales se dejan ver. Hoy, reconocerlos da el doble de gemas."
+   }
+  },
+  "glowworms": {
+   "name": {
+    "valley": "Noche de luciérnagas",
+    "azara": "Luciérnagas en el monte"
+   },
+   "text": {
+    "valley": "Las luciérnagas se posan donde hay algo escondido. Hoy, los secretos de los lugares brillan más.",
+    "azara": "Las luciérnagas se posan donde hay algo escondido. Hoy, los secretos de cada lugar brillan más."
+   }
+  },
+  "sniff": {
+   "name": {
+    "valley": "Buen olfato",
+    "azara": "La criatura husmea"
+   },
+   "text": {
+    "valley": "Sopla el viento del bosque y la criatura huele de todo. Hoy olfatea una vez más en cada minijuego.",
+    "azara": "El viento trae olores del monte. Hoy la criatura olfatea una vez más en cada minijuego."
+   }
+  },
+  "pageday": {
+   "name": {
+    "valley": "Hambre de páginas",
+    "azara": "Día de cuaderno"
+   },
+   "text": {
+    "valley": "La criatura se ha despertado con hambre de páginas. Hoy, la página del día da el doble de aliento.",
+    "azara": "Hoy toca repasar el cuaderno. La página del día da el doble de aliento."
+   }
   }
  },
+ "deck": [
+  "calm",
+  "breeze",
+  "footprint",
+  "exchange",
+  "knot",
+  "messengers",
+  "trade",
+  "minionday",
+  "owlnight",
+  "glowworms",
+  "sniff",
+  "pageday"
+ ],
  "battle": {
   "reward": "thread",
   "final": {

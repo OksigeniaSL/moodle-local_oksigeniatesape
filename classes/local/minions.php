@@ -102,8 +102,10 @@ final class minions {
         if ($right) {
             $DB->insert_record(self::T . 'found', (object) ['charid' => $char->id, 'courseid' => $courseid,
                 'missionid' => $mission->id, 'kind' => 'untangled', 'code' => $code, 'timecreated' => $now]);
-            if (engine::gems($member, self::GEMS, 'minion', 0, 0, 0, $now)) {
-                $out['gems'] = self::GEMS;
+            // With «Minions out walking» as the card of the day, twice.
+            $gems = self::GEMS * (events::active($courseid, 'minionday', $now) ? 2 : 1);
+            if (engine::gems($member, $gems, 'minion', 0, 0, 0, $now)) {
+                $out['gems'] = $gems;
             }
             $out['weakness'] = missions::text($knot['weakness'] ?? '', $mission->skin);
         }

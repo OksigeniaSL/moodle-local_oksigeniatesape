@@ -109,12 +109,20 @@ final class creatures {
     }
 
     /**
-     * Whether the creature of a student sniffs in the minigames: from its second stage, once a play.
+     * Whether the creature of a student sniffs in the minigames: from its second stage, once a play; once more with
+     * «A good nose» as the card of the day of the course.
      *
      * @param \stdClass $char
+     * @param int $courseid The course played in, for the card of the day.
+     * @param int|null $now
      * @return int Sniffs in a play.
      */
-    public static function sniffs(\stdClass $char): int {
-        return self::traits($char) && (int) $char->creaturestage >= self::BRANCH_STAGE ? 1 : 0;
+    public static function sniffs(\stdClass $char, int $courseid = 0, ?int $now = null): int {
+        if (!self::traits($char)) {
+            return 0;
+        }
+        // With «A good nose» as the card of the day, once more.
+        $more = $courseid && events::active($courseid, 'sniff', $now) ? 1 : 0;
+        return ((int) $char->creaturestage >= self::BRANCH_STAGE ? 1 : 0) + $more;
     }
 }

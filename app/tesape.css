@@ -11378,3 +11378,33 @@ body.still .place-view .secret > span {
     animation: none;
   }
 }
+
+/* The card of the day over the map, folded: its name; open, what it does. */
+.card-today {
+  margin: 0 0 8px;
+  padding: 8px 12px;
+  border: 1px solid rgba(var(--lantern-rgb), .4);
+  border-radius: var(--r);
+  background: rgba(var(--night-rgb), .75);
+}
+
+.card-today summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.card-today summary .kicker {
+  display: inline;
+  margin-right: 4px;
+}
+
+.card-today p {
+  margin: 6px 0 0;
+}
+
+/* «Night of fireflies»: the secrets of the places glow more, and more often. */
+.place-view.glowday .secret > span {
+  opacity: .95;
+  animation-duration: 1.6s;
+  filter: drop-shadow(0 0 5px #fff3b0);
+}

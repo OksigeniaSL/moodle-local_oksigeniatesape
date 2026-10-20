@@ -118,7 +118,8 @@ final class daily {
             throw new \moodle_exception('pagedone', 'local_oksigeniatesape');
         }
         if ($right) {
-            engine::breath($member, self::BREATH, 'page', 0, 0, $now);
+            // With «Hungry for pages» as the card of the day, twice.
+            engine::breath($member, self::BREATH * (events::active($courseid, 'pageday', $now) ? 2 : 1), 'page', 0, 0, $now);
             // The minion that carried it is beaten, once.
             $mission = missions::get($courseid);
             $knot = $mission ? self::minion($mission, (string) $id) : null;

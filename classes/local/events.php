@@ -28,7 +28,14 @@ namespace local_oksigeniatesape\local;
  * - Messengers: one team takes a hint to another of its choice: today the first hint of each scene is free for it.
  *
  * The last two go to a team (drawn at random; the teacher can change it before anything comes of the card). A mission
- * can give the cards its own names and texts (`cards`).
+ * can give the cards its own names and texts (`cards`), and choose its deck (`deck`) among these and five more, which
+ * make more of what is already there:
+ *
+ * - Minions out walking: a minion untangled on the road gives twice the gems.
+ * - The owl flies: a being recognised in an encounter gives twice the gems.
+ * - Night of fireflies: the secrets of the places glow more.
+ * - A good nose: the creature sniffs once more in each minigame.
+ * - Hungry for pages: the page of the day gives twice the breath.
  *
  * @package    local_oksigeniatesape
  * @copyright  2026 Oksigenia <dev@oksigenia.cc>
@@ -38,8 +45,12 @@ final class events {
     /** @var string Prefix of the tables. */
     private const T = 'local_oksigeniatesape_';
 
-    /** @var string[] The cards of the deck. */
-    public const CARDS = ['calm', 'breeze', 'footprint', 'exchange', 'knot', 'messengers', 'trade'];
+    /** @var string[] The cards there are. */
+    public const CARDS = ['calm', 'breeze', 'footprint', 'exchange', 'knot', 'messengers', 'trade', 'minionday', 'owlnight',
+        'glowworms', 'sniff', 'pageday'];
+
+    /** @var string[] The deck of a mission that does not choose its own. */
+    public const CORE = ['calm', 'breeze', 'footprint', 'exchange', 'knot', 'messengers', 'trade'];
 
     /** @var string[] The cards that go to a team. */
     public const TARGETED = ['knot', 'messengers'];
@@ -99,7 +110,8 @@ final class events {
         if ($code === '') {
             $yesterday = self::today($courseid, engine::day_start($now, $courseid) - 1);
             $avoid = array_filter([$event->code ?? null, $yesterday->code ?? null]);
-            $cards = array_values(array_diff(self::CARDS, $avoid)) ?: self::CARDS;
+            $deck = self::deck($courseid);
+            $cards = array_values(array_diff($deck, $avoid)) ?: $deck;
             if (questions::pick($courseid) === null) {
                 // Without questions in the mission there is no footprint to follow.
                 $cards = array_values(array_diff($cards, ['footprint'])) ?: ['calm'];
@@ -151,6 +163,43 @@ final class events {
             $record->id = $DB->insert_record(self::T . 'event', $record);
         }
         return $DB->get_record(self::T . 'event', ['id' => $record->id], '*', MUST_EXIST);
+    }
+
+    /**
+     * The deck of a course: the one its mission chooses, or the usual one.
+     *
+     * @param int $courseid
+     * @return string[]
+     */
+    public static function deck(int $courseid): array {
+        $mission = missions::get($courseid);
+        $chosen = array_values(array_intersect(self::CARDS, (array) ($mission->data['deck'] ?? [])));
+        return $chosen ?: self::CORE;
+    }
+
+    /**
+     * The card of today as the students see it, once drawn: its code, name and text (those of the mission, or the usual
+     * ones).
+     *
+     * @param int $courseid
+     * @param int|null $now
+     * @return array|null code, name, text.
+     */
+    public static function for_students(int $courseid, ?int $now = null): ?array {
+        $event = self::today($courseid, $now);
+        if (!$event || $event->status !== 'drawn') {
+            return null;
+        }
+        $mission = missions::get($courseid);
+        $card = $mission ? ($mission->data['cards'][$event->code] ?? []) : [];
+        $name = $mission ? missions::text($card['name'] ?? '', $mission->skin, $mission->variant) : '';
+        $text = $mission ? missions::text($card['text'] ?? '', $mission->skin, $mission->variant) : '';
+        $sm = get_string_manager();
+        return ['code' => (string) $event->code,
+            'name' => $name !== '' ? $name : ($sm->string_exists('event_' . $event->code, 'local_oksigeniatesape') ?
+                get_string('event_' . $event->code, 'local_oksigeniatesape') : $event->code),
+            'text' => $text !== '' ? $text : ($sm->string_exists('event_' . $event->code . '_text', 'local_oksigeniatesape') ?
+                get_string('event_' . $event->code . '_text', 'local_oksigeniatesape') : '')];
     }
 
     /**

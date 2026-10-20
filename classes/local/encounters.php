@@ -192,6 +192,8 @@ final class encounters {
         }
         $fresh = count($crossed) === 1 && talents::has((int) $char->id, 'freshtrack', (int) $mission->courseid);
         $gems = $golden ? 2 * self::GEMS : (!$crossed || $fresh ? self::GEMS : 0);
+        // With «The owl flies» as the card of the day, twice.
+        $gems *= events::active((int) $member->courseid, 'owlnight', $now) ? 2 : 1;
         $entry = $gems ? engine::gems($member, $gems, 'encounter', 0, 0, 0, $now) : null;
         return ['right' => true, 'golden' => $golden, 'gems' => $entry ? (int) $entry->amount : 0,
             'name' => missions::text($being['name'] ?? '', $mission->skin, $mission->variant),
