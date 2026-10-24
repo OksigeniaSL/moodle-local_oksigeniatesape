@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 74,
+ "version": 75,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 75,
+   "kind": "improvement",
+   "date": "2026-10-24",
+   "text": "La ráfaga del Embrollo, desde el mapa: retos rápidos de una palabra («¡Vivo!», «¡Grupo!», «¡Piensa!»), cada vez más deprisa, y al final tres cosas a la vez"
+  },
   {
    "version": 74,
    "kind": "improvement",
@@ -4789,6 +4795,32 @@
      "shield": 4,
      "speed": 4
     }
+   }
+  },
+  "rafaga": {
+   "type": "burst",
+   "title": "La ráfaga del Embrollo",
+   "intro": {
+    "valley": "El Embrollo se planta en mitad del camino y suelta una ráfaga de preguntas, una detrás de otra, cada vez más deprisa. Contesta antes de que se acabe el tiempo: con tres fallos, se escapa riéndose.",
+    "azara": "Las notas del cuaderno salen volando, una detrás de otra, cada vez más deprisa. Atrapa cada una con su respuesta antes de que se acabe el tiempo: con tres fallos, se pierden en el viento."
+   },
+   "scene": {
+    "embrollo": {
+     "valley": "«¡Ráfaga! A ver si piensas tan deprisa como yo enredo.»",
+     "azara": "Una ráfaga de viento abre el cuaderno y las notas salen volando."
+    },
+    "creature": {
+     "valley": "{{creature}} se agacha para saltar en cuanto empiece.",
+     "azara": "{{creature}} sigue las notas con los ojos, una a una."
+    }
+   },
+   "win": {
+    "valley": "El Embrollo se queda sin aliento y sin preguntas. Pensar deprisa sale bien cuando se ha pensado despacio antes.",
+    "azara": "Todas las notas vuelven al cuaderno, cada una con su respuesta."
+   },
+   "lose": "Esta vez la ráfaga ha podido contigo. Abajo tienes lo que se te escapó, con su respuesta: vuelve cuando quieras.",
+   "reward": {
+    "gems": 3
    }
   },
   "terrarioclaro": {

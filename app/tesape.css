@@ -7233,6 +7233,194 @@ body.adapt-colours .errors-text .fixed ins {
   border-radius: 10px;
 }
 
+/* ---------- The burst of the Embrollo ---------- */
+
+/* The order in one word, big, as the Embrollo shouts it. */
+.burst-word {
+  margin: 4px 0 8px;
+  color: var(--lilac);
+  font-family: var(--f-title, inherit);
+  font-size: clamp(28px, 7vw, 44px);
+  font-weight: 800;
+  letter-spacing: .04em;
+  text-align: center;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, .35);
+}
+
+.burst-word.big {
+  display: block;
+  font-size: clamp(40px, 10vw, 64px);
+}
+
+.burst-word.beaten {
+  opacity: .55;
+  text-decoration: line-through;
+}
+
+.burst-hud {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.burst-misses {
+  display: flex;
+  gap: 6px;
+}
+
+.burst-miss {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--lantern);
+}
+
+.burst-miss.gone {
+  background: rgba(255, 255, 255, .15);
+}
+
+.burst-card {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  padding: 12px;
+  border-radius: var(--r);
+  background: rgba(var(--deep-rgb), .35);
+}
+
+.burst-thing .thing-pic {
+  width: 112px;
+  height: 112px;
+}
+
+.burst-thing .thing-name {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.burst-prompt {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.burst-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+}
+
+.burst-options.many {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 700px) {
+  .burst-options.many {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.burst-opt {
+  min-height: 56px;
+  font-size: 17px;
+  white-space: normal;
+}
+
+.burst-opt.right,
+.burst-pick.right {
+  box-shadow: 0 0 0 3px rgb(var(--leaf-rgb));
+}
+
+.burst-opt.wrong {
+  box-shadow: 0 0 0 3px var(--ember);
+}
+
+.burst-three {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+}
+
+.burst-pick {
+  min-height: 120px;
+  padding: 8px 4px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--parchment);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+.burst-pick[aria-pressed="true"] {
+  box-shadow: 0 0 0 4px var(--lantern);
+}
+
+.burst-pick.notalive {
+  filter: saturate(.5);
+}
+
+.burst-pick:focus-visible,
+.burst-opt:focus-visible {
+  outline: 3px solid var(--sky);
+  outline-offset: 2px;
+}
+
+/* The clock: a bar that empties; without hurry, there is none. */
+.burst-clock {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .12);
+  overflow: hidden;
+}
+
+.burst-clock i {
+  display: block;
+  height: 100%;
+  background: var(--lantern);
+  transform-origin: left center;
+  animation: burst-clock linear forwards;
+}
+
+@keyframes burst-clock {
+  from {
+    transform: scaleX(1);
+  }
+
+  to {
+    transform: scaleX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .burst-clock i {
+    animation-timing-function: steps(8, end);
+  }
+}
+
+.burst-say {
+  min-height: 1.4em;
+  font-weight: 700;
+}
+
+.burst-say.good {
+  color: var(--leaf-text);
+}
+
+.burst-say.bad {
+  color: var(--ember-text);
+}
+
+.landmark-btn.burst .landmark-pic svg {
+  width: 100%;
+  height: 100%;
+}
+
 /* ---------- The terrarium of the clearing ---------- */
 
 /* A glass jar drawn here: the terrarium of the intro and the end. */

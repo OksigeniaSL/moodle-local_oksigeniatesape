@@ -45,6 +45,11 @@ namespace local_oksigeniatesape\local;
  * the student touches only what is alive. A thing touched that is not alive is a slip, with its why; a living thing let
  * go is not caught.
  *
+ * The burst of the Embrollo (type burst): micro-challenges of one word, one after the other and faster each time: «Alive!»
+ * (is this thing alive?), «Group!» (the group of a being) and «Think!» (a question of the battle from the places the
+ * class has opened); three misses and it is over, and at the end the Embrollo throws three things at once. Made from the
+ * catalog and the questions of the mission, another one each play.
+ *
  * The terrarium of the clearing (type terrarium): what is alive is a process, and here time passes. The student puts in
  * a terrarium what they think is alive and lets a week go by: what is alive changes (it grows, eats, has young), what is
  * not stays the same, or changes without being alive (water dries up, a dry leaf crumbles). They take out what did not
@@ -84,6 +89,18 @@ final class minigames {
         'habitat' => ['tierra', 'agua-dulce', 'mar', 'subsuelo', 'casa', 'aire'],
     ];
 
+    /** @var int Micro-challenges of a burst before the three things at once. */
+    public const BURST = 9;
+
+    /** @var int Misses that end a burst. */
+    public const BURST_MISSES = 3;
+
+    /** @var int[] Seconds for each kind of micro-challenge, at the start of a burst. */
+    public const BURST_SECONDS = ['alive' => 8, 'group' => 10, 'question' => 16, 'boss' => 14];
+
+    /** @var string[] Groups of the catalog that are animals, for «Group!». */
+    private const ANIMALGROUPS = ['mamifero', 'ave', 'reptil', 'anfibio', 'pez', 'insecto', 'aracnido', 'molusco'];
+
     /** @var string[] Groups of the catalog that are not animals. */
     private const NOTANIMALS = ['planta', 'alga', 'hongo', 'bacteria'];
 
@@ -121,6 +138,8 @@ final class minigames {
             $config = self::guesswho_config($mission, $code, $game, $step, $charid, $plays);
         } else if (($game['type'] ?? '') === 'terrarium') {
             $config = self::terrarium_config($mission, $code, $game, $step);
+        } else if (($game['type'] ?? '') === 'burst') {
+            $config = self::burst_config($mission, $code, $game, $charid, $plays);
         } else {
             $config = self::config_step($mission, $code, $step);
         }
@@ -498,6 +517,131 @@ final class minigames {
     }
 
     /**
+     * A burst of the Embrollo: micro-challenges drawn for this play (by the student and the plays they kept), from the
+     * catalog and from the questions of the places the class has opened, and the three things at once at the end.
+     *
+     * @param \stdClass $mission With data.
+     * @param string $code
+     * @param array $game
+     * @param int $charid
+     * @param int $plays Plays the student has kept: each one, another burst.
+     * @return array
+     */
+    private static function burst_config(\stdClass $mission, string $code, array $game, int $charid, int $plays): array {
+        global $DB;
+        $catalog = $mission->data['things'] ?? [];
+        $seed = $code . '|' . $charid . '|' . $plays;
+        $shuffle = function (array $list, string $salt) use ($seed): array {
+            usort($list, fn($a, $b) => crc32($seed . $salt . json_encode($a)) <=> crc32($seed . $salt . json_encode($b)));
+            return $list;
+        };
+        $word = fn($kind) => get_string('burst_word_' . $kind, 'local_oksigeniatesape');
+        $things = [];
+        foreach ($catalog as $id => $card) {
+            $things[] = ['id' => (string) $id, 'label' => self::variant($mission, $card['label'] ?? $id),
+                'alive' => !empty($card['alive']), 'group' => (string) ($card['group'] ?? ''),
+                'picture' => self::picture($mission, (string) $id, !empty($card['alive']))];
+        }
+        // «Alive!»: half alive and half not, as they come.
+        $alive = $shuffle($things, 'a');
+        // «Group!»: the animals, plants and fungi (an alga or a bacterium would answer with its own name); the other options,
+        // from their own family.
+        $groups = $shuffle(array_values(array_filter($things, fn($x) => in_array($x['group'], self::ANIMALGROUPS, true) ||
+            in_array($x['group'], ['planta', 'hongo'], true))), 'g');
+        // «Think!»: the questions of the places the class has lit, and of the place it is opening.
+        $lit = $DB->get_records_menu(self::T . 'chapter', ['missionid' => $mission->id], 'sortorder', 'code, litat');
+        $upto = 1;
+        foreach (array_values($lit) as $i => $litat) {
+            if ($litat) {
+                $upto = $i + 2;
+            }
+        }
+        $codes = array_slice(array_map(fn($c) => (string) $c['code'], $mission->data['chapters'] ?? []), 0, $upto);
+        // The place of a question, by its code or by its number.
+        $place = fn($c) => is_numeric($c) ? (string) ($mission->data['chapters'][(int) $c - 1]['code'] ?? '') : (string) $c;
+        $questions = $shuffle(array_values(array_filter(
+            $mission->data['questions'] ?? [],
+            fn($q) => in_array($place($q['chapter'] ?? 1), $codes, true) && count($q['options'] ?? []) >= 2
+        )), 'q');
+        $items = [];
+        $kinds = ['alive', 'group', 'question'];
+        $taken = [];
+        for ($i = 0; $i < self::BURST; $i++) {
+            $kind = $kinds[$i % 3];
+            if ($kind === 'question' && !$questions) {
+                $kind = 'alive';
+            }
+            if ($kind === 'alive' || ($kind === 'group' && !$groups)) {
+                $x = null;
+                while ($alive && (!$x || isset($taken[$x['id']]))) {
+                    $x = array_shift($alive);
+                }
+                $taken[$x['id']] = true;
+                $items[] = ['kind' => 'alive', 'word' => $word('alive'), 'prompt' => get_string('burst_ask_alive', 'local_oksigeniatesape'),
+                    'label' => $x['label'], 'picture' => $x['picture'], 'options' => [
+                        get_string('burst_alive_yes', 'local_oksigeniatesape'),
+                        get_string('burst_alive_no', 'local_oksigeniatesape'),
+                    ], 'right' => $x['alive'] ? 0 : 1, 'seconds' => self::BURST_SECONDS['alive'], 'things' => []];
+            } else if ($kind === 'group') {
+                $x = array_shift($groups);
+                $family = in_array($x['group'], self::ANIMALGROUPS, true) ? self::ANIMALGROUPS : self::NOTANIMALS;
+                $others = array_slice($shuffle(array_values(array_diff($family, [$x['group']])), 'o' . $i), 0, 2);
+                $options = $shuffle(array_merge([$x['group']], $others), 'p' . $i);
+                $items[] = ['kind' => 'group', 'word' => $word('group'), 'prompt' => get_string('burst_ask_group', 'local_oksigeniatesape'),
+                    'label' => $x['label'], 'picture' => $x['picture'],
+                    'options' => array_map(fn($g) => get_string('burst_group_' . $g, 'local_oksigeniatesape'), $options),
+                    'right' => (int) array_search($x['group'], $options, true), 'seconds' => self::BURST_SECONDS['group'],
+                    'things' => []];
+            } else {
+                $q = array_shift($questions);
+                $options = array_map(fn($o) => missions::text($o, $mission->skin, $mission->variant), array_values($q['options']));
+                $order = $shuffle(array_keys($options), 'q' . $i);
+                $items[] = ['kind' => 'question', 'word' => $word('question'),
+                    'prompt' => missions::text($q['text'] ?? '', $mission->skin, $mission->variant), 'label' => '', 'picture' => '',
+                    'options' => array_map(fn($k) => $options[$k], $order), 'right' => (int) array_search(0, $order, true),
+                    'seconds' => self::BURST_SECONDS['question'], 'things' => []];
+            }
+        }
+        // The Embrollo at the end: three things at once, to touch those that are alive (at least one, never all three).
+        $three = [];
+        foreach ($alive as $x) {
+            if (count($three) < 3 && !isset($taken[$x['id']])) {
+                $three[] = $x;
+            }
+        }
+        $count = count(array_filter($three, fn($x) => $x['alive']));
+        if (count($three) === 3 && ($count === 0 || $count === 3)) {
+            // One of the other side takes the place of the last.
+            foreach ($alive as $x) {
+                if ($x['alive'] !== $three[0]['alive'] && !in_array($x, $three, true)) {
+                    $three[2] = $x;
+                    break;
+                }
+            }
+        }
+        $items[] = ['kind' => 'boss', 'word' => $word('boss'), 'prompt' => get_string('burst_ask_boss', 'local_oksigeniatesape'),
+            'label' => '', 'picture' => '', 'options' => [], 'right' => 0, 'seconds' => self::BURST_SECONDS['boss'],
+            'things' => array_map(fn($x) => ['id' => $x['id'], 'label' => $x['label'], 'picture' => $x['picture'],
+                'alive' => $x['alive']], $three)];
+        return [
+            'code' => $code,
+            'type' => 'burst',
+            'title' => missions::text($game['title'] ?? $code, $mission->skin),
+            'intro' => missions::text($game['intro'] ?? '', $mission->skin, $mission->variant),
+            'win' => missions::text($game['win'] ?? '', $mission->skin, $mission->variant),
+            'lose' => missions::text($game['lose'] ?? '', $mission->skin, $mission->variant),
+            'nets' => [],
+            'animals' => [],
+            'burst' => $items,
+            'seed' => $plays,
+            'misses' => self::BURST_MISSES,
+            'goal' => count($items),
+            'shield' => 0,
+            'speed' => 0,
+        ];
+    }
+
+    /**
      * The terrarium of the clearing as a student of a step plays it: the things of their step, from the catalog, with
      * what a week does to each one; how many living things the terrarium needs, and how many fit in it.
      *
@@ -800,6 +944,8 @@ final class minigames {
             [$caught, $missed, $wrong, $success, $golden] = self::count_guesswho($game, $events);
         } else if (($game['type'] ?? '') === 'terrarium') {
             [$caught, $missed, $wrong, $success, $weeks] = self::count_terrarium($game, $events);
+        } else if (($game['type'] ?? '') === 'burst') {
+            [$caught, $missed, $wrong, $success] = self::count_burst($game, $events);
         } else if (($game['type'] ?? '') === 'errors') {
             [$caught, $missed, $wrong, $success] = self::count_errors($game, $events);
         } else if (($game['type'] ?? '') === 'whack') {
@@ -1145,6 +1291,48 @@ final class minigames {
     }
 
     /**
+     * Counts a play of a burst: each micro-challenge in its order (i, from 0; a, the option touched, or -1 when the time ran
+     * out; for the three things at once, picked, those touched). Three misses end it, and nothing comes after; won when
+     * all of them were played with fewer misses.
+     *
+     * @param array $game As the student plays it.
+     * @param array $events
+     * @return array [right, misses, wrong (kind:index => what), success]
+     */
+    private static function count_burst(array $game, array $events): array {
+        $items = $game['burst'];
+        $right = 0;
+        $misses = 0;
+        $wrong = [];
+        $next = 0;
+        foreach ($events as $k => $event) {
+            if ($k === 0 && isset($event['n'])) {
+                continue;
+            }
+            $i = (int) ($event['i'] ?? -1);
+            if ($i !== $next || !isset($items[$i]) || $misses >= (int) $game['misses']) {
+                throw new \moodle_exception('invalidgameplay', 'local_oksigeniatesape');
+            }
+            $next++;
+            $item = $items[$i];
+            if ($item['kind'] === 'boss') {
+                $picked = array_values(array_unique(array_map('strval', (array) ($event['picked'] ?? []))));
+                $should = array_column(array_filter($item['things'], fn($x) => $x['alive']), 'id');
+                $ok = !array_diff($picked, $should) && !array_diff($should, $picked);
+            } else {
+                $ok = (int) ($event['a'] ?? -1) === (int) $item['right'];
+            }
+            if ($ok) {
+                $right++;
+            } else {
+                $misses++;
+                $wrong[$item['kind'] . ':' . $i] = $item['kind'] === 'boss' ? 'boss' : (string) ($item['label'] ?: $item['prompt']);
+            }
+        }
+        return [$right, $misses, $wrong, $next === count($items) && $misses < (int) $game['misses']];
+    }
+
+    /**
      * Counts a play of the terrarium: each thing put in or taken out (i, and in: 1 or 0, with as many inside as fit), each
      * week let go by with something inside (w), and each look that shows a thing is not alive (l). Won at the first week
      * with everything inside alive and as many as the goal; nothing comes after it.
@@ -1375,6 +1563,13 @@ final class minigames {
                         get_string($string, 'local_oksigeniatesape') : $key;
                     $confusions[] = ['text' => get_string('minigame_guesswho_first', 'local_oksigeniatesape', $question),
                         'count' => $count];
+                    continue;
+                }
+                if (($game['type'] ?? '') === 'burst') {
+                    // What the class misses most in the bursts: the thing, the being or the question.
+                    $what = explode('|', $key, 2)[1] ?? '';
+                    $confusions[] = ['text' => $what === 'boss' ? get_string('minigame_burst_boss', 'local_oksigeniatesape') :
+                        get_string('minigame_burst_missed', 'local_oksigeniatesape', $what), 'count' => $count];
                     continue;
                 }
                 if (($game['type'] ?? '') === 'terrarium') {

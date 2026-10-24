@@ -2072,11 +2072,15 @@
     if (w.museum) {
       list.push(['museum', T.artUrl(['landmark.museum', 'landmark.valley.library']), 'log']);
     }
-    return list.length ? '<div class="map-landmarks">' + list.map(function(l) {
+    // The burst of the Embrollo is not a place: it opens the game at once.
+    var burst = w.mission && w.mission.burst ? '<button type="button" class="landmark-btn burst" data-game="' +
+      esc(w.mission.burst) + '" data-gametype="burst"><span class="landmark-pic" aria-hidden="true">' + T.embrollo(0.6) +
+      '</span><span>' + esc(t('app_landmark_burst')) + '</span></button>' : '';
+    return list.length || burst ? '<div class="map-landmarks">' + list.map(function(l) {
       return '<button type="button" class="landmark-btn ' + l[0] + '" data-landmark="' + l[0] + '"><span class="landmark-pic" ' +
         'aria-hidden="true">' + (l[1] ? '<img src="' + esc(l[1]) + '" alt="">' : T.icon(l[2])) + '</span><span>' +
         esc(t('app_landmark_' + l[0])) + '</span></button>';
-    }).join('') + '</div>' : '';
+    }).join('') + burst + '</div>' : '';
   }
 
   /**

@@ -112,7 +112,7 @@ final class get_minigame extends external_api {
             'type' => new external_value(
                 PARAM_ALPHA,
                 'nest (Defensa del nido), errors (the hunt for mistakes), whack (Who is alive?), venn (the two circles), whoami, ' .
-                    'guesswho or terrarium',
+                    'guesswho, terrarium or burst',
                 VALUE_DEFAULT,
                 'nest'
             ),
@@ -195,6 +195,22 @@ final class get_minigame extends external_api {
             'seed' => new external_value(PARAM_INT, 'Guess who: plays kept when this one began', VALUE_DEFAULT, 0),
             'golden' => new external_value(PARAM_INT, 'Guess who: questions at most for a golden card', VALUE_DEFAULT, 0),
             'most' => new external_value(PARAM_INT, 'The terrarium: things that fit in it', VALUE_DEFAULT, 0),
+            'burst' => new external_multiple_structure(new external_single_structure([
+                'kind' => new external_value(PARAM_ALPHA, 'alive, group, question or boss (three things at once)'),
+                'word' => new external_value(PARAM_TEXT, 'The order, in one word'),
+                'prompt' => new external_value(PARAM_TEXT, 'What to do, or the question'),
+                'label' => new external_value(PARAM_TEXT, 'The thing or the being, empty for a question'),
+                'picture' => new external_value(PARAM_RAW_TRIMMED, 'Key of its drawing in the art pack', VALUE_DEFAULT, ''),
+                'options' => new external_multiple_structure(new external_value(PARAM_TEXT, 'An answer')),
+                'right' => new external_value(PARAM_INT, 'The right answer, from 0'),
+                'seconds' => new external_value(PARAM_INT, 'Seconds at the start of the burst'),
+                'things' => new external_multiple_structure(new external_single_structure([
+                    'id' => new external_value(PARAM_ALPHANUMEXT, 'Thing'),
+                    'label' => new external_value(PARAM_TEXT, 'Name'),
+                    'picture' => new external_value(PARAM_RAW_TRIMMED, 'Key of its drawing', VALUE_DEFAULT, ''),
+                    'alive' => new external_value(PARAM_BOOL, 'Whether it is alive'),
+                ]), 'The three things at once', VALUE_DEFAULT, []),
+            ]), 'The burst of the Embrollo: its micro-challenges in order', VALUE_DEFAULT, []),
             'training' => new external_value(
                 PARAM_BOOL,
                 'Won already and no gems left today for winning again',

@@ -268,6 +268,7 @@ final class structures {
                 'x' => new external_value(PARAM_INT, 'Where on the map, in its units (400 wide)'),
                 'y' => new external_value(PARAM_INT, 'Where on the map, in its units'),
             ]), 'The secrets still hidden on the map, between the places', VALUE_DEFAULT, []),
+            'burst' => new external_value(PARAM_ALPHANUMEXT, 'Code of the burst of the Embrollo, empty if none', VALUE_DEFAULT, ''),
             'pranks' => new external_multiple_structure(new external_single_structure([
                 'chapter' => new external_value(PARAM_ALPHANUMEXT, 'Code of the place'),
                 'name' => new external_value(PARAM_TEXT, 'The name the Embrollo puts to it'),

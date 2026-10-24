@@ -545,6 +545,68 @@ final class minigames_test extends \advanced_testcase {
         $this->assertContains(get_string('minigame_guesswho_first', 'local_oksigeniatesape', $first), $texts);
     }
 
+    public function test_the_burst_of_the_embrollo(): void {
+        $this->resetAfterTest();
+        $w = $this->make_class();
+        $char = characters::get($w->user->id);
+        $step = (int) $w->member->step;
+        $config = fn($plays) => minigames::config($w->mission, 'rafaga', $step, 'scout', [], 0, [], (int) $char->id, $plays);
+        $game = $config(0);
+        $this->assertSame('burst', $game['type']);
+        $this->assertCount(minigames::BURST + 1, $game['burst']);
+        $this->assertSame(['alive', 'group', 'question'], array_slice(array_column($game['burst'], 'kind'), 0, 3));
+        $boss = end($game['burst']);
+        $this->assertSame('boss', $boss['kind']);
+        $this->assertCount(3, $boss['things']);
+        // Three at once: at least one alive, never all three.
+        $alive = count(array_filter($boss['things'], fn($x) => $x['alive']));
+        $this->assertGreaterThan(0, $alive);
+        $this->assertLessThan(3, $alive);
+        // With no lantern lit, the questions are those of the first place.
+        $first = [];
+        foreach ($w->mission->data['questions'] as $q) {
+            $first[missions::text($q['text'], $w->mission->skin, $w->mission->variant)] = (string) $q['chapter'];
+        }
+        $clearing = (string) $w->mission->data['chapters'][0]['code'];
+        foreach ($game['burst'] as $item) {
+            if ($item['kind'] === 'question') {
+                $this->assertSame($clearing, $first[$item['prompt']]);
+            }
+            if ($item['kind'] !== 'boss') {
+                $this->assertArrayHasKey($item['right'], $item['options']);
+            }
+        }
+        // Each play, another burst.
+        $this->assertNotSame(array_column($game['burst'], 'label'), array_column($config(1)['burst'], 'label'));
+        // All right: won, with its gems.
+        $all = [['n' => 0]];
+        foreach ($game['burst'] as $i => $item) {
+            $living = array_column(array_filter($item['things'], fn($x) => $x['alive']), 'id');
+            $all[] = $item['kind'] === 'boss' ? ['i' => $i, 'picked' => $living] : ['i' => $i, 'a' => $item['right']];
+        }
+        $result = minigames::play($w->course->id, $w->user->id, 'rafaga', $all);
+        $this->assertTrue($result['success']);
+        $this->assertSame(minigames::BURST + 1, $result['caught']);
+        $this->assertSame(3, $result['gems']);
+        // Three misses end it: lost, and nothing may come after them.
+        $next = $config(1);
+        $lost = [['n' => 1]];
+        foreach (array_slice($next['burst'], 0, 3) as $i => $item) {
+            $lost[] = ['i' => $i, 'a' => -1];
+        }
+        $this->assertFalse(minigames::play($w->course->id, $w->user->id, 'rafaga', $lost)['success']);
+        $lost[] = ['i' => 3, 'a' => $next['burst'][3]['right']];
+        try {
+            minigames::play($w->course->id, $w->user->id, 'rafaga', $lost);
+            $this->fail('A burst went on after three misses');
+        } catch (\moodle_exception $e) {
+            $this->assertSame('invalidgameplay', $e->errorcode);
+        }
+        // The teacher sees what was missed.
+        $results = array_column(minigames::results($w->mission), null, 'code');
+        $this->assertNotEmpty($results['rafaga']['confusions']);
+    }
+
     public function test_the_terrarium(): void {
         global $DB;
         $this->resetAfterTest();
