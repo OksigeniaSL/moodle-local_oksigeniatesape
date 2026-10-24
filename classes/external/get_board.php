@@ -126,6 +126,17 @@ final class get_board extends external_api {
             'opener' => new external_value(PARAM_TEXT, 'A question to open the class, from the plan of the AI', VALUE_OPTIONAL),
             'today' => structures::today(),
             'expeditions' => structures::expeditions(),
+            'fog' => new external_multiple_structure(
+                new external_value(PARAM_ALPHANUMEXT, 'A place in the fog'),
+                'The places the class has forgotten, in the fog of the Embrollo',
+                VALUE_DEFAULT,
+                []
+            ),
+            'tokens' => new external_multiple_structure(new external_single_structure([
+                'teamid' => new external_value(PARAM_INT, 'Team'),
+                'team' => new external_value(PARAM_TEXT, 'Its name'),
+                'place' => new external_value(PARAM_ALPHANUMEXT, 'Where most of it played last'),
+            ]), 'The token of each team on the board', VALUE_DEFAULT, []),
         ]);
     }
 }

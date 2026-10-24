@@ -164,7 +164,9 @@ final class live {
         $final = $final && !$rehearsal;
         // The final battle: the knots of what the class still mixes up, kept by the Embrollo for the end.
         $known = $final && $turns ? array_column(expedition::known($courseid), 'code') : [];
-        $plan = $turns && !$rehearsal ? knots::plan($courseid, $count, $final, $known) : [];
+        // With the fog over three places or more, the Embrollo grows: a knot more.
+        $grown = $turns && !$rehearsal && count(fog::places($courseid)) >= fog::GROWS;
+        $plan = $turns && !$rehearsal ? knots::plan($courseid, $count + ($grown ? 1 : 0), $final, $known) : [];
         $questions = $rehearsal ? self::REHEARSAL : ($plan ? array_column($plan, 1) : questions::pick_many($courseid, $count));
         if (!$questions) {
             throw new \moodle_exception('noquestions', 'local_oksigeniatesape');
@@ -186,7 +188,8 @@ final class live {
             $state['knots'] = array_column($plan, 0);
             $rules = knots::rules(missions::get($courseid));
             $state += ['candles' => $rules['candles'], 'maxcandles' => $rules['candles'], 'phases' => $rules['phases'],
-                'tangled' => [], 'broken' => [], 'hanging' => [], 'dazed' => false, 'known' => $known, 'dizzy' => []];
+                'tangled' => [], 'broken' => [], 'hanging' => [], 'dazed' => false, 'known' => $known, 'dizzy' => [],
+                'grown' => $grown];
         }
         $record = (object) ['courseid' => $courseid, 'kind' => 'battle', 'state' => json_encode($state), 'round' => 0,
             'timecreated' => $now, 'timemodified' => $now, 'timeend' => 0];
@@ -1746,6 +1749,8 @@ final class live {
             'counter' => $round > 0 ? (int) ($state['rounds'][$round]['counter'] ?? 0) : 0,
             'shielded' => $round > 0 && !empty($state['rounds'][$round]['shielded']),
             'parried' => $round > 0 && !empty($state['rounds'][$round]['parried']),
+            // By turns, the Embrollo grown by the fog over the valley: a knot more.
+            'grown' => !empty($state['grown']),
             // By turns, the candles of the tower from the lobby to the end: the screens know it is a battle by turns.
             'candles' => (int) ($state['candles'] ?? 0),
             'maxcandles' => (int) ($state['maxcandles'] ?? 0),

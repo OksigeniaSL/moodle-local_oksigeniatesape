@@ -878,6 +878,12 @@ final class structures {
                 VALUE_DEFAULT,
                 false
             ),
+            'grown' => new external_value(
+                PARAM_BOOL,
+                'By turns: the fog over the valley gave the Embrollo a knot more',
+                VALUE_DEFAULT,
+                false
+            ),
             'stage' => new external_value(PARAM_ALPHA, 'By turns: intent, prep, strike or resolve', VALUE_DEFAULT, ''),
             'stageleft' => new external_value(PARAM_INT, 'By turns: seconds left of the stage (-1: no limit)', VALUE_DEFAULT, 0),
             'knot' => new external_single_structure([

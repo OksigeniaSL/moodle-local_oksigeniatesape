@@ -641,6 +641,9 @@ final class view {
             $board['today'] = $today;
         }
         $board['expeditions'] = self::expeditions($courseid);
+        // The board as a game board: the fog of the Embrollo over the places the class forgot, and the token of each team.
+        $board['fog'] = fog::places($courseid);
+        $board['tokens'] = fog::tokens($courseid);
         $opener = nextclass::opener($courseid, $now ?? time());
         if ($opener !== '') {
             $board['opener'] = $opener;

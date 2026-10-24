@@ -7685,6 +7685,77 @@ body.adapt-colours .errors-text .fixed ins {
   font-weight: 700;
 }
 
+/* ---------- The board as a game board: the fog of the Embrollo and the tokens of the teams ---------- */
+
+.fog-cloud ellipse {
+  fill: rgba(var(--lilac-rgb), .42);
+  animation: fog-drift 9s ease-in-out infinite alternate;
+}
+
+.fog-cloud ellipse:nth-child(2n) {
+  animation-duration: 12s;
+}
+
+@keyframes fog-drift {
+  from {
+    transform: translateX(-4px);
+  }
+
+  to {
+    transform: translateX(5px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fog-cloud ellipse {
+    animation: none;
+  }
+}
+
+.team-token circle {
+  stroke: #fff;
+  stroke-width: 2;
+}
+
+.team-token text {
+  font-size: 11px;
+  font-weight: 700;
+  fill: #fff;
+}
+
+.team-token.two text {
+  font-size: 9px;
+}
+
+.team-token.token-0 circle {
+  fill: #c0563a;
+}
+
+.team-token.token-1 circle {
+  fill: #2f7d6b;
+}
+
+.team-token.token-2 circle {
+  fill: #3a5fa8;
+}
+
+.team-token.token-3 circle {
+  fill: #8a5a9e;
+}
+
+.team-token.token-4 circle {
+  fill: #a8742a;
+}
+
+.team-token.token-5 circle {
+  fill: #4b6b2f;
+}
+
+.fog-note {
+  margin: 8px 0;
+  color: var(--text-soft);
+}
+
 /* ---------- The tools of the classroom on the class screen ---------- */
 
 .class-tool {

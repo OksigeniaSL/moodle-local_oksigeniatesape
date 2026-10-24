@@ -1025,7 +1025,8 @@
         '</p></div>' + (l.sorting ? '<div class="board-sorting" data-sorting></div>' : '');
       buttons = '<button class="btn btn-main" data-dismiss>' + esc(t('board_battle_back')) + '</button>';
     } else if (!l.round) {
-      main = '<div class="battle-lobby">' + (l.rematch ? '<p class="turn-outcome fell">' + esc(t('board_battle_rematch',
+      main = '<div class="battle-lobby">' + (l.grown ? '<p class="turn-outcome fell grown">' + esc(t('board_battle_grown')) +
+        '</p>' : '') + (l.rematch ? '<p class="turn-outcome fell">' + esc(t('board_battle_rematch',
         l.rematch)) + '</p>' : '') + '<p class="lead">' + esc(t(l.mode === 'phones' ? 'board_battle_join' :
         l.maxcandles ? 'board_turn_aloudhelp' :
         'board_battle_aloudhelp')) + '</p>' + (l.mode === 'phones' ? '<p class="battle-count">' + esc(players() ?
@@ -1932,16 +1933,37 @@
     var photos = (state.cls && state.cls.photos || []).filter(function(p) {
       return p.status === 'approved';
     });
+    // The board as a game board: the fog of the Embrollo over the places the class forgot, and the token of each team.
+    var fog = state.board.fog || [];
+    var tokens = state.board.tokens || [];
+    // Each token with the initial of its team; two letters where two teams start alike.
+    var bare = function(x) {
+      return String(x.team).replace(/^(Team|Equipo)\s+/i, '');
+    };
+    tokens.forEach(function(x) {
+      var one = bare(x).charAt(0).toUpperCase();
+      var alike = tokens.filter(function(y) {
+        return bare(y).charAt(0).toUpperCase() === one;
+      }).length > 1;
+      x.initial = alike ? one + bare(x).charAt(1).toLowerCase() : one;
+    });
     var places = m.chapters.map(function(ch, i) {
       var here = photos.filter(function(p) {
         return p.chapter === ch.code;
       }).slice(0, 3);
+      var foggy = fog.indexOf(ch.code) >= 0;
+      var teams = tokens.filter(function(x) {
+        return x.place === ch.code;
+      });
       // A place the class lit that the Embrollo came back to: its lantern flickers until the stain is cleaned.
       var back = ch.lit && ((state.board.today && state.board.today.stains) || []).some(function(s) {
         return s.chapter === ch.code && s.kind !== 'page';
       });
-      return '<g class="place' + (ch.lit ? ' mine lit' : '') + (back ? ' flicker' : '') + '" data-art="' +
-        esc(ch.art || ch.code) + '" aria-label="' + esc(ch.name) + '">' + here.map(function(p, k) {
+      return '<g class="place' + (ch.lit ? ' mine lit' : '') + (back ? ' flicker' : '') + (foggy ? ' foggy' : '') + '" data-art="' +
+        esc(ch.art || ch.code) + '" aria-label="' + esc(ch.name + (foggy ? ' · ' + t('board_fog_place') : '') +
+        (teams.length ? ' · ' + teams.map(function(x) {
+          return x.team;
+        }).join(', ') : '')) + '">' + here.map(function(p, k) {
           return T.photoSticker(p, ch.x, ch.y, i, k);
         }).join('') +
         (ch.lit ? '<circle cx="' + ch.x + '" cy="' + ch.y + '" r="40" class="classglow"/>' : '') +
@@ -1950,7 +1972,9 @@
         '" width="40" height="50" class="' + (ch.lit ? 'lamp-on' : 'lamp-off') + '"/>' :
         '<rect x="' + (ch.x - 2) + '" y="' + (ch.y - 4) + '" width="4" height="17" rx="1" fill="#2b2219"/>' +
         '<circle cx="' + ch.x + '" cy="' + (ch.y - 7) + '" r="7" class="flame"/>') +
-        T.mapLabel(ch.x, ch.y + 44, ch.name) + '</g>';
+        T.mapLabel(ch.x, ch.y + 44, ch.name) + (foggy ? fogCloud(ch.x, ch.y) : '') + teams.map(function(x, k) {
+          return teamToken(x, ch.x, ch.y, k);
+        }).join('') + '</g>';
     }).join('') + dozing(m) + stickers(m);
     var height = T.mapHeight(m);
     var fresh = T.mapNewRoad('board-' + cfg.courseid + '-' + m.code, m.chapters, Math.min(lit, m.chapters.length - 1));
@@ -1960,8 +1984,60 @@
       '"><svg class="map" viewBox="0 0 400 ' + height + '" role="img" aria-label="' + esc(m.title) + '"><defs>' + T.MAPGLOW +
       '</defs>' + T.mapGround(m) + T.mapLandmarks(m) + T.mapNight(m) +
       '<polyline points="' + pts + '" class="road"/>' + (lit ? '<polyline points="' + walked + '" class="road walked"/>' : '') +
-      drawn + (T.critters ? T.critters.fireflies(m) : '') + places + '</svg></div>' + classRow() + pastExpeditions() +
-      '</section>';
+      drawn + (T.critters ? T.critters.fireflies(m) : '') + places + '</svg></div>' + fogNote(m, fog) + classRow() +
+      pastExpeditions() + '</section>';
+  }
+
+  /**
+   * What the fog says under the map: the places the class has forgotten and, with three or more, that the Embrollo grows.
+   *
+   * @param {Object} m The mission.
+   * @param {string[]} fog Codes of the places in the fog.
+   * @return {string}
+   */
+  function fogNote(m, fog) {
+    if (!fog.length) {
+      return '';
+    }
+    var names = m.chapters.filter(function(ch) {
+      return fog.indexOf(ch.code) >= 0;
+    }).map(function(ch) {
+      return ch.name;
+    });
+    var list = names.length > 1 ? names.slice(0, -1).join(', ') + ' ' + t('board_and') + ' ' + names[names.length - 1] :
+      names[0];
+    return '<p class="fog-note">' + esc(t('board_fog_note', list)) + (fog.length >= 3 ? ' ' +
+      esc(t('board_fog_grows')) : '') + '</p>';
+  }
+
+  /**
+   * The fog of the Embrollo over a place the class has forgotten: lilac clouds that drift over its lantern.
+   *
+   * @param {number} x
+   * @param {number} y
+   * @return {string}
+   */
+  function fogCloud(x, y) {
+    return '<g class="fog-cloud" aria-hidden="true">' + [[-26, -6, 22], [-4, -16, 26], [20, -4, 20], [0, 8, 24]].map(function(c) {
+      return '<ellipse cx="' + (x + c[0]) + '" cy="' + (y + c[1]) + '" rx="' + c[2] + '" ry="' + Math.round(c[2] * 0.62) + '"/>';
+    }).join('') + '</g>';
+  }
+
+  /**
+   * The token of a team on the board, beside the place where it works: a round flag with its initial.
+   *
+   * @param {Object} x teamid, team, place.
+   * @param {number} cx
+   * @param {number} cy
+   * @param {number} k Its order among the teams of the place.
+   * @return {string}
+   */
+  function teamToken(x, cx, cy, k) {
+    var tx = cx - 34 + (k % 3) * 22;
+    var ty = cy + 62 + Math.floor(k / 3) * 22;
+    return '<g class="team-token token-' + (x.teamid % 6) + (String(x.initial).length > 1 ? ' two' : '') + '" aria-hidden="true">' +
+      '<circle cx="' + tx + '" cy="' + ty + '" r="10"/><text x="' + tx + '" y="' + (ty + 4) + '" text-anchor="middle">' +
+      esc(x.initial) + '</text></g>';
   }
 
   /**
