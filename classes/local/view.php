@@ -55,6 +55,8 @@ final class view {
             'enabled' => $enabled,
             'family' => $region->family ?? 'storyheroes',
             'nicknames' => (int) ($region->nicknames ?? 0),
+            // What puts a student in pause, agreed with the class: they can read it on their sheet.
+            'pauses' => regions::pauses($region),
             'quiet' => (bool) ($region->quiet ?? false),
             'devicemusic' => (int) ($region->devicemusic ?? 1),
             'energymax' => engine::ENERGY_MAX,
@@ -929,6 +931,8 @@ final class view {
             'setup' => (int) ($region->setup ?? 0),
             'reasons' => regions::reasons($region),
             'reasonsown' => !empty($region->reasons),
+            'pauses' => regions::pauses($region),
+            'pausesown' => !empty($region->pauses),
             // Without completion of activities, the activities of Moodle give no saber: the first step says so.
             'completion' => !empty($GLOBALS['CFG']->enablecompletion) && (!$region ||
                 !empty($GLOBALS['DB']->get_field('course', 'enablecompletion', ['id' => games::course((int) $region->courseid)]))),
@@ -1035,6 +1039,7 @@ final class view {
                 // from far, the teacher decides whether their team sees it.
                 'status' => !$private && $member->status === 'paused' ? 'away' : $member->status,
                 'statusreason' => $private ? (string) $member->statusreason : '',
+                'pausedto' => $private && $member->status === 'paused' ? (int) ($member->pausedto ?? 0) : 0,
                 'step' => $private ? (int) $member->step : 0,
                 'lastseen' => $private ? (int) ($member->lastseen ?? 0) : 0,
                 'mood' => $private ? self::mood($char, $member) : '',

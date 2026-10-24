@@ -14034,3 +14034,34 @@ body.still .pet-me.patted .creature {
   margin-top: 4px;
   color: var(--text-soft);
 }
+
+/* The pause: its form in the panel, and what pauses the game on the sheet of the student. */
+.pause-form {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.pause-form fieldset {
+  margin: 0 0 12px;
+  padding: 0;
+  border: 0;
+}
+
+.pause-form legend {
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.sheet-pauses {
+  margin: 12px 0 0;
+}
+
+.sheet-pauses summary {
+  cursor: pointer;
+  color: var(--text-soft);
+}
+
+.sheet-pauses ul {
+  margin: 8px 0;
+  padding-left: 20px;
+}

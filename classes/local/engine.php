@@ -61,6 +61,10 @@ final class engine {
         global $DB;
         $member = $DB->get_record(self::T . 'member', ['charid' => $char->id, 'courseid' => $courseid]);
         if ($member) {
+            // A pause that has ended ends now, before the hour of the task.
+            if ($member->status === 'paused' && $member->pausedto > 0 && $member->pausedto <= ($now ?? time())) {
+                $member = self::resume($member, $now);
+            }
             return $member;
         }
         $now = $now ?? time();
@@ -441,14 +445,33 @@ final class engine {
      * @param int|null $now
      * @return \stdClass
      */
-    public static function pause(\stdClass $member, string $reason, int $actorid, ?int $now = null): \stdClass {
+    public static function pause(\stdClass $member, string $reason, int $actorid, ?int $now = null, int $until = 0): \stdClass {
         global $DB;
+        $now = $now ?? time();
         $member->status = 'paused';
         $member->statusreason = $reason;
         $member->statusby = $actorid;
-        $member->timemodified = $now ?? time();
+        // Never for good: a week at most.
+        $member->pausedto = min($until ?: PHP_INT_MAX, $now + regions::PAUSE_DAYS * DAYSECS);
+        $member->timemodified = $now;
         $DB->update_record(self::T . 'member', $member);
         return $member;
+    }
+
+    /**
+     * Brings back to the game the students whose pause has ended.
+     *
+     * @param int|null $now
+     * @return int How many.
+     */
+    public static function wake(?int $now = null): int {
+        global $DB;
+        $now = $now ?? time();
+        $ended = $DB->get_records_select(self::T . 'member', "status = 'paused' AND pausedto > 0 AND pausedto <= ?", [$now]);
+        foreach ($ended as $member) {
+            self::resume($member, $now);
+        }
+        return count($ended);
     }
 
     /**
@@ -466,6 +489,7 @@ final class engine {
         $member->status = $member->energy > 0 ? 'active' : 'fallen';
         $member->statusreason = null;
         $member->statusby = 0;
+        $member->pausedto = 0;
         $member->timemodified = $now ?? time();
         $DB->update_record(self::T . 'member', $member);
         return $member;

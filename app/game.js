@@ -1556,7 +1556,8 @@
   function status(m) {
     if (m.status === 'paused') {
       return '<div class="banner rest"><div><b>' + esc(t('app_paused')) + '</b><p>' + esc(t('app_paused_help')) + '</p>' +
-        (m.statusreason ? '<div class="note">' + esc(m.statusreason) + '</div>' : '') + '</div></div>';
+        (m.statusreason ? '<div class="note">' + esc(m.statusreason) + '</div>' : '') + (m.pausedto ? '<div class="note">' +
+        esc(t('app_paused_until', T.day(m.pausedto))) + '</div>' : '') + '</div></div>';
     }
     if (m.status === 'fallen') {
       return '<div class="banner fallen"><div><b>' + esc(t('app_fallen')) + '</b><p>' + esc(t('app_fallen_help')) +
@@ -4290,6 +4291,11 @@
       '<div class="stat"><span>' + esc(t('app_gems')) + '</span><b>' + c.gems + '</b></div>' +
       '<div class="stat"><span>' + esc(t('app_energy')) + '</span><b>' + (m.energy || 0) + ' / ' + w.energymax + '</b></div>' +
       '<div class="stat"><span>' + esc(t('app_breath')) + '</span><b>' + (m.breath || 0) + ' / ' + w.breathmax + '</b></div>' +
+      // What puts the game in pause, as the class agreed it: there to read, folded.
+      ((w.pauses || []).length ? '<details class="sheet-pauses"><summary>' + esc(t('app_pauses')) + '</summary><ul>' +
+      w.pauses.map(function(p) {
+        return '<li>' + esc(p) + '</li>';
+      }).join('') + '</ul><p class="help-soft">' + esc(t('app_pauses_help')) + '</p></details>' : '') +
       '<div class="actions no-print" style="justify-content:flex-start;margin-top:16px">' +
       '<button class="btn btn-soft" data-print>' + esc(t('app_print')) +
       '</button><a class="btn btn-soft" href="' + esc(cfg.courseurl) + '">' + esc(t('app_exit')) + '</a></div></div>' +

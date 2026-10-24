@@ -2089,7 +2089,8 @@
       stat('app_breath', m.breath + ' / ' + state.data.breathmax) : '');
     if (m && m.status === 'paused') {
       html += '<div class="banner rest" style="margin-top:12px"><div><b>' + esc(t('app_resting')) + '</b>' +
-        (m.statusreason ? '<div class="note">' + esc(m.statusreason) + '</div>' : '') + '</div></div>';
+        (m.statusreason ? '<div class="note">' + esc(m.statusreason) + '</div>' : '') + (m.pausedto ? '<div class="note">' +
+        esc(t('app_paused_until', T.day(m.pausedto))) + '</div>' : '') + '</div></div>';
     }
     if (can('manageregion')) {
       // The role, when the student asks to change it: they keep their level and everything they have.
@@ -2151,7 +2152,7 @@
       if (m && m.status === 'paused') {
         html += '<button class="btn btn-soft" data-status="resume">' + esc(t('teach_resume')) + '</button>';
       } else {
-        html += '<button class="btn btn-soft" data-status="pause">' + esc(t('teach_pause')) + '</button>';
+        html += '<button class="btn btn-soft" data-status="pause">' + esc(t('teach_pause')) + '</button>' + pauseForm();
       }
       if (m && m.status === 'fallen') {
         html += '<button class="btn btn-main" data-status="recover">' + esc(t('teach_recover')) + '</button>';
@@ -2287,14 +2288,15 @@
     el.querySelectorAll('[data-status]').forEach(function(b) {
       b.onclick = function() {
         var action = b.dataset.status;
-        var reason = '';
         if (action === 'pause') {
-          reason = window.prompt(t('teach_pause_reason'), '');
-          if (reason === null) {
-            return;
-          }
+          // Its form: always for one of the reasons agreed with the class, and a week at most.
+          var pf = el.querySelector('[data-pauseform]');
+          pf.hidden = false;
+          b.hidden = true;
+          pf.querySelector('input').focus();
+          return;
         }
-        T.api('set_status', {courseid: cfg.courseid, userid: userid, action: action, reason: reason}).then(function() {
+        T.api('set_status', {courseid: cfg.courseid, userid: userid, action: action}).then(function() {
           load(true).then(function() {
             openStudent(userid);
           });
@@ -2303,6 +2305,29 @@
         });
       };
     });
+    var pf = el.querySelector('[data-pauseform]');
+    if (pf) {
+      pf.onsubmit = function(ev) {
+        ev.preventDefault();
+        var picked = pf.querySelector('[name="criterion"]:checked');
+        if (!picked) {
+          return;
+        }
+        T.api('set_status', {courseid: cfg.courseid, userid: userid, action: 'pause', criterion: Number(picked.value),
+          days: Number(pf.querySelector('[name="days"]').value), reason: pf.querySelector('[name="note"]').value.trim()})
+          .then(function() {
+            load(true).then(function() {
+              openStudent(userid);
+            });
+          }).catch(function(e) {
+            T.toast(esc(e.message), true);
+          });
+      };
+      pf.querySelector('[data-pausecancel]').onclick = function() {
+        pf.hidden = true;
+        el.querySelector('[data-status="pause"]').hidden = false;
+      };
+    }
     var logbtn = el.querySelector('[data-studentlog]');
     if (logbtn) {
       logbtn.onclick = function() {
@@ -3414,6 +3439,27 @@
     form.scrollIntoView({behavior: 'smooth'});
   }
 
+  /**
+   * The form of a pause: which of the reasons agreed with the class, for how long (a week at most) and a note.
+   *
+   * @return {string}
+   */
+  function pauseForm() {
+    var reasons = state.data.region.pauses || [];
+    return '<form class="pause-form" data-pauseform hidden><fieldset><legend>' + esc(t('teach_pause_why')) + '</legend>' +
+      reasons.map(function(r, i) {
+        return '<label class="chip" style="display:flex;gap:8px;align-items:flex-start;margin-bottom:6px"><input ' +
+          'type="radio" name="criterion" value="' + i + '" required> <span>' + esc(r) + '</span></label>';
+      }).join('') + '</fieldset>' + field('days', t('teach_pause_days'), '<select name="days">' +
+      [1, 2, 3, 4, 5, 6, 7].map(function(d) {
+        return '<option value="' + d + '"' + (d === 7 ? ' selected' : '') + '>' + esc(d === 7 ? t('teach_pause_week') :
+          d === 1 ? t('teach_pause_oneday') : t('teach_pause_ndays', d)) + '</option>';
+      }).join('') + '</select>') + field('note', t('teach_pause_note'), '<input name="note" maxlength="200">') +
+      '<p class="help-soft">' + esc(t('teach_pause_help')) + '</p><div class="actions" style="justify-content:flex-start">' +
+      '<button class="btn btn-main" type="submit">' + esc(t('teach_pause')) + '</button><button class="btn btn-soft" ' +
+      'type="button" data-pausecancel>' + esc(t('app_cancel')) + '</button></div></form>';
+  }
+
   function field(name, label, input) {
     return '<label style="display:block;margin-bottom:12px"><span style="display:block;font-size:14px;color:' +
       'var(--text-soft);margin-bottom:4px">' + esc(label) + '</span>' + input + '</label>';
@@ -3788,6 +3834,11 @@
     var badgeCard = r.badgeid ? '<h3>' + esc(t('teach_badge')) + '</h3><p style="color:var(--text-soft)">' +
       esc(t(r.badgeon ? 'teach_badge_on' : 'teach_badge_off', r.badge)) + ' <a href="' +
       esc(cfg.wwwroot + '/badges/overview.php?id=' + r.badgeid) + '">' + esc(t('teach_badge_manage')) + '</a></p>' : '';
+    // What puts a student in pause, agreed with the class: one a line.
+    var pausesText = (r.pauses || []).join('\n');
+    var pausesCard = '<h3>' + esc(t('teach_pauses')) + '</h3><p class="help-soft">' + esc(t('teach_pauses_help')) + '</p>' +
+      '<textarea name="pauses" rows="4" style="width:100%"' + (editable ? '' : ' disabled') + ' aria-label="' +
+      esc(t('teach_pauses')) + '">' + esc(pausesText) + '</textarea>';
     // The gradebook of Moodle, off by default: only the ratings the teacher gives in the competencies.
     var gradesCard = '<h3>' + esc(t('teach_gradebook')) + '</h3><label class="chip" style="display:flex;gap:8px;' +
       'align-items:flex-start;margin:4px 0"><input type="checkbox" name="gradebook"' + (r.gradebook ? ' checked' : '') +
@@ -3851,7 +3902,8 @@
       '</small>' + '<label class="chip" style="display:flex;gap:8px;align-items:flex-start;margin:4px 0"><input type="checkbox" ' +
       'name="skillson"' + (r.skillson !== false ? ' checked' : '') + (editable ? '' : ' disabled') + '> <span>' +
       esc(t('teach_set_skillson')) + '</span></label><small style="display:block;color:var(--text-soft);margin-bottom:14px">' +
-      esc(t('teach_set_skillson_help')) + '</small>' + touchesEditor(r, editable) + inside + lookCard + badgeCard + gradesCard + qbankCard +
+      esc(t('teach_set_skillson_help')) + '</small>' + touchesEditor(r, editable) + pausesCard + inside + lookCard + badgeCard +
+      gradesCard + qbankCard +
       '</details>';
     var el = content('<section class="card"><h2>' + esc(t('teach_tab_settings')) + '</h2><form data-settings>' + daily +
       advanced + (editable ? '<div class="actions" style="justify-content:flex-start;margin-top:14px"><button ' +
@@ -3915,7 +3967,10 @@
         skillson: f.skillson.checked,
         look: look ? look.value : '',
         // Only when they were changed: those of the plugin follow the language of each teacher.
-        reasons: touches.edited() ? JSON.stringify(touches.list()) : null
+        reasons: touches.edited() ? JSON.stringify(touches.list()) : null,
+        pauses: f.pauses.value.trim() !== pausesText.trim() ? f.pauses.value.split('\n').map(function(l) {
+          return l.trim();
+        }).filter(Boolean) : undefined
       }).then(function(region) {
         T.light.follow(region.look || region.worldlook);
         T.toast(esc(t('app_saved')));

@@ -39,5 +39,7 @@ final class regenerate extends \core\task\scheduled_task {
     public function execute(): void {
         $count = \local_oksigeniatesape\local\engine::regenerate();
         mtrace("Energy and breath filled for $count characters.");
+        $woken = \local_oksigeniatesape\local\engine::wake();
+        mtrace("Pauses ended: $woken.");
     }
 }

@@ -1125,5 +1125,20 @@ function xmldb_local_oksigeniatesape_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026102430, 'local', 'oksigeniatesape');
     }
 
+    if ($oldversion < 2026102433) {
+        // The pause, for a reason agreed with the class and for a week at most.
+        $table = new xmldb_table('local_oksigeniatesape_region');
+        $field = new xmldb_field('pauses', XMLDB_TYPE_TEXT, null, null, null, null, null, 'reviewed');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        $table = new xmldb_table('local_oksigeniatesape_member');
+        $field = new xmldb_field('pausedto', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'statusby');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        upgrade_plugin_savepoint(true, 2026102433, 'local', 'oksigeniatesape');
+    }
+
     return true;
 }

@@ -84,6 +84,7 @@ final class structures {
                 'breath' => new external_value(PARAM_INT, 'Breath in the course'),
                 'status' => new external_value(PARAM_ALPHA, 'active, fallen or paused (away, for classmates)'),
                 'statusreason' => new external_value(PARAM_TEXT, 'Why, only for the student and the teachers'),
+                'pausedto' => new external_value(PARAM_INT, 'When the pause ends by itself, for them and the teachers', VALUE_DEFAULT, 0),
                 'step' => new external_value(PARAM_INT, 'Step of the mission, 1 to 4'),
                 'lastseen' => new external_value(PARAM_INT, 'Last time they opened the game (0: not known)', VALUE_DEFAULT, 0),
                 'mood' => new external_value(PARAM_ALPHA, 'How their creature is: asleep, happy or empty', VALUE_DEFAULT, ''),
@@ -766,6 +767,13 @@ final class structures {
                 'amount' => new external_value(PARAM_INT, 'How much'),
             ]), 'The touches with a reason of the course', VALUE_DEFAULT, []),
             'reasonsown' => new external_value(PARAM_BOOL, 'The course changed the touches of the plugin', VALUE_DEFAULT, false),
+            'pauses' => new external_multiple_structure(
+                new external_value(PARAM_TEXT, 'A reason'),
+                'What puts a student in pause in the game, agreed with the class',
+                VALUE_DEFAULT,
+                []
+            ),
+            'pausesown' => new external_value(PARAM_BOOL, 'The course changed those of the plugin', VALUE_DEFAULT, false),
             'completion' => new external_value(
                 PARAM_BOOL,
                 'Completion of activities on in the site and the course',

@@ -47,10 +47,17 @@ final class set_status extends external_api {
             'action' => new external_value(PARAM_ALPHA, 'pause, resume or recover'),
             'reason' => new external_value(
                 PARAM_TEXT,
-                'Why, when pausing; only the student and the teachers see it',
+                'When pausing, a note to the reason; only the student and the teachers see it',
                 VALUE_DEFAULT,
                 ''
             ),
+            'criterion' => new external_value(
+                PARAM_INT,
+                'When pausing, which of the reasons agreed with the class (from 0)',
+                VALUE_DEFAULT,
+                -1
+            ),
+            'days' => new external_value(PARAM_INT, 'When pausing, for how many days, 1 to 7', VALUE_DEFAULT, 7),
         ]);
     }
 
@@ -61,13 +68,17 @@ final class set_status extends external_api {
      * @param int $userid
      * @param string $action
      * @param string $reason
+     * @param int $criterion
+     * @param int $days
      * @return array
      */
     public static function execute(
         int $courseid,
         int $userid,
         string $action,
-        string $reason = ''
+        string $reason = '',
+        int $criterion = -1,
+        int $days = 7
     ): array {
         global $USER;
         $params = self::validate_parameters(self::execute_parameters(), [
@@ -75,6 +86,8 @@ final class set_status extends external_api {
             'userid' => $userid,
             'action' => $action,
             'reason' => $reason,
+            'criterion' => $criterion,
+            'days' => $days,
         ]);
         $context = \local_oksigeniatesape\local\games::require_enter($params['courseid']);
         self::validate_context($context);
@@ -87,7 +100,16 @@ final class set_status extends external_api {
         $member = engine::member($char, $params['courseid']);
         switch ($params['action']) {
             case 'pause':
-                $member = engine::pause($member, $params['reason'], (int) $USER->id);
+                // Always for one of the reasons agreed with the class, and a week at most.
+                $agreed = regions::pauses(regions::get($params['courseid']));
+                if (!isset($agreed[$params['criterion']])) {
+                    throw new \invalid_parameter_exception('A pause goes with one of the reasons of the course');
+                }
+                $note = trim($params['reason']);
+                $why = $agreed[$params['criterion']] . ($note !== '' ? ' · ' . $note : '');
+                $now = time();
+                $days = max(1, min(regions::PAUSE_DAYS, $params['days']));
+                $member = engine::pause($member, $why, (int) $USER->id, $now, $now + $days * DAYSECS);
                 break;
             case 'resume':
                 $member = engine::resume($member);

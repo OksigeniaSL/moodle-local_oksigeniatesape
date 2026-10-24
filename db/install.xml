@@ -56,6 +56,7 @@
         <FIELD NAME="setup" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Steps of the first week the teachers went through, of five (6: the list of the first day closed too)"/>
         <FIELD NAME="reasons" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="The touches with a reason of the course, as JSON (null: those of the plugin)"/>
         <FIELD NAME="reviewed" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Knots the class broke in a practice battle, and when (JSON): the Embrollo does not keep them for the final"/>
+        <FIELD NAME="pauses" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="What puts a student in pause in the game, agreed with the class, as JSON (null: those of the plugin)"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>
@@ -75,6 +76,7 @@
         <FIELD NAME="status" TYPE="char" LENGTH="10" NOTNULL="true" DEFAULT="active" SEQUENCE="false" COMMENT="active, fallen or paused"/>
         <FIELD NAME="statusreason" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Why they were paused or fell; only the student and the teachers see it"/>
         <FIELD NAME="statusby" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Teacher who paused them"/>
+        <FIELD NAME="pausedto" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="When their pause ends by itself"/>
         <FIELD NAME="step" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="2" SEQUENCE="false" COMMENT="1 first steps, 2 core, 3 further, 4 expert"/>
         <FIELD NAME="lastregen" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Last daily refill of energy and breath"/>
         <FIELD NAME="lastseen" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Last time the student opened the game in the course"/>

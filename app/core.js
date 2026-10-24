@@ -775,6 +775,20 @@
       dark.toFixed(2) + '"/>' : '';
   };
 
+  /**
+   * A day as people say it: «lunes, 27 de octubre».
+   *
+   * @param {number} time Seconds.
+   * @return {string}
+   */
+  T.day = function(time) {
+    try {
+      return new Intl.DateTimeFormat(cfg.lang, {weekday: 'long', day: 'numeric', month: 'long'}).format(new Date(time * 1000));
+    } catch (e) {
+      return new Date(time * 1000).toLocaleDateString();
+    }
+  };
+
   /* ---------- The sky: the season and the hour ---------- */
 
   /** @var {string[]} The season of each month, in the north. */

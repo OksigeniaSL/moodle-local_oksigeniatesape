@@ -130,6 +130,13 @@ final class save_region extends external_api {
                 null,
                 NULL_ALLOWED
             ),
+            'pauses' => new external_multiple_structure(
+                new external_value(PARAM_TEXT, 'A reason'),
+                'What puts a student in pause, agreed with the class (empty: those of the plugin)',
+                VALUE_DEFAULT,
+                null,
+                NULL_ALLOWED
+            ),
         ]);
     }
 
@@ -162,6 +169,7 @@ final class save_region extends external_api {
      * @param int|null $secretsshown
      * @param bool|null $sharelibrary
      * @param int|null $qbank
+     * @param array|null $pauses
      * @return array
      */
     public static function execute(
@@ -190,7 +198,8 @@ final class save_region extends external_api {
         ?bool $skillson = null,
         ?int $secretsshown = null,
         ?bool $sharelibrary = null,
-        ?int $qbank = null
+        ?int $qbank = null,
+        ?array $pauses = null
     ): array {
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
@@ -219,6 +228,7 @@ final class save_region extends external_api {
             'secretsshown' => $secretsshown,
             'sharelibrary' => $sharelibrary,
             'qbank' => $qbank,
+            'pauses' => $pauses,
         ]);
         $context = \local_oksigeniatesape\local\games::require_enter($params['courseid']);
         self::validate_context($context);

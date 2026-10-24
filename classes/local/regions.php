@@ -24,6 +24,15 @@ namespace local_oksigeniatesape\local;
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class regions {
+    /** @var int Most reasons that pause the game a course can have. */
+    public const PAUSES_MAX = 5;
+
+    /** @var int Longest reason that pauses the game. */
+    public const PAUSE_LENGTH = 120;
+
+    /** @var int Most days a pause lasts: then it ends by itself. */
+    public const PAUSE_DAYS = 7;
+
     /** @var string Table of the regions. */
     private const TABLE = 'local_oksigeniatesape_region';
 
@@ -144,6 +153,11 @@ final class regions {
         if (array_key_exists('setup', $settings)) {
             $region->setup = max(0, min(6, (int) $settings['setup']));
         }
+        if (array_key_exists('pauses', $settings)) {
+            // Null or empty: back to those of the plugin.
+            $list = is_array($settings['pauses']) ? self::clean_pauses($settings['pauses']) : [];
+            $region->pauses = $list ? json_encode($list) : null;
+        }
         if (array_key_exists('reasons', $settings)) {
             // Null: back to those of the plugin.
             $region->reasons = is_array($settings['reasons']) ? json_encode(self::clean_reasons($settings['reasons'])) : null;
@@ -253,6 +267,37 @@ final class regions {
         }
         return array_map(fn($r) => ['text' => get_string($r[0], 'local_oksigeniatesape'), 'resource' => $r[1],
             'amount' => $r[2]], self::REASONS);
+    }
+
+    /**
+     * What puts a student in pause in the game of a course: what its class agreed, or what the plugin proposes.
+     *
+     * @param \stdClass|null $region
+     * @return string[]
+     */
+    public static function pauses(?\stdClass $region): array {
+        $own = $region && !empty($region->pauses) ? json_decode($region->pauses, true) : null;
+        if (is_array($own) && $own) {
+            return self::clean_pauses($own);
+        }
+        return array_values(array_filter(array_map('trim', explode('|', get_string('pause_defaults', 'local_oksigeniatesape')))));
+    }
+
+    /**
+     * What pauses the game, as a list that makes sense: texts, short, a few.
+     *
+     * @param array $list
+     * @return string[]
+     */
+    public static function clean_pauses(array $list): array {
+        $clean = [];
+        foreach ($list as $text) {
+            $text = \core_text::substr(trim(clean_param((string) $text, PARAM_TEXT)), 0, self::PAUSE_LENGTH);
+            if ($text !== '' && !in_array($text, $clean, true)) {
+                $clean[] = $text;
+            }
+        }
+        return array_slice($clean, 0, self::PAUSES_MAX);
     }
 
     /**

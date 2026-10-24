@@ -18,6 +18,7 @@ namespace local_oksigeniatesape\external;
 
 use core_external\external_api;
 use local_oksigeniatesape\local\characters;
+use local_oksigeniatesape\local\engine;
 use local_oksigeniatesape\local\regions;
 
 /**
@@ -117,20 +118,33 @@ final class externals_test extends \advanced_testcase {
         $w = $this->make_class();
         $this->call('create_character', $w->ana, [$w->course->id, 'healer', 'f']);
         $this->call('create_character', $w->leo, [$w->course->id, 'scout', 'm']);
-        $this->call('set_status', $w->teacher, [$w->course->id, $w->leo->id, 'pause', 'Needs a break']);
+        // Without one of the reasons agreed with the class, no pause.
+        try {
+            $this->call('set_status', $w->teacher, [$w->course->id, $w->leo->id, 'pause', 'Needs a break']);
+            $this->fail('A pause without its reason');
+        } catch (\invalid_parameter_exception $e) {
+            $this->assertStringContainsString('reasons of the course', $e->getMessage());
+        }
+        regions::save($w->course->id, ['pauses' => ['Laughing at a classmate', 'Playing for another']]);
+        $this->call('set_status', $w->teacher, [$w->course->id, $w->leo->id, 'pause', 'Needs a break', 1, 3]);
         $world = $this->call('get_world', $w->ana, [$w->course->id]);
         $leo = array_values(array_filter($world['team']['members'], fn($m) => $m['userid'] == $w->leo->id))[0];
         // Not that he rests either: only that he is not playing.
         $this->assertEquals('away', $leo['character']['member']['status']);
         $this->assertEquals('', $leo['character']['member']['statusreason']);
         $this->assertEquals('Leo', $leo['name']);
-        // Leo sees his own reason.
+        // Leo sees his own reason, until when, and what pauses the game in his class.
         $world = $this->call('get_world', $w->leo, [$w->course->id]);
-        $this->assertEquals('Needs a break', $world['character']['member']['statusreason']);
+        $this->assertEquals('Playing for another · Needs a break', $world['character']['member']['statusreason']);
+        $this->assertEqualsWithDelta(time() + 3 * DAYSECS, $world['character']['member']['pausedto'], 60);
+        $this->assertSame(['Laughing at a classmate', 'Playing for another'], $world['pauses']);
         // The teacher too.
         $class = $this->call('get_class', $w->teacher, [$w->course->id]);
         $leo = array_values(array_filter($class['students'], fn($s) => $s['userid'] == $w->leo->id))[0];
-        $this->assertEquals('Needs a break', $leo['character']['member']['statusreason']);
+        $this->assertEquals('Playing for another · Needs a break', $leo['character']['member']['statusreason']);
+        // When its time is up, the pause ends by itself.
+        $this->assertSame(1, engine::wake(time() + 3 * DAYSECS + 1));
+        $this->assertSame('active', $this->call('get_world', $w->leo, [$w->course->id])['character']['member']['status']);
     }
 
     public function test_teacher_flow(): void {
