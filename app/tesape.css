@@ -13259,3 +13259,58 @@ body.still .pet-me.patted .creature {
     animation: none;
   }
 }
+
+/* The knot of the team. */
+.team-knot .knot-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0;
+  font-weight: 700;
+}
+
+.team-knot .knot-candle {
+  display: inline-block;
+  width: 12px;
+  height: 18px;
+  margin-left: 4px;
+  border-radius: 50% 50% 45% 45%;
+  background: var(--line);
+}
+
+.team-knot .knot-candle.lit {
+  background: radial-gradient(circle at 50% 70%, #fff3c4, #f5b942 55%, #e07a2e);
+  box-shadow: 0 0 8px #f5b94299;
+}
+
+.team-knot .knot-last {
+  margin: 6px 0;
+  font-weight: 700;
+}
+
+.team-knot .knot-last.right,
+.team-knot .knot-last.shielded {
+  color: var(--leaf-text);
+}
+
+.team-knot .knot-last.blown {
+  color: var(--danger-text);
+}
+
+.team-knot .opt.struck {
+  text-decoration: line-through;
+  opacity: .5;
+}
+
+.team-knot .knot-weak {
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(var(--lilac-rgb), .12);
+}
+
+.team-knot .knot-helped {
+  margin: 8px 0;
+  padding-left: 18px;
+  color: var(--text-soft);
+}

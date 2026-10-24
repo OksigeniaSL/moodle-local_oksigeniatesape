@@ -3402,6 +3402,21 @@
    * @return {string}
    */
   /**
+   * The knot of the team: the tablets of the team against some knots of the Embrollo, without the class screen.
+   *
+   * @param {Object} team
+   * @return {string}
+   */
+  function teamKnotCard(team) {
+    if (!T.teamKnot || team.members.length < 2 || !state.world.mission) {
+      return '';
+    }
+    return '<section class="card team-knot-card"><div class="kicker">' + esc(t('app_teamknot')) + '</div><p>' +
+      esc(t('app_teamknot_offer')) + '</p><div class="actions" style="justify-content:flex-start"><button type="button" ' +
+      'class="btn btn-main" data-teamknot>' + esc(t('app_teamknot_open')) + '</button></div></section>';
+  }
+
+  /**
    * The turn in deferred: whoever follows from far plays the last battle of the class they were not in, when they can.
    *
    * @return {string}
@@ -3530,8 +3545,8 @@
             '<span class="meter energy" ' +
             'title="' + esc(t('app_energy')) + '"><i style="width:' + Math.round(100 * m.energy / w.energymax) +
             '%"></i></span></span>' : '') + '</li>';
-        }).join('') + '</ul></section>' + councilCard(team) + giftCard() + reserveCard(team.reserve) + pactsCard(team.pacts) +
-        tangleCard();
+        }).join('') + '</ul></section>' + councilCard(team) + giftCard() + teamKnotCard(team) + reserveCard(team.reserve) +
+        pactsCard(team.pacts) + tangleCard();
     }
     html += powersCard();
     if (w.standings.length > 1) {
@@ -3756,6 +3771,12 @@
         });
       };
     });
+    var knotted = app.querySelector('[data-teamknot]');
+    if (knotted) {
+      knotted.onclick = function() {
+        T.teamKnot();
+      };
+    }
     var tanglewrite = app.querySelector('[data-tanglewrite]');
     if (tanglewrite) {
       tanglewrite.onclick = writeTangle;

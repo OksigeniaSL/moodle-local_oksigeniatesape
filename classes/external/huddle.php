@@ -22,6 +22,7 @@ use core_external\external_multiple_structure;
 use core_external\external_single_structure;
 use core_external\external_value;
 use local_oksigeniatesape\local\huddles;
+use local_oksigeniatesape\local\teamknots;
 
 /**
  * The team session of a student: what their tablet sees, and what it does in it.
@@ -39,7 +40,10 @@ final class huddle extends external_api {
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
             'courseid' => new external_value(PARAM_INT, 'Course'),
-            'action' => new external_value(PARAM_ALPHA, 'mine, open, join, start, publish, decide, tell, leave or close'),
+            'action' => new external_value(
+                PARAM_ALPHA,
+                'mine, open, join, start, publish, decide, tell, leave or close; for a knot of the team, knot, kstart, khelp, kanswer'
+            ),
             'sceneid' => new external_value(PARAM_INT, 'open: the scene', VALUE_DEFAULT, 0),
             'huddleid' => new external_value(PARAM_INT, 'start, publish, decide, close: the session', VALUE_DEFAULT, 0),
             'node' => new external_value(PARAM_RAW, 'publish: the decision at hand (JSON)', VALUE_DEFAULT, ''),
@@ -105,6 +109,9 @@ final class huddle extends external_api {
             case 'join':
                 $view = huddles::join($courseid, $userid, $now);
                 return $view ? ['huddle' => $view] : [];
+            case 'knot':
+                teamknots::open($courseid, $userid, $now);
+                return ['huddle' => huddles::mine($courseid, $userid, $now)];
         }
         [$session, $char] = huddles::get($courseid, $userid, $params['huddleid'], $now);
         switch ($params['action']) {
@@ -120,6 +127,15 @@ final class huddle extends external_api {
                 break;
             case 'tell':
                 huddles::tell($session, $char, $params['seq']);
+                break;
+            case 'kstart':
+                teamknots::start($session, $char, $now);
+                break;
+            case 'khelp':
+                teamknots::help($session, $char, $params['option'], $params['seq'], $now);
+                break;
+            case 'kanswer':
+                teamknots::answer($session, $char, (int) $params['option'], $params['seq'], $now);
                 break;
             case 'leave':
                 huddles::leave($session, $char);
@@ -193,6 +209,40 @@ final class huddle extends external_api {
                     'seq' => new external_value(PARAM_INT, 'For which decision'),
                     'answer' => new external_value(PARAM_RAW, 'Of several or to sort: the whole answer (JSON)', VALUE_DEFAULT, ''),
                 ], 'For the guide: the choice to play', VALUE_OPTIONAL),
+                'knot' => new external_single_structure([
+                    'phase' => new external_value(PARAM_ALPHA, 'lobby, round or end'),
+                    'round' => new external_value(PARAM_INT, 'The turn at hand, from 0'),
+                    'rounds' => new external_value(PARAM_INT, 'Turns'),
+                    'cut' => new external_value(PARAM_INT, 'Threads cut'),
+                    'towin' => new external_value(PARAM_INT, 'Threads to cut to win'),
+                    'candles' => new external_value(PARAM_INT, 'Candles lit'),
+                    'maxcandles' => new external_value(PARAM_INT, 'Candles of the team'),
+                    'hand' => new external_value(PARAM_INT, 'Who answers'),
+                    'handname' => new external_value(PARAM_TEXT, 'Their name'),
+                    'myturn' => new external_value(PARAM_BOOL, 'This student answers'),
+                    'myverb' => new external_value(PARAM_ALPHA, 'The verb of their role'),
+                    'canhelp' => new external_value(PARAM_BOOL, 'They can help with it now'),
+                    'helped' => new external_multiple_structure(new external_single_structure([
+                        'verb' => new external_value(PARAM_ALPHA, 'Verb'),
+                        'name' => new external_value(PARAM_TEXT, 'Who'),
+                    ]), 'The help given this turn'),
+                    'name' => new external_value(PARAM_TEXT, 'The knot'),
+                    'claim' => new external_value(PARAM_TEXT, 'What the Embrollo claims'),
+                    'weakness' => new external_value(PARAM_TEXT, 'Its weakness, once the scout shows it'),
+                    'question' => new external_value(PARAM_TEXT, 'The question'),
+                    'options' => new external_multiple_structure(new external_single_structure([
+                        'text' => new external_value(PARAM_TEXT, 'Option'),
+                        'struck' => new external_value(PARAM_BOOL, 'Struck out'),
+                    ])),
+                    'last' => new external_value(PARAM_ALPHA, 'How the last answer went: right, again, shielded, blown'),
+                    'outcome' => new external_value(PARAM_ALPHA, 'won or lost, at the end'),
+                    'gem' => new external_value(PARAM_BOOL, 'This student got a gem'),
+                    'player' => new external_value(PARAM_BOOL, 'This student plays'),
+                    'log' => new external_multiple_structure(new external_single_structure([
+                        'name' => new external_value(PARAM_TEXT, 'Knot'),
+                        'result' => new external_value(PARAM_ALPHA, 'right, shielded or blown'),
+                    ])),
+                ], 'A knot of the team: what every tablet sees', VALUE_OPTIONAL),
             ], 'The session of the team', VALUE_OPTIONAL),
         ]);
     }

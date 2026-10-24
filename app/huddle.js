@@ -236,7 +236,7 @@
   follow.show = function(h) {
     var had = follow.seen;
     follow.seen = h;
-    if (!h || h.guide) {
+    if (!h || (h.guide && !h.knot)) {
       if (follow.joined && had && !h) {
         // The guide closed it, or its tablet went away.
         layer.innerHTML = '<div class="huddle-phone" role="dialog" aria-modal="true" aria-labelledby="tesape-huddle-end">' +
@@ -271,8 +271,8 @@
         return;
       }
       follow.sig = call;
-      layer.innerHTML = '<div class="battle-call huddle-call"><p>' + esc(t('app_huddle_call', {scene: h.scene,
-        guide: h.guidename})) + '</p><button type="button" class="btn btn-main" data-join>' + esc(t('app_huddle_join')) +
+      layer.innerHTML = '<div class="battle-call huddle-call"><p>' + esc(h.knot ? t('app_teamknot_call', h.guidename) :
+        t('app_huddle_call', {scene: h.scene, guide: h.guidename})) + '</p><button type="button" class="btn btn-main" data-join>' + esc(t('app_huddle_join')) +
         '</button><button type="button" class="btn btn-soft" data-later>' + esc(t('app_talent_later')) + '</button></div>';
       layer.querySelector('[data-join]').onclick = function(ev) {
         ev.target.disabled = true;
@@ -286,6 +286,10 @@
     }
     follow.joined = true;
     document.body.classList.add('in-huddle');
+    if (h.knot) {
+      knot(h);
+      return;
+    }
     var sig = JSON.stringify([h.seq, h.started, h.members, h.waiting, h.hand, h.myturn, h.piece, h.known, h.told, h.tellers,
       h.mytold, h.ready]);
     if (follow.sig === sig) {
@@ -399,6 +403,119 @@
     if (first) {
       first.focus();
     }
+  };
+
+  /**
+   * A knot of the team, the same on every tablet: the waiting room, each turn (who answers, the question, the help of
+   * the others with the verb of their role) and the end.
+   *
+   * @param {Object} h The session, with its knot.
+   */
+  function knot(h) {
+    var k = h.knot;
+    var sig = JSON.stringify(['knot', h.members, k]);
+    if (follow.sig === sig) {
+      return;
+    }
+    follow.sig = sig;
+    var cap = function(s) {
+      return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+    };
+    var said = {right: 'app_teamknot_right', again: 'app_teamknot_again', shielded: 'app_teamknot_shielded',
+      blown: 'app_teamknot_blown'};
+    var title = k.phase === 'lobby' ? t('app_teamknot_lobby') : k.phase === 'end' ? t(k.outcome === 'won' ?
+      'app_teamknot_won' : 'app_teamknot_lost') : cap(k.name);
+    var body = '';
+    if (k.phase === 'lobby') {
+      body = '<p class="help">' + esc(t('app_teamknot_lobby_help')) + '</p><div class="actions"><button type="button" ' +
+        'class="btn btn-main" data-kstart' + (h.members.length < 2 ? ' disabled' : '') + '>' + esc(t('app_huddle_start')) +
+        '</button></div>' + (h.members.length < 2 ? '<p class="help-soft">' + esc(t('app_teamknot_few')) + '</p>' : '');
+    } else if (k.phase === 'round') {
+      var flames = '';
+      for (var i = 0; i < k.maxcandles; i++) {
+        flames += '<span class="knot-candle' + (i < k.candles ? ' lit' : '') + '" aria-hidden="true"></span>';
+      }
+      body = '<div class="knot-bar"><span>' + esc(t('app_teamknot_threads', k)) + '</span><span role="img" aria-label="' +
+        esc(t('app_teamknot_candles', k)) + '">' + flames + '</span></div>' + (k.last && said[k.last] ? '<p class="knot-last ' +
+        esc(k.last) + '" role="status">' + esc(t(said[k.last])) + '</p>' : '') + (k.claim ? '<p class="knot-claim">«' +
+        esc(k.claim) + '»</p>' : '') + '<p class="huddle-turn' + (k.myturn ? ' mine' : '') + '">' + esc(k.myturn ?
+        t('app_teamknot_yourturn') : t(k.canhelp ? 'app_teamknot_theirturn_help' : 'app_teamknot_theirturn', k.handname)) +
+        '</p><p class="scene-prompt">' + esc(k.question) + '</p><div class="opts">' + k.options.map(function(o, n) {
+          return '<button type="button" class="opt' + (o.struck ? ' struck' : '') + '" data-kopt="' + n + '"' +
+            (k.myturn && !o.struck ? '' : ' disabled') + (o.struck ? ' aria-label="' + esc(t('app_teamknot_struck', o.text)) +
+            '"' : '') + '>' + esc(o.text) + '</button>';
+        }).join('') + '</div>' + (k.weakness ? '<p class="knot-weak"><b>' + esc(t('app_teamknot_weakness')) + '</b> ' +
+        esc(k.weakness) + '</p>' : '') + (k.helped.length ? '<ul class="knot-helped">' + k.helped.map(function(x) {
+          return '<li>' + esc(t('app_teamknot_helped_' + x.verb, x.name)) + '</li>';
+        }).join('') + '</ul>' : '') + (k.canhelp ? '<div class="actions" style="justify-content:flex-start"><button ' +
+        'type="button" class="btn btn-soft" data-khelp="' + esc(k.myverb) + '">' + esc(t('app_teamknot_verb_' + k.myverb)) +
+        '</button></div>' : '');
+    } else {
+      var results = {right: 'app_teamknot_log_right', shielded: 'app_teamknot_log_shielded', blown: 'app_teamknot_log_blown'};
+      body = '<p>' + esc(t(k.outcome === 'won' ? 'app_teamknot_won_text' : k.candles > 0 ? 'app_teamknot_lost_text' :
+        'app_teamknot_lost_candles', k)) + '</p>' +
+        (k.gem ? '<p><b>' + esc(t('app_teamknot_gem')) + '</b></p>' : k.outcome === 'won' && k.player ? '<p class="help-soft">' +
+        esc(t('app_teamknot_gemtoday')) + '</p>' : '') + '<ul class="list">' + k.log.map(function(x) {
+          return '<li class="item"><span class="grow">' + esc(cap(x.name)) + '</span><small>' + esc(t(results[x.result] ||
+            results.blown)) + '</small></li>';
+        }).join('') + '</ul>';
+    }
+    layer.innerHTML = '<div class="huddle-phone team-knot' + (k.outcome ? ' ' + esc(k.outcome) : '') + '" role="dialog" ' +
+      'aria-modal="true" aria-labelledby="tesape-knot-title"><div class="kicker">' + esc(t('app_teamknot')) + '</div><h2 ' +
+      'id="tesape-knot-title">' + esc(title) + '</h2>' + chips(h) + body + '<div class="actions"><button type="button" ' +
+      'class="btn btn-soft" data-leave>' + esc(t(k.phase === 'end' ? 'app_continue' : 'app_huddle_leave')) +
+      '</button></div></div>';
+    var act = function(action, extra) {
+      layer.querySelectorAll('[data-kopt], [data-khelp], [data-kstart]').forEach(function(b) {
+        b.disabled = true;
+      });
+      api(action, Object.assign({huddleid: h.id, seq: k.round}, extra || {})).then(function(r) {
+        follow.show(r.huddle || null);
+      }).catch(function(e) {
+        T.toast(esc(e.message), true);
+        follow.sig = '';
+      });
+    };
+    var start = layer.querySelector('[data-kstart]');
+    if (start) {
+      start.onclick = function() {
+        act('kstart');
+      };
+    }
+    layer.querySelectorAll('[data-kopt]').forEach(function(b) {
+      b.onclick = function() {
+        b.classList.add('sel');
+        act('kanswer', {option: b.dataset.kopt});
+      };
+    });
+    var help = layer.querySelector('[data-khelp]');
+    if (help) {
+      help.onclick = function() {
+        act('khelp', {option: help.dataset.khelp});
+      };
+    }
+    follow.bindLeave();
+    var first = layer.querySelector('[data-kopt]:not([disabled]), [data-khelp], [data-kstart]:not([disabled])');
+    if (first) {
+      first.focus();
+    }
+  }
+
+  /**
+   * Opens a knot of the team from this tablet, or comes into the one open.
+   */
+  T.teamKnot = function() {
+    clearTimeout(follow.timer);
+    follow.dismissed = 0;
+    follow.closed = false;
+    api('knot').then(function(r) {
+      follow.joined = !!r.huddle;
+      follow.show(r.huddle || null);
+    }).catch(function(e) {
+      T.toast(esc(e.message), true);
+    }).then(function() {
+      follow.timer = setTimeout(follow.poll, FAST);
+    });
   };
 
   /**

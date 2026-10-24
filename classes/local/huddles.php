@@ -54,6 +54,10 @@ final class huddles {
             throw new \moodle_exception('huddlesolo', 'local_oksigeniatesape');
         }
         $open = self::current($courseid, (int) $team->id, $now);
+        // A knot of the team already over does not hold the team.
+        if ($open && teamknots::is_knot($open) && teamknots::over($open)) {
+            $open = null;
+        }
         if ($open && (int) $open->charid !== (int) $char->id) {
             // Someone of the team opened one already: this tablet joins it.
             self::touch($open, $char, $now, true);
@@ -432,6 +436,11 @@ final class huddles {
         $view += ['shared' => !empty($node['shared']), 'tellers' => count($tellers),
             'told' => count(array_filter($tellers, fn($p) => in_array((int) $p['userid'], $told, true))),
             'mytold' => in_array((int) $char->userid, $told, true), 'ready' => self::ready($state, $present)];
+        // A knot of the team: the same on every tablet, and no scene.
+        if (teamknots::is_knot($huddle)) {
+            $view['scene'] = get_string('app_teamknot', 'local_oksigeniatesape');
+            $view['knot'] = teamknots::view($huddle, $char, $now);
+        }
         // The choice waiting is for the guide to play.
         if ($guide && !empty($state['pending'])) {
             $view['pending'] = ['by' => (int) $state['pending']['by'], 'option' => (string) $state['pending']['option'],
@@ -484,7 +493,8 @@ final class huddles {
             $DB->insert_record(self::T . 'huddlein', (object) ['huddleid' => $huddle->id, 'courseid' => $huddle->courseid,
                 'charid' => $char->id, 'lastseen' => $now, 'timecreated' => $now]);
         }
-        if ((int) $huddle->charid === (int) $char->id) {
+        // The guide keeps a scene alive; a knot of the team, any of those in.
+        if ((int) $huddle->charid === (int) $char->id || (teamknots::is_knot($huddle) && ($in || $join))) {
             $DB->set_field(self::T . 'huddle', 'timemodified', $now, ['id' => $huddle->id]);
             $huddle->timemodified = $now;
         }
