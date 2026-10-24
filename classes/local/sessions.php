@@ -381,6 +381,8 @@ final class sessions {
     public static function lit(int $courseid, \stdClass $chapter): void {
         \local_oksigeniatesape\event\lantern_lit::create(['context' => games::context($courseid),
             'objectid' => $chapter->id, 'other' => ['place' => (string) $chapter->code]])->trigger();
+        // In infant school, the creature of the class grows.
+        classcreature::grow($courseid, 'lantern');
     }
 
     /**

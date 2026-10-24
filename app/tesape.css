@@ -14314,3 +14314,39 @@ body.still .pet-me.patted .creature {
   display: block;
   color: var(--text-soft);
 }
+
+/* In infant school, the creature of the class: on the class screen, and alone on the screen of a student. */
+.class-creature {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, .06);
+}
+
+.class-creature-pic {
+  flex: none;
+  width: 96px;
+  height: 96px;
+}
+
+.class-creature small {
+  display: block;
+}
+
+.early-creature {
+  width: min(260px, 60vw);
+  margin: 0 auto 12px;
+}
+
+.creature-grew .early-creature {
+  animation: tesape-lantern 2.4s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .creature-grew .early-creature {
+    animation: none;
+  }
+}

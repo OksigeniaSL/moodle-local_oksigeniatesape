@@ -3967,7 +3967,10 @@
         return '<label class="chip stage-option"><input type="radio" name="stage" value="' + st + '"' + ((r.stage || 'primary') ===
           st ? ' checked' : '') + (editable ? '' : ' disabled') + '> <span><b>' + esc(t('teach_stage_' + st)) + '</b><small>' +
           esc(t('teach_stage_' + st + '_help')) + '</small></span></label>';
-      }).join('') + '</div><p class="help-soft" data-stagenote aria-live="polite"></p>';
+      }).join('') + '</div><p class="help-soft" data-stagenote aria-live="polite"></p><div data-creaturename' +
+      ((r.stage || 'primary') === 'early' ? '' : ' hidden') + '>' + field('creaturename', t('teach_creaturename'), '<input ' +
+      'name="creaturename" maxlength="40" value="' + esc(r.creaturename || '') + '"' + (editable ? '' : ' disabled') + '>') +
+      '<p class="help-soft">' + esc(t('teach_creaturename_help')) + '</p></div>';
     var daily = '<label class="chip" style="display:inline-flex;gap:8px;align-items:center;margin-bottom:14px"><input ' +
       'type="checkbox" name="enabled"' + (r.enabled ? ' checked' : '') + (editable ? '' : ' disabled') + '> ' +
       esc(t('teach_set_enabled')) + '</label>' + stages + '<h3>' + esc(t('teach_family')) + '</h3><div class="pills" style="' +
@@ -4035,6 +4038,8 @@
         f.talentson.checked = p.talents !== false;
         f.dailyenergylosscap.value = p.energyloss === undefined ? r.dailyenergylosscap : p.energyloss;
         el.querySelector('[data-stagenote]').textContent = t('teach_stage_set');
+        // In infant school, the name of the creature of the class.
+        el.querySelector('[data-creaturename]').hidden = radio.value !== 'early';
       };
     });
     bindMakeTeams(el);
@@ -4079,6 +4084,7 @@
         sharelibrary: f.sharelibrary.checked,
         lightart: f.lightart.checked,
         stage: (f.querySelector('[name="stage"]:checked') || {}).value || 'primary',
+        creaturename: f.creaturename.value.trim(),
         qbank: f.qbank ? Number(f.qbank.value) : undefined,
         nicknames: picked ? Number(picked.value) : 0,
         timezone: f.timezone.value,

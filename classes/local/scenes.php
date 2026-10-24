@@ -779,6 +779,8 @@ final class scenes {
         }
         $rewarded = 0;
         if (in_array($result['outcome'], ['success', 'partial'], true)) {
+            // A scene played well with the whole class: in infant school, the creature of the class grows.
+            classcreature::grow($courseid, 'scene', $now);
             $transaction = $DB->start_delegated_transaction();
             foreach ($members as $member) {
                 $got = self::reward($chars[$member->id], $member, $scene, $result, $now);

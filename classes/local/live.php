@@ -955,6 +955,10 @@ final class live {
             \local_oksigeniatesape\event\battle_ended::create(['context' => games::context((int) $live->courseid),
                 'objectid' => $live->id, 'other' => ['outcome' => (string) $state['outcome'],
                 'final' => !empty($state['final'])]])->trigger();
+            // A battle won, not a rehearsal: in infant school, the creature of the class grows.
+            if ($state['outcome'] === 'won' && empty($state['rehearsal'])) {
+                classcreature::grow((int) $live->courseid, 'battle', $now);
+            }
         }
         return $live;
     }

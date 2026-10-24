@@ -71,6 +71,15 @@ final class get_world extends external_api {
     public static function execute_returns(): \core_external\external_description {
         return new external_single_structure([
             'enabled' => new external_value(PARAM_BOOL, 'The game is on in the course'),
+            'classcreature' => new external_single_structure([
+                'name' => new external_value(PARAM_TEXT, 'Its name'),
+                'hue' => new external_value(PARAM_INT, 'Its colour'),
+                'grown' => new external_value(PARAM_INT, 'What it has grown'),
+                'stage' => new external_value(PARAM_INT, 'Its stage, 1 to 5'),
+                'from' => new external_value(PARAM_INT, 'What its stage starts at'),
+                'next' => new external_value(PARAM_INT, 'What the next stage needs (0: the last)'),
+                'grewat' => new external_value(PARAM_INT, 'When it last changed'),
+            ], 'In infant school, the creature of the class', VALUE_OPTIONAL),
             'family' => new external_value(PARAM_ALPHA, 'Family of role names'),
             'nicknames' => new external_value(PARAM_INT, 'Hero names allowed'),
             'pauses' => new external_multiple_structure(

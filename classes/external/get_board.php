@@ -64,6 +64,15 @@ final class get_board extends external_api {
     public static function execute_returns(): \core_external\external_description {
         return new external_single_structure([
             'cards' => new external_multiple_structure(new external_value(PARAM_ALPHA, 'Card of the deck')),
+            'classcreature' => new external_single_structure([
+                'name' => new external_value(PARAM_TEXT, 'Its name'),
+                'hue' => new external_value(PARAM_INT, 'Its colour'),
+                'grown' => new external_value(PARAM_INT, 'What it has grown'),
+                'stage' => new external_value(PARAM_INT, 'Its stage, 1 to 5'),
+                'from' => new external_value(PARAM_INT, 'What its stage starts at'),
+                'next' => new external_value(PARAM_INT, 'What the next stage needs (0: the last)'),
+                'grewat' => new external_value(PARAM_INT, 'When it last changed'),
+            ], 'In infant school, the creature of the class', VALUE_OPTIONAL),
             'mission' => new external_single_structure([
                 'items' => new external_multiple_structure(new external_value(PARAM_ALPHANUMEXT, 'Item somebody carries')),
                 'roles' => new external_multiple_structure(new external_value(PARAM_ALPHA, 'Role somebody plays')),

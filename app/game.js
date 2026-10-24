@@ -46,6 +46,15 @@
         esc(t('app_exit')) + '</a></div></div>';
       return;
     }
+    // In infant school there are no characters: the class plays on the class screen, with its creature.
+    if (w.classcreature) {
+      var cc = w.classcreature;
+      app.innerHTML = '<div class="story early-story"><div class="early-creature" aria-hidden="true">' +
+        T.creature({hue: cc.hue}, cc.stage, true) + '</div><h2>' + esc(cc.name) + '</h2><p class="lead">' +
+        esc(t('app_early', cc.name)) + '</p><div class="actions"><a class="btn btn-soft" href="' + esc(cfg.courseurl) + '">' +
+        esc(t('app_exit')) + '</a></div></div>';
+      return;
+    }
     if (!w.character) {
       state.draft = {role: '', nameform: 'm', lineage: '', look: null, nature: []};
       // The first time, the prologue of the mission: what happened in the valley, before choosing who to be.

@@ -151,6 +151,13 @@ final class save_region extends external_api {
                 null,
                 NULL_ALLOWED
             ),
+            'creaturename' => new external_value(
+                PARAM_TEXT,
+                'In infant school, the name of the creature of the class (empty: the one of the plugin)',
+                VALUE_DEFAULT,
+                null,
+                NULL_ALLOWED
+            ),
         ]);
     }
 
@@ -186,6 +193,7 @@ final class save_region extends external_api {
      * @param array|null $pauses
      * @param bool|null $lightart
      * @param string|null $stage
+     * @param string|null $creaturename
      * @return array
      */
     public static function execute(
@@ -217,7 +225,8 @@ final class save_region extends external_api {
         ?int $qbank = null,
         ?array $pauses = null,
         ?bool $lightart = null,
-        ?string $stage = null
+        ?string $stage = null,
+        ?string $creaturename = null
     ): array {
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
@@ -249,6 +258,7 @@ final class save_region extends external_api {
             'pauses' => $pauses,
             'lightart' => $lightart,
             'stage' => $stage,
+            'creaturename' => $creaturename,
         ]);
         $context = \local_oksigeniatesape\local\games::require_enter($params['courseid']);
         self::validate_context($context);
@@ -264,7 +274,8 @@ final class save_region extends external_api {
             $settings['sharelibrary'],
             $settings['qbank'],
             $settings['lightart'],
-            $settings['stage']
+            $settings['stage'],
+            $settings['creaturename']
         );
         if ($params['reasons'] !== null) {
             $list = $params['reasons'] === 'default' ? null : json_decode($params['reasons'], true);
@@ -310,7 +321,12 @@ final class save_region extends external_api {
                 throw new \invalid_parameter_exception('Unknown grouping');
             }
         }
-        return view::region(regions::save($params['courseid'], $settings));
+        $region = regions::save($params['courseid'], $settings);
+        if ($params['creaturename'] !== null) {
+            \local_oksigeniatesape\local\classcreature::name($params['courseid'], $params['creaturename']);
+            $region = regions::get($params['courseid']);
+        }
+        return view::region($region);
     }
 
     /**

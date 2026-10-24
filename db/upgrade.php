@@ -1156,5 +1156,15 @@ function xmldb_local_oksigeniatesape_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026102437, 'local', 'oksigeniatesape');
     }
 
+    if ($oldversion < 2026102440) {
+        // In infant school, the creature of the whole class.
+        $table = new xmldb_table('local_oksigeniatesape_region');
+        $field = new xmldb_field('creature', XMLDB_TYPE_TEXT, null, null, null, null, null, 'pauses');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        upgrade_plugin_savepoint(true, 2026102440, 'local', 'oksigeniatesape');
+    }
+
     return true;
 }

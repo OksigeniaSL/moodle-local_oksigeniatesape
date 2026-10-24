@@ -71,6 +71,11 @@ final class view {
             'ideas' => [],
             'hascoat' => false,
         ];
+        // In infant school, the creature of the class: the student plays on the class screen, without a character.
+        $creature = classcreature::view($courseid);
+        if ($creature) {
+            $world['classcreature'] = $creature;
+        }
         if (!$char) {
             // Who comes in for the first time: the prologue of the mission, before choosing a role.
             $opening = $enabled ? self::opening($courseid) : null;
@@ -578,6 +583,11 @@ final class view {
     public static function board(int $courseid, ?int $now = null): array {
         global $DB;
         $board = ['cards' => events::deck($courseid)];
+        // In infant school, the creature of the class.
+        $creature = classcreature::view($courseid);
+        if ($creature) {
+            $board['classcreature'] = $creature;
+        }
         $mission = missions::get($courseid);
         if ($mission) {
             $info = [];
@@ -928,6 +938,7 @@ final class view {
             'sharelibrary' => $region && regions::rule($region, 'library') > 0,
             'lightart' => $region && regions::rule($region, 'lightart') > 0,
             'stage' => regions::stage($region),
+            'creaturename' => classcreature::given_name($region),
             'qbank' => $region ? regions::rule($region, 'qbank') : 0,
             'qbanks' => $region && $banks ? moodlebank::categories((int) $region->courseid) : [],
             'portal' => (string) ($region->portal ?? 'door'),

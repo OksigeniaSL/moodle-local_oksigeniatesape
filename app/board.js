@@ -1868,6 +1868,56 @@
       '<button class="btn btn-soft" type="button" data-cine>' + esc(t('board_cine')) + '</button>' : '');
   }
 
+  /* ---------- The creature of the class, in infant school ---------- */
+
+  /**
+   * The creature of the whole class: as it is now, its name and how much it lacks to change. When it changes, the class
+   * screen shows it in big, once.
+   *
+   * @return {string}
+   */
+  function classCreature() {
+    var c = state.board && state.board.classcreature;
+    if (!c) {
+      return '';
+    }
+    var pct = c.next ? Math.round(100 * (c.grown - c.from) / Math.max(1, c.next - c.from)) : 100;
+    var key = 'tesape-classcreature-' + cfg.courseid;
+    try {
+      // The first time on this screen, where it is now; later, each change, once.
+      var seen = window.localStorage.getItem(key);
+      if (seen === null) {
+        window.localStorage.setItem(key, String(c.grewat || 1));
+      } else if (c.grewat > Number(seen)) {
+        window.localStorage.setItem(key, String(c.grewat));
+        setTimeout(function() {
+          creatureGrew(c);
+        }, 400);
+      }
+    } catch (e) {
+      // Without storage, no big moment: the card says it.
+    }
+    return '<div class="class-creature"><span class="class-creature-pic" aria-hidden="true">' + T.creature({hue: c.hue},
+      c.stage, true) + '</span><span class="grow"><b>' + esc(c.name) + '</b><span class="meter level" role="img" aria-label="' +
+      esc(t('board_classcreature_meter', pct)) + '"><i style="width:' + pct + '%"></i></span><small>' +
+      esc(t(c.next ? 'board_classcreature_help' : 'board_classcreature_full', c.name)) + '</small></span></div>';
+  }
+
+  /**
+   * The creature of the class has changed: in big, over the class screen, for a few seconds.
+   *
+   * @param {Object} c
+   */
+  function creatureGrew(c) {
+    var el = toolLayer('<div class="kicker">' + esc(t('board_classcreature_grew_kicker')) + '</div><h2 id="tesape-grew">' +
+      esc(t('board_classcreature_grew', c.name)) + '</h2><div class="early-creature" aria-hidden="true">' +
+      T.creature({hue: c.hue}, c.stage, true) + '</div>', 'tesape-grew');
+    el.classList.add('creature-grew');
+    if (T.fx) {
+      T.fx.sound('lantern');
+    }
+  }
+
   /* ---------- The cinematics of the mission ---------- */
 
   /** The cinematics of the mission, to tell the class: which one, when there is more than one. */
@@ -2328,7 +2378,8 @@
     var fresh = T.mapNewRoad('board-' + cfg.courseid + '-' + m.code, m.chapters, Math.min(lit, m.chapters.length - 1));
     var drawn = fresh.road ? fresh.road.replace('/>', ' style="animation-delay:' + (0.3 + fresh.delay) + 's,' +
       (2.4 + fresh.delay) + 's"/>') : '';
-    return '<section class="board-map"><h2>' + esc(m.title) + '</h2><div class="map-wrap' + (height > 640 ? ' tall' : '') +
+    return '<section class="board-map"><h2>' + esc(m.title) + '</h2>' + classCreature() + '<div class="map-wrap' +
+      (height > 640 ? ' tall' : '') +
       '">' + T.skyChip(m) + '<svg class="map" viewBox="0 0 400 ' + height + '" role="img" aria-label="' + esc(m.title) + '"><defs>' +
       T.MAPGLOW + '</defs>' + T.mapGround(m) + T.mapLandmarks(m) + T.mapNight(m) + T.mapSky(m) +
       '<polyline points="' + pts + '" class="road"/>' + (lit ? '<polyline points="' + walked + '" class="road walked"/>' : '') +
