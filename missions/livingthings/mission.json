@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 79,
+ "version": 80,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 80,
+   "kind": "improvement",
+   "date": "2026-10-24",
+   "text": "La ruta del equipo: dos caminos para llegar a cada lugar, cada uno con su llegada; los elige quien explora en el equipo"
+  },
   {
    "version": 79,
    "kind": "improvement",
@@ -3137,6 +3143,30 @@
     "valley": "Claro del Despertar",
     "azara": "El campamento"
    },
+   "routes": [
+    {
+     "code": "arroyo",
+     "name": {
+      "valley": "Por el arroyo",
+      "azara": "Por el arroyo"
+     },
+     "arrival": {
+      "valley": "Tu equipo llega al claro siguiendo el arroyo: el agua canta entre las piedras y huele a musgo.",
+      "azara": "Tu equipo llega al campamento siguiendo el arroyo: el agua canta entre las piedras y huele a musgo."
+     }
+    },
+    {
+     "code": "colina",
+     "name": {
+      "valley": "Por la colina",
+      "azara": "Por la colina"
+     },
+     "arrival": {
+      "valley": "Tu equipo llega al claro bajando la colina: desde arriba se ve todo el valle, todavía a oscuras.",
+      "azara": "Tu equipo llega al campamento bajando la colina: desde arriba se ve toda la sierra, todavía a oscuras."
+     }
+    }
+   ],
    "stop": {
     "speaker": "druida-mayor",
     "text": {
@@ -3428,6 +3458,30 @@
     "valley": "Biblioteca de los Reinos",
     "azara": "Las cajas de la expedición"
    },
+   "routes": [
+    {
+     "code": "escalera",
+     "name": {
+      "valley": "Por la escalera de caracol",
+      "azara": "Por la escalera de la casa"
+     },
+     "arrival": {
+      "valley": "Tu equipo sube a la biblioteca por la escalera de caracol: cada peldaño cruje como una página vieja.",
+      "azara": "Tu equipo sube a las cajas de la expedición por la escalera de la casa: cada peldaño cruje como una página vieja."
+     }
+    },
+    {
+     "code": "patio",
+     "name": {
+      "valley": "Por el patio de los libros",
+      "azara": "Por el patio de las cajas"
+     },
+     "arrival": {
+      "valley": "Tu equipo entra en la biblioteca por el patio, entre montones de libros que esperan su estante.",
+      "azara": "Tu equipo entra en el almacén por el patio, entre cajas que esperan su sitio."
+     }
+    }
+   ],
    "stop": {
     "speaker": "bibliotecaria",
     "text": {
@@ -3681,6 +3735,30 @@
     "valley": "Bosque de las Huellas",
     "azara": "El monte"
    },
+   "routes": [
+    {
+     "code": "huellas",
+     "name": {
+      "valley": "Siguiendo las huellas",
+      "azara": "Siguiendo las huellas"
+     },
+     "arrival": {
+      "valley": "Tu equipo entra en el bosque siguiendo huellas en el barro: unas pequeñas, otras enormes.",
+      "azara": "Tu equipo entra en el monte siguiendo huellas en el barro: unas pequeñas, otras enormes."
+     }
+    },
+    {
+     "code": "copas",
+     "name": {
+      "valley": "Mirando las copas",
+      "azara": "Mirando las copas"
+     },
+     "arrival": {
+      "valley": "Tu equipo entra en el bosque mirando las copas de los árboles: algo se mueve entre las ramas.",
+      "azara": "Tu equipo entra en el monte mirando las copas de los árboles: algo se mueve entre las ramas."
+     }
+    }
+   ],
    "stop": {
     "speaker": "barquero",
     "text": {
@@ -3946,6 +4024,30 @@
     "valley": "Jardín de la Luz",
     "azara": "El huerto"
    },
+   "routes": [
+    {
+     "code": "sol",
+     "name": {
+      "valley": "Por el lado del sol",
+      "azara": "Por el lado del sol"
+     },
+     "arrival": {
+      "valley": "Tu equipo entra en el jardín por el lado del sol: todas las plantas miran hacia la luz.",
+      "azara": "Tu equipo entra en el huerto por el lado del sol: todas las plantas miran hacia la luz."
+     }
+    },
+    {
+     "code": "sombra",
+     "name": {
+      "valley": "Por el lado de la sombra",
+      "azara": "Por el lado de la sombra"
+     },
+     "arrival": {
+      "valley": "Tu equipo entra en el jardín por la sombra: aquí las plantas son otras, de hojas grandes y oscuras.",
+      "azara": "Tu equipo entra en el huerto por la sombra: aquí las plantas son otras, de hojas grandes y oscuras."
+     }
+    }
+   ],
    "stop": {
     "speaker": "jardinera",
     "text": {
@@ -4203,6 +4305,30 @@
     "valley": "El Gran Lago",
     "azara": "La orilla del río"
    },
+   "routes": [
+    {
+     "code": "barca",
+     "name": {
+      "valley": "En la barca",
+      "azara": "En la barca"
+     },
+     "arrival": {
+      "valley": "Tu equipo llega al lago en la barca: desde el agua se ve a la garza quieta en la orilla.",
+      "azara": "Tu equipo llega a la orilla en la barca: desde el agua se ve a la garza quieta junto a los juncos."
+     }
+    },
+    {
+     "code": "orilla",
+     "name": {
+      "valley": "Por la orilla",
+      "azara": "Por la orilla"
+     },
+     "arrival": {
+      "valley": "Tu equipo llega al lago andando por la orilla, entre juncos que se mueven sin viento.",
+      "azara": "Tu equipo llega al río andando por la orilla, entre juncos que se mueven sin viento."
+     }
+    }
+   ],
    "stop": {
     "speaker": "garza",
     "text": {
@@ -4481,6 +4607,30 @@
     "valley": "La Torre",
     "azara": "El cuaderno"
    },
+   "routes": [
+    {
+     "code": "puerta",
+     "name": {
+      "valley": "Por la puerta grande",
+      "azara": "Por la primera página"
+     },
+     "arrival": {
+      "valley": "Tu equipo llega a la torre por la puerta grande, que el Embrollo ha dejado entreabierta.",
+      "azara": "Tu equipo abre el cuaderno por la primera página: el Embrollo ha dejado una esquina doblada."
+     }
+    },
+    {
+     "code": "ronda",
+     "name": {
+      "valley": "Por el camino de ronda",
+      "azara": "Por la última página"
+     },
+     "arrival": {
+      "valley": "Tu equipo sube a la torre por el camino de ronda: desde arriba se oyen las risitas del Embrollo.",
+      "azara": "Tu equipo abre el cuaderno por la última página: desde allí se oyen las risitas del Embrollo."
+     }
+    }
+   ],
    "stop": {
     "speaker": "druida-mayor",
     "text": {

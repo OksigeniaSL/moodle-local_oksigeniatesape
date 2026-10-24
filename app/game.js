@@ -2755,7 +2755,7 @@
     }).join('') + peek;
     return '<section class="card chapter">' + listen() + '<div class="kicker">' + esc(lantern) + '</div><h2>' +
       esc(ch.name) + '</h2>' + (here ? '<p class="mates-here">' + T.icon('team') + ' ' + esc(t('app_mates_here', here)) +
-      '</p>' : '') + placeView(ch, past) +
+      '</p>' : '') + routeCard(ch, past) + placeView(ch, past) +
       '<p>' + esc(ch.intro) + '</p>' + (ch.memory && ch.memory.length ? '<div class="memory"><small>' +
       esc(t('app_memory')) + '</small>' + ch.memory.map(function(line) {
         return '<p>' + esc(line) + '</p>';
@@ -2763,6 +2763,32 @@
       '</small>' + esc(ch.letter) + '</blockquote>' : '') + (ch.teaser ? '<p class="teaser"><b>' + esc(t('app_teaser')) +
       '</b> ' + esc(ch.teaser) + '</p>' : '') + peek + night + (scenes ? '<ul class="list">' + scenes + '</ul>' : '') +
       stopCard(ch, past) + photoCard(ch, past) + more(games, quests, acts, challenge) + '</section>';
+  }
+
+  /**
+   * The way of the team into the place: how it arrived, or, while the class is in it, the two ways to choose (the scout
+   * chooses; without a scout, anyone).
+   *
+   * @param {Object} ch
+   * @param {boolean} past
+   * @return {string}
+   */
+  function routeCard(ch, past) {
+    var r = ch.route;
+    if (past || !r) {
+      return '';
+    }
+    if (r.chosen) {
+      var way = r.routes.filter(function(x) {
+        return x.code === r.chosen;
+      })[0];
+      return '<p class="route-arrival"><small>' + esc(way ? way.name : '') + '</small>' + esc(r.arrival) + '</p>';
+    }
+    return '<div class="route-card"><b>' + esc(t('app_route')) + '</b><p class="help-soft">' + esc(t(r.chooser ?
+      'app_route_help' : 'app_route_scout')) + '</p>' + (r.chooser ? '<div class="actions" style="justify-content:' +
+      'flex-start">' + r.routes.map(function(x) {
+        return '<button type="button" class="btn btn-soft" data-route="' + esc(x.code) + '">' + esc(x.name) + '</button>';
+      }).join('') + '</div>' : '') + '</div>';
   }
 
   /**
@@ -3279,6 +3305,19 @@
     if (mixed) {
       mixed.onclick = undoTangle;
     }
+    app.querySelectorAll('[data-route]').forEach(function(b) {
+      b.onclick = function() {
+        app.querySelectorAll('[data-route]').forEach(function(x) {
+          x.disabled = true;
+        });
+        T.api('choose_route', {courseid: cfg.courseid, route: b.dataset.route}).then(function() {
+          return refresh();
+        }).catch(function(e) {
+          T.toast(esc(e.message), true);
+          world();
+        });
+      };
+    });
     app.querySelectorAll('[data-stop]').forEach(function(b) {
       b.onclick = function() {
         app.querySelectorAll('[data-stop]').forEach(function(x) {

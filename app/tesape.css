@@ -7782,6 +7782,26 @@ body.adapt-colours .errors-text .fixed ins {
   width: min(900px, 100%);
 }
 
+/* ---------- The way of the team into a place ---------- */
+
+.route-card {
+  margin: 10px 0;
+  padding: 10px 12px;
+  border-radius: var(--r-s);
+  background: rgba(var(--leaf-rgb), .1);
+}
+
+.route-arrival {
+  margin: 8px 0;
+  font-style: italic;
+}
+
+.route-arrival small {
+  display: block;
+  font-style: normal;
+  color: var(--text-soft);
+}
+
 /* ---------- A stop on the way ---------- */
 
 .stop-card {

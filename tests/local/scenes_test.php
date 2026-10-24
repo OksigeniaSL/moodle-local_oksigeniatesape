@@ -492,6 +492,48 @@ final class scenes_test extends \advanced_testcase {
         $this->assertStringContainsString('semilla', $other['text']);
     }
 
+    public function test_the_route_of_the_team_chosen_by_its_scout(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $w = $this->make_class(3);
+        $c = (int) $w->course->id;
+        $gen = $this->getDataGenerator();
+        $team = $gen->create_group(['courseid' => $c]);
+        foreach ([0 => 'scout', 1 => 'protector'] as $i => $role) {
+            $gen->create_group_member(['groupid' => $team->id, 'userid' => $w->users[$i]->id]);
+            $DB->set_field(self::T . 'char', 'role', $role, ['userid' => $w->users[$i]->id]);
+        }
+        $route = function (\stdClass $user) use ($c): array {
+            $char = characters::get($user->id);
+            return array_column(view::mission($c, $char, engine::member($char, $c))['chapters'], 'route', 'code')['claro'];
+        };
+        // The class is in the clearing: two ways, the scout chooses; the protector sees it but does not.
+        $this->assertSame(['arroyo', 'colina'], array_column($route($w->users[0])['routes'], 'code'));
+        $this->assertTrue($route($w->users[0])['chooser']);
+        $this->assertFalse($route($w->users[1])['chooser']);
+        try {
+            routes::choose($c, $w->users[1]->id, 'colina');
+            $this->fail('Not the scout');
+        } catch (\moodle_exception $e) {
+            $this->assertSame('routescout', $e->errorcode);
+        }
+        routes::choose($c, $w->users[0]->id, 'colina');
+        // The whole team arrived that way, once; and the second way lists the games the other way round.
+        $seen = $route($w->users[1]);
+        $this->assertSame('colina', $seen['chosen']);
+        $this->assertStringContainsString('bajando la colina', $seen['arrival']);
+        try {
+            routes::choose($c, $w->users[0]->id, 'arroyo');
+            $this->fail('Twice');
+        } catch (\moodle_exception $e) {
+            $this->assertSame('routechosen', $e->errorcode);
+        }
+        // Without a team, no way to choose.
+        $char = characters::get($w->users[2]->id);
+        $claro = array_column(view::mission($c, $char, engine::member($char, $c))['chapters'], null, 'code')['claro'];
+        $this->assertArrayNotHasKey('route', $claro);
+    }
+
     public function test_the_messengers_bring_the_first_hint_of_each_scene_of_the_day(): void {
         global $DB;
         $this->resetAfterTest();

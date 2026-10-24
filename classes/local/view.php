@@ -356,6 +356,10 @@ final class view {
             }
         }
         $secretsfound = secrets::found($char, $mission);
+        // The ways of the team into the places, and whether this student chooses them.
+        $myteam = teams::of($courseid, (int) $char->userid);
+        $ways = $myteam ? routes::chosen((int) $myteam->id) : [];
+        $chooser = $myteam && routes::chooser($courseid, (int) $myteam->id, $char);
         $list = [];
         foreach ($chapters as $chapter) {
             $meta = $info[$chapter->code] ?? [];
@@ -412,6 +416,14 @@ final class view {
                 'scenes' => array_map($sceneview, $mine),
                 // The quests of the place, for whoever wants more, whatever their step.
                 'quests' => array_map($sceneview, scenes::quests($here)),
+                // The way of the team into the place: to choose while the class is in it, and how the team arrived.
+                'route' => $myteam ? routes::view(
+                    $mission,
+                    $meta,
+                    (string) ($ways[$chapter->code] ?? ''),
+                    $chapter->code === $todaycode,
+                    $chooser
+                ) : null,
                 // A stop on the way, once they played a scene of the place: rest by the fire or listen to who lives there.
                 'stop' => stops::view(
                     $mission,
@@ -420,7 +432,14 @@ final class view {
                     (bool) array_filter($here, fn($s) => !empty($attempts[$s->id]))
                 ),
             ];
-            foreach (['embrollo', 'encounter', 'minion', 'stop'] as $optional) {
+            // The second way lists the games and the quests of the place the other way round.
+            $last = &$list[count($list) - 1];
+            if (!empty($last['route']['chosen']) && $last['route']['chosen'] === (string) ($meta['routes'][1]['code'] ?? '')) {
+                $last['games'] = array_reverse($last['games']);
+                $last['quests'] = array_reverse($last['quests']);
+            }
+            unset($last);
+            foreach (['embrollo', 'encounter', 'minion', 'stop', 'route'] as $optional) {
                 if ($list[count($list) - 1][$optional] === null) {
                     unset($list[count($list) - 1][$optional]);
                 }

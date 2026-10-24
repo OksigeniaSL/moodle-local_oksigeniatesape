@@ -206,6 +206,16 @@ final class structures {
                     'options' => new external_multiple_structure(new external_value(PARAM_TEXT, 'Option')),
                     'tried' => new external_value(PARAM_BOOL, 'Answered today already'),
                 ], 'A minion of the Embrollo on the road to the place, until the class lights it', VALUE_OPTIONAL),
+                'route' => new external_single_structure([
+                    'routes' => new external_multiple_structure(new external_single_structure([
+                        'code' => new external_value(PARAM_ALPHANUMEXT, 'The way'),
+                        'name' => new external_value(PARAM_TEXT, 'Its name'),
+                    ])),
+                    'chosen' => new external_value(PARAM_ALPHANUMEXT, 'The way the team chose; empty if none yet'),
+                    'arrival' => new external_value(PARAM_TEXT, 'How the team arrived, once chosen'),
+                    'now' => new external_value(PARAM_BOOL, 'The class is in this place now'),
+                    'chooser' => new external_value(PARAM_BOOL, 'The student can choose the way of the team'),
+                ], 'The way of the team into the place', VALUE_OPTIONAL),
                 'stop' => new external_single_structure([
                     'speaker' => new external_value(PARAM_TEXT, 'Who lives there'),
                     'to' => new external_value(PARAM_TEXT, 'Who lives there, inside a sentence that goes to them'),

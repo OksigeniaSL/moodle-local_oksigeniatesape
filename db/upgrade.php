@@ -1074,5 +1074,15 @@ function xmldb_local_oksigeniatesape_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026102414, 'local', 'oksigeniatesape');
     }
 
+    if ($oldversion < 2026102417) {
+        // The way each team chooses into each place.
+        $table = new xmldb_table('local_oksigeniatesape_team');
+        $field = new xmldb_field('routes', XMLDB_TYPE_TEXT, null, null, null, null, null, 'gifts');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        upgrade_plugin_savepoint(true, 2026102417, 'local', 'oksigeniatesape');
+    }
+
     return true;
 }
