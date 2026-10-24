@@ -56,6 +56,8 @@ final class regions {
         'skills' => 1,
         // Secrets shown at a time in the painting of a place (0: all of them), the next one once one is found.
         'secrets' => 0,
+        // The library of the class (the museum of its field guide) can be visited from other regions of the site (1).
+        'library' => 0,
     ];
 
     /**

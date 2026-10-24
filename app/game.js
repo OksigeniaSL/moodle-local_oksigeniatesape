@@ -2112,10 +2112,36 @@
     if (!m) {
       return '';
     }
+    // The libraries of other regions whose teachers share them: their work, without people.
+    var others = state.world.libraries || [];
     return '<section class="card no-print museum-card" style="margin-top:16px"><h2>' + esc(t('app_museum')) + '</h2>' +
       '<p class="help-soft">' + esc(t('app_museum_help', {entries: m.entries, lit: m.shelves.filter(function(s) {
         return s.lit;
-      }).length})) + '</p>' + T.museum(m, true) + '</section>';
+      }).length})) + '</p>' + T.museum(m, true) + (others.length ? '<h3>' + esc(t('app_libraries')) + '</h3><p class="help-soft">' +
+      esc(t('app_libraries_help')) + '</p><div class="chips">' + others.map(function(l) {
+        return '<button type="button" class="chip" data-library="' + l.courseid + '">' + esc(l.name) + '</button>';
+      }).join('') + '</div>' : '') + '</section>';
+  }
+
+  /**
+   * The library of another region: its shelves and books, to read, and the way back.
+   *
+   * @param {number} other Its course.
+   */
+  function visitLibrary(other) {
+    T.api('get_library', {courseid: cfg.courseid, other: other}).then(function(lib) {
+      var layer = moment('<div class="kicker">' + esc(t('app_libraries')) + '</div><h2 id="tesape-library">' +
+        esc(t('app_library_of', lib.name)) + '</h2><p class="help-soft">' + esc(t('app_museum_help', {entries: lib.museum.entries,
+        lit: lib.museum.shelves.filter(function(s) {
+          return s.lit;
+        }).length})) + '</p><div class="museum-card library-visit">' + T.museum(lib.museum, true) + '</div>', 'tesape-library');
+      layer.querySelector('.badge-card').classList.add('wide');
+      T.bindMuseum(layer.querySelector('.library-visit'), lib.museum, null, function() {
+        return null;
+      });
+    }).catch(function(e) {
+      T.toast(esc(e.message), true);
+    });
   }
 
   /**
@@ -4796,6 +4822,11 @@
         state.book = book;
       });
     }
+    app.querySelectorAll('[data-library]').forEach(function(b) {
+      b.onclick = function() {
+        visitLibrary(Number(b.dataset.library));
+      };
+    });
     app.querySelectorAll('[data-mesection]').forEach(function(b) {
       b.onclick = function() {
         state.meSection = state.meSection === b.dataset.mesection ? null : b.dataset.mesection;

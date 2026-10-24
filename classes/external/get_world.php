@@ -148,6 +148,10 @@ final class get_world extends external_api {
             ]), 'The minions of the Embrollo of the places the student has played', VALUE_DEFAULT, []),
             'museum' => structures::museum(),
             'tangles' => structures::tangles_student(VALUE_OPTIONAL),
+            'libraries' => new external_multiple_structure(new external_single_structure([
+                'courseid' => new external_value(PARAM_INT, 'Course of the library'),
+                'name' => new external_value(PARAM_TEXT, 'The region'),
+            ]), 'Libraries of other regions the student can visit', VALUE_DEFAULT, []),
             'names' => new external_single_structure([
                 'heroes' => new external_value(PARAM_BOOL, 'Hero names allowed in the course'),
                 'own' => new external_value(PARAM_BOOL, 'Own names allowed, read by a teacher first'),

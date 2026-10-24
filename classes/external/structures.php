@@ -407,9 +407,10 @@ final class structures {
      * The museum of the class in the Library: a shelf for each group of living things, a book for each entry of the
      * field guide.
      *
+     * @param int $required
      * @return external_single_structure
      */
-    public static function museum(): external_single_structure {
+    public static function museum(int $required = VALUE_OPTIONAL): external_single_structure {
         return new external_single_structure([
             'shelves' => new external_multiple_structure(new external_single_structure([
                 'group' => new external_value(PARAM_TEXT, 'Group of living things (empty: without a group)'),
@@ -423,7 +424,7 @@ final class structures {
                 ])),
             ])),
             'entries' => new external_value(PARAM_INT, 'Entries of the whole class'),
-        ], 'The museum of the class', VALUE_OPTIONAL);
+        ], 'The museum of the class', $required);
     }
 
     /**
@@ -692,6 +693,7 @@ final class structures {
             'completionrule' => new external_value(PARAM_INT, 'Knowledge for an activity that is not a challenge'),
             'talentson' => new external_value(PARAM_BOOL, 'The talents act in the course', VALUE_DEFAULT, true),
             'secretsshown' => new external_value(PARAM_INT, 'Secrets shown at a time in a painting (0: all)', VALUE_DEFAULT, 0),
+            'sharelibrary' => new external_value(PARAM_BOOL, 'Other regions can visit the library', VALUE_DEFAULT, false),
             'skillson' => new external_value(PARAM_BOOL, 'The named skills show to the students', VALUE_DEFAULT, true),
             'portal' => new external_value(PARAM_ALPHA, 'Cover: door, card, direct or menu', VALUE_DEFAULT, 'door'),
             'hideacts' => new external_value(PARAM_BOOL, 'Mission activities only inside the valley', VALUE_DEFAULT, false),

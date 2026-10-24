@@ -1641,6 +1641,226 @@
    *
    * @return {string}
    */
+  /* ---------- The tools of the classroom: the hourglass and the wheel of fate ---------- */
+
+  /** Minutes the hourglass can be turned for. */
+  var MINUTES = [1, 2, 3, 5, 10, 15, 20];
+
+  function toolButtons() {
+    return '<button class="btn btn-soft" type="button" data-hourglass>' + esc(t('board_hourglass')) + '</button>' +
+      '<button class="btn btn-soft" type="button" data-wheel>' + esc(t('board_wheel')) + '</button>';
+  }
+
+  /**
+   * A tool over the class screen, with its way out.
+   *
+   * @param {string} html
+   * @param {string} label Id of its title.
+   * @return {Element}
+   */
+  function toolLayer(html, label) {
+    closeTool();
+    var el = document.createElement('div');
+    el.className = 'class-tool';
+    el.setAttribute('role', 'dialog');
+    el.setAttribute('aria-modal', 'true');
+    el.setAttribute('aria-labelledby', label);
+    el.innerHTML = '<button type="button" class="btn btn-soft scene-close" data-toolclose aria-label="' + esc(t('app_close')) +
+      '">' + T.icon('close') + '</button><div class="class-tool-body">' + html + '</div>';
+    document.body.appendChild(el);
+    el.querySelector('[data-toolclose]').onclick = closeTool;
+    state.tool = el;
+    return el;
+  }
+
+  function closeTool() {
+    clearInterval(state.tooltimer);
+    clearTimeout(state.wheeltimer);
+    if (state.tool) {
+      state.tool.remove();
+      state.tool = null;
+    }
+  }
+
+  /** The hourglass of the Embrollo: the minutes, and then the sand falling with the time left in big. */
+  function hourglass() {
+    var el = toolLayer('<h1 id="tesape-hourglass">' + esc(t('board_hourglass')) + '</h1><p class="lead">' +
+      esc(t('board_hourglass_pick')) + '</p><div class="tool-picks">' + MINUTES.map(function(m) {
+        return '<button type="button" class="btn btn-soft" data-minutes="' + m + '">' + esc(t('board_minutes', m)) + '</button>';
+      }).join('') + '</div>', 'tesape-hourglass');
+    el.querySelectorAll('[data-minutes]').forEach(function(b) {
+      b.onclick = function() {
+        runHourglass(el, Number(b.dataset.minutes) * 60);
+      };
+    });
+    el.querySelector('[data-minutes]').focus();
+  }
+
+  /**
+   * The hourglass running: the sand goes down as the time goes, it can wait or get a minute more, and at the end it says
+   * so.
+   *
+   * @param {Element} el
+   * @param {number} total Seconds.
+   */
+  function runHourglass(el, total) {
+    var end = Date.now() + total * 1000;
+    var left = total * 1000;
+    var waiting = false;
+    var body = el.querySelector('.class-tool-body');
+    body.innerHTML = '<h1 id="tesape-hourglass">' + esc(t('board_hourglass')) + '</h1><div class="hourglass" aria-hidden="true">' +
+      '<span class="hg-top"><i></i></span><span class="hg-bottom"><i></i></span></div><div class="show-clock" data-hgclock ' +
+      'aria-live="off"></div><div class="actions" style="justify-content:center"><button type="button" class="btn btn-soft" ' +
+      'data-hgwait>' + esc(t('board_hourglass_wait')) + '</button><button type="button" class="btn btn-soft" data-hgmore>' +
+      esc(t('board_hourglass_more')) + '</button></div>';
+    var glass = body.querySelector('.hourglass');
+    var clock = body.querySelector('[data-hgclock]');
+    var draw = function() {
+      if (!waiting) {
+        left = Math.max(0, end - Date.now());
+      }
+      var secs = Math.ceil(left / 1000);
+      clock.textContent = Math.floor(secs / 60) + ':' + ('0' + secs % 60).slice(-2);
+      glass.style.setProperty('--done', String(1 - left / (total * 1000)));
+      if (left <= 0) {
+        clearInterval(state.tooltimer);
+        clock.textContent = t('board_hourglass_end');
+        clock.setAttribute('aria-live', 'assertive');
+        glass.classList.add('done');
+        body.querySelectorAll('[data-hgwait], [data-hgmore]').forEach(function(b) {
+          b.disabled = true;
+        });
+        if (T.fx) {
+          T.fx.sound('win');
+        }
+      }
+    };
+    body.querySelector('[data-hgwait]').onclick = function() {
+      waiting = !waiting;
+      if (!waiting) {
+        end = Date.now() + left;
+      }
+      this.textContent = t(waiting ? 'board_hourglass_go' : 'board_hourglass_wait');
+    };
+    body.querySelector('[data-hgmore]').onclick = function() {
+      total += 60;
+      end += 60000;
+      left += 60000;
+    };
+    clearInterval(state.tooltimer);
+    state.tooltimer = setInterval(draw, 250);
+    draw();
+  }
+
+  /** The wheel of fate: a team or a student at random, without repeating until everybody has come out. */
+  function wheel() {
+    var el = toolLayer('<h1 id="tesape-wheel">' + esc(t('board_wheel')) + '</h1><p class="lead">' + esc(t('board_wheel_help')) +
+      '</p><div class="tool-picks"><button type="button" class="btn btn-soft" data-wheelkind="teams">' +
+      esc(t('board_wheel_teams')) + '</button><button type="button" class="btn btn-soft" data-wheelkind="students">' +
+      esc(t('board_wheel_students')) + '</button></div><div data-wheelbox></div>', 'tesape-wheel');
+    el.querySelectorAll('[data-wheelkind]').forEach(function(b) {
+      b.onclick = function() {
+        spin(el.querySelector('[data-wheelbox]'), b.dataset.wheelkind);
+      };
+    });
+    el.querySelector('[data-wheelkind]').focus();
+  }
+
+  /**
+   * Who can come out of the wheel: the teams, or the students with a hero, by the name their classmates see.
+   *
+   * @param {string} kind teams or students.
+   * @return {string[]}
+   */
+  function wheelNames(kind) {
+    var cls = state.cls;
+    if (kind === 'teams') {
+      return cls.teams.map(function(team) {
+        return team.name;
+      });
+    }
+    var heroes = cls.region && cls.region.nicknames;
+    return cls.students.filter(function(s) {
+      return s.character;
+    }).map(function(s) {
+      return heroes && s.character.nickname ? s.character.nickname : s.firstname;
+    });
+  }
+
+  /**
+   * One turn of the wheel: the names go by, slower and slower, and stop on one that has not come out yet.
+   *
+   * @param {Element} box
+   * @param {string} kind
+   */
+  function spin(box, kind) {
+    clearTimeout(state.wheeltimer);
+    var all = wheelNames(kind);
+    if (!all.length) {
+      box.innerHTML = '<p class="lead">' + esc(t('board_wheel_empty')) + '</p>';
+      return;
+    }
+    var key = 'tesape-wheel-' + cfg.courseid + '-' + kind;
+    var used = [];
+    try {
+      used = JSON.parse(window.sessionStorage.getItem(key) || '[]');
+    } catch (e) {
+      used = [];
+    }
+    var left = all.filter(function(n) {
+      return used.indexOf(n) < 0;
+    });
+    if (!left.length) {
+      used = [];
+      left = all.slice();
+    }
+    var pick = left[Math.floor(Math.random() * left.length)];
+    used.push(pick);
+    try {
+      window.sessionStorage.setItem(key, JSON.stringify(used));
+    } catch (e) {
+      // Without storage, the wheel may repeat: nothing else changes.
+    }
+    box.innerHTML = '<div class="wheel-name" data-wheelname aria-live="polite"></div><p class="help-soft" data-wheelleft></p>' +
+      '<div class="actions" style="justify-content:center"><button type="button" class="btn btn-main" data-wheelagain disabled>' +
+      esc(t('board_wheel_again')) + '</button><button type="button" class="btn btn-soft" data-wheelreset>' +
+      esc(t('board_wheel_reset')) + '</button></div>';
+    var name = box.querySelector('[data-wheelname]');
+    var steps = T.moves() ? 16 : 0;
+    var delay = 60;
+    var i = 0;
+    var go = function() {
+      if (i >= steps) {
+        name.textContent = pick;
+        name.classList.add('chosen');
+        box.querySelector('[data-wheelleft]').textContent = t('board_wheel_left', all.length - used.length);
+        var again = box.querySelector('[data-wheelagain]');
+        again.disabled = false;
+        again.focus();
+        if (T.fx) {
+          T.fx.sound('right');
+        }
+        return;
+      }
+      name.textContent = all[(i * 5 + used.length) % all.length];
+      i++;
+      delay *= 1.17;
+      state.wheeltimer = setTimeout(go, delay);
+    };
+    box.querySelector('[data-wheelagain]').onclick = function() {
+      spin(box, kind);
+    };
+    box.querySelector('[data-wheelreset]').onclick = function() {
+      try {
+        window.sessionStorage.removeItem(key);
+      } catch (e) {
+        // Nothing kept, nothing to forget.
+      }
+      spin(box, kind);
+    };
+    go();
+  }
+
   function musicButton() {
     if (!T.fx) {
       return '';
@@ -2567,7 +2787,7 @@
       '<div class="board-tools">' + (pending && can('approvepowers') ? '<a class="btn btn-soft" href="' +
       esc(cfg.wwwroot + '/local/oksigeniatesape/teach.php?id=' + cfg.courseid) + '">' + esc(t('board_powers', pending)) +
       '</a>' : '') + '<a class="btn btn-soft" href="' + esc(cfg.wwwroot + '/local/oksigeniatesape/teach.php?id=' +
-      cfg.courseid) + '">' + esc(t('board_panel')) + '</a>' + musicButton() + lightButton() +
+      cfg.courseid) + '">' + esc(t('board_panel')) + '</a>' + toolButtons() + musicButton() + lightButton() +
       '<button class="btn btn-soft" data-full>' +
       esc(t('board_fullscreen')) + '</button></div></header>' +
       '<div class="board-grid">' + map() + '<div class="board-side">' + todayCard() + openerCard() + eventCard() + battleCard() +
@@ -2600,6 +2820,8 @@
     on('[data-full]', fullscreen);
     on('[data-light]', switchLight);
     on('[data-music]', switchMusic);
+    on('[data-hourglass]', hourglass);
+    on('[data-wheel]', wheel);
     on('[data-openerhide]', function() {
       state.openerhidden = true;
       render();

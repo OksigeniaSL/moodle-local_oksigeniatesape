@@ -115,6 +115,13 @@ final class save_region extends external_api {
                 null,
                 NULL_ALLOWED
             ),
+            'sharelibrary' => new external_value(
+                PARAM_BOOL,
+                'Other regions of the site can visit the library of the class',
+                VALUE_DEFAULT,
+                null,
+                NULL_ALLOWED
+            ),
         ]);
     }
 
@@ -145,6 +152,7 @@ final class save_region extends external_api {
      * @param bool|null $talentson
      * @param bool|null $skillson
      * @param int|null $secretsshown
+     * @param bool|null $sharelibrary
      * @return array
      */
     public static function execute(
@@ -171,7 +179,8 @@ final class save_region extends external_api {
         ?string $reasons = null,
         ?bool $talentson = null,
         ?bool $skillson = null,
-        ?int $secretsshown = null
+        ?int $secretsshown = null,
+        ?bool $sharelibrary = null
     ): array {
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
@@ -198,6 +207,7 @@ final class save_region extends external_api {
             'talentson' => $talentson,
             'skillson' => $skillson,
             'secretsshown' => $secretsshown,
+            'sharelibrary' => $sharelibrary,
         ]);
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
@@ -209,7 +219,8 @@ final class save_region extends external_api {
             $settings['reasons'],
             $settings['talentson'],
             $settings['skillson'],
-            $settings['secretsshown']
+            $settings['secretsshown'],
+            $settings['sharelibrary']
         );
         if ($params['reasons'] !== null) {
             $list = $params['reasons'] === 'default' ? null : json_decode($params['reasons'], true);
@@ -229,6 +240,9 @@ final class save_region extends external_api {
         }
         if ($params['skillson'] !== null) {
             $settings['rules'] = ($settings['rules'] ?? []) + ['skills' => $params['skillson'] ? 1 : 0];
+        }
+        if ($params['sharelibrary'] !== null) {
+            $settings['rules'] = ($settings['rules'] ?? []) + ['library' => $params['sharelibrary'] ? 1 : 0];
         }
         if (!empty($settings['groupingid'])) {
             $grouping = groups_get_grouping($settings['groupingid']);

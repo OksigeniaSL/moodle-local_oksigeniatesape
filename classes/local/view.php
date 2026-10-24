@@ -206,6 +206,8 @@ final class view {
             foreach ($myteam ? photos::of_team($courseid, (int) $char->userid) : [] as $code => $photo) {
                 $world['photos'][] = ['chapter' => (string) $code] + $photo;
             }
+            // The libraries of other regions of the site whose teachers share them.
+            $world['libraries'] = museum::shared($courseid);
             // Be the Embrollo: the tangle of the team this week, and those of other teams to undo.
             $world['tangles'] = self::tangles($courseid, (int) $char->userid);
             if (!empty($world['team'])) {
@@ -862,6 +864,7 @@ final class view {
             'talentson' => !$region || regions::rule($region, 'talents') > 0,
             'skillson' => !$region || regions::rule($region, 'skills') > 0,
             'secretsshown' => $region ? regions::rule($region, 'secrets') : 0,
+            'sharelibrary' => $region && regions::rule($region, 'library') > 0,
             'portal' => (string) ($region->portal ?? 'door'),
             'hideacts' => (bool) ($region->hideacts ?? false),
             'allowstealth' => !empty($GLOBALS['CFG']->allowstealth),

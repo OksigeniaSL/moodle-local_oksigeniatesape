@@ -27,6 +27,9 @@ namespace local_oksigeniatesape\local;
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class museum {
+    /** @var string Prefix of the plugin tables. */
+    private const T = 'local_oksigeniatesape_';
+
     /** @var int Entries a shelf needs for its light. */
     public const LIT = 3;
 
@@ -97,5 +100,53 @@ final class museum {
             $shelves[$key]['books'] = array_reverse($shelf['books']);
         }
         return ['shelves' => array_values($shelves), 'entries' => $count];
+    }
+    /**
+     * The libraries of other regions of the site that a student of a course can visit: those whose teachers share them,
+     * with the game on and some book in their shelves. The work of a class, without people.
+     *
+     * @param int $courseid
+     * @return array Each: courseid, name.
+     */
+    public static function shared(int $courseid): array {
+        global $DB;
+        $like = $DB->sql_like('rules', ':rule');
+        $regions = $DB->get_records_select(
+            self::T . 'region',
+            "enabled = 1 AND courseid <> :courseid AND $like",
+            ['courseid' => $courseid, 'rule' => '%"library":1%'],
+            'courseid',
+            'id, courseid, rules'
+        );
+        $out = [];
+        foreach ($regions as $region) {
+            $course = $DB->get_record('course', ['id' => $region->courseid], 'id, fullname, visible');
+            if ($course && $course->visible && regions::rule($region, 'library') > 0) {
+                $out[] = ['courseid' => (int) $course->id, 'name' => format_string(
+                    $course->fullname,
+                    true,
+                    ['context' => \context_course::instance($course->id)]
+                )];
+            }
+        }
+        return $out;
+    }
+
+    /**
+     * The library of another region, for a student of a course: only if its teachers share it.
+     *
+     * @param int $courseid Of the student.
+     * @param int $otherid Of the library.
+     * @return array name, museum.
+     */
+    public static function visit(int $courseid, int $otherid): array {
+        if (!in_array($otherid, array_column(self::shared($courseid), 'courseid'), true)) {
+            throw new \moodle_exception('nolibrary', 'local_oksigeniatesape');
+        }
+        $museum = self::of_course($otherid);
+        if (!$museum) {
+            throw new \moodle_exception('nolibrary', 'local_oksigeniatesape');
+        }
+        return ['name' => format_string(get_course($otherid)->fullname), 'museum' => $museum];
     }
 }

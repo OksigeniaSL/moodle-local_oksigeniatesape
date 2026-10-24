@@ -7630,6 +7630,103 @@ body.adapt-colours .errors-text .fixed ins {
   height: 100%;
 }
 
+/* ---------- The tools of the classroom on the class screen ---------- */
+
+.class-tool {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(var(--deep-rgb), .97);
+  text-align: center;
+}
+
+.class-tool-body {
+  display: grid;
+  gap: 18px;
+  justify-items: center;
+  width: min(1100px, 100%);
+}
+
+.tool-picks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+
+.tool-picks .btn {
+  min-width: 120px;
+  min-height: 64px;
+  font-size: clamp(18px, 2vw, 26px);
+}
+
+/* The hourglass: the sand of the top goes down to the bottom as --done goes from 0 to 1. */
+.hourglass {
+  --done: 0;
+  display: grid;
+  width: 160px;
+  height: 260px;
+}
+
+.hg-top,
+.hg-bottom {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  background: rgba(255, 255, 255, .08);
+}
+
+.hg-top {
+  clip-path: polygon(0 0, 100% 0, 54% 100%, 46% 100%);
+}
+
+.hg-bottom {
+  clip-path: polygon(46% 0, 54% 0, 100% 100%, 0 100%);
+}
+
+.hg-top i,
+.hg-bottom i {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--lantern);
+}
+
+.hg-top i {
+  height: calc((1 - var(--done)) * 100%);
+}
+
+.hg-bottom i {
+  height: calc(var(--done) * 100%);
+}
+
+.hourglass.done {
+  animation: shake .6s ease 2;
+}
+
+.class-tool .show-clock {
+  font-size: clamp(64px, 12vw, 160px);
+}
+
+.wheel-name {
+  min-height: 1.3em;
+  font-family: var(--f-title);
+  font-size: clamp(48px, 8vw, 120px);
+  color: var(--text-soft);
+}
+
+.wheel-name.chosen {
+  color: var(--lantern);
+}
+
+.badge-card.wide {
+  width: min(900px, 100%);
+}
+
 /* ---------- Be the Embrollo ---------- */
 
 .landmark-btn.tangles .landmark-pic svg {

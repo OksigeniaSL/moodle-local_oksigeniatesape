@@ -76,4 +76,40 @@ final class museum_test extends \advanced_testcase {
         $this->assertSame(1, $museum['entries']);
         $this->assertSame(['Hornero'], array_merge(...array_map(fn($s) => array_column($s['books'], 'name'), $museum['shelves'])));
     }
+    public function test_a_class_shares_its_library_and_other_regions_visit_it(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $gen = $this->getDataGenerator();
+        $mine = $gen->create_course();
+        $theirs = $gen->create_course(['fullname' => 'Cuarto B']);
+        regions::save($mine->id, ['enabled' => 1]);
+        regions::save($theirs->id, ['enabled' => 1]);
+        $data = $gen->create_module('data', ['course' => $theirs->id]);
+        $dgen = $gen->get_plugin_generator('mod_data');
+        $dgen->create_field((object) ['name' => 'Nombre', 'type' => 'text'], $data);
+        $dgen->create_field((object) ['name' => 'Grupo', 'type' => 'menu', 'param1' => "Ave\nPlanta"], $data);
+        $ids = $DB->get_records_menu('data_fields', ['dataid' => $data->id], 'id', 'name, id');
+        activities::save($theirs->id, (int) $data->cmid, ['saber' => 30]);
+        $this->setUser($gen->create_and_enrol($theirs, 'student'));
+        $dgen->create_entry($data, [$ids['Nombre'] => 'Hornero', $ids['Grupo'] => 'Ave']);
+        // Not shared: nobody else sees it.
+        $this->assertSame([], museum::shared($mine->id));
+        try {
+            museum::visit($mine->id, $theirs->id);
+            $this->fail('A library not shared');
+        } catch (\moodle_exception $e) {
+            $this->assertSame('nolibrary', $e->errorcode);
+        }
+        // Shared by its teacher: the other region sees it by the name of its course, and reads its shelves.
+        regions::save($theirs->id, ['rules' => ['library' => 1]]);
+        $this->assertSame([['courseid' => (int) $theirs->id, 'name' => 'Cuarto B']], museum::shared($mine->id));
+        $this->assertSame([], museum::shared($theirs->id));
+        $visit = museum::visit($mine->id, $theirs->id);
+        $this->assertSame('Cuarto B', $visit['name']);
+        $this->assertSame(1, $visit['museum']['entries']);
+        $this->assertSame('Hornero', $visit['museum']['shelves'][0]['books'][0]['name']);
+        // Without the game on, or hidden, it is not shared any more.
+        regions::save($theirs->id, ['enabled' => 0]);
+        $this->assertSame([], museum::shared($mine->id));
+    }
 }

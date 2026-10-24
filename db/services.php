@@ -53,6 +53,13 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:play',
     ],
+    'local_oksigeniatesape_get_library' => [
+        'classname' => 'local_oksigeniatesape\external\get_library',
+        'description' => 'The library of another region of the site, if its teachers share it.',
+        'type' => 'read',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:play',
+    ],
     'local_oksigeniatesape_play_tangle' => [
         'classname' => 'local_oksigeniatesape\external\play_tangle',
         'description' => 'Writes the tangle of the current student\'s team, or undoes the tangle of another team.',
