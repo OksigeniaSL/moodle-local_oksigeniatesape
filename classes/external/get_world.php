@@ -149,6 +149,16 @@ final class get_world extends external_api {
             'museum' => structures::museum(),
             'tangles' => structures::tangles_student(VALUE_OPTIONAL),
             'gift' => structures::gift(),
+            'deferred' => new external_single_structure([
+                'liveid' => new external_value(PARAM_INT, 'The battle'),
+                'outcome' => new external_value(PARAM_ALPHA, 'won or lost'),
+                'final' => new external_value(PARAM_BOOL, 'The final battle'),
+                'questions' => new external_multiple_structure(new external_single_structure([
+                    'id' => new external_value(PARAM_RAW, 'Question'),
+                    'text' => new external_value(PARAM_TEXT, 'Its text'),
+                    'options' => new external_multiple_structure(new external_value(PARAM_TEXT, 'Option')),
+                ])),
+            ], 'The last battle the student, from far, can play in deferred', VALUE_OPTIONAL),
             'libraries' => new external_multiple_structure(new external_single_structure([
                 'courseid' => new external_value(PARAM_INT, 'Course of the library'),
                 'name' => new external_value(PARAM_TEXT, 'The region'),

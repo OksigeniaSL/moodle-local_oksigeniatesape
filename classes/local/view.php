@@ -244,6 +244,11 @@ final class view {
         if ($missed) {
             $world['battles'] = $missed;
         }
+        // And the last battle they were not in, to play its questions in deferred.
+        $deferred = deferred::pending($courseid, $char, $member);
+        if ($deferred) {
+            $world['deferred'] = $deferred;
+        }
         welcome::seen($member, time());
         return $world;
     }
@@ -643,6 +648,8 @@ final class view {
         $board['expeditions'] = self::expeditions($courseid);
         // The board as a game board: the fog of the Embrollo over the places the class forgot, and the token of each team.
         $board['fog'] = fog::places($courseid);
+        // Who brought their strength from far, playing the last battle in deferred.
+        $board['fromfar'] = deferred::from_far($courseid, $now);
         $board['tokens'] = fog::tokens($courseid);
         $opener = nextclass::opener($courseid, $now ?? time());
         if ($opener !== '') {

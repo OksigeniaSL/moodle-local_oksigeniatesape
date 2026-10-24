@@ -53,6 +53,13 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:play',
     ],
+    'local_oksigeniatesape_play_deferred' => [
+        'classname' => 'local_oksigeniatesape\external\play_deferred',
+        'description' => 'The current student, who follows from far, plays the last battle of the class in deferred.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:play',
+    ],
     'local_oksigeniatesape_choose_route' => [
         'classname' => 'local_oksigeniatesape\external\choose_route',
         'description' => 'The scout of a team chooses the way of the team into the place where the class is now.',

@@ -1984,7 +1984,7 @@
       '"><svg class="map" viewBox="0 0 400 ' + height + '" role="img" aria-label="' + esc(m.title) + '"><defs>' + T.MAPGLOW +
       '</defs>' + T.mapGround(m) + T.mapLandmarks(m) + T.mapNight(m) +
       '<polyline points="' + pts + '" class="road"/>' + (lit ? '<polyline points="' + walked + '" class="road walked"/>' : '') +
-      drawn + (T.critters ? T.critters.fireflies(m) : '') + places + '</svg></div>' + fogNote(m, fog) + classRow() +
+      drawn + (T.critters ? T.critters.fireflies(m) : '') + places + '</svg></div>' + fogNote(m, fog) + fromFar() + classRow() +
       pastExpeditions() + '</section>';
   }
 
@@ -2008,6 +2008,23 @@
       names[0];
     return '<p class="fog-note">' + esc(t('board_fog_note', list)) + (fog.length >= 3 ? ' ' +
       esc(t('board_fog_grows')) : '') + '</p>';
+  }
+
+  /**
+   * Who brought their strength from far, playing the last battle in deferred from home or the hospital.
+   *
+   * @return {string}
+   */
+  function fromFar() {
+    var list = state.board.fromfar || [];
+    if (!list.length) {
+      return '';
+    }
+    var names = list.map(function(x) {
+      return x.name;
+    });
+    var who = names.length > 1 ? names.slice(0, -1).join(', ') + ' ' + t('board_and') + ' ' + names[names.length - 1] : names[0];
+    return '<p class="from-far">' + esc(t('board_fromfar', who)) + '</p>';
   }
 
   /**

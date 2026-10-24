@@ -3305,6 +3305,10 @@
     if (mixed) {
       mixed.onclick = undoTangle;
     }
+    var later = app.querySelector('[data-deferred]');
+    if (later) {
+      later.onclick = playDeferred;
+    }
     app.querySelectorAll('[data-route]').forEach(function(b) {
       b.onclick = function() {
         app.querySelectorAll('[data-route]').forEach(function(x) {
@@ -3355,7 +3359,7 @@
     var hidden = (w.stains || []).some(function(s) {
       return s.hidden;
     }) ? '<p class="team-banner hidden-banner">' + esc(t('app_page_hidden')) + '</p>' : '';
-    return battlesCard() + hidden + missionView(w.mission) + expeditionsCard();
+    return battlesCard() + deferredCard() + hidden + missionView(w.mission) + expeditionsCard();
     }
     var next = w.challenges.filter(function(ch) {
       return !ch.status || ch.status === 'notyet';
@@ -3397,6 +3401,72 @@
    *
    * @return {string}
    */
+  /**
+   * The turn in deferred: whoever follows from far plays the last battle of the class they were not in, when they can.
+   *
+   * @return {string}
+   */
+  function deferredCard() {
+    var d = state.world.deferred;
+    if (!d) {
+      return '';
+    }
+    return '<section class="card deferred-card" style="margin-bottom:12px"><div class="kicker">' + esc(t('app_deferred')) +
+      '</div><span class="battle-mini" aria-hidden="true">' + T.embrollo(d.outcome === 'won' ? 0.2 : 1) + '</span><p>' +
+      esc(t(d.outcome === 'won' ? 'app_deferred_won' : 'app_deferred_lost')) + '</p><div class="actions" style="justify-' +
+      'content:flex-start"><button type="button" class="btn btn-main" data-deferred>' + esc(t('app_deferred_play')) +
+      '</button></div></section>';
+  }
+
+  /**
+   * The battle in deferred: its questions one after the other, and then what it brought to the class.
+   */
+  function playDeferred() {
+    var d = state.world.deferred;
+    var answers = [];
+    var layer = moment('<div class="kicker">' + esc(t('app_deferred')) + '</div><h2 id="tesape-deferred">' +
+      esc(t('app_deferred_title')) + '</h2><div data-dq></div>', 'tesape-deferred', function() {
+      refresh();
+    });
+    var close = layer.querySelector('[data-close]');
+    close.textContent = t('app_later');
+    close.className = 'btn btn-soft';
+    var box = layer.querySelector('[data-dq]');
+    var ask = function(i) {
+      var q = d.questions[i];
+      if (!q) {
+        box.innerHTML = '<p class="help">' + esc(t('app_loading')) + '</p>';
+        T.api('play_deferred', {courseid: cfg.courseid, liveid: d.liveid, answers: answers}).then(function(r) {
+          box.innerHTML = '<p><b>' + esc(t('app_deferred_result', r)) + '</b></p>' + (r.gems ? '<p>' +
+            esc(t(r.gems === 1 ? 'app_deferred_gem' : 'app_deferred_gems', r.gems)) + '</p>' : '') + (r.helped ? '<p>' + esc(t('app_deferred_helped')) + '</p>' :
+            '') + '<p class="help-soft">' + esc(t('app_deferred_board')) + '</p>';
+          state.world.deferred = null;
+          close.textContent = t('app_continue');
+          close.className = 'btn btn-main';
+          close.focus();
+          if (T.fx) {
+            T.fx.sound(r.right ? 'right' : 'giggle');
+          }
+        }).catch(function(e) {
+          T.toast(esc(e.message), true);
+        });
+        return;
+      }
+      box.innerHTML = '<p class="kicker">' + esc(t('app_deferred_count', {n: i + 1, all: d.questions.length})) + '</p><p class="lead">' +
+        esc(q.text) + '</p><div class="tangle-options">' + q.options.map(function(o, k) {
+          return '<button type="button" class="btn btn-soft tangle-opt" data-da="' + k + '">' + esc(o) + '</button>';
+        }).join('') + '</div>';
+      box.querySelectorAll('[data-da]').forEach(function(b) {
+        b.onclick = function() {
+          answers.push(Number(b.dataset.da));
+          ask(i + 1);
+        };
+      });
+      box.querySelector('[data-da]').focus();
+    };
+    ask(0);
+  }
+
   function battlesCard() {
     var list = state.world.battles || [];
     if (!list.length) {

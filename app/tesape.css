@@ -7756,6 +7756,18 @@ body.adapt-colours .errors-text .fixed ins {
   color: var(--text-soft);
 }
 
+.from-far {
+  margin: 8px 0;
+  color: var(--lantern);
+  font-weight: 700;
+}
+
+.deferred-card .battle-mini {
+  float: right;
+  width: 56px;
+  height: 56px;
+}
+
 /* ---------- The tools of the classroom on the class screen ---------- */
 
 .class-tool {

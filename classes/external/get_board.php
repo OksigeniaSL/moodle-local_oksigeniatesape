@@ -132,6 +132,10 @@ final class get_board extends external_api {
                 VALUE_DEFAULT,
                 []
             ),
+            'fromfar' => new external_multiple_structure(new external_single_structure([
+                'name' => new external_value(PARAM_TEXT, 'Who, by the name the class sees'),
+                'right' => new external_value(PARAM_INT, 'Answers right'),
+            ]), 'Who played the last battle in deferred, from far', VALUE_DEFAULT, []),
             'tokens' => new external_multiple_structure(new external_single_structure([
                 'teamid' => new external_value(PARAM_INT, 'Team'),
                 'team' => new external_value(PARAM_TEXT, 'Its name'),
