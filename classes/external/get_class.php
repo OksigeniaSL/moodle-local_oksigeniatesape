@@ -152,6 +152,18 @@ final class get_class extends external_api {
                 'goal' => new external_value(PARAM_INT, 'Knowledge of the parts needed'),
                 'reached' => new external_value(PARAM_BOOL, 'Goal reached'),
                 'players' => new external_value(PARAM_INT, 'Members who play'),
+                'pairs' => new external_multiple_structure(
+                    new external_value(PARAM_ALPHA, 'Role'),
+                    'Roles two or more of the team have',
+                    VALUE_DEFAULT,
+                    []
+                ),
+                'missing' => new external_multiple_structure(
+                    new external_value(PARAM_ALPHA, 'Role'),
+                    'Roles nobody of the team has',
+                    VALUE_DEFAULT,
+                    []
+                ),
             ])),
             'activities' => new external_multiple_structure(new external_single_structure([
                 'cmid' => new external_value(PARAM_INT, 'Activity'),

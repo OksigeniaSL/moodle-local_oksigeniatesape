@@ -14027,3 +14027,10 @@ body.still .pet-me.patted .creature {
   border-color: var(--lantern);
   color: var(--lantern);
 }
+
+/* What the roles of a team mean in the battle, for its teacher. */
+.team-roles {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-soft);
+}

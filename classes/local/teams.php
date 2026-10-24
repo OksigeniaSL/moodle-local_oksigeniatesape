@@ -216,6 +216,28 @@ final class teams {
     }
 
     /**
+     * The roles of a team, for its teacher: those two or more have (a pair of the same role shares its verb in the
+     * battle) and those nobody has (anyone covers them in the battle). Of everybody in it, also who is paused.
+     *
+     * @param int $courseid
+     * @param int $groupid
+     * @return array pairs, missing (roles).
+     */
+    public static function roles(int $courseid, int $groupid): array {
+        global $DB;
+        $members = self::members($courseid, $groupid, true);
+        if (count($members) < 2) {
+            return ['pairs' => [], 'missing' => []];
+        }
+        [$insql, $params] = $DB->get_in_or_equal(array_map(fn($m) => (int) $m->charid, $members));
+        $count = array_count_values($DB->get_fieldset_select(self::T . 'char', 'role', "id $insql", $params));
+        return [
+            'pairs' => array_values(array_filter(self::ROLE_ORDER, fn($r) => ($count[$r] ?? 0) > 1)),
+            'missing' => array_values(array_filter(self::ROLE_ORDER, fn($r) => empty($count[$r]))),
+        ];
+    }
+
+    /**
      * After someone earns knowledge: if their team has reached the goal of the week, everybody who plays in it gets
      * gems (once a week each).
      *
@@ -259,7 +281,7 @@ final class teams {
         $list = [];
         foreach (groups_get_all_groups(games::course($courseid), 0, (int) ($region->groupingid ?? 0)) as $group) {
             $list[] = ['id' => (int) $group->id, 'name' => format_string($group->name)] +
-                self::week($courseid, (int) $group->id, $now);
+                self::week($courseid, (int) $group->id, $now) + self::roles($courseid, (int) $group->id);
         }
         usort($list, fn($a, $b) => $b['saber'] <=> $a['saber'] ?: strcmp($a['name'], $b['name']));
         return $list;
@@ -309,12 +331,10 @@ final class teams {
             groups_assign_grouping($groupingid, $groupid);
             $groups[$i] = $groupid;
         }
-        // Dealt like cards, going back and forth, so that no team gets only the last ones.
+        // Dealt like cards, round the table, each role going on where the one before stopped: every team gets each role
+        // and, in teams of five, one of them twice; those without a character yet, spread at the end.
         foreach ($order as $i => $userid) {
-            $round = intdiv($i, $count);
-            $position = $i % $count;
-            $team = $round % 2 ? $count - 1 - $position : $position;
-            groups_add_member($groups[$team], $userid);
+            groups_add_member($groups[$i % $count], $userid);
         }
         regions::save($courseid, ['groupingid' => $groupingid]);
         $transaction->allow_commit();

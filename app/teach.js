@@ -1787,19 +1787,63 @@
       '</h2>' + (d.region.leaderboard ? '' : '<span class="tag todo">' + esc(t('teach_teams_hidden')) + '</span>') +
       '</div><ul class="list">' + d.standings.map(function(x) {
         var pct = x.needed ? Math.min(100, Math.round(100 * x.done / x.needed)) : 0;
+        var names = function(roles) {
+          return roles.map(function(r) {
+            return T.roleName(d.region.family, r, 'm');
+          }).join(', ');
+        };
+        // A role two have, or one nobody has: how the battle deals with it.
+        var pairs = x.pairs || [];
+        var missing = x.missing || [];
+        var roles = (pairs.length ? '<small class="team-roles">' + esc(t(pairs.length > 1 ? 'teach_teams_pairs' :
+          'teach_teams_pair', names(pairs))) + '</small>' : '') + (missing.length ? '<small class="team-roles">' +
+          esc(t(missing.length > 1 ? 'teach_teams_missings' : 'teach_teams_missing', names(missing))) + '</small>' : '');
         return '<li class="item"><span class="grow"><b>' + esc(x.name) + '</b><span class="meter level"><i style="width:' +
           pct + '%"></i></span><small>' + esc(t('teach_teams_progress', {done: x.done, needed: x.needed, part: x.part,
-          saber: x.saber, players: x.players})) + '</small></span>' +
+          saber: x.saber, players: x.players})) + '</small>' + roles + '</span>' +
           (x.reached ? '<span class="tag merit">' + esc(t('app_team_goal')) + '</span>' : '') + '</li>';
       }).join('') + '</ul></section>';
   }
 
+  /**
+   * The size of the teams that suits a class: of four if they come out even, of five if those do (25 are five of
+   * five), else of four.
+   *
+   * @param {number} n Students.
+   * @return {number}
+   */
+  function teamSize(n) {
+    return n % 4 && !(n % 5) ? 5 : 4;
+  }
+
+  /**
+   * How the teams of a class will come out: how many, and of how many each.
+   *
+   * @param {number} n Students.
+   * @param {number} size
+   * @return {string}
+   */
+  function teamsPreview(n, size) {
+    if (!n) {
+      return '';
+    }
+    var count = Math.max(1, Math.round(n / size));
+    var small = Math.floor(n / count);
+    var big = n % count;
+    var shape = big ? t('teach_teams_preview_mixed', {count: count, big: big, bigsize: small + 1, small: count - big,
+      smallsize: small}) : t('teach_teams_preview_even', {count: count, size: small});
+    return t('teach_teams_preview', shape) + (small + (big ? 1 : 0) > 4 ? ' ' + t('teach_teams_five') : '');
+  }
+
   function makeTeamsForm() {
+    var n = state.data ? state.data.students.length : 0;
+    var size = teamSize(n);
     return '<div class="actions" style="justify-content:flex-start;align-items:center;margin-top:10px"><label>' +
-      esc(t('teach_teams_size')) + ' <select data-teamsize>' + [3, 4, 5, 6].map(function(n) {
-        return '<option value="' + n + '"' + (n === 4 ? ' selected' : '') + '>' + n + '</option>';
+      esc(t('teach_teams_size')) + ' <select data-teamsize>' + [3, 4, 5, 6].map(function(k) {
+        return '<option value="' + k + '"' + (k === size ? ' selected' : '') + '>' + k + '</option>';
       }).join('') + '</select></label><button class="btn btn-main" type="button" data-maketeams>' +
-      esc(t('teach_teams_make')) + '</button></div>' + (state.data && state.data.classtools ? '<p class="help-soft">' +
+      esc(t('teach_teams_make')) + '</button></div><p class="help-soft" data-teamspreview aria-live="polite">' +
+      esc(teamsPreview(n, size)) + '</p>' + (state.data && state.data.classtools ? '<p class="help-soft">' +
       esc(t('teach_teams_classtools')) + ' <a href="' + esc(state.data.classtools) + '" target="_blank" rel="noopener">' +
       esc(t('teach_teams_classtools_open')) + '</a></p>' : '');
   }
@@ -1809,6 +1853,10 @@
     if (!b) {
       return;
     }
+    var select = el.querySelector('[data-teamsize]');
+    select.onchange = function() {
+      el.querySelector('[data-teamspreview]').textContent = teamsPreview(state.data.students.length, Number(select.value));
+    };
     b.onclick = function() {
       var size = Number(el.querySelector('[data-teamsize]').value);
       if (state.data.standings.length && !window.confirm(t('teach_teams_again'))) {

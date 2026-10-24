@@ -91,6 +91,31 @@ final class teams_test extends \advanced_testcase {
         $this->assertCount(2, groups_get_all_groups($w->course->id, 0, regions::get($w->course->id)->groupingid));
     }
 
+    public function test_teams_of_five_say_the_role_two_have(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        // 25: seven protectors and six of each other role; in five teams of five, each team with every role and one twice.
+        $roles = array_merge(
+            array_fill(0, 7, 'protector'),
+            array_fill(0, 6, 'healer'),
+            array_fill(0, 6, 'sage'),
+            array_fill(0, 6, 'scout')
+        );
+        $w = $this->make_class($roles);
+        $this->assertCount(5, teams::make($w->course->id, 5));
+        $standings = teams::standings($w->course->id);
+        $this->assertSame([5, 5, 5, 5, 5], array_column($standings, 'players'));
+        foreach ($standings as $team) {
+            $this->assertCount(1, $team['pairs']);
+            $this->assertSame([], $team['missing']);
+        }
+        // A team of three: the role nobody has, for the battle to cover it.
+        $three = $this->make_class(['protector', 'healer', 'healer']);
+        teams::make($three->course->id, 3);
+        $team = teams::standings($three->course->id)[0];
+        $this->assertSame([['healer'], ['sage', 'scout']], [$team['pairs'], $team['missing']]);
+    }
+
     public function test_the_team_activities_follow_the_teams(): void {
         global $DB;
         $this->resetAfterTest();
