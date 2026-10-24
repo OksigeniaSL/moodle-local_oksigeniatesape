@@ -174,8 +174,13 @@ final class market {
      */
     public static function team_owns(int $courseid, int $groupid): array {
         $owns = [];
+        // The library of the team brings the lantern of its banner too.
+        $library = curiosities::library($courseid, $groupid)['banner'];
         foreach (self::ITEMS as $code => $item) {
-            if ($item['team'] && self::team_given($courseid, $groupid, $code) >= $item['price']) {
+            if (
+                $item['team'] && (self::team_given($courseid, $groupid, $code) >= $item['price'] ||
+                    ($library && $item['kind'] === 'banner'))
+            ) {
                 $owns[] = $code;
             }
         }
@@ -195,6 +200,7 @@ final class market {
         $owned = $DB->get_fieldset_select(self::T . 'purchase', 'code', 'charid = ? AND groupid = 0', [$char->id]);
         $worn = self::worn($char);
         $team = teams::of($courseid, $userid);
+        $library = $team ? curiosities::library($courseid, (int) $team->id)['banner'] : false;
         $list = [];
         foreach (self::ITEMS as $code => $item) {
             if ($item['team'] && !$team) {
@@ -211,7 +217,10 @@ final class market {
                 'kind' => $item['kind'],
                 'price' => $item['price'],
                 'team' => $item['team'],
-                'owned' => $item['team'] ? $given >= $item['price'] : in_array($code, $owned, true),
+                'owned' => $item['team'] ? $given >= $item['price'] || ($library && $item['kind'] === 'banner') :
+                    in_array($code, $owned, true),
+                // The library of the team brought it.
+                'bylibrary' => $item['team'] && $library && $item['kind'] === 'banner' && $given < $item['price'],
                 'worn' => ($worn[$item['kind']] ?? '') === $code,
                 'given' => $given,
                 'mine' => $mine,

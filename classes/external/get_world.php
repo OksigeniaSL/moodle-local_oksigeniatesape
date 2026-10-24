@@ -92,6 +92,11 @@ final class get_world extends external_api {
             'team' => new external_single_structure([
                 'id' => new external_value(PARAM_INT, 'Group'),
                 'name' => new external_value(PARAM_TEXT, 'Name'),
+                'library' => new external_single_structure([
+                    'books' => new external_value(PARAM_INT, 'Curiosities read by the team'),
+                    'titles' => new external_multiple_structure(new external_value(PARAM_TEXT, 'A book')),
+                    'banner' => new external_value(PARAM_BOOL, 'It brought the lantern of the banner'),
+                ], 'The library of the team', VALUE_OPTIONAL),
                 'state' => new external_value(
                     PARAM_ALPHA,
                     'How the team says it is doing today: ready, working, help or empty',

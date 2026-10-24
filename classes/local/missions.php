@@ -375,6 +375,8 @@ final class missions {
             $fresh = $DB->get_record(self::T . 'mission', ['id' => $record->id], '*', MUST_EXIST);
             $fresh->data = json_decode((string) $fresh->definition, true) ?: [];
             badges::make($fresh);
+            // And «Explorer of knowledge», where the mission has a shop of the naturalist.
+            badges::make($fresh, 'explorer');
         } catch (\Throwable $e) {
             debugging('Tesapé could not make the badge of the mission: ' . $e->getMessage(), DEBUG_DEVELOPER);
         }

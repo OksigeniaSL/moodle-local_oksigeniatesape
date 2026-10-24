@@ -1115,6 +1115,29 @@
   }
 
   /**
+   * The library in the card of the team: a book for each curiosity one of them read, and the lantern of the banner it
+   * brings with three.
+   *
+   * @param {Object} team
+   * @return {string}
+   */
+  function libraryLine(team) {
+    var l = team.library;
+    if (!l || !(state.world.curiosities || []).length) {
+      return '';
+    }
+    // A book for each curiosity one of the team read; with three, the lantern of the banner.
+    var shelf = '';
+    for (var i = 0; i < Math.max(l.books, 1); i++) {
+      shelf += '<span class="curio-book' + (i < l.books ? ' done' : '') + '"></span>';
+    }
+    return '<div class="team-library"><span class="team-shelf" aria-hidden="true">' + shelf + '</span><span class="grow"><b>' +
+      esc(t(l.books === 1 ? 'app_library_team_one' : 'app_library_team', l.books)) + '</b><small>' + esc(l.banner ? t('app_library_banner_done') :
+      t('app_library_banner', {books: l.books, need: 3})) + '</small>' + (l.titles.length ? '<small>' + esc(l.titles.join(' · ')) +
+      '</small>' : '') + '</span></div>';
+  }
+
+  /**
    * The banner in the card of the team: as it is, the weeks with the goal, how many more it needs to grow and what it
    * gives.
    *
@@ -3667,7 +3690,8 @@
         '<small>' + esc(wk.reached ? t('app_team_reached') : t('app_team_week', {done: wk.done, needed: wk.needed,
         part: wk.part})) + '</small></div><div class="team-week"><span class="meter energy"><i style="width:' + epct +
         '%"></i></span><small>' + esc(t(team.carer ? 'app_team_energy_carer' : 'app_team_energy', {energy: team.energy,
-        max: team.energymax})) + '</small></div>' + bannerLine(team) + '<ul class="list">' + team.members.map(function(mate) {
+        max: team.energymax})) + '</small></div>' + bannerLine(team) + libraryLine(team) + '<ul class="list">' +
+      team.members.map(function(mate) {
           var c = mate.character;
           var m = c && c.member;
           var tag = m && m.status === 'paused' ? '<span class="tag todo">' + esc(t('app_resting')) + '</span>' :
@@ -4494,7 +4518,8 @@
       var pic = art ? '<img class="item-art" src="' + esc(art) + '" alt="">' : '';
       if (x.team) {
         var pct = Math.min(100, Math.round(100 * x.given / x.price));
-        action = x.owned ? '<span class="tag done">' + esc(t('app_market_team_done')) + '</span>' : '<span class="row-actions">' +
+        action = x.owned ? '<span class="tag done">' + esc(t(x.bylibrary ? 'app_market_bylibrary' : 'app_market_team_done')) +
+          '</span>' : '<span class="row-actions">' +
           '<button class="chip" type="button" data-give="' + x.code + ':1"' + (c.gems < 1 ? ' disabled' : '') + '>+1</button>' +
           '<button class="chip" type="button" data-give="' + x.code + ':5"' + (c.gems < 1 ? ' disabled' : '') + '>+5</button>' +
           '</span>';

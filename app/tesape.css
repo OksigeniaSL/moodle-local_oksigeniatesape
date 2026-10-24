@@ -14117,3 +14117,32 @@ body.still .pet-me.patted .creature {
   align-items: center;
   gap: 6px;
 }
+
+/* The library of the team, in its card. */
+.team-library {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 10px 0;
+}
+
+.team-shelf {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  padding: 0 6px 4px;
+  border-bottom: 4px solid #6b4a2b;
+}
+
+.team-shelf .curio-book {
+  width: 14px;
+  height: 34px;
+}
+
+.team-shelf .curio-book:not(.done) {
+  opacity: .35;
+}
+
+.team-library small {
+  display: block;
+}

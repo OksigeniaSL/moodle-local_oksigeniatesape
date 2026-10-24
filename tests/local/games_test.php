@@ -94,8 +94,8 @@ final class games_test extends \advanced_testcase {
         $mission = missions::install($key, 'livingthings', 'valley', 'es', null, true);
         $this->assertSame($key, (int) $mission->courseid);
         $this->assertSame($sections, $DB->count_records('course_sections', ['course' => $c]));
-        $theirs = $DB->get_records_menu(self::T . 'chapter', ['missionid' => missions::get($c)->id], '', 'code, sectionid');
-        $ours = $DB->get_records_menu(self::T . 'chapter', ['missionid' => $mission->id], '', 'code, sectionid');
+        $theirs = $DB->get_records_menu(self::T . 'chapter', ['missionid' => missions::get($c)->id], 'code', 'code, sectionid');
+        $ours = $DB->get_records_menu(self::T . 'chapter', ['missionid' => $mission->id], 'code', 'code, sectionid');
         $this->assertSame($theirs, $ours);
         $this->assertSame(
             $DB->count_records_select(self::T . 'challenge', 'courseid = ? AND cmid > 0', [$c]),

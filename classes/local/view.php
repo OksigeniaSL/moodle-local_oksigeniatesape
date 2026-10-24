@@ -1050,6 +1050,8 @@ final class view {
                 'adapt' => $private ? adapt::of($member) : [],
                 'adaptteacher' => $private ? adapt::teacher($member) : [],
                 'adaptown' => $private ? adapt::own($member) : [],
+                // The curiosities they read, and whether they told the class their fact (for their teacher to mark it).
+                'curios' => $private ? curiosities::for_teacher((int) $member->courseid, (int) $char->id) : [],
             ];
         }
         return $character;
@@ -1157,6 +1159,8 @@ final class view {
         return ['id' => (int) $group->id, 'name' => format_string($group->name), 'members' => $mates,
             'energy' => $energy, 'energymax' => $playing * engine::ENERGY_MAX, 'carer' => $carers,
             'banner' => market::team_owns($courseid, (int) $group->id),
+            // The library of the team: a book for each curiosity one of them read.
+            'library' => curiosities::library($courseid, (int) $group->id),
             'bannerstage' => banners::view($courseid, (int) $group->id),
             'brought' => events::brought($courseid, (int) $group->id),
             'state' => teams::states($courseid)[(int) $group->id] ?? '',

@@ -17,8 +17,9 @@
 namespace local_oksigeniatesape\local;
 
 /**
- * The badge of Moodle a mission brings: made in the course with the mission, not turned on until the teacher wants it,
- * and given by the game to whoever lights the lanterns of every place. The teacher can give it by hand too.
+ * The badges of Moodle a mission brings: made in the course with the mission, not turned on until the teacher wants
+ * them. The one of the mission goes to whoever lights the lanterns of every place; «Explorer of knowledge», where the
+ * mission has a shop of the naturalist, to whoever earns three seals of curiosity. The teacher can give them by hand.
  *
  * The badge is found by its name in the course: a copy of the course restores its badges with other ids.
  *
@@ -29,6 +30,9 @@ namespace local_oksigeniatesape\local;
 final class badges {
     /** @var string Prefix of the plugin tables. */
     private const T = 'local_oksigeniatesape_';
+
+    /** @var int Seals of curiosity for the badge «Explorer of knowledge». */
+    public const EXPLORER_SEALS = 3;
 
     /**
      * Whether the site uses badges in courses.
@@ -41,12 +45,16 @@ final class badges {
     }
 
     /**
-     * The name of the badge of a mission, in its skin.
+     * The name of a badge of a mission, in its skin.
      *
      * @param \stdClass $mission With data.
-     * @return string Empty if the mission brings no badge.
+     * @param string $which mission, or explorer (that of the shop of the naturalist).
+     * @return string Empty if the mission brings no such badge.
      */
-    public static function name(\stdClass $mission): string {
+    public static function name(\stdClass $mission, string $which = 'mission'): string {
+        if ($which === 'explorer') {
+            return empty($mission->data['curiosities']) ? '' : get_string('badge_explorer', 'local_oksigeniatesape');
+        }
         $name = $mission->data['badge']['name'] ?? '';
         return trim(missions::text($name, (string) $mission->skin, (string) $mission->variant));
     }
@@ -56,12 +64,13 @@ final class badges {
      *
      * @param int $courseid
      * @param \stdClass $mission With data.
+     * @param string $which mission or explorer.
      * @return int Its id, or 0.
      */
-    public static function find(int $courseid, \stdClass $mission): int {
+    public static function find(int $courseid, \stdClass $mission, string $which = 'mission'): int {
         global $CFG, $DB;
         require_once($CFG->libdir . '/badgeslib.php');
-        $name = self::name($mission);
+        $name = self::name($mission, $which);
         if ($name === '') {
             return 0;
         }
@@ -73,17 +82,18 @@ final class badges {
      * Makes the badge of the mission in its course, not turned on, if the site uses badges and it is not there yet.
      *
      * @param \stdClass $mission With data.
+     * @param string $which mission or explorer.
      * @return int Its id, or 0 when there is none.
      */
-    public static function make(\stdClass $mission): int {
+    public static function make(\stdClass $mission, string $which = 'mission'): int {
         global $CFG, $DB, $SITE, $USER;
         require_once($CFG->libdir . '/badgeslib.php');
         $courseid = (int) $mission->courseid;
-        $name = self::name($mission);
+        $name = self::name($mission, $which);
         if (!self::enabled() || $name === '') {
             return 0;
         }
-        $id = self::find($courseid, $mission);
+        $id = self::find($courseid, $mission, $which);
         if ($id) {
             return $id;
         }
@@ -93,7 +103,8 @@ final class badges {
         $context = games::context($courseid);
         $setup = !empty($USER->id) && has_capability('local/oksigeniatesape:manageregion', $context);
         $author = $setup ? (int) $USER->id : (int) get_admin()->id;
-        $text = $mission->data['badge']['description'] ?? $name;
+        $text = $which === 'explorer' ? get_string('badge_explorer_description', 'local_oksigeniatesape') :
+            ($mission->data['badge']['description'] ?? $name);
         $description = missions::text($text, (string) $mission->skin, (string) $mission->variant);
         $id = (int) $DB->insert_record('badge', (object) [
             'name' => $name,
@@ -147,7 +158,9 @@ final class badges {
         global $DB;
         try {
             $mission = missions::get($courseid);
-            if (!$mission || self::find($courseid, $mission) !== $badgeid) {
+            $which = !$mission ? '' : (self::find($courseid, $mission) === $badgeid ? 'mission' :
+                (self::find($courseid, $mission, 'explorer') === $badgeid ? 'explorer' : ''));
+            if ($which === '') {
                 return;
             }
             $sql = 'SELECT c.userid
@@ -155,10 +168,46 @@ final class badges {
                       JOIN {' . self::T . 'char} c ON c.id = m.charid
                      WHERE m.courseid = ? AND m.leftat = 0';
             foreach ($DB->get_fieldset_sql($sql, [$courseid]) as $userid) {
-                self::check($courseid, (int) $userid);
+                if ($which === 'mission') {
+                    self::check($courseid, (int) $userid);
+                } else {
+                    self::check_explorer($courseid, (int) $userid);
+                }
             }
         } catch (\Throwable $e) {
             debugging('Tesapé could not give the badge of the mission: ' . $e->getMessage(), DEBUG_DEVELOPER);
+        }
+    }
+
+    /**
+     * Gives «Explorer of knowledge» to a student with three seals of curiosity in a course, if the teacher turned it on.
+     * Never in the way of the game.
+     *
+     * @param int $courseid
+     * @param int $userid
+     */
+    public static function check_explorer(int $courseid, int $userid): void {
+        global $CFG;
+        if (!self::enabled()) {
+            return;
+        }
+        try {
+            require_once($CFG->libdir . '/badgeslib.php');
+            $mission = missions::get($courseid);
+            $char = characters::get($userid);
+            $id = $mission && $char ? self::find($courseid, $mission, 'explorer') : 0;
+            if (!$id) {
+                return;
+            }
+            $badge = new \core_badges\badge($id);
+            if (
+                $badge->is_active() && !$badge->is_issued($userid) &&
+                    count(curiosities::done($courseid, (int) $char->id)) >= self::EXPLORER_SEALS
+            ) {
+                $badge->issue($userid);
+            }
+        } catch (\Throwable $e) {
+            debugging('Tesapé could not give the badge of the explorer: ' . $e->getMessage(), DEBUG_DEVELOPER);
         }
     }
 

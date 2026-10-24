@@ -2146,7 +2146,8 @@
       'data-remoteshown' + (m.remoteshown ? ' checked' : '') + (can('award') ? '' : ' disabled') + '> ' +
       esc(t('teach_remote_shown')) + '</label>' : '') +
       '<p class="help-soft" style="margin-top:6px">' + esc(t('teach_remote_help')) + '</p>' +
-      (m && m.remote ? '<p class="help-soft">' + esc(t('teach_remote_shown_help')) + '</p>' : '') + teamplaysList(s) +
+      (m && m.remote ? '<p class="help-soft">' + esc(t('teach_remote_shown_help')) + '</p>' : '') + curiosList(m) +
+      teamplaysList(s) +
       '<div class="actions" style="justify-content:flex-start;margin-top:16px">';
     if (can('pause')) {
       if (m && m.status === 'paused') {
@@ -2301,6 +2302,20 @@
             openStudent(userid);
           });
         }).catch(function(e) {
+          T.toast(esc(e.message), true);
+        });
+      };
+    });
+    el.querySelectorAll('[data-told]').forEach(function(b) {
+      b.onclick = function() {
+        b.disabled = true;
+        T.api('curiosity_told', {courseid: cfg.courseid, userid: userid, code: b.dataset.told}).then(function(r) {
+          T.toast(esc(t('teach_curio_told_done')));
+          load(true).then(function() {
+            openStudent(userid);
+          });
+        }).catch(function(e) {
+          b.disabled = false;
           T.toast(esc(e.message), true);
         });
       };
@@ -3437,6 +3452,26 @@
       };
     }
     form.scrollIntoView({behavior: 'smooth'});
+  }
+
+  /**
+   * The curiosities a student read in the shop of the naturalist: when they tell the class the fact of the explorer of
+   * one, a touch gives breath to their team.
+   *
+   * @param {Object} m Their state in the course.
+   * @return {string}
+   */
+  function curiosList(m) {
+    var list = m && m.curios || [];
+    if (!list.length) {
+      return '';
+    }
+    return '<h3 style="margin-top:14px">' + esc(t('teach_curios')) + '</h3><p class="help-soft">' + esc(t('teach_curios_help')) +
+      '</p><ul class="list">' + list.map(function(c) {
+        return '<li class="item"><span class="grow"><b>' + esc(c.title) + '</b><small>' + esc(c.fact) + '</small></span>' +
+          (c.told ? '<span class="tag done">' + esc(t('teach_curio_told')) + '</span>' : '<button type="button" ' +
+          'class="btn btn-soft" data-told="' + esc(c.code) + '">' + esc(t('teach_curio_tell')) + '</button>') + '</li>';
+      }).join('') + '</ul>';
   }
 
   /**

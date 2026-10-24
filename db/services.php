@@ -410,6 +410,13 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:play',
     ],
+    'local_oksigeniatesape_curiosity_told' => [
+        'classname' => 'local_oksigeniatesape\\external\\curiosity_told',
+        'description' => 'The teacher marks that a student told the class the fact of a curiosity: their team gets breath.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:award',
+    ],
     'local_oksigeniatesape_manage_games' => [
         'classname' => 'local_oksigeniatesape\\external\\manage_games',
         'description' => 'The games of a course: the one of the course and one more for each group that plays apart.',

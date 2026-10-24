@@ -35,6 +35,15 @@ final class curiosities {
     /** @var string What a curiosity read and understood is called among what was found. */
     public const DONE = 'curio';
 
+    /** @var string What a curiosity whose fact was told to the class is called among what was found. */
+    public const TOLD = 'curiofact';
+
+    /** @var int Books of the library of a team that bring it the lantern of its banner. */
+    public const LIBRARY_BANNER = 3;
+
+    /** @var int Breath for each one of the team when one of them tells the class the fact of the explorer. */
+    public const FACT_BREATH = 1;
+
     /**
      * The curiosities of the mission of a course, for a student: each one with whether they bought it and read it.
      *
@@ -75,10 +84,9 @@ final class curiosities {
      */
     public static function done(int $courseid, int $charid): array {
         global $DB;
-        return $DB->get_fieldset_select(
-            self::T . 'found',
-            'code',
-            'charid = ? AND courseid = ? AND kind = ?',
+        // In the order they were read.
+        return $DB->get_fieldset_sql(
+            'SELECT code FROM {' . self::T . 'found} WHERE charid = ? AND courseid = ? AND kind = ? ORDER BY id',
             [$charid, $courseid, self::DONE]
         );
     }
@@ -194,8 +202,102 @@ final class curiosities {
                 return true;
             });
         }
+        if ($first) {
+            badges::check_explorer($courseid, $userid);
+        }
         return ['right' => $right, 'first' => $first, 'gems' => $first ? $read['back'] : 0,
             'seals' => count(self::done($courseid, (int) $char->id))];
+    }
+
+    /**
+     * The library of a team: a book for each curiosity one of them read with its questions right. With three, the
+     * lantern of its banner is the team's.
+     *
+     * @param int $courseid
+     * @param int $groupid
+     * @return array books, titles, banner (it brought the lantern of the banner).
+     */
+    public static function library(int $courseid, int $groupid): array {
+        global $DB;
+        $mission = missions::get($courseid);
+        $members = teams::members($courseid, $groupid, true);
+        $books = [];
+        if ($mission && $members) {
+            [$insql, $params] = $DB->get_in_or_equal(array_map(fn($m) => (int) $m->charid, $members));
+            $found = $DB->get_records_select(
+                self::T . 'found',
+                "charid $insql AND courseid = ? AND kind = ?",
+                array_merge($params, [$courseid, self::DONE]),
+                'timecreated',
+                'id, code'
+            );
+            foreach ($found as $book) {
+                $books[] = self::text($mission, $mission->data['curiosities'][$book->code]['title'] ?? $book->code);
+            }
+        }
+        return ['books' => count($books), 'titles' => $books, 'banner' => count($books) >= self::LIBRARY_BANNER];
+    }
+
+    /**
+     * The curiosities a student read with their questions right, for their teacher: whether they told the class their
+     * fact yet.
+     *
+     * @param int $courseid
+     * @param int $charid
+     * @return array code, title, fact, told.
+     */
+    public static function for_teacher(int $courseid, int $charid): array {
+        global $DB;
+        $mission = missions::get($courseid);
+        if (!$mission || empty($mission->data['curiosities'])) {
+            return [];
+        }
+        $told = $DB->get_fieldset_select(
+            self::T . 'found',
+            'code',
+            'charid = ? AND courseid = ? AND kind = ?',
+            [$charid, $courseid, self::TOLD]
+        );
+        $out = [];
+        foreach (self::done($courseid, $charid) as $code) {
+            $c = $mission->data['curiosities'][$code] ?? [];
+            $out[] = ['code' => $code, 'title' => self::text($mission, $c['title'] ?? $code),
+                'fact' => self::text($mission, $c['fact'] ?? ''), 'told' => in_array($code, $told, true)];
+        }
+        return $out;
+    }
+
+    /**
+     * The teacher marks that a student told the class the fact of the explorer of a curiosity: what one learnt, shared.
+     * Each one of their team who plays gets breath for their powers, once for each curiosity.
+     *
+     * @param int $courseid
+     * @param int $userid The student.
+     * @param string $code
+     * @param int $actorid The teacher.
+     * @param int|null $now
+     * @return int Those who got breath.
+     */
+    public static function told(int $courseid, int $userid, string $code, int $actorid, ?int $now = null): int {
+        global $DB;
+        $now = $now ?? time();
+        $char = characters::get($userid);
+        $mission = missions::get($courseid);
+        if (!$char || !$mission || !in_array($code, self::done($courseid, (int) $char->id), true)) {
+            throw new \moodle_exception('nomarket', 'local_oksigeniatesape');
+        }
+        $key = ['charid' => $char->id, 'courseid' => $courseid, 'kind' => self::TOLD, 'code' => $code];
+        if ($DB->record_exists(self::T . 'found', $key)) {
+            return 0;
+        }
+        $DB->insert_record(self::T . 'found', (object) ($key + ['missionid' => $mission->id, 'timecreated' => $now]));
+        // The breath for the team: those who play in it, or only them without a team.
+        $team = teams::of($courseid, $userid);
+        $members = $team ? teams::members($courseid, (int) $team->id) : [engine::member($char, $courseid)];
+        foreach ($members as $member) {
+            engine::breath($member, self::FACT_BREATH, 'curiosityfact', $actorid, 0, $now);
+        }
+        return count($members);
     }
 
     /**

@@ -108,6 +108,12 @@ final class structures {
                     VALUE_DEFAULT,
                     []
                 ),
+                'curios' => new external_multiple_structure(new external_single_structure([
+                    'code' => new external_value(PARAM_ALPHANUMEXT, 'Curiosity'),
+                    'title' => new external_value(PARAM_TEXT, 'Its title'),
+                    'fact' => new external_value(PARAM_TEXT, 'What to tell the class'),
+                    'told' => new external_value(PARAM_BOOL, 'They told it, their teacher marked it'),
+                ]), 'The curiosities they read with their questions right', VALUE_DEFAULT, []),
             ], 'State in the course, if it plays there', VALUE_OPTIONAL),
         ], 'Character', $required);
     }
@@ -407,6 +413,7 @@ final class structures {
             'worn' => new external_value(PARAM_BOOL, 'Worn'),
             'given' => new external_value(PARAM_INT, 'Gems the team has put towards it'),
             'mine' => new external_value(PARAM_INT, 'Gems the student has put towards it'),
+            'bylibrary' => new external_value(PARAM_BOOL, 'The library of the team brought it', VALUE_DEFAULT, false),
         ]), 'The market of the valley', VALUE_DEFAULT, []);
     }
 

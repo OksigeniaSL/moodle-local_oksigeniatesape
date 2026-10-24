@@ -81,9 +81,10 @@ final class badges_test extends \advanced_testcase {
         // Given by the game or by the teacher by hand.
         $this->assertTrue($badge->has_criteria());
         $this->assertTrue($DB->record_exists('badge_criteria', ['badgeid' => $id, 'criteriatype' => BADGE_CRITERIA_TYPE_MANUAL]));
-        // Installed again (a newer package), the same badge.
+        // Installed again (a newer package), the same badges: that of the mission and that of the explorer.
         missions::install($w->course->id, 'livingthings', 'valley', 'es');
-        $this->assertSame(1, $DB->count_records('badge', ['courseid' => $w->course->id]));
+        $this->assertSame(2, $DB->count_records('badge', ['courseid' => $w->course->id]));
+        $this->assertNotSame(0, badges::find($w->course->id, $w->mission, 'explorer'));
     }
 
     public function test_the_last_lantern_gives_the_badge_once_it_is_on(): void {
