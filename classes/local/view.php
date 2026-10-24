@@ -76,6 +76,11 @@ final class view {
         if ($creature) {
             $world['classcreature'] = $creature;
         }
+        // The campaign with other courses, if any.
+        $campaign = campaigns::view($courseid);
+        if ($campaign) {
+            $world['campaign'] = $campaign;
+        }
         if (!$char) {
             // Who comes in for the first time: the prologue of the mission, before choosing a role.
             $opening = $enabled ? self::opening($courseid) : null;
@@ -588,6 +593,11 @@ final class view {
         if ($creature) {
             $board['classcreature'] = $creature;
         }
+        // The campaign with other courses, if any.
+        $campaign = campaigns::view($courseid);
+        if ($campaign) {
+            $board['campaign'] = $campaign;
+        }
         $mission = missions::get($courseid);
         if ($mission) {
             $info = [];
@@ -921,7 +931,9 @@ final class view {
             $on = in_array($status, [BADGE_STATUS_ACTIVE, BADGE_STATUS_ACTIVE_LOCKED], true);
             $badge = ['badge' => badges::name($mission), 'badgeid' => $id, 'badgeon' => $on];
         }
-        return $badge + [
+        // The campaign with other courses, with its code for the teachers.
+        $campaign = $region ? campaigns::view((int) $region->courseid, true) : null;
+        return $badge + ($campaign ? ['campaign' => $campaign] : []) + [
             'enabled' => (bool) ($region->enabled ?? false),
             'family' => $region->family ?? 'storyheroes',
             'groupingid' => (int) ($region->groupingid ?? 0),

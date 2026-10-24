@@ -58,6 +58,7 @@
         <FIELD NAME="reviewed" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Knots the class broke in a practice battle, and when (JSON): the Embrollo does not keep them for the final"/>
         <FIELD NAME="pauses" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="What puts a student in pause in the game, agreed with the class, as JSON (null: those of the plugin)"/>
         <FIELD NAME="creature" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="In infant school, the creature of the whole class: its name, its colour and what it has grown, as JSON"/>
+        <FIELD NAME="campaignid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The campaign with other courses it is in (0: none)"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>
@@ -65,6 +66,9 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
         <KEY NAME="courseid" TYPE="foreign-unique" FIELDS="courseid" REFTABLE="course" REFFIELDS="id"/>
       </KEYS>
+      <INDEXES>
+        <INDEX NAME="campaignid" UNIQUE="false" FIELDS="campaignid"/>
+      </INDEXES>
     </TABLE>
     <TABLE NAME="local_oksigeniatesape_member" COMMENT="A character in a course">
       <FIELDS>
@@ -889,6 +893,21 @@
         <KEY NAME="courseid" TYPE="foreign" FIELDS="courseid" REFTABLE="course" REFFIELDS="id"/>
         <KEY NAME="groupid" TYPE="foreign" FIELDS="groupid" REFTABLE="groups" REFFIELDS="id"/>
       </KEYS>
+    </TABLE>
+    <TABLE NAME="local_oksigeniatesape_campaign" COMMENT="A campaign of several courses: each one plays its mission, and the lanterns of all of them are seen together">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="code" TYPE="char" LENGTH="8" NOTNULL="true" SEQUENCE="false" COMMENT="What the teachers of other courses write to join it"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="code" UNIQUE="true" FIELDS="code"/>
+      </INDEXES>
     </TABLE>
   </TABLES>
 </XMLDB>

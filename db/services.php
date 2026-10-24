@@ -431,6 +431,13 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:manageregion',
     ],
+    'local_oksigeniatesape_campaign' => [
+        'classname' => 'local_oksigeniatesape\\external\\campaign',
+        'description' => 'The campaign of a course with other courses: makes one, joins one by its code, or leaves it.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:manageregion',
+    ],
     'local_oksigeniatesape_manage_games' => [
         'classname' => 'local_oksigeniatesape\\external\\manage_games',
         'description' => 'The games of a course: the one of the course and one more for each group that plays apart.',

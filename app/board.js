@@ -2383,7 +2383,7 @@
       '">' + T.skyChip(m) + '<svg class="map" viewBox="0 0 400 ' + height + '" role="img" aria-label="' + esc(m.title) + '"><defs>' +
       T.MAPGLOW + '</defs>' + T.mapGround(m) + T.mapLandmarks(m) + T.mapNight(m) + T.mapSky(m) +
       '<polyline points="' + pts + '" class="road"/>' + (lit ? '<polyline points="' + walked + '" class="road walked"/>' : '') +
-      drawn + (T.critters ? T.critters.fireflies(m) : '') + places + '</svg></div>' + fogNote(m, fog) + fromFar() + classRow() +
+      drawn + (T.critters ? T.critters.fireflies(m) : '') + places + '</svg></div>' + fogNote(m, fog) + fromFar() + T.campaign(state.board.campaign) + classRow() +
       pastExpeditions() + '</section>';
   }
 

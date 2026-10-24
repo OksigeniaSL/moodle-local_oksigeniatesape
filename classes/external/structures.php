@@ -784,6 +784,7 @@ final class structures {
             'pausesown' => new external_value(PARAM_BOOL, 'The course changed those of the plugin', VALUE_DEFAULT, false),
             'lightart' => new external_value(PARAM_BOOL, 'The tablets take the small copy of the big images', VALUE_DEFAULT, false),
             'stage' => new external_value(PARAM_ALPHA, 'The stage of the class', VALUE_DEFAULT, 'primary'),
+            'campaign' => self::campaign(),
             'creaturename' => new external_value(PARAM_TEXT, 'In infant school, the name of the creature of the class', VALUE_DEFAULT, ''),
             'completion' => new external_value(
                 PARAM_BOOL,
@@ -1153,5 +1154,25 @@ final class structures {
             'breath' => new external_value(PARAM_INT, 'Breath afterwards', VALUE_OPTIONAL),
             'state' => new external_value(PARAM_ALPHA, 'How the student is afterwards: active, paused or fallen', VALUE_OPTIONAL),
         ]));
+    }
+
+    /**
+     * The campaign of a course with others: its courses with their lanterns.
+     *
+     * @return external_single_structure
+     */
+    public static function campaign(): external_single_structure {
+        return new external_single_structure([
+            'name' => new external_value(PARAM_TEXT, 'Its name'),
+            'code' => new external_value(PARAM_ALPHANUM, 'Its code, for teachers'),
+            'regions' => new external_multiple_structure(new external_single_structure([
+                'name' => new external_value(PARAM_TEXT, 'The course'),
+                'lit' => new external_value(PARAM_INT, 'Its lanterns lit'),
+                'total' => new external_value(PARAM_INT, 'Its lanterns'),
+                'here' => new external_value(PARAM_BOOL, 'This course'),
+            ])),
+            'lit' => new external_value(PARAM_INT, 'The lanterns lit of all of them'),
+            'total' => new external_value(PARAM_INT, 'The lanterns of all of them'),
+        ], 'The campaign with other courses', VALUE_OPTIONAL);
     }
 }

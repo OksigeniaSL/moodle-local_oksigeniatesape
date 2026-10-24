@@ -1166,5 +1166,30 @@ function xmldb_local_oksigeniatesape_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026102440, 'local', 'oksigeniatesape');
     }
 
+    if ($oldversion < 2026102441) {
+        // Campaigns of several courses.
+        $table = new xmldb_table('local_oksigeniatesape_campaign');
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('code', XMLDB_TYPE_CHAR, '8', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('name', XMLDB_TYPE_CHAR, '100', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_index('code', XMLDB_INDEX_UNIQUE, ['code']);
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+        $table = new xmldb_table('local_oksigeniatesape_region');
+        $field = new xmldb_field('campaignid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'creature');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        $index = new xmldb_index('campaignid', XMLDB_INDEX_NOTUNIQUE, ['campaignid']);
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+        upgrade_plugin_savepoint(true, 2026102441, 'local', 'oksigeniatesape');
+    }
+
     return true;
 }

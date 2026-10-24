@@ -938,6 +938,30 @@
       (text ? '' : ' disabled') + '>' + icon + '<span>' + label + '</span></button>' + say + '</div>';
   };
 
+  /**
+   * The campaign of a course with other courses: each course with its lanterns, and all of them together. The same on
+   * the class screen and on the map of the student.
+   *
+   * @param {Object} c The campaign: name, regions (name, lit, total, here), lit, total.
+   * @return {string}
+   */
+  T.campaign = function(c) {
+    if (!c || !c.regions || c.regions.length < 2) {
+      return '';
+    }
+    var pct = function(lit, total) {
+      return total ? Math.round(100 * lit / total) : 0;
+    };
+    var rows = c.regions.map(function(r) {
+      return '<li' + (r.here ? ' class="here"' : '') + '><span>' + T.esc(r.name) + '</span><span class="meter level" ' +
+        'role="img" aria-label="' + T.esc(T.t('app_campaign_lit', {lit: r.lit, total: r.total})) + '"><i style="width:' +
+        pct(r.lit, r.total) + '%"></i></span><small>' + r.lit + '/' + r.total + '</small></li>';
+    }).join('');
+    return '<section class="card campaign-card"><div class="kicker">' + T.esc(T.t('app_campaign')) + '</div><h3>' +
+      T.esc(c.name) + '</h3><p class="help-soft">' + T.esc(T.t('app_campaign_all', {lit: c.lit, total: c.total})) +
+      '</p><ul class="campaign-list">' + rows + '</ul></section>';
+  };
+
   // The sky of any map, touched: what happens in the world this season shows or hides.
   document.addEventListener('click', function(e) {
     var button = e.target.closest ? e.target.closest('[data-sky]') : null;

@@ -3618,7 +3618,7 @@
     var hidden = (w.stains || []).some(function(s) {
       return s.hidden;
     }) ? '<p class="team-banner hidden-banner">' + esc(t('app_page_hidden')) + '</p>' : '';
-    return battlesCard() + deferredCard() + hidden + missionView(w.mission) + expeditionsCard();
+    return battlesCard() + deferredCard() + hidden + missionView(w.mission) + T.campaign(w.campaign) + expeditionsCard();
     }
     var next = w.challenges.filter(function(ch) {
       return !ch.status || ch.status === 'notyet';

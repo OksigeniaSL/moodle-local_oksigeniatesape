@@ -312,6 +312,75 @@
   }
 
   /**
+   * The card of the campaign with other courses, in the settings: filled when it is bound.
+   *
+   * @return {string}
+   */
+  function campaignCard() {
+    return can('manageregion') ? '<section class="card" style="margin-top:16px"><h2>' + esc(t('teach_campaign')) + '</h2>' +
+      '<p class="help-soft">' + esc(t('teach_campaign_help')) + '</p><div data-campaign></div></section>' : '';
+  }
+
+  /**
+   * The campaign of the course: its courses and its code to give, and leaving it; or, out of any, making one or joining
+   * one by its code.
+   *
+   * @param {Element} el
+   * @param {Object} [campaign]
+   */
+  function bindCampaign(el, campaign) {
+    var box = el.querySelector('[data-campaign]');
+    if (!box) {
+      return;
+    }
+    var send = function(args, done) {
+      args.courseid = cfg.courseid;
+      return T.api('campaign', args).then(function(r) {
+        T.toast(esc(t(done)));
+        bindCampaign(el, r.campaign);
+      }).catch(function(e) {
+        T.toast(esc(e.message), true);
+        bindCampaign(el, campaign);
+      });
+    };
+    if (campaign) {
+      box.innerHTML = '<p><b>' + esc(campaign.name) + '</b> · ' + esc(t('teach_campaign_code')) + ' <code class="campaign-code">' +
+        esc(campaign.code) + '</code></p><p class="help-soft">' + esc(t('teach_campaign_give')) + '</p><ul class="list">' +
+        campaign.regions.map(function(c) {
+          return '<li class="item"><span class="grow">' + esc(c.name) + '</span><small>' +
+            esc(t('app_campaign_lit', {lit: c.lit, total: c.total})) + '</small></li>';
+        }).join('') + '</ul><div class="actions" style="justify-content:flex-start;margin-top:12px"><button type="button" class="btn btn-soft" ' +
+        'data-leavecampaign>' + esc(t('teach_campaign_leave')) + '</button></div>';
+      box.querySelector('[data-leavecampaign]').onclick = function() {
+        if (window.confirm(t('teach_campaign_leave_confirm', campaign.name))) {
+          this.disabled = true;
+          send({action: 'leave'}, 'teach_campaign_left');
+        }
+      };
+      return;
+    }
+    box.innerHTML = '<div class="grid2"><div>' + field('campaignname', t('teach_campaign_name'), '<input ' +
+      'data-campaignname maxlength="100">') + '<button type="button" class="btn btn-main" data-newcampaign>' +
+      esc(t('teach_campaign_create')) + '</button></div><div>' + field('campaigncode', t('teach_campaign_join_code'),
+      '<input data-campaigncode maxlength="8" autocapitalize="characters" spellcheck="false">') + '<button type="button" ' +
+      'class="btn btn-soft" data-joincampaign>' + esc(t('teach_campaign_join')) + '</button></div></div>';
+    box.querySelector('[data-newcampaign]').onclick = function() {
+      var name = box.querySelector('[data-campaignname]').value.trim();
+      if (name) {
+        this.disabled = true;
+        send({action: 'create', name: name}, 'teach_campaign_made');
+      }
+    };
+    box.querySelector('[data-joincampaign]').onclick = function() {
+      var code = box.querySelector('[data-campaigncode]').value.replace(/[^A-Za-z0-9]/g, '');
+      if (code) {
+        this.disabled = true;
+        send({action: 'join', code: code}, 'teach_campaign_joined');
+      }
+    };
+  }
+
+  /**
    * The games of the course, read: each with its group and its students, to go to it or close it; and a group of
    * Moodle to open one more for.
    *
@@ -4013,8 +4082,10 @@
       '</details>';
     var el = content('<section class="card"><h2>' + esc(t('teach_tab_settings')) + '</h2><form data-settings>' + daily +
       advanced + (editable ? '<div class="actions" style="justify-content:flex-start;margin-top:14px"><button ' +
-      'class="btn btn-main" type="submit">' + esc(t('app_save')) + '</button></div>' : '') + '</form></section>' + gamesCard());
+      'class="btn btn-main" type="submit">' + esc(t('app_save')) + '</button></div>' : '') + '</form></section>' + gamesCard() +
+      campaignCard());
     bindGames(el);
+    bindCampaign(el, r.campaign);
     el.querySelector('.settings-advanced').ontoggle = function() {
       state.advanced = this.open;
     };

@@ -174,6 +174,10 @@ final class observer {
     public static function clear_game(int $key): void {
         global $DB;
         self::clear_played($key);
+        // Out of its campaign: the campaign goes when no course is left in it.
+        if (regions::get($key)) {
+            \local_oksigeniatesape\local\campaigns::leave($key);
+        }
         $missions = $DB->get_fieldset_select(self::T . 'mission', 'id', 'courseid = ?', [$key]);
         if ($missions) {
             [$insql, $params] = $DB->get_in_or_equal($missions);

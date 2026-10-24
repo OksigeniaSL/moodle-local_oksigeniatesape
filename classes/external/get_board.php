@@ -64,6 +64,7 @@ final class get_board extends external_api {
     public static function execute_returns(): \core_external\external_description {
         return new external_single_structure([
             'cards' => new external_multiple_structure(new external_value(PARAM_ALPHA, 'Card of the deck')),
+            'campaign' => structures::campaign(),
             'classcreature' => new external_single_structure([
                 'name' => new external_value(PARAM_TEXT, 'Its name'),
                 'hue' => new external_value(PARAM_INT, 'Its colour'),
