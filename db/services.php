@@ -53,6 +53,13 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:play',
     ],
+    'local_oksigeniatesape_direct' => [
+        'classname' => 'local_oksigeniatesape\external\direct',
+        'description' => 'Gives a mark of the story to a team or to the class, as the director of the game.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:award',
+    ],
     'local_oksigeniatesape_get_library' => [
         'classname' => 'local_oksigeniatesape\external\get_library',
         'description' => 'The library of another region of the site, if its teachers share it.',

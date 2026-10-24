@@ -112,6 +112,23 @@
      "next": "noche-alto"
     },
     {
+     "id": "garza-avisa",
+     "label": "Preguntar a la garza, que es amiga de la clase, dónde se duerme mejor",
+     "requires": {
+      "flag": "garza-amiga"
+     },
+     "points": 2,
+     "objective": "SV-06",
+     "effects": [
+      {
+       "flag": "alto-seco"
+      }
+     ],
+     "say": "«En el alto seco», dice la garza. «Junto al agua quieta, los mosquitos no dejan dormir a nadie.»",
+     "feedback": "Quien conoce el lago sabe dónde viven los mosquitos: en el agua quieta. Preguntar a quien sabe también es investigar.",
+     "next": "noche-alto"
+    },
+    {
      "id": "ronda",
      "label": "Hacer la ronda de guardia por los tres sitios antes de que oscurezca",
      "requires": {

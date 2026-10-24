@@ -7630,6 +7630,27 @@ body.adapt-colours .errors-text .fixed ins {
   height: 100%;
 }
 
+/* «What do they do?»: the teacher as the director of the game. */
+.director-card summary {
+  cursor: pointer;
+}
+
+.director-card summary h2 {
+  display: inline;
+  margin-right: 10px;
+}
+
+.director-card fieldset {
+  margin: 10px 0;
+  padding: 0;
+  border: 0;
+}
+
+.director-card legend {
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
 /* ---------- The tools of the classroom on the class screen ---------- */
 
 .class-tool {

@@ -1558,8 +1558,8 @@
           '" aria-label="' + esc(t('app_teamstate_' + g.state)) + '"></span>' : '') + '</button>';
       }).join('') + '</div>';
     var shown = studentsShown();
-    var el = content(firstCard() + sessionCard() + remoteCard() + inboxCard() + signalsCard() + todayCard() + teamsCard() +
-      farCard() + '<section class="card"><div class="section-title"><h2>' +
+    var el = content(firstCard() + sessionCard() + remoteCard() + inboxCard() + signalsCard() + todayCard() + directorCard() +
+      teamsCard() + farCard() + '<section class="card"><div class="section-title"><h2>' +
       esc(t('teach_tab_class')) +
       '</h2><span class="section-tools"><label class="chip"><input type="checkbox" data-showres' + (state.showres ? ' checked' :
       '') + '> ' + esc(t('teach_showres')) + '</label><button class="btn btn-soft" data-all>' + esc(t('teach_selectall')) +
@@ -1569,6 +1569,7 @@
     bindMakeTeams(el);
     bindSession(el);
     bindRemote(el);
+    bindDirector(el);
     el.querySelector('[data-showres]').onchange = function() {
       state.showres = this.checked;
       try {
@@ -2918,6 +2919,83 @@
   }
 
   /* ---------- Classroom challenges ---------- */
+
+  /**
+   * The teacher as the director of the game: «What do they do?». What a team or the class did, in a line, and what
+   * happens because of it: some knowledge, a gem, or a mark the story remembers (with a gem). Each one sees the line on
+   * their device.
+   *
+   * @return {string}
+   */
+  function directorCard() {
+    var d = state.data;
+    if (!can('award') || !d.students.length) {
+      return '';
+    }
+    var marks = d.director || [];
+    var who = [{id: 0, name: t('teach_director_all')}].concat(d.teams.map(function(team) {
+      return {id: team.id, name: team.name};
+    }));
+    var pick = function(name, value, label, checked) {
+      return '<label class="chip"><input type="radio" name="' + name + '" value="' + esc(value) + '"' + (checked ? ' checked' : '') +
+        '> ' + esc(label) + '</label>';
+    };
+    return '<section class="card director-card" data-director><details><summary><h2>' + esc(t('teach_director')) + '</h2>' +
+      '<small>' + esc(t('teach_director_summary')) + '</small></summary><p class="help-soft">' + esc(t('teach_director_help')) +
+      '</p><form data-directorform><fieldset><legend>' + esc(t('teach_director_who')) + '</legend><div class="chips">' +
+      who.map(function(w, i) {
+        return pick('who', w.id, w.name, i === 0);
+      }).join('') + '</div></fieldset><label class="ws-field"><span>' + esc(t('teach_director_what')) + '</span><input type="text" ' +
+      'name="what" maxlength="255" required placeholder="' + esc(t('teach_director_what_example')) + '"></label><fieldset><legend>' +
+      esc(t('teach_director_then')) + '</legend><div class="chips">' + pick('then', 'saber', t('teach_director_saber'), true) +
+      pick('then', 'gems', t('teach_director_gem'), false) + marks.map(function(m) {
+        return pick('then', 'mark:' + m.flag, t('teach_director_mark', m.text), false);
+      }).join('') + '</div></fieldset><div class="actions" style="justify-content:flex-start"><button type="submit" ' +
+      'class="btn btn-main">' + esc(t('teach_director_go')) + '</button></div></form></details></section>';
+  }
+
+  /**
+   * «What do they do?», sent: the knowledge and the gem go as a touch with its reason; a mark, with its gem.
+   *
+   * @param {Element} el
+   */
+  function bindDirector(el) {
+    var form = el.querySelector('[data-directorform]');
+    if (!form) {
+      return;
+    }
+    form.onsubmit = function(ev) {
+      ev.preventDefault();
+      var d = state.data;
+      var who = Number(form.querySelector('[name="who"]:checked').value);
+      var then = form.querySelector('[name="then"]:checked').value;
+      var note = form.what.value.trim();
+      if (!note) {
+        form.what.focus();
+        return;
+      }
+      var button = form.querySelector('[type="submit"]');
+      button.disabled = true;
+      var userids = d.students.filter(function(s) {
+        return s.character && (!who || s.teamid === who);
+      }).map(function(s) {
+        return s.userid;
+      });
+      var done = then.indexOf('mark:') === 0 ?
+        T.api('direct', {courseid: cfg.courseid, groupid: who, flag: then.slice(5), note: note}) :
+        T.api('award', {courseid: cfg.courseid, userids: userids, resource: then, amount: then === 'saber' ? 5 : 1,
+          note: note});
+      done.then(function() {
+        form.what.value = '';
+        button.disabled = false;
+        T.toast(esc(t('teach_director_done')));
+        return load(true);
+      }).catch(function(e) {
+        button.disabled = false;
+        T.toast(esc(e.message), true);
+      });
+    };
+  }
 
   /**
    * What is true, the other wrong idea and why, of the tangle of a team.

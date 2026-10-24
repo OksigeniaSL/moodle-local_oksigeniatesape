@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 76,
+ "version": 77,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 77,
+   "kind": "improvement",
+   "date": "2026-10-24",
+   "text": "Marcas para el docente como director de juego («¿Qué hacen?»): la garza amiga de la clase, el búho que confía en ella y el huerto cuidado, con su recuerdo en cada lugar; y en «La noche del lago», preguntar a la garza si es amiga de la clase"
+  },
   {
    "version": 76,
    "kind": "improvement",
@@ -2592,6 +2598,29 @@
    }
   }
  },
+ "director": [
+  {
+   "flag": "garza-amiga",
+   "text": {
+    "valley": "La garza es amiga de la clase",
+    "azara": "La garza de la orilla es amiga de la clase"
+   }
+  },
+  {
+   "flag": "buho-confia",
+   "text": {
+    "valley": "El búho guardián confía en la clase",
+    "azara": "El búho del monte confía en la clase"
+   }
+  },
+  {
+   "flag": "huerto-cuidado",
+   "text": {
+    "valley": "La clase cuida el huerto del jardín",
+    "azara": "La clase cuida el huerto de la expedición"
+   }
+  }
+ ],
  "glossary": [
   {
    "id": "ser-vivo",
@@ -3620,6 +3649,13 @@
    ],
    "memory": [
     {
+     "flag": "buho-confia",
+     "text": {
+      "valley": "El búho guardián ya no se esconde cuando pasamos: sabe que cuidamos el bosque.",
+      "azara": "El búho del monte ya no se esconde cuando pasamos: sabe que cuidamos el monte."
+     }
+    },
+    {
      "flag": "pregunta-buena",
      "text": {
       "valley": "Elegimos bien la primera pregunta al búho, y nos regaló otra más.",
@@ -3871,6 +3907,13 @@
    ],
    "memory": [
     {
+     "flag": "huerto-cuidado",
+     "text": {
+      "valley": "Cuidamos el huerto entre todos: las plantas lo notan.",
+      "azara": "Cuidamos el huerto entre todos: las plantas lo notan."
+     }
+    },
+    {
      "flag": "leche-a-las-plantas",
      "text": {
       "valley": "Regamos las plantas con leche, como había hecho el Embrollo, y salió moho en la maceta.",
@@ -4113,6 +4156,13 @@
     }
    ],
    "memory": [
+    {
+     "flag": "garza-amiga",
+     "text": {
+      "valley": "La garza nos llama amigos: nos lo ganamos entre todos.",
+      "azara": "La garza de la orilla nos conoce: nos lo ganamos entre todos."
+     }
+    },
     {
      "flag": "mosquitos",
      "text": {

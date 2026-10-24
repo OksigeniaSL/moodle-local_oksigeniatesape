@@ -718,6 +718,8 @@ final class view {
             'ideasunread' => ideas::unread($courseid),
             'pactspending' => pacts::pending($courseid),
             'namespending' => names::pending($courseid),
+            // The marks of the mission the teacher can give as the director of the game.
+            'director' => $board ? [] : director::marks($courseid),
             // The tangles of the teams: those waiting for the teacher, and those approved with how they went.
             'tangles' => $board ? ['pending' => [], 'approved' => []] : tangles::for_teacher($courseid),
             // The photos of the classroom: those waiting for the teacher and those on the map; the class screen, only these.

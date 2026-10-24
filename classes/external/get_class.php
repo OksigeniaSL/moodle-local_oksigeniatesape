@@ -165,6 +165,10 @@ final class get_class extends external_api {
             'pactspending' => new external_value(PARAM_INT, 'Commitments still to mark'),
             'namespending' => structures::names_pending(),
             'tangles' => structures::tangles_teacher(),
+            'director' => new external_multiple_structure(new external_single_structure([
+                'flag' => new external_value(PARAM_ALPHANUMEXT, 'Mark'),
+                'text' => new external_value(PARAM_TEXT, 'What it says'),
+            ]), 'The marks the teacher can give as the director of the game', VALUE_DEFAULT, []),
             'photos' => new external_multiple_structure(new external_single_structure([
                 'id' => new external_value(PARAM_INT, 'The photo'),
                 'team' => new external_value(PARAM_TEXT, 'The team that sent it'),
