@@ -1039,6 +1039,9 @@
         case 'firstday':
           return '<button type="button" class="btn btn-main" data-sshow="firstday">' + esc(t('teach_session_act_firstday')) +
             '</button>';
+        case 'burst':
+          return '<button type="button" class="btn btn-main" data-sshow="burst">' + esc(t('teach_session_act_burst')) +
+            '</button>';
         case 'challenge':
           return '<button type="button" class="btn btn-soft" data-sgoto="challenges">' + esc(t('teach_session_act_challenge')) +
             '</button>';
@@ -1188,7 +1191,9 @@
           'style="justify-content:flex-start">' + (v.shown ? '<button type="button" class="btn btn-soft" data-sshow="">' +
           esc(t('teach_session_clear')) + '</button>' : '') + (v.shown === 'council' ? '' : '<button type="button" ' +
           'class="btn btn-soft" data-sshow="council">' + esc(t('teach_session_act_council')) + '</button>') +
-          '<button type="button" class="btn btn-main" data-sclose>' +
+          // The burst of the Embrollo, to start: on the class screen, the class answers aloud.
+          (v.shown === 'burst' ? '' : '<button type="button" class="btn btn-soft" data-sshow="burst">' +
+          esc(t('teach_session_act_burst')) + '</button>') + '<button type="button" class="btn btn-main" data-sclose>' +
           esc(t('teach_session_close')) + '</button></div>' + subButton();
       } else {
         box.innerHTML = '<div class="kicker">' + esc(t('teach_session_next')) + (v.optional ? ' · ' +

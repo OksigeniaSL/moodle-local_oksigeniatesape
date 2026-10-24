@@ -7416,6 +7416,58 @@ body.adapt-colours .errors-text .fixed ins {
   color: var(--ember-text);
 }
 
+/* On the class screen: the same burst, big, with the options lettered for the class to say them aloud. */
+.burst-board {
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+}
+
+.burst-board .burst-word {
+  font-size: clamp(48px, 7vw, 96px);
+}
+
+.burst-board .thing-pic {
+  width: clamp(120px, 16vw, 220px);
+  height: clamp(120px, 16vw, 220px);
+}
+
+.burst-board .burst-prompt {
+  font-size: clamp(24px, 3vw, 40px);
+}
+
+.burst-board-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  width: min(1100px, 100%);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: clamp(22px, 2.6vw, 34px);
+}
+
+.burst-board-options li {
+  padding: 14px 20px;
+  border-radius: var(--r);
+  background: rgba(255, 255, 255, .08);
+}
+
+.burst-board-options li b {
+  margin-right: 10px;
+  color: var(--lantern);
+}
+
+.burst-board-options li.right {
+  box-shadow: 0 0 0 4px rgb(var(--leaf-rgb));
+  background: rgba(var(--leaf-rgb), .2);
+}
+
+.burst-board .burst-clock {
+  width: min(1100px, 100%);
+  height: 12px;
+}
+
 .landmark-btn.burst .landmark-pic svg {
   width: 100%;
   height: 100%;

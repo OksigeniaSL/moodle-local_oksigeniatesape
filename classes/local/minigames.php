@@ -517,6 +517,23 @@ final class minigames {
     }
 
     /**
+     * A burst of the Embrollo for the class screen: the micro-challenges of the burst of the mission, drawn for a moment
+     * (when the teacher put it on the screen), with no student. The class answers aloud and the screen shows the answer.
+     *
+     * @param \stdClass $mission With data.
+     * @param int $seed
+     * @return array The micro-challenges, as in a play; empty if the mission has no burst.
+     */
+    public static function class_burst(\stdClass $mission, int $seed): array {
+        foreach ($mission->data['games'] ?? [] as $code => $game) {
+            if (($game['type'] ?? '') === 'burst') {
+                return self::burst_config($mission, (string) $code, $game, 0, $seed)['burst'];
+            }
+        }
+        return [];
+    }
+
+    /**
      * A burst of the Embrollo: micro-challenges drawn for this play (by the student and the plays they kept), from the
      * catalog and from the questions of the places the class has opened, and the three things at once at the end.
      *

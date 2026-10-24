@@ -36,14 +36,15 @@ final class sessions {
 
     /** @var string[] What a step launches. */
     public const ACTIONS = ['enter', 'card', 'scene', 'game', 'battle', 'timer', 'pacts', 'light', 'challenge', 'council',
-        'firstday', 'none'];
+        'firstday', 'burst', 'none'];
 
     /**
      * @var string[] What the class screen shows for a session: the place entered, the card, a timer, the commitments, a
-     * scene, the lantern lit, the teams in council, the phases of a session, or the first day (the heroes being made).
+     * scene, the lantern lit, the teams in council, the phases of a session, the first day (the heroes being made) or the
+     * burst of the Embrollo, to start a class.
      */
     public const SHOWS = ['enter', 'card', 'timer', 'pacts', 'scene', 'light', 'council', 'campfire', 'dawn', 'expedition',
-        'encounter', 'loot', 'firstday'];
+        'encounter', 'loot', 'firstday', 'burst'];
 
     /** @var int Minutes of the soft hourglass of the expedition, when the teacher does not say. */
     public const EXPEDITION = 20;
@@ -474,6 +475,10 @@ final class sessions {
         }
         if ($open->shown === 'firstday') {
             $out['firstday'] = self::firstday($courseid);
+        }
+        if ($open->shown === 'burst') {
+            // Another burst each time it is put on the screen.
+            $out['burst'] = minigames::class_burst($mission, (int) $open->shownat);
         }
         return $out;
     }

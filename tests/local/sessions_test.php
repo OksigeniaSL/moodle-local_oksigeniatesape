@@ -214,6 +214,21 @@ final class sessions_test extends \advanced_testcase {
         $this->assertSame(['healer', 'sage', 'scout'], sessions::board($course->id, $now + 13)['firstday']['sparks']);
     }
 
+    public function test_the_burst_of_the_embrollo_on_the_class_screen(): void {
+        [$course] = $this->make_class();
+        $now = time();
+        sessions::start($course->id, 'claro', 1, $now);
+        sessions::show($course->id, 'burst', 0, 0, $now + 10);
+        $burst = sessions::board($course->id, $now + 11)['burst'];
+        // The micro-challenges of a burst, with no student, and the three things at once at the end.
+        $this->assertCount(minigames::BURST + 1, $burst);
+        $this->assertSame('boss', end($burst)['kind']);
+        // The same while it is on the screen; another one when it is put on it again.
+        $this->assertSame($burst, sessions::board($course->id, $now + 30)['burst']);
+        sessions::show($course->id, 'burst', 0, 0, $now + 60);
+        $this->assertNotSame(array_column($burst, 'label'), array_column(sessions::board($course->id, $now + 61)['burst'], 'label'));
+    }
+
     public function test_the_class_screen_by_phases_from_dawn_to_the_loot(): void {
         global $DB;
         [$course, $teacher] = $this->make_class();

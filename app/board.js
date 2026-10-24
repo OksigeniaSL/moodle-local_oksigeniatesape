@@ -376,8 +376,74 @@
     }).join('');
   }
 
+  /**
+   * One challenge of the burst on the class screen: big, with its clock; then what was right, a moment; then the next.
+   * At the end, the Embrollo gives up.
+   *
+   * @param {Element} box
+   * @param {Object[]} items As the burst of a student, with no student.
+   * @param {number} i
+   */
+  function boardBurst(box, items, i) {
+    // A thing or a being, drawn if the pack has it, with its name.
+    var thing = function(picture, label) {
+      var art = picture ? T.artUrl([picture]) : null;
+      return (art ? '<img class="thing-pic" src="' + esc(art) + '" alt="">' : '') + '<span class="thing-name">' +
+        esc(label ? label.charAt(0).toLocaleUpperCase() + label.slice(1) : '') + '</span>';
+    };
+    var item = items[i];
+    if (!box || !box.isConnected) {
+      return;
+    }
+    if (!item) {
+      box.innerHTML = '<div class="burst-word big beaten" aria-hidden="true">' + esc(t('app_burst_shout')) + '</div><h1>' +
+        esc(t('board_burst_end')) + '</h1><span class="battle-mini" aria-hidden="true">' + T.embrollo(0.2) + '</span>';
+      if (T.fx) {
+        T.fx.sound('win');
+      }
+      return;
+    }
+    var letters = 'ABCD';
+    var seconds = item.seconds + 3;
+    box.innerHTML = '<div class="burst-hud"><span class="kicker">' + esc(t('app_burst_count', {n: i + 1, all: items.length})) +
+      '</span></div><div class="burst-word" aria-hidden="true">' + esc(item.word) + '</div>' + (item.picture || item.label ?
+      '<div class="burst-thing">' + thing(item.picture, item.label) + '</div>' : '') + '<p class="burst-prompt">' +
+      esc(item.prompt) + '</p>' + (item.kind === 'boss' ? '<div class="burst-three">' + item.things.map(function(x) {
+        return '<span class="burst-pick" data-thing="' + esc(x.id) + '">' + thing(x.picture, x.label) + '</span>';
+      }).join('') + '</div>' : '<ol class="burst-board-options">' + item.options.map(function(o, k) {
+        return '<li data-k="' + k + '"><b>' + letters.charAt(k) + '</b> ' + esc(o) + '</li>';
+      }).join('') + '</ol>') + '<div class="burst-clock" aria-hidden="true"><i style="animation-duration:' + seconds + 's"></i>' +
+      '</div>';
+    if (T.fx) {
+      T.fx.sound('chime');
+    }
+    state.bursttimer = setTimeout(function() {
+      // What was right, a moment.
+      if (item.kind === 'boss') {
+        item.things.forEach(function(x) {
+          var b = box.querySelector('[data-thing="' + x.id + '"]');
+          if (b) {
+            b.classList.add(x.alive ? 'right' : 'notalive');
+          }
+        });
+      } else {
+        var right = box.querySelector('[data-k="' + item.right + '"]');
+        if (right) {
+          right.classList.add('right');
+        }
+      }
+      if (T.fx) {
+        T.fx.sound('right');
+      }
+      state.bursttimer = setTimeout(function() {
+        boardBurst(box, items, i + 1);
+      }, 3500);
+    }, seconds * 1000);
+  }
+
   function showSession(s) {
     clearInterval(state.showtimer);
+    clearTimeout(state.bursttimer);
     if (state.showEl) {
       state.showEl.remove();
       state.showEl = null;
@@ -577,6 +643,10 @@
       if (T.fx) {
         T.fx.sound('coin');
       }
+    } else if (s.shown === 'burst') {
+      // The burst of the Embrollo, to start the class: each challenge big, the class answers aloud, then the answer.
+      html = '<div class="show-card burst-board"><div class="kicker">' + esc(t('board_burst')) + '</div><div data-sburst></div>' +
+        '</div>';
     } else if (s.shown === 'council') {
       // The teams in council: each one, on a tablet, looks at its task and chooses who starts the hand.
       var ev = state.board && state.board.event;
@@ -592,6 +662,7 @@
       T.icon('close') + '</button>' + html;
     el.querySelector('.scene-close').onclick = function() {
       clearInterval(state.showtimer);
+      clearTimeout(state.bursttimer);
       el.remove();
       state.showEl = null;
     };
@@ -599,6 +670,9 @@
     state.showEl = el;
     if (s.firstday) {
       firstSparks(el, s.firstday);
+    }
+    if (s.shown === 'burst') {
+      boardBurst(el.querySelector('[data-sburst]'), s.burst || [], 0);
     }
     if (end) {
       var total = end - Date.now();
