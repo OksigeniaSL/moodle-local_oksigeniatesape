@@ -51,6 +51,15 @@ final class edits {
     /** @var string The switch of a scene in the game: «off» takes it out of the map, the class screen and the lanterns. */
     public const ENABLED = 'enabled';
 
+    /** @var string The secrets the teacher hides in the paintings of the places, besides those of the mission. */
+    public const OWNSECRETS = 'ownsecrets';
+
+    /** @var int Most secrets of the teacher in a mission. */
+    public const MAX_SECRETS = 12;
+
+    /** @var int Longest text of a secret of the teacher. */
+    public const MAX_SECRET = 300;
+
     /** @var string[] Fields with one text, in a scene, a node or an element of a list. */
     private const TEXTS = ['title', 'whatif', 'text', 'prompt', 'label', 'say', 'feedback', 'intro', 'offscreen', 'do', 'materials',
         'name', 'claim', 'laugh', 'weakness', 'why', 'ask', 'expect', 'mistake', 'redirect', 'spare', 'cardtitle',
@@ -124,13 +133,14 @@ final class edits {
     }
 
     /**
-     * Whether a change is a list kept as JSON: the questions of the battle, or the questions of a knot.
+     * Whether a change is a list kept as JSON: the questions of the battle, the secrets of the teacher, or the questions
+     * of a knot.
      *
      * @param string $path
      * @return bool
      */
     private static function is_list(string $path): bool {
-        return $path === 'questions' || (bool) preg_match('#^battle/knots/[A-Za-z0-9_-]+/(questions|taken)$#', $path);
+        return $path === 'questions' || $path === self::OWNSECRETS || (bool) preg_match('#^battle/knots/[A-Za-z0-9_-]+/(questions|taken)$#', $path);
     }
 
     /**
@@ -343,6 +353,11 @@ final class edits {
                 continue;
             }
             if ($path === self::ENABLED) {
+                continue;
+            }
+            if ($path === self::OWNSECRETS) {
+                // Those of the teacher go after those of the mission: one more to find in the painting of its place.
+                $definition['secrets'] = array_merge($definition['secrets'] ?? [], is_array($value) ? $value : []);
                 continue;
             }
             self::set($definition, explode('/', $path), $value);
@@ -575,6 +590,48 @@ final class edits {
     }
 
     /**
+     * The secrets the teacher hides in the paintings of the places of the mission of a course, all of them, as the teacher
+     * leaves them: each in a place, inside what a phone shows of the painting, with what it says. Like those of the
+     * mission, they go to the album and give neither knowledge nor gems.
+     *
+     * @param int $courseid
+     * @param array $secrets Each: id (empty for a new one), place (code), x and y (percent of the painting), text.
+     * @return array The secrets kept.
+     */
+    public static function save_secrets(int $courseid, array $secrets): array {
+        $mission = missions::get($courseid);
+        if (!$mission) {
+            throw new \moodle_exception('nomission', 'local_oksigeniatesape');
+        }
+        $places = array_map(fn($c) => (string) $c['code'], $mission->data['chapters'] ?? []);
+        $clean = [];
+        $ids = [];
+        foreach (array_slice(array_values($secrets), 0, self::MAX_SECRETS) as $secret) {
+            $text = trim(clean_param((string) ($secret['text'] ?? ''), PARAM_TEXT));
+            $place = (string) ($secret['place'] ?? '');
+            if ($text === '' || !in_array($place, $places, true)) {
+                throw new \invalid_parameter_exception('A secret needs its place and what it says');
+            }
+            $id = (string) ($secret['id'] ?? '');
+            while (!preg_match('/^own-[a-z0-9]{6}$/', $id) || isset($ids[$id])) {
+                $id = 'own-' . strtolower(random_string(6));
+            }
+            $ids[$id] = true;
+            $clean[] = [
+                'id' => $id,
+                'place' => $place,
+                'kind' => 'thing',
+                // Where a phone sees it: the middle half of the painting, and not on its very edges.
+                'x' => max(25, min(75, (int) round((float) ($secret['x'] ?? 50)))),
+                'y' => max(12, min(88, (int) round((float) ($secret['y'] ?? 50)))),
+                'text' => \core_text::substr($text, 0, self::MAX_SECRET),
+            ];
+        }
+        self::store($courseid, (string) $mission->code, self::MISSION, self::OWNSECRETS, $clean ? json_encode($clean) : '');
+        return $clean;
+    }
+
+    /**
      * The changes of the mission of a course, to take to another course or another site: only the texts of the teacher,
      * never the mission, which the other course needs to have.
      *
@@ -617,6 +674,8 @@ final class edits {
             try {
                 if ($path === 'questions' && is_array($value)) {
                     self::save_questions($courseid, $value);
+                } else if ($path === self::OWNSECRETS && is_array($value)) {
+                    self::save_secrets($courseid, $value);
                 } else if (is_string($value) && $value !== '') {
                     self::save($courseid, (string) ($edit['scene'] ?? self::MISSION), $path, $value);
                 } else {
@@ -771,6 +830,12 @@ final class edits {
                 || ($i === 0 && strpos($f['path'], 'entry/') === 0);
             $chapters[] = [
                 'code' => (string) $chapter['code'],
+                'art' => (string) ($chapter['art'] ?? $chapter['code']),
+                // Where the secrets of the mission are in its painting, for the teacher hiding one of their own.
+                'secrets' => array_values(array_map(fn($x) => ['x' => (int) ($x['x'] ?? 50), 'y' => (int) ($x['y'] ?? 50)], array_filter(
+                    $original['secrets'] ?? [],
+                    fn($x) => ($x['place'] ?? '') === $chapter['code']
+                ))),
                 'number' => $i + 1,
                 'name' => self::resolve($chapter['name'] ?? $chapter['code'], $skin, $variant),
                 'fields' => array_values(array_filter($places, $mine)),
@@ -801,6 +866,9 @@ final class edits {
             'chapters' => $chapters,
             'questions' => $questions,
             'questionschanged' => isset($changes[self::MISSION]['questions']),
+            'ownsecrets' => array_values((array) ($changes[self::MISSION][self::OWNSECRETS] ?? [])),
+            'secretsmost' => self::MAX_SECRETS,
+            'secretmax' => self::MAX_SECRET,
             'objectives' => $objectives,
             'changed' => array_sum(array_map('count', $changes)),
             'challenges' => array_values(array_map(fn($c) => ['id' => (int) $c->id, 'name' => format_string($c->name),

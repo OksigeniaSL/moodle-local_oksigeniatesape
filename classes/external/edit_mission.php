@@ -33,8 +33,8 @@ use local_oksigeniatesape\local\missions;
  */
 final class edit_mission extends external_api {
     /** @var string[] What can be done. */
-    private const ACTIONS = ['view', 'save', 'questions', 'restore', 'export', 'import', 'courses', 'copy', 'skip', 'challenge',
-        'knotdraft', 'knotaccept'];
+    private const ACTIONS = ['view', 'save', 'questions', 'secrets', 'restore', 'export', 'import', 'courses', 'copy', 'skip',
+        'challenge', 'knotdraft', 'knotaccept'];
 
     /**
      * Parameters.
@@ -46,9 +46,10 @@ final class edit_mission extends external_api {
             'courseid' => new external_value(PARAM_INT, 'Course'),
             'action' => new external_value(
                 PARAM_ALPHA,
-                'view, save, questions, restore, export, import, courses, copy, skip (a place: value on, or empty to go ' .
-                    'back), challenge (of a place: value, the classroom challenge, 0 none), knotdraft (lanes for the knot ' .
-                    'in scene, by the AI) or knotaccept (value, a question in JSON, for the knot in scene)'
+                'view, save, questions, secrets (value, the secrets of the teacher in JSON), restore, export, import, ' .
+                    'courses, copy, skip (a place: value on, or empty to go back), challenge (of a place: value, the ' .
+                    'classroom challenge, 0 none), knotdraft (lanes for the knot in scene, by the AI) or knotaccept ' .
+                    '(value, a question in JSON, for the knot in scene)'
             ),
             'scene' => new external_value(
                 PARAM_RAW,
@@ -113,6 +114,12 @@ final class edit_mission extends external_api {
                 throw new \invalid_parameter_exception('The questions are not a list');
             }
             edits::save_questions($params['courseid'], $questions);
+        } else if ($params['action'] === 'secrets') {
+            $secrets = json_decode($params['value'], true);
+            if (!is_array($secrets)) {
+                throw new \invalid_parameter_exception('The secrets are not a list');
+            }
+            edits::save_secrets($params['courseid'], $secrets);
         } else if ($params['action'] === 'skip') {
             edits::skip($params['courseid'], $scene, $params['value'] === 'on');
         } else if ($params['action'] === 'challenge') {

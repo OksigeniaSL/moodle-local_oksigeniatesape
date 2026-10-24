@@ -129,6 +129,39 @@ final class edits_test extends \advanced_testcase {
         edits::save($course->id, 'C3-2', 'nodes/p1/views/' . $roles[1], 'Un trozo propio del docente');
     }
 
+    public function test_the_teacher_hides_secrets_of_their_own_in_the_paintings(): void {
+        $this->resetAfterTest();
+        $course = $this->make_course();
+        $theirs = count(missions::get($course->id)->data['secrets']);
+        $this->assertSame([], edits::view($course->id)['ownsecrets']);
+        // One where a phone does not see it, and one with an id that is not one: both kept, inside what a phone shows.
+        $kept = edits::save_secrets($course->id, [
+            ['id' => '', 'place' => 'claro', 'x' => 5, 'y' => 99, 'text' => 'Debajo de la piedra grande, la nota de ayer.'],
+            ['id' => 'huella-1', 'place' => 'lago', 'x' => 60, 'y' => 40, 'text' => '¿Quién vio la garza en la salida?'],
+        ]);
+        $this->assertCount(2, $kept);
+        $this->assertSame([25, 88], [$kept[0]['x'], $kept[0]['y']]);
+        $this->assertMatchesRegularExpression('/^own-[a-z0-9]{6}$/', $kept[1]['id']);
+        $this->assertSame($kept, edits::view($course->id)['ownsecrets']);
+        // In the game, after those of the mission: one more in the painting of the clearing, found as the others.
+        $mission = missions::get($course->id);
+        $this->assertCount($theirs + 2, $mission->data['secrets']);
+        $user = $this->getDataGenerator()->create_and_enrol($course, 'student');
+        $char = characters::create($user->id, 'sage', 'f');
+        $member = engine::member($char, $course->id);
+        $this->assertContains($kept[0]['id'], array_column(secrets::in_place($char, $mission, 'claro', []), 'id'));
+        $this->assertSame('Debajo de la piedra grande, la nota de ayer.', secrets::find($char, $member, $kept[0]['id'])['text']);
+        $this->assertSame($theirs + 2, secrets::album($mission, secrets::found($char, $mission))['total']);
+        // Saved again with its id, the same secret; to another course, with the other changes.
+        $this->assertSame($kept[0]['id'], edits::save_secrets($course->id, [$kept[0]])[0]['id']);
+        $other = $this->make_course();
+        edits::import($other->id, edits::export($course->id));
+        $this->assertSame([$kept[0]], edits::view($other->id)['ownsecrets']);
+        // Every secret needs its place and what it says.
+        $this->expectException(\invalid_parameter_exception::class);
+        edits::save_secrets($course->id, [['place' => 'nowhere', 'x' => 50, 'y' => 50, 'text' => 'Algo']]);
+    }
+
     public function test_the_teacher_switches_the_sniffing_of_the_creature_in_a_scene(): void {
         $this->resetAfterTest();
         $course = $this->make_course();

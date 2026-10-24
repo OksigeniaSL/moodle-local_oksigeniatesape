@@ -1,7 +1,7 @@
 /**
- * Tesapé: the workshop where the teacher changes the mission of the course: the texts of its places and scenes, and the
- * questions of the battle. The changes are kept apart from the mission (a newer version of it does not take them away);
- * an empty text, or «Back to the original», takes a change away.
+ * Tesapé: the workshop where the teacher changes the mission of the course: the texts of its places and scenes, the
+ * questions of the battle and the secrets of the class in the paintings. The changes are kept apart from the mission (a
+ * newer version of it does not take them away); an empty text, or «Back to the original», takes a change away.
  *
  * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -14,7 +14,7 @@
   var t = T.t;
   var esc = T.esc;
   var MISSION = '#';
-  var state = {data: null, el: null, done: null, questions: null};
+  var state = {data: null, el: null, done: null, questions: null, secrets: null};
 
   function api(action, extra) {
     return T.api('edit_mission', Object.assign({courseid: cfg.courseid, action: action}, extra || {})).then(function(r) {
@@ -387,6 +387,139 @@
     }
   }
 
+  /* ---------- The secrets of the class ---------- */
+
+  /**
+   * A secret of the teacher: its place, where it is in the painting (touched on it), and what it says.
+   *
+   * @param {Object} s place, x, y, text.
+   * @param {number} i
+   * @return {string}
+   */
+  function secretHtml(s, i) {
+    var d = state.data;
+    var ch = d.chapters.filter(function(c) {
+      return c.code === s.place;
+    })[0] || d.chapters[0];
+    var art = T.artUrl ? T.artUrl(['scene.' + (ch.art || ch.code)]) : null;
+    // The secrets of the mission in this place, faded, so that a new one does not sit on them.
+    var theirs = (ch.secrets || []).map(function(o) {
+      return '<span class="ws-secret-dot theirs" style="left:' + o.x + '%;top:' + o.y + '%"></span>';
+    }).join('');
+    return '<div class="ws-secret" data-s="' + i + '"><label class="ws-field"><span>' + esc(t('teach_ws_s_place')) +
+      '</span><select data-splace>' + d.chapters.map(function(c) {
+        return '<option value="' + esc(c.code) + '"' + (c.code === ch.code ? ' selected' : '') + '>' +
+          esc(c.number + '. ' + c.name) + '</option>';
+      }).join('') + '</select></label>' + (art ? '<div class="ws-secret-art" data-spick style="background-image:url(\'' +
+      esc(art) + '\')" role="button" tabindex="0" aria-label="' + esc(t('teach_ws_s_where')) + '"><span ' +
+      'class="ws-secret-band" aria-hidden="true"></span>' + theirs + '<span class="ws-secret-dot" style="left:' + s.x +
+      '%;top:' + s.y + '%"></span></div><small>' + esc(t('teach_ws_s_where_help')) + '</small>' : '') +
+      '<label class="ws-field"><span>' + esc(t('teach_ws_s_text')) + '</span><textarea rows="2" maxlength="' +
+      d.secretmax + '" data-stext>' + esc(s.text) + '</textarea></label><div class="actions" ' +
+      'style="justify-content:flex-end"><button class="btn btn-soft" data-sdelete>' + esc(t('teach_ws_s_delete')) +
+      '</button></div></div>';
+  }
+
+  function secretsHtml() {
+    var list = state.secrets;
+    return '<details class="card ws-chapter" data-secrets' + (state.secretsopen ? ' open' : '') + '><summary><h3>' +
+      esc(t('teach_ws_secrets')) + '</h3>' + (state.data.ownsecrets.length ? '<span class="tag done">' +
+      esc(t('teach_ws_s_count', state.data.ownsecrets.length)) + '</span>' : '') + '</summary><p class="help">' +
+      esc(t('teach_ws_secrets_help', state.data.secretsmost)) + '</p>' + list.map(secretHtml).join('') +
+      '<div class="actions" style="justify-content:flex-start">' + (list.length < state.data.secretsmost ?
+      '<button class="btn btn-soft" data-sadd>' + esc(t('teach_ws_s_add')) + '</button>' : '') +
+      '<button class="btn btn-main" data-ssave>' + esc(t('teach_ws_q_save')) + '</button></div></details>';
+  }
+
+  /** The secrets as they are on the screen now. */
+  function readSecrets() {
+    return Array.prototype.map.call(state.el.querySelectorAll('.ws-secret'), function(box) {
+      var s = state.secrets[+box.dataset.s] || {};
+      return {id: s.id || '', place: box.querySelector('[data-splace]').value, x: s.x, y: s.y,
+        text: box.querySelector('[data-stext]').value};
+    });
+  }
+
+  function renderSecrets() {
+    var box = state.el.querySelector('[data-secrets]');
+    var html = document.createElement('div');
+    html.innerHTML = secretsHtml();
+    box.replaceWith(html.firstChild);
+    bindSecrets();
+  }
+
+  function bindSecrets() {
+    var box = state.el.querySelector('[data-secrets]');
+    box.addEventListener('toggle', function() {
+      state.secretsopen = box.open;
+    });
+    var add = box.querySelector('[data-sadd]');
+    if (add) {
+      add.onclick = function() {
+        state.secrets = readSecrets();
+        var last = state.secrets[state.secrets.length - 1];
+        state.secrets.push({id: '', place: last ? last.place : state.data.chapters[0].code, x: 50, y: 60, text: ''});
+        renderSecrets();
+        var boxes = state.el.querySelectorAll('.ws-secret');
+        boxes[boxes.length - 1].querySelector('[data-stext]').focus();
+      };
+    }
+    box.querySelectorAll('.ws-secret').forEach(function(one) {
+      var i = +one.dataset.s;
+      one.querySelector('[data-sdelete]').onclick = function() {
+        state.secrets = readSecrets();
+        state.secrets.splice(i, 1);
+        renderSecrets();
+      };
+      one.querySelector('[data-splace]').onchange = function() {
+        state.secrets = readSecrets();
+        renderSecrets();
+      };
+      var pick = one.querySelector('[data-spick]');
+      if (!pick) {
+        return;
+      }
+      // Where it is: touched on the painting, inside what a phone shows of it; with the keys, step by step.
+      var put = function(x, y) {
+        state.secrets = readSecrets();
+        state.secrets[i].x = Math.max(25, Math.min(75, Math.round(x)));
+        state.secrets[i].y = Math.max(12, Math.min(88, Math.round(y)));
+        var dot = pick.querySelector('.ws-secret-dot:not(.theirs)');
+        dot.style.left = state.secrets[i].x + '%';
+        dot.style.top = state.secrets[i].y + '%';
+      };
+      pick.onclick = function(e) {
+        var r = pick.getBoundingClientRect();
+        put((e.clientX - r.left) * 100 / r.width, (e.clientY - r.top) * 100 / r.height);
+      };
+      pick.onkeydown = function(e) {
+        var s = state.secrets[i];
+        var move = {ArrowLeft: [-2, 0], ArrowRight: [2, 0], ArrowUp: [0, -2], ArrowDown: [0, 2]}[e.key];
+        if (move) {
+          e.preventDefault();
+          put(s.x + move[0], s.y + move[1]);
+        }
+      };
+    });
+    box.querySelector('[data-ssave]').onclick = function() {
+      var list = readSecrets();
+      if (list.some(function(s) {
+        return !s.text.trim();
+      })) {
+        T.toast(esc(t('teach_ws_s_incomplete')), true);
+        return;
+      }
+      api('secrets', {value: JSON.stringify(list)}).then(function(d) {
+        state.secrets = d.ownsecrets.slice();
+        renderSecrets();
+        header();
+        T.toast(esc(t('app_saved')));
+      }).catch(function(e) {
+        T.toast(esc(e.message), true);
+      });
+    };
+  }
+
   /* ---------- The whole workshop ---------- */
 
   function header() {
@@ -485,10 +618,12 @@
 
   function render() {
     state.questions = state.data.questions.slice();
+    state.secrets = state.data.ownsecrets.slice();
     state.el.innerHTML = '<section class="card ws-head" data-wshead></section>' +
-      state.data.chapters.map(chapterHtml).join('') + questionsHtml() + shareHtml();
+      state.data.chapters.map(chapterHtml).join('') + questionsHtml() + secretsHtml() + shareHtml();
     header();
     bindQuestions();
+    bindSecrets();
     bindShare();
   }
 
