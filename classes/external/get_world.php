@@ -143,6 +143,15 @@ final class get_world extends external_api {
                 ),
             ], 'Team', VALUE_OPTIONAL),
             'market' => structures::market(),
+            'curiosities' => new external_multiple_structure(new external_single_structure([
+                'code' => new external_value(PARAM_ALPHANUMEXT, 'Curiosity'),
+                'title' => new external_value(PARAM_TEXT, 'Its title'),
+                'teaser' => new external_value(PARAM_TEXT, 'What it asks, to want to read it'),
+                'price' => new external_value(PARAM_INT, 'Gems it costs'),
+                'back' => new external_value(PARAM_INT, 'Gems it gives back, read with its questions right'),
+                'bought' => new external_value(PARAM_BOOL, 'Bought'),
+                'done' => new external_value(PARAM_BOOL, 'Read with its questions right: a seal and a golden card'),
+            ]), 'The shop of the naturalist', VALUE_DEFAULT, []),
             'expeditions' => structures::expeditions(),
             'album' => structures::album(),
             'bestiary' => new external_multiple_structure(new external_single_structure([

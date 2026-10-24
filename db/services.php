@@ -403,6 +403,13 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:manageregion',
     ],
+    'local_oksigeniatesape_curiosity' => [
+        'classname' => 'local_oksigeniatesape\\external\\curiosity',
+        'description' => 'The shop of the naturalist: buys a curiosity, opens it to read, or ends it with its questions.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:play',
+    ],
     'local_oksigeniatesape_manage_games' => [
         'classname' => 'local_oksigeniatesape\\external\\manage_games',
         'description' => 'The games of a course: the one of the course and one more for each group that plays apart.',

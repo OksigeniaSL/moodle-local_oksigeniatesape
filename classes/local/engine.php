@@ -443,6 +443,7 @@ final class engine {
      * @param string $reason Seen only by the student and the teachers.
      * @param int $actorid The teacher.
      * @param int|null $now
+     * @param int $until When it ends by itself (0: in a week, the most a pause lasts).
      * @return \stdClass
      */
     public static function pause(\stdClass $member, string $reason, int $actorid, ?int $now = null, int $until = 0): \stdClass {

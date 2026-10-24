@@ -122,6 +122,8 @@ final class view {
             $world['badge'] = $badge;
         }
         $world['market'] = market::for_student($char, $courseid, $userid);
+        // The shop of the naturalist: what they can read beyond the mission, and the seals of what they read.
+        $world['curiosities'] = curiosities::for_student($courseid, $char);
         $album = album::for_student($courseid, $userid);
         if ($album) {
             $world['album'] = $album;

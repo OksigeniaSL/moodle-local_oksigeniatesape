@@ -2064,7 +2064,7 @@
   function landmarks() {
     var w = state.world;
     var list = [];
-    if (w.market && w.market.length) {
+    if ((w.market && w.market.length) || (w.curiosities || []).length) {
       list.push(['market', T.artUrl(['landmark.market', 'market.banner-lantern']), 'gems']);
     }
     if (w.album || (w.mission && (w.mission.guide || []).length)) {
@@ -2100,7 +2100,9 @@
       T.fx.ambient('meadow', 'biblioteca');
     }
     return '<div class="landmark-view"><button type="button" class="btn btn-soft back-map" data-tab-back="world">' +
-      T.icon('world') + ' ' + esc(t('app_back_map')) + '</button>' + ({market: marketCard, album: albumCard,
+      T.icon('world') + ' ' + esc(t('app_back_map')) + '</button>' + ({market: function() {
+        return marketCard() + curioCard();
+      }, album: albumCard,
       museum: museumCard})[which]() + '</div>';
   }
 
@@ -4289,6 +4291,10 @@
       esc(t('app_saber')) + '</span><b>' + c.saber + '</b></div>' +
       '<div class="stat"><span>' + esc(t('app_renown')) + '</span><b>' + (m.renown || 0) + '</b></div>' +
       '<div class="stat"><span>' + esc(t('app_gems')) + '</span><b>' + c.gems + '</b></div>' +
+      ((w.curiosities || []).length ? '<div class="stat"><span>' + esc(t('app_curio_seals')) + '</span><b>' +
+      w.curiosities.filter(function(x) {
+        return x.done;
+      }).length + '</b></div>' : '') +
       '<div class="stat"><span>' + esc(t('app_energy')) + '</span><b>' + (m.energy || 0) + ' / ' + w.energymax + '</b></div>' +
       '<div class="stat"><span>' + esc(t('app_breath')) + '</span><b>' + (m.breath || 0) + ' / ' + w.breathmax + '</b></div>' +
       // What puts the game in pause, as the class agreed it: there to read, folded.
@@ -4510,6 +4516,142 @@
     }).join('');
     return '<section class="card no-print market-card" style="margin-top:16px"><h2>' + esc(t('app_market')) + '</h2>' +
       '<p class="help-soft">' + esc(t('app_market_help', c.gems)) + '</p><ul class="list">' + items + '</ul></section>';
+  }
+
+  /**
+   * The shop of the naturalist, «Do you want to know more?»: readings beyond the mission, bought with gems; read with
+   * their questions right, they give the gems back and some more, a seal of curiosity and a golden card.
+   *
+   * @return {string}
+   */
+  function curioCard() {
+    var w = state.world;
+    var list = w.curiosities || [];
+    if (!list.length) {
+      return '';
+    }
+    var c = w.character;
+    return '<section class="card no-print curio-card" style="margin-top:16px"><h2>' + esc(t('app_curio')) + '</h2>' +
+      '<p class="help-soft">' + esc(t('app_curio_help', c.gems)) + '</p><ul class="list">' + list.map(function(x) {
+        var action = !x.bought ? '<button class="btn btn-soft" type="button" data-curiobuy="' + esc(x.code) + '"' +
+          (c.gems < x.price ? ' disabled' : '') + '>' + esc(t('app_curio_buy', x.price)) + '</button>' :
+          '<button class="btn btn-soft" type="button" data-curioread="' + esc(x.code) + '">' + esc(t(x.done ? 'app_curio_again' :
+          'app_curio_read')) + '</button>';
+        return '<li class="item"><span class="curio-book' + (x.done ? ' done' : '') + '" aria-hidden="true"></span><span ' +
+          'class="grow"><b>' + esc(x.title) + '</b><small>' + esc(x.teaser) + '</small><small>' + esc(x.done ?
+          t('app_curio_sealed') : t('app_curio_back', x.back)) + '</small></span>' + action + '</li>';
+      }).join('') + '</ul></section>';
+  }
+
+  /**
+   * A curiosity to read: its pages one by one, then its questions (one wrong waits for another try, with nothing lost);
+   * all of them right, the gems back, the seal, the golden card and what to tell the class.
+   *
+   * @param {string} code
+   * @param {boolean} buy Buy it first.
+   */
+  function readCurio(code, buy) {
+    T.api('curiosity', {courseid: cfg.courseid, action: buy ? 'buy' : 'read', code: code}).then(function(r) {
+      var c = r.read;
+      var layer = document.createElement('div');
+      layer.className = 'badge-moment curio-moment' + (T.moves() ? '' : ' still');
+      layer.setAttribute('role', 'dialog');
+      layer.setAttribute('aria-modal', 'true');
+      layer.setAttribute('aria-labelledby', 'tesape-curio-title');
+      document.body.appendChild(layer);
+      var answers = [];
+      var onkey = function(ev) {
+        if (ev.key === 'Escape') {
+          close();
+        }
+      };
+      var close = function() {
+        document.removeEventListener('keydown', onkey);
+        layer.remove();
+        refresh();
+      };
+      document.addEventListener('keydown', onkey);
+      var show = function(html) {
+        layer.innerHTML = '<div class="badge-card wide"><div class="kicker">' + esc(t('app_curio')) + '</div><h2 ' +
+          'id="tesape-curio-title">' + esc(c.title) + '</h2>' + html + '</div>';
+        var first = layer.querySelector('[data-next], [data-pick], [data-close]');
+        if (first) {
+          first.focus();
+        }
+      };
+      var end = function() {
+        T.api('curiosity', {courseid: cfg.courseid, action: 'finish', code: code, answers: answers}).then(function(f) {
+          var res = f.result;
+          if (res.first && T.fx) {
+            T.fx.sound('right');
+          }
+          show((res.first ? '<p class="curio-prize"><span class="curio-seal" aria-hidden="true"></span>' +
+            esc(t(res.seals > 1 ? 'app_curio_prize' : 'app_curio_prize_first', {gems: res.gems, seals: res.seals})) + '</p>' : '<p>' +
+            esc(t('app_curio_already')) +
+            '</p>') + (c.fact ? '<div class="curio-fact"><b>' + esc(t('app_curio_fact')) + '</b> ' + esc(c.fact) + '</div>' : '') +
+            '<div class="actions"><button class="btn btn-main" type="button" data-close>' + esc(t('app_continue')) +
+            '</button></div>');
+          layer.querySelector('[data-close]').onclick = close;
+        }).catch(function(e) {
+          T.toast(esc(e.message), true);
+          close();
+        });
+      };
+      var question = function(j) {
+        var q = c.questions[j];
+        show('<p class="curio-count">' + esc(t('app_curio_question', {n: j + 1, total: c.questions.length})) + '</p><p ' +
+          'class="lead">' + esc(q.prompt) + '</p><div class="whoami-options">' + q.options.map(function(o) {
+            return '<button type="button" class="btn btn-soft" data-pick="' + esc(o) + '">' + esc(o) + '</button>';
+          }).join('') + '</div><div class="whoami-say" aria-live="polite"></div><div class="actions"></div>');
+        var say = layer.querySelector('.whoami-say');
+        layer.querySelectorAll('[data-pick]').forEach(function(b) {
+          b.onclick = function() {
+            if (b.dataset.pick.toLowerCase() !== q.answer.toLowerCase()) {
+              // Not yet: another try, with nothing lost.
+              b.disabled = true;
+              say.className = 'whoami-say bad';
+              say.textContent = t('app_curio_notyet');
+              return;
+            }
+            answers[j] = b.dataset.pick;
+            layer.querySelectorAll('[data-pick]').forEach(function(o) {
+              o.disabled = true;
+            });
+            say.className = 'whoami-say good';
+            say.innerHTML = '<b>' + esc(t('app_curio_right')) + '</b> ' + esc(q.why);
+            var last = j === c.questions.length - 1;
+            var actions = layer.querySelector('.actions');
+            actions.innerHTML = '<button class="btn btn-main" type="button" data-next>' + esc(t(last ? 'app_curio_end' :
+              'app_curio_next')) + '</button>';
+            actions.querySelector('[data-next]').onclick = function() {
+              if (last) {
+                end();
+              } else {
+                question(j + 1);
+              }
+            };
+            actions.querySelector('[data-next]').focus();
+          };
+        });
+      };
+      var page = function(i) {
+        var last = i === c.pages.length - 1;
+        show('<p class="curio-count">' + esc(t('app_curio_page', {n: i + 1, total: c.pages.length})) + '</p><p class="lead">' +
+          esc(c.pages[i]) + '</p><div class="actions"><button class="btn btn-main" type="button" data-next>' +
+          esc(t(last ? 'app_curio_toquestions' : 'app_curio_next')) + '</button></div>');
+        layer.querySelector('[data-next]').onclick = function() {
+          if (last) {
+            question(0);
+          } else {
+            page(i + 1);
+          }
+        };
+      };
+      page(0);
+    }).catch(function(e) {
+      T.toast(esc(e.message), true);
+      refresh();
+    });
   }
 
   /**
@@ -4774,10 +4916,26 @@
       }).join('') + '</ul>' : '') + '</section>';
   }
 
+  /**
+   * The golden cards of the curiosities read with their questions right.
+   *
+   * @return {string}
+   */
+  function curioGolden() {
+    var done = (state.world.curiosities || []).filter(function(x) {
+      return x.done;
+    });
+    return done.length ? '<section class="card no-print" style="margin-top:16px"><h2>' + esc(t('app_curio_golden')) + '</h2>' +
+      '<div class="album">' + done.map(function(x) {
+        return '<div class="album-card golden curio-golden"><span class="curio-seal" aria-hidden="true"></span><b>' +
+          esc(x.title) + '</b><small>' + esc(t('app_curio')) + '</small></div>';
+      }).join('') + '</div></section>' : '';
+  }
+
   function albumCard() {
     var a = state.world.album;
     if (!a) {
-      return guideCard() + bestiaryCard() + secretsCard();
+      return curioGolden() + guideCard() + bestiaryCard() + secretsCard();
     }
     var golden = a.cards.filter(function(x) {
       return x.golden;
@@ -4793,7 +4951,7 @@
           '') + '</div>';
       }).join('') + '</div>' : '<p class="empty">' + esc(t('app_album_empty')) + '</p>') + '<div class="actions" style="' +
       'justify-content:flex-start"><button class="btn btn-soft" data-activity="' + a.cmid + '">' + esc(t('app_album_open')) +
-      '</button></div></section>' + guideCard() + bestiaryCard() + secretsCard();
+      '</button></div></section>' + curioGolden() + guideCard() + bestiaryCard() + secretsCard();
   }
 
   /**
@@ -5227,6 +5385,12 @@
     app.querySelectorAll('[data-wear]').forEach(function(b) {
       b.onclick = function() {
         shop('market_wear', {code: b.dataset.wear});
+      };
+    });
+    app.querySelectorAll('[data-curiobuy], [data-curioread]').forEach(function(b) {
+      b.onclick = function() {
+        b.disabled = true;
+        readCurio(b.dataset.curiobuy || b.dataset.curioread, !!b.dataset.curiobuy);
       };
     });
     app.querySelectorAll('[data-takeoff]').forEach(function(b) {

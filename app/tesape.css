@@ -14065,3 +14065,55 @@ body.still .pet-me.patted .creature {
   margin: 8px 0;
   padding-left: 20px;
 }
+
+/* The shop of the naturalist: its books, the seal of curiosity and the fact of the explorer. */
+.curio-book {
+  flex: none;
+  width: 34px;
+  height: 42px;
+  border-radius: 3px 6px 6px 3px;
+  background: linear-gradient(90deg, rgba(0, 0, 0, .25) 0 5px, transparent 5px), #2f6f8f;
+  box-shadow: inset -3px 0 0 rgba(255, 255, 255, .25);
+}
+
+.curio-book.done {
+  background: linear-gradient(90deg, rgba(0, 0, 0, .25) 0 5px, transparent 5px), #b8862b;
+}
+
+.curio-seal {
+  display: inline-block;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  margin-right: 8px;
+  vertical-align: middle;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #fff3c4, #ffc857 45%, #b8862b);
+  box-shadow: 0 0 12px rgba(255, 200, 87, .6);
+}
+
+.curio-count {
+  margin: 0 0 6px;
+  color: var(--text-soft);
+  font-size: 14px;
+}
+
+.curio-prize {
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+}
+
+.curio-fact {
+  margin: 12px 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(var(--leaf-rgb), .14);
+}
+
+.curio-golden {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}

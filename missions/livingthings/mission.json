@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 83,
+ "version": 84,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 84,
+   "kind": "improvement",
+   "date": "2026-10-24",
+   "text": "La tienda del naturalista: «¿Quieres saber más?» con tres curiosidades (plantas que cazan, luces vivas y los campeones de la resistencia), que devuelven las gemas y dan un sello y un cromo dorado"
+  },
   {
    "version": 83,
    "kind": "improvement",
@@ -509,6 +515,110 @@
   "summer": "Es verano: los días son largos, las plantas fabrican mucho alimento con tanta luz y los frutos maduran.",
   "autumn": "Es otoño: los árboles de hoja caduca pierden sus hojas, algunos animales guardan comida para el invierno y muchas aves se van a lugares más cálidos.",
   "winter": "Es invierno: muchos árboles están sin hojas, algunos animales hibernan o pasan el frío escondidos y muchas semillas esperan bajo la tierra a la primavera."
+ },
+ "curiosities": {
+  "cazadoras": {
+   "title": "Plantas que cazan",
+   "teaser": "Hay plantas que atrapan insectos. ¿Cómo lo hacen? ¿Y por qué, si fabrican su alimento con la luz?",
+   "price": 6,
+   "back": 8,
+   "pages": [
+    "La dionea tiene hojas como dos manos abiertas, con dientes en el borde y unos pelillos dentro. Si un insecto toca dos veces seguidas esos pelillos, las dos mitades se cierran en un momento y el insecto queda atrapado.",
+    "La drosera está cubierta de pelos con una gota brillante en la punta, pegajosa como la miel. El insecto que se posa se queda pegado, y la hoja se enrolla poco a poco a su alrededor.",
+    "Estas plantas viven en suelos pobres y encharcados, como las turberas, donde faltan algunas de las sustancias que las plantas sacan del suelo. Fabrican su alimento con la luz, como todas las plantas verdes; los insectos les dan lo que el suelo no tiene, como un abono que se mueve."
+   ],
+   "questions": [
+    {
+     "prompt": "¿Cuándo cierra su trampa la dionea?",
+     "answer": "Cuando un insecto toca dos veces sus pelillos",
+     "options": [
+      "Cuando un insecto toca dos veces sus pelillos",
+      "Cuando sopla el viento",
+      "Cuando se hace de noche"
+     ],
+     "why": "Cerrarse le cuesta energía: por eso espera dos toques seguidos y no se cierra con una gota de lluvia o una hoja que cae."
+    },
+    {
+     "prompt": "¿Por qué cazan insectos estas plantas?",
+     "answer": "Porque el suelo donde viven es pobre y los insectos les dan lo que les falta",
+     "options": [
+      "Porque el suelo donde viven es pobre y los insectos les dan lo que les falta",
+      "Porque no saben fabricar su alimento con la luz",
+      "Porque los insectos les hacen daño"
+     ],
+     "why": "Siguen fabricando su alimento con la luz, como todas las plantas verdes. Los insectos solo completan lo que el suelo no les da."
+    }
+   ],
+   "fact": "Cuéntale a tu clase cómo caza la dionea y por qué lo hace."
+  },
+  "luces": {
+   "title": "Luces vivas",
+   "teaser": "Algunos seres vivos brillan en la oscuridad. ¿De dónde sale su luz?",
+   "price": 6,
+   "back": 8,
+   "pages": [
+    "En las noches de verano, en el campo, se ven puntitos de luz que se encienden y se apagan: son luciérnagas, escarabajos que producen luz con una sustancia de su cuerpo y el oxígeno del aire.",
+    "Su luz es fría: casi no da calor, al contrario que una vela. Cada especie hace sus destellos a su manera, y así se encuentran y se reconocen las luciérnagas de la misma especie.",
+    "No son las únicas: hay hongos que brillan en los troncos podridos y peces de las profundidades del mar, donde nunca llega la luz del sol, que llevan su propia luz."
+   ],
+   "questions": [
+    {
+     "prompt": "¿Para qué hacen destellos las luciérnagas?",
+     "answer": "Para encontrarse y reconocerse entre ellas",
+     "options": [
+      "Para encontrarse y reconocerse entre ellas",
+      "Para calentarse por la noche",
+      "Para que la luna las vea"
+     ],
+     "why": "Cada especie tiene su manera de hacer destellos, como un mensaje que solo entienden las de su especie."
+    },
+    {
+     "prompt": "¿Cómo es la luz de una luciérnaga?",
+     "answer": "Fría, casi no da calor",
+     "options": [
+      "Fría, casi no da calor",
+      "Caliente, como la de una vela",
+      "Es la luz de la luna reflejada"
+     ],
+     "why": "Casi toda la energía se convierte en luz y muy poca en calor. Por eso se llama luz fría."
+    }
+   ],
+   "fact": "Cuéntale a tu clase de dónde sale la luz de las luciérnagas."
+  },
+  "resistentes": {
+   "title": "Los campeones de la resistencia",
+   "teaser": "Hay seres vivos que aguantan años sin agua. ¿Siguen vivos mientras tanto?",
+   "price": 6,
+   "back": 8,
+   "pages": [
+    "Los tardígrados, también llamados osos de agua, son tan pequeños que casi no se ven y viven en el musgo, siempre que esté húmedo. Tienen ocho patitas con garras y caminan despacio, como un oso diminuto.",
+    "Cuando el musgo se seca, el tardígrado se encoge como un barrilito y casi deja de funcionar. Puede pasar así mucho tiempo, incluso años, y cuando vuelve el agua se despereza y sigue con su vida.",
+    "Algunas semillas hacen algo parecido: esperan secas, a veces muchísimos años, hasta que tienen agua y calor para germinar. Parecen cosas sin vida, pero están vivas, esperando su momento."
+   ],
+   "questions": [
+    {
+     "prompt": "¿Qué hace un tardígrado cuando se seca el musgo donde vive?",
+     "answer": "Se encoge como un barrilito y espera al agua",
+     "options": [
+      "Se encoge como un barrilito y espera al agua",
+      "Se muere y ya no vuelve",
+      "Se va volando a otro musgo"
+     ],
+     "why": "Así, seco, casi no gasta nada. Cuando vuelve el agua, se despereza y sigue con su vida."
+    },
+    {
+     "prompt": "Un tardígrado seco, encogido como un barrilito, ¿está vivo?",
+     "answer": "Sí, está vivo, aunque ahora no se mueva ni coma",
+     "options": [
+      "Sí, está vivo, aunque ahora no se mueva ni coma",
+      "No, porque no se mueve",
+      "No, porque no come"
+     ],
+     "why": "Un ser vivo no tiene que estar haciéndolo todo a la vez. El tardígrado seco está vivo, esperando el agua, como una semilla."
+    }
+   ],
+   "fact": "Cuéntale a tu clase cómo aguanta un tardígrado sin agua."
+  }
  },
  "skins": {
   "valley": "El valle",
