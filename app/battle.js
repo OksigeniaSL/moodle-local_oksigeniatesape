@@ -191,6 +191,19 @@
   }
 
   /**
+   * The double techniques of the team this turn: two verbs of the team together, with their name and what they do.
+   *
+   * @param {Object} live
+   * @return {string}
+   */
+  function comboNote(live) {
+    return (live.combos || []).map(function(code) {
+      return '<p class="battle-combo">' + esc(t('app_combo', {name: t('app_combo_' + code), what: t('app_combo_' + code +
+        '_what')})) + '</p>';
+    }).join('');
+  }
+
+  /**
    * By turns, the pull after answering or the parry after the shield: a knot crosses a bar in three seconds and the
    * touch counts if it is in the clear zone. Drawn again on each poll, it goes on from where it was; once touched, or
    * once the knot has crossed, it is not there any more.
@@ -247,7 +260,7 @@
         esc(t('board_turn_intent_' + live.intent)) + '</p>' : live.target ? '<p class="knot-target' + (mine ? ' mine' : '') +
         '">' + esc(mine ? t('app_turn_mine') : t('app_turn_goes', live.target)) + '</p>' : '';
       return '<div class="knot-call' + (tangled ? ' tangled' : '') + '"><p class="knot-name">' + esc(live.knot.name) +
-        '</p><p class="knot-claim">«' + esc(live.knot.claim.replace(/^«|»$/g, '')) + '»</p>' + intent + '</div>' +
+        '</p><p class="knot-claim">«' + esc(live.knot.claim.replace(/^«|»$/g, '')) + '»</p>' + intent + '</div>' + comboNote(live) +
         (live.stage === 'prep' && !T.adapted.notime ? '<p class="battle-left" data-left="' + live.stageleft +
         '" data-say="app_turn_prep" aria-live="off">' + esc(t('app_turn_prep', live.stageleft)) + '</p>' : '') + token(live);
     }
@@ -262,14 +275,14 @@
         '';
       return (live.stage === 'strike' ? '<p class="knot-name">' + esc(t('app_turn_strike', live.knot.name)) + '</p>' : '') +
         '<div class="lane-play" data-lane></div>' + (live.trail && !live.revealed ? '<p class="battle-trail">' +
-        esc(t('app_token_trail_shown', live.trail)) + '</p>' : '') + laneNote + (live.pull ? timing(live, 'pull') : '') +
+        esc(t('app_token_trail_shown', live.trail)) + '</p>' : '') + comboNote(live) + laneNote + (live.pull ? timing(live, 'pull') : '') +
         turnNote(live) + token(live);
     }
     var q = live.question;
     var answered = live.mine >= 0;
     var options = q.options.map(function(o, i) {
       var sniffed = live.sniffed === i && !live.revealed;
-      var struck = (live.struck === i || sniffed) && !live.revealed;
+      var struck = (live.struck === i || live.struck2 === i || sniffed) && !live.revealed;
       var cls = 'battle-option' + (live.mine === i ? ' mine' : '') + (live.revealed && q.correct === i ? ' right' : '') +
         (struck ? ' struck' : '');
       return '<button type="button" class="' + cls + '" data-answer="' + i + '"' + (answered || !live.open || struck ?
@@ -300,7 +313,8 @@
         esc(live.knot.laugh.replace(/^«|»$/g, '')) + '»</p>' : '');
     }
     return (live.stage === 'strike' ? '<p class="knot-name">' + esc(t('app_turn_strike', live.knot.name)) + '</p>' : '') +
-      '<p class="battle-q">' + esc(q.text) + '</p>' + trail + '<div class="battle-options">' + options + '</div>' + note +
+      '<p class="battle-q">' + esc(q.text) + '</p>' + trail + comboNote(live) + '<div class="battle-options">' + options +
+      '</div>' + note +
       token(live);
   }
 

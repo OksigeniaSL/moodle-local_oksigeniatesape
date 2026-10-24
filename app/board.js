@@ -1172,6 +1172,10 @@
       return '<p class="battle-token-used">' + esc(k.target ? t('board_token_' + k.kind + '_on', k) :
         t('board_token_' + k.kind, k.team || '')) + (k.place ? ' · ' + esc(t('board_token_trail_place', k.place)) : '') +
         (k.next ? ' · ' + esc(t('board_token_trail_next', k)) : '') + '</p>';
+    }).join('') + (l.combos || []).map(function(c) {
+      // A double technique: two verbs of a team in the same turn.
+      return '<p class="battle-combo">' + esc(t('board_combo', {team: c.team, name: t('app_combo_' + c.code)})) + ' · ' +
+        esc(t('app_combo_' + c.code + '_what')) + '</p>';
     }).join('');
   }
 

@@ -76,6 +76,15 @@ final class live {
     /** @var string[] The battle token of each role: one for each player and battle, in an open round, with phones. */
     public const TOKENS = ['sage' => 'glance', 'scout' => 'trail', 'protector' => 'shield', 'healer' => 'cheer'];
 
+    /**
+     * @var array By turns, the double techniques: two verbs of the same team in the same turn. The oak embrace (shield and
+     * cheer) keeps the shield on its team the next turn too; the owl's eye (glance and trail) strikes out two options of
+     * the lane instead of one; the steady lantern (shield and glance) keeps the candle lit when the Embrollo goes for
+     * everybody; the clear path (cheer and trail) takes a thread more if the team undoes its lane.
+     */
+    public const COMBOS = ['oak' => ['shield', 'cheer'], 'owl' => ['glance', 'trail'], 'lantern' => ['shield', 'glance'],
+        'path' => ['cheer', 'trail']];
+
     /** @var int Aloud: gems for each member of a team whose spokesperson argued its answer, right or not. */
     public const ARGUED = 1;
 
@@ -1032,6 +1041,13 @@ final class live {
             'target' => $t->target && $t->target != $t->team ? ($names[$t->target] ?? '') : '',
             'place' => (string) ($t->place ?? ''), 'next' => (string) ($t->next ?? ''), 'goes' => (string) ($t->goes ?? '')];
         $view['tokens'] = array_values(array_map($token, $used));
+        // By turns, the double techniques of the round, announced too.
+        $view['combos'] = [];
+        foreach (empty($state['knots']) ? [] : self::combos($used) as $team => $codes) {
+            foreach ($codes as $code) {
+                $view['combos'][] = ['team' => $names[$team] ?? '', 'code' => $code];
+            }
+        }
         return $view;
     }
 
@@ -1393,6 +1409,16 @@ final class live {
             // Always the same wrong option for the round, so that the phones of the team agree.
             $wrong = array_values(array_diff(range(0, $info['options'] - 1), [(int) $info['correct']]));
             $view['struck'] = $wrong[self::seed($live, $round) % count($wrong)];
+            // The owl's eye of the team: another wrong option too, if one is left besides the right one.
+            if (in_array('trail', $kinds, true) && in_array('glance', $kinds, true) && count($wrong) > 2) {
+                $others = array_values(array_diff($wrong, [$view['struck']]));
+                $view['struck2'] = $others[self::seed($live, $round + 1) % count($others)];
+            }
+        }
+        // The double techniques of the team this turn, for its phones.
+        $mine = $team ? self::combos(array_map(fn($k) => (object) ['team' => $team, 'kind' => $k], $kinds))[$team] ?? [] : [];
+        if ($mine) {
+            $view['combos'] = $mine;
         }
         // The scent of the creature: a knot of a place its student lit, it strikes out another wrong option by itself, on
         // their phone only.
@@ -1832,6 +1858,43 @@ final class live {
     }
 
     /**
+     * The first team with a steady lantern in a turn, or 0.
+     *
+     * @param array $combos team => codes.
+     * @return int
+     */
+    private static function steady(array $combos): int {
+        foreach ($combos as $team => $codes) {
+            if (in_array('lantern', $codes, true)) {
+                return (int) $team;
+            }
+        }
+        return 0;
+    }
+
+    /**
+     * The double techniques of a turn: for each team, those whose two verbs it used (in its tokens, or said aloud).
+     *
+     * @param object[] $tokens Of the round: team and kind.
+     * @return array team => codes.
+     */
+    public static function combos(array $tokens): array {
+        $kinds = [];
+        foreach ($tokens as $token) {
+            $kinds[(int) $token->team][(string) $token->kind] = true;
+        }
+        $out = [];
+        foreach ($kinds as $team => $used) {
+            foreach (self::COMBOS as $code => $pair) {
+                if (isset($used[$pair[0]], $used[$pair[1]])) {
+                    $out[$team][] = $code;
+                }
+            }
+        }
+        return $out;
+    }
+
+    /**
      * The resolution of a turn by turns: the cheer of a healer untangles the team it goes to (and once a battle lights a
      * candle again); each lane its team undoes (most of its players in got it right) takes a thread from the Embrollo;
      * if every lane is undone, the knot breaks (three threads more,
@@ -1861,6 +1924,22 @@ final class live {
         // The shield and the cheer go to the team they were put on (their own, if none).
         $on = fn($kind) => array_map(fn($t) => (int) ($t->target ?: $t->team), array_filter($tokens, fn($t) => $t->kind === $kind));
         $shields = $on('shield');
+        // The double techniques of the turn; and the shields an oak embrace left from the turn before.
+        $combos = self::combos($tokens);
+        $info['combos'] = $combos;
+        foreach ($state['oak'] ?? [] as $team => $until) {
+            if ((int) $until === $round) {
+                $shields[] = (int) $team;
+            }
+        }
+        $state['oak'] = [];
+        foreach ($combos as $team => $codes) {
+            if (in_array('oak', $codes, true)) {
+                foreach (array_filter($tokens, fn($t) => $t->kind === 'shield' && (int) $t->team === $team) as $token) {
+                    $state['oak'][(int) ($token->target ?: $token->team)] = $round + 1;
+                }
+            }
+        }
         $courseid = (int) $live->courseid;
         // The cheer of the healer: the team it goes to is not tangled any more, and once a battle a candle lights again;
         // with «Spare candle», once more in the battle for the whole class.
@@ -1934,8 +2013,10 @@ final class live {
         foreach ($info['lanes'] as $team => $lane) {
             if (!empty($lane['done'])) {
                 $done++;
-                // «Strong cheer»: a thread more if the team it cheers undoes its lane; and the finishing pull, another.
-                $damage += (isset($strong[(int) $team]) ? 2 : 1) + (!empty($lane['pulled']) ? 1 : 0);
+                // «Strong cheer»: a thread more if the team it cheers undoes its lane; the finishing pull, another; and the
+                // clear path of the team, another.
+                $path = in_array('path', $combos[(int) $team] ?? [], true);
+                $damage += (isset($strong[(int) $team]) ? 2 : 1) + (!empty($lane['pulled']) ? 1 : 0) + ($path ? 1 : 0);
                 unset($state['tangled'][$team], $state['dizzy'][$team]);
             }
         }
@@ -1981,6 +2062,10 @@ final class live {
                     $state['tangled'][$target] = true;
                     $info['counter'] = 1;
                 }
+            } else if (($info['intent'] ?? '') === 'all' && $few && ($steady = self::steady($combos))) {
+                // The steady lantern of a team keeps the candle lit.
+                $info['shielded'] = -1;
+                $info['lantern'] = $steady;
             } else if (($info['intent'] ?? '') === 'all' && $few && ($guard = self::candle_guard($tokens, $state, $courseid))) {
                 // «Candle guard»: once a battle, the shield of the protector who has it saves the candle.
                 $state['candleguard'][] = $guard;

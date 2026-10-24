@@ -989,6 +989,96 @@ final class live_test extends \advanced_testcase {
         }
     }
 
+    /**
+     * By turns: a battle of two teams of two with these roles, everybody in, at its first turn.
+     *
+     * @param string[] $roles Of the four students: the first two in the first team.
+     * @return array course, members, groups, live.
+     */
+    private function turns_with_roles(array $roles): array {
+        global $DB;
+        [$course, $members, $groups] = $this->make_class();
+        foreach ($roles as $i => $role) {
+            $DB->set_field(self::T . 'char', 'role', $role, ['id' => $members[$i]->charid]);
+        }
+        $live = live::start($course->id, 'phones', 8, 30, self::NOW, false, true);
+        foreach ($members as $member) {
+            live::join($live, $member, $member->userid, self::NOW);
+        }
+        return [$course, $members, $groups, live::next($live, self::NOW)];
+    }
+
+    public function test_by_turns_the_double_techniques_oak_embrace_and_owls_eye(): void {
+        $this->resetAfterTest();
+        [, $members, $groups, $live] = $this->turns_with_roles(['protector', 'healer', 'sage', 'scout']);
+        [$first, $second] = [(int) $groups[0]->id, (int) $groups[1]->id];
+        // The lane of the second team, one to choose among four; the knot goes for it.
+        $live = $this->set_state($live, function (array $state) use ($second) {
+            unset($state['rounds'][1]['lanes'][$second]['engine']);
+            $state['rounds'][1]['lanes'][$second]['options'] = 4;
+            $state['rounds'][1]['lanes'][$second]['correct'] = 0;
+            $state['rounds'][1]['intent'] = 'team';
+            $state['rounds'][1]['target'] = $second;
+            return $state;
+        });
+        // The first team shields and cheers itself; the second glances and follows the trail.
+        live::token($live, $members[0], self::NOW + 2, $first);
+        live::token($live, $members[1], self::NOW + 2, $first);
+        live::token($live, $members[2], self::NOW + 2);
+        live::token($live, $members[3], self::NOW + 2);
+        $board = live::board_view($live, self::NOW + 3);
+        $this->assertEqualsCanonicalizing(['oak', 'owl'], array_column($board['combos'], 'code'));
+        // The owl's eye: two wrong options struck out on the phones of the second team, never the right one.
+        $strike = self::NOW + live::INTENT + live::PREP;
+        $view = live::device_view($live, $members[3], $strike + 1);
+        $this->assertSame(['owl'], $view['combos']);
+        $this->assertNotSame($view['struck'], $view['struck2']);
+        $this->assertNotContains(0, [$view['struck'], $view['struck2']]);
+        $this->assertArrayNotHasKey('struck2', live::device_view($live, $members[0], $strike + 1));
+        $live = $this->play_turn($live, $members, $groups, [true, true], self::NOW);
+        // The oak embrace: the next turn the knot goes for the first team, which fails its lane with no shield on it
+        // now, and its candle does not go out.
+        $at = $strike + 31 + live::RESOLVE;
+        $live = live::tick($live, 2, true, $at);
+        $live = $this->set_state($live, function (array $state) use ($first) {
+            $state['rounds'][2]['intent'] = 'team';
+            $state['rounds'][2]['target'] = $first;
+            return $state;
+        });
+        $candles = (int) json_decode($live->state, true)['candles'];
+        $live = $this->play_turn($live, $members, $groups, [false, true], $at);
+        $view = live::board_view($live, $at + live::INTENT + live::PREP + 40);
+        $this->assertTrue($view['shielded']);
+        $this->assertSame($candles, $view['candles']);
+        $this->assertSame([], $view['combos']);
+    }
+
+    public function test_by_turns_the_double_techniques_steady_lantern_and_clear_path(): void {
+        $this->resetAfterTest();
+        // The steady lantern: going for everybody, both lanes fail, and the candle does not go out.
+        [, $members, $groups, $live] = $this->turns_with_roles(['protector', 'sage', 'healer', 'scout']);
+        $first = (int) $groups[0]->id;
+        $live = $this->set_state($live, function (array $state) {
+            $state['rounds'][1]['intent'] = 'all';
+            return $state;
+        });
+        live::token($live, $members[0], self::NOW + 2, $first);
+        live::token($live, $members[1], self::NOW + 2);
+        $candles = (int) json_decode($live->state, true)['candles'];
+        $live = $this->play_turn($live, $members, $groups, [false, false], self::NOW);
+        $view = live::board_view($live, self::NOW + 60);
+        $this->assertTrue($view['shielded']);
+        $this->assertSame($candles, $view['candles']);
+        $this->assertSame([['team' => $view['combos'][0]['team'], 'code' => 'lantern']], $view['combos']);
+        // The clear path: the second team cheers itself and follows the trail, undoes its lane: a thread more.
+        [, $members, $groups, $live] = $this->turns_with_roles(['protector', 'sage', 'healer', 'scout']);
+        $second = (int) $groups[1]->id;
+        live::token($live, $members[2], self::NOW + 2, $second);
+        live::token($live, $members[3], self::NOW + 2);
+        $live = $this->play_turn($live, $members, $groups, [false, true], self::NOW);
+        $this->assertSame(2, live::board_view($live, self::NOW + 60)['damage']);
+    }
+
     public function test_by_turns_a_team_tangled_twice_is_dizzy_until_another_team_carries_its_lane(): void {
         $this->resetAfterTest();
         [$course, $members, $groups] = $this->make_class();

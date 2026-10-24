@@ -925,6 +925,10 @@ final class structures {
                 'next' => new external_value(PARAM_TEXT, 'Aloud, a trail: the knot of the next turn', VALUE_DEFAULT, ''),
                 'goes' => new external_value(PARAM_TEXT, 'Aloud, a trail: the team it will go for', VALUE_DEFAULT, ''),
             ]), 'Battle tokens used in the round', VALUE_DEFAULT, []),
+            'combos' => new external_multiple_structure(new external_single_structure([
+                'team' => new external_value(PARAM_TEXT, 'Team'),
+                'code' => new external_value(PARAM_ALPHA, 'oak, owl, lantern or path'),
+            ]), 'By turns: the double techniques of the round', VALUE_DEFAULT, []),
             'lanes' => new external_multiple_structure(new external_single_structure([
                 'teamid' => new external_value(PARAM_INT, 'Group'),
                 'team' => new external_value(PARAM_TEXT, 'Team'),
@@ -987,6 +991,12 @@ final class structures {
             'token' => new external_value(PARAM_ALPHA, 'Battle token of their role (empty: none)', VALUE_DEFAULT, ''),
             'tokenused' => new external_value(PARAM_BOOL, 'They used it in this battle', VALUE_DEFAULT, false),
             'struck' => new external_value(PARAM_INT, 'A wrong option struck out by the glance of their team', VALUE_OPTIONAL),
+            'struck2' => new external_value(PARAM_INT, 'By turns: another, by the owl\'s eye of their team', VALUE_OPTIONAL),
+            'combos' => new external_multiple_structure(
+                new external_value(PARAM_ALPHA, 'oak, owl, lantern or path'),
+                'By turns: the double techniques of their team this turn',
+                VALUE_OPTIONAL
+            ),
             'trail' => new external_value(PARAM_TEXT, 'Chapter of the answer, by the trail of their team', VALUE_OPTIONAL),
             'tokenrest' => new external_value(PARAM_INT, 'By turns: turns their verb still rests (0: ready)', VALUE_OPTIONAL),
             'covers' => new external_multiple_structure(
