@@ -8039,6 +8039,26 @@ body.adapt-colours .errors-text .fixed ins {
   animation: seed-shake .35s ease;
 }
 
+.seed-art {
+  position: relative;
+  display: block;
+}
+
+.seed-art svg {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+}
+
+.seed-art path {
+  fill: none;
+  stroke: #5b2d0e;
+  stroke-width: 9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 6px rgba(var(--lantern-rgb), .9));
+}
+
 @keyframes seed-glow {
   50% {
     filter: drop-shadow(0 0 14px rgba(var(--lantern-rgb), .8));

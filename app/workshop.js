@@ -109,7 +109,8 @@
     var rows = Math.min(8, Math.max(2, Math.ceil(f.text.length / 75)));
     return '<label class="ws-field' + (f.changed ? ' changed' : '') + '" data-field="' + esc(f.path) + '"><span>' +
       esc(label(f)) + (f.changed ? ' <button type="button" class="ws-link" data-orig>' + esc(t('teach_ws_original')) +
-      '</button>' : '') + '</span><textarea rows="' + rows + '" data-scene="' + esc(scene) + '" data-path="' +
+      '</button>' : '') + '</span><textarea rows="' + rows + '"' + (f.max ? ' maxlength="' + f.max + '"' : '') +
+      ' data-scene="' + esc(scene) + '" data-path="' +
       esc(f.path) + '">' + esc(f.text) + '</textarea>' + (f.changed ? '<small>' + esc(t('teach_ws_was', f.original)) +
       '</small>' : '') + '</label>';
   }

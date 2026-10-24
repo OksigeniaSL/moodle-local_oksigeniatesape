@@ -1701,9 +1701,11 @@
         (back ? ' flicker' : '') + (prank.name && prank.name.chapter === ch.code ? ' pranked' : '') +
         (ch.id === current.id ? ' here' : '') +
         (ch.id === state.chapter ? ' selected' : '') + (today ? ' today' : '');
+      // The name the Embrollo wrote over the place, when it did, said first: it is what is read on the map.
+      var pranked = prank.name && prank.name.chapter === ch.code ? prank.name.name : '';
       return '<g class="' + cls + '" data-chapter="' + ch.id + '" data-art="' + esc(ch.art || ch.code) + '" tabindex="0" ' +
-        'role="button" aria-label="' + esc((today ? t('app_today_here') + ' ' : '') + ch.name + (here ? '. ' +
-        t('app_mates_here', here) : '')) + '">' +
+        'role="button" aria-label="' + esc((today ? t('app_today_here') + ' ' : '') + (pranked ? pranked + ', ' +
+        t('app_prank_word_over') + ' ' : '') + ch.name + (here ? '. ' + t('app_mates_here', here) : '')) + '">' +
         '<rect class="hit" x="' + (ch.x - 80) + '" y="' + (ch.y - 32) + '" width="160" height="84" rx="16"/>' +
         (ch.lit ? '<circle cx="' + ch.x + '" cy="' + ch.y + '" r="40" class="classglow"/>' : '') +
         // Where the class is today: what the teacher has on «Today in the valley».
@@ -1716,8 +1718,8 @@
         '<rect x="' + (ch.x - 2) + '" y="' + (ch.y - 4) + '" width="4" height="17" rx="1" fill="#2b2219"/>' +
         '<circle cx="' + ch.x + '" cy="' + (ch.y - 7) + '" r="7" class="flame"/>') +
         (i > opened && !today ? '<ellipse cx="' + ch.x + '" cy="' + (ch.y + 6) + '" rx="62" ry="34" class="fog"/>' : '') +
-        (state.visit ? '' : T.photoSticker(photoOf(ch.code), ch.x, ch.y, i)) + T.mapLabel(ch.x, ch.y + 44, prank.name &&
-        prank.name.chapter === ch.code ? prank.name.name : ch.name) + '</g>';
+        (state.visit ? '' : T.photoSticker(photoOf(ch.code), ch.x, ch.y, i)) + T.mapLabel(ch.x, ch.y + 44, pranked || ch.name) +
+        '</g>';
     }).join('');
     // The team, beside the lanterns but outside the places: the name of a place is what it says, and the team is in it.
     var crowd = m.chapters.map(function(ch) {

@@ -2597,4 +2597,5 @@ $string['world_none'] = 'You are not in any course with Tesapé yet.';
 $string['world_title'] = 'Tesapé: your world';
 $string['wslastscene'] = 'At least one scene of the chapter has to stay in the game.';
 $string['wsnoskip'] = 'This place cannot be skipped: its lantern is lit already, or it is the place of the final battle.';
+$string['wspiecelong'] = 'That piece is long: keep it within {$a} characters, so it can be read at a glance on the tablet.';
 $string['wssamepiece'] = 'That piece is the same as the one of another role: nobody would need to tell it. Change it for what only this role sees.';

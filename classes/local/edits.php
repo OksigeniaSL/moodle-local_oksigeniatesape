@@ -36,6 +36,9 @@ final class edits {
     /** @var int Longest text of one field. */
     public const MAX_TEXT = 4000;
 
+    /** @var int Longest piece of the information shared out: read at a glance on a tablet, as missions are checked. */
+    public const MAX_PIECE = 220;
+
     /** @var int Most questions of a mission. */
     public const MAX_QUESTIONS = 80;
 
@@ -509,6 +512,9 @@ final class edits {
             throw new \invalid_parameter_exception('Too long');
         }
         if ($value !== '' && preg_match('#^nodes/([^/]+)/views/([a-z]+)$#', $path, $m)) {
+            if (\core_text::strlen($value) > self::MAX_PIECE) {
+                throw new \moodle_exception('wspiecelong', 'local_oksigeniatesape', '', self::MAX_PIECE);
+            }
             // A piece of the information shared out has to be its own: the same as the piece of another role, nobody
             // would need to tell it.
             $node = self::apply($original, $courseid, (string) $mission->code, $scene)['nodes'][$m[1]] ?? [];
@@ -803,7 +809,8 @@ final class edits {
     }
 
     /**
-     * The texts of a definition for the teacher: path, kind (the last name of the path), now and as it came.
+     * The texts of a definition for the teacher: path, kind (the last name of the path), now and as it came, and how long
+     * it may be.
      *
      * @param array $texts path => text, as it came.
      * @param array $changes path => text of the teacher.
@@ -827,6 +834,7 @@ final class edits {
                 'text' => array_key_exists($path, $changes) ? (string) $changes[$path] : $original,
                 'original' => $original,
                 'changed' => array_key_exists($path, $changes),
+                'max' => $kind === 'views' ? self::MAX_PIECE : self::MAX_TEXT,
             ];
         }
         return $fields;

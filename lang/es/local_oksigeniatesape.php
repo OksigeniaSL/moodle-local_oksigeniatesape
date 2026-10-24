@@ -2597,4 +2597,5 @@ $string['world_none'] = 'Todavía no estás en ningún curso con Tesapé.';
 $string['world_title'] = 'Tesapé: tu mundo';
 $string['wslastscene'] = 'Al menos una escena del capítulo tiene que quedar en el juego.';
 $string['wsnoskip'] = 'Este lugar no se puede saltar: ya tiene su linterna encendida o es el de la batalla final.';
+$string['wspiecelong'] = 'Ese trozo es largo: que quepa en {$a} caracteres, para que se lea de un vistazo en la tableta.';
 $string['wssamepiece'] = 'Ese trozo es igual que el de otro papel: así nadie necesita contarlo. Cámbialo por lo que solo ve este papel.';

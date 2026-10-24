@@ -351,8 +351,11 @@
     var data = null;
     var sc = null;
     var run = null;
-    // The seed of the creature, warm and alive, with the cracks that open as it is touched.
-    var SEED = T.artUrl && T.artUrl(['creature.seed']) ? '<img src="' + esc(T.artUrl(['creature.seed'])) + '" alt="">' :
+    // The seed of the creature, warm and alive, with the cracks that open as it is touched: over the painting of the pack
+    // too, from the split at its tip.
+    var SEED = T.artUrl && T.artUrl(['creature.seed']) ? '<span class="seed-art"><img src="' + esc(T.artUrl(['creature.seed'])) +
+      '" alt=""><svg viewBox="0 0 512 512" aria-hidden="true"><path class="c1" d="M300 46 L318 92 L298 138"/><path ' +
+      'class="c2" d="M298 138 L256 172 L266 216"/><path class="c3" d="M298 138 L342 174 L332 224"/></svg></span>' :
       '<svg viewBox="0 0 100 120" aria-hidden="true"><defs><radialGradient id="tesape-seed" cx="40%" cy="35%" r="70%">' +
       '<stop offset="0" stop-color="#fff2c4"/><stop offset=".55" stop-color="#e9b85a"/><stop offset="1" stop-color="#9a6a2a"/>' +
       '</radialGradient></defs><ellipse cx="50" cy="66" rx="34" ry="44" fill="url(#tesape-seed)"/><path class="c1" ' +

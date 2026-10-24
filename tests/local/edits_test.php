@@ -114,6 +114,14 @@ final class edits_test extends \advanced_testcase {
         }
         $pieces = array_values(array_filter($fields, fn($f) => $f['kind'] === 'views' && $f['node'] === 'p1'));
         $this->assertCount(count($roles), $pieces);
+        $this->assertSame(edits::MAX_PIECE, $pieces[0]['max']);
+        // A piece is read at a glance: a long one is not kept.
+        try {
+            edits::save($course->id, 'C3-2', 'nodes/p1/views/' . $roles[0], str_repeat('Largo. ', 40));
+            $this->fail('A long piece was kept');
+        } catch (\moodle_exception $e) {
+            $this->assertSame('wspiecelong', $e->errorcode);
+        }
         $this->assertTrue(edits::save($course->id, 'C3-2', 'nodes/p1/views/' . $roles[0], 'Un trozo propio del docente'));
         $this->assertSame('Un trozo propio del docente', $this->scene($course->id, 'C3-2')->data['nodes']['p1']['views'][$roles[0]]);
         // The same as the piece of another role: nobody would need to tell it.
