@@ -93,6 +93,9 @@ final class live {
      */
     public const CARDS = ['lantern' => 'cardlamp', 'magnifier' => 'cardlens', 'net' => 'cardnet'];
 
+    /** @var string[] What a team stakes in a turn: on the safe side, a strong pull, or supporting the team attacked. */
+    public const TACTICS = ['safe', 'strong', 'support'];
+
     /** @var int Aloud: gems for each member of a team whose spokesperson argued its answer, right or not. */
     public const ARGUED = 1;
 
@@ -1006,7 +1009,8 @@ final class live {
                 'mark' => (int) ($state['rounds'][$round]['teams'][$group->id] ?? -1),
                 'argued' => !empty($state['rounds'][$round]['argued'][$group->id]),
                 'speaker' => $state['mode'] === 'aloud' && $round ? self::spokesperson($live, (int) $group->id, $round) : '',
-                'verbs' => self::aloud_verbs($state, (int) $group->id, $round)];
+                'verbs' => self::aloud_verbs($state, (int) $group->id, $round),
+                'tactic' => (string) ($state['rounds'][$round]['tactics'][$group->id] ?? '')];
         }
         $view = self::common($live, $state, $now) + ['joined' => count($players), 'teams' => $teams, 'answered' => 0];
         $sorting = $state['outcome'] === 'won' && !empty($state['final']) && !empty($state['knots']) ?
@@ -1119,6 +1123,15 @@ final class live {
         if ($live->kind === 'battle' && $state['mode'] === 'phones' && array_key_exists(0, $mine)) {
             $view += self::tokens_for($live, $state, $member, (int) $mine[0]->team);
         }
+        // By turns, what their team stakes in the turn, and whether it can still change it.
+        if (
+            $live->kind === 'battle' && $state['mode'] === 'phones' && !empty($state['knots']) && $round > 0 &&
+            (int) ($mine[0]->team ?? 0)
+        ) {
+            [$stage] = self::stage($live, $state, $now);
+            $view['tactic'] = (string) ($state['rounds'][$round]['tactics'][(int) $mine[0]->team] ?? 'safe');
+            $view['cantactic'] = $state['outcome'] === '' && in_array($stage, ['intent', 'prep'], true);
+        }
         return array_filter($view, fn($value) => $value !== null);
     }
 
@@ -1147,6 +1160,46 @@ final class live {
         $DB->insert_record(self::T . 'livetoken', (object) ['liveid' => $live->id, 'courseid' => $live->courseid,
             'charid' => $member->charid, 'round' => (int) $live->round, 'team' => $team, 'kind' => self::CARDS[$item],
             'target' => 0, 'parried' => 0, 'timecreated' => $now]);
+    }
+
+    /**
+     * By turns, a player chooses what their team stakes in the turn, while the knot is announced and the roles get ready:
+     * on the safe side (the usual), a strong pull (its lane undone cuts a thread more; failed, the Embrollo gets one
+     * back) or supporting (its lane undone cuts nothing, but shields the team the Embrollo goes for, or keeps the candle
+     * when it goes for everybody). The last one chosen in the team counts.
+     *
+     * @param \stdClass $live
+     * @param \stdClass $member
+     * @param string $tactic One of TACTICS.
+     * @param int|null $now
+     * @return \stdClass The session.
+     */
+    public static function tactic(\stdClass $live, \stdClass $member, string $tactic, ?int $now = null): \stdClass {
+        $now = $now ?? time();
+        if (!in_array($tactic, self::TACTICS, true)) {
+            throw new \invalid_parameter_exception('Not a tactic');
+        }
+        return self::locked((int) $live->courseid, function () use ($live, $member, $tactic, $now) {
+            global $DB;
+            $live = $DB->get_record(self::T . 'live', ['id' => $live->id], '*', MUST_EXIST);
+            $state = self::state($live);
+            $round = (int) $live->round;
+            $joined = $DB->get_record(self::T . 'livein', ['liveid' => $live->id, 'round' => 0, 'charid' => $member->charid]);
+            [$stage] = self::stage($live, $state, $now);
+            $turns = !empty($state['knots']) && $live->kind === 'battle' && $state['mode'] === 'phones' && $state['outcome'] === '';
+            if (
+                !$turns || !$joined || !(int) $joined->team || $round < 1 || !in_array($stage, ['intent', 'prep'], true)
+                || $member->status === 'paused'
+            ) {
+                throw new \moodle_exception('roundclosed', 'local_oksigeniatesape');
+            }
+            if ($tactic === 'safe') {
+                unset($state['rounds'][$round]['tactics'][(int) $joined->team]);
+            } else {
+                $state['rounds'][$round]['tactics'][(int) $joined->team] = $tactic;
+            }
+            return self::save($live, $state, $round, $now);
+        });
     }
 
     /**
@@ -1749,6 +1802,9 @@ final class live {
             'counter' => $round > 0 ? (int) ($state['rounds'][$round]['counter'] ?? 0) : 0,
             'shielded' => $round > 0 && !empty($state['rounds'][$round]['shielded']),
             'parried' => $round > 0 && !empty($state['rounds'][$round]['parried']),
+            // By turns, what the stakes of the teams did: a team that supported, the strong pulls that failed.
+            'supported' => $round > 0 && !empty($state['rounds'][$round]['supported']),
+            'strongmiss' => $round > 0 ? (int) ($state['rounds'][$round]['strongmiss'] ?? 0) : 0,
             // By turns, the Embrollo grown by the fog over the valley: a knot more.
             'grown' => !empty($state['grown']),
             // By turns, the candles of the tower from the lobby to the end: the screens know it is a battle by turns.
@@ -2093,15 +2149,33 @@ final class live {
                 $info['lanes'][$team]['carried'] = $by;
             }
         }
+        // What each team staked: a strong pull, or supporting the team attacked.
+        $tactics = array_map('strval', $info['tactics'] ?? []);
+        $supported = false;
+        $recovered = 0;
         foreach ($info['lanes'] as $team => $lane) {
+            $tactic = $tactics[$team] ?? 'safe';
+            $info['lanes'][$team]['tactic'] = $tactic;
             if (!empty($lane['done'])) {
                 $done++;
                 // «Strong cheer»: a thread more if the team it cheers undoes its lane; the finishing pull, another; and the
-                // clear path of the team, another.
+                // clear path of the team, another. Supporting, the lane cuts nothing: it protects.
                 $path = in_array('path', $combos[(int) $team] ?? [], true);
-                $damage += (isset($strong[(int) $team]) ? 2 : 1) + (!empty($lane['pulled']) ? 1 : 0) + ($path ? 1 : 0);
+                $cut = (isset($strong[(int) $team]) ? 2 : 1) + (!empty($lane['pulled']) ? 1 : 0) + ($path ? 1 : 0);
+                $damage += $tactic === 'support' ? 0 : $cut + ($tactic === 'strong' ? 1 : 0);
+                $supported = $supported || $tactic === 'support';
                 unset($state['tangled'][$team], $state['dizzy'][$team]);
+            } else if ($tactic === 'strong') {
+                // The strong pull that fails gives the Embrollo a thread back.
+                $recovered++;
             }
+        }
+        if ($supported && ($info['intent'] ?? '') === 'team' && !empty($info['target'])) {
+            $shields[] = (int) $info['target'];
+            $info['supported'] = true;
+        }
+        if ($recovered) {
+            $info['strongmiss'] = $recovered;
         }
         $all = $info['lanes'] && $done === count($info['lanes']);
         if ($all) {
@@ -2115,7 +2189,7 @@ final class live {
             $damage *= 2;
         }
         $state['dazed'] = $all;
-        $state['hp'] = max(0, $state['hp'] - $damage);
+        $state['hp'] = min($state['maxhp'], max(0, $state['hp'] - $damage) + ($state['hp'] - $damage > 0 ? $recovered : 0));
         $info['damage'] = $damage;
         // A team nobody of which had to answer (all of it with «no hurry», and nobody did) is not in play this turn.
         $inplay = array_filter(array_keys($info['lanes']), fn($team) => $aloud || !empty($present[$team]) ||
@@ -2145,6 +2219,10 @@ final class live {
                     $state['tangled'][$target] = true;
                     $info['counter'] = 1;
                 }
+            } else if (($info['intent'] ?? '') === 'all' && $few && $supported) {
+                // A team that supported keeps the candle of the class lit.
+                $info['shielded'] = -1;
+                $info['supported'] = true;
             } else if (($info['intent'] ?? '') === 'all' && $few && ($steady = self::steady($combos))) {
                 // The steady lantern of a team keeps the candle lit.
                 $info['shielded'] = -1;

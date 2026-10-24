@@ -22,6 +22,7 @@ use core_external\external_single_structure;
 use core_external\external_value;
 use local_oksigeniatesape\local\huddles;
 use local_oksigeniatesape\local\live;
+use local_oksigeniatesape\local\nestboards;
 use local_oksigeniatesape\local\regions;
 use local_oksigeniatesape\local\sessions;
 use local_oksigeniatesape\local\teams;
@@ -47,7 +48,7 @@ final class live_host extends external_api {
             'action' => new external_value(
                 PARAM_ALPHA,
                 'state, start, next, reveal, mark, argue, verb, boardplay, settle, finish, startvote, vote, pick, pause or resume;' .
-                    ' untangle and go for the great untangling'
+                    ' untangle and go for the great untangling; nest (with groupid) and go for the nest of a team'
             ),
             'mode' => new external_value(PARAM_ALPHA, 'start: phones or aloud', VALUE_DEFAULT, 'phones'),
             'count' => new external_value(PARAM_INT, 'start: questions', VALUE_DEFAULT, 6),
@@ -165,8 +166,9 @@ final class live_host extends external_api {
                 $award = has_capability('local/oksigeniatesape:award', $context);
                 $userid = (int) $USER->id;
                 $live = live::locked($courseid, fn() => $live->kind === untangles::KIND ?
-                    untangles::tick(live::recent($courseid, $now, true) ?? $live, $now) :
-                    live::tick(live::recent($courseid, $now, true) ?? $live, $userid, $award, $now));
+                    untangles::tick(live::recent($courseid, $now, true) ?? $live, $now) : ($live->kind === nestboards::KIND ?
+                    nestboards::tick(live::recent($courseid, $now, true) ?? $live, $now) :
+                    live::tick(live::recent($courseid, $now, true) ?? $live, $userid, $award, $now)));
             }
             return ['live' => self::view($live, $now)] + $session;
         }
@@ -210,19 +212,25 @@ final class live_host extends external_api {
             require_capability('local/oksigeniatesape:award', $context);
             return ['live' => self::view(untangles::start($courseid, $now), $now)];
         }
+        if ($params['action'] === 'nest') {
+            require_capability('local/oksigeniatesape:award', $context);
+            return ['live' => self::view(nestboards::start($courseid, $params['groupid'], $now), $now)];
+        }
         $live = live::current($courseid, $now, true);
         if (!$live) {
             throw new \moodle_exception('nobattle', 'local_oksigeniatesape');
         }
         // Back on the session: the phones see it again.
         live::heartbeat($live, $now);
-        if ($live->kind === untangles::KIND) {
-            // The great untangling: started or ended from the class screen; the rest happens on the phones.
+        if ($live->kind === untangles::KIND || $live->kind === nestboards::KIND) {
+            // The great untangling and the nest of a team: started or ended from the class screen; the rest happens on
+            // the phones.
             require_capability('local/oksigeniatesape:award', $context);
+            $class = $live->kind === untangles::KIND ? untangles::class : nestboards::class;
             if ($params['action'] === 'go') {
-                $live = untangles::go($live, $now);
+                $live = $class::go($live, $now);
             } else if ($params['action'] === 'finish') {
-                $live = untangles::finish($live, $now);
+                $live = $class::finish($live, $now);
             } else {
                 throw new \invalid_parameter_exception('Not for the great untangling');
             }
@@ -300,6 +308,8 @@ final class live_host extends external_api {
         $view = live::board_view($live, $now);
         if ($live->kind === untangles::KIND) {
             $view['untangle'] = json_encode(untangles::board($live, $now));
+        } else if ($live->kind === nestboards::KIND) {
+            $view['nest'] = json_encode(nestboards::board($live, $now));
         }
         return $view;
     }

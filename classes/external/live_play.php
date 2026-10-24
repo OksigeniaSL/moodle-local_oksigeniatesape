@@ -21,6 +21,7 @@ use core_external\external_function_parameters;
 use core_external\external_single_structure;
 use core_external\external_value;
 use local_oksigeniatesape\local\live;
+use local_oksigeniatesape\local\nestboards;
 use local_oksigeniatesape\local\regions;
 use local_oksigeniatesape\local\untangles;
 
@@ -107,6 +108,24 @@ final class live_play extends external_api {
             }
             return [];
         }
+        if ($live->kind === nestboards::KIND) {
+            // The nest of a team on the class screen: only its tablets, each with its nets.
+            if (!nestboards::device($live, $member, $now)) {
+                if ($params['action'] !== 'state') {
+                    throw new \moodle_exception('nestnotnow', 'local_oksigeniatesape');
+                }
+                return [];
+            }
+            if ($params['action'] === 'join') {
+                live::join($live, $member, (int) $USER->id, $now);
+            } else if ($params['action'] === 'card') {
+                $live = nestboards::throw($live, $member, $params['item'], $params['round'], $now);
+            } else if ($params['action'] !== 'state') {
+                throw new \invalid_parameter_exception('Not for the nest');
+            }
+            return ['live' => live::device_view($live, $member, $now) +
+                ['nest' => json_encode(nestboards::device($live, $member, $now))]];
+        }
         if ($live->kind === untangles::KIND) {
             // The great untangling: to come in, and the micro-challenges.
             if ($params['action'] === 'join') {
@@ -145,6 +164,9 @@ final class live_play extends external_api {
                 break;
             case 'card':
                 live::card($live, $member, $params['item'], $now);
+                break;
+            case 'tactic':
+                $live = live::tactic($live, $member, $params['item'], $now);
                 break;
             default:
                 throw new \invalid_parameter_exception('Unknown action');

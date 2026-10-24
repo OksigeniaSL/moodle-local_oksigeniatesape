@@ -862,6 +862,11 @@ final class structures {
     private static function live_common(): array {
         return [
             'untangle' => new external_value(PARAM_RAW, 'The great untangling, as this screen shows it (JSON)', VALUE_OPTIONAL),
+            'nest' => new external_value(
+                PARAM_RAW,
+                'The nest of a team on the class screen, as this screen shows it (JSON)',
+                VALUE_OPTIONAL
+            ),
             'id' => new external_value(PARAM_INT, 'Session'),
             'kind' => new external_value(PARAM_ALPHA, 'battle, vote or untangle'),
             'mode' => new external_value(PARAM_ALPHA, 'phones or aloud'),
@@ -880,6 +885,13 @@ final class structures {
             'rematch' => new external_value(PARAM_INT, 'By turns: threads the Embrollo is back with (percent)', VALUE_DEFAULT, 0),
             'counter' => new external_value(PARAM_INT, 'Life the Embrollo got back after the round', VALUE_DEFAULT, 0),
             'shielded' => new external_value(PARAM_BOOL, 'A protector\'s shield stopped that', VALUE_DEFAULT, false),
+            'supported' => new external_value(
+                PARAM_BOOL,
+                'By turns: a team that supported protected the attacked',
+                VALUE_DEFAULT,
+                false
+            ),
+            'strongmiss' => new external_value(PARAM_INT, 'By turns: strong pulls that failed (threads back)', VALUE_DEFAULT, 0),
             'parried' => new external_value(
                 PARAM_BOOL,
                 'By turns: the shield was raised in time and the blow bounced back',
@@ -961,6 +973,12 @@ final class structures {
                 'mark' => new external_value(PARAM_INT, 'Aloud: marked right (1), not (0) or not yet (-1) in this round'),
                 'argued' => new external_value(PARAM_BOOL, 'Aloud: its spokesperson argued in this round', VALUE_DEFAULT, false),
                 'speaker' => new external_value(PARAM_TEXT, 'Aloud: who speaks for it in this round', VALUE_DEFAULT, ''),
+                'tactic' => new external_value(
+                    PARAM_ALPHA,
+                    'By turns: what it stakes in the turn (strong, support; empty: safe)',
+                    VALUE_DEFAULT,
+                    ''
+                ),
                 'verbs' => new external_multiple_structure(
                     new external_value(PARAM_ALPHA, 'Verb'),
                     'By turns aloud: the verbs it can say now',
@@ -1025,6 +1043,12 @@ final class structures {
         return new external_single_structure(self::live_common() + [
             'joined' => new external_value(PARAM_BOOL, 'The student came in'),
             'myteam' => new external_value(PARAM_INT, 'The team they came in with (0: none)', VALUE_DEFAULT, 0),
+            'tactic' => new external_value(
+                PARAM_ALPHA,
+                'By turns: what their team stakes in the turn (safe, strong, support)',
+                VALUE_OPTIONAL
+            ),
+            'cantactic' => new external_value(PARAM_BOOL, 'By turns: the team can still change it', VALUE_OPTIONAL),
             'mine' => new external_value(PARAM_INT, 'Their answer in the round (-1: none)'),
             'done' => new external_value(PARAM_BOOL, 'By turns: their team undid its lane, once resolved', VALUE_OPTIONAL),
             'lane' => new external_value(PARAM_RAW, 'By turns: their lane when it is not one to choose (JSON)', VALUE_OPTIONAL),

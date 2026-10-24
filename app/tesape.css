@@ -13579,3 +13579,69 @@ body.still .pet-me.patted .creature {
   margin: 0 auto;
   object-fit: contain;
 }
+
+/* Nest defence on the class screen, with the tablets as controls. */
+.nest-eggs {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.nest-egg {
+  display: inline-block;
+  width: 26px;
+  height: 34px;
+  border-radius: 50% 50% 46% 46% / 60% 60% 40% 40%;
+  border: 2px solid var(--line);
+}
+
+.nest-egg.warm {
+  background: radial-gradient(circle at 40% 35%, #fff8e6, #ffd77a 70%);
+  border-color: var(--lantern);
+}
+
+.nest-board .nest-eggs .nest-egg {
+  width: 44px;
+  height: 58px;
+}
+
+.nest-animal {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.nest-animal img {
+  width: 160px;
+  height: 160px;
+  object-fit: contain;
+}
+
+.nest-last {
+  font-weight: 700;
+}
+
+.nest-last.good {
+  color: var(--leaf-text);
+}
+
+.nest-last.bad {
+  color: var(--danger-text);
+}
+
+/* What a team stakes in a turn. */
+.battle-tactics {
+  margin: 10px 0;
+}
+
+.battle-tactics .chip[aria-checked="true"] {
+  background: var(--lantern);
+  color: var(--on-lantern);
+}
+
+.tactic-tag.strong {
+  background: rgba(var(--ember-rgb), .25);
+}
+
+.tactic-tag.support {
+  background: rgba(var(--leaf-rgb), .25);
+}

@@ -879,6 +879,47 @@ final class live_test extends \advanced_testcase {
         $this->assertSame(0, $view['counter']);
     }
 
+    public function test_by_turns_a_team_stakes_a_strong_pull_or_supports(): void {
+        $this->resetAfterTest();
+        [$course, $members, $groups] = $this->make_class();
+        $live = live::start($course->id, 'phones', 4, 30, self::NOW, false, true);
+        foreach ($members as $member) {
+            live::join($live, $member, $member->userid, self::NOW);
+        }
+        $live = live::next($live, self::NOW);
+        $hp = live::board_view($live, self::NOW)['hp'];
+        // While the knot is announced, the first team goes for a strong pull; the last one chosen counts.
+        live::tactic($live, $members[0], 'support', self::NOW + 1);
+        $live = live::tactic($live, $members[1], 'strong', self::NOW + 2);
+        $view = live::device_view($live, $members[0], self::NOW + 2);
+        $this->assertSame(['strong', true], [$view['tactic'], $view['cantactic']]);
+        $this->assertSame('safe', live::device_view($live, $members[2], self::NOW + 2)['tactic']);
+        $this->assertSame(['strong', ''], array_column(live::board_view($live, self::NOW + 2)['teams'], 'tactic'));
+        // Once it strikes, no more changes.
+        try {
+            live::tactic($live, $members[2], 'support', self::NOW + live::INTENT + live::PREP + 1);
+            $this->fail('Too late');
+        } catch (\moodle_exception $e) {
+            $this->assertSame('roundclosed', $e->errorcode);
+        }
+        // The strong pull undone: a thread more. The other team fails.
+        $live = $this->play_turn($live, $members, $groups, [true, false], self::NOW);
+        $view = live::board_view($live, self::NOW + 60);
+        $this->assertSame([2, 0], [$view['damage'], $view['strongmiss']]);
+        $this->assertSame($hp - 2, $view['hp']);
+        // Next turn: the first team supports and gets it right (it cuts nothing); the second goes for a strong pull and
+        // fails: the Embrollo gets a thread back, and the team attacked is protected.
+        $next = self::NOW + live::INTENT + live::PREP + 31 + live::RESOLVE;
+        $live = live::tick($live, 2, true, $next);
+        live::tactic($live, $members[0], 'support', $next + 1);
+        $live = live::tactic($live, $members[2], 'strong', $next + 1);
+        $candles = live::board_view($live, $next + 1)['candles'];
+        $live = $this->play_turn($live, $members, $groups, [true, false], $next);
+        $view = live::board_view($live, $next + 60);
+        $this->assertSame([0, 1, $hp - 1], [$view['damage'], $view['strongmiss'], $view['hp']]);
+        $this->assertSame($candles, $view['candles']);
+    }
+
     public function test_by_turns_the_verbs_go_to_a_team_and_rest_two_turns(): void {
         global $DB;
         $this->resetAfterTest();

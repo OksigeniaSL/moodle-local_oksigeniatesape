@@ -767,6 +767,100 @@
   }
 
   /**
+   * Whether the nest of a team is on the class screen: going on, or its end not seen yet.
+   *
+   * @return {boolean}
+   */
+  function nesting() {
+    var l = state.live;
+    return !!(l && l.kind === 'nest' && l.nest && (!l.outcome || state.seen !== l.id));
+  }
+
+  /**
+   * Defensa del nido on the class screen for a team: the animal coming down, the eggs of the nest, who holds each net,
+   * and how the last one went. The nets are on the tablets.
+   */
+  function drawNest() {
+    var l = state.live;
+    var n = JSON.parse(l.nest);
+    var sig = JSON.stringify([l.id, n.phase, n.index, n.eggs, n.joined, n.outcome, n.nets]);
+    if (sig === state.nestsig && app.querySelector('.nest-board')) {
+      var left = app.querySelector('[data-nleft]');
+      if (left) {
+        left.textContent = n.left + ' s';
+      }
+      return;
+    }
+    state.nestsig = sig;
+    var eggs = '';
+    for (var i = 0; i < n.maxeggs; i++) {
+      eggs += '<i class="nest-egg' + (i < n.eggs ? ' warm' : '') + '"></i>';
+    }
+    var last = n.last ? '<p class="nest-last ' + (n.last.right ? 'good' : 'bad') + '" role="status">' + esc(n.last.right ?
+      t('board_nest_caught', n.last) : n.last.net ? t('board_nest_wrong', n.last) : t('board_nest_late', n.last)) + '</p>' +
+      (!n.last.right && n.last.hint ? '<p class="help-soft">' + esc(n.last.hint) + '</p>' : '') : '';
+    var main = '';
+    var buttons = '';
+    if (n.phase === 'lobby') {
+      main = '<p class="lead">' + esc(t('board_nest_lobby', n.team)) + '</p><p><b>' + esc(t('board_untangle_joined',
+        n.joined.length)) + '</b>' + (n.joined.length ? ' · ' + esc(n.joined.join(', ')) : '') + '</p>';
+      buttons = '<button class="btn btn-main" data-ngo' + (n.joined.length ? '' : ' disabled') + '>' +
+        esc(t('board_untangle_go')) + '</button><button class="btn btn-soft" data-nfinish>' + esc(t('board_untangle_cancel')) +
+        '</button>';
+    } else if (n.phase === 'play' && n.animal) {
+      var pic = T.artUrl(['being.' + n.animal.id]);
+      main = last + '<p class="kicker">' + esc(t('board_nest_count', {n: n.index + 1, all: n.total})) + '</p><div class="nest-animal">' +
+        (pic ? '<img src="' + esc(pic) + '" alt="">' : '') + '<h1>' + esc(T.capital(n.animal.label)) + '</h1></div><p class="lead">' +
+        esc(t('board_nest_ask')) + ' <span class="untangle-clock small" data-nleft>' + n.left + ' s</span></p>';
+      buttons = '<button class="btn btn-soft" data-nfinish>' + esc(t('board_untangle_finish')) + '</button>';
+    } else {
+      main = last + '<h1>' + esc(t(n.outcome === 'won' ? 'board_nest_won' : n.outcome === 'lost' ? 'board_nest_lost' :
+        'board_untangle_none')) + '</h1><p>' + esc(t('board_nest_result', n)) + '</p>';
+      buttons = '<button class="btn btn-main" data-dismiss-nest>' + esc(t('board_untangle_back')) + '</button>';
+    }
+    var nets = n.phase === 'lobby' ? '' : '<ol class="untangle-strands nest-nets">' + n.nets.map(function(x) {
+      return '<li class="untangle-strand"><b>' + esc(x.label) + '</b><small>' + esc(x.who || t('board_nest_nobody')) +
+        '</small></li>';
+    }).join('') + '</ol>';
+    app.innerHTML = '<div class="board battle-board nest-board"><header class="board-top">' + T.emblem() + '<div><b>' +
+      esc(cfg.coursename) + '</b><small>' + esc(t('board_nest', n.team)) + '</small></div><div class="board-tools">' +
+      musicButton() + lightButton() + '<button class="btn btn-soft" data-full>' + esc(t('board_fullscreen')) + '</button></div>' +
+      '</header><div class="battle-stage"><div class="battle-boss"><span class="nest-eggs" role="img" aria-label="' +
+      esc(t('board_nest_eggs', n)) + '">' + eggs + '</span></div><div class="battle-main">' + main + '<div class="actions">' +
+      buttons + '</div></div></div>' + nets + '</div>';
+    var on = function(sel, fn) {
+      app.querySelectorAll(sel).forEach(function(el) {
+        el.onclick = function() {
+          fn(el);
+        };
+      });
+    };
+    on('[data-full]', fullscreen);
+    on('[data-light]', switchLight);
+    on('[data-music]', switchMusic);
+    on('[data-ngo]', function() {
+      host('go');
+    });
+    on('[data-nfinish]', function() {
+      host('finish');
+    });
+    on('[data-dismiss-nest]', function() {
+      state.seen = l.id;
+      try {
+        window.sessionStorage.setItem(SEEN, String(l.id));
+      } catch (e) {
+        // Without storage, a reload shows the end once more.
+      }
+      render();
+      load(false);
+    });
+    if (T.fx && n.last && state.nestfx !== l.id + ':' + n.index) {
+      state.nestfx = l.id + ':' + n.index;
+      T.fx.sound(n.phase === 'end' && n.outcome === 'won' ? 'win' : n.last.right ? 'right' : 'wrong');
+    }
+  }
+
+  /**
    * The great untangling on the class screen: the knot of the Embrollo with a strand for each team, the clock, and
    * what the teacher does (start it, end it).
    */
@@ -857,7 +951,7 @@
 
   function schedule() {
     clearTimeout(state.timer);
-    if ((battling() || untangling()) && !document.hidden) {
+    if ((battling() || untangling() || nesting()) && !document.hidden) {
       state.timer = setTimeout(function() {
         host('state');
       }, LIVE);
@@ -896,6 +990,8 @@
         drawBattle(action !== 'state');
       } else if (untangling()) {
         drawUntangle();
+      } else if (nesting()) {
+        drawNest();
       } else {
         load(false);
       }
@@ -979,7 +1075,10 @@
       '</button><button class="btn btn-soft" data-battlerehearsal title="' + esc(t('board_battle_rehearsal_help')) + '">' +
       esc(t('board_battle_rehearsal')) + '</button></div><div class="untangle-offer"><p class="help-soft">' +
       esc(t('board_untangle_help')) + '</p><button class="btn btn-soft" data-untangle>' + esc(t('board_untangle_start')) +
-      '</button></div></section>';
+      '</button></div>' + (state.cls && state.cls.teams.length ? '<div class="untangle-offer"><p class="help-soft">' +
+      esc(t('board_nest_help')) + '</p><div class="pills" style="justify-content:flex-start">' + state.cls.teams.map(function(team) {
+        return '<button class="chip" data-nest="' + team.id + '">' + esc(team.name) + '</button>';
+      }).join('') + '</div></div>' : '') + '</section>';
   }
 
   /**
@@ -1240,7 +1339,8 @@
         '</b>' + ((l.dizzy || []).indexOf(team.id) >= 0 && !l.outcome ? '<span class="tag dizzy-tag">' +
         esc(t('board_team_dizzy')) + '</span>' : '') + '<small>' + (l.mode === 'phones' ?
         esc(t('board_battle_joined', team.joined)) + ' · ' : '') + esc(t('board_battle_teamright', team.right)) + '</small>' +
-        speaker + marks + say + '</div>';
+        (team.tactic && l.maxcandles && !l.outcome ? '<span class="tag tactic-tag ' + esc(team.tactic) + '">' +
+        esc(t('app_tactic_' + team.tactic)) + '</span>' : '') + speaker + marks + say + '</div>';
     }).join('');
     // The place of the battle, as the story of the mission paints it (the port of the expedition of Azara), or the tower.
     var skin = (state.board.mission || {}).skin;
@@ -1530,6 +1630,9 @@
         }).join('') + (l.counter && !l.recovered ? '<p class="turn-outcome fell">' +
         esc(t(l.intent === 'all' ? 'board_turn_candle_all' : 'board_turn_candle', l.target)) + '</p>' : '') +
         (l.recovered ? '<p class="turn-outcome fell">' + esc(t('board_turn_recovered', l.counter)) + '</p>' : '') +
+        (l.supported ? '<p class="turn-outcome">' + esc(t('board_turn_supported')) + '</p>' : '') +
+        (l.strongmiss ? '<p class="turn-outcome fell">' + esc(t(l.strongmiss === 1 ? 'board_turn_strongmiss_one' :
+          'board_turn_strongmiss', l.strongmiss)) + '</p>' : '') +
         // A team carried by another, and the one the blow left dizzy.
         (l.carried || []).map(function(c) {
           return '<p class="turn-outcome undone">' + esc(t('board_turn_carried', c)) + '</p>';
@@ -2977,6 +3080,10 @@
       drawUntangle();
       return;
     }
+    if (nesting()) {
+      drawNest();
+      return;
+    }
     unliveBattle();
     if (state.print) {
       drawPrint();
@@ -3081,6 +3188,9 @@
     // Three test questions to check the phones, without prizes nor the questions of the mission.
     on('[data-untangle]', function() {
       host('untangle');
+    });
+    on('[data-nest]', function(el) {
+      host('nest', {groupid: Number(el.dataset.nest)});
     });
     on('[data-battlerehearsal]', function() {
       var b = state.battle;

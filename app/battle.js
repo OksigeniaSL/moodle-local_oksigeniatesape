@@ -89,8 +89,9 @@
     state.inside = !!(playing && live.joined);
     // The seconds left change on every poll; the countdown shows them without drawing everything again.
     var u = live && live.untangle ? JSON.parse(live.untangle) : null;
+    var nb = live && live.nest ? JSON.parse(live.nest) : null;
     var sig = JSON.stringify([live ? Object.assign({}, live, {left: 0, stageleft: 0, untangle: u ? JSON.stringify(Object.assign({},
-      u, {left: 0})) : ''}) : null, state.inside]);
+      u, {left: 0})) : '', nest: nb ? JSON.stringify(Object.assign({}, nb, {left: 0})) : ''}) : null, state.inside]);
     if (u) {
       var uleft = layer.querySelector('[data-uleft]');
       if (uleft) {
@@ -113,11 +114,12 @@
     }
     var vote = live.kind === 'vote';
     var knot = live.kind === 'untangle';
+    var nest = live.kind === 'nest';
     if (!live.joined) {
       layer.innerHTML = '<div class="battle-call"><span class="battle-mini">' + (vote ? T.icon('world') : T.embrollo(1)) +
-        '</span><p>' + esc(t(vote ? 'app_vote_call' : knot ? 'app_untangle_call' : 'app_battle_call')) + '</p><button ' +
-        'class="btn btn-main" data-join>' + esc(t(vote ? 'app_vote_join' : knot ? 'app_untangle_join' : 'app_battle_join')) +
-        '</button></div>';
+        '</span><p>' + esc(t(vote ? 'app_vote_call' : knot ? 'app_untangle_call' : nest ? 'app_nestboard_call' :
+        'app_battle_call')) + '</p><button class="btn btn-main" data-join>' + esc(t(vote ? 'app_vote_join' : knot || nest ?
+        'app_untangle_join' : 'app_battle_join')) + '</button></div>';
       layer.querySelector('[data-join]').onclick = function(e) {
         e.target.disabled = true;
         api('join').then(function(r) {
@@ -134,6 +136,10 @@
       untangle(live, u);
       return;
     }
+    if (nest) {
+      nestboard(live, nb);
+      return;
+    }
     if (live.outcome && state.celebrated !== live.id && T.fx) {
       // The end of the battle, heard and seen once on each phone.
       state.celebrated = live.id;
@@ -148,6 +154,75 @@
       esc(t('app_battle_title')) + '">' + head(live) + body(live) + '</div>';
     bind(live);
     tell(live);
+  }
+
+  /**
+   * Defensa del nido on the class screen, on the tablet: the nets of this student, to throw at the animal on the class
+   * screen when it is theirs; the others hold other nets.
+   *
+   * @param {Object} live
+   * @param {Object} n Its nest.
+   */
+  function nestboard(live, n) {
+    var eggs = '';
+    for (var i = 0; i < n.maxeggs; i++) {
+      eggs += '<i class="nest-egg' + (i < n.eggs ? ' warm' : '') + '"></i>';
+    }
+    var head = '<div class="battle-head"><span class="battle-mini">' + T.icon('world') + '</span><div class="grow"><b>' +
+      esc(t('app_nestboard')) + '</b><small>' + esc(n.team) + '</small></div><span class="nest-eggs" role="img" aria-label="' +
+      esc(t('board_nest_eggs', n)) + '">' + eggs + '</span></div>';
+    var last = n.last ? '<p class="nest-last ' + (n.last.right ? 'good' : 'bad') + '" role="status">' + esc(n.last.right ?
+      t('board_nest_caught', n.last) : n.last.net ? t('board_nest_wrong', n.last) : t('board_nest_late', n.last)) + '</p>' : '';
+    var body = '';
+    if (n.phase === 'lobby') {
+      body = '<p class="help">' + esc(t('app_untangle_wait')) + '</p>';
+    } else if (n.phase === 'play' && n.animal) {
+      body = last + '<p class="help-soft">' + esc(t('app_nestboard_look', T.capital(n.animal.label))) + '</p><p><b>' +
+        esc(t('app_nestboard_mine')) + '</b></p><div class="fight-nets">' + n.nets.map(function(x) {
+          return '<button type="button" class="btn btn-soft fight-net" data-nnet="' + esc(x.id) + '">' + esc(x.label) + '</button>';
+        }).join('') + '</div><p class="help-soft">' + esc(t('app_nestboard_help')) + '</p>';
+    } else {
+      body = last + '<h2>' + esc(t(n.outcome === 'won' ? 'board_nest_won' : 'board_nest_lost')) + '</h2>' + (n.gem ? '<p><b>' +
+        esc(t('app_teamknot_gem')) + '</b></p>' : '') + '<div class="actions"><button type="button" class="btn btn-main" ' +
+        'data-back>' + esc(t('app_continue')) + '</button></div>';
+    }
+    layer.innerHTML = '<div class="battle-phone nest-phone" role="dialog" aria-modal="true" aria-label="' +
+      esc(t('app_nestboard')) + '">' + head + body + '</div>';
+    layer.querySelectorAll('[data-nnet]').forEach(function(b) {
+      b.onclick = function() {
+        layer.querySelectorAll('[data-nnet]').forEach(function(x) {
+          x.disabled = true;
+        });
+        api('card', {item: b.dataset.nnet, round: n.index}).then(function(r) {
+          show(r.live || null);
+        }).catch(function(e) {
+          T.toast(esc(e.message), true);
+          state.sig = '';
+          poll();
+        });
+      };
+    });
+    var back = layer.querySelector('[data-back]');
+    if (back) {
+      back.onclick = function() {
+        state.dismissed = live.id;
+        try {
+          window.sessionStorage.setItem(SEEN, String(live.id));
+        } catch (e) {
+          // Without storage, a reload shows the end once more.
+        }
+        state.sig = '';
+        show(live);
+      };
+    }
+    if (T.fx && n.last && state.nestlast !== n.index) {
+      state.nestlast = n.index;
+      T.fx.sound(n.last.right ? 'right' : 'wrong');
+    }
+    var first = layer.querySelector('[data-nnet]:not([disabled]), [data-back]');
+    if (first) {
+      first.focus();
+    }
   }
 
   /**
@@ -262,6 +337,24 @@
     }
   }
 
+  /**
+   * By turns, what the team stakes in the turn: on the safe side, a strong pull or supporting the team attacked. Any of
+   * the team chooses it while the knot is announced; the last one counts.
+   *
+   * @param {Object} live
+   * @return {string}
+   */
+  function tactics(live) {
+    if (!live.tactic) {
+      return '';
+    }
+    return '<div class="battle-tactics" role="radiogroup" aria-label="' + esc(t('app_tactic')) + '"><small>' +
+      esc(t('app_tactic')) + '</small><div class="pills">' + ['safe', 'strong', 'support'].map(function(k) {
+        return '<button type="button" class="chip" role="radio" data-tactic="' + k + '" aria-checked="' + (live.tactic === k) +
+          '"' + (live.cantactic ? '' : ' disabled') + '>' + esc(t('app_tactic_' + k)) + '</button>';
+      }).join('') + '</div><p class="help-soft">' + esc(t('app_tactic_' + live.tactic + '_help')) + '</p></div>';
+  }
+
   function head(live) {
     if (live.kind === 'vote') {
       return '<div class="battle-head"><span class="battle-mini">' + T.icon('world') + '</span><div class="grow"><b>' +
@@ -367,7 +460,8 @@
         esc(t('board_turn_intent_' + live.intent)) + '</p>' : live.target ? '<p class="knot-target' + (mine ? ' mine' : '') +
         '">' + esc(mine ? t('app_turn_mine') : t('app_turn_goes', live.target)) + '</p>' : '';
       return '<div class="knot-call' + (tangled ? ' tangled' : '') + '"><p class="knot-name">' + esc(live.knot.name) +
-        '</p><p class="knot-claim">«' + esc(live.knot.claim.replace(/^«|»$/g, '')) + '»</p>' + intent + '</div>' + comboNote(live) +
+        '</p><p class="knot-claim">«' + esc(live.knot.claim.replace(/^«|»$/g, '')) + '»</p>' + intent + '</div>' + tactics(live) +
+        comboNote(live) +
         (live.stage === 'prep' && !T.adapted.notime ? '<p class="battle-left" data-left="' + live.stageleft +
         '" data-say="app_turn_prep" aria-live="off">' + esc(t('app_turn_prep', live.stageleft)) + '</p>' : '') + token(live);
     }
@@ -580,6 +674,21 @@
   }
 
   function bind(live) {
+    layer.querySelectorAll('[data-tactic]').forEach(function(b) {
+      b.onclick = function() {
+        layer.querySelectorAll('[data-tactic]').forEach(function(x) {
+          x.disabled = true;
+        });
+        api('tactic', {item: b.dataset.tactic}).then(function(r) {
+          state.sig = '';
+          show(r.live || null);
+        }).catch(function(e) {
+          T.toast(esc(e.message), true);
+          state.sig = '';
+          poll();
+        });
+      };
+    });
     layer.querySelectorAll('[data-timingtap]').forEach(function(b) {
       b.onclick = function() {
         var kind = b.dataset.timingtap;
