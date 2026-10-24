@@ -381,6 +381,33 @@ final class art {
     }
 
     /**
+     * The address of the small copy of an image of the art, where it has one; if not, the same address. For phones.
+     *
+     * @param string $url An address of manifest().
+     * @return string
+     */
+    public static function small(string $url): string {
+        $art = self::manifest();
+        foreach ($art ? $art['layers'] : [] as $layer) {
+            $root = \moodle_url::make_pluginfile_url(
+                \context_system::instance()->id,
+                self::COMPONENT,
+                self::FILEAREA,
+                $layer['version'],
+                '/' . $layer['code'] . '/',
+                ''
+            )->out(false);
+            if (strpos($url, $root) !== 0) {
+                continue;
+            }
+            $rest = substr($url, strlen($root));
+            return in_array(rawurldecode($rest), (array) (self::pack($layer['code'])['small'] ?? []), true) ?
+                $root . self::SMALL . $rest : $url;
+        }
+        return $url;
+    }
+
+    /**
      * Serves an image of a pack to anyone logged in. The first argument is the version, only there for caching.
      *
      * @param array $args
