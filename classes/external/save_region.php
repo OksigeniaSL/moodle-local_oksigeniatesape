@@ -137,6 +137,13 @@ final class save_region extends external_api {
                 null,
                 NULL_ALLOWED
             ),
+            'lightart' => new external_value(
+                PARAM_BOOL,
+                'The tablets of the class take the small copy of the big images',
+                VALUE_DEFAULT,
+                null,
+                NULL_ALLOWED
+            ),
         ]);
     }
 
@@ -170,6 +177,7 @@ final class save_region extends external_api {
      * @param bool|null $sharelibrary
      * @param int|null $qbank
      * @param array|null $pauses
+     * @param bool|null $lightart
      * @return array
      */
     public static function execute(
@@ -199,7 +207,8 @@ final class save_region extends external_api {
         ?int $secretsshown = null,
         ?bool $sharelibrary = null,
         ?int $qbank = null,
-        ?array $pauses = null
+        ?array $pauses = null,
+        ?bool $lightart = null
     ): array {
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
@@ -229,6 +238,7 @@ final class save_region extends external_api {
             'sharelibrary' => $sharelibrary,
             'qbank' => $qbank,
             'pauses' => $pauses,
+            'lightart' => $lightart,
         ]);
         $context = \local_oksigeniatesape\local\games::require_enter($params['courseid']);
         self::validate_context($context);
@@ -242,7 +252,8 @@ final class save_region extends external_api {
             $settings['skillson'],
             $settings['secretsshown'],
             $settings['sharelibrary'],
-            $settings['qbank']
+            $settings['qbank'],
+            $settings['lightart']
         );
         if ($params['reasons'] !== null) {
             $list = $params['reasons'] === 'default' ? null : json_decode($params['reasons'], true);
@@ -262,6 +273,9 @@ final class save_region extends external_api {
         }
         if ($params['skillson'] !== null) {
             $settings['rules'] = ($settings['rules'] ?? []) + ['skills' => $params['skillson'] ? 1 : 0];
+        }
+        if ($params['lightart'] !== null) {
+            $settings['rules'] = ($settings['rules'] ?? []) + ['lightart' => $params['lightart'] ? 1 : 0];
         }
         if ($params['sharelibrary'] !== null) {
             $settings['rules'] = ($settings['rules'] ?? []) + ['library' => $params['sharelibrary'] ? 1 : 0];

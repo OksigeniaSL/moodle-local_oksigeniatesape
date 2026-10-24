@@ -260,4 +260,57 @@ final class art_test extends \advanced_testcase {
         $this->assertStringNotContainsString('<', $file->get_content());
         $this->assertSame('<b>', json_decode($file->get_content(), true)['meta']['note']);
     }
+
+    public function test_big_paintings_get_their_small_copy(): void {
+        global $PAGE;
+        $this->resetAfterTest();
+        if (!function_exists('imagepng')) {
+            $this->markTestSkipped('No GD');
+        }
+        // A painting of a place, big; a set piece, big too; and a small painting.
+        $dir = make_request_directory();
+        $image = function (int $width, int $height) use ($dir): string {
+            $path = $dir . '/i' . $width . 'x' . $height . '.png';
+            imagepng(imagecreatetruecolor($width, $height), $path);
+            return $path;
+        };
+        $files = ['scene.big' => 'scene/scene.big.png', 'stage.big' => 'stage/stage.big.png', 'scene.small' => 'scene/scene.small.png'];
+        file_put_contents($dir . '/pack.json', json_encode(['code' => 'valle', 'version' => 3, 'files' => $files]));
+        $zip = $dir . '/pack.zip';
+        get_file_packer('application/zip')->archive_to_pathname(['pack.json' => $dir . '/pack.json',
+            'scene/scene.big.png' => $image(1000, 400), 'stage/stage.big.png' => $image(1000, 400),
+            'scene/scene.small.png' => $image(300, 200)], $zip);
+        art::install($zip);
+        // Only the painting that is big, at half its size.
+        $small = get_file_storage()->get_file(
+            \context_system::instance()->id,
+            'local_oksigeniatesape',
+            art::FILEAREA,
+            0,
+            '/valle/small/scene/',
+            'scene.big.png'
+        );
+        $this->assertNotFalse($small);
+        $this->assertSame([500, 200], [(int) $small->get_imageinfo()['width'], (int) $small->get_imageinfo()['height']]);
+        $client = art::client();
+        $this->assertSame([0, 'png', 1], $client['files']['scene.big']);
+        $this->assertSame([0, 'png'], $client['files']['stage.big']);
+        $this->assertSame([0, 'png'], $client['files']['scene.small']);
+        // Made again by the task, the same.
+        (new \local_oksigeniatesape\task\small_art())->execute();
+        $this->expectOutputRegex('/Small copies of valle: 1/');
+        $this->assertSame([0, 'png', 1], art::client()['files']['scene.big']);
+        // A class whose teacher asked for the light images: the game takes them; the class screen, never.
+        $course = $this->getDataGenerator()->create_course();
+        regions::save((int) $course->id, ['enabled' => 1, 'rules' => ['lightart' => 1]]);
+        $this->setUser($this->getDataGenerator()->create_and_enrol($course, 'editingteacher'));
+        foreach (['game' => true, 'board' => false] as $app => $light) {
+            $PAGE = new \moodle_page();
+            $PAGE->set_url('/local/oksigeniatesape/play.php', ['id' => $course->id]);
+            ob_start();
+            page::output($app, $course);
+            preg_match('/window\.TESAPE_CONFIG = (\{.*?\});<\/script>/s', ob_get_clean(), $m);
+            $this->assertSame($light, json_decode($m[1], true)['lightart']);
+        }
+    }
 }

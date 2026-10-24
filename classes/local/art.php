@@ -59,6 +59,19 @@ final class art {
     /** @var int The most a file of data can weigh, in bytes. */
     private const DATAMAX = 262144;
 
+    /** @var int Images wider than this get a small copy, of half their size, for tablets with little memory. */
+    public const SMALL_FROM = 640;
+
+    /** @var string Where the small copies of a pack go, under the folder of the pack. */
+    public const SMALL = 'small/';
+
+    /**
+     * @var string[] The kinds of images that can go small: those the game draws at the size of their place, whatever
+     *     their own (the paintings, the characters, the maps). Not the pieces of puppets, sets or figures, measured in
+     *     pixels of their own.
+     */
+    public const SMALL_KINDS = ['scene', 'character', 'portrait', 'map', 'band'];
+
     /** @var string[] The layers of a pack, from the one under to the one on top. */
     public const KINDS = ['world', 'style', 'mission'];
 
@@ -137,6 +150,9 @@ final class art {
             'filepath' => '/' . $code . '/',
             'filename' => 'pack.json',
         ], json_encode($manifest));
+        self::$packs = null;
+        // And the small copies of its big images.
+        self::make_small($code);
         // The world is the one of the site; a style or a mission goes over it, beside those already there.
         $layers = array_values(array_diff(self::layers(), [$code]));
         if ($kind === 'world') {
@@ -150,6 +166,70 @@ final class art {
         set_config('artlayers', implode(',', $layers), self::COMPONENT);
         self::$packs = null;
         return $manifest;
+    }
+
+    /**
+     * Makes the small copies of the big images of a pack (half their size), for tablets with little memory, and writes
+     * which ones have it in the pack. Without the means to do it (the GD of the server), nothing: the big ones serve.
+     *
+     * @param string $code
+     * @return int Copies made.
+     */
+    public static function make_small(string $code): int {
+        $info = self::pack($code);
+        if (!$info || !function_exists('imagecreatefromstring')) {
+            return 0;
+        }
+        $context = \context_system::instance();
+        $fs = get_file_storage();
+        $small = [];
+        $paths = array_filter(
+            $info['files'],
+            fn($key) => in_array(strtok((string) $key, '.'), self::SMALL_KINDS, true),
+            ARRAY_FILTER_USE_KEY
+        );
+        foreach (array_unique($paths) as $path) {
+            $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+            $writer = ['webp' => 'imagewebp', 'png' => 'imagepng', 'jpg' => 'imagejpeg', 'jpeg' => 'imagejpeg'][$extension] ?? '';
+            $dir = '/' . $code . '/' . (dirname($path) === '.' ? '' : dirname($path) . '/');
+            $file = $fs->get_file($context->id, self::COMPONENT, self::FILEAREA, 0, $dir, basename($path));
+            $size = $file && $writer !== '' && function_exists($writer) ? $file->get_imageinfo() : false;
+            if (!$size || (int) $size['width'] <= self::SMALL_FROM) {
+                continue;
+            }
+            $image = @imagecreatefromstring($file->get_content());
+            if (!$image) {
+                continue;
+            }
+            $width = (int) round($size['width'] / 2);
+            $height = (int) round($size['height'] / 2);
+            $copy = imagecreatetruecolor($width, $height);
+            imagealphablending($copy, false);
+            imagesavealpha($copy, true);
+            imagefill($copy, 0, 0, imagecolorallocatealpha($copy, 0, 0, 0, 127));
+            imagecopyresampled($copy, $image, 0, 0, 0, 0, $width, $height, (int) $size['width'], (int) $size['height']);
+            ob_start();
+            $writer === 'imagepng' ? imagepng($copy, null, 9) : $writer($copy, null, 80);
+            $bytes = (string) ob_get_clean();
+            $target = '/' . $code . '/' . self::SMALL . (dirname($path) === '.' ? '' : dirname($path) . '/');
+            $old = $fs->get_file($context->id, self::COMPONENT, self::FILEAREA, 0, $target, basename($path));
+            if ($old) {
+                $old->delete();
+            }
+            $fs->create_file_from_string(['contextid' => $context->id, 'component' => self::COMPONENT,
+                'filearea' => self::FILEAREA, 'itemid' => 0, 'filepath' => $target, 'filename' => basename($path)], $bytes);
+            $small[] = $path;
+        }
+        // Which images of the pack have their small copy.
+        $packfile = $fs->get_file($context->id, self::COMPONENT, self::FILEAREA, 0, '/' . $code . '/', 'pack.json');
+        $packfile->delete();
+        $fs->create_file_from_string(
+            ['contextid' => $context->id, 'component' => self::COMPONENT,
+            'filearea' => self::FILEAREA, 'itemid' => 0, 'filepath' => '/' . $code . '/', 'filename' => 'pack.json'],
+            json_encode(['small' => $small] + $info)
+        );
+        self::$packs = null;
+        return count($small);
     }
 
     /**
@@ -275,6 +355,11 @@ final class art {
                 ''
             )->out(false);
         }
+        // The images with a small copy, in each pack.
+        $small = [];
+        foreach ($art['layers'] as $i => $layer) {
+            $small[$i] = array_flip((array) (self::pack($layer['code'])['small'] ?? []));
+        }
         $files = [];
         foreach ($art['files'] as $key => $url) {
             $files[$key] = $url;
@@ -284,6 +369,10 @@ final class art {
                     $derived = strtok($key, '.') . '/' . $key . '.';
                     $files[$key] = [$i, strpos($rest, $derived) === 0 && strpos(substr($rest, strlen($derived)), '/') === false ?
                         substr($rest, strlen($derived)) : $rest];
+                    // With its small copy, for tablets with little memory.
+                    if (isset($small[$i][rawurldecode($rest)])) {
+                        $files[$key][] = 1;
+                    }
                     break;
                 }
             }

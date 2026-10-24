@@ -11,12 +11,21 @@
   var cfg = window.TESAPE_CONFIG || {};
   var T = window.Tesape = {cfg: cfg};
 
+  /*
+   * The small copy of the big images (half their size), in the game: for tablets with little memory or that ask to save
+   * data, and for a class whose teacher asked for it. Never on the class screen.
+   */
+  var memory = navigator.deviceMemory;
+  T.lightArt = cfg.app === 'game' && !!(cfg.lightart || (memory && memory <= 2) ||
+    (navigator.connection && navigator.connection.saveData));
+
   // The art comes light (the address of each pack once, and the rest of each image): its addresses, whole again.
   if (cfg.art && cfg.art.roots) {
     Object.keys(cfg.art.files).forEach(function(key) {
       var f = cfg.art.files[key];
       if (Array.isArray(f)) {
-        cfg.art.files[key] = cfg.art.roots[f[0]] + (/[./]/.test(f[1]) ? f[1] : key.split('.')[0] + '/' + key + '.' + f[1]);
+        cfg.art.files[key] = cfg.art.roots[f[0]] + (T.lightArt && f[2] ? 'small/' : '') +
+          (/[./]/.test(f[1]) ? f[1] : key.split('.')[0] + '/' + key + '.' + f[1]);
       }
     });
   }
@@ -773,6 +782,27 @@
     var dark = 0.55 * (1 - lit / Math.max(1, m.chapters.length));
     return dark > 0.01 ? '<rect class="night" width="400" height="' + T.mapHeight(m) + '" fill="#081322" opacity="' +
       dark.toFixed(2) + '"/>' : '';
+  };
+
+  var fetched = {};
+
+  /**
+   * Images the game will want soon, asked for in the background: once each, when the device is free.
+   *
+   * @param {Array} urls Addresses (or null).
+   */
+  T.prefetch = function(urls) {
+    urls.forEach(function(url) {
+      if (!url || fetched[url]) {
+        return;
+      }
+      fetched[url] = true;
+      var link = document.createElement('link');
+      link.rel = 'prefetch';
+      link.as = 'image';
+      link.href = url;
+      document.head.appendChild(link);
+    });
   };
 
   /**

@@ -1150,5 +1150,11 @@ function xmldb_local_oksigeniatesape_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026102436, 'local', 'oksigeniatesape');
     }
 
+    if ($oldversion < 2026102437) {
+        // The small copies of the big images of the art packs already there, for tablets with little memory: by the cron.
+        \core\task\manager::queue_adhoc_task(new \local_oksigeniatesape\task\small_art(), true);
+        upgrade_plugin_savepoint(true, 2026102437, 'local', 'oksigeniatesape');
+    }
+
     return true;
 }

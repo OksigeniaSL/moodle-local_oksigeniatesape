@@ -1296,6 +1296,12 @@
     var pct = c.levelneeded ? Math.round(100 * c.levelinto / c.levelneeded) : 100;
     // What waits in «Challenges»: only what the place of today asks for, with a mission.
     var place = w.mission && w.mission.chapters.length ? todayChapter(w.mission) : null;
+    // The painting of the place of today and of the one after, ready before they are opened.
+    if (place) {
+      var after = w.mission.chapters[w.mission.chapters.indexOf(place) + 1];
+      T.prefetch([T.artUrl(['scene.' + (place.art || place.code)]), after ? T.artUrl(['scene.' + (after.art || after.code)]) :
+        null]);
+    }
     var pending = w.challenges.filter(function(ch) {
       return (!ch.status || ch.status === 'notyet') && (!place || ch.id === place.challengeid);
     }).length + w.activities.filter(function(a) {

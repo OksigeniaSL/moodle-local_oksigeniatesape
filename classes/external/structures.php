@@ -782,6 +782,7 @@ final class structures {
                 []
             ),
             'pausesown' => new external_value(PARAM_BOOL, 'The course changed those of the plugin', VALUE_DEFAULT, false),
+            'lightart' => new external_value(PARAM_BOOL, 'The tablets take the small copy of the big images', VALUE_DEFAULT, false),
             'completion' => new external_value(
                 PARAM_BOOL,
                 'Completion of activities on in the site and the course',

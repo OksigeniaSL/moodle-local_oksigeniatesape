@@ -92,6 +92,9 @@ final class page {
         $zone = engine::timezone($game);
         $where = $zone->getLocation();
         $config['sky'] = ['zone' => $zone->getName(), 'south' => $where && $where['latitude'] < 0 && $where['latitude'] > -89];
+        // Which page, and whether the tablets of the class take the small copy of the big images.
+        $config['app'] = $app;
+        $config['lightart'] = $app === 'game' && $region && regions::rule($region, 'lightart') > 0;
         $worldcolours = themes::style($config['art']);
         $version = (int) get_config('local_oksigeniatesape', 'version');
         // The version, for what the client loads later (the engine of the moments that are played).

@@ -69,6 +69,8 @@ final class regions {
         'library' => 0,
         // The category of the question bank of Moodle half of the battles without turns come from (0: none).
         'qbank' => 0,
+        // The tablets of the class take the small copy of the big images, as those with little memory do by themselves.
+        'lightart' => 0,
     ];
 
     /**

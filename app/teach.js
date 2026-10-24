@@ -3968,7 +3968,8 @@
       '</p>' + choice('secretsshown', [0, 1, 2], r.secretsshown || 0, function(m) {
         return t('teach_set_secrets_' + m);
       }) + '<h3>' + esc(t('teach_set_library')) + '</h3><p class="help-soft">' + esc(t('teach_set_library_help')) + '</p>' +
-      check('sharelibrary', r.sharelibrary) + coverCard;
+      check('sharelibrary', r.sharelibrary) + '<h3>' + esc(t('teach_set_lightart_title')) + '</h3><p class="help-soft">' +
+      esc(t('teach_set_lightart_help')) + '</p>' + check('lightart', r.lightart) + coverCard;
     var advanced = '<details class="settings-advanced"' + (state.advanced ? ' open' : '') + '><summary><b>' +
       esc(t('teach_set_advanced')) + '</b><small>' + esc(t('teach_set_advanced_help')) + '</small></summary>' +
       field('groupingid', t('teach_set_groupingid'), groupings) + field('timezone', t('teach_set_timezone'), timezone) +
@@ -4037,6 +4038,7 @@
         mischief: f.querySelector('[name="mischief"]:checked').value,
         secretsshown: Number(f.querySelector('[name="secretsshown"]:checked').value),
         sharelibrary: f.sharelibrary.checked,
+        lightart: f.lightart.checked,
         qbank: f.qbank ? Number(f.qbank.value) : undefined,
         nicknames: picked ? Number(picked.value) : 0,
         timezone: f.timezone.value,
