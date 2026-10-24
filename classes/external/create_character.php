@@ -47,6 +47,7 @@ final class create_character extends external_api {
             'nameform' => new external_value(PARAM_ALPHA, 'm or f'),
             'lineage' => new external_value(PARAM_ALPHA, 'Lineage, empty for none', VALUE_DEFAULT, ''),
             'appearance' => new external_value(PARAM_RAW, 'Look (JSON object)', VALUE_DEFAULT, '{}'),
+            'nature' => new external_value(PARAM_TEXT, 'Two words that describe the hero, separated by commas', VALUE_DEFAULT, ''),
         ]);
     }
 
@@ -58,6 +59,7 @@ final class create_character extends external_api {
      * @param string $nameform
      * @param string $lineage
      * @param string $appearance
+     * @param string $nature
      * @return array
      */
     public static function execute(
@@ -65,7 +67,8 @@ final class create_character extends external_api {
         string $role,
         string $nameform,
         string $lineage = '',
-        string $appearance = '{}'
+        string $appearance = '{}',
+        string $nature = ''
     ): array {
         global $USER;
         $params = self::validate_parameters(self::execute_parameters(), [
@@ -74,6 +77,7 @@ final class create_character extends external_api {
             'nameform' => $nameform,
             'lineage' => $lineage,
             'appearance' => $appearance,
+            'nature' => $nature,
         ]);
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
@@ -83,7 +87,9 @@ final class create_character extends external_api {
             $params['role'],
             $params['nameform'],
             $params['lineage'] === '' ? null : $params['lineage'],
-            self::appearance($params['appearance'])
+            self::appearance($params['appearance']),
+            null,
+            explode(',', $params['nature'])
         );
         return view::world($params['courseid'], (int) $USER->id);
     }

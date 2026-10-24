@@ -929,6 +929,7 @@ final class view {
             'role' => $char->role,
             'nameform' => $char->nameform,
             'lineage' => (string) $char->lineage,
+            'nature' => implode(',', characters::nature($char)),
             'nickname' => (string) $char->nickname,
             'appearance' => (string) $char->appearance,
             'saber' => (int) $char->saber,

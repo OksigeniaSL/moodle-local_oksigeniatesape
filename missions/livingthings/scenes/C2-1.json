@@ -26,6 +26,17 @@
  "nodes": {
   "intro": {
    "type": "story",
+   "nature": {
+    "curious": "«Tú, que lo preguntas todo: si una etiqueta no te convence, pregúntale al ser, no a la etiqueta.»",
+    "brave": "«Hace falta valor para decir que una etiqueta está mal. Tú lo tienes.»",
+    "calm": "«Despacio, que con prisa se escribieron estas etiquetas. Tú sabes ir despacio.»",
+    "cheerful": "«Menos mal que alguien sonríe hoy por aquí.»",
+    "tenacious": {
+     "valley": "«Son muchos estantes. Tú no te cansas, ¿verdad? Uno a uno.»",
+     "azara": "«Son muchas láminas. Tú no te cansas, ¿verdad? Una a una.»"
+    },
+    "dreamy": "«Cierra los ojos e imagina cada ser en su casa. Luego ábrelos y míralo bien.»"
+   },
    "speaker": "bibliotecaria",
    "image": "biblioteca-estantes",
    "text": {

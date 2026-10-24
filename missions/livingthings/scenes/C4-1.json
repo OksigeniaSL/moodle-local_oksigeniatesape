@@ -14,6 +14,23 @@
  "nodes": {
   "intro": {
    "type": "story",
+   "nature": {
+    "curious": "«Tú, que lo quieres saber todo: cada parte de la planta tiene un trabajo. Averígualo.»",
+    "brave": {
+     "valley": "«Hay que tocar la tierra y la raíz. A ti no te importa mancharte las manos.»",
+     "azara": "«Corregir un dibujo que hizo otro pide valor. A ti no te falta.»"
+    },
+    "calm": {
+     "valley": "«Una planta no tiene prisa. Tú tampoco: mírala entera antes de moverla.»",
+     "azara": "«Un dibujo bueno se hace sin prisa. Mira la planta entera antes de corregirlo.»"
+    },
+    "cheerful": {
+     "valley": "«Hasta la planta al revés parece más contenta desde que has llegado.»",
+     "azara": "«Hasta la jardinera sonríe desde que has llegado.»"
+    },
+    "tenacious": "«Si no sale a la primera, se prueba otra vez. Así se trabaja la tierra, y así trabajas tú.»",
+    "dreamy": "«Imagina que eres la raíz, a oscuras, buscando agua. ¿Dónde querrías estar?»"
+   },
    "speaker": "jardinera",
    "image": "jardin-planta-reves",
    "text": {

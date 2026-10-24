@@ -33,6 +33,12 @@ final class characters {
     /** @var string[] Lineages, only how the character looks in the fantasy families. */
     public const LINEAGES = ['human', 'elf', 'dwarf', 'fairy'];
 
+    /** @var string[] The words a student may choose to describe their hero: flavour that the scenes read. */
+    public const NATURES = ['curious', 'brave', 'calm', 'cheerful', 'tenacious', 'dreamy'];
+
+    /** @var int Words a hero is described with. */
+    public const NATURES_MOST = 2;
+
     /** @var int Days before a student can change role again. */
     public const ROLE_CHANGE_DAYS = 90;
 
@@ -59,6 +65,7 @@ final class characters {
      * @param string|null $lineage One of LINEAGES, or null.
      * @param array $appearance Parts and colours.
      * @param int|null $now
+     * @param string[] $nature Words that describe the hero (NATURES), two at most.
      * @return \stdClass
      */
     public static function create(
@@ -67,7 +74,8 @@ final class characters {
         string $nameform,
         ?string $lineage = null,
         array $appearance = [],
-        ?int $now = null
+        ?int $now = null,
+        array $nature = []
     ): \stdClass {
         global $DB;
         if (self::get($userid)) {
@@ -81,11 +89,52 @@ final class characters {
             'nameform' => $nameform,
             'lineage' => $lineage,
             'appearance' => self::encode_appearance($appearance),
+            'nature' => implode(',', self::clean_nature($nature)),
             'timecreated' => $now,
             'timemodified' => $now,
         ];
         $char->id = $DB->insert_record(self::TABLE, $char);
         return $DB->get_record(self::TABLE, ['id' => $char->id], '*', MUST_EXIST);
+    }
+
+    /**
+     * The words that describe a hero, as chosen.
+     *
+     * @param \stdClass $char
+     * @return string[]
+     */
+    public static function nature(\stdClass $char): array {
+        return self::clean_nature(explode(',', (string) ($char->nature ?? '')));
+    }
+
+    /**
+     * Words chosen to describe a hero: those that exist, each once, two at most.
+     *
+     * @param array $nature
+     * @return string[]
+     */
+    public static function clean_nature(array $nature): array {
+        $clean = array_values(array_unique(array_filter(
+            array_map(fn($w) => trim((string) $w), $nature),
+            fn($w) => in_array($w, self::NATURES, true)
+        )));
+        return array_slice($clean, 0, self::NATURES_MOST);
+    }
+
+    /**
+     * Changes the words that describe a hero: they are flavour, so they can change at any time.
+     *
+     * @param \stdClass $char
+     * @param array $nature
+     * @return \stdClass
+     */
+    public static function set_nature(\stdClass $char, array $nature): \stdClass {
+        global $DB;
+        $char->nature = implode(',', self::clean_nature($nature));
+        $char->timemodified = time();
+        $DB->update_record(self::TABLE, (object) ['id' => $char->id, 'nature' => $char->nature,
+            'timemodified' => $char->timemodified]);
+        return $char;
     }
 
     /**

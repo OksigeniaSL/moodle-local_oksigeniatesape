@@ -18,6 +18,26 @@
  "nodes": {
   "intro": {
    "type": "story",
+   "nature": {
+    "curious": "«Tú, que todo lo preguntas, ya sabes la respuesta: saber por qué estaba mal.»",
+    "brave": {
+     "valley": "«Mañana subimos a la torre. Me alegra que vengas tú.»",
+     "azara": "«Mañana entregamos el cuaderno. Me alegra que lo hayas escrito con nosotros.»"
+    },
+    "calm": {
+     "valley": "«Con calma se deshace cualquier nudo. Tú lo sabes desde el claro.»",
+     "azara": "«Con calma se deshace cualquier nudo. Tú lo sabes desde el primer día.»"
+    },
+    "cheerful": {
+     "valley": "«Que no se te borre la sonrisa: al Embrollo le molesta mucho.»",
+     "azara": "«Que no se te borre la sonrisa: los errores se arreglan mejor así.»"
+    },
+    "tenacious": "«Hemos llegado hasta aquí porque no te rendiste. Mañana, tampoco.»",
+    "dreamy": {
+     "valley": "«Imagina el valle con todas sus luces encendidas. Mañana lo vamos a ver.»",
+     "azara": "«Imagina el cuaderno terminado, sin un error. Mañana lo vamos a ver.»"
+    }
+   },
    "speaker": "druida-mayor",
    "image": "torre-ensayo",
    "text": {

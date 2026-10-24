@@ -31,6 +31,20 @@
  "nodes": {
   "intro": {
    "type": "story",
+   "nature": {
+    "curious": {
+     "valley": "«A ti, que todo lo preguntas: pregúntale al barro. Las huellas también cuentan cosas.»",
+     "azara": "«A ti, que todo lo preguntas: pregúntale a esa página manchada. Las manchas también cuentan cosas.»"
+    },
+    "brave": {
+     "valley": "«A ti no te asusta el barro, lo sé. Mira esas huellas de cerca, sin miedo.»",
+     "azara": "«A ti no te asusta una mancha rara. Mírala de cerca, sin miedo.»"
+    },
+    "calm": "«Tú, que miras sin prisa, verás antes que nadie lo que de verdad come y crece.»",
+    "cheerful": "«Tu risa le va a gustar a la semilla. Háblale bajito mientras buscas.»",
+    "tenacious": "«Tú no te rindes a la primera. Aquí hará falta: lo vivo no siempre se deja ver.»",
+    "dreamy": "«Tú, que imaginas lo que no se ve: imagina qué come quien duerme dentro de la semilla.»"
+   },
    "speaker": "druida-mayor",
    "image": "claro-semilla",
    "text": {

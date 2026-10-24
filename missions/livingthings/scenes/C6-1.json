@@ -14,6 +14,14 @@
  "nodes": {
   "intro": {
    "type": "story",
+   "nature": {
+    "curious": "«Tus preguntas son los mejores apartados: ¿qué come?, ¿dónde vive?, ¿cómo nace?»",
+    "brave": "«Escribir lo que ves, aunque no coincida con lo que dicen otros, pide valor. Tú lo tienes.»",
+    "calm": "«Una ficha se escribe sin prisa, con el ser delante. Tú sabes hacerlo así.»",
+    "cheerful": "«Que se note en la ficha que te gusta lo que miras.»",
+    "tenacious": "«Una ficha buena se repasa dos veces, y a ti no te importa repasar.»",
+    "dreamy": "«Imagina a alguien que nunca ha visto este ser. Escribe para que lo vea.»"
+   },
    "speaker": "bibliotecaria",
    "image": "torre-ficha",
    "text": {

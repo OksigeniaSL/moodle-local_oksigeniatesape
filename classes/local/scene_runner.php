@@ -91,6 +91,9 @@ final class scene_runner {
     /** @var string[] The roles teammates lend to the play («Shared trail»). */
     private array $lent = [];
 
+    /** @var string[] The words that describe whoever plays: options that ask for one of them are theirs. */
+    private array $natures = [];
+
     /** @var bool The shield has stopped a mistake in this play. */
     private bool $shielded = false;
 
@@ -194,6 +197,17 @@ final class scene_runner {
     }
 
     /**
+     * The words that describe whoever plays (characters::NATURES): an option that asks for one is there for them.
+     *
+     * @param string[] $natures
+     * @return self
+     */
+    public function natures(array $natures): self {
+        $this->natures = array_values($natures);
+        return $this;
+    }
+
+    /**
      * A play with the aids of the first steps: a core scene played by who is on the first step, without the hard items.
      *
      * @param bool $aided
@@ -207,7 +221,8 @@ final class scene_runner {
     /**
      * Whether a requirement is met.
      *
-     * @param array|null $requires {item: code}, {teamrole: role}, {role: own role}, {flag: code} or {any: [...]}.
+     * @param array|null $requires {item: code}, {teamrole: role}, {role: own role}, {nature: a word of the hero},
+     *     {flag: code} or {any: [...]}.
      * @return bool
      */
     public function has(?array $requires): bool {
@@ -227,6 +242,9 @@ final class scene_runner {
         }
         if (isset($requires['teamrole'])) {
             return in_array($requires['teamrole'], $this->teamroles, true);
+        }
+        if (isset($requires['nature'])) {
+            return in_array($requires['nature'], $this->natures, true);
         }
         if (isset($requires['any']) && is_array($requires['any'])) {
             foreach ($requires['any'] as $one) {

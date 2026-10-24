@@ -39,6 +39,7 @@ final class structures {
             'role' => new external_value(PARAM_ALPHA, 'protector, healer, sage or scout'),
             'nameform' => new external_value(PARAM_ALPHA, 'm or f'),
             'lineage' => new external_value(PARAM_ALPHA, 'Lineage, empty if none'),
+            'nature' => new external_value(PARAM_TEXT, 'Words that describe the hero, separated by commas', VALUE_DEFAULT, ''),
             'nickname' => new external_value(PARAM_TEXT, 'Hero name, empty if none'),
             'appearance' => new external_value(PARAM_RAW, 'Look of the character (JSON), empty if none'),
             'saber' => new external_value(PARAM_INT, 'Knowledge'),

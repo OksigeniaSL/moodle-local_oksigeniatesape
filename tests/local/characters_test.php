@@ -72,6 +72,20 @@ final class characters_test extends \advanced_testcase {
         $this->assertEquals(['hat' => 'none'], json_decode(characters::get($user->id)->appearance, true));
     }
 
+    public function test_two_words_that_describe_the_hero(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $user = $this->getDataGenerator()->create_user();
+        // Made with three words, one of them twice and one that does not exist: the first two that exist.
+        $char = characters::create($user->id, 'sage', 'f', null, [], null, ['calm', 'calm', 'sleepy', 'curious', 'brave']);
+        $this->assertSame(['calm', 'curious'], characters::nature($char));
+        // They change at any time, or go.
+        characters::set_nature($char, ['dreamy']);
+        $this->assertSame('dreamy', $DB->get_field('local_oksigeniatesape_char', 'nature', ['id' => $char->id]));
+        characters::set_nature($char, []);
+        $this->assertSame([], characters::nature(characters::get($user->id)));
+    }
+
     public function test_role_change_once_a_term(): void {
         $this->resetAfterTest();
         $user = $this->getDataGenerator()->create_user();

@@ -1012,5 +1012,15 @@ function xmldb_local_oksigeniatesape_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026102014, 'local', 'oksigeniatesape');
     }
 
+    if ($oldversion < 2026102404) {
+        // The two words that describe the hero: flavour that the scenes read.
+        $table = new xmldb_table('local_oksigeniatesape_char');
+        $field = new xmldb_field('nature', XMLDB_TYPE_CHAR, '40', null, null, null, null, 'rolechangedat');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        upgrade_plugin_savepoint(true, 2026102404, 'local', 'oksigeniatesape');
+    }
+
     return true;
 }

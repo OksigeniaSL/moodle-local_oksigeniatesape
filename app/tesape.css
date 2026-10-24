@@ -2913,6 +2913,14 @@ body.in-scene {
   font-weight: 600;
 }
 
+/* What a moment says to whoever is like this: the voice of the place, to them. */
+.scene-nature {
+  margin: 0 0 6px;
+  padding-left: 12px;
+  border-left: 3px solid rgba(var(--lantern-rgb), .7);
+  font-style: italic;
+}
+
 .opts {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -8727,6 +8735,41 @@ body.adapt-still .feed-face.eating .creature {
 }
 
 /* The sheet: what the role does, and what comes next as the hero grows. */
+/* Two words that describe the hero: on creating it, and on its sheet. */
+.nature-pick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.nature-chip {
+  min-height: 48px;
+  padding: 8px 18px;
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  background: var(--card-a);
+  color: var(--text);
+  font: inherit;
+  font-size: 17px;
+  cursor: pointer;
+}
+
+.nature-chip[aria-pressed="true"] {
+  border-color: var(--lantern);
+  background: rgba(var(--lantern-rgb), .22);
+  font-weight: 700;
+}
+
+.nature-chip:focus-visible {
+  outline: 3px solid var(--sky);
+  outline-offset: 2px;
+}
+
+.nature-line {
+  margin: 4px 0 0;
+}
+
 .traits {
   display: grid;
   gap: 2px;

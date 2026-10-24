@@ -21,6 +21,7 @@
         <FIELD NAME="creaturestage" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="0 before it hatches"/>
         <FIELD NAME="cosmetics" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="What it wears from the market: JSON with paint and aura"/>
         <FIELD NAME="rolechangedat" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Last change of role (one per term)"/>
+        <FIELD NAME="nature" TYPE="char" LENGTH="40" NOTNULL="false" SEQUENCE="false" COMMENT="Two words that describe the hero, chosen by the student: codes separated by commas"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>

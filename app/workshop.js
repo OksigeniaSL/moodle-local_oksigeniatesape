@@ -81,6 +81,9 @@
         // A piece of the information shared out: what only that role sees.
         return t('teach_ws_k_piece', T.roleName ? T.roleName(T.family || '', parts[parts.length - 1], 'm') :
           parts[parts.length - 1]);
+      case 'nature':
+        // What is said to whoever is described by a word.
+        return t('teach_ws_k_nature', T.natureName ? T.natureName(parts[parts.length - 1], 'm') : parts[parts.length - 1]);
       case 'intro':
         return t('teach_ws_k_intro');
       case 'offscreen':

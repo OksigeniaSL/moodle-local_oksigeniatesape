@@ -602,6 +602,34 @@
     return lineage ? T.t('lineage_' + lineage + '_' + (form || 'm')) : '';
   };
 
+  /** The words a student may choose to describe their hero, in the order they are offered. */
+  T.NATURES = ['curious', 'brave', 'calm', 'cheerful', 'tenacious', 'dreamy'];
+
+  /**
+   * A word that describes a hero, in the form of their name (curioso, curiosa).
+   *
+   * @param {string} word
+   * @param {string} form m or f.
+   * @return {string}
+   */
+  T.natureName = function(word, form) {
+    return T.NATURES.indexOf(word) >= 0 ? T.t('app_natureword_' + word + '_' + (form === 'f' ? 'f' : 'm')) : '';
+  };
+
+  /**
+   * The words of a hero said together («curiosa y tranquila»), or empty.
+   *
+   * @param {string} nature Codes separated by commas.
+   * @param {string} form m or f.
+   * @return {string}
+   */
+  T.natureSaid = function(nature, form) {
+    var words = String(nature || '').split(',').map(function(w) {
+      return T.natureName(w, form);
+    }).filter(Boolean);
+    return words.length > 1 ? T.t('app_nature_and', {a: words[0], b: words[1]}) : words[0] || '';
+  };
+
   /**
    * The emblem of Tesapé, in its small drawing (for 24 to 48 px).
    *

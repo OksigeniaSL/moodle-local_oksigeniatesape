@@ -715,6 +715,10 @@
         // The whole class, at the class screen, has the role of any of its players.
         return cm ? cm.roles.indexOf(req.role) >= 0 : hasRole(req.role);
       }
+      if (req.nature) {
+        // A word of the hero: the class, at the class screen, has none of its own.
+        return !cm && natures().indexOf(req.nature) >= 0;
+      }
       if (cm && req.item) {
         return cm.items.indexOf(req.item) >= 0;
       }
@@ -739,6 +743,32 @@
         return req.any.some(has);
       }
       return false;
+    }
+
+    /**
+     * The words that describe whoever plays, in the order they chose them.
+     *
+     * @return {string[]}
+     */
+    function natures() {
+      return world && world.character ? String(world.character.nature || '').split(',').filter(Boolean) : [];
+    }
+
+    /**
+     * What a moment says to whoever is described by one of their words (nature: {word: text}): the first of their words
+     * that it has. Nothing at the class screen.
+     *
+     * @param {Object} n The node.
+     * @return {string}
+     */
+    function natureSay(n) {
+      if (cm || !n.nature) {
+        return '';
+      }
+      var words = natures().filter(function(w) {
+        return n.nature[w];
+      });
+      return words.length ? tx(n.nature[words[0]]) : '';
     }
 
     function missing(req) {
@@ -881,6 +911,11 @@
      */
     function story(n) {
       var pieces = cut(tx(n.text));
+      // Then, what is said to whoever is like this.
+      var said = natureSay(n);
+      if (said) {
+        pieces.push(said);
+      }
       var at = 0;
       // Who speaks stands in the place, if the pack has their figure; then their round portrait is not needed.
       var figure = n.speaker ? T.artUrl(['figure.' + n.speaker + '.' + data.skin, 'figure.' + n.speaker]) : null;
@@ -1752,7 +1787,8 @@
         // the option of another role (each role sees only its own). What was tried and led back here is not there
         // either: the world changed, it is not the same question again.
         // In the backpack, only what is carried.
-        var hidden = o.requires && (o.requires.flag || o.requires.role || n.type === 'use') && !has(o.requires);
+        var hidden = o.requires && (o.requires.flag || o.requires.role || o.requires.nature || n.type === 'use') &&
+          !has(o.requires);
         return !hidden && tried.indexOf(o.id) < 0;
       }).map(function(o) {
         if (!has(o.requires)) {
@@ -1776,9 +1812,10 @@
           '<span class="opt-votes" data-votes></span></button>';
       }).join('');
       var voting = cm && cm.vote && !multi && open.length >= 2;
+      var said = natureSay(n);
       var body = show((n.image ? picture(n.image, data) : '') + clueBox() + pieces(n) + (n.recall ?
-        '<p class="justify-about">' + esc(n.recall) + '</p>' : '') + '<p class="scene-prompt">' + esc(tx(n.prompt)) +
-        '</p>' +
+        '<p class="justify-about">' + esc(n.recall) + '</p>' : '') + (said ? '<p class="scene-nature">' + esc(said) + '</p>' : '') +
+        '<p class="scene-prompt">' + esc(tx(n.prompt)) + '</p>' +
         (voting ? '<div class="class-vote" data-vote><button class="btn btn-soft" data-voteopen>' +
         esc(t('board_scene_voteopen')) + '</button></div>' : '') +
         '<div class="opts">' + opts + '</div>' + (canSniff(n, tried) ? '<div class="sniff-row"><button type="button" ' +

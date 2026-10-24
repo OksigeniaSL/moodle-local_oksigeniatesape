@@ -26,6 +26,14 @@
  "nodes": {
   "intro": {
    "type": "story",
+   "nature": {
+    "curious": "«Tú, que todo lo preguntas: pregunta por qué cada abrigo es como es. La respuesta está en quien lo lleva.»",
+    "brave": "«Los animales se esconden del frío. Tú no te escondes: acércate a ellos con cuidado.»",
+    "calm": "«Despacio. Quien sabe esperar ve más, y tú sabes: mira primero, decide después.»",
+    "cheerful": "«Con ese buen humor, hasta los que tiritan se animan a salir.»",
+    "tenacious": "«Hay muchos abrigos y poca luz. Tú no lo dejas a medias, lo sé.»",
+    "dreamy": "«Imagina el frío que pasaría una rana con plumas. Así sabrás de quién es cada abrigo.»"
+   },
    "speaker": "buho",
    "image": "bosque-abrigos",
    "text": {

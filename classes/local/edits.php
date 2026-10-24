@@ -431,6 +431,12 @@ final class edits {
                     $texts[$base . '/views/' . $role] = $text;
                 }
             }
+            // What is said to whoever is described by a word.
+            foreach ($node['nature'] ?? [] as $word => $text) {
+                if (self::is_text($text)) {
+                    $texts[$base . '/nature/' . $word] = $text;
+                }
+            }
             foreach (self::ELEMENTS as $list) {
                 foreach ($node[$list] ?? [] as $element) {
                     if (!is_array($element) || !isset($element['id'])) {
@@ -892,7 +898,7 @@ final class edits {
         foreach ($texts as $path => $text) {
             $original = self::resolve($text, $skin, $variant, $locals);
             $parts = explode('/', $path);
-            $grouped = in_array($parts[count($parts) - 2] ?? '', ['stuck', 'feedback', 'views'], true);
+            $grouped = in_array($parts[count($parts) - 2] ?? '', ['stuck', 'feedback', 'views', 'nature'], true);
             $kind = preg_match('/^\d+$/', end($parts)) || $grouped ? $parts[count($parts) - 2] : end($parts);
             $fields[] = [
                 'path' => $path,

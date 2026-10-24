@@ -226,6 +226,20 @@
       }
      ],
      "feedback": "La mancha está justo donde alguien quiso escribir «no vivo» deprisa, sin mirar. El Embrollo también ronda lo pequeño. Una gema por fijarse."
+    },
+    {
+     "id": "preguntar",
+     "label": "Preguntar por qué la botella con levadura huele a pan",
+     "requires": {
+      "nature": "curious"
+     },
+     "points": 1,
+     "effects": [
+      {
+       "gems": 1
+      }
+     ],
+     "feedback": "Al comerse el azúcar, la levadura suelta un gas que hincha el globo y ese olor a pan: es la levadura viva, trabajando. Una gema por preguntar."
     }
    ],
    "next": "resultado"

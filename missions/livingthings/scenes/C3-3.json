@@ -262,6 +262,42 @@
      ],
      "say": "Las huellas van hacia el cubo del barquero, que gotea, y el explorador la lleva allí. Una gema por leer el rastro.",
      "feedback": "Las huellas se cortaban a medio camino: con la pata lastimada, no podía llegar al agua que buscaba. Un anfibio busca la humedad porque la necesita para su piel."
+    },
+    {
+     "id": "calma",
+     "label": "Quedarse junto a la salamandra, sin prisa, y mojarle la piel con las manos",
+     "requires": {
+      "nature": "calm"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      },
+      {
+       "flag": "salamandra-a-la-sombra"
+      }
+     ],
+     "say": "Con calma y las manos mojadas, la salamandra deja de forcejear y se queda a la sombra. Una gema por no tener prisa.",
+     "feedback": "A un anfibio se le toca con las manos mojadas: su piel es fina y también respira por ella. Con prisa, se habría escurrido al sol."
+    },
+    {
+     "id": "imaginar",
+     "label": "Imaginar dónde se escondería, si fueras tan pequeño como ella",
+     "requires": {
+      "nature": "dreamy"
+     },
+     "points": 2,
+     "effects": [
+      {
+       "gems": 1
+      },
+      {
+       "flag": "salamandra-a-la-sombra"
+      }
+     ],
+     "say": "Te imaginas bajo una tabla húmeda, a oscuras: allí la llevas, y al rato mueve la pata. Una gema por ponerte en su lugar.",
+     "feedback": "Las salamandras buscan sitios húmedos y oscuros, bajo las piedras y las hojas, porque su piel fina se seca enseguida."
     }
    ],
    "next": "rumbo"

@@ -24,6 +24,23 @@
  "nodes": {
   "intro": {
    "type": "story",
+   "nature": {
+    "curious": {
+     "valley": "«Tú, que todo lo preguntas: pregúntale a cada cosa si come, si crece y si tiene crías. Lo que conteste que sí, al nido.»",
+     "azara": "«Tú, que todo lo preguntas: pregúntale a cada cosa si come, si crece y si tiene crías. Lo que conteste que sí, al cajón.»"
+    },
+    "brave": "«No te fíes de lo que da miedo ni de lo que parece bonito. Tú miras de cerca, sin asustarte.»",
+    "calm": "«Tú, que miras sin prisa: no todo lo que se mueve está vivo, ni todo lo quieto está muerto.»",
+    "cheerful": {
+     "valley": "«A la semilla le gusta oír reír. Llénale el nido de vida, y de risa también.»",
+     "azara": "«A la semilla le gusta oír reír. Llena el cajón de vida, y de risa también.»"
+    },
+    "tenacious": "«Si una cosa no cabe, se saca y se prueba otra. Tú no te cansas de probar.»",
+    "dreamy": {
+     "valley": "«Imagina el nido lleno de vida dentro de un año. ¿Qué habrá crecido? Eso es lo que está vivo.»",
+     "azara": "«Imagina el cajón dentro de un año. ¿Qué habrá crecido? Eso es lo que está vivo.»"
+    }
+   },
    "speaker": "druida-mayor",
    "image": "claro-nido",
    "text": {

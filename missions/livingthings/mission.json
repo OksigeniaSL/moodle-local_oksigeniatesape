@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 73,
+ "version": 74,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 74,
+   "kind": "improvement",
+   "date": "2026-10-24",
+   "text": "Las dos palabras que describen al héroe: en la entrada de cada lugar, quien habla le dice algo según cómo es, y algunas escenas tienen una opción solo para quien es curioso, tranquilo o soñador"
+  },
   {
    "version": 73,
    "kind": "improvement",

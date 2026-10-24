@@ -30,6 +30,17 @@
  "nodes": {
   "intro": {
    "type": "story",
+   "nature": {
+    "curious": "Tú, que todo lo preguntas, ya te estás preguntando quién vivirá cerca del agua por la noche.",
+    "brave": "Te gusta la noche, y no te asusta la oscuridad. Aun así, elige bien dónde dormir.",
+    "calm": "Sin prisa, miras la orilla antes de decidir. Así se acampa bien.",
+    "cheerful": "Te ríes porque se oyen ranas por todas partes. Ellas también buscan su sitio.",
+    "tenacious": "Ha sido un día largo, pero tú todavía tienes fuerzas para hacerlo bien.",
+    "dreamy": {
+     "valley": "Imaginas el lago de noche, lleno de vida que de día no se ve.",
+     "azara": "Imaginas el río de noche, lleno de vida que de día no se ve."
+    }
+   },
    "speaker": "narrador",
    "image": "lago-atardecer",
    "text": {

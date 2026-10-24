@@ -47,7 +47,7 @@
       return;
     }
     if (!w.character) {
-      state.draft = {role: '', nameform: 'm', lineage: '', look: null};
+      state.draft = {role: '', nameform: 'm', lineage: '', look: null, nature: []};
       // The first time, the prologue of the mission: what happened in the valley, before choosing who to be.
       if (w.opening && w.opening.beats.length) {
         opening(0);
@@ -103,6 +103,8 @@
     if (T.hasLineages(state.world.family) || lookChanges(state.draft, 1)) {
       list.push('look');
     }
+    // Then, two words that describe the hero.
+    list.push('nature');
     var i = list.indexOf(current);
     return {
       list: list,
@@ -119,7 +121,7 @@
       create();
       return;
     }
-    ({role: chooseRole, form: chooseForm, look: chooseLook})[step]();
+    ({role: chooseRole, form: chooseForm, look: chooseLook, nature: chooseNature})[step]();
     window.scrollTo(0, 0);
   }
 
@@ -612,7 +614,8 @@
       role: d.role,
       nameform: d.nameform,
       lineage: T.hasLineages(state.world.family) ? d.lineage : '',
-      appearance: JSON.stringify(d.look)
+      appearance: JSON.stringify(d.look),
+      nature: (d.nature || []).join(',')
     }).then(function(world) {
       var played = !!(state.world && state.world.opening);
       state.world = world;
@@ -650,6 +653,60 @@
       }
       T.toast(esc(e.message), true);
     });
+  }
+
+  /**
+   * The words to describe a hero, as buttons that are pressed or not.
+   *
+   * @param {string[]} chosen
+   * @param {string} form m or f.
+   * @return {string}
+   */
+  function natureChips(chosen, form) {
+    return '<div class="nature-pick" role="group" aria-label="' + esc(t('app_nature_title')) + '">' +
+      T.NATURES.map(function(w) {
+        return '<button type="button" class="nature-chip" data-word="' + w + '" aria-pressed="' + (chosen.indexOf(w) >= 0) +
+          '">' + esc(T.natureName(w, form)) + '</button>';
+      }).join('') + '</div>';
+  }
+
+  /**
+   * Two words at most: a third one takes the place of the first chosen.
+   *
+   * @param {Element} box
+   * @param {string[]} chosen Changed as the words are touched.
+   */
+  function bindNatureChips(box, chosen) {
+    box.querySelectorAll('[data-word]').forEach(function(b) {
+      b.onclick = function() {
+        var at = chosen.indexOf(b.dataset.word);
+        if (at >= 0) {
+          chosen.splice(at, 1);
+        } else {
+          chosen.push(b.dataset.word);
+          if (chosen.length > 2) {
+            chosen.shift();
+          }
+        }
+        box.querySelectorAll('[data-word]').forEach(function(o) {
+          o.setAttribute('aria-pressed', chosen.indexOf(o.dataset.word) >= 0);
+        });
+      };
+    });
+  }
+
+  /**
+   * Two words that describe the hero: the people of the valley speak to them differently, and some ways open only to
+   * one of them. None is fine too: they can be chosen later, on the sheet.
+   */
+  function chooseNature() {
+    var s = steps('nature');
+    var d = state.draft;
+    d.nature = d.nature || [];
+    app.innerHTML = '<div class="story">' + s.bar + '<h2>' + esc(t('app_nature_title')) + '</h2><p class="help">' +
+      esc(t('app_nature_help')) + '</p>' + natureChips(d.nature, d.nameform) + nav(s) + '</div>';
+    bindNatureChips(app, d.nature);
+    bindNav(s);
   }
 
   function nav(s) {
@@ -3856,7 +3913,8 @@
       esc(T.creatureMark(c.creature)) + '</small>' : '') + petCare(c) + '</div>' : '';
     var unlock = nextUnlock(c);
     return '<section class="card sheet"><div class="sheet-art">' + avatarOf(c, title(c)) + creature + '</div><div class="stats"><h2>' + esc(myName()) +
-      '</h2><p style="color:var(--text-soft)">' + esc(rank(c)) + ' · ' + esc(title(c)) + '</p>' + traits(c) + talentsHtml(c) + skillsHtml(c) +
+      '</h2><p style="color:var(--text-soft)">' + esc(rank(c)) + ' · ' + esc(title(c)) + '</p>' + natureHtml(c) + traits(c) +
+      talentsHtml(c) + skillsHtml(c) +
       '<div class="stat"><span>' + esc(t('app_level')) + '</span><b>' + c.level + '</b></div>' +
       '<div class="meter level" style="margin:6px 0 4px"><i style="width:' + pct + '%"></i></div><small style="color:' +
       'var(--text-soft)">' + esc(c.levelneeded ? t('app_tonext', c.levelneeded - c.levelinto) : t('app_maxlevel')) +
@@ -4515,8 +4573,51 @@
     layer.querySelector('button').focus();
   }
 
+  /**
+   * The two words of the hero on their sheet, to change them at any time; or the invitation to choose them.
+   *
+   * @param {Object} c The character.
+   * @return {string}
+   */
+  function natureHtml(c) {
+    var said = T.natureSaid(c.nature, c.nameform);
+    return '<p class="nature-line no-print">' + (said ? esc(t('app_nature_you', said)) + ' ' : '') + '<button type="button" ' +
+      'class="ws-link" data-nature>' + esc(t(said ? 'app_nature_change' : 'app_nature_choose')) + '</button></p>';
+  }
+
+  /** The words of the hero, chosen again: saved at once, the scenes read them from the next play. */
+  function natureMoment() {
+    var c = state.world.character;
+    var chosen = String(c.nature || '').split(',').filter(Boolean);
+    var layer = moment('<h2 id="tesape-nature-title">' + esc(t('app_nature_title')) + '</h2><p class="help">' +
+      esc(t('app_nature_help_later')) + '</p>' + natureChips(chosen, c.nameform) + '<div class="actions"><button type="button" ' +
+      'class="btn btn-main" data-savenature>' + esc(t('app_save')) + '</button></div>', 'tesape-nature-title');
+    var close = layer.querySelector('[data-close]');
+    close.textContent = t('app_cancel');
+    close.className = 'btn btn-soft';
+    bindNatureChips(layer, chosen);
+    var save = layer.querySelector('[data-savenature]');
+    layer.querySelector('[data-word]').focus();
+    save.onclick = function() {
+      save.disabled = true;
+      T.api('set_nature', {courseid: cfg.courseid, nature: chosen.join(',')}).then(function(w) {
+        state.world = w;
+        close.click();
+        world();
+        T.toast(esc(t('app_saved')));
+      }).catch(function(e) {
+        save.disabled = false;
+        T.toast(esc(e.message), true);
+      });
+    };
+  }
+
   function bindMe() {
     var c = state.world.character;
+    var nature = app.querySelector('[data-nature]');
+    if (nature) {
+      nature.onclick = natureMoment;
+    }
     // A pat for the creature: it is happy, and that is all.
     var pet = app.querySelector('[data-petme]');
     if (pet) {

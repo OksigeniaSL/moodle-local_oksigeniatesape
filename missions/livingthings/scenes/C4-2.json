@@ -15,6 +15,20 @@
  "nodes": {
   "intro": {
    "type": "story",
+   "nature": {
+    "curious": "«Tú, que lo quieres saber todo: pregúntate qué les falta, no qué les sobra.»",
+    "brave": {
+     "valley": "«Bajar al sótano a oscuras no asusta a cualquiera. A ti no.»",
+     "azara": "«Entrar a oscuras en el almacén no asusta a cualquiera. A ti no.»"
+    },
+    "calm": "«Las plantas pálidas se curan sin prisa. Tú sabes esperar a que respondan.»",
+    "cheerful": {
+     "valley": "«Con tu buen humor, hasta este sótano parece menos oscuro.»",
+     "azara": "«Con tu buen humor, hasta este almacén parece menos oscuro.»"
+    },
+    "tenacious": "«Si la primera cosa no basta, se prueba otra. Tú no te rindes con ellas.»",
+    "dreamy": "«Imagina que eres una de esas plantas, encerrada. ¿Qué echarías de menos?»"
+   },
    "speaker": "jardinera",
    "image": "sotano-plantas-palidas",
    "text": {

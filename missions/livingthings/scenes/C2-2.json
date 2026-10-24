@@ -17,6 +17,32 @@
  "nodes": {
   "intro": {
    "type": "story",
+   "nature": {
+    "curious": {
+     "valley": "«Tú, que lo preguntas todo: pregunta qué tiene cada ser por dentro y por fuera. Así se sabe su estante.»",
+     "azara": "«Tú, que lo preguntas todo: pregunta qué tiene cada ser por dentro y por fuera. Así se sabe su caja.»"
+    },
+    "brave": {
+     "valley": "«Cambiar de sitio un libro que otro puso mal pide valor. Tú lo tienes.»",
+     "azara": "«Cambiar de caja una muestra que otro puso mal pide valor. Tú lo tienes.»"
+    },
+    "calm": {
+     "valley": "«Despacio, que la torre cruje. Tú sabes poner las cosas en su sitio sin prisa.»",
+     "azara": "«Despacio, que el barco espera. Tú sabes poner las cosas en su sitio sin prisa.»"
+    },
+    "cheerful": {
+     "valley": "«Menos mal que alguien sonríe en esta torre que cruje.»",
+     "azara": "«Menos mal que alguien sonríe entre tantas cajas.»"
+    },
+    "tenacious": {
+     "valley": "«Son muchos grupos. Tú no lo dejas a medias: estante a estante.»",
+     "azara": "«Son muchos grupos. Tú no lo dejas a medias: caja a caja.»"
+    },
+    "dreamy": {
+     "valley": "«Imagina a cada ser en su casa de verdad. Su estante se parece a esa casa.»",
+     "azara": "«Imagina a cada ser en su casa de verdad. Así sabrás en qué caja va.»"
+    }
+   },
    "speaker": "bibliotecaria",
    "image": "biblioteca-torre",
    "text": {

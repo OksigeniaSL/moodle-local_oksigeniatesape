@@ -510,7 +510,8 @@ final class scenes {
         }
         $items = array_values(array_unique($items));
         $runner = new scene_runner($scene->data, $items, $roles, $flags, $char->role);
-        $runner->aided(self::aided($member, $scene))->shields(self::shields($char, $courseid));
+        $runner->aided(self::aided($member, $scene))->shields(self::shields($char, $courseid))
+            ->natures(characters::nature($char));
         // What teammates with a talent for the team bring to a play as a team: their guard, and their trail.
         $players = array_merge([$char], array_map(fn($p) => $p['char'], $team));
         if ($team && self::gift($players, 'teamguard', $courseid)) {

@@ -69,6 +69,17 @@
   },
   "intro": {
    "type": "story",
+   "nature": {
+    "curious": "«Tú, que todo lo preguntas, sabrás que la mejor pregunta es la que parte en dos lo que queda.»",
+    "brave": "«Hace falta valor para preguntar poco y decidir. Tú lo tienes.»",
+    "calm": "«Sin prisa. Antes de preguntar, mira bien el rastro: él ya dice mucho.»",
+    "cheerful": {
+     "valley": "«Hasta el búho guardián parece de mejor humor contigo.»",
+     "azara": "«Hasta el baqueano parece de mejor humor contigo.»"
+    },
+    "tenacious": "«Si una pregunta no sirve, piensa la siguiente. Tú no te rindes.»",
+    "dreamy": "«Imagina quién pudo dejar ese rastro, y luego pregunta para saber si tienes razón.»"
+   },
    "speaker": "buho",
    "image": "bosque-rastro",
    "text": {

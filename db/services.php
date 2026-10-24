@@ -46,6 +46,13 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:play',
     ],
+    'local_oksigeniatesape_set_nature' => [
+        'classname' => 'local_oksigeniatesape\external\set_nature',
+        'description' => 'Changes the two words that describe the current student\'s hero.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:play',
+    ],
     'local_oksigeniatesape_get_class' => [
         'classname' => 'local_oksigeniatesape\external\get_class',
         'description' => 'The class of a course for its teachers: settings, students and their characters, teams and challenges.',

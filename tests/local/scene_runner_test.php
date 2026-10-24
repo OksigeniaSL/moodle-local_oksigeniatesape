@@ -92,6 +92,20 @@ final class scene_runner_test extends \advanced_testcase {
      * The creature sniffs a choice: it strikes out the option marked as clearly not it, once a play, with the creature
      * hatched; the evidence says the answer came after it.
      */
+    public function test_an_option_for_a_word_of_the_hero(): void {
+        $scene = ['nodes' => ['q' => ['type' => 'choice', 'options' => [
+            ['id' => 'a', 'label' => 'A'],
+            ['id' => 'calma', 'label' => 'B', 'requires' => ['nature' => 'calm']],
+        ]]]];
+        $runner = new scene_runner($scene, [], [], [], 'scout');
+        $this->assertFalse($runner->has(['nature' => 'calm']));
+        $runner->natures(['curious', 'calm']);
+        $this->assertTrue($runner->has(['nature' => 'calm']));
+        $this->assertFalse($runner->has(['nature' => 'brave']));
+        // Among others that can be had: any of them is enough.
+        $this->assertTrue($runner->has(['any' => [['role' => 'sage'], ['nature' => 'curious']]]));
+    }
+
     public function test_the_creature_sniffs_out_one_option_once_a_play(): void {
         $scene = ['id' => 'T', 'start' => 'q', 'nodes' => [
             'q' => ['type' => 'choice', 'prompt' => '?', 'objective' => 'SV-01', 'options' => [

@@ -27,6 +27,14 @@
  "nodes": {
   "intro": {
    "type": "story",
+   "nature": {
+    "curious": "«Tú, que preguntas el porqué de todo: pregunta quién come a quién, y verás cómo se mueve todo lo que vive aquí.»",
+    "brave": "«Aquí hay quien caza y quien huye. Tú mira a los dos sin miedo.»",
+    "calm": "«Esto se entiende mirando sin prisa, como miro yo. Tú sabes esperar y mirar.»",
+    "cheerful": "«Con tu risa se ha asomado hasta un pez. Aprovecha y míralo bien.»",
+    "tenacious": "«Las flechas son muchas y se cruzan. Tú las seguirás hasta el final.»",
+    "dreamy": "«Imagina que sigues la comida de boca en boca, de un ser a otro. Así se dibujan las flechas.»"
+   },
    "speaker": "garza",
    "image": "lago-cadenas",
    "text": {
