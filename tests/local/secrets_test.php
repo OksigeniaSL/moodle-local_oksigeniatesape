@@ -72,9 +72,16 @@ final class secrets_test extends \advanced_testcase {
         $last = secrets::find($char, $member, 'huella-6');
         $this->assertStringContainsString('sin comprobar', $last['set']);
         $this->assertTrue($has('flag', 'seis-huellas'));
+        // On the map itself, between the places: an owl dozing in a pine, found the same way.
+        $this->assertEqualsCanonicalizing(['buho-dormido', 'hebra-invernadero'], array_column(
+            secrets::in_place($char, $mission, 'map', secrets::found($char, $mission)),
+            'id'
+        ));
+        $this->assertStringContainsString('búho', secrets::find($char, $member, 'buho-dormido')['text']);
+        $this->assertSame(['hebra-invernadero'], array_column(view::mission($course->id, $char, $member)['mapsecrets'], 'id'));
         $album = secrets::album($mission, secrets::found($char, $mission));
-        $this->assertCount(8, $album['found']);
-        $this->assertSame(8, $album['total']);
+        $this->assertCount(9, $album['found']);
+        $this->assertSame(10, $album['total']);
         // No saber nor gems for a secret.
         $this->assertSame(0, (int) $DB->count_records(self::T . 'ledger', ['charid' => $char->id]));
         // A secret that does not exist is not found.

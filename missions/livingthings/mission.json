@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 72,
+ "version": 73,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 73,
+   "kind": "improvement",
+   "date": "2026-10-24",
+   "text": "Dos secretos en el mapa, entre los lugares: un búho que dormita en lo alto de un pino y una hebra lila enganchada en el invernadero"
+  },
   {
    "version": 72,
    "kind": "improvement",
@@ -2534,6 +2540,28 @@
    "text": {
     "valley": "Bajo una hoja grande y medio podrida asoma una página suelta del Gran Libro, húmeda por los bordes. Debajo, la tierra está llena de bichitos.",
     "azara": "Bajo una hoja grande y medio podrida asoma una nota suelta del cuaderno, húmeda por los bordes. Debajo, la tierra está llena de bichitos."
+   }
+  },
+  {
+   "id": "buho-dormido",
+   "place": "map",
+   "kind": "thing",
+   "x": 50,
+   "y": 268,
+   "text": {
+    "valley": "En lo alto de un pino, un búho dormita con un ojo medio abierto. Lleva muchas noches mirando el valle, y ha visto pasar a alguien hecho de hilo lila.",
+    "azara": "En lo alto de un árbol, una lechuza dormita con un ojo medio abierto. Lleva muchas noches vigilando el campamento, y ha visto pasar a alguien con prisa."
+   }
+  },
+  {
+   "id": "hebra-invernadero",
+   "place": "map",
+   "kind": "thing",
+   "x": 368,
+   "y": 284,
+   "text": {
+    "valley": "Enganchada en la puerta del invernadero, una hebra lila. El Embrollo pasó por aquí de noche, y con prisa.",
+    "azara": "Enganchada en una estaca del huerto, una hebra lila. Alguien pasó por aquí de noche, y con prisa."
    }
   }
  ],

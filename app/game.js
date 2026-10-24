@@ -1831,6 +1831,13 @@
     if (T.fx) {
       T.fx.ambient(T.fx.place(current.art || current.code), current.code);
     }
+    // The secrets of the map itself, between the places: a glint to touch, as in the paintings.
+    var secrets = state.visit ? '' : (m.mapsecrets || []).map(function(x) {
+      return '<foreignObject x="' + (x.x - 16) + '" y="' + (x.y - 16) + '" width="32" height="32" class="map-secret-fo">' +
+        '<button xmlns="http://www.w3.org/1999/xhtml" type="button" class="secret map-secret ' + esc(x.kind) + '" ' +
+        'data-secret="' + esc(x.id) + '" data-secretplace="map" aria-label="' + esc(t('app_secret_look')) + '"><span ' +
+        'aria-hidden="true">' + (x.kind === 'print' ? INKPRINT : '✦') + '</span></button></foreignObject>';
+    }).join('');
     // The card of the day goes over the map, outside it (the landmarks sit on its top edge), both in one column.
     var card = state.visit ? '' : cardToday();
     return (card ? '<div class="map-col">' + card : '') + '<div class="map-wrap' + (height > 640 ? ' tall' : '') +
@@ -1839,7 +1846,8 @@
       '" role="group" aria-label="' + esc(m.title) + '"><defs>' + T.MAPGLOW + '</defs>' + T.mapGround(m) +
       T.mapLandmarks(m) + T.mapNight(m) + '<polyline points="' + pts + '" class="road"/>' +
       (walked ? '<polyline points="' + walked + '" class="road walked"/>' : '') + roadDrawing(fresh) +
-      (T.critters ? T.critters.fireflies(m) : '') + prints + places + crowd + blots + minions + thread + me + pet + hungry + '</svg></div>' + (card ? '</div>' : '');
+      (T.critters ? T.critters.fireflies(m) : '') + prints + places + secrets + crowd + blots + minions + thread + me + pet + hungry +
+      '</svg></div>' + (card ? '</div>' : '');
   }
 
   /**
@@ -2540,10 +2548,15 @@
     btn.disabled = true;
     T.api('find_secret', {courseid: cfg.courseid, id: id}).then(function(r) {
       // Out of the painting, and into the album.
+      var m = state.world.mission;
       ch.secrets = (ch.secrets || []).filter(function(x) {
         return x.id !== id;
       });
-      var m = state.world.mission;
+      if (m && m.mapsecrets) {
+        m.mapsecrets = m.mapsecrets.filter(function(x) {
+          return x.id !== id;
+        });
+      }
       if (m && m.secrets) {
         m.secrets.found.push({id: id, kind: btn.classList.contains('print') ? 'print' : 'thing', text: r.text});
       }
@@ -3022,7 +3035,8 @@
     app.querySelectorAll('[data-secret]').forEach(function(b) {
       b.onclick = function(ev) {
         ev.stopPropagation();
-        var ch = (state.world.mission.chapters || []).filter(function(x) {
+        // One of the map itself belongs to no place.
+        var ch = b.dataset.secretplace === 'map' ? {} : (state.world.mission.chapters || []).filter(function(x) {
           return x.id === Number(b.dataset.secretplace);
         })[0];
         if (ch) {

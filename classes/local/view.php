@@ -434,6 +434,8 @@ final class view {
             'chapters' => $list,
             'pages' => $pages,
             'secrets' => secrets::album($mission, $secretsfound),
+            // The secrets of the map itself, between the places (an owl dozing in a pine): those still hidden.
+            'mapsecrets' => secrets::in_place($char, $mission, 'map', $secretsfound),
             // The names the Embrollo puts to the places, a prank a day on the map of each student.
             'pranks' => array_map(fn($code, $name) => ['chapter' => (string) $code, 'name' => missions::text(
                 $name,
