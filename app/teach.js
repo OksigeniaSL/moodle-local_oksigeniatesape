@@ -155,10 +155,10 @@
   var TABS = ['class', 'powers', 'mission', 'competencies', 'challenges', 'log'];
 
   /** What the game can adapt for a student (as adapt::ALL on the server). */
-  var ADAPT = ['bigtext', 'readaloud', 'notime', 'still', 'contrast', 'colours', 'quiet', 'hints'];
+  var ADAPT = ['bigtext', 'readaloud', 'easyread', 'notime', 'still', 'contrast', 'colours', 'quiet', 'hints'];
 
   /** The profiles of one touch, and what each one marks (as adapt::PROFILES on the server). */
-  var PROFILES = {reading: ['readaloud', 'bigtext', 'hints'], calm: ['notime', 'quiet', 'still'], sight: ['bigtext', 'contrast']};
+  var PROFILES = {reading: ['readaloud', 'easyread', 'bigtext', 'hints'], calm: ['notime', 'quiet', 'still'], sight: ['bigtext', 'contrast']};
 
   /**
    * The buttons of the profiles of one touch.

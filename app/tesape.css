@@ -2913,6 +2913,28 @@ body.in-scene {
   font-weight: 600;
 }
 
+/* The easy reading of a scene, in the workshop: what the AI proposed shows until it is saved. */
+.ws-easy {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: var(--r-s);
+  background: rgba(255, 255, 255, .04);
+}
+
+.ws-easy > summary {
+  cursor: pointer;
+}
+
+.ws-easy .ws-field small {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text-soft);
+}
+
+.ws-easy textarea.proposed {
+  border-color: var(--lilac);
+}
+
 /* A word of the glossary in a text: it reads as the text, underlined with dots, and opens its card. */
 .gloss {
   display: inline;

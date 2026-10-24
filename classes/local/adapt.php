@@ -33,14 +33,14 @@ final class adapt {
      * @var string[] The adaptations: big text, reading aloud, no hurry, no movement, high contrast, colours that do not
      *     depend on red and green, no sounds, and more help (hints that cost no breath).
      */
-    public const ALL = ['bigtext', 'readaloud', 'notime', 'still', 'contrast', 'colours', 'quiet', 'hints'];
+    public const ALL = ['bigtext', 'readaloud', 'easyread', 'notime', 'still', 'contrast', 'colours', 'quiet', 'hints'];
 
     /** @var string[] Those of comfort, which the student can turn on: they do not change the game. */
-    public const COMFORT = ['bigtext', 'readaloud', 'still', 'contrast', 'colours', 'quiet'];
+    public const COMFORT = ['bigtext', 'readaloud', 'easyread', 'still', 'contrast', 'colours', 'quiet'];
 
     /** @var array Profiles of one touch for the teacher, and what each one marks (added to what was marked). */
     public const PROFILES = [
-        'reading' => ['readaloud', 'bigtext', 'hints'],
+        'reading' => ['readaloud', 'easyread', 'bigtext', 'hints'],
         'calm' => ['notime', 'quiet', 'still'],
         'sight' => ['bigtext', 'contrast'],
     ];

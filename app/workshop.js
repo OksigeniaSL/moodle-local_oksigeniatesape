@@ -148,8 +148,44 @@
       html += fieldHtml(sc.code, f);
     });
     html += node !== null ? '</div>' : '';
+    html += easyHtml(sc);
     return html + (sc.changed ? '<div class="actions" style="justify-content:flex-start"><button class="btn btn-soft" ' +
       'data-restorescene="' + esc(sc.code) + '">' + esc(t('teach_ws_sceneorig')) + '</button></div>' : '');
+  }
+
+  /**
+   * The easy reading of the texts of a scene: for the students who have it marked, the scene says these instead. The AI
+   * of the site can propose them; nothing is kept until the teacher saves it.
+   *
+   * @param {Object} sc
+   * @return {string}
+   */
+  function easyHtml(sc) {
+    if (!(sc.easy || []).length) {
+      return '';
+    }
+    var moments = {};
+    var m = 0;
+    sc.fields.forEach(function(f) {
+      if (f.node && !(f.node in moments)) {
+        moments[f.node] = ++m;
+      }
+    });
+    var ai = state.data.ai && state.data.ai.canuse;
+    return '<details class="ws-easy" data-easy="' + esc(sc.code) + '"><summary><b>' + esc(t('teach_ws_easy')) + '</b>' +
+      changes(sc.easy.filter(function(f) {
+        return f.changed;
+      }).length) + '</summary><p class="help">' + esc(t('teach_ws_easy_help')) + '</p>' + (ai ? '<div class="actions" ' +
+      'style="justify-content:flex-start"><button type="button" class="btn btn-soft" data-easydraft="' + esc(sc.code) + '">' +
+      esc(t('teach_ws_easydraft')) + '</button><button type="button" class="btn btn-main" data-easysave="' + esc(sc.code) +
+      '" hidden>' + esc(t('teach_ws_easysave')) + '</button></div><p class="help-soft" data-easysaid aria-live="polite"></p>' :
+      '') + sc.easy.map(function(f) {
+        return '<label class="ws-field' + (f.changed ? ' changed' : '') + '" data-field="' + esc(f.path) + '"><span>' +
+          esc(t('teach_ws_moment', moments[f.node] || 1) + ' · ' + t('teach_ws_k_' + f.kind)) + '</span><small>' +
+          esc(f.source) + '</small><textarea rows="' + Math.min(8, Math.max(2, Math.ceil(f.source.length / 75))) +
+          '" maxlength="' + f.max + '" data-scene="' + esc(sc.code) + '" ' +
+          'data-path="' + esc(f.path) + '">' + esc(f.text) + '</textarea></label>';
+      }).join('') + '</details>';
   }
 
   function stepName(sc) {
@@ -681,7 +717,12 @@
           return fieldHtml(MISSION, f);
         }).join('') + knotDrafts(ch);
     } else {
+      // The easy reading stays open while the teacher works on it.
+      var easyopen = !!body.querySelector('.ws-easy[open]');
       body.innerHTML = sceneBody(findScene(details.dataset.code));
+      if (easyopen) {
+        body.querySelector('.ws-easy').open = true;
+      }
     }
   }
 
@@ -758,7 +799,8 @@
         return;
       }
       var area = ev.target;
-      if (area.tagName !== 'TEXTAREA' || !area.dataset.path) {
+      // A proposal of the AI is saved with the others, with «Save the easy reading».
+      if (area.tagName !== 'TEXTAREA' || !area.dataset.path || area.classList.contains('proposed')) {
         return;
       }
       save(area.dataset.scene, area.dataset.path, area.value.trim(), area.closest('.ws-scene'));
@@ -777,6 +819,53 @@
         }).catch(function(e) {
           draft.disabled = false;
           box.innerHTML = '';
+          T.toast(esc(e.message), true);
+        });
+        return;
+      }
+      var easydraft = ev.target.closest('[data-easydraft]');
+      if (easydraft) {
+        var easybox = easydraft.closest('.ws-easy');
+        var said = easybox.querySelector('[data-easysaid]');
+        easydraft.disabled = true;
+        said.textContent = t('teach_ws_easywait');
+        // Not through api(): what comes back is a proposal, not the workshop.
+        T.api('edit_mission', {courseid: cfg.courseid, action: 'easydraft', scene: easydraft.dataset.easydraft}).then(function(r) {
+          var proposal = JSON.parse(r.json);
+          easydraft.disabled = false;
+          Object.keys(proposal).forEach(function(path) {
+            var area = easybox.querySelector('textarea[data-path="' + path + '"]');
+            if (area) {
+              area.value = proposal[path];
+              area.classList.add('proposed');
+            }
+          });
+          var n = Object.keys(proposal).length;
+          said.textContent = n ? t('teach_ws_easyproposed', n) : t('teach_ws_easynone');
+          easybox.querySelector('[data-easysave]').hidden = !n;
+        }).catch(function(e) {
+          easydraft.disabled = false;
+          said.textContent = '';
+          T.toast(esc(e.message), true);
+        });
+        return;
+      }
+      var easysave = ev.target.closest('[data-easysave]');
+      if (easysave) {
+        // The proposals, saved one after the other; the scene is drawn again at the end.
+        var easyholder = easysave.closest('.ws-scene');
+        var areas = Array.prototype.slice.call(easysave.closest('.ws-easy').querySelectorAll('textarea.proposed'));
+        easysave.disabled = true;
+        areas.reduce(function(chain, area) {
+          return chain.then(function() {
+            return api('save', {scene: area.dataset.scene, path: area.dataset.path, value: area.value.trim()});
+          });
+        }, Promise.resolve()).then(function() {
+          fill(easyholder);
+          counts();
+          T.toast(esc(t('app_saved')));
+        }).catch(function(e) {
+          easysave.disabled = false;
           T.toast(esc(e.message), true);
         });
         return;

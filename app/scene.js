@@ -865,6 +865,18 @@
       close.focus();
     }
 
+    /**
+     * A text of a node (its narration or its question), in easy reading for whoever has it marked, if the scene has it.
+     *
+     * @param {Object} n The node.
+     * @param {string} key text or prompt.
+     * @return {*}
+     */
+    function easy(n, key) {
+      var simple = key === 'text' ? n.easy : n.easyprompt;
+      return !cm && T.adapted.easyread && simple ? simple : n[key];
+    }
+
     // A word of the glossary, touched anywhere in the scene: its card.
     layer.addEventListener('click', function(ev) {
       var b = ev.target.closest && ev.target.closest('[data-gloss]');
@@ -1014,7 +1026,7 @@
      * @param {Object} n The node.
      */
     function story(n) {
-      var pieces = cut(tx(n.text));
+      var pieces = cut(tx(easy(n, 'text')));
       // Each word of the glossary, marked the first time it appears in the moment (each piece, worked out once).
       var glossed = {};
       var marked = [];
@@ -1432,7 +1444,7 @@
       var known = run.clues.map(function(c) {
         return tx(sc.clues[c]);
       });
-      return {node: run.node, kind: kind, prompt: n.prompt ? tx(n.prompt) : '', options: options, views: views, known: known,
+      return {node: run.node, kind: kind, prompt: n.prompt ? tx(easy(n, 'prompt')) : '', options: options, views: views, known: known,
         hand: hand ? Number(hand.userid) : Number(cfg.userid), bins: bins, max: max,
         min: Math.min(max, (n.select && n.select.min) || 1)};
     }
@@ -1923,7 +1935,7 @@
       var said = natureSay(n);
       var body = show((n.image ? picture(n.image, data) : '') + clueBox() + pieces(n) + (n.recall ?
         '<p class="justify-about">' + esc(n.recall) + '</p>' : '') + (said ? '<p class="scene-nature">' + esc(said) + '</p>' : '') +
-        '<p class="scene-prompt">' + glossify(tx(n.prompt), {}) + '</p>' +
+        '<p class="scene-prompt">' + glossify(tx(easy(n, 'prompt')), {}) + '</p>' +
         (voting ? '<div class="class-vote" data-vote><button class="btn btn-soft" data-voteopen>' +
         esc(t('board_scene_voteopen')) + '</button></div>' : '') +
         '<div class="opts">' + opts + '</div>' + (canSniff(n, tried) ? '<div class="sniff-row"><button type="button" ' +
@@ -2162,7 +2174,7 @@
       var right = {};
       var chosen = null;
       var trip = 1;
-      var body = show((n.image ? stage(n.image, n.speaker) : '') + pieces(n) + '<p class="scene-prompt">' + glossify(tx(n.prompt), {}) +
+      var body = show((n.image ? stage(n.image, n.speaker) : '') + pieces(n) + '<p class="scene-prompt">' + glossify(tx(easy(n, 'prompt')), {}) +
         '</p><div data-cls></div><div data-out></div>');
       var box = body.querySelector('[data-cls]');
       hintArea(n, body);
@@ -2347,7 +2359,7 @@
           go(n.next);
           return;
         }
-        var body = show(pieces(n) + '<p class="scene-prompt">' + glossify(tx(n.prompt), {}) + '</p><ol class="built">' +
+        var body = show(pieces(n) + '<p class="scene-prompt">' + glossify(tx(easy(n, 'prompt')), {}) + '</p><ol class="built">' +
           built.map(function(s) {
           return '<li>' + esc(tx(s.label)) + '</li>';
         }).join('') + '</ol><div class="opts">' + pool.filter(function(s) {
@@ -2433,7 +2445,7 @@
             esc(t('app_card_back', tx(o.label))) + '">' + esc(tx(o.label)) + '</button>' :
             '<span class="card-gap" aria-hidden="true"></span>');
         }
-        var body = show((n.image ? picture(n.image, data) : '') + pieces(n) + '<p class="scene-prompt">' + glossify(tx(n.prompt), {}) +
+        var body = show((n.image ? picture(n.image, data) : '') + pieces(n) + '<p class="scene-prompt">' + glossify(tx(easy(n, 'prompt')), {}) +
           '</p><div class="fill-card" data-card><div class="fill-card-title">' + esc(tx(n.cardtitle || '')) + '</div>' +
           gaps.join('') + '</div><div class="card-pieces">' + usable.filter(function(o) {
             return placed.indexOf(o.id) < 0;
@@ -2666,7 +2678,7 @@
             esc(tx(s.label)) + '"' + (got || miss || done ? ' disabled' : '') + '>' + (got ? '<span>' + esc(tx(s.label)) +
             '</span>' : '') + '</button>';
         }).join('');
-        var body = show(pieces(n) + '<p class="scene-prompt">' + glossify(tx(n.prompt), {}) + '</p><p class="find-count">' +
+        var body = show(pieces(n) + '<p class="scene-prompt">' + glossify(tx(easy(n, 'prompt')), {}) + '</p><p class="find-count">' +
           esc(t('app_find_count', found.length + '/' + need)) + '</p>' + (world ? '<div class="on-painting find-on" hidden>' + marks +
           '</div>' : '<div class="find-map">' + picture(image, data) + marks + '</div>') + '<div data-out>' + (said || '') +
           (done ? '<div class="actions"><button class="btn btn-main" data-go>' + esc(t('app_continue')) + '</button></div>' :
@@ -2756,7 +2768,7 @@
         var at = done.length ? done[done.length - 1] : from;
         // With the place alive, the journey is on its painting; else, on a picture in the page.
         var world = onPainting(image);
-        var body = show(pieces(n) + '<p class="scene-prompt">' + glossify(tx(n.prompt), {}) + '</p>' + (world ?
+        var body = show(pieces(n) + '<p class="scene-prompt">' + glossify(tx(easy(n, 'prompt')), {}) + '</p>' + (world ?
           '<div class="on-painting path-on" hidden>' : '<div class="path-map">' + picture(image, data)) + n.steps.map(function(s, i) {
             var visited = done.indexOf(s) >= 0;
             return '<button type="button" class="path-stop' + (visited ? ' visited' : '') + '" data-id="' + esc(s.id) + '" ' +
@@ -2866,7 +2878,7 @@
           picture(last.image, data) : '') + '<p>' + esc(tx(last.text || '')) + '</p>' + (last.feedback ? '<small>' +
           esc(tx(last.feedback)) + '</small>' : '') + '</div>' : (n.image && !world ? picture(n.image, data) : '');
         var more = last && !last.correct && round < rounds;
-        var body = show(pieces(n) + shown + '<p class="scene-prompt">' + glossify(tx(n.prompt), {}) + '</p>' + (last && (last.correct ||
+        var body = show(pieces(n) + shown + '<p class="scene-prompt">' + glossify(tx(easy(n, 'prompt')), {}) + '</p>' + (last && (last.correct ||
           !more) ? '' : '<div class="opts tend-items">' + items.map(function(it) {
           var on = chosen.indexOf(it.id) >= 0;
           return '<button type="button" class="opt' + (on ? ' sel' : '') + '" data-id="' + esc(it.id) + '" aria-pressed="' +
@@ -3003,7 +3015,7 @@
       box.querySelector('[data-voteopen]').onclick = function() {
         this.disabled = true;
         // The node and its options go with the vote: what the class votes wrong counts in what confuses it.
-        cm.vote.open(tx(n.prompt), open.map(function(o) {
+        cm.vote.open(tx(easy(n, 'prompt')), open.map(function(o) {
           return tx(o.label);
         }), {node: run.node, ids: open.map(function(o) {
           return o.id;
@@ -3038,7 +3050,7 @@
         var result = answers[0];
         var success = result.outcome !== 'retry';
         celebrate(result.outcome, null);
-        var body = show(picture(n.image || sceneImage(), data) + '<p class="scene-text">' + esc(tx(n.text)) + '</p>' + (success ?
+        var body = show(picture(n.image || sceneImage(), data) + '<p class="scene-text">' + glossify(tx(easy(n, 'text')), {}) + '</p>' + (success ?
           '<div class="conseq good"><span class="what">' + esc(t('board_scene_rewarded', result.rewarded)) + '</span></div>' :
           '') + better(result) + whatif(success) + '<div class="actions">' + (success ? '<button class="btn btn-main" ' +
           'data-focus data-map>' +
@@ -3231,7 +3243,7 @@
         var pet = before.creature && !r.hatched ? '<div class="end-creature ' + (success ? 'happy' : 'smudged') + '">' +
           '<span class="end-pet" aria-hidden="true">' + T.creature(before.creature, world.character.creaturestage) +
           '</span><small>' + esc(t(success ? 'app_creature_happy' : 'app_creature_smudged', creatureName())) + '</small></div>' : '';
-        var body = show(picture(n.image || sceneImage(), data) + '<p class="scene-text">' + esc(tx(n.text)) + '</p>' + pet + hatch + levelup +
+        var body = show(picture(n.image || sceneImage(), data) + '<p class="scene-text">' + glossify(tx(easy(n, 'text')), {}) + '</p>' + pet + hatch + levelup +
           (lines.length ? '<div class="conseq good"><span class="what">' + esc(t('app_forcharacter')) + '</span>' +
           lines.map(esc).join('<br>') + '</div>' : '') + done + better(result) + whatif(success) + '<div class="actions">' +
           (success ?

@@ -65,6 +65,9 @@ final class edits {
         'name', 'claim', 'laugh', 'weakness', 'why', 'ask', 'expect', 'mistake', 'redirect', 'spare', 'cardtitle',
         'reveal_after', 'after'];
 
+    /** @var string[] The easy reading of a text of a node: its key => the key of the text it says again. */
+    public const EASY = ['easy' => 'text', 'easyprompt' => 'prompt'];
+
     /** @var string[] Lists of elements with an id, in a node. */
     private const ELEMENTS = ['options', 'items', 'bins', 'steps', 'spots'];
 
@@ -531,6 +534,14 @@ final class edits {
             }
             return self::store($courseid, (string) $mission->code, $scene, $path, $value);
         }
+        if ($scene !== self::MISSION && isset(self::easy_paths($original)[$path])) {
+            // The easy reading of a text: empty, the scene says the text as it is.
+            $value = trim(clean_param($value, PARAM_TEXT));
+            if (\core_text::strlen($value) > self::MAX_TEXT) {
+                throw new \invalid_parameter_exception('Too long');
+            }
+            return self::store($courseid, (string) $mission->code, $scene, $path, $value);
+        }
         if (!array_key_exists($path, self::texts($original, $scene === self::MISSION))) {
             throw new \invalid_parameter_exception('Not a text that can be changed: ' . $path);
         }
@@ -834,6 +845,8 @@ final class edits {
                     'sniffcame' => $came,
                     'sniff' => isset($mine[self::SNIFF]) ? $mine[self::SNIFF] === 'on' : $came,
                     'enabled' => ($mine[self::ENABLED] ?? '') !== 'off',
+                    // The easy reading of its texts, for the students who have it marked.
+                    'easy' => self::easy_fields($def, $mine, $skin, $variant),
                 ];
             }
             usort($list, fn($a, $b) => [$a['quest'], $a['step'], $a['code']] <=> [$b['quest'], $b['step'], $b['code']]);
@@ -927,6 +940,145 @@ final class edits {
             ];
         }
         return $fields;
+    }
+
+    /**
+     * Where the easy reading of each text of a scene goes: path => the key of the text it says again.
+     *
+     * @param array $definition Of a scene.
+     * @return array
+     */
+    private static function easy_paths(array $definition): array {
+        $paths = [];
+        foreach ($definition['nodes'] ?? [] as $nodeid => $node) {
+            foreach (self::EASY as $easy => $of) {
+                if (self::is_text($node[$of] ?? null)) {
+                    $paths['nodes/' . $nodeid . '/' . $easy] = $of;
+                }
+            }
+        }
+        return $paths;
+    }
+
+    /**
+     * The easy reading of the texts of a scene, for the workshop: each with the text it says again (as the course has
+     * it now), what it says, and whether the teacher wrote it.
+     *
+     * @param array $definition Of a scene, as the mission has it.
+     * @param array $mine The changes of the course in it.
+     * @param string $skin
+     * @param string $variant
+     * @return array path, node, kind (easy or easyprompt), source, text, changed.
+     */
+    private static function easy_fields(array $definition, array $mine, string $skin, string $variant): array {
+        $locals = $definition['locals'] ?? [];
+        $fields = [];
+        foreach (self::easy_paths($definition) as $path => $of) {
+            $parts = explode('/', $path);
+            $node = $definition['nodes'][$parts[1]];
+            $source = $mine['nodes/' . $parts[1] . '/' . $of] ?? self::resolve($node[$of], $skin, $variant, $locals);
+            $fields[] = [
+                'path' => $path,
+                'node' => $parts[1],
+                'kind' => $parts[2],
+                'source' => (string) $source,
+                'text' => array_key_exists($path, $mine) ? (string) $mine[$path] :
+                    self::resolve($node[$parts[2]] ?? '', $skin, $variant, $locals),
+                'changed' => array_key_exists($path, $mine),
+                'max' => self::MAX_TEXT,
+            ];
+        }
+        return $fields;
+    }
+
+    /**
+     * The easy reading of the texts of a scene, proposed by the AI of the site: shorter sentences, one idea in each,
+     * common words, the same facts. Kept nowhere: the teacher reads it, changes what they want and saves it.
+     *
+     * @param int $courseid
+     * @param string $code Of the scene.
+     * @param int $userid
+     * @return array path => text.
+     */
+    public static function easy_proposal(int $courseid, string $code, int $userid): array {
+        global $DB;
+        $status = nextclass::status($courseid, $userid);
+        if (!$status['ai'] || !$status['canuse']) {
+            throw new \moodle_exception('authoring_noai', 'local_oksigeniatesape');
+        }
+        if (!$status['policy']) {
+            throw new \moodle_exception('authoring_aipolicy', 'local_oksigeniatesape');
+        }
+        $mission = missions::get($courseid);
+        $scene = $mission ? $DB->get_record(self::T . 'scene', ['missionid' => $mission->id, 'code' => $code]) : null;
+        if (!$scene) {
+            throw new \invalid_parameter_exception('Not a scene of the mission');
+        }
+        $definition = json_decode((string) $scene->definition, true) ?: [];
+        $mine = self::of($courseid, (string) $mission->code)[$code] ?? [];
+        $sources = [];
+        foreach (self::easy_fields($definition, $mine, (string) $mission->skin, (string) $mission->variant) as $field) {
+            $sources[$field['path']] = $field['source'];
+        }
+        if (!$sources) {
+            return [];
+        }
+        $prompt = "You rewrite the texts of a scene of an educational role-playing game in easy reading, for students aged " .
+            ($mission->data['ages'] ?? '9-11') . " who read with difficulty (dyslexia, another language at home), in the " .
+            "language of this code: " . current_language() . ". Rules: short sentences, one idea in each; common words; the " .
+            "active voice; no metaphors, irony or double meanings; the same facts, names, people who speak and decisions, " .
+            "without adding anything or giving away any answer; keep {{creature}} and {{name}} exactly as they are; keep " .
+            "the quotes of who speaks with «»; a question stays a question; not longer than the original; the same way " .
+            "of addressing the reader (in Spanish, the student is «tú», never the plural «vosotros» nor its forms such as " .
+            "«os» or «fiéis», and never the verb «coger»). The teacher " .
+            "will read every text.\n\nThe texts, as JSON (key => text):\n" . json_encode($sources, JSON_UNESCAPED_UNICODE) .
+            "\n\nAnswer with only a JSON object with the same keys and the texts rewritten.";
+        $manager = \core\di::get(\core_ai\manager::class);
+        $contextid = \context_course::instance($courseid)->id;
+        $again = 'Your previous answer was not valid JSON with those keys. Answer again with only the JSON.';
+        foreach ([$prompt, $prompt . "\n\n" . $again] as $text) {
+            try {
+                $response = $manager->process_action(new \core_ai\aiactions\generate_text($contextid, $userid, $text));
+            } catch (\Throwable $e) {
+                throw new \moodle_exception('authoring_aifailed', 'local_oksigeniatesape', '', null, $e->getMessage());
+            }
+            if (!$response->get_success()) {
+                $why = $response->get_errormessage();
+                throw new \moodle_exception('authoring_aifailed', 'local_oksigeniatesape', '', null, $why);
+            }
+            $answer = (string) ($response->get_response_data()['generatedcontent'] ?? '');
+            $start = strpos($answer, '{');
+            $end = strrpos($answer, '}');
+            $data = $start !== false && $end !== false ? json_decode(substr($answer, $start, $end - $start + 1), true) : null;
+            $proposal = is_array($data) ? self::clean_easy($data, $sources) : [];
+            if ($proposal) {
+                return $proposal;
+            }
+        }
+        throw new \moodle_exception('authoring_aifailed', 'local_oksigeniatesape');
+    }
+
+    /**
+     * A proposal of easy reading cleaned as anything a teacher writes: only the texts asked for, and only those that say
+     * something other than the text they come from.
+     *
+     * @param array $data path => text, as the AI answered.
+     * @param array $sources path => the text it says again.
+     * @return array path => text.
+     */
+    public static function clean_easy(array $data, array $sources): array {
+        // The plural that is never said to the students, and the verb that is never used with them: a text that brings
+        // them where the original did not have them is left out.
+        $never = '/(?<!\p{L})(os|vosotros|vosotras|coger|coge|cogemos)(?!\p{L})|\p{L}+éis(?!\p{L})/iu';
+        $out = [];
+        foreach ($sources as $path => $source) {
+            $text = \core_text::substr(trim(clean_param((string) ($data[$path] ?? ''), PARAM_TEXT)), 0, self::MAX_TEXT);
+            if ($text === '' || $text === trim($source) || (preg_match($never, $text) && !preg_match($never, $source))) {
+                continue;
+            }
+            $out[$path] = $text;
+        }
+        return $out;
     }
 
     /**
@@ -1056,8 +1208,9 @@ final class edits {
                 }
             }
         }
-        if ($at === null && (array_key_exists($key, $data) || (!$path && $key === 'taken'))) {
-            // The questions taken for a knot are the only thing a change adds that the mission did not have.
+        if ($at === null && (array_key_exists($key, $data) || (!$path && ($key === 'taken' || isset(self::EASY[$key]))))) {
+            // The questions taken for a knot and the easy reading of a text are what a change adds that the mission did
+            // not have.
             $at = $key;
         }
         if ($at === null) {

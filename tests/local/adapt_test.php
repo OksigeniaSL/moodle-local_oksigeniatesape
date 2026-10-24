@@ -91,15 +91,15 @@ final class adapt_test extends \advanced_testcase {
         );
         // What it marks is added to what was marked; who has no character yet is left out.
         $this->assertSame([
-            ['userid' => (int) $users[0]->id, 'adapt' => ['bigtext', 'readaloud', 'colours', 'hints']],
-            ['userid' => (int) $users[1]->id, 'adapt' => ['bigtext', 'readaloud', 'hints']],
+            ['userid' => (int) $users[0]->id, 'adapt' => ['bigtext', 'readaloud', 'easyread', 'colours', 'hints']],
+            ['userid' => (int) $users[1]->id, 'adapt' => ['bigtext', 'readaloud', 'easyread', 'hints']],
         ], $result['students']);
         // One student, from their sheet.
         $result = external_api::clean_returnvalue(
             set_adapt::execute_returns(),
             set_adapt::execute($course->id, $users[1]->id, [], [], 'calm')
         );
-        $this->assertSame(['bigtext', 'readaloud', 'notime', 'still', 'quiet', 'hints'], $result['adapt']);
+        $this->assertSame(['bigtext', 'readaloud', 'easyread', 'notime', 'still', 'quiet', 'hints'], $result['adapt']);
         $this->expectException(\invalid_parameter_exception::class);
         set_adapt::execute($course->id, $users[1]->id, [], [], 'magic');
     }

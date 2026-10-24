@@ -187,6 +187,42 @@ final class edits_test extends \advanced_testcase {
         }
     }
 
+    public function test_the_easy_reading_of_a_scene_is_written_and_the_game_reads_it(): void {
+        $this->resetAfterTest();
+        $course = $this->make_course();
+        $scene = null;
+        foreach (edits::view($course->id)['chapters'][0]['scenes'] as $one) {
+            $scene = $one['code'] === 'C1-2' ? $one : $scene;
+        }
+        $easy = array_column($scene['easy'], null, 'path');
+        $this->assertArrayHasKey('nodes/intro/easy', $easy);
+        $this->assertArrayHasKey('nodes/elegir/easyprompt', $easy);
+        $this->assertSame('', $easy['nodes/intro/easy']['text']);
+        $this->assertStringContainsString('nido', $easy['nodes/intro/easy']['source']);
+        // Written by the teacher: the scene has it beside the text, for whoever has it marked.
+        $this->assertTrue(edits::save($course->id, 'C1-2', 'nodes/intro/easy', 'La druida señala el nido. Caben cinco cosas.'));
+        $id = (int) $this->scene($course->id, 'C1-2')->id;
+        $this->assertSame('La druida señala el nido. Caben cinco cosas.', scenes::get($course->id, $id)->data['nodes']['intro']['easy']);
+        $this->assertNotSame('', scenes::get($course->id, $id)->data['nodes']['intro']['text']);
+        // Only where there is a text to say again.
+        try {
+            edits::save($course->id, 'C1-2', 'nodes/nowhere/easy', 'Algo');
+            $this->fail('Not a node of the scene');
+        } catch (\invalid_parameter_exception $e) {
+            $this->assertStringContainsString('Not a text', $e->getMessage());
+        }
+        // What the AI proposes: only what was asked, and only what says something else.
+        $sources = ['nodes/intro/easy' => 'Un texto largo.', 'nodes/elegir/easyprompt' => '¿Qué llevamos?'];
+        $this->assertSame(['nodes/intro/easy' => 'Un texto.'], edits::clean_easy([
+            'nodes/intro/easy' => ' Un texto. ',
+            'nodes/elegir/easyprompt' => '¿Qué llevamos?',
+            'nodes/otro/easy' => 'Nada',
+        ], $sources));
+        // Never the plural «vosotros» where the original did not have it.
+        $this->assertSame([], edits::clean_easy(['nodes/intro/easy' => 'No os fiéis de las etiquetas.'], $sources));
+        $this->assertSame([], edits::clean_easy(['nodes/intro/easy' => '¿Qué podéis llevar?'], $sources));
+    }
+
     public function test_the_teacher_switches_the_sniffing_of_the_creature_in_a_scene(): void {
         $this->resetAfterTest();
         $course = $this->make_course();

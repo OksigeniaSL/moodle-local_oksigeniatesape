@@ -34,7 +34,7 @@ use local_oksigeniatesape\local\missions;
 final class edit_mission extends external_api {
     /** @var string[] What can be done. */
     private const ACTIONS = ['view', 'save', 'questions', 'secrets', 'restore', 'export', 'import', 'courses', 'copy', 'skip',
-        'challenge', 'knotdraft', 'knotaccept'];
+        'challenge', 'knotdraft', 'knotaccept', 'easydraft'];
 
     /**
      * Parameters.
@@ -48,8 +48,9 @@ final class edit_mission extends external_api {
                 PARAM_ALPHA,
                 'view, save, questions, secrets (value, the secrets of the teacher in JSON), restore, export, import, ' .
                     'courses, copy, skip (a place: value on, or empty to go back), challenge (of a place: value, the ' .
-                    'classroom challenge, 0 none), knotdraft (lanes for the knot in scene, by the AI) or knotaccept ' .
-                    '(value, a question in JSON, for the knot in scene)'
+                    'classroom challenge, 0 none), knotdraft (lanes for the knot in scene, by the AI), knotaccept ' .
+                    '(value, a question in JSON, for the knot in scene) or easydraft (the easy reading of the texts of ' .
+                    'scene, by the AI)'
             ),
             'scene' => new external_value(
                 PARAM_RAW,
@@ -128,6 +129,10 @@ final class edit_mission extends external_api {
             // A proposal of the AI of the site, kept nowhere: the teacher takes what they want.
             require_capability('local/oksigeniatesape:aidraft', $context);
             return ['json' => json_encode(edits::knot_proposal($params['courseid'], $scene, (int) $USER->id))];
+        } else if ($params['action'] === 'easydraft') {
+            // A proposal of the AI of the site, kept nowhere: the teacher reads it, changes it and saves it.
+            require_capability('local/oksigeniatesape:aidraft', $context);
+            return ['json' => json_encode(edits::easy_proposal($params['courseid'], $scene, (int) $USER->id))];
         } else if ($params['action'] === 'knotaccept') {
             $question = json_decode($params['value'], true);
             edits::knot_accept($params['courseid'], $scene, is_array($question) ? $question : []);

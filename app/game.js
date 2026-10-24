@@ -4079,7 +4079,7 @@
   }
 
   /** The adaptations a student can turn on for themselves: they do not change the game. */
-  var COMFORT = ['bigtext', 'readaloud', 'still', 'contrast', 'colours', 'quiet'];
+  var COMFORT = ['bigtext', 'readaloud', 'easyread', 'still', 'contrast', 'colours', 'quiet'];
 
   /**
    * How the student sees and hears the game better: what they turn on, and what their teacher marked, already on.
