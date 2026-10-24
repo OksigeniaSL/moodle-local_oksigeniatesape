@@ -73,6 +73,12 @@ final class get_board extends external_api {
                 'map' => new external_value(PARAM_ALPHANUMEXT, 'Code of the painted map', VALUE_DEFAULT, ''),
                 'mapworld' => new external_value(PARAM_ALPHANUMEXT, 'World of a map in layers', VALUE_DEFAULT, ''),
                 'mapheight' => new external_value(PARAM_INT, 'Height of a map in layers', VALUE_DEFAULT, 0),
+                'seasons' => new external_single_structure([
+                    'spring' => new external_value(PARAM_TEXT, 'What happens in spring'),
+                    'summer' => new external_value(PARAM_TEXT, 'What happens in summer'),
+                    'autumn' => new external_value(PARAM_TEXT, 'What happens in autumn'),
+                    'winter' => new external_value(PARAM_TEXT, 'What happens in winter'),
+                ], 'What happens in the world of the mission in each season', VALUE_OPTIONAL),
                 'chapters' => new external_multiple_structure(new external_single_structure([
                     'id' => new external_value(PARAM_INT, 'Chapter'),
                     'code' => new external_value(PARAM_ALPHANUMEXT, 'Code'),

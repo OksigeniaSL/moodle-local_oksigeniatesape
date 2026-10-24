@@ -467,15 +467,22 @@
       return;
     }
     if (s.shown === 'light') {
-      // The rite of the lantern: the place, its lantern lighting up; then the map, with its new road.
+      // The rite of the lantern, a short scene: the painting of the place under the sky of now, slowly closer, its
+      // lantern lighting up and what is told of it; then the map, with its new road.
       var lamp = T.artUrl(['map.lantern.on']);
+      var painting = T.artUrl(['scene.' + (s.litart || s.litcode)]);
+      var sky = T.sky();
       var rite = document.createElement('div');
-      rite.className = 'session-show shows-light';
+      rite.className = 'session-show shows-light light-scene sky-' + sky.light;
       rite.setAttribute('role', 'dialog');
       rite.setAttribute('aria-modal', 'true');
-      rite.innerHTML = '<div class="show-card"><div class="kicker">' + esc(t('board_session_light')) + '</div><div ' +
-        'class="show-lantern" aria-hidden="true">' + (lamp ? '<img src="' + esc(lamp) + '" alt="">' : '<span class="flame">' +
-        '</span>') + '</div><h1>' + esc(s.lit || '') + '</h1></div>';
+      rite.setAttribute('aria-label', t('board_light_scene', s.lit || ''));
+      rite.innerHTML = '<div class="light-scene-art" aria-hidden="true">' + (painting ? '<img src="' + esc(painting) +
+        '" alt="">' : '') + '<i class="light-scene-tint"></i><svg viewBox="0 0 400 225" preserveAspectRatio="xMidYMid slice">' +
+        T.skyAir(sky.season, 400, 225, 18, 7) + '</svg></div><div class="show-card"><div class="kicker">' +
+        esc(t('board_session_light')) + '</div><div class="show-lantern" aria-hidden="true">' + (lamp ? '<img src="' +
+        esc(lamp) + '" alt="">' : '<span class="flame"></span>') + '</div><h1>' + esc(s.lit || '') + '</h1>' + (s.litline ?
+        '<p class="light-line">' + esc(s.litline) + '</p>' : '') + '</div>';
       document.body.appendChild(rite);
       state.showEl = rite;
       if (T.fx) {
@@ -487,7 +494,7 @@
           state.showEl = null;
         }
         load(false);
-      }, 6500);
+      }, s.litline ? 10000 : 6500);
       return;
     }
     var el = document.createElement('div');
@@ -2188,8 +2195,8 @@
     var drawn = fresh.road ? fresh.road.replace('/>', ' style="animation-delay:' + (0.3 + fresh.delay) + 's,' +
       (2.4 + fresh.delay) + 's"/>') : '';
     return '<section class="board-map"><h2>' + esc(m.title) + '</h2><div class="map-wrap' + (height > 640 ? ' tall' : '') +
-      '"><svg class="map" viewBox="0 0 400 ' + height + '" role="img" aria-label="' + esc(m.title) + '"><defs>' + T.MAPGLOW +
-      '</defs>' + T.mapGround(m) + T.mapLandmarks(m) + T.mapNight(m) +
+      '">' + T.skyChip(m) + '<svg class="map" viewBox="0 0 400 ' + height + '" role="img" aria-label="' + esc(m.title) + '"><defs>' +
+      T.MAPGLOW + '</defs>' + T.mapGround(m) + T.mapLandmarks(m) + T.mapNight(m) + T.mapSky(m) +
       '<polyline points="' + pts + '" class="road"/>' + (lit ? '<polyline points="' + walked + '" class="road walked"/>' : '') +
       drawn + (T.critters ? T.critters.fireflies(m) : '') + places + '</svg></div>' + fogNote(m, fog) + fromFar() + classRow() +
       pastExpeditions() + '</section>';

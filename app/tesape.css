@@ -13815,3 +13815,198 @@ body.still .pet-me.patted .creature {
     animation: none;
   }
 }
+
+/* The sky of the map: the season and the light now, to touch. */
+.sky-chip {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  max-width: min(320px, calc(100% - 16px));
+}
+
+.map-wrap.tall .sky-chip {
+  position: sticky;
+  float: right;
+  height: 0;
+  overflow: visible;
+}
+
+.sky-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 4px 12px 4px 8px;
+  border: 1px solid rgba(255, 255, 255, .25);
+  border-radius: 16px;
+  background: rgba(10, 24, 36, .78);
+  color: #eef3f6;
+  font: 700 13px var(--f-text);
+  cursor: pointer;
+}
+
+.sky-btn:disabled {
+  cursor: default;
+}
+
+.sky-say {
+  margin: 6px 0 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(10, 24, 36, .92);
+  color: #eef3f6;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.sky-chip .sky-when {
+  display: none;
+}
+
+.sky-when {
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* On the map of the student, a landmark more: the sky of the hour in its picture, and its text under the row. */
+.map-landmarks {
+  right: 8px;
+  flex-wrap: wrap;
+}
+
+.map-landmarks .sky-say {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: min(340px, 100%);
+}
+
+.sky-mark .landmark-pic {
+  border-color: rgba(255, 255, 255, .5);
+}
+
+.sky-mark.sky-dawn .landmark-pic {
+  background: linear-gradient(#5b4a7a, #f0a37f);
+}
+
+.sky-mark.sky-day .landmark-pic {
+  background: linear-gradient(#4f8fc4, #a9d4f0);
+}
+
+.sky-mark.sky-dusk .landmark-pic {
+  background: linear-gradient(#4a3a6a, #e8784a);
+}
+
+.sky-mark.sky-night .landmark-pic {
+  background: linear-gradient(#0b1530, #22355e);
+}
+
+@media (max-width: 600px) {
+  .sky-btn {
+    padding: 4px 7px;
+  }
+
+  .sky-btn span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .sky-chip .sky-when {
+    display: block;
+  }
+}
+
+.map-wrap.zoomed .sky-chip {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* The lantern lit on the board, a short scene in the painting of the place. */
+.light-scene {
+  overflow: hidden;
+}
+
+.light-scene-art {
+  position: absolute;
+  inset: 0;
+}
+
+.light-scene-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(.55);
+  animation: tesape-closer 10s ease-out both;
+}
+
+.light-scene-art svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.light-scene-tint {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 42%, rgba(255, 200, 87, .32), rgba(10, 24, 36, .55) 70%);
+}
+
+.light-scene.sky-dawn .light-scene-tint {
+  background-color: rgba(255, 179, 138, .14);
+}
+
+.light-scene.sky-dusk .light-scene-tint {
+  background-color: rgba(255, 122, 47, .18);
+}
+
+.light-scene.sky-night .light-scene-tint {
+  background-color: rgba(11, 26, 58, .3);
+}
+
+.light-scene .show-card {
+  position: relative;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, .7);
+}
+
+.light-line {
+  margin: 0 auto;
+  font: 600 clamp(20px, 2.6vw, 34px) / 1.35 var(--f-text);
+  animation: tesape-rise 1.2s 2.2s ease-out both;
+}
+
+@keyframes tesape-closer {
+  from {
+    transform: scale(1);
+  }
+
+  to {
+    transform: scale(1.12) translate(-1.5%, -1.5%);
+  }
+}
+
+@keyframes tesape-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .light-scene-art img,
+  .light-line {
+    animation: none;
+  }
+}
+
+.map-wrap.tall .map-landmarks .sky-say {
+  top: 84px;
+}

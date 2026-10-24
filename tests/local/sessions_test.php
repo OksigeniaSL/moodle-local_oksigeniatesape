@@ -104,6 +104,9 @@ final class sessions_test extends \advanced_testcase {
         $this->assertSame($now + 60, (int) $DB->get_field(self::T . 'chapter', 'litat', ['id' => $clearing->id]));
         $board = sessions::board($course->id, $now + 61);
         $this->assertSame(['light', 'Claro del Despertar'], [$board['shown'], $board['lit']]);
+        // A short scene: the painting of the place and what is told of it.
+        $this->assertSame('claro', $board['litart']);
+        $this->assertStringContainsString('semillas dormidas', $board['litline']);
         $this->assertSame([], sessions::ready((int) $mission->id));
         // Ready and not lit by the teacher: closing the session lights it.
         $DB->set_field(self::T . 'chapter', 'litat', 0, ['id' => $clearing->id]);

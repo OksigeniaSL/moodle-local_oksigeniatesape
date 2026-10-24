@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 82,
+ "version": 83,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 83,
+   "kind": "improvement",
+   "date": "2026-10-24",
+   "text": "El mapa cambia con la estación y la hora; lo que pasa en el mundo en cada estación, y lo que se cuenta en la pantalla de clase al encender cada linterna"
+  },
   {
    "version": 82,
    "kind": "improvement",
@@ -497,6 +503,12 @@
    "valley": "En el agua del río te ves por primera vez. ¿Cómo eres?",
    "azara": "En el agua del río te ves la cara. ¿Cómo eres?"
   }
+ },
+ "seasons": {
+  "spring": "Es primavera: los árboles echan hojas nuevas, muchas plantas florecen y las abejas van de flor en flor llevando el polen.",
+  "summer": "Es verano: los días son largos, las plantas fabrican mucho alimento con tanta luz y los frutos maduran.",
+  "autumn": "Es otoño: los árboles de hoja caduca pierden sus hojas, algunos animales guardan comida para el invierno y muchas aves se van a lugares más cálidos.",
+  "winter": "Es invierno: muchos árboles están sin hojas, algunos animales hibernan o pasan el frío escondidos y muchas semillas esperan bajo la tierra a la primavera."
  },
  "skins": {
   "valley": "El valle",
@@ -3190,6 +3202,10 @@
     "¿Qué tienen en común una seta, un árbol y una hormiga? ¿Qué le falta a una piedra para estar viva?",
     "¿Cuántos seres vivos ves en el camino de casa al colegio?"
    ],
+   "lantern": {
+    "valley": "La linterna del claro se enciende y las semillas dormidas se desperezan bajo la tierra.",
+    "azara": "Encendemos la linterna del campamento: la primera página del cuaderno ya tiene luz."
+   },
    "intro": {
     "valley": "El primer lugar del valle donde se apagaron las luces. Aquí despiertan las semillas.",
     "azara": "La primera noche de la expedición. El cuaderno pide distinguir lo que vive de lo que no."
@@ -3505,6 +3521,10 @@
     "¿Por qué una seta no es una planta?",
     "Si ordenaras en grupos los animales que conoces, ¿qué grupos harías?"
    ],
+   "lantern": {
+    "valley": "Cada ser vivo vuelve a su estante, y la linterna de la Biblioteca brilla sobre los reinos en orden.",
+    "azara": "Las cajas vuelven a estar por grupos, y la linterna alumbra las etiquetas bien puestas."
+   },
    "intro": {
     "valley": "Los estantes del Gran Libro guardan a los seres vivos por grupos. El Embrollo los ha revuelto.",
     "azara": "Las muestras viajan en cajas por grupos, pero se han caído las etiquetas."
@@ -3782,6 +3802,10 @@
     "¿Qué animales tienen esqueleto por dentro? ¿Y cuáles no?",
     "¿De quién podrían ser las huellas que vemos en el parque o en el campo?"
    ],
+   "lantern": {
+    "valley": "Los animales recuperan sus nombres, y la linterna del bosque alumbra sus huellas.",
+    "azara": "Cada descripción del cuaderno vuelve a tener su animal, y la linterna alumbra el monte."
+   },
    "intro": {
     "valley": "El Embrollo ha borrado los nombres de los animales. Solo quedan sus huellas.",
     "azara": "En el cuaderno hay descripciones de animales sin nombre."
@@ -4071,6 +4095,10 @@
     "¿Qué necesita una planta para vivir? ¿Cómo se alimenta si no tiene boca?",
     "¿Cómo va la semilla del experimento de clase?"
    ],
+   "lantern": {
+    "valley": "Las plantas vuelven a fabricar su alimento con la luz, y se enciende la linterna mayor del Jardín.",
+    "azara": "Las plantas del huerto recuperan su verde, y la linterna se enciende entre ellas."
+   },
    "intro": {
     "valley": "El corazón del valle. Sus plantas daban la luz a la linterna mayor.",
     "azara": "Las plantas que viajaron a oscuras han salido pálidas."
@@ -4357,6 +4385,10 @@
     "En la comida de hoy, ¿quién se come a quién? Haz una cadena que acabe en ti.",
     "¿Qué pasaría en un lago si desaparecieran todos los peces pequeños?"
    ],
+   "lantern": {
+    "valley": "Cada eslabón vuelve a su sitio, y la linterna del lago se refleja en el agua.",
+    "azara": "En la orilla del río todo vuelve a depender de todo, y la linterna se refleja en el agua."
+   },
    "intro": {
     "valley": "A orillas del lago todo depende de todo. Cae la tarde y hay que pasar aquí la noche.",
     "azara": "La expedición llega a la orilla de un gran río al caer la tarde."
@@ -4664,6 +4696,10 @@
     "¿Qué hacemos las personas que ayuda o daña a los seres vivos del barrio?",
     "¿Qué cambiarías tú para cuidarlos?"
    ],
+   "lantern": {
+    "valley": "La última linterna se enciende en lo alto de la Torre, y todo el valle vuelve a tener luz.",
+    "azara": "Encendemos la última linterna: el cuaderno de Azara está completo."
+   },
    "intro": {
     "valley": "En lo alto de la torre se esconde el Embrollo. Las huellas de tinta acaban en su puerta.",
     "azara": "Antes de entregar el cuaderno hay que corregir lo que se mezcló."

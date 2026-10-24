@@ -85,6 +85,10 @@ final class page {
         $look = (string) ($region->look ?? '');
         $theme = themes::current($look, $config['art']);
         $config['theme'] = ['current' => $theme, 'world' => themes::current('', $config['art'])];
+        // The sky of the valley: the hour and the season where the course is (in the south, the seasons the other way).
+        $zone = engine::timezone((int) $course->id);
+        $where = $zone->getLocation();
+        $config['sky'] = ['zone' => $zone->getName(), 'south' => $where && $where['latitude'] < 0 && $where['latitude'] > -89];
         $worldcolours = themes::style($config['art']);
         $version = (int) get_config('local_oksigeniatesape', 'version');
         // The version, for what the client loads later (the engine of the moments that are played).

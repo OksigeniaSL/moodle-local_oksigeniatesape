@@ -470,6 +470,9 @@ final class sessions {
             $code = (string) $DB->get_field(self::T . 'chapter', 'code', ['id' => $open->target]);
             $out['lit'] = self::place($mission, $code);
             $out['litcode'] = $code;
+            $chapter = array_column($mission->data['chapters'] ?? [], null, 'code')[$code] ?? [];
+            $out['litart'] = (string) ($chapter['art'] ?? $code);
+            $out['litline'] = missions::text($chapter['lantern'] ?? '', $mission->skin, $mission->variant);
         }
         if ($open->shown === 'pacts') {
             $out['pacts'] = self::pacts($courseid, $mission);

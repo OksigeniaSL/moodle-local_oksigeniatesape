@@ -1901,7 +1901,7 @@
       '" data-herox="' + current.x + '" data-heroy="' + current.y +
       '">' + (state.visit ? '' : landmarks() + asleep()) + '<svg class="map" viewBox="0 0 400 ' + height +
       '" role="group" aria-label="' + esc(m.title) + '"><defs>' + T.MAPGLOW + '</defs>' + T.mapGround(m) +
-      T.mapLandmarks(m) + T.mapNight(m) + '<polyline points="' + pts + '" class="road"/>' +
+      T.mapLandmarks(m) + T.mapNight(m) + T.mapSky(m) + '<polyline points="' + pts + '" class="road"/>' +
       (walked ? '<polyline points="' + walked + '" class="road walked"/>' : '') + roadDrawing(fresh) +
       (T.critters ? T.critters.fireflies(m) : '') + prints + places + secrets + crowd + blots + minions + thread + me + pet + hungry +
       '</svg></div>' + (card ? '</div>' : '');
@@ -2080,11 +2080,12 @@
     var mixed = w.tangles && w.tangles.others.length ? '<button type="button" class="landmark-btn tangles" data-tangles>' +
       '<span class="landmark-pic" aria-hidden="true">' + T.embrollo(0.4) + '</span><span>' + esc(t('app_landmark_tangles',
       w.tangles.others.length)) + '</span></button>' : '';
-    return list.length || burst || mixed ? '<div class="map-landmarks">' + list.map(function(l) {
+    // And the sky of the valley, last: the season and the light now.
+    return '<div class="map-landmarks">' + list.map(function(l) {
       return '<button type="button" class="landmark-btn ' + l[0] + '" data-landmark="' + l[0] + '"><span class="landmark-pic" ' +
         'aria-hidden="true">' + (l[1] ? '<img src="' + esc(l[1]) + '" alt="">' : T.icon(l[2])) + '</span><span>' +
         esc(t('app_landmark_' + l[0])) + '</span></button>';
-    }).join('') + burst + mixed + '</div>' : '';
+    }).join('') + burst + mixed + (w.mission ? T.skyChip(w.mission, true) : '') + '</div>';
   }
 
   /**

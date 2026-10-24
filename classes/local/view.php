@@ -471,6 +471,7 @@ final class view {
             'map' => (string) ($data['map'] ?? $mission->code),
             'mapworld' => (string) ($data['maplayers']['world'] ?? ''),
             'mapheight' => (int) ($data['maplayers']['height'] ?? 0),
+            'seasons' => self::seasons($mission),
             'chapters' => $list,
             'pages' => $pages,
             'secrets' => secrets::album($mission, $secretsfound),
@@ -616,6 +617,7 @@ final class view {
                 'map' => (string) ($mission->data['map'] ?? $mission->code),
                 'mapworld' => (string) ($mission->data['maplayers']['world'] ?? ''),
                 'mapheight' => (int) ($mission->data['maplayers']['height'] ?? 0),
+                'seasons' => self::seasons($mission),
                 'chapters' => $chapters,
                 // The final battle, if the mission saves something for the end, and the text of its end.
                 'final' => !empty($mission->data['battle']['final']),
@@ -1337,5 +1339,19 @@ final class view {
             'undone' => (bool) $entry->undoneby,
             'time' => (int) $entry->timecreated,
         ];
+    }
+
+    /**
+     * What happens in the world of a mission in each season, as its map tells it: spring, summer, autumn and winter.
+     *
+     * @param \stdClass $mission With data.
+     * @return array season => text ('' if the mission says nothing).
+     */
+    public static function seasons(\stdClass $mission): array {
+        $out = [];
+        foreach (['spring', 'summer', 'autumn', 'winter'] as $season) {
+            $out[$season] = missions::text($mission->data['seasons'][$season] ?? '', $mission->skin, $mission->variant);
+        }
+        return $out;
     }
 }

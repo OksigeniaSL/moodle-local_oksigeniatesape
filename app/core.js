@@ -775,6 +775,135 @@
       dark.toFixed(2) + '"/>' : '';
   };
 
+  /* ---------- The sky: the season and the hour ---------- */
+
+  /** @var {string[]} The season of each month, in the north. */
+  var SEASONS = ['winter', 'winter', 'spring', 'spring', 'spring', 'summer', 'summer', 'summer', 'autumn', 'autumn', 'autumn',
+    'winter'];
+  /** @var {Object} The hour each light of the day begins, by season: dawn, day, dusk and night. */
+  var LIGHTS = {spring: [6, 9, 19, 21], summer: [6, 9, 20, 22], autumn: [7, 9, 17, 20], winter: [7, 9, 16, 19]};
+  /** @var {Object} The tint of each light over the world: colour and how much. */
+  var TINTS = {dawn: ['#ffb38a', 0.16], dusk: ['#ff7a2f', 0.2], night: ['#0b1a3a', 0.3]};
+
+  /**
+   * The sky now where the course is: its season (in the south, the other way round) and the light of the hour.
+   *
+   * @param {Date} [when]
+   * @return {Object} season (spring, summer, autumn, winter), light (dawn, day, dusk, night).
+   */
+  T.sky = function(when) {
+    var sky = cfg.sky || {};
+    var date = when || new Date();
+    var hour = date.getHours();
+    var month = date.getMonth();
+    try {
+      var parts = {};
+      new Intl.DateTimeFormat('en-GB', {timeZone: sky.zone, hour: 'numeric', month: 'numeric', hourCycle: 'h23'})
+        .formatToParts(date).forEach(function(p) {
+          parts[p.type] = Number(p.value);
+        });
+      hour = parts.hour % 24;
+      month = parts.month - 1;
+    } catch (e) {
+      // A zone this browser does not know: the hour of the device.
+    }
+    var season = SEASONS[sky.south ? (month + 6) % 12 : month];
+    var at = LIGHTS[season];
+    return {season: season, light: hour < at[0] || hour >= at[3] ? 'night' : hour < at[1] ? 'dawn' : hour < at[2] ? 'day' :
+      'dusk'};
+  };
+
+  /**
+   * What floats in the air in a season, for an SVG: petals, pollen, leaves or snow, falling (or rising) slowly; still
+   * without movement.
+   *
+   * @param {string} season
+   * @param {number} width
+   * @param {number} height
+   * @param {number} count
+   * @param {number} id To place them the same each time.
+   * @return {string}
+   */
+  T.skyAir = function(season, width, height, count, id) {
+    var seed = function(n) {
+      var x = Math.sin((id || 1) * 53 + n * 7.31) * 10000;
+      return x - Math.floor(x);
+    };
+    var moves = T.moves();
+    var out = '';
+    for (var i = 0; i < count; i++) {
+      var x = Math.round(seed(i) * width);
+      var y = Math.round(seed(i + 40) * height);
+      var shape = {
+        spring: '<ellipse rx="3" ry="1.8" fill="#f7b6c9"/>',
+        summer: '<circle r="1.6" fill="#ffe08a"/>',
+        autumn: '<path d="M0 -4 Q4 0 0 4 Q-4 0 0 -4Z" fill="' + (i % 2 ? '#d9822b' : '#b5521f') + '"/>',
+        winter: '<circle r="' + (1.5 + seed(i + 80)).toFixed(1) + '" fill="#ffffff"/>'
+      }[season];
+      // Pollen rises; the rest falls, swaying.
+      var fall = season === 'summer' ? -height / 3 : height + 20;
+      var sway = Math.round(10 + seed(i + 120) * 20) * (i % 2 ? 1 : -1);
+      var time = Math.round(14 + seed(i + 160) * 16);
+      out += '<g transform="translate(' + x + ' ' + (moves && season !== 'summer' ? -10 : y) + ')"><g opacity=".85">' +
+        (moves ? '<animateTransform attributeName="transform" type="translate" values="0 0;' + sway + ' ' +
+        Math.round(fall / 2) + ';0 ' + fall + '" dur="' + time + 's" begin="-' + Math.round(seed(i + 200) * time) + 's" ' +
+        'repeatCount="indefinite"/>' : '') + shape + '</g></g>';
+    }
+    return out;
+  };
+
+  /**
+   * The sky over the map: the tint of the hour and what floats in the air in the season. Nothing of it can be touched.
+   *
+   * @param {Object} m The mission.
+   * @return {string} SVG for the map.
+   */
+  T.mapSky = function(m) {
+    var sky = T.sky();
+    var height = T.mapHeight(m);
+    var tint = TINTS[sky.light];
+    return '<g class="sky sky-' + sky.season + ' sky-' + sky.light + '" aria-hidden="true" pointer-events="none">' +
+      (tint ? '<rect width="400" height="' + height + '" fill="' + tint[0] + '" opacity="' + tint[1] + '"/>' : '') +
+      (sky.season === 'winter' ? '<rect width="400" height="' + height + '" fill="#d8e8ff" opacity=".12"/>' : '') +
+      T.skyAir(sky.season, 400, height, Math.round(14 * height / 640), m.id) + '</g>';
+  };
+
+  /**
+   * The sky of the map, to touch: the season and the light now and, touched, what happens in the world this season. On
+   * the map of the student, one more landmark of its row, with the season under it; on the class screen, a label.
+   *
+   * @param {Object} m The mission, with its seasons.
+   * @param {boolean} [mark] As a landmark.
+   * @return {string}
+   */
+  T.skyChip = function(m, mark) {
+    var sky = T.sky();
+    var text = (m.seasons || {})[sky.season] || '';
+    var icon = '<svg viewBox="0 0 20 20" width="' + (mark ? 30 : 18) + '" height="' + (mark ? 30 : 18) + '" aria-hidden="true">' +
+      (sky.light === 'night' ? '<path d="M12 3a7 7 0 1 0 6 10.5A6 6 0 0 1 12 3Z" fill="#dfe8ff"/>' : '<circle cx="10" cy="10" ' +
+      'r="5" fill="' + {dawn: '#ffc58a', day: '#ffd34d', dusk: '#ff8a3d'}[sky.light] + '"/>') + '</svg>';
+    var label = T.esc(T.t('app_sky_' + sky.season) + ' · ' + T.t('app_sky_' + sky.light));
+    var say = text ? '<p class="sky-say" hidden><b class="sky-when">' + label + '</b>' + T.esc(text) + '</p>' : '';
+    if (mark) {
+      return '<button type="button" class="landmark-btn sky-mark sky-' + sky.light + '" data-sky aria-expanded="false" ' +
+        'aria-label="' + label + '"' + (text ? '' : ' disabled') + '><span class="landmark-pic">' + icon + '</span><span>' +
+        T.esc(T.t('app_sky_' + sky.season)) + '</span></button>' + say;
+    }
+    // On a small screen, only the sun or the moon: the season and the light go with the text.
+    return '<div class="sky-chip"><button type="button" class="sky-btn" data-sky aria-expanded="false"' +
+      (text ? '' : ' disabled') + '>' + icon + '<span>' + label + '</span></button>' + say + '</div>';
+  };
+
+  // The sky of any map, touched: what happens in the world this season shows or hides.
+  document.addEventListener('click', function(e) {
+    var button = e.target.closest ? e.target.closest('[data-sky]') : null;
+    var say = button ? button.parentNode.querySelector('.sky-say') : null;
+    if (say) {
+      say.hidden = !say.hidden;
+      button.setAttribute('aria-expanded', String(!say.hidden));
+    }
+  });
+
   /** The gradient of the night under the drawn map, for the defs of its SVG. */
   T.MAPGLOW = '<radialGradient id="mapglow" cx="50%" cy="40%" r="70%"><stop offset="0" stop-color="#21465c"/>' +
     '<stop offset="1" stop-color="#10283b"/></radialGradient>';

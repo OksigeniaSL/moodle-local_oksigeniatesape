@@ -150,6 +150,12 @@ final class structures {
             'map' => new external_value(PARAM_ALPHANUMEXT, 'Code of the painted map', VALUE_DEFAULT, ''),
             'mapworld' => new external_value(PARAM_ALPHANUMEXT, 'World of a map in layers', VALUE_DEFAULT, ''),
             'mapheight' => new external_value(PARAM_INT, 'Height of a map in layers', VALUE_DEFAULT, 0),
+            'seasons' => new external_single_structure([
+                'spring' => new external_value(PARAM_TEXT, 'What happens in spring'),
+                'summer' => new external_value(PARAM_TEXT, 'What happens in summer'),
+                'autumn' => new external_value(PARAM_TEXT, 'What happens in autumn'),
+                'winter' => new external_value(PARAM_TEXT, 'What happens in winter'),
+            ], 'What happens in the world of the mission in each season', VALUE_OPTIONAL),
             'today' => new external_value(PARAM_ALPHANUMEXT, 'Place where the class is today', VALUE_DEFAULT, ''),
             'prints' => new external_value(PARAM_INT, 'Footprints of the Embrollo towards the next place', VALUE_DEFAULT, 0),
             'guide' => new external_multiple_structure(new external_single_structure([
