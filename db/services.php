@@ -53,6 +53,13 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:play',
     ],
+    'local_oksigeniatesape_take_stop' => [
+        'classname' => 'local_oksigeniatesape\external\take_stop',
+        'description' => 'The current student stops on the way in a place: rests by the fire or listens to who lives there.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:play',
+    ],
     'local_oksigeniatesape_choose_gift' => [
         'classname' => 'local_oksigeniatesape\external\choose_gift',
         'description' => 'Chooses the gift of the team of the current student for the place where the class is now.',

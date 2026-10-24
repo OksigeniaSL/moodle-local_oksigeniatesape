@@ -412,8 +412,15 @@ final class view {
                 'scenes' => array_map($sceneview, $mine),
                 // The quests of the place, for whoever wants more, whatever their step.
                 'quests' => array_map($sceneview, scenes::quests($here)),
+                // A stop on the way, once they played a scene of the place: rest by the fire or listen to who lives there.
+                'stop' => stops::view(
+                    $mission,
+                    $meta + ['code' => $chapter->code],
+                    $found,
+                    (bool) array_filter($here, fn($s) => !empty($attempts[$s->id]))
+                ),
             ];
-            foreach (['embrollo', 'encounter', 'minion'] as $optional) {
+            foreach (['embrollo', 'encounter', 'minion', 'stop'] as $optional) {
                 if ($list[count($list) - 1][$optional] === null) {
                     unset($list[count($list) - 1][$optional]);
                 }

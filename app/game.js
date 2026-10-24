@@ -2762,7 +2762,28 @@
       }).join('') + '</div>' : '') + (ch.letter ? '<blockquote class="letter"><small>' + esc(t('app_letter')) +
       '</small>' + esc(ch.letter) + '</blockquote>' : '') + (ch.teaser ? '<p class="teaser"><b>' + esc(t('app_teaser')) +
       '</b> ' + esc(ch.teaser) + '</p>' : '') + peek + night + (scenes ? '<ul class="list">' + scenes + '</ul>' : '') +
-      photoCard(ch, past) + more(games, quests, acts, challenge) + '</section>';
+      stopCard(ch, past) + photoCard(ch, past) + more(games, quests, acts, challenge) + '</section>';
+  }
+
+  /**
+   * A stop on the way: once they played a scene of the place, rest by the fire or listen to who lives there, once.
+   *
+   * @param {Object} ch
+   * @param {boolean} past
+   * @return {string}
+   */
+  function stopCard(ch, past) {
+    var s = ch.stop;
+    if (past || !s || !s.open) {
+      return '';
+    }
+    var body = s.taken === 'listen' ? '<blockquote class="stop-tale"><small>' + esc(s.speaker) + '</small>' + esc(s.text) +
+      '</blockquote>' : s.taken === 'rest' ? '<p class="help-soft">' + esc(t('app_stop_rested')) + '</p>' :
+      '<p class="help-soft">' + esc(t('app_stop_help', s.to)) + '</p><div class="actions" style="justify-content:' +
+      'flex-start"><button type="button" class="btn btn-soft" data-stop="' + esc(ch.code) + '" data-choice="rest">' +
+      esc(t('app_stop_rest')) + '</button><button type="button" class="btn btn-soft" data-stop="' + esc(ch.code) + '" ' +
+      'data-choice="listen">' + esc(t('app_stop_listen', s.to)) + '</button></div>';
+    return '<div class="stop-card"><b>' + esc(t('app_stop')) + '</b>' + body + '</div>';
   }
 
   /**
@@ -3258,6 +3279,22 @@
     if (mixed) {
       mixed.onclick = undoTangle;
     }
+    app.querySelectorAll('[data-stop]').forEach(function(b) {
+      b.onclick = function() {
+        app.querySelectorAll('[data-stop]').forEach(function(x) {
+          x.disabled = true;
+        });
+        T.api('take_stop', {courseid: cfg.courseid, place: b.dataset.stop, choice: b.dataset.choice}).then(function(r) {
+          if (b.dataset.choice === 'rest') {
+            T.toast(esc(t('app_stop_breath', r.breath)));
+          }
+          return refresh();
+        }).catch(function(e) {
+          T.toast(esc(e.message), true);
+          world();
+        });
+      };
+    });
     app.querySelectorAll('[data-activity]').forEach(function(b) {
       b.onclick = function() {
         openActivity(Number(b.dataset.activity));

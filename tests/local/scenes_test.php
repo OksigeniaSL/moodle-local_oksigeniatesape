@@ -451,6 +451,47 @@ final class scenes_test extends \advanced_testcase {
         $this->assertSame($lamp['rewards']['gems'] + 1, $heron['rewards']['gems']);
     }
 
+    public function test_a_stop_on_the_way_to_rest_or_to_listen_once_a_place(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $w = $this->make_class(2);
+        $c = (int) $w->course->id;
+        $stop = function (\stdClass $user) use ($c): array {
+            $char = characters::get($user->id);
+            return array_column(view::mission($c, $char, engine::member($char, $c))['chapters'], 'stop', 'code')['claro'];
+        };
+        // Before playing a scene of the place, no stop.
+        $this->assertFalse($stop($w->users[0])['open']);
+        try {
+            stops::take($c, $w->users[0]->id, 'claro', 'rest');
+            $this->fail('A stop before playing the place');
+        } catch (\moodle_exception $e) {
+            $this->assertSame('stopclosed', $e->errorcode);
+        }
+        $this->play($w, $w->users[0], 'C1-2');
+        $this->play($w, $w->users[1], 'C1-2');
+        $this->assertTrue($stop($w->users[0])['open']);
+        $this->assertSame('', $stop($w->users[0])['taken']);
+        // Resting by the fire gives breath back, once.
+        $char = characters::get($w->users[0]->id);
+        $DB->set_field(self::T . 'member', 'breath', 3, ['charid' => $char->id, 'courseid' => $c]);
+        $this->assertSame(stops::BREATH, stops::take($c, $w->users[0]->id, 'claro', 'rest'));
+        $this->assertSame(3 + stops::BREATH, (int) engine::member($char, $c)->breath);
+        $this->assertSame('rest', $stop($w->users[0])['taken']);
+        try {
+            stops::take($c, $w->users[0]->id, 'claro', 'listen');
+            $this->fail('Twice in a place');
+        } catch (\moodle_exception $e) {
+            $this->assertSame('stopclosed', $e->errorcode);
+        }
+        // Listening: the tale of who lives there.
+        $this->assertSame(0, stops::take($c, $w->users[1]->id, 'claro', 'listen'));
+        $other = $stop($w->users[1]);
+        $this->assertSame('listen', $other['taken']);
+        $this->assertSame('La druida mayor', $other['speaker']);
+        $this->assertStringContainsString('semilla', $other['text']);
+    }
+
     public function test_the_messengers_bring_the_first_hint_of_each_scene_of_the_day(): void {
         global $DB;
         $this->resetAfterTest();

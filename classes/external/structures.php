@@ -206,6 +206,13 @@ final class structures {
                     'options' => new external_multiple_structure(new external_value(PARAM_TEXT, 'Option')),
                     'tried' => new external_value(PARAM_BOOL, 'Answered today already'),
                 ], 'A minion of the Embrollo on the road to the place, until the class lights it', VALUE_OPTIONAL),
+                'stop' => new external_single_structure([
+                    'speaker' => new external_value(PARAM_TEXT, 'Who lives there'),
+                    'to' => new external_value(PARAM_TEXT, 'Who lives there, inside a sentence that goes to them'),
+                    'text' => new external_value(PARAM_TEXT, 'Their tale'),
+                    'open' => new external_value(PARAM_BOOL, 'The student played a scene of the place'),
+                    'taken' => new external_value(PARAM_ALPHA, 'rest or listen, what they chose; empty if not yet'),
+                ], 'A stop on the way in the place', VALUE_OPTIONAL),
                 'encounter' => new external_single_structure([
                     'place' => new external_value(PARAM_ALPHANUMEXT, 'The place'),
                     'clues' => new external_multiple_structure(new external_value(PARAM_TEXT, 'A clue, in the first person')),

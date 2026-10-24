@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 78,
+ "version": 79,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 79,
+   "kind": "improvement",
+   "date": "2026-10-24",
+   "text": "Una parada en el camino en cada lugar: descansar junto al fuego o escuchar a quien vive allí, con seis historias cortas de los seres vivos"
+  },
   {
    "version": 78,
    "kind": "improvement",
@@ -3131,6 +3137,13 @@
     "valley": "Claro del Despertar",
     "azara": "El campamento"
    },
+   "stop": {
+    "speaker": "druida-mayor",
+    "text": {
+     "valley": "Una semilla puede pasar años dormida. Algunas despiertan con la primera lluvia y otras solo después de un incendio. Dentro llevan todo lo que necesitan para empezar a crecer.",
+     "azara": "Una semilla puede pasar años dormida. Algunas despiertan con la primera lluvia y otras solo después de un incendio. Dentro llevan todo lo que necesitan para empezar a crecer."
+    }
+   },
    "home": [
     "¿Qué tienen en común una seta, un árbol y una hormiga? ¿Qué le falta a una piedra para estar viva?",
     "¿Cuántos seres vivos ves en el camino de casa al colegio?"
@@ -3415,6 +3428,13 @@
     "valley": "Biblioteca de los Reinos",
     "azara": "Las cajas de la expedición"
    },
+   "stop": {
+    "speaker": "bibliotecaria",
+    "text": {
+     "valley": "En una gota del charco caben miles de seres vivos: bacterias, algas de una sola célula, diminutos animales que nadan. Antes del microscopio nadie sabía que estaban ahí.",
+     "azara": "En una gota del charco caben miles de seres vivos: bacterias, algas de una sola célula, diminutos animales que nadan. Antes del microscopio nadie sabía que estaban ahí."
+    }
+   },
    "home": [
     "¿Por qué una seta no es una planta?",
     "Si ordenaras en grupos los animales que conoces, ¿qué grupos harías?"
@@ -3660,6 +3680,13 @@
    "name": {
     "valley": "Bosque de las Huellas",
     "azara": "El monte"
+   },
+   "stop": {
+    "speaker": "barquero",
+    "text": {
+     "valley": "Desde la barca veo el barro de la orilla: patas de garza, de jabalí, de nutria. Cada animal deja su firma. Leer huellas es saber quién ha pasado sin haberlo visto.",
+     "azara": "Desde la barca veo el barro de la orilla: patas de garza, de jabalí, de nutria. Cada animal deja su firma. Leer huellas es saber quién ha pasado sin haberlo visto."
+    }
    },
    "home": [
     "¿Qué animales tienen esqueleto por dentro? ¿Y cuáles no?",
@@ -3919,6 +3946,13 @@
     "valley": "Jardín de la Luz",
     "azara": "El huerto"
    },
+   "stop": {
+    "speaker": "jardinera",
+    "text": {
+     "valley": "Las plantas no tienen boca, pero comen: con la luz, el agua y el aire fabrican su alimento en las hojas. Por eso una planta a oscuras se pone pálida y se estira buscando la luz.",
+     "azara": "Las plantas no tienen boca, pero comen: con la luz, el agua y el aire fabrican su alimento en las hojas. Por eso una planta a oscuras se pone pálida y se estira buscando la luz."
+    }
+   },
    "home": [
     "¿Qué necesita una planta para vivir? ¿Cómo se alimenta si no tiene boca?",
     "¿Cómo va la semilla del experimento de clase?"
@@ -4168,6 +4202,13 @@
    "name": {
     "valley": "El Gran Lago",
     "azara": "La orilla del río"
+   },
+   "stop": {
+    "speaker": "garza",
+    "text": {
+     "valley": "Me paso horas quieta en el agua y los peces pequeños se olvidan de mí. Pero si en el lago no hubiera peces pequeños, yo tampoco estaría aquí: en el lago todos dependen de todos.",
+     "azara": "Me paso horas quieta en el agua y los peces pequeños se olvidan de mí. Pero si en el río no hubiera peces pequeños, yo tampoco estaría aquí: en el río todos dependen de todos."
+    }
    },
    "home": [
     "En la comida de hoy, ¿quién se come a quién? Haz una cadena que acabe en ti.",
@@ -4439,6 +4480,13 @@
    "name": {
     "valley": "La Torre",
     "azara": "El cuaderno"
+   },
+   "stop": {
+    "speaker": "druida-mayor",
+    "text": {
+     "valley": "Quien investiga no se cree nada a la primera: mira, apunta, pregunta a otros y vuelve a mirar. Así se deshace cualquier enredo, también los que no son del Embrollo.",
+     "azara": "Quien investiga no se cree nada a la primera: mira, apunta, pregunta a otros y vuelve a mirar. Así se deshace cualquier enredo, también los que no son del Embrollo."
+    }
    },
    "home": [
     "¿Qué hacemos las personas que ayuda o daña a los seres vivos del barrio?",
