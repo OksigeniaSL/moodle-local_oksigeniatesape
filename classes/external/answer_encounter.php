@@ -62,7 +62,7 @@ final class answer_encounter extends external_api {
         global $USER;
         $params = self::validate_parameters(self::execute_parameters(), ['courseid' => $courseid, 'place' => $place,
             'choice' => $choice, 'clues' => $clues]);
-        $context = \context_course::instance($params['courseid']);
+        $context = \local_oksigeniatesape\local\games::require_enter($params['courseid']);
         self::validate_context($context);
         require_capability('local/oksigeniatesape:play', $context);
         $region = regions::get($params['courseid']);

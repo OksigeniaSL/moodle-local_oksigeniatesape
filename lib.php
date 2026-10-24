@@ -43,7 +43,7 @@ function local_oksigeniatesape_coursemodule_standard_elements($formwrapper, $mfo
         return;
     }
     $cm = $formwrapper->get_coursemodule();
-    $challenge = $cm ? activities::challenge((int) $cm->id) : null;
+    $challenge = $cm ? activities::challenge((int) $cm->id, (int) $course->id) : null;
     $component = 'local_oksigeniatesape';
     $mform->addElement('header', 'tesapeheader', get_string('form_header', $component));
     $mform->addElement(
@@ -158,7 +158,7 @@ function local_oksigeniatesape_coursemodule_edit_post_actions($data, $course) {
     if (isset($data->tesape_item)) {
         $settings['itemid'] = (int) $data->tesape_item;
     }
-    activities::save((int) $course->id, (int) $data->coursemodule, $settings);
+    activities::save_in_course((int) $course->id, (int) $data->coursemodule, $settings);
     return $data;
 }
 

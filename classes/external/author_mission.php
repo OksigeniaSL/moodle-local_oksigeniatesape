@@ -67,7 +67,7 @@ final class author_mission extends external_api {
             'value' => $value,
         ]);
         $courseid = $params['courseid'];
-        $context = \context_course::instance($courseid);
+        $context = \local_oksigeniatesape\local\games::require_enter($courseid);
         self::validate_context($context);
         require_capability('local/oksigeniatesape:manageregion', $context);
         if (!in_array($params['action'], self::ACTIONS, true)) {
@@ -156,7 +156,7 @@ final class author_mission extends external_api {
             $current = missions::get($courseid);
             // The draft by the AI has its own permission: the button shows only to who has it.
             $ai = \local_oksigeniatesape\local\nextclass::status($courseid, (int) $USER->id);
-            $context = \context_course::instance($courseid);
+            $context = \local_oksigeniatesape\local\games::context($courseid);
             $ai['canuse'] = !empty($ai['canuse']) && has_capability('local/oksigeniatesape:aidraft', $context);
             return ['code' => $code, 'version' => (int) $record->version, 'draft' => $record->data,
                 'ai' => $ai,

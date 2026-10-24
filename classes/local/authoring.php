@@ -319,7 +319,7 @@ final class authoring {
             "\"objective\": code, \"steps\": [texts in their right order] (3 to 6), \"stuck\": text}], \"success\": text, " .
             "\"partial\": text, \"retry\": text}";
         $manager = \core\di::get(\core_ai\manager::class);
-        $contextid = \context_course::instance($courseid)->id;
+        $contextid = games::context($courseid)->id;
         $again = 'Your previous answer was not valid JSON with exactly that shape. Answer again with only the JSON.';
         foreach ([$prompt, $prompt . "\n\n" . $again] as $text) {
             try {

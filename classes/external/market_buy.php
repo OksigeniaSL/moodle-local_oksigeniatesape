@@ -59,7 +59,7 @@ final class market_buy extends external_api {
             'code' => $code,
             'amount' => $amount,
         ]);
-        $context = \context_course::instance($params['courseid']);
+        $context = \local_oksigeniatesape\local\games::require_enter($params['courseid']);
         self::validate_context($context);
         require_capability('local/oksigeniatesape:play', $context);
         market::buy($params['courseid'], (int) $USER->id, $params['code'], $params['amount']);

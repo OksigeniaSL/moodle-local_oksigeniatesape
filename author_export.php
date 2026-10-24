@@ -26,10 +26,11 @@ require(__DIR__ . '/../../config.php');
 
 $id = required_param('id', PARAM_INT);
 $code = required_param('code', PARAM_ALPHANUM);
-$course = get_course($id);
+// The course, or a game more in it.
+$course = get_course(\local_oksigeniatesape\local\games::course($id));
 require_login($course);
 require_capability('local/oksigeniatesape:manageregion', context_course::instance($course->id));
 require_sesskey();
 
-$package = \local_oksigeniatesape\local\authoring::export($course->id, $code);
+$package = \local_oksigeniatesape\local\authoring::export($id, $code);
 send_temp_file($package['path'], $package['name']);

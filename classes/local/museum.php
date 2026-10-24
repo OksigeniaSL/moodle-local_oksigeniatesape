@@ -120,13 +120,10 @@ final class museum {
         );
         $out = [];
         foreach ($regions as $region) {
-            $course = $DB->get_record('course', ['id' => $region->courseid], 'id, fullname, visible');
+            // Its course, or the course of the game more it is.
+            $course = $DB->get_record('course', ['id' => games::course((int) $region->courseid)], 'id, fullname, visible');
             if ($course && $course->visible && regions::rule($region, 'library') > 0) {
-                $out[] = ['courseid' => (int) $course->id, 'name' => format_string(
-                    $course->fullname,
-                    true,
-                    ['context' => \context_course::instance($course->id)]
-                )];
+                $out[] = ['courseid' => (int) $region->courseid, 'name' => games::name((int) $region->courseid)];
             }
         }
         return $out;
@@ -147,6 +144,6 @@ final class museum {
         if (!$museum) {
             throw new \moodle_exception('nolibrary', 'local_oksigeniatesape');
         }
-        return ['name' => format_string(get_course($otherid)->fullname), 'museum' => $museum];
+        return ['name' => games::name($otherid), 'museum' => $museum];
     }
 }

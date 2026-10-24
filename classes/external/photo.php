@@ -70,7 +70,7 @@ final class photo extends external_api {
         global $USER;
         $params = self::validate_parameters(self::execute_parameters(), ['courseid' => $courseid, 'action' => $action,
             'chapter' => $chapter, 'picture' => $picture, 'photoid' => $photoid, 'ok' => $ok]);
-        $context = \context_course::instance($params['courseid']);
+        $context = \local_oksigeniatesape\local\games::require_enter($params['courseid']);
         self::validate_context($context);
         $courseid = $params['courseid'];
         $userid = (int) $USER->id;

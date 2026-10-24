@@ -58,7 +58,7 @@ final class review_tangle extends external_api {
             'tangleid' => $tangleid,
             'action' => $action,
         ]);
-        $context = \context_course::instance($params['courseid']);
+        $context = \local_oksigeniatesape\local\games::require_enter($params['courseid']);
         self::validate_context($context);
         if ($params['action'] === 'battle') {
             // The questions of the battle are the mission of the course, as the workshop changes it.

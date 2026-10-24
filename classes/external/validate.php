@@ -81,7 +81,7 @@ final class validate extends external_api {
             'status' => $status,
             'note' => $note,
         ]);
-        $context = \context_course::instance($params['courseid']);
+        $context = \local_oksigeniatesape\local\games::require_enter($params['courseid']);
         self::validate_context($context);
         require_capability('local/oksigeniatesape:award', $context);
         if (classroom::get($params['challengeid'])->courseid != $params['courseid']) {

@@ -25,15 +25,16 @@
 require(__DIR__ . '/../../config.php');
 
 $id = required_param('id', PARAM_INT);
-$course = get_course($id);
+// The course, or a game more in it.
+$course = get_course(\local_oksigeniatesape\local\games::course($id));
 require_login($course);
 $context = context_course::instance($course->id);
 require_capability('local/oksigeniatesape:runclassscreen', $context);
 require_capability('local/oksigeniatesape:award', $context);
 $PAGE->set_context($context);
-$PAGE->set_url(new moodle_url('/local/oksigeniatesape/board.php', ['id' => $course->id]));
+$PAGE->set_url(new moodle_url('/local/oksigeniatesape/board.php', ['id' => $id]));
 $caps = [];
 foreach (['award', 'approvepowers', 'runclassscreen', 'manageregion'] as $cap) {
     $caps[$cap] = has_capability('local/oksigeniatesape:' . $cap, $context);
 }
-\local_oksigeniatesape\local\page::output('board', $course, ['caps' => $caps]);
+\local_oksigeniatesape\local\page::output('board', $course, ['caps' => $caps, 'games' => \local_oksigeniatesape\local\games::menu((int) $course->id)], $id);

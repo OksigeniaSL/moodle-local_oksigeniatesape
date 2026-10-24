@@ -59,11 +59,11 @@ final class nextclass {
         $ai = $manager->is_action_available(generate_text::class);
         // Since Moodle 5.1 AI tools can be turned off for a course.
         if ($ai && method_exists($manager, 'is_action_enabled_in_context')) {
-            $ai = $manager->is_action_enabled_in_context(\context_course::instance($courseid), generate_text::class);
+            $ai = $manager->is_action_enabled_in_context(games::context($courseid), generate_text::class);
         }
         $policy = \core_ai\manager::get_user_policy_status($userid);
         // Someone who has not accepted the policy and may not accept it (a public account of a demo site) cannot use it.
-        $canuse = $ai && ($policy || has_capability('moodle/ai:acceptpolicy', \context_course::instance($courseid), $userid));
+        $canuse = $ai && ($policy || has_capability('moodle/ai:acceptpolicy', games::context($courseid), $userid));
         return ['ai' => $ai, 'policy' => $policy, 'canuse' => $canuse];
     }
 
@@ -75,9 +75,9 @@ final class nextclass {
      */
     public static function accept_policy(int $courseid, int $userid): void {
         // Whoever may not accept it (a public account of a demo site) does not, whatever the client sends.
-        require_capability('moodle/ai:acceptpolicy', \context_course::instance($courseid), $userid);
+        require_capability('moodle/ai:acceptpolicy', games::context($courseid), $userid);
         if (!\core_ai\manager::get_user_policy_status($userid)) {
-            \core_ai\manager::user_policy_accepted($userid, \context_course::instance($courseid)->id);
+            \core_ai\manager::user_policy_accepted($userid, games::context($courseid)->id);
         }
     }
 
@@ -143,7 +143,7 @@ final class nextclass {
             throw new \moodle_exception('nextclass_nodata', 'local_oksigeniatesape');
         }
         $manager = \core\di::get(\core_ai\manager::class);
-        $contextid = \context_course::instance($courseid)->id;
+        $contextid = games::context($courseid)->id;
         $prompt = self::prompt($context, current_language());
         $plan = null;
         // A second try if the answer does not have the shape asked for: smaller models sometimes add words around it.

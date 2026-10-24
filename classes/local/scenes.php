@@ -259,7 +259,7 @@ final class scenes {
         );
         $roles = [$char->role];
         $region = regions::get($courseid);
-        $groups = groups_get_all_groups($courseid, $char->userid, (int) ($region->groupingid ?? 0));
+        $groups = groups_get_all_groups(games::course($courseid), $char->userid, (int) ($region->groupingid ?? 0));
         if ($groups) {
             $group = reset($groups);
             $mates = array_keys(groups_get_members($group->id, 'u.id'));
@@ -615,7 +615,7 @@ final class scenes {
                 'timefinished' => $now,
             ];
             $one->id = $DB->insert_record(self::T . 'sceneattempt', $one);
-            \local_oksigeniatesape\event\scene_completed::create(['context' => \context_course::instance($courseid),
+            \local_oksigeniatesape\event\scene_completed::create(['context' => games::context($courseid),
                 'objectid' => $one->id, 'userid' => (int) $player['char']->userid, 'other' => ['scene' => (string) $scene->code,
                 'ending' => (string) $result['ending'], 'team' => (bool) $team]])->trigger();
             if ($team && !$game) {

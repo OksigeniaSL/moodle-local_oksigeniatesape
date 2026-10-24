@@ -57,7 +57,8 @@ final class signals_test extends \advanced_testcase {
         $scenes = array_filter(scenes::summaries($mission), fn($s) => $s['best']);
         $ids = array_keys($scenes);
         $best = fn($id) => $scenes[$id]['best'][0];
-        $now = time();
+        // Midday: the plays of a few minutes ago are today at any hour the test runs.
+        $now = engine::day_start(time(), (int) $course->id) + 12 * HOURSECS;
         $students = [];
         foreach (['stuck', 'hard', 'easy', 'fine', 'paused'] as $who) {
             $user = $dg->create_and_enrol($course, 'student', ['firstname' => ucfirst($who)]);

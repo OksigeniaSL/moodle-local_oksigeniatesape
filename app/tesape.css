@@ -14010,3 +14010,20 @@ body.still .pet-me.patted .creature {
 .map-wrap.tall .map-landmarks .sky-say {
   top: 84px;
 }
+
+/* The games of the course, to go from one to another. */
+.game-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
+.game-switch .chip {
+  text-decoration: none;
+}
+
+.game-switch .chip.on {
+  border-color: var(--lantern);
+  color: var(--lantern);
+}

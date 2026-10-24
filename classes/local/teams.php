@@ -145,7 +145,7 @@ final class teams {
      */
     public static function of(int $courseid, int $userid): ?\stdClass {
         $region = regions::get($courseid);
-        $groups = groups_get_all_groups($courseid, $userid, (int) ($region->groupingid ?? 0));
+        $groups = groups_get_all_groups(games::course($courseid), $userid, (int) ($region->groupingid ?? 0));
         return $groups ? reset($groups) : null;
     }
 
@@ -257,7 +257,7 @@ final class teams {
     public static function standings(int $courseid, ?int $now = null): array {
         $region = regions::get($courseid);
         $list = [];
-        foreach (groups_get_all_groups($courseid, 0, (int) ($region->groupingid ?? 0)) as $group) {
+        foreach (groups_get_all_groups(games::course($courseid), 0, (int) ($region->groupingid ?? 0)) as $group) {
             $list[] = ['id' => (int) $group->id, 'name' => format_string($group->name)] +
                 self::week($courseid, (int) $group->id, $now);
         }
@@ -296,7 +296,7 @@ final class teams {
         $count = max(1, (int) round(count($order) / $size));
         $transaction = $DB->start_delegated_transaction();
         $groupingid = groups_create_grouping((object) [
-            'courseid' => $courseid,
+            'courseid' => games::course($courseid),
             'name' => self::unique_name($courseid, get_string('teams_grouping', 'local_oksigeniatesape'), 'groupings'),
         ]);
         $names = array_map('trim', explode(',', get_string('teams_names', 'local_oksigeniatesape')));
@@ -304,7 +304,7 @@ final class teams {
         for ($i = 0; $i < $count; $i++) {
             $animal = $names[$i % count($names)];
             $name = get_string('teams_name', 'local_oksigeniatesape', $animal);
-            $groupid = groups_create_group((object) ['courseid' => $courseid,
+            $groupid = groups_create_group((object) ['courseid' => games::course($courseid),
                 'name' => self::unique_name($courseid, $name, 'groups')]);
             groups_assign_grouping($groupingid, $groupid);
             $groups[$i] = $groupid;
@@ -322,6 +322,65 @@ final class teams {
     }
 
     /**
+     * The teams of a game that were all the groups of its course, kept as they are in a grouping of their own: some of
+     * the groups are now classes, each with a game of its own.
+     *
+     * @param int $key The game.
+     * @param int[] $classes The groups that are classes.
+     * @return int The grouping, or 0 if no team is left.
+     */
+    public static function keep_as_teams(int $key, array $classes): int {
+        global $CFG;
+        require_once($CFG->dirroot . '/group/lib.php');
+        $courseid = games::course($key);
+        $groups = array_diff_key(groups_get_all_groups($courseid, 0, 0, 'g.id'), array_flip($classes));
+        if (!$groups) {
+            return 0;
+        }
+        $id = (int) groups_create_grouping((object) ['courseid' => $courseid,
+            'name' => self::unique_name($key, get_string('teams_grouping', 'local_oksigeniatesape'), 'groupings')]);
+        foreach (array_keys($groups) as $groupid) {
+            groups_assign_grouping($id, $groupid);
+        }
+        regions::save($key, ['groupingid' => $id]);
+        return $id;
+    }
+
+    /**
+     * In a course with more than one game, the grouping with the teams of all its games, for the team submissions of
+     * the activities they share (a student is in one game only, so in one team only). Made when needed and kept up to
+     * date.
+     *
+     * @param int $courseid The course.
+     * @return int Its id.
+     */
+    public static function all_teams(int $courseid): int {
+        global $CFG, $DB;
+        require_once($CFG->dirroot . '/group/lib.php');
+        $idnumber = 'tesape-allteams';
+        $id = (int) $DB->get_field('groupings', 'id', ['courseid' => $courseid, 'idnumber' => $idnumber]);
+        if (!$id) {
+            $id = (int) groups_create_grouping((object) ['courseid' => $courseid, 'idnumber' => $idnumber,
+                'name' => self::unique_name($courseid, get_string('teams_allgrouping', 'local_oksigeniatesape'), 'groupings')]);
+        }
+        $want = [];
+        foreach (games::keys($courseid) as $key) {
+            $region = regions::get($key);
+            if ($region && $region->groupingid) {
+                $want += groups_get_all_groups($courseid, 0, (int) $region->groupingid, 'g.id');
+            }
+        }
+        $have = groups_get_all_groups($courseid, 0, $id, 'g.id');
+        foreach (array_diff_key($want, $have) as $groupid => $group) {
+            groups_assign_grouping($id, $groupid);
+        }
+        foreach (array_diff_key($have, $want) as $groupid => $group) {
+            groups_unassign_grouping($id, $groupid);
+        }
+        return $id;
+    }
+
+    /**
      * A name not used yet in the course for a group or a grouping.
      *
      * @param int $courseid
@@ -332,7 +391,7 @@ final class teams {
     private static function unique_name(int $courseid, string $name, string $table): string {
         global $DB;
         $candidate = $name;
-        for ($n = 2; $DB->record_exists($table, ['courseid' => $courseid, 'name' => $candidate]); $n++) {
+        for ($n = 2; $DB->record_exists($table, ['courseid' => games::course($courseid), 'name' => $candidate]); $n++) {
             $candidate = $name . ' (' . $n . ')';
         }
         return $candidate;

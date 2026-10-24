@@ -26,7 +26,8 @@ require(__DIR__ . '/../../config.php');
 
 $id = required_param('id', PARAM_INT);
 $userid = required_param('user', PARAM_INT);
-$course = get_course($id);
+// The course, or a game more in it.
+$course = get_course(\local_oksigeniatesape\local\games::course($id));
 require_login($course);
 $context = context_course::instance($course->id);
 require_capability('local/oksigeniatesape:viewlog', $context);
@@ -37,4 +38,6 @@ if (!is_enrolled($context, $userid)) {
 
 $filename = clean_filename(get_string('homepack_file', 'local_oksigeniatesape') . '-' . $course->shortname . '-' .
     userdate(time(), '%Y-%m-%d'));
-send_file(\local_oksigeniatesape\local\homepack::pdf($course, $userid), $filename . '.pdf', 0, 0, true, true, 'application/pdf');
+// The course as the game the PDF is made for.
+$game = \local_oksigeniatesape\local\games::as_course($course, $id);
+send_file(\local_oksigeniatesape\local\homepack::pdf($game, $userid), $filename . '.pdf', 0, 0, true, true, 'application/pdf');

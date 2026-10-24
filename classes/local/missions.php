@@ -353,11 +353,13 @@ final class missions {
             self::item_id($itemcode, $item['name'] ?? $itemcode, $item['description'] ?? null, $code);
         }
         if ($activities) {
-            $course = get_course($courseid);
+            $course = get_course(games::course($courseid));
             foreach ($package['chapters'] as $chapter) {
                 $place = $DB->get_record(self::T . 'chapter', ['id' => $chapterids[$chapter['code']]], '*', MUST_EXIST);
-                if (!$place->sectionid && !empty($chapter['activities'])) {
-                    activities::make_for_chapter($course, $place, $chapter, $skin, $now, $variant);
+                // In a course with more than one game, the activities of a place are made once: another game of the course
+                // with the same mission takes them as they are.
+                if (!$place->sectionid && !empty($chapter['activities']) && !self::share_activities($courseid, $code, $place)) {
+                    activities::make_for_chapter($course, $place, $chapter, $skin, $now, $variant, $courseid);
                 }
             }
         }
@@ -545,5 +547,39 @@ final class missions {
             return (string) ($text[$skin . '.' . $variant] ?? $text[$skin] ?? reset($text));
         }
         return (string) $text;
+    }
+
+    /**
+     * Gives a place of a game the activities another game of the same course already has for the same place of the same
+     * mission: its section and its challenges.
+     *
+     * @param int $key The game.
+     * @param string $code The mission.
+     * @param \stdClass $place The chapter of the game, without a section.
+     * @return bool Whether it found them.
+     */
+    private static function share_activities(int $key, string $code, \stdClass $place): bool {
+        global $DB;
+        foreach (games::keys(games::course($key)) as $other) {
+            $mission = $other === $key ? null : self::get($other);
+            if (!$mission || $mission->code !== $code) {
+                continue;
+            }
+            $theirs = $DB->get_record(self::T . 'chapter', ['missionid' => $mission->id, 'code' => $place->code]);
+            if (!$theirs || !$theirs->sectionid) {
+                continue;
+            }
+            $DB->set_field(self::T . 'chapter', 'sectionid', $theirs->sectionid, ['id' => $place->id]);
+            foreach ($DB->get_records(self::T . 'challenge', ['courseid' => $other, 'chapterid' => $theirs->id]) as $task) {
+                if ($task->cmid && !$DB->record_exists(self::T . 'challenge', ['courseid' => $key, 'cmid' => $task->cmid])) {
+                    unset($task->id);
+                    $task->courseid = $key;
+                    $task->chapterid = $place->id;
+                    $DB->insert_record(self::T . 'challenge', $task);
+                }
+            }
+            return true;
+        }
+        return false;
     }
 }

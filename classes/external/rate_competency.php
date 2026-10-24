@@ -74,7 +74,7 @@ final class rate_competency extends external_api {
             'grade' => $grade,
             'ratings' => $ratings,
         ]);
-        $context = \context_course::instance($params['courseid']);
+        $context = \local_oksigeniatesape\local\games::require_enter($params['courseid']);
         self::validate_context($context);
         require_capability('local/oksigeniatesape:award', $context);
         $list = $params['ratings'] ?: [['userid' => $params['userid'], 'objective' => $params['objective'],

@@ -25,13 +25,14 @@
 require(__DIR__ . '/../../config.php');
 
 $id = required_param('id', PARAM_INT);
-$course = get_course($id);
+// The course, or a game more in it.
+$course = get_course(\local_oksigeniatesape\local\games::course($id));
 require_login($course);
 $context = context_course::instance($course->id);
 require_capability('local/oksigeniatesape:manageregion', $context);
 
-$url = new moodle_url('/local/oksigeniatesape/author_import.php', ['id' => $course->id]);
-$back = new moodle_url('/local/oksigeniatesape/teach.php', ['id' => $course->id]);
+$url = new moodle_url('/local/oksigeniatesape/author_import.php', ['id' => $id]);
+$back = new moodle_url('/local/oksigeniatesape/teach.php', ['id' => $id]);
 $PAGE->set_url($url);
 $PAGE->set_context($context);
 $PAGE->set_title(get_string('teach_au_import', 'local_oksigeniatesape'));
@@ -48,7 +49,7 @@ if ($form->get_data()) {
     $zip = make_request_directory() . '/mission.zip';
     $form->save_file('package', $zip, true);
     try {
-        \local_oksigeniatesape\local\authoring::import($course->id, $zip);
+        \local_oksigeniatesape\local\authoring::import($id, $zip);
         redirect(
             $back,
             get_string('teach_au_imported', 'local_oksigeniatesape'),

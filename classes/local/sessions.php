@@ -379,7 +379,7 @@ final class sessions {
      * @param \stdClass $chapter With id and code.
      */
     public static function lit(int $courseid, \stdClass $chapter): void {
-        \local_oksigeniatesape\event\lantern_lit::create(['context' => \context_course::instance($courseid),
+        \local_oksigeniatesape\event\lantern_lit::create(['context' => games::context($courseid),
             'objectid' => $chapter->id, 'other' => ['place' => (string) $chapter->code]])->trigger();
     }
 
@@ -564,7 +564,7 @@ final class sessions {
     private static function expedition(int $courseid, \stdClass $open): array {
         $teams = [];
         $grouping = (int) (regions::get($courseid)->groupingid ?? 0);
-        foreach (groups_get_all_groups($courseid, 0, $grouping) as $group) {
+        foreach (groups_get_all_groups(games::course($courseid), 0, $grouping) as $group) {
             $in = false;
             foreach (teams::members($courseid, (int) $group->id) as $member) {
                 $in = $in || (int) $member->lastseen >= (int) $open->startedat;
@@ -621,7 +621,7 @@ final class sessions {
         }
         $teams = [];
         $grouping = (int) (regions::get($courseid)->groupingid ?? 0);
-        foreach (groups_get_all_groups($courseid, 0, $grouping) as $group) {
+        foreach (groups_get_all_groups(games::course($courseid), 0, $grouping) as $group) {
             $charids = array_map(fn($m) => (int) $m->charid, teams::members($courseid, (int) $group->id, true));
             $chest = ['name' => format_string($group->name), 'saber' => 0, 'gems' => 0, 'beings' => [], 'more' => 0];
             if ($charids) {
@@ -671,7 +671,7 @@ final class sessions {
         $firsts = teams::firsts($courseid, $now);
         $teams = [];
         $grouping = (int) (regions::get($courseid)->groupingid ?? 0);
-        foreach (groups_get_all_groups($courseid, 0, $grouping) as $group) {
+        foreach (groups_get_all_groups(games::course($courseid), 0, $grouping) as $group) {
             $teams[] = ['name' => format_string($group->name), 'first' => $firsts[(int) $group->id] ?? ''];
         }
         return ['place' => $chapter ? self::place($mission, (string) $chapter->code) : '', 'teams' => $teams];
@@ -715,7 +715,7 @@ final class sessions {
         $count = array_count_values(array_map('intval', $chose));
         $teams = [];
         $grouping = (int) (regions::get($courseid)->groupingid ?? 0);
-        foreach (groups_get_all_groups($courseid, 0, $grouping) as $group) {
+        foreach (groups_get_all_groups(games::course($courseid), 0, $grouping) as $group) {
             $teams[] = ['name' => format_string($group->name), 'chose' => (int) ($count[(int) $group->id] ?? 0),
                 'total' => count(groups_get_members($group->id, 'u.id'))];
         }

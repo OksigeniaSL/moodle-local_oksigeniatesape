@@ -55,7 +55,7 @@ final class get_results extends external_api {
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
         ]);
-        $context = \context_course::instance($params['courseid']);
+        $context = \local_oksigeniatesape\local\games::require_enter($params['courseid']);
         self::validate_context($context);
         require_capability('local/oksigeniatesape:viewlog', $context);
         return results::mission($params['courseid']) ?? ['title' => '', 'players' => 0, 'chapters' => [], 'games' => [],

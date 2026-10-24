@@ -68,7 +68,7 @@ final class decide_pact extends external_api {
             'status' => $status,
             'pactids' => $pactids,
         ]);
-        $context = \context_course::instance($params['courseid']);
+        $context = \local_oksigeniatesape\local\games::require_enter($params['courseid']);
         self::validate_context($context);
         require_capability('local/oksigeniatesape:award', $context);
         $ids = array_values(array_unique(array_map('intval', $params['pactids'] ?: [$params['pactid']])));

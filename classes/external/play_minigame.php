@@ -75,7 +75,7 @@ final class play_minigame extends external_api {
             'events' => $events,
             'playid' => $playid,
         ]);
-        $context = \context_course::instance($params['courseid']);
+        $context = \local_oksigeniatesape\local\games::require_enter($params['courseid']);
         self::validate_context($context);
         require_capability('local/oksigeniatesape:play', $context);
         $events = json_decode($params['events'], true);

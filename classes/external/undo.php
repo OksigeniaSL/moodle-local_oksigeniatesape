@@ -63,7 +63,7 @@ final class undo extends external_api {
             'courseid' => $courseid,
             'entryid' => $entryid,
         ]);
-        $context = \context_course::instance($params['courseid']);
+        $context = \local_oksigeniatesape\local\games::require_enter($params['courseid']);
         self::validate_context($context);
         require_capability('local/oksigeniatesape:undo', $context);
         $entry = $DB->get_record('local_oksigeniatesape_ledger', ['id' => $params['entryid']], '*', MUST_EXIST);

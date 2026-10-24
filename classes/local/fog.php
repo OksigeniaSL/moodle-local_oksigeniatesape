@@ -101,7 +101,7 @@ final class fog {
         $codes = $DB->get_records_menu(self::T . 'chapter', ['missionid' => $mission->id], '', 'id, code');
         $grouping = (int) (regions::get($courseid)->groupingid ?? 0);
         $out = [];
-        foreach (groups_get_all_groups($courseid, 0, $grouping) as $group) {
+        foreach (groups_get_all_groups(games::course($courseid), 0, $grouping) as $group) {
             $userids = array_map(fn($m) => (int) $m->userid, teams::members($courseid, (int) $group->id));
             $at = array_count_values(view::team_places($courseid, (int) $mission->id, $userids));
             if (!$at) {

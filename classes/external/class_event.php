@@ -83,7 +83,7 @@ final class class_event extends external_api {
             'to' => $to,
             'item' => $item,
         ]);
-        $context = \context_course::instance($params['courseid']);
+        $context = \local_oksigeniatesape\local\games::require_enter($params['courseid']);
         self::validate_context($context);
         require_capability('local/oksigeniatesape:runclassscreen', $context);
         $courseid = $params['courseid'];

@@ -62,7 +62,7 @@ final class skills {
         $proficient = [];
         $links = competencies::links($courseid);
         if (array_filter($links)) {
-            $records = user_competency_course::get_records(['courseid' => $courseid, 'userid' => (int) $char->userid]);
+            $records = user_competency_course::get_records(['courseid' => games::course($courseid), 'userid' => (int) $char->userid]);
             foreach ($records as $uc) {
                 if ($uc->get('proficiency')) {
                     $proficient[(int) $uc->get('competencyid')] = true;

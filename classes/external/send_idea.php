@@ -71,7 +71,7 @@ final class send_idea extends external_api {
             'message' => $message,
             'anonymous' => $anonymous,
         ]);
-        $context = \context_course::instance($params['courseid']);
+        $context = \local_oksigeniatesape\local\games::require_enter($params['courseid']);
         self::validate_context($context);
         require_capability('local/oksigeniatesape:play', $context);
         ideas::send($params['courseid'], (int) $USER->id, $params['message'], $params['anonymous']);

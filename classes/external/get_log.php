@@ -70,7 +70,7 @@ final class get_log extends external_api {
             'limit' => $limit,
             'beforeid' => $beforeid,
         ]);
-        $context = \context_course::instance($params['courseid']);
+        $context = \local_oksigeniatesape\local\games::require_enter($params['courseid']);
         self::validate_context($context);
         require_capability('local/oksigeniatesape:viewlog', $context);
         return view::log($params['courseid'], $params['userid'], max(1, min(200, $params['limit'])), $params['beforeid']);

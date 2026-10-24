@@ -63,7 +63,7 @@ final class nestboards {
         $mission = missions::get($courseid);
         $game = $mission ? minigames::config($mission, self::GAME, 1) : null;
         $group = groups_get_group($groupid);
-        if (!$game || !$group || (int) $group->courseid !== $courseid) {
+        if (!$game || !$group || (int) $group->courseid !== games::course($courseid)) {
             throw new \moodle_exception('noquestions', 'local_oksigeniatesape');
         }
         $DB->set_field_select(self::T . 'live', 'timeend', $now, 'courseid = ? AND timeend = 0', [$courseid]);

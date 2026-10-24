@@ -42,9 +42,12 @@ final class page {
      * @param string $app game, teach or board.
      * @param \stdClass $course
      * @param array $config More configuration for the client.
+     * @param int $game The game, if it is one more of the course.
      */
-    public static function output(string $app, \stdClass $course, array $config = []): void {
+    public static function output(string $app, \stdClass $course, array $config = [], int $game = 0): void {
         global $CFG, $USER;
+        // The game: the course, or a game more in it.
+        $game = $game ?: (int) $course->id;
         $context = \context_course::instance($course->id);
         $strings = [];
         $lang = current_language();
@@ -57,7 +60,7 @@ final class page {
             }
         }
         // The story of the mission may tell some texts in its own way, when the game speaks its language.
-        $mission = missions::get((int) $course->id);
+        $mission = missions::get($game);
         $told = $mission ? ($mission->data['texts'][(string) $mission->skin] ?? []) : [];
         if (is_array($told) && strpos($lang, (string) ($mission->data['lang'] ?? '')) === 0) {
             foreach ($told as $key => $text) {
@@ -69,10 +72,10 @@ final class page {
         $config += [
             'wwwroot' => $CFG->wwwroot,
             'sesskey' => sesskey(),
-            'courseid' => (int) $course->id,
-            'coursename' => format_string($course->fullname, true, ['context' => $context]),
+            'courseid' => $game,
+            'coursename' => games::name($game),
             // Students who go straight into the valley leave to their dashboard: the course would send them back.
-            'courseurl' => (portal::goes_straight_in((int) $course->id) ? new \moodle_url('/my/') :
+            'courseurl' => (portal::goes_straight_in($game) ? new \moodle_url('/my/') :
                 new \moodle_url('/course/view.php', ['id' => $course->id]))->out(false),
             'userid' => (int) $USER->id,
             'firstname' => $USER->firstname,
@@ -81,12 +84,12 @@ final class page {
             'art' => art::client(),
         ];
         // The theme of the class, chosen by the teacher or else the one of the world; the board may switch it.
-        $region = regions::get((int) $course->id);
+        $region = regions::get($game);
         $look = (string) ($region->look ?? '');
         $theme = themes::current($look, $config['art']);
         $config['theme'] = ['current' => $theme, 'world' => themes::current('', $config['art'])];
         // The sky of the valley: the hour and the season where the course is (in the south, the seasons the other way).
-        $zone = engine::timezone((int) $course->id);
+        $zone = engine::timezone($game);
         $where = $zone->getLocation();
         $config['sky'] = ['zone' => $zone->getName(), 'south' => $where && $where['latitude'] < 0 && $where['latitude'] > -89];
         $worldcolours = themes::style($config['art']);

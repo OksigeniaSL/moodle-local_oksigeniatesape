@@ -54,7 +54,7 @@ final class remote {
      * @return array The remote.
      */
     public static function publish(int $courseid, string $title, string $text, array $buttons, int $now): array {
-        $old = self::cache()->get($courseid) ?: [];
+        $old = self::cache()->get(games::cache_key($courseid)) ?: [];
         $clean = [];
         foreach (array_slice($buttons, 0, self::MAX) as $button) {
             $key = clean_param((string) ($button['key'] ?? ''), PARAM_ALPHANUMEXT);
@@ -65,7 +65,7 @@ final class remote {
         }
         $state = ['title' => \core_text::substr(trim($title), 0, 120), 'text' => \core_text::substr(trim($text), 0, 400),
             'buttons' => $clean, 'at' => $now, 'press' => $old['press'] ?? ['seq' => 0, 'key' => '']];
-        self::cache()->set($courseid, $state);
+        self::cache()->set(games::cache_key($courseid), $state);
         return $state;
     }
 
@@ -77,12 +77,12 @@ final class remote {
      * @return array|null The remote, or null if there is none.
      */
     public static function alive(int $courseid, int $now): ?array {
-        $state = self::cache()->get($courseid);
+        $state = self::cache()->get(games::cache_key($courseid));
         if (!$state) {
             return null;
         }
         $state['at'] = $now;
-        self::cache()->set($courseid, $state);
+        self::cache()->set(games::cache_key($courseid), $state);
         return $state;
     }
 
@@ -94,7 +94,7 @@ final class remote {
      * @return array|null
      */
     public static function read(int $courseid, int $now): ?array {
-        $state = self::cache()->get($courseid);
+        $state = self::cache()->get(games::cache_key($courseid));
         return $state && $now - (int) $state['at'] <= self::FRESH ? $state : null;
     }
 
@@ -112,7 +112,7 @@ final class remote {
             throw new \moodle_exception('noremote', 'local_oksigeniatesape');
         }
         $state['press'] = ['seq' => (int) $state['press']['seq'] + 1, 'key' => $key];
-        self::cache()->set($courseid, $state);
+        self::cache()->set(games::cache_key($courseid), $state);
         return $state;
     }
 
@@ -122,6 +122,6 @@ final class remote {
      * @param int $courseid
      */
     public static function clear(int $courseid): void {
-        self::cache()->delete($courseid);
+        self::cache()->delete(games::cache_key($courseid));
     }
 }

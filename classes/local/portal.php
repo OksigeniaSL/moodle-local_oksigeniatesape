@@ -42,7 +42,7 @@ final class portal {
         if (!isloggedin() || isguestuser()) {
             return '';
         }
-        $context = \context_course::instance($courseid);
+        $context = games::context($courseid);
         if (has_capability('local/oksigeniatesape:award', $context)) {
             return 'teacher';
         }
@@ -56,8 +56,11 @@ final class portal {
      * @return bool
      */
     public static function goes_straight_in(int $courseid): bool {
-        $region = regions::get($courseid);
-        return $region && $region->enabled && $region->portal === 'direct' && self::role($courseid) === 'student';
+        global $USER;
+        // A course: the game of the student in it.
+        $key = $courseid > 0 && !empty($USER->id) ? games::key($courseid, (int) $USER->id) : $courseid;
+        $region = regions::get($key);
+        return $region && $region->enabled && $region->portal === 'direct' && self::role($key) === 'student';
     }
 
     /**
@@ -69,7 +72,9 @@ final class portal {
     public static function cover(\stdClass $course): string {
         global $USER;
         $role = self::role((int) $course->id);
-        $region = regions::get((int) $course->id);
+        // A student sees the game they play in: the course, or the game more of their group.
+        $key = $role === 'student' ? games::key((int) $course->id, (int) $USER->id) : (int) $course->id;
+        $region = regions::get($key);
         $enabled = $region && $region->enabled;
         if (!$role || ($role === 'student' && !$enabled)) {
             return '';
@@ -81,8 +86,8 @@ final class portal {
         if ($role === 'teacher' && $mode === 'menu' && $enabled) {
             return '';
         }
-        $mission = $enabled ? missions::get((int) $course->id) : null;
-        $data = self::data($course, $mission, $role, (int) $USER->id);
+        $mission = $enabled ? missions::get($key) : null;
+        $data = self::data($course, $mission, $role, (int) $USER->id, $key);
         $big = $mode !== 'card';
         $style = $data['image'] ? ' style="background-image:url(\'' . s($data['image']) . '\')"' : '';
         $buttons = '';
@@ -103,16 +108,18 @@ final class portal {
      * @param \stdClass|null $mission
      * @param string $role teacher or student.
      * @param int $userid
+     * @param int $key The game: the course, or a game more in it.
      * @return array kicker, title, line, note, image and buttons (url, label, main).
      */
-    public static function data(\stdClass $course, ?\stdClass $mission, string $role, int $userid): array {
+    public static function data(\stdClass $course, ?\stdClass $mission, string $role, int $userid, int $key = 0): array {
         global $DB;
-        $play = new \moodle_url('/local/oksigeniatesape/play.php', ['id' => $course->id]);
-        $teach = new \moodle_url('/local/oksigeniatesape/teach.php', ['id' => $course->id]);
-        $board = new \moodle_url('/local/oksigeniatesape/board.php', ['id' => $course->id]);
-        $view = ['kicker' => get_string('portal_kicker', 'local_oksigeniatesape'), 'title' => format_string($course->fullname),
+        $key = $key ?: (int) $course->id;
+        $play = new \moodle_url('/local/oksigeniatesape/play.php', ['id' => $key]);
+        $teach = new \moodle_url('/local/oksigeniatesape/teach.php', ['id' => $key]);
+        $board = new \moodle_url('/local/oksigeniatesape/board.php', ['id' => $key]);
+        $view = ['kicker' => get_string('portal_kicker', 'local_oksigeniatesape'), 'title' => games::name($key),
             'line' => '', 'note' => '', 'image' => '', 'buttons' => []];
-        if (!regions::enabled((int) $course->id)) {
+        if (!regions::enabled($key)) {
             // Only teachers see this: the game is not on yet in the course.
             $view['line'] = get_string('portal_off', 'local_oksigeniatesape');
             $view['buttons'][] = [$teach, get_string('portal_turnon', 'local_oksigeniatesape'), true];
@@ -137,7 +144,7 @@ final class portal {
         if ($role === 'teacher') {
             $view['buttons'][] = [$teach, get_string('portal_teach', 'local_oksigeniatesape'), true];
             $view['buttons'][] = [$board, get_string('portal_board', 'local_oksigeniatesape'), false];
-            if ((regions::get((int) $course->id)->portal ?? '') === 'direct') {
+            if ((regions::get($key)->portal ?? '') === 'direct') {
                 $view['note'] = get_string('portal_direct_note', 'local_oksigeniatesape');
             }
             return $view;
@@ -147,7 +154,7 @@ final class portal {
         if (!$char) {
             $view['note'] = get_string('portal_newcharacter', 'local_oksigeniatesape');
         } else {
-            $member = $DB->get_record(self::T . 'member', ['charid' => $char->id, 'courseid' => $course->id]);
+            $member = $DB->get_record(self::T . 'member', ['charid' => $char->id, 'courseid' => $key]);
             $page = $member ? daily::today($char, $member) : null;
             if ($page && !$page['answered']) {
                 $creature = (string) ((json_decode((string) $char->creature, true) ?: [])['name'] ?? '');
@@ -176,16 +183,16 @@ final class portal {
         }
         $sectionids = $DB->get_fieldset_select(self::T . 'chapter', 'sectionid', 'missionid = ? AND sectionid > 0', [$mission->id]);
         foreach ($sectionids as $sectionid) {
-            $section = $DB->get_record('course_sections', ['id' => $sectionid, 'course' => $courseid]);
+            $section = $DB->get_record('course_sections', ['id' => $sectionid, 'course' => games::course($courseid)]);
             if (!$section) {
                 continue;
             }
             if (method_exists(\core_courseformat\local\sectionactions::class, 'set_visibility')) {
                 // Moodle 5.2 and later.
-                $info = get_fast_modinfo($courseid)->get_section_info_by_id((int) $sectionid);
-                \core_courseformat\formatactions::section($courseid)->set_visibility($info, !$inside);
+                $info = get_fast_modinfo(games::course($courseid))->get_section_info_by_id((int) $sectionid);
+                \core_courseformat\formatactions::section(games::course($courseid))->set_visibility($info, !$inside);
             } else {
-                set_section_visible($courseid, $section->section, $inside ? 0 : 1);
+                set_section_visible(games::course($courseid), $section->section, $inside ? 0 : 1);
             }
             foreach (array_filter(explode(',', (string) $section->sequence)) as $cmid) {
                 set_coursemodule_visible((int) $cmid, 1, $inside ? 0 : 1);
@@ -203,21 +210,25 @@ final class portal {
         $list = [];
         foreach (enrol_get_users_courses($userid, true, 'id, fullname, shortname') as $course) {
             $role = self::role((int) $course->id);
-            if (!$role || !regions::enabled((int) $course->id)) {
-                continue;
+            // A student, the game they play in; a teacher, every game of the course.
+            $keys = $role === 'student' ? [games::key((int) $course->id, $userid)] : games::keys((int) $course->id);
+            foreach ($role ? $keys : [] as $key) {
+                if (!regions::enabled($key)) {
+                    continue;
+                }
+                $mission = missions::get($key);
+                $data = self::data($course, $mission, $role, $userid, $key);
+                $list[] = [
+                    'id' => $key,
+                    'name' => games::name($key),
+                    'role' => $role,
+                    'mission' => $data['title'],
+                    'line' => $data['line'],
+                    'note' => $data['note'],
+                    'image' => $data['image'],
+                    'buttons' => $data['buttons'],
+                ];
             }
-            $mission = missions::get((int) $course->id);
-            $data = self::data($course, $mission, $role, $userid);
-            $list[] = [
-                'id' => (int) $course->id,
-                'name' => format_string($course->fullname),
-                'role' => $role,
-                'mission' => $data['title'],
-                'line' => $data['line'],
-                'note' => $data['note'],
-                'image' => $data['image'],
-                'buttons' => $data['buttons'],
-            ];
         }
         return $list;
     }
@@ -235,7 +246,11 @@ final class portal {
         if (is_array($known) && $known['time'] > time() - 10 * MINSECS && $known['user'] === $userid) {
             return $known['has'];
         }
-        $courses = array_keys(enrol_get_users_courses($userid, true, 'id'));
+        $courses = [];
+        foreach (array_keys(enrol_get_users_courses($userid, true, 'id')) as $courseid) {
+            // The game of each course and its games more.
+            $courses = array_merge($courses, games::keys((int) $courseid));
+        }
         $has = false;
         if ($courses) {
             [$insql, $params] = $DB->get_in_or_equal($courses);

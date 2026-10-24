@@ -26,7 +26,8 @@ require(__DIR__ . '/../../config.php');
 
 $id = required_param('id', PARAM_INT);
 $format = required_param('format', PARAM_ALPHA);
-$course = get_course($id);
+// The course, or a game more in it.
+$course = get_course(\local_oksigeniatesape\local\games::course($id));
 require_login($course);
 $context = context_course::instance($course->id);
 require_capability('local/oksigeniatesape:viewlog', $context);
@@ -39,11 +40,19 @@ if (!in_array($format, $formats, true)) {
 $filename = clean_filename('tesape-' . $course->shortname . '-' . userdate(time(), '%Y-%m-%d'));
 if ($format === 'pdf') {
     // A PDF laid out to be read, not a sheet printed.
-    send_file(\local_oksigeniatesape\local\report::pdf($course), $filename . '.pdf', 0, 0, true, true, 'application/pdf');
+    send_file(
+        \local_oksigeniatesape\local\report::pdf(\local_oksigeniatesape\local\games::as_course($course, $id)),
+        $filename . '.pdf',
+        0,
+        0,
+        true,
+        true,
+        'application/pdf'
+    );
 }
 \core\dataformat::download_data(
     $filename,
     $format,
-    array_values(\local_oksigeniatesape\local\report::columns($course->id)),
-    new ArrayIterator(\local_oksigeniatesape\local\report::rows($course->id))
+    array_values(\local_oksigeniatesape\local\report::columns($id)),
+    new ArrayIterator(\local_oksigeniatesape\local\report::rows($id))
 );

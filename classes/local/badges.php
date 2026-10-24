@@ -66,7 +66,7 @@ final class badges {
             return 0;
         }
         $where = 'courseid = ? AND type = ? AND name = ?';
-        return (int) $DB->get_field_select('badge', 'id', $where, [$courseid, BADGE_TYPE_COURSE, $name], IGNORE_MULTIPLE);
+        return (int) $DB->get_field_select('badge', 'id', $where, [games::course($courseid), BADGE_TYPE_COURSE, $name], IGNORE_MULTIPLE);
     }
 
     /**
@@ -90,7 +90,7 @@ final class badges {
         $now = time();
         // Made by who sets up the game in the course; when the mission is brought up to date in the request of a student,
         // by the site.
-        $context = \context_course::instance($courseid);
+        $context = games::context($courseid);
         $setup = !empty($USER->id) && has_capability('local/oksigeniatesape:manageregion', $context);
         $author = $setup ? (int) $USER->id : (int) get_admin()->id;
         $text = $mission->data['badge']['description'] ?? $name;
@@ -108,7 +108,7 @@ final class badges {
             'expiredate' => null,
             'expireperiod' => null,
             'type' => BADGE_TYPE_COURSE,
-            'courseid' => $courseid,
+            'courseid' => games::course($courseid),
             'messagesubject' => get_string('badge_subject', 'local_oksigeniatesape'),
             'message' => get_string('badge_message', 'local_oksigeniatesape', $name),
             'attachment' => 1,

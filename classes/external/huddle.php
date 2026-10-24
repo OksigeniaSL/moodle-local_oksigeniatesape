@@ -85,7 +85,7 @@ final class huddle extends external_api {
         $params = self::validate_parameters(self::execute_parameters(), ['courseid' => $courseid, 'action' => $action,
             'sceneid' => $sceneid, 'huddleid' => $huddleid, 'node' => $node, 'option' => $option, 'seq' => $seq,
             'answer' => $answer]);
-        $context = \context_course::instance($params['courseid']);
+        $context = \local_oksigeniatesape\local\games::require_enter($params['courseid']);
         self::validate_context($context);
         $now = time();
         $courseid = $params['courseid'];

@@ -41,9 +41,9 @@ final class moodlebank {
      * @return int[] Context ids.
      */
     public static function contexts(int $courseid): array {
-        $ids = [(int) \context_course::instance($courseid)->id];
+        $ids = [(int) games::context($courseid)->id];
         if (\core_component::get_component_directory('mod_qbank')) {
-            foreach (get_fast_modinfo($courseid)->get_instances_of('qbank') as $cm) {
+            foreach (get_fast_modinfo(games::course($courseid))->get_instances_of('qbank') as $cm) {
                 $ids[] = (int) \context_module::instance($cm->id)->id;
             }
         }

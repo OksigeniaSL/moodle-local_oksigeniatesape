@@ -186,7 +186,7 @@ final class edits {
             "Answer with only this JSON: {\"questions\": [{\"text\": text, \"options\": [the right answer first, then 2 " .
             "or 3 wrong ones], \"why\": text}] (exactly 3), \"laughs\": [text, text]}";
         $manager = \core\di::get(\core_ai\manager::class);
-        $contextid = \context_course::instance($courseid)->id;
+        $contextid = games::context($courseid)->id;
         $again = 'Your previous answer was not valid JSON with exactly that shape. Answer again with only the JSON.';
         foreach ([$prompt, $prompt . "\n\n" . $again] as $text) {
             try {
@@ -1034,7 +1034,7 @@ final class edits {
             "will read every text.\n\nThe texts, as JSON (key => text):\n" . json_encode($sources, JSON_UNESCAPED_UNICODE) .
             "\n\nAnswer with only a JSON object with the same keys and the texts rewritten.";
         $manager = \core\di::get(\core_ai\manager::class);
-        $contextid = \context_course::instance($courseid)->id;
+        $contextid = games::context($courseid)->id;
         $again = 'Your previous answer was not valid JSON with those keys. Answer again with only the JSON.';
         foreach ([$prompt, $prompt . "\n\n" . $again] as $text) {
             try {

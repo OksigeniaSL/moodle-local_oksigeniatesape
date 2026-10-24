@@ -50,7 +50,7 @@ final class get_board extends external_api {
      */
     public static function execute(int $courseid): array {
         $params = self::validate_parameters(self::execute_parameters(), ['courseid' => $courseid]);
-        $context = \context_course::instance($params['courseid']);
+        $context = \local_oksigeniatesape\local\games::require_enter($params['courseid']);
         self::validate_context($context);
         require_capability('local/oksigeniatesape:runclassscreen', $context);
         return view::board($params['courseid']);

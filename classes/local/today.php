@@ -106,13 +106,13 @@ final class today {
         }
         if ($mixup) {
             $cache = \cache::make('local_oksigeniatesape', 'mixups');
-            $found = $cache->get($courseid);
+            $found = $cache->get(games::cache_key($courseid));
             if ($found === false) {
                 $context = nextclass::context($courseid);
                 $first = $context['mixups'][0] ?? null;
                 $found = $first ? ['question' => rtrim(trim((string) $first['question']), '.'),
                     'answer' => (string) $first['answer'], 'why' => (string) ($first['why'] ?? '')] : 0;
-                $cache->set($courseid, $found);
+                $cache->set(games::cache_key($courseid), $found);
             }
             if ($found) {
                 $today['mixup'] = $found;

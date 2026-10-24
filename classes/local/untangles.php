@@ -209,7 +209,7 @@ final class untangles {
         global $DB;
         $u = self::state($live)['untangle'];
         $names = [];
-        foreach (groups_get_all_groups((int) $live->courseid) as $group) {
+        foreach (groups_get_all_groups(games::course((int) $live->courseid)) as $group) {
             $names[(int) $group->id] = format_string($group->name);
         }
         $strands = [];

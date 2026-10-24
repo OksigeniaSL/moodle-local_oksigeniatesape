@@ -136,7 +136,7 @@ final class minions {
         $courseid = (int) $member->courseid;
         $DB->insert_record(self::T . 'found', (object) ['charid' => $char->id, 'courseid' => $courseid,
             'missionid' => $mission->id, 'kind' => 'untangled', 'code' => (string) $knot['code'], 'timecreated' => $now]);
-        \local_oksigeniatesape\event\minion_untangled::create(['context' => \context_course::instance($courseid),
+        \local_oksigeniatesape\event\minion_untangled::create(['context' => games::context($courseid),
             'userid' => (int) $char->userid, 'other' => ['minion' => (string) $knot['code']]])->trigger();
         // With «Minions out walking» as the card of the day, twice.
         $gems = self::GEMS * (events::active($courseid, 'minionday', $now) ? 2 : 1);

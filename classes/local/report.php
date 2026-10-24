@@ -126,7 +126,7 @@ final class report {
             $row = array_fill_keys($columns, '');
             $row['lastname'] = $user->lastname;
             $row['firstname'] = $user->firstname;
-            $groups = groups_get_all_groups($courseid, $user->id, (int) ($region->groupingid ?? 0));
+            $groups = groups_get_all_groups(games::course($courseid), $user->id, (int) ($region->groupingid ?? 0));
             $row['team'] = $groups ? format_string(reset($groups)->name) : '';
             if ($tracked) {
                 [$insql, $params] = $DB->get_in_or_equal($tracked);

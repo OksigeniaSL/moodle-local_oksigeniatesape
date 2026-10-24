@@ -51,15 +51,16 @@ final class observer {
      */
     public static function completion_updated(\core\event\course_module_completion_updated $event): void {
         global $DB;
-        $courseid = (int) $event->courseid;
         $userid = (int) $event->relateduserid;
+        // The game of the student in the course: the course, or the game more of their group.
+        $courseid = \local_oksigeniatesape\local\games::key((int) $event->courseid, $userid);
         $cmid = (int) $event->contextinstanceid;
         $region = regions::get($courseid);
         $char = characters::get($userid);
         if (!$region || !$region->enabled || !$char) {
             return;
         }
-        if (!has_capability('local/oksigeniatesape:play', \context_course::instance($courseid), $userid)) {
+        if (!has_capability('local/oksigeniatesape:play', \context_course::instance((int) $event->courseid), $userid)) {
             return;
         }
         $completion = $event->get_record_snapshot('course_modules_completion', $event->objectid);
@@ -111,8 +112,9 @@ final class observer {
      * @param \core\event\badge_enabled $event
      */
     public static function badge_enabled(\core\event\badge_enabled $event): void {
-        if ($event->courseid) {
-            badges::check_course((int) $event->courseid, (int) $event->objectid);
+        // In the game of the course and in each game more.
+        foreach ($event->courseid ? \local_oksigeniatesape\local\games::keys((int) $event->courseid) : [] as $key) {
+            badges::check_course($key, (int) $event->objectid);
         }
     }
 
@@ -131,7 +133,9 @@ final class observer {
      * @param \core\event\user_enrolment_deleted $event
      */
     public static function user_enrolment_deleted(\core\event\user_enrolment_deleted $event): void {
-        \local_oksigeniatesape\local\leaving::left((int) $event->courseid, (int) $event->relateduserid);
+        foreach (\local_oksigeniatesape\local\games::keys((int) $event->courseid) as $key) {
+            \local_oksigeniatesape\local\leaving::left($key, (int) $event->relateduserid);
+        }
     }
 
     /**
@@ -140,7 +144,9 @@ final class observer {
      * @param \core\event\user_enrolment_created $event
      */
     public static function user_enrolment_created(\core\event\user_enrolment_created $event): void {
-        \local_oksigeniatesape\local\leaving::back((int) $event->courseid, (int) $event->relateduserid);
+        foreach (\local_oksigeniatesape\local\games::keys((int) $event->courseid) as $key) {
+            \local_oksigeniatesape\local\leaving::back($key, (int) $event->relateduserid);
+        }
     }
 
     /**
@@ -152,15 +158,30 @@ final class observer {
     public static function course_deleted(\core\event\course_deleted $event): void {
         global $DB;
         $courseid = (int) $event->objectid;
-        self::clear_played($courseid);
-        $missions = $DB->get_fieldset_select(self::T . 'mission', 'id', 'courseid = ?', [$courseid]);
+        // Its game and the games more it had.
+        foreach (\local_oksigeniatesape\local\games::keys($courseid) as $key) {
+            self::clear_game($key);
+        }
+        $DB->delete_records(self::T . 'game', ['courseid' => $courseid]);
+        \local_oksigeniatesape\local\games::forget();
+    }
+
+    /**
+     * Takes away all a game had: what was played in it and how it was set up.
+     *
+     * @param int $key The course, or a game more.
+     */
+    public static function clear_game(int $key): void {
+        global $DB;
+        self::clear_played($key);
+        $missions = $DB->get_fieldset_select(self::T . 'mission', 'id', 'courseid = ?', [$key]);
         if ($missions) {
             [$insql, $params] = $DB->get_in_or_equal($missions);
             $DB->delete_records_select(self::T . 'scene', "missionid $insql", $params);
             $DB->delete_records_select(self::T . 'chapter', "missionid $insql", $params);
         }
         foreach (self::SETUP_TABLES as $table) {
-            $DB->delete_records(self::T . $table, ['courseid' => $courseid]);
+            $DB->delete_records(self::T . $table, ['courseid' => $key]);
         }
         regions::forget();
         missions::forget();
@@ -179,13 +200,15 @@ final class observer {
         if (empty($options['unenrol_users'])) {
             return;
         }
-        $courseid = (int) $event->courseid;
-        self::clear_played($courseid);
-        $missions = $DB->get_fieldset_select(self::T . 'mission', 'id', 'courseid = ?', [$courseid]);
-        if ($missions) {
-            [$insql, $params] = $DB->get_in_or_equal($missions);
-            $DB->set_field_select(self::T . 'chapter', 'litat', 0, "missionid $insql", $params);
-            $DB->set_field_select(self::T . 'chapter', 'skippedat', 0, "missionid $insql", $params);
+        // Its game and the games more it has.
+        foreach (\local_oksigeniatesape\local\games::keys((int) $event->courseid) as $key) {
+            self::clear_played($key);
+            $missions = $DB->get_fieldset_select(self::T . 'mission', 'id', 'courseid = ?', [$key]);
+            if ($missions) {
+                [$insql, $params] = $DB->get_in_or_equal($missions);
+                $DB->set_field_select(self::T . 'chapter', 'litat', 0, "missionid $insql", $params);
+                $DB->set_field_select(self::T . 'chapter', 'skippedat', 0, "missionid $insql", $params);
+            }
         }
     }
 

@@ -231,7 +231,7 @@
       esc(t('teach_tab_settings')) + '" title="' + esc(t('teach_tab_settings')) +
       '"' + (state.tab === 'settings' ? ' aria-current="page"' : '') + '>' + T.icon('settings') + '</button><a class="btn ' +
       'btn-soft exit" href="' + esc(cfg.courseurl) + '" aria-label="' + esc(t('app_exit')) + '">' + T.icon('exit') +
-      '<span>' + esc(t('app_exit')) + '</span></a></div></header><nav class="tabs" ' +
+      '<span>' + esc(t('app_exit')) + '</span></a></div></header>' + gameSwitch() + '<nav class="tabs" ' +
       'aria-label="Tesapé">' + TABS.map(function(tab) {
         var count = tab === 'powers' ? d.powerspending : tab === 'challenges' ? d.pactspending : 0;
         var badge = count ? '<span class="badge">' + count + '</span>' : '';
@@ -282,6 +282,103 @@
       log: tabLog, settings: tabSettings, ideas: tabIdeas})[state.tab]();
   }
 
+  /* ---------- The games of the course ---------- */
+
+  /**
+   * The games of the course, to go from one to another: only when there is more than one.
+   *
+   * @return {string}
+   */
+  function gameSwitch() {
+    var list = cfg.games || [];
+    if (list.length < 2) {
+      return '';
+    }
+    return '<nav class="game-switch" aria-label="' + esc(t('teach_games')) + '">' + list.map(function(g) {
+      var here = g.key === cfg.courseid;
+      return '<a class="chip' + (here ? ' on' : '') + '" href="' + esc(cfg.wwwroot + '/local/oksigeniatesape/teach.php?id=' +
+        g.key) + '"' + (here ? ' aria-current="page"' : '') + '>' + esc(g.name || t('teach_games_main')) + '</a>';
+    }).join('') + '</nav>';
+  }
+
+  /**
+   * The card of the games of the course, in the settings: filled when it is read.
+   *
+   * @return {string}
+   */
+  function gamesCard() {
+    return can('manageregion') ? '<section class="card" style="margin-top:16px"><h2>' + esc(t('teach_games')) + '</h2>' +
+      '<p class="help-soft">' + esc(t('teach_games_help')) + '</p><div data-gameslist></div></section>' : '';
+  }
+
+  /**
+   * The games of the course, read: each with its group and its students, to go to it or close it; and a group of
+   * Moodle to open one more for.
+   *
+   * @param {Element} el
+   */
+  function bindGames(el) {
+    var box = el.querySelector('[data-gameslist]');
+    if (!box) {
+      return;
+    }
+    var main = function(r) {
+      return cfg.wwwroot + '/local/oksigeniatesape/teach.php?id=' + r.games[0].key;
+    };
+    var show = function(r) {
+      box.innerHTML = '<ul class="list">' + r.games.map(function(g) {
+        var here = g.key === cfg.courseid;
+        return '<li class="item"><span class="grow"><b>' + esc(g.name || t('teach_games_main')) + '</b><small>' +
+          esc(g.group ? t('teach_games_group', {group: g.groupname, n: g.students}) : t('teach_games_rest', g.students)) +
+          (g.enabled ? '' : ' · ' + esc(t('teach_games_off'))) + '</small></span>' + (here ? '<span class="tag">' +
+          esc(t('teach_games_here')) + '</span>' : '<a class="btn btn-soft" href="' + esc(cfg.wwwroot +
+          '/local/oksigeniatesape/teach.php?id=' + g.key) + '">' + esc(t('teach_games_open')) + '</a>') + (g.key < 0 ?
+          '<button type="button" class="btn btn-soft" data-closegame="' + g.key + '" data-name="' + esc(g.name) + '">' +
+          esc(t('teach_games_close')) + '</button>' : '') + '</li>';
+      }).join('') + '</ul>' + (r.groups.length ? '<h3>' + esc(t('teach_games_new')) + '</h3><div class="actions" style="' +
+        'justify-content:flex-start;align-items:flex-end;flex-wrap:wrap"><label>' + esc(t('teach_games_pick')) + ' <select ' +
+        'data-newgroup>' + r.groups.map(function(g) {
+          return '<option value="' + g.id + '">' + esc(g.name) + ' (' + g.members + ')</option>';
+        }).join('') + '</select></label><button type="button" class="btn btn-main" data-newgame>' +
+        esc(t('teach_games_create')) + '</button></div>' : '<p class="help-soft">' + esc(t('teach_games_nogroups')) + '</p>');
+      var make = box.querySelector('[data-newgame]');
+      if (make) {
+        make.onclick = function() {
+          make.disabled = true;
+          T.api('manage_games', {courseid: cfg.courseid, action: 'create', groupid: Number(box.querySelector('[data-newgroup]')
+            .value)}).then(function(made) {
+            T.toast(esc(t('teach_games_made')));
+            // To the new game, to set it up.
+            window.location.href = cfg.wwwroot + '/local/oksigeniatesape/teach.php?id=' + made.made;
+          }).catch(function(e) {
+            make.disabled = false;
+            T.toast(esc(e.message), true);
+          });
+        };
+      }
+      box.querySelectorAll('[data-closegame]').forEach(function(b) {
+        b.onclick = function() {
+          if (!window.confirm(t('teach_games_close_confirm', b.dataset.name))) {
+            return;
+          }
+          b.disabled = true;
+          var key = Number(b.dataset.closegame);
+          T.api('manage_games', {courseid: cfg.courseid, action: 'delete', game: key}).then(function(after) {
+            T.toast(esc(t('teach_games_closed')));
+            // Every page of the course knows its games: the panel opens again, in the game of the course if this one went.
+            window.location.href = key === cfg.courseid ? main(after) : window.location.href;
+          }).catch(function(e) {
+            b.disabled = false;
+            T.toast(esc(e.message), true);
+          });
+        };
+      });
+    };
+    T.api('manage_games', {courseid: cfg.courseid, action: 'list'}).then(show).catch(function(e) {
+      box.innerHTML = '<p class="help-soft">' + esc(e.message) + '</p>';
+    });
+  }
+
   function content(html) {
     var el = document.getElementById('content');
     el.innerHTML = html;
@@ -304,7 +401,12 @@
   }
 
   function welcome() {
-    app.innerHTML = '<div class="sky"></div><div class="story">' + T.vignette('region') + '<h1>' + esc(t('teach_welcome')) +
+    // A game more of the course says which one it is.
+    var game = (cfg.games || []).filter(function(g) {
+      return g.key === cfg.courseid && g.name;
+    })[0];
+    app.innerHTML = '<div class="sky"></div><div class="story">' + gameSwitch() + T.vignette('region') + '<h1>' +
+      esc(game ? t('teach_welcome_game', game.name) : t('teach_welcome')) +
       '</h1><p class="lead">' + esc(t('teach_welcome_help')) + '</p><ol class="first-plan">' + STEPS.map(function(x) {
         return '<li><b>' + esc(t('teach_first_' + x[0])) + '</b> <small>' + esc(minutes(x[1])) + '</small></li>';
       }).join('') + '</ol><div class="actions">' + (can('manageregion') ? '<button class="btn btn-main" data-on>' +
@@ -3633,7 +3735,7 @@
       }).join('') + '</div>';
     var coverCard = '<h3>' + esc(t('teach_cover')) + '</h3><p style="color:var(--text-soft)">' + esc(t('teach_cover_help')) +
       '</p><div class="cover-options">' + covers + '</div><p><a href="' +
-      esc(cfg.wwwroot + '/course/view.php?id=' + cfg.courseid) + '">' + esc(t('teach_cover_see')) + '</a></p>';
+      esc(cfg.courseurl) + '">' + esc(t('teach_cover_see')) + '</a></p>';
     // The badge of Moodle the mission brings: whether it is on, and where the teacher turns it on.
     var badgeCard = r.badgeid ? '<h3>' + esc(t('teach_badge')) + '</h3><p style="color:var(--text-soft)">' +
       esc(t(r.badgeon ? 'teach_badge_on' : 'teach_badge_off', r.badge)) + ' <a href="' +
@@ -3705,7 +3807,8 @@
       '</details>';
     var el = content('<section class="card"><h2>' + esc(t('teach_tab_settings')) + '</h2><form data-settings>' + daily +
       advanced + (editable ? '<div class="actions" style="justify-content:flex-start;margin-top:14px"><button ' +
-      'class="btn btn-main" type="submit">' + esc(t('app_save')) + '</button></div>' : '') + '</form></section>');
+      'class="btn btn-main" type="submit">' + esc(t('app_save')) + '</button></div>' : '') + '</form></section>' + gamesCard());
+    bindGames(el);
     el.querySelector('.settings-advanced').ontoggle = function() {
       state.advanced = this.open;
     };

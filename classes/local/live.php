@@ -952,7 +952,7 @@ final class live {
         $transaction->allow_commit();
         $live->timeend = $now;
         if ($live->kind === 'battle') {
-            \local_oksigeniatesape\event\battle_ended::create(['context' => \context_course::instance((int) $live->courseid),
+            \local_oksigeniatesape\event\battle_ended::create(['context' => games::context((int) $live->courseid),
                 'objectid' => $live->id, 'other' => ['outcome' => (string) $state['outcome'],
                 'final' => !empty($state['final'])]])->trigger();
         }
@@ -2910,6 +2910,6 @@ final class live {
      */
     private static function teams(int $courseid): array {
         $region = regions::get($courseid);
-        return groups_get_all_groups($courseid, 0, (int) ($region->groupingid ?? 0));
+        return groups_get_all_groups(games::course($courseid), 0, (int) ($region->groupingid ?? 0));
     }
 }

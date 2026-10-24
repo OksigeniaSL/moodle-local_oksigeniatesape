@@ -31,6 +31,7 @@ use core_privacy\local\request\contextlist;
 use core_privacy\local\request\transform;
 use core_privacy\local\request\userlist;
 use core_privacy\local\request\writer;
+use local_oksigeniatesape\local\games;
 
 /**
  * The character lives in the student's user context (it is theirs on the whole site); what happens in a course lives
@@ -43,6 +44,9 @@ class provider implements
     \core_privacy\local\request\plugin\provider {
     /** @var string Prefix of the plugin tables. */
     private const T = 'local_oksigeniatesape_';
+
+    /** @var int The game being exported: a game more of the course goes in a folder of its own. */
+    private static int $game = 0;
 
     /** @var string[] Tables of a character in a course, all with charid and courseid. */
     public const COURSE_TABLES = ['member', 'ledger', 'inventory', 'sceneattempt', 'minigame', 'validation', 'found', 'idea',
@@ -128,8 +132,9 @@ class provider implements
         foreach (self::COURSE_TABLES as $table) {
             $contextlist->add_from_sql(
                 'SELECT ctx.id
-                   FROM {context} ctx
-                   JOIN {' . self::T . $table . '} t ON t.courseid = ctx.instanceid AND ctx.contextlevel = :level
+                   FROM {' . self::T . $table . '} t
+                   LEFT JOIN {' . self::T . 'game} g ON g.id = -t.courseid
+                   JOIN {context} ctx ON ctx.instanceid = COALESCE(g.courseid, t.courseid) AND ctx.contextlevel = :level
                    JOIN {' . self::T . 'char} c ON c.id = t.charid
                   WHERE c.userid = :userid',
                 ['level' => CONTEXT_COURSE, 'userid' => $userid]
@@ -137,51 +142,58 @@ class provider implements
         }
         $contextlist->add_from_sql(
             'SELECT ctx.id
-               FROM {context} ctx
-               JOIN {' . self::T . 'member} m ON m.courseid = ctx.instanceid AND ctx.contextlevel = :level
+               FROM {' . self::T . 'member} m
+               LEFT JOIN {' . self::T . 'game} g ON g.id = -m.courseid
+               JOIN {context} ctx ON ctx.instanceid = COALESCE(g.courseid, m.courseid) AND ctx.contextlevel = :level
               WHERE m.statusby = :userid',
             ['level' => CONTEXT_COURSE, 'userid' => $userid]
         );
         $contextlist->add_from_sql(
             'SELECT ctx.id
-               FROM {context} ctx
-               JOIN {' . self::T . 'ledger} l ON l.courseid = ctx.instanceid AND ctx.contextlevel = :level
+               FROM {' . self::T . 'ledger} l
+               LEFT JOIN {' . self::T . 'game} g ON g.id = -l.courseid
+               JOIN {context} ctx ON ctx.instanceid = COALESCE(g.courseid, l.courseid) AND ctx.contextlevel = :level
               WHERE l.actorid = :userid',
             ['level' => CONTEXT_COURSE, 'userid' => $userid]
         );
         $contextlist->add_from_sql(
             'SELECT ctx.id
-               FROM {context} ctx
-               JOIN {' . self::T . 'member} m ON m.courseid = ctx.instanceid AND ctx.contextlevel = :level
+               FROM {' . self::T . 'member} m
+               LEFT JOIN {' . self::T . 'game} g ON g.id = -m.courseid
+               JOIN {context} ctx ON ctx.instanceid = COALESCE(g.courseid, m.courseid) AND ctx.contextlevel = :level
                JOIN {' . self::T . 'powerreq} r ON r.memberid = m.id
               WHERE r.decidedby = :userid',
             ['level' => CONTEXT_COURSE, 'userid' => $userid]
         );
         $contextlist->add_from_sql(
             'SELECT ctx.id
-               FROM {context} ctx
-               JOIN {' . self::T . 'validation} v ON v.courseid = ctx.instanceid AND ctx.contextlevel = :level
+               FROM {' . self::T . 'validation} v
+               LEFT JOIN {' . self::T . 'game} g ON g.id = -v.courseid
+               JOIN {context} ctx ON ctx.instanceid = COALESCE(g.courseid, v.courseid) AND ctx.contextlevel = :level
               WHERE v.validatedby = :userid',
             ['level' => CONTEXT_COURSE, 'userid' => $userid]
         );
         $contextlist->add_from_sql(
             'SELECT ctx.id
-               FROM {context} ctx
-               JOIN {' . self::T . 'photo} p ON p.courseid = ctx.instanceid AND ctx.contextlevel = :level
+               FROM {' . self::T . 'photo} p
+               LEFT JOIN {' . self::T . 'game} g ON g.id = -p.courseid
+               JOIN {context} ctx ON ctx.instanceid = COALESCE(g.courseid, p.courseid) AND ctx.contextlevel = :level
               WHERE p.reviewedby = :userid',
             ['level' => CONTEXT_COURSE, 'userid' => $userid]
         );
         $contextlist->add_from_sql(
             'SELECT ctx.id
-               FROM {context} ctx
-               JOIN {' . self::T . 'tangle} t ON t.courseid = ctx.instanceid AND ctx.contextlevel = :level
+               FROM {' . self::T . 'tangle} t
+               LEFT JOIN {' . self::T . 'game} g ON g.id = -t.courseid
+               JOIN {context} ctx ON ctx.instanceid = COALESCE(g.courseid, t.courseid) AND ctx.contextlevel = :level
               WHERE t.reviewedby = :userid',
             ['level' => CONTEXT_COURSE, 'userid' => $userid]
         );
         $contextlist->add_from_sql(
             'SELECT ctx.id
-               FROM {context} ctx
-               JOIN {' . self::T . 'pact} p ON p.courseid = ctx.instanceid AND ctx.contextlevel = :level
+               FROM {' . self::T . 'pact} p
+               LEFT JOIN {' . self::T . 'game} g ON g.id = -p.courseid
+               JOIN {context} ctx ON ctx.instanceid = COALESCE(g.courseid, p.courseid) AND ctx.contextlevel = :level
               WHERE p.decidedby = :userid',
             ['level' => CONTEXT_COURSE, 'userid' => $userid]
         );
@@ -194,6 +206,7 @@ class provider implements
      * @param userlist $userlist
      */
     public static function get_users_in_context(userlist $userlist) {
+        global $DB;
         $context = $userlist->get_context();
         if ($context->contextlevel == CONTEXT_USER) {
             $userlist->add_from_sql(
@@ -206,40 +219,41 @@ class provider implements
         if ($context->contextlevel != CONTEXT_COURSE) {
             return;
         }
-        $params = ['courseid' => $context->instanceid];
+        // The game of the course and its games more.
+        [$in, $params] = $DB->get_in_or_equal(games::keys((int) $context->instanceid), SQL_PARAMS_NAMED, 'game');
         foreach (self::COURSE_TABLES as $table) {
             $userlist->add_from_sql(
                 'userid',
                 'SELECT c.userid
                    FROM {' . self::T . $table . '} t
                    JOIN {' . self::T . 'char} c ON c.id = t.charid
-                  WHERE t.courseid = :courseid',
+                  WHERE t.courseid ' . $in . '',
                 $params
             );
         }
         $userlist->add_from_sql(
             'statusby',
-            'SELECT statusby FROM {' . self::T . 'member} WHERE courseid = :courseid AND statusby > 0',
+            'SELECT statusby FROM {' . self::T . 'member} WHERE courseid ' . $in . ' AND statusby > 0',
             $params
         );
         $userlist->add_from_sql(
             'actorid',
-            'SELECT actorid FROM {' . self::T . 'ledger} WHERE courseid = :courseid AND actorid > 0',
+            'SELECT actorid FROM {' . self::T . 'ledger} WHERE courseid ' . $in . ' AND actorid > 0',
             $params
         );
         $userlist->add_from_sql(
             'validatedby',
-            'SELECT validatedby FROM {' . self::T . 'validation} WHERE courseid = :courseid AND validatedby > 0',
+            'SELECT validatedby FROM {' . self::T . 'validation} WHERE courseid ' . $in . ' AND validatedby > 0',
             $params
         );
         $userlist->add_from_sql(
             'reviewedby',
-            'SELECT reviewedby FROM {' . self::T . 'photo} WHERE courseid = :courseid AND reviewedby > 0',
+            'SELECT reviewedby FROM {' . self::T . 'photo} WHERE courseid ' . $in . ' AND reviewedby > 0',
             $params
         );
         $userlist->add_from_sql(
             'reviewedby',
-            'SELECT reviewedby FROM {' . self::T . 'tangle} WHERE courseid = :courseid AND reviewedby > 0',
+            'SELECT reviewedby FROM {' . self::T . 'tangle} WHERE courseid ' . $in . ' AND reviewedby > 0',
             $params
         );
         $userlist->add_from_sql(
@@ -247,12 +261,12 @@ class provider implements
             'SELECT r.decidedby
                FROM {' . self::T . 'powerreq} r
                JOIN {' . self::T . 'member} m ON m.id = r.memberid
-              WHERE m.courseid = :courseid AND r.decidedby > 0',
+              WHERE m.courseid ' . $in . ' AND r.decidedby > 0',
             $params
         );
         $userlist->add_from_sql(
             'decidedby',
-            'SELECT decidedby FROM {' . self::T . 'pact} WHERE courseid = :courseid AND decidedby > 0',
+            'SELECT decidedby FROM {' . self::T . 'pact} WHERE courseid ' . $in . ' AND decidedby > 0',
             $params
         );
     }
@@ -268,8 +282,12 @@ class provider implements
         $char = $DB->get_record(self::T . 'char', ['userid' => $userid]);
         foreach ($contextlist->get_contexts() as $context) {
             if ($context->contextlevel == CONTEXT_COURSE) {
-                // What they did as a teacher, with or without a character of their own.
-                self::export_teacher($context, (int) $userid);
+                // What they did as a teacher, with or without a character of their own, in each game of the course.
+                foreach (games::keys((int) $context->instanceid) as $key) {
+                    self::$game = $key;
+                    self::export_teacher($context, (int) $userid, $key);
+                }
+                self::$game = 0;
             }
         }
         if (!$char) {
@@ -303,7 +321,11 @@ class provider implements
                 }
                 self::export_ledger($context, $char->id, 0);
             } else if ($context->contextlevel == CONTEXT_COURSE) {
-                self::export_course($context, $char->id);
+                foreach (games::keys((int) $context->instanceid) as $key) {
+                    self::$game = $key;
+                    self::export_course($context, $char->id, $key);
+                }
+                self::$game = 0;
             }
         }
     }
@@ -314,10 +336,10 @@ class provider implements
      *
      * @param \context $context
      * @param int $userid
+     * @param int $courseid The game: the course, or a game more in it.
      */
-    private static function export_teacher(\context $context, int $userid): void {
+    private static function export_teacher(\context $context, int $userid, int $courseid): void {
         global $DB;
-        $courseid = (int) $context->instanceid;
         $given = $DB->get_records(
             self::T . 'ledger',
             ['courseid' => $courseid, 'actorid' => $userid],
@@ -398,6 +420,11 @@ class provider implements
      */
     private static function path(?string $sub = null): array {
         $path = [get_string('pluginname', 'local_oksigeniatesape')];
+        // What was done in a game more of the course, in a folder of its own.
+        $game = self::$game < 0 ? games::get(self::$game) : null;
+        if ($game) {
+            $path[] = format_string($game->name);
+        }
         if ($sub !== null) {
             $path[] = get_string('privacy:path:' . $sub, 'local_oksigeniatesape');
         }
@@ -409,10 +436,10 @@ class provider implements
      *
      * @param \context $context
      * @param int $charid
+     * @param int $courseid The game: the course, or a game more in it.
      */
-    private static function export_course(\context $context, int $charid): void {
+    private static function export_course(\context $context, int $charid, int $courseid): void {
         global $DB;
-        $courseid = (int) $context->instanceid;
         $writer = writer::with_context($context);
         $member = $DB->get_record(self::T . 'member', ['charid' => $charid, 'courseid' => $courseid]);
         if ($member) {
@@ -716,7 +743,9 @@ class provider implements
                 self::delete_character((int) $charid);
             }
         } else if ($context->contextlevel == CONTEXT_COURSE) {
-            self::delete_in_course((int) $context->instanceid, null);
+            foreach (games::keys((int) $context->instanceid) as $key) {
+                self::delete_in_course($key, null);
+            }
         }
     }
 
@@ -764,7 +793,19 @@ class provider implements
         if ($context->contextlevel != CONTEXT_COURSE) {
             return;
         }
-        $courseid = (int) $context->instanceid;
+        foreach (games::keys((int) $context->instanceid) as $courseid) {
+            self::delete_users_in_game($courseid, $userids);
+        }
+    }
+
+    /**
+     * Deletes the data of some users in one game of a course.
+     *
+     * @param int $courseid The game: the course, or a game more in it.
+     * @param int[] $userids
+     */
+    private static function delete_users_in_game(int $courseid, array $userids): void {
+        global $DB;
         [$insql, $params] = $DB->get_in_or_equal($userids);
         $charids = $DB->get_fieldset_select(self::T . 'char', 'id', "userid $insql", $params);
         if ($charids) {

@@ -41,7 +41,7 @@ final class leaving {
      */
     public static function left(int $courseid, int $userid, ?int $now = null): void {
         global $DB;
-        if (is_enrolled(\context_course::instance($courseid), $userid, '', false)) {
+        if (is_enrolled(games::context($courseid), $userid, '', false)) {
             return;
         }
         $member = self::member($courseid, $userid);

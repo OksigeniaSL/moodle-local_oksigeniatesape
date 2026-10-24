@@ -84,7 +84,7 @@ final class award extends external_api {
             'note' => $note,
             'opid' => $opid,
         ]);
-        $context = \context_course::instance($params['courseid']);
+        $context = \local_oksigeniatesape\local\games::require_enter($params['courseid']);
         self::validate_context($context);
         require_capability('local/oksigeniatesape:award', $context);
         if (!in_array($params['resource'], ['saber', 'gems', 'breath', 'energy'], true)) {

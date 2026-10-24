@@ -61,7 +61,7 @@ final class team_reserve extends external_api {
         global $USER;
         $params = self::validate_parameters(self::execute_parameters(), ['courseid' => $courseid, 'action' => $action,
             'kind' => $kind, 'spendid' => $spendid]);
-        $context = \context_course::instance($params['courseid']);
+        $context = \local_oksigeniatesape\local\games::require_enter($params['courseid']);
         self::validate_context($context);
         require_capability('local/oksigeniatesape:play', $context);
         $char = characters::get((int) $USER->id);

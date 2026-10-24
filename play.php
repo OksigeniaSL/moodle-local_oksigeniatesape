@@ -25,13 +25,19 @@
 require(__DIR__ . '/../../config.php');
 
 $id = required_param('id', PARAM_INT);
-$course = get_course($id);
+// The course, or a game more in it.
+$course = get_course(\local_oksigeniatesape\local\games::course($id));
 require_login($course);
 $context = context_course::instance($course->id);
 if (!has_capability('local/oksigeniatesape:play', $context) && has_capability('local/oksigeniatesape:award', $context)) {
-    redirect(new moodle_url('/local/oksigeniatesape/teach.php', ['id' => $course->id]));
+    redirect(new moodle_url('/local/oksigeniatesape/teach.php', ['id' => $id]));
 }
 require_capability('local/oksigeniatesape:play', $context);
+// A student plays in the game of their group: the course, or a game more in it.
+$key = \local_oksigeniatesape\local\games::key((int) $course->id, (int) $USER->id);
+if ($key !== $id) {
+    redirect(new moodle_url('/local/oksigeniatesape/play.php', ['id' => $key]));
+}
 $PAGE->set_context($context);
-$PAGE->set_url(new moodle_url('/local/oksigeniatesape/play.php', ['id' => $course->id]));
-\local_oksigeniatesape\local\page::output('game', $course);
+$PAGE->set_url(new moodle_url('/local/oksigeniatesape/play.php', ['id' => $id]));
+\local_oksigeniatesape\local\page::output('game', $course, [], $id);

@@ -190,10 +190,10 @@ final class competencies {
         } else {
             $DB->insert_record(self::T . 'objcomp', (object) ($key + ['competencyid' => $competencyid, 'timemodified' => time()]));
         }
-        $linked = course_competency::record_exists_select('courseid = ? AND competencyid = ?', [$courseid, $competencyid]);
+        $linked = course_competency::record_exists_select('courseid = ? AND competencyid = ?', [games::course($courseid), $competencyid]);
         if ($competencyid && !$linked) {
-            $link = new course_competency(0, (object) ['courseid' => $courseid, 'competencyid' => $competencyid,
-                'sortorder' => course_competency::count_records(['courseid' => $courseid])]);
+            $link = new course_competency(0, (object) ['courseid' => games::course($courseid), 'competencyid' => $competencyid,
+                'sortorder' => course_competency::count_records(['courseid' => games::course($courseid)])]);
             $link->create();
         }
     }
@@ -247,7 +247,7 @@ final class competencies {
                    JOIN {competency_usercomp} uc ON uc.id = e.usercompetencyid
                   WHERE uc.userid = ? AND e.contextid = ? AND e.desccomponent = ? AND e.descidentifier IN (?, ?, ?)
                     AND e.timecreated BETWEEN ? AND ?',
-                [$userid, \context_course::instance($courseid)->id, 'local_oksigeniatesape', 'evidence_scene_team',
+                [$userid, games::context($courseid)->id, 'local_oksigeniatesape', 'evidence_scene_team',
                     'evidence_scene_team_sniffed', 'evidence_scene_team_how', $time - MINSECS, $time + HOURSECS]
             );
             foreach ($rows as $row) {
@@ -281,7 +281,7 @@ final class competencies {
         bool $team
     ): void {
         $links = self::links($courseid);
-        $context = \context_course::instance($courseid);
+        $context = games::context($courseid);
         $title = (string) ($scene->data['title'] ?? $scene->code);
         $url = (new \moodle_url('/local/oksigeniatesape/play.php', ['id' => $courseid]))->out(false);
         foreach ($objectives as $code => $o) {
@@ -341,7 +341,7 @@ final class competencies {
         // To choose from: the competencies of the course (also those of the school's own frameworks) and the
         // framework of the mission.
         $options = [];
-        foreach (course_competency::list_competencies($courseid) as $competency) {
+        foreach (course_competency::list_competencies(games::course($courseid)) as $competency) {
             $options[$competency->get('id')] = $competency;
         }
         $framework = self::framework($mission);
@@ -361,7 +361,7 @@ final class competencies {
         }
         // The share right at the first try of each scene, and the rating in the course.
         $ratings = [];
-        foreach (user_competency_course::get_records(['courseid' => $courseid]) as $uc) {
+        foreach (user_competency_course::get_records(['courseid' => games::course($courseid)]) as $uc) {
             $ratings[$uc->get('userid')][$uc->get('competencyid')] = (int) $uc->get('grade');
         }
         foreach (view::students($courseid) as $user) {
@@ -455,7 +455,7 @@ final class competencies {
         if (empty($links[$objective]) || $grade < 1) {
             throw new \invalid_parameter_exception('Nothing to rate');
         }
-        api::grade_competency_in_course($courseid, $userid, $links[$objective], $grade);
+        api::grade_competency_in_course(games::course($courseid), $userid, $links[$objective], $grade);
         // And to the gradebook, if the teacher wants it.
         gradebook::set($courseid, $userid, $objective, $grade);
     }

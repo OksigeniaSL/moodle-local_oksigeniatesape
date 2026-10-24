@@ -54,7 +54,7 @@ final class find_secret extends external_api {
     public static function execute(int $courseid, string $id): array {
         global $USER;
         $params = self::validate_parameters(self::execute_parameters(), ['courseid' => $courseid, 'id' => $id]);
-        $context = \context_course::instance($params['courseid']);
+        $context = \local_oksigeniatesape\local\games::require_enter($params['courseid']);
         self::validate_context($context);
         require_capability('local/oksigeniatesape:play', $context);
         $char = characters::get((int) $USER->id);

@@ -67,7 +67,7 @@ final class get_scene extends external_api {
             'courseid' => $courseid,
             'sceneid' => $sceneid,
         ]);
-        $context = \context_course::instance($params['courseid']);
+        $context = \local_oksigeniatesape\local\games::require_enter($params['courseid']);
         self::validate_context($context);
         if (!has_capability('local/oksigeniatesape:play', $context)) {
             // The class screen plays scenes with the whole class.

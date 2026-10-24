@@ -59,7 +59,7 @@ final class play_deferred extends external_api {
             'liveid' => $liveid,
             'answers' => $answers,
         ]);
-        $context = \context_course::instance($params['courseid']);
+        $context = \local_oksigeniatesape\local\games::require_enter($params['courseid']);
         self::validate_context($context);
         require_capability('local/oksigeniatesape:play', $context);
         return deferred::play($params['courseid'], (int) $USER->id, $params['liveid'], $params['answers']);

@@ -59,7 +59,7 @@ final class get_class extends external_api {
             'courseid' => $courseid,
             'board' => $board,
         ]);
-        $context = \context_course::instance($params['courseid']);
+        $context = \local_oksigeniatesape\local\games::require_enter($params['courseid']);
         self::validate_context($context);
         require_capability('local/oksigeniatesape:award', $context);
         return view::teacher($params['courseid'], $params['board']);

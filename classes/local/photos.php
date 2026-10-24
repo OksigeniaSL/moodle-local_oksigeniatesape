@@ -89,7 +89,7 @@ final class photos {
         $photo = $DB->get_record(self::T . 'photo', ['id' => $photoid, 'courseid' => $courseid], '*', MUST_EXIST);
         if (!$ok) {
             get_file_storage()->delete_area_files(
-                \context_course::instance($courseid)->id,
+                games::context($courseid)->id,
                 'local_oksigeniatesape',
                 self::FILEAREA,
                 $photoid
@@ -134,7 +134,7 @@ final class photos {
         foreach ($mission ? $mission->data['chapters'] ?? [] : [] as $chapter) {
             $places[$chapter['code']] = missions::text($chapter['name'] ?? $chapter['code'], $mission->skin, $mission->variant);
         }
-        $teams = groups_get_all_groups($courseid);
+        $teams = groups_get_all_groups(games::course($courseid));
         $out = [];
         foreach ($DB->get_records(self::T . 'photo', $where, 'timecreated') as $p) {
             if ($p->status === 'rejected') {
@@ -209,7 +209,7 @@ final class photos {
             return;
         }
         // A course deleted has no context any more: Moodle deleted its files with it.
-        $context = \context_course::instance($courseid, IGNORE_MISSING);
+        $context = \context_course::instance(games::course($courseid), IGNORE_MISSING);
         foreach ($context ? $ids : [] as $id) {
             get_file_storage()->delete_area_files($context->id, 'local_oksigeniatesape', self::FILEAREA, (int) $id);
         }
@@ -247,7 +247,7 @@ final class photos {
      * @return array
      */
     private static function file(int $courseid, int $photoid, string $filename): array {
-        return ['contextid' => \context_course::instance($courseid)->id, 'component' => 'local_oksigeniatesape',
+        return ['contextid' => games::context($courseid)->id, 'component' => 'local_oksigeniatesape',
             'filearea' => self::FILEAREA, 'itemid' => $photoid, 'filepath' => '/', 'filename' => $filename];
     }
 
@@ -258,7 +258,7 @@ final class photos {
      * @return string Empty if it has none.
      */
     private static function url(\stdClass $photo): string {
-        $context = \context_course::instance((int) $photo->courseid);
+        $context = games::context((int) $photo->courseid);
         $files = get_file_storage()->get_area_files(
             $context->id,
             'local_oksigeniatesape',

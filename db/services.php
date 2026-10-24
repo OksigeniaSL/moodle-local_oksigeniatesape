@@ -403,6 +403,13 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:manageregion',
     ],
+    'local_oksigeniatesape_manage_games' => [
+        'classname' => 'local_oksigeniatesape\\external\\manage_games',
+        'description' => 'The games of a course: the one of the course and one more for each group that plays apart.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:manageregion',
+    ],
     'local_oksigeniatesape_get_ideas' => [
         'classname' => 'local_oksigeniatesape\\external\\get_ideas',
         'description' => 'The ideas the students of the course have sent, for its teachers.',

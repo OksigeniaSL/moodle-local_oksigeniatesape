@@ -55,7 +55,7 @@ final class answer_page extends external_api {
     public static function execute(int $courseid, int $answer): array {
         global $USER;
         $params = self::validate_parameters(self::execute_parameters(), ['courseid' => $courseid, 'answer' => $answer]);
-        $context = \context_course::instance($params['courseid']);
+        $context = \local_oksigeniatesape\local\games::require_enter($params['courseid']);
         self::validate_context($context);
         require_capability('local/oksigeniatesape:play', $context);
         $region = regions::get($params['courseid']);

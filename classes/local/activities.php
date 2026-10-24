@@ -41,14 +41,38 @@ final class activities {
     public const MAX_GEMS = 50;
 
     /**
-     * The challenge of an activity, if it is one.
+     * The challenge of an activity in a game, if it is one.
      *
      * @param int $cmid
+     * @param int $courseid The game: in a course with more than one, an activity may be a challenge in each.
      * @return \stdClass|null
      */
-    public static function challenge(int $cmid): ?\stdClass {
+    public static function challenge(int $cmid, int $courseid): ?\stdClass {
         global $DB;
-        return $DB->get_record(self::T . 'challenge', ['cmid' => $cmid]) ?: null;
+        return $DB->get_record(self::T . 'challenge', ['cmid' => $cmid, 'courseid' => $courseid]) ?: null;
+    }
+
+    /**
+     * The settings of an activity from its form in Moodle: for the game of the course and, in a course with more than
+     * one game, for each game more (with its own place of the same code, if it has one).
+     *
+     * @param int $courseid
+     * @param int $cmid
+     * @param array $data As for save().
+     */
+    public static function save_in_course(int $courseid, int $cmid, array $data): void {
+        global $DB;
+        $challenge = self::save($courseid, $cmid, $data);
+        $code = $challenge->chapterid ? (string) $DB->get_field(self::T . 'chapter', 'code', ['id' => $challenge->chapterid]) : '';
+        foreach (array_slice(games::keys($courseid), 1) as $key) {
+            $mission = missions::get($key);
+            $data['chapterid'] = $code !== '' && $mission ? (int) $DB->get_field(
+                self::T . 'chapter',
+                'id',
+                ['missionid' => $mission->id, 'code' => $code]
+            ) : 0;
+            self::save($key, $cmid, $data);
+        }
     }
 
     /**
@@ -63,7 +87,7 @@ final class activities {
     public static function save(int $courseid, int $cmid, array $data, ?int $now = null): \stdClass {
         global $DB;
         $now = $now ?? time();
-        $challenge = self::challenge($cmid) ?? (object) ['cmid' => $cmid, 'courseid' => $courseid, 'kind' => 'activity',
+        $challenge = self::challenge($cmid, $courseid) ?? (object) ['cmid' => $cmid, 'courseid' => $courseid, 'kind' => 'activity',
             'saber' => 20, 'timecreated' => $now];
         if (array_key_exists('saber', $data)) {
             $challenge->saber = max(0, min(self::MAX_SABER, (int) $data['saber']));
@@ -116,14 +140,20 @@ final class activities {
      */
     public static function regroup(int $courseid, int $groupingid): int {
         global $DB;
-        $sql = "SELECT a.id
+        // In a course with more than one game, its activities are shared: the teams of all the games, in one grouping.
+        $keys = games::keys(games::course($courseid));
+        if (count($keys) > 1) {
+            $groupingid = teams::all_teams(games::course($courseid));
+        }
+        [$insql, $params] = $DB->get_in_or_equal(count($keys) > 1 ? $keys : [$courseid]);
+        $sql = "SELECT DISTINCT a.id
                   FROM {" . self::T . "challenge} c
                   JOIN {course_modules} cm ON cm.id = c.cmid
                   JOIN {modules} m ON m.id = cm.module AND m.name = 'assign'
                   JOIN {assign} a ON a.id = cm.instance
-                 WHERE c.courseid = ? AND c.teamwork = 1 AND a.teamsubmission = 1
+                 WHERE c.courseid $insql AND c.teamwork = 1 AND a.teamsubmission = 1
                        AND a.teamsubmissiongroupingid <> ?";
-        $ids = $DB->get_fieldset_sql($sql, [$courseid, $groupingid]);
+        $ids = $DB->get_fieldset_sql($sql, array_merge($params, [$groupingid]));
         foreach ($ids as $id) {
             $DB->set_field('assign', 'teamsubmissiongroupingid', $groupingid, ['id' => $id]);
         }
@@ -141,7 +171,7 @@ final class activities {
      */
     public static function for_student(int $courseid, int $userid, \stdClass $member): array {
         global $DB;
-        $modinfo = get_fast_modinfo($courseid, $userid);
+        $modinfo = get_fast_modinfo(games::course($courseid), $userid);
         $course = $modinfo->get_course();
         $completion = new \completion_info($course);
         $region = regions::get($courseid);
@@ -201,7 +231,7 @@ final class activities {
      */
     public static function for_teacher(int $courseid, array $userids): array {
         global $DB;
-        $modinfo = get_fast_modinfo($courseid);
+        $modinfo = get_fast_modinfo(games::course($courseid));
         $list = [];
         foreach ($DB->get_records_select(self::T . 'challenge', 'courseid = ? AND cmid > 0', [$courseid], 'id') as $challenge) {
             $cm = $modinfo->cms[$challenge->cmid] ?? null;
@@ -244,6 +274,7 @@ final class activities {
      * @param string $skin
      * @param int $now
      * @param string $variant The local examples, for the voice of the texts.
+     * @param int $key The game, if it is one more of the course.
      * @return int The id of the section.
      */
     public static function make_for_chapter(
@@ -252,7 +283,8 @@ final class activities {
         array $info,
         string $skin,
         int $now,
-        string $variant = ''
+        string $variant = '',
+        int $key = 0
     ): int {
         global $CFG, $DB;
         require_once($CFG->dirroot . '/course/lib.php');
@@ -266,18 +298,21 @@ final class activities {
         }
         $section = course_create_section($course);
         course_update_section($course, $section, ['name' => missions::text($info['name'] ?? $chapter->code, $skin)]);
-        $region = regions::get((int) $course->id);
+        $key = $key ?: (int) $course->id;
+        $region = regions::get($key);
+        // In a course with more than one game, the teams of all of them.
+        $shared = count(games::keys((int) $course->id)) > 1;
         foreach ($info['activities'] ?? [] as $activity) {
             if (!in_array($activity['module'] ?? '', self::MODULES, true)) {
                 continue;
             }
-            $groupingid = (int) ($region->groupingid ?? 0);
+            $groupingid = $shared ? teams::all_teams((int) $course->id) : (int) ($region->groupingid ?? 0);
             $moduleinfo = self::moduleinfo($course, (int) $section->section, $activity, $skin, $groupingid, $variant);
             $moduleinfo = add_moduleinfo($moduleinfo, $course);
             if ($activity['module'] === 'data') {
                 self::data_fields((int) $moduleinfo->instance, $course, $activity['fields'] ?? []);
             }
-            self::save((int) $course->id, (int) $moduleinfo->coursemodule, [
+            self::save($key, (int) $moduleinfo->coursemodule, [
                 'saber' => (int) ($activity['saber'] ?? 20),
                 'teamwork' => !empty($activity['teamwork']),
                 'chapterid' => (int) $chapter->id,

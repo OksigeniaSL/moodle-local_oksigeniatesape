@@ -67,7 +67,7 @@ final class set_coat extends external_api {
             'courseid' => $courseid,
             'coat' => $coat,
         ]);
-        $context = \context_course::instance($params['courseid']);
+        $context = \local_oksigeniatesape\local\games::require_enter($params['courseid']);
         self::validate_context($context);
         require_capability('local/oksigeniatesape:play', $context);
         minigames::set_coat($params['courseid'], (int) $USER->id, $params['coat']);

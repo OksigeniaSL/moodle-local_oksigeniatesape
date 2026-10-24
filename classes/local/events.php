@@ -572,6 +572,6 @@ final class events {
      */
     private static function teams(int $courseid): array {
         $region = regions::get($courseid);
-        return groups_get_all_groups($courseid, 0, (int) ($region->groupingid ?? 0));
+        return groups_get_all_groups(games::course($courseid), 0, (int) ($region->groupingid ?? 0));
     }
 }

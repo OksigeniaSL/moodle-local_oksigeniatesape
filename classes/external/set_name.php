@@ -61,7 +61,7 @@ final class set_name extends external_api {
             'option' => $option,
             'own' => $own,
         ]);
-        $context = \context_course::instance($params['courseid']);
+        $context = \local_oksigeniatesape\local\games::require_enter($params['courseid']);
         self::validate_context($context);
         require_capability('local/oksigeniatesape:play', $context);
         names::choose($params['courseid'], (int) $USER->id, $params['what'], $params['option'], $params['own']);

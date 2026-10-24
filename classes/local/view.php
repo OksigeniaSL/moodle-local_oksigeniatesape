@@ -201,7 +201,7 @@ final class view {
             }
             // The photos of the classroom of the team, by place: stickers of the map once the teacher approves them; and
             // whether this student may send one.
-            $world['sendphoto'] = has_capability('local/oksigeniatesape:sendphoto', \context_course::instance($courseid));
+            $world['sendphoto'] = has_capability('local/oksigeniatesape:sendphoto', games::context($courseid));
             $world['photos'] = [];
             foreach ($myteam ? photos::of_team($courseid, (int) $char->userid) : [] as $code => $photo) {
                 $world['photos'][] = ['chapter' => (string) $code] + $photo;
@@ -688,7 +688,7 @@ final class view {
                 $members[$member->charid] = $member;
             }
         }
-        $groups = groups_get_all_groups($courseid, 0, $groupingid);
+        $groups = groups_get_all_groups(games::course($courseid), 0, $groupingid);
         $teamof = [];
         foreach ($groups as $group) {
             foreach (array_keys(groups_get_members($group->id, 'u.id')) as $memberid) {
@@ -751,7 +751,7 @@ final class view {
             'groupings' => array_values(array_map(
                 fn($g) => ['id' => (int) $g->id, 'name' => format_string($g->name),
                     'classtools' => str_starts_with((string) ($g->idnumber ?? ''), 'oksigeniaclasstools-')],
-                groups_get_all_groupings($courseid)
+                groups_get_all_groupings(games::course($courseid))
             )),
             // Oksigenia Classtools, if the site has it: its random teams, with the photos of the class, saved as a grouping.
             'classtools' => \core_component::get_component_directory('local_oksigeniaclasstools') ?
@@ -792,7 +792,7 @@ final class view {
         // Who to look at: stuck today, or with a step that may weigh or fall short. Only here, never on the class screen.
         $view['signals'] = signals::of_course($courseid);
         // The requests of powers waiting, for the tray of what is waiting in the panel.
-        if ($view['powerspending'] && has_capability('local/oksigeniatesape:approvepowers', \context_course::instance($courseid))) {
+        if ($view['powerspending'] && has_capability('local/oksigeniatesape:approvepowers', games::context($courseid))) {
             $view['powersqueue'] = powers::requests($courseid, 0)['pending'];
         }
         return $view;
@@ -856,7 +856,7 @@ final class view {
             \core_user\fields::get_name_fields()
         ));
         $users = get_enrolled_users(
-            \context_course::instance($courseid),
+            games::context($courseid),
             'local/oksigeniatesape:play',
             0,
             $fields,
@@ -865,7 +865,8 @@ final class view {
             0,
             true
         );
-        return $users;
+        // Those of the game: in a course with more than one, each student plays in one.
+        return games::filter($courseid, $users);
     }
 
     /**
@@ -930,7 +931,7 @@ final class view {
             'reasonsown' => !empty($region->reasons),
             // Without completion of activities, the activities of Moodle give no saber: the first step says so.
             'completion' => !empty($GLOBALS['CFG']->enablecompletion) && (!$region ||
-                !empty($GLOBALS['DB']->get_field('course', 'enablecompletion', ['id' => $region->courseid]))),
+                !empty($GLOBALS['DB']->get_field('course', 'enablecompletion', ['id' => games::course((int) $region->courseid)]))),
             'look' => (string) ($region->look ?? ''),
             'worldlook' => themes::current('', art::manifest()),
         ];
@@ -1090,7 +1091,7 @@ final class view {
      */
     private static function team(int $courseid, int $userid, int $groupingid, \stdClass $region): ?array {
         global $DB;
-        $groups = groups_get_all_groups($courseid, $userid, $groupingid);
+        $groups = groups_get_all_groups(games::course($courseid), $userid, $groupingid);
         if (!$groups) {
             return null;
         }

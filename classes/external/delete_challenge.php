@@ -62,7 +62,7 @@ final class delete_challenge extends external_api {
             'courseid' => $courseid,
             'id' => $id,
         ]);
-        $context = \context_course::instance($params['courseid']);
+        $context = \local_oksigeniatesape\local\games::require_enter($params['courseid']);
         self::validate_context($context);
         require_capability('local/oksigeniatesape:manageregion', $context);
         if (classroom::get($params['id'])->courseid != $params['courseid']) {

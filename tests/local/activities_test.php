@@ -125,7 +125,7 @@ final class activities_test extends \advanced_testcase {
             'completion' => COMPLETION_TRACKING_MANUAL]);
         $this->assertSame([], activities::for_student($w->course->id, $w->student->id, $w->member));
         activities::save($w->course->id, $page->cmid, ['saber' => 500, 'gems' => 3, 'steps' => [3, 4]]);
-        $this->assertSame(activities::MAX_SABER, (int) activities::challenge($page->cmid)->saber);
+        $this->assertSame(activities::MAX_SABER, (int) activities::challenge($page->cmid, (int) $w->course->id)->saber);
         $this->assertSame([], activities::for_student($w->course->id, $w->student->id, $w->member));
         activities::save($w->course->id, $page->cmid, ['steps' => [2]]);
         $list = activities::for_student($w->course->id, $w->student->id, $w->member);
@@ -134,7 +134,7 @@ final class activities_test extends \advanced_testcase {
         $this->assertSame(0, $list[0]['chapterid']);
         $this->assertSame(3, $list[0]['gems']);
         activities::remove($page->cmid);
-        $this->assertNull(activities::challenge($page->cmid));
+        $this->assertNull(activities::challenge($page->cmid, (int) $w->course->id));
     }
 
     public function test_settings_form_of_an_activity(): void {
@@ -147,11 +147,11 @@ final class activities_test extends \advanced_testcase {
         // A student cannot set it.
         $this->setUser($w->student);
         local_oksigeniatesape_coursemodule_edit_post_actions($data, $w->course);
-        $this->assertNull(activities::challenge($page->cmid));
+        $this->assertNull(activities::challenge($page->cmid, (int) $w->course->id));
 
         $this->setUser($w->teacher);
         local_oksigeniatesape_coursemodule_edit_post_actions($data, $w->course);
-        $challenge = activities::challenge($page->cmid);
+        $challenge = activities::challenge($page->cmid, (int) $w->course->id);
         $this->assertSame(30, (int) $challenge->saber);
         $this->assertSame('2,3', $challenge->steps);
         $this->assertSame(1, (int) $challenge->teamwork);
@@ -159,10 +159,10 @@ final class activities_test extends \advanced_testcase {
 
         // Forms without the game leave it as it is; unticked, it stops being a challenge.
         local_oksigeniatesape_coursemodule_edit_post_actions((object) ['coursemodule' => $page->cmid], $w->course);
-        $this->assertNotNull(activities::challenge($page->cmid));
+        $this->assertNotNull(activities::challenge($page->cmid, (int) $w->course->id));
         $data->tesape_challenge = 0;
         local_oksigeniatesape_coursemodule_edit_post_actions($data, $w->course);
-        $this->assertNull(activities::challenge($page->cmid));
+        $this->assertNull(activities::challenge($page->cmid, (int) $w->course->id));
 
         $errors = local_oksigeniatesape_coursemodule_validation(null, ['tesape_challenge' => 1, 'tesape_saber' => 999,
             'tesape_gems' => -1]);

@@ -62,10 +62,11 @@ final class direct extends external_api {
             'flag' => $flag,
             'note' => $note,
         ]);
-        $context = \context_course::instance($params['courseid']);
+        $context = \local_oksigeniatesape\local\games::require_enter($params['courseid']);
         self::validate_context($context);
         require_capability('local/oksigeniatesape:award', $context);
-        if ($params['groupid'] && (int) (groups_get_group($params['groupid'], 'courseid')->courseid ?? 0) !== $params['courseid']) {
+        $course = \local_oksigeniatesape\local\games::course($params['courseid']);
+        if ($params['groupid'] && (int) (groups_get_group($params['groupid'], 'courseid')->courseid ?? 0) !== $course) {
             throw new \invalid_parameter_exception('Not a team of the course');
         }
         return ['given' => director::give(

@@ -94,7 +94,7 @@ final class save_power extends external_api {
             'enabled' => $enabled,
             'autoapprove' => $autoapprove,
         ]);
-        $context = \context_course::instance($params['courseid']);
+        $context = \local_oksigeniatesape\local\games::require_enter($params['courseid']);
         self::validate_context($context);
         require_capability('local/oksigeniatesape:manageregion', $context);
         $data = $params;

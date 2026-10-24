@@ -56,7 +56,7 @@ final class set_competency extends external_api {
             'objective' => $objective,
             'competencyid' => $competencyid,
         ]);
-        $context = \context_course::instance($params['courseid']);
+        $context = \local_oksigeniatesape\local\games::require_enter($params['courseid']);
         self::validate_context($context);
         require_capability('local/oksigeniatesape:manageregion', $context);
         competencies::set($params['courseid'], $params['objective'], $params['competencyid']);

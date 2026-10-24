@@ -25,12 +25,13 @@
 require(__DIR__ . '/../../config.php');
 
 $id = required_param('id', PARAM_INT);
-$course = get_course($id);
+// The course, or a game more in it.
+$course = get_course(\local_oksigeniatesape\local\games::course($id));
 require_login($course);
 $context = context_course::instance($course->id);
 require_capability('local/oksigeniatesape:award', $context);
 $PAGE->set_context($context);
-$PAGE->set_url(new moodle_url('/local/oksigeniatesape/teach.php', ['id' => $course->id]));
+$PAGE->set_url(new moodle_url('/local/oksigeniatesape/teach.php', ['id' => $id]));
 $caps = [];
 foreach (['manageregion', 'award', 'approvepowers', 'pause', 'viewlog', 'undo', 'runclassscreen'] as $cap) {
     $caps[$cap] = has_capability('local/oksigeniatesape:' . $cap, $context);
@@ -39,4 +40,6 @@ foreach (['manageregion', 'award', 'approvepowers', 'pause', 'viewlog', 'undo', 
 $caps['siteconfig'] = has_capability('moodle/site:config', context_system::instance());
 // The form of suggestions to Oksigenia, only where the site has it on.
 $suggest = \local_oksigeniatesape\local\suggestions::enabled();
-\local_oksigeniatesape\local\page::output('teach', $course, ['caps' => $caps, 'suggest' => $suggest]);
+// The games of the course: its own and those more, for groups of it.
+$games = \local_oksigeniatesape\local\games::menu((int) $course->id);
+\local_oksigeniatesape\local\page::output('teach', $course, ['caps' => $caps, 'suggest' => $suggest, 'games' => $games], $id);
