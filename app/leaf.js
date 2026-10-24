@@ -108,7 +108,7 @@
       }
       if (run.done) {
         html += '<div class="actions"><button class="btn btn-main" data-next>' + esc(last ? t('app_errors_finish') :
-          t('app_whoami_next')) + '</button></div>';
+          t('app_leaf_next')) + '</button></div>';
       }
       var body = layer.querySelector('.scene-body');
       if (!body) {

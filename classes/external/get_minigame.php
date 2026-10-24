@@ -198,7 +198,18 @@ final class get_minigame extends external_api {
                     VALUE_DEFAULT,
                     []
                 ),
-            ]), 'The rounds of the leaf factory', VALUE_DEFAULT, []),
+                'order' => new external_multiple_structure(
+                    new external_value(PARAM_ALPHANUMEXT, 'A link'),
+                    'A chain of Eslabón: the links in their order from the sun',
+                    VALUE_DEFAULT,
+                    []
+                ),
+                'cards' => new external_multiple_structure(new external_single_structure([
+                    'id' => new external_value(PARAM_ALPHANUMEXT, 'Being or thing of the catalog'),
+                    'label' => new external_value(PARAM_TEXT, 'Its name'),
+                    'picture' => new external_value(PARAM_RAW_TRIMMED, 'Key of its drawing in the art pack'),
+                ]), 'A chain of Eslabón: its links, shuffled', VALUE_DEFAULT, []),
+            ]), 'The rounds of the leaf factory and of Eslabón', VALUE_DEFAULT, []),
             'cards' => new external_multiple_structure(new external_single_structure([
                 'id' => new external_value(PARAM_ALPHANUMEXT, 'Being of the catalog'),
                 'label' => new external_value(PARAM_TEXT, 'Name'),

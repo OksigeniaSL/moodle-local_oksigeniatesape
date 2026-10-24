@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 81,
+ "version": 82,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 82,
+   "kind": "improvement",
+   "date": "2026-10-24",
+   "text": "Eslabón, en el Gran Lago: ordenar las cadenas desde el sol, la energía que llega a cada eslabón, el eslabón que arranca el Embrollo y los descomponedores"
+  },
   {
    "version": 81,
    "kind": "improvement",
@@ -4566,6 +4572,7 @@
    "x": 150,
    "y": 165,
    "games": [
+    "eslabonlago",
     "enredolago"
    ],
    "spots": {
@@ -4596,6 +4603,10 @@
     "enredolago": [
      64,
      72
+    ],
+    "eslabonlago": [
+     80,
+     56
     ]
    },
    "activities": [
@@ -5937,6 +5948,98 @@
      "prompt": "La raíz ya bebe y el sol ha vuelto. Llena el tarro hasta arriba con 4 de azúcar, sin desperdiciar nada.",
      "target": 4,
      "why": "Con las tres llaves abiertas del todo y a la par, la hoja fabrica todo lo que puede."
+    }
+   ]
+  },
+  "eslabonlago": {
+   "type": "chain",
+   "title": "Eslabón",
+   "intro": "En el Gran Lago, cada ser vivo es un eslabón: se come a otro y otro se lo come, y la energía que empezó en el sol pasa de uno a otro. Pon cada cadena en orden, desde el sol, y mira qué pasa cuando el Embrollo arranca un eslabón.",
+   "scene": {
+    "embrollo": {
+     "valley": "«¡Ji, ji! He soltado los eslabones de las cadenas del lago. A ver quién las vuelve a unir.»",
+     "azara": "Con la humedad del lago, las páginas del cuaderno sobre quién come a quién se han desordenado."
+    },
+    "creature": {
+     "valley": "{{creature}} mira los eslabones sueltos y se rasca la cabeza.",
+     "azara": "{{creature}} husmea la orilla, donde unos se comen a otros."
+    }
+   },
+   "win": "Las cadenas vuelven a estar unidas. Ya sabes que la energía viene del sol, que llega menos a cada eslabón y que, si falta uno, se nota en toda la cadena.",
+   "lose": "Esta vez las cadenas se han quedado sueltas. Abajo tienes lo que pasó en cada ronda: léelo y vuelve a intentarlo.",
+   "misses": {
+    "1": 2,
+    "2": 1
+   },
+   "reward": {
+    "gems": 5
+   },
+   "rounds": [
+    {
+     "id": "lago",
+     "kind": "order",
+     "title": "La cadena del lago",
+     "prompt": "Ordena la cadena, desde el sol hasta el que no se come nadie en el lago.",
+     "chain": [
+      "sol",
+      "alga",
+      "pezrio",
+      "martinpescador"
+     ],
+     "why": "El alga fabrica su alimento con la luz del sol, el pez se come el alga y el martín pescador se come el pez."
+    },
+    {
+     "id": "energia",
+     "kind": "question",
+     "title": "La energía que llega",
+     "prompt": "En el lago hay muchísimas algas y pocos martines pescadores. ¿Por qué?",
+     "answer": "Porque a cada eslabón llega menos energía",
+     "options": [
+      "Porque a cada eslabón llega menos energía",
+      "Porque a los martines pescadores no les gusta el lago",
+      "Porque las algas se esconden mejor"
+     ],
+     "why": "Cada ser vivo gasta casi toda la energía que come en vivir: a quien se lo come le llega solo una parte. Por eso, cuanto más arriba en la cadena, menos seres vivos."
+    },
+    {
+     "id": "prado",
+     "kind": "order",
+     "title": "La cadena del prado",
+     "prompt": "Ordena esta otra cadena, la del prado junto al lago, desde el sol.",
+     "chain": [
+      "sol",
+      "dientedeleon",
+      "caracol",
+      "sapo",
+      "culebra"
+     ],
+     "why": "El diente de león fabrica su alimento, el caracol se lo come, el sapo se come el caracol y la culebra caza al sapo."
+    },
+    {
+     "id": "arranca",
+     "kind": "question",
+     "title": "El Embrollo arranca un eslabón",
+     "prompt": "El Embrollo se lleva a todos los sapos del prado. ¿Qué pasa con los caracoles?",
+     "answer": "Que hay más, porque nadie se los come",
+     "options": [
+      "Que hay más, porque nadie se los come",
+      "Que desaparecen también",
+      "Que no les pasa nada"
+     ],
+     "why": "Sin sapos, nadie caza a los caracoles: se multiplican y se comen más dientes de león. Y la culebra se queda con menos comida. Si falta un eslabón, se nota en toda la cadena."
+    },
+    {
+     "id": "restos",
+     "kind": "question",
+     "title": "Lo que queda",
+     "prompt": "Cuando mueren la culebra, el sapo y el caracol, ¿quién aprovecha lo que queda de ellos?",
+     "answer": "Los hongos y las lombrices, que lo descomponen",
+     "options": [
+      "Los hongos y las lombrices, que lo descomponen",
+      "Nadie, se queda ahí para siempre",
+      "El sol, que lo seca"
+     ],
+     "why": "Los descomponedores, como los hongos y las lombrices, deshacen los restos y devuelven al suelo lo que las plantas necesitan. Así empieza otra vez la cadena."
     }
    ]
   },

@@ -220,6 +220,9 @@ final class minigames {
         if (($game['type'] ?? '') === 'leaf') {
             return self::leaf_config($mission, $code, $game, $step);
         }
+        if (($game['type'] ?? '') === 'chain') {
+            return self::chain_config($mission, $code, $game, $step);
+        }
         $level = self::level($game, $step);
         $nets = [];
         foreach ($level['nets'] as $net) {
@@ -493,6 +496,99 @@ final class minigames {
             'shield' => 0,
             'speed' => 0,
         ];
+    }
+
+    /**
+     * Eslabón as a student of a step plays it: rounds to put the links of a chain in their order from the sun (cards of
+     * the catalog, shuffled) and rounds of a question.
+     *
+     * @param \stdClass $mission With data.
+     * @param string $code
+     * @param array $game
+     * @param int $step
+     * @return array
+     */
+    private static function chain_config(\stdClass $mission, string $code, array $game, int $step): array {
+        $text = fn($t) => missions::text($t ?? '', $mission->skin, $mission->variant);
+        $rounds = [];
+        foreach ($game['rounds'] ?? [] as $round) {
+            $out = ['id' => (string) $round['id'], 'kind' => (string) ($round['kind'] ?? 'order'),
+                'title' => $text($round['title'] ?? ''), 'prompt' => $text($round['prompt'] ?? ''),
+                'why' => $text($round['why'] ?? '')];
+            if ($out['kind'] === 'question') {
+                $options = array_values(array_map($text, (array) ($round['options'] ?? [])));
+                shuffle($options);
+                $out += ['answer' => $text($round['answer'] ?? ''), 'options' => $options];
+            } else {
+                $chain = array_values(array_map('strval', (array) ($round['chain'] ?? [])));
+                $cards = [];
+                foreach ($chain as $id) {
+                    $thing = $mission->data['things'][$id] ?? [];
+                    $cards[] = ['id' => $id, 'label' => self::variant($mission, $thing['label'] ?? $id),
+                        'picture' => self::picture($mission, $id, !empty($thing['alive']))];
+                }
+                shuffle($cards);
+                $out += ['order' => $chain, 'cards' => $cards];
+            }
+            $rounds[] = $out;
+        }
+        $misses = self::misses($game, $step);
+        return [
+            'code' => $code,
+            'type' => 'chain',
+            'title' => missions::text($game['title'] ?? $code, $mission->skin),
+            'intro' => $text($game['intro'] ?? ''),
+            'win' => $text($game['win'] ?? ''),
+            'lose' => $text($game['lose'] ?? ''),
+            'nets' => [],
+            'animals' => [],
+            'rounds' => $rounds,
+            'goal' => max(1, count($rounds) - $misses),
+            'misses' => $misses,
+            'shield' => 0,
+            'speed' => 0,
+        ];
+    }
+
+    /**
+     * Counts a play of Eslabón: each round once; a chain is right with its links in their order, a question with its
+     * own answer.
+     *
+     * @param array $game As the student plays it.
+     * @param array $events Each one: r (the round) and o (the ids in the order put) or g (the answer, as shown).
+     * @return array [right, wrong rounds, wrong (round => what was done), success]
+     */
+    private static function count_chain(array $game, array $events): array {
+        $rounds = array_column($game['rounds'], null, 'id');
+        $seen = [];
+        $right = 0;
+        $wrong = [];
+        foreach ($events as $event) {
+            $id = (string) ($event['r'] ?? '');
+            $round = $rounds[$id] ?? null;
+            if (!$round || isset($seen[$id])) {
+                throw new \moodle_exception('invalidgameplay', 'local_oksigeniatesape');
+            }
+            $seen[$id] = true;
+            if ($round['kind'] === 'question') {
+                $what = trim((string) ($event['g'] ?? ''));
+                $ok = \core_text::strtolower($what) === \core_text::strtolower($round['answer']);
+            } else {
+                $put = array_values(array_map('strval', (array) ($event['o'] ?? [])));
+                if (count($put) !== count($round['order']) || array_diff($put, $round['order'])) {
+                    throw new \moodle_exception('invalidgameplay', 'local_oksigeniatesape');
+                }
+                $ok = $put === $round['order'];
+                $what = implode(',', $put);
+            }
+            if ($ok) {
+                $right++;
+            } else {
+                $wrong[$id] = $what;
+            }
+        }
+        $missed = count($rounds) - $right;
+        return [$right, $missed, $wrong, $missed <= (int) $game['misses']];
     }
 
     /**
@@ -1071,6 +1167,8 @@ final class minigames {
             [$caught, $missed, $wrong, $success] = self::count_whoami($game, $events);
         } else if (($game['type'] ?? '') === 'leaf') {
             [$caught, $missed, $wrong, $success] = self::count_leaf($game, $events);
+        } else if (($game['type'] ?? '') === 'chain') {
+            [$caught, $missed, $wrong, $success] = self::count_chain($game, $events);
         } else {
             [$caught, $missed, $wrong, $success] = self::count_nest($game, $events);
         }
@@ -1673,6 +1771,20 @@ final class minigames {
                 }
                 if (($game['type'] ?? '') === 'whoami') {
                     $confusions[] = ['text' => self::mistaken($mission, $game, (string) $key), 'count' => $count];
+                    continue;
+                }
+                if (($game['type'] ?? '') === 'chain') {
+                    // The round of Eslabón the class gets wrong most, and the order it puts or the answer it gives.
+                    [$id, $what] = array_pad(explode('|', (string) $key, 2), 2, '');
+                    $round = array_column($game['rounds'] ?? [], null, 'id')[$id] ?? [];
+                    $names = array_map(
+                        fn($b) => self::variant($mission, $mission->data['things'][$b]['label'] ?? $b),
+                        array_filter(explode(',', $what))
+                    );
+                    $confusions[] = ['text' => get_string('minigame_leaf_wrong', 'local_oksigeniatesape', (object) [
+                        'round' => missions::text($round['title'] ?? $id, $mission->skin, $mission->variant),
+                        'what' => ($round['kind'] ?? 'order') === 'question' ? $what : implode(' → ', $names)]),
+                        'count' => $count];
                     continue;
                 }
                 if (($game['type'] ?? '') === 'leaf') {

@@ -92,7 +92,8 @@
    */
   T.gamePlayer = function(type) {
     return {errors: T.playErrors, whack: T.playWhack, venn: T.playVenn, whoami: T.playWhoami,
-      guesswho: T.playGuesswho, terrarium: T.playTerrarium, burst: T.playBurst, leaf: T.playLeaf}[type] || T.playNest;
+      guesswho: T.playGuesswho, terrarium: T.playTerrarium, burst: T.playBurst, leaf: T.playLeaf,
+      chain: T.playChain}[type] || T.playNest;
   };
 
   /**
