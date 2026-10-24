@@ -85,14 +85,14 @@
 
   /**
    * What plays a minigame of a type: Defensa del nido, a hunt for mistakes of the Embrollo, Who is alive?, the two
-   * circles, Who am I? or Guess who.
+   * circles, Who am I?, Guess who or the terrarium.
    *
    * @param {string} type
    * @return {function} Called with code, world and onclose(world).
    */
   T.gamePlayer = function(type) {
     return {errors: T.playErrors, whack: T.playWhack, venn: T.playVenn, whoami: T.playWhoami,
-      guesswho: T.playGuesswho}[type] || T.playNest;
+      guesswho: T.playGuesswho, terrarium: T.playTerrarium}[type] || T.playNest;
   };
 
   /**

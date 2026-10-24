@@ -545,6 +545,78 @@ final class minigames_test extends \advanced_testcase {
         $this->assertContains(get_string('minigame_guesswho_first', 'local_oksigeniatesape', $first), $texts);
     }
 
+    public function test_the_terrarium(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $w = $this->make_class();
+        $char = characters::get($w->user->id);
+        $step = (int) $w->member->step;
+        $game = minigames::config($w->mission, 'terrarioclaro', $step, 'scout', [], 0, [], (int) $char->id);
+        $this->assertSame('terrarium', $game['type']);
+        $this->assertSame(8, $game['most']);
+        $alive = array_column($game['things'], 'alive', 'id');
+        $living = array_keys(array_filter($alive));
+        $not = array_keys(array_filter($alive, fn($a) => !$a));
+        $this->assertNotEmpty($not);
+        $this->assertGreaterThanOrEqual($game['goal'], count($living));
+        foreach ($game['things'] as $thing) {
+            // What is alive says what a week does to it, and has its drawing a week later in the pack, if it comes.
+            if ($thing['alive']) {
+                $this->assertNotSame('', $thing['week'], $thing['id']);
+            }
+            $this->assertSame($thing['picture'] . '.week', $thing['weekpicture']);
+        }
+        // A stone and two living things go in; a week: the stone does not change. Out with it, more living things in,
+        // and another week: a terrarium full of life.
+        $put = fn($id, $in = 1) => ['i' => $id, 'in' => $in];
+        $events = [$put($not[0]), $put($living[0]), $put($living[1]), ['w' => 1], $put($not[0], 0)];
+        foreach (array_slice($living, 2, $game['goal'] - 2) as $id) {
+            $events[] = $put($id);
+        }
+        $events[] = ['w' => 1];
+        $result = minigames::play($w->course->id, $w->user->id, 'terrarioclaro', $events);
+        $this->assertTrue($result['success']);
+        $this->assertSame($game['goal'], $result['caught']);
+        $this->assertSame(1, $result['missed']);
+        $this->assertSame(5, $result['gems']);
+        $plays = $DB->get_records('local_oksigeniatesape_minigame', ['charid' => $char->id, 'game' => 'terrarioclaro'], 'id DESC');
+        $detail = json_decode((string) reset($plays)->detail, true);
+        $this->assertSame(2, $detail['weeks']);
+        // The teacher sees what spent a week in the terrarium without being alive.
+        $results = array_column(minigames::results($w->mission), null, 'code');
+        $label = array_column($game['things'], 'label', 'id')[$not[0]];
+        $this->assertContains(
+            get_string('minigame_terrarium_in', 'local_oksigeniatesape', $label),
+            array_column($results['terrarioclaro']['confusions'], 'text')
+        );
+        // What cannot be: a week with nothing inside, a thing in twice, out of what is not in, more than fit, a look
+        // that says a living thing is not alive, anything after it is full of life.
+        $full = array_map($put, array_slice(array_merge($living, $not), 0, $game['most'] + 1));
+        $bad = [
+            'a week with nothing inside' => [['w' => 1]],
+            'a thing in twice' => [$put($living[0]), $put($living[0])],
+            'out of what is not in' => [$put($living[0], 0)],
+            'more than fit' => $full,
+            'a look at a living thing' => [['l' => $living[0]]],
+            'something after it was won' => array_merge(array_map($put, array_slice($living, 0, $game['goal'])), [['w' => 1],
+                $put($not[0])]),
+        ];
+        foreach ($bad as $what => $play) {
+            if ($what === 'more than fit' && count($play) <= $game['most']) {
+                continue;
+            }
+            try {
+                minigames::play($w->course->id, $w->user->id, 'terrarioclaro', $play);
+                $this->fail('Accepted: ' . $what);
+            } catch (\moodle_exception $e) {
+                $this->assertSame('invalidgameplay', $e->errorcode, $what);
+            }
+        }
+        // The sage looks once: a thing that is not alive, said without a week.
+        $sage = minigames::config($w->mission, 'terrarioclaro', $step, 'sage', [], 0, [], (int) $char->id);
+        $this->assertSame(1, $sage['looks']);
+    }
+
     public function test_guess_who_refuses_what_cannot_be(): void {
         $this->resetAfterTest();
         $w = $this->make_class();

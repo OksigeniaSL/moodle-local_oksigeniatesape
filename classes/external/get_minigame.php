@@ -111,8 +111,8 @@ final class get_minigame extends external_api {
             'code' => new external_value(PARAM_ALPHANUMEXT, 'Minigame'),
             'type' => new external_value(
                 PARAM_ALPHA,
-                'nest (Defensa del nido), errors (the hunt for mistakes), whack (Who is alive?), venn (the two circles), whoami ' .
-                    'or guesswho',
+                'nest (Defensa del nido), errors (the hunt for mistakes), whack (Who is alive?), venn (the two circles), whoami, ' .
+                    'guesswho or terrarium',
                 VALUE_DEFAULT,
                 'nest'
             ),
@@ -165,7 +165,14 @@ final class get_minigame extends external_api {
                 'alive' => new external_value(PARAM_BOOL, 'Whether it is alive'),
                 'why' => new external_value(PARAM_TEXT, 'Why, when it is tricky'),
                 'picture' => new external_value(PARAM_RAW_TRIMMED, 'Key of its drawing in the art pack', VALUE_DEFAULT, ''),
-            ]), 'What comes out of the holes in Who is alive?', VALUE_DEFAULT, []),
+                'week' => new external_value(PARAM_TEXT, 'In the terrarium, what a week does to it', VALUE_DEFAULT, ''),
+                'weekpicture' => new external_value(
+                    PARAM_RAW_TRIMMED,
+                    'In the terrarium, the key of its drawing a week later',
+                    VALUE_DEFAULT,
+                    ''
+                ),
+            ]), 'What comes out of the holes in Who is alive?, or goes into the terrarium', VALUE_DEFAULT, []),
             'riddles' => new external_multiple_structure(new external_single_structure([
                 'id' => new external_value(PARAM_ALPHANUMEXT, 'Riddle'),
                 'answer' => new external_value(PARAM_TEXT, 'Who it is'),
@@ -187,6 +194,7 @@ final class get_minigame extends external_api {
             'secret' => new external_value(PARAM_ALPHANUMEXT, 'Guess who: the being that hides', VALUE_DEFAULT, ''),
             'seed' => new external_value(PARAM_INT, 'Guess who: plays kept when this one began', VALUE_DEFAULT, 0),
             'golden' => new external_value(PARAM_INT, 'Guess who: questions at most for a golden card', VALUE_DEFAULT, 0),
+            'most' => new external_value(PARAM_INT, 'The terrarium: things that fit in it', VALUE_DEFAULT, 0),
             'training' => new external_value(
                 PARAM_BOOL,
                 'Won already and no gems left today for winning again',
@@ -194,7 +202,7 @@ final class get_minigame extends external_api {
                 false
             ),
             'misses' => new external_value(PARAM_INT, 'Slips or wrong guesses a game allows', VALUE_DEFAULT, 0),
-            'goal' => new external_value(PARAM_INT, 'Animals to catch, or mistakes to find'),
+            'goal' => new external_value(PARAM_INT, 'Animals to catch, mistakes to find, or living things in the terrarium'),
             'shield' => new external_value(PARAM_INT, 'What the shield of the nest holds'),
             'speed' => new external_value(PARAM_INT, 'Speed, 1 to 4'),
             'scene' => new external_single_structure([

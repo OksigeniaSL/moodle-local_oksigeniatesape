@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 71,
+ "version": 72,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 72,
+   "kind": "improvement",
+   "date": "2026-10-24",
+   "text": "«El terrario del claro»: se mete en un terrario lo que se cree vivo y se deja pasar una semana; lo vivo cambia (crece, come, tiene crías) y lo que no, se queda igual. Se saca lo que no cambia hasta que todo lo de dentro está vivo, y no se pierde nunca"
+  },
   {
    "version": 71,
    "kind": "improvement",
@@ -2979,7 +2985,8 @@
    "y": 560,
    "games": [
     "quienestavivo",
-    "enredoclaro"
+    "enredoclaro",
+    "terrarioclaro"
    ],
    "spots": {
     "C1-1": [
@@ -3004,6 +3011,10 @@
     ],
     "enredoclaro": [
      66,
+     78
+    ],
+    "terrarioclaro": [
+     36,
      78
     ]
    },
@@ -4746,6 +4757,108 @@
     }
    }
   },
+  "terrarioclaro": {
+   "type": "terrarium",
+   "title": "El terrario del claro",
+   "intro": {
+    "valley": "El Embrollo ha dejado el claro lleno de cosas, y la druida te presta un terrario de cristal. Mete dentro lo que creas que está vivo y deja pasar una semana: lo vivo cambia; lo que no, se queda igual.",
+    "azara": "Entre las muestras del rastreo hay de todo, y el naturalista te presta una caja de cristal. Mete dentro lo que creas que está vivo y deja pasar una semana: lo vivo cambia; lo que no, se queda igual."
+   },
+   "scene": {
+    "embrollo": {
+     "valley": "«¡Una piedra también puede estar viva si la miras con cariño!», dice el Embrollo, y se ríe.",
+     "azara": "Alguien ha mezclado las muestras vivas con las piedras del camino."
+    },
+    "creature": {
+     "valley": "{{creature}} pega la nariz al cristal y espera a ver qué pasa.",
+     "azara": "{{creature}} se sienta junto a la caja de cristal, muy quieta."
+    }
+   },
+   "win": "Lo que está vivo no se queda quieto: se nutre, crece, se relaciona y se reproduce, aunque haga falta una semana para verlo. Lo que no está vivo sigue igual, o cambia sin crecer ni tener crías.",
+   "lose": "Aquí no se pierde: saca lo que no ha cambiado y deja pasar otra semana.",
+   "most": 8,
+   "levels": {
+    "1": {
+     "things": [
+      "caracol",
+      "hormiga",
+      "lechuga",
+      "semilla",
+      "seta",
+      "lombriz",
+      "piedra",
+      "robot",
+      "concha",
+      "agua",
+      "hojaseca",
+      "cristal"
+     ],
+     "goal": 4
+    },
+    "2": {
+     "things": [
+      "caracol",
+      "lombriz",
+      "lechuga",
+      "semilla",
+      "musgo",
+      "cactus",
+      "seta",
+      "piedra",
+      "robot",
+      "concha",
+      "agua",
+      "hojaseca",
+      "cristal",
+      "fuego"
+     ],
+     "goal": 5
+    },
+    "3": {
+     "things": [
+      "semilla",
+      "musgo",
+      "cactus",
+      "moho",
+      "seta",
+      "lombriz",
+      "levadura",
+      "alga",
+      "piedra",
+      "robot",
+      "concha",
+      "cristal",
+      "hojaseca",
+      "agua"
+     ],
+     "goal": 6
+    },
+    "4": {
+     "things": [
+      "musgo",
+      "moho",
+      "levadura",
+      "bacteria",
+      "coral",
+      "alga",
+      "semilla",
+      "cactus",
+      "piedra",
+      "robot",
+      "concha",
+      "cristal",
+      "hojaseca",
+      "agua",
+      "fuego",
+      "mesa"
+     ],
+     "goal": 6
+    }
+   },
+   "reward": {
+    "gems": 5
+   }
+  },
   "quienestavivo": {
    "type": "whack",
    "title": "¿Quién está vivo?",
@@ -5948,6 +6061,7 @@
    "label": "caracol",
    "name": "el caracol",
    "alive": true,
+   "week": "Se ha comido un borde de la lechuga y ha dejado un rastro brillante. Está un poco más grande.",
    "group": "molusco",
    "cover": "concha",
    "legs": 0,
@@ -5962,6 +6076,7 @@
    "label": "hormiga",
    "name": "la hormiga",
    "alive": true,
+   "week": "Ha llevado migas al hormiguero y ya no está sola: otra hormiga ha salido a ayudar.",
    "group": "insecto",
    "cover": "exoesqueleto",
    "legs": 6,
@@ -6003,6 +6118,7 @@
    "label": "rana",
    "name": "la rana",
    "alive": true,
+   "week": "A su lado flota un racimo de huevos transparentes.",
    "group": "anfibio",
    "cover": "piel-humeda",
    "legs": 4,
@@ -6067,6 +6183,7 @@
    "label": "moho del pan",
    "name": "el moho",
    "alive": true,
+   "week": "La mancha verde se ha extendido por el pan.",
    "group": "hongo",
    "born": "espora",
    "eats": "descomponedor",
@@ -6167,6 +6284,7 @@
    "label": "seta",
    "name": "la seta",
    "alive": true,
+   "week": "Han salido dos setas pequeñas a su lado.",
    "group": "hongo",
    "born": "espora",
    "eats": "descomponedor",
@@ -6251,6 +6369,7 @@
    "label": "lombriz",
    "name": "la lombriz",
    "alive": true,
+   "week": "Ha cavado túneles y la tierra está más suelta. Asoma otra lombriz pequeña.",
    "group": "gusano",
    "cover": "piel-blanda",
    "legs": 0,
@@ -6408,6 +6527,7 @@
    "label": "musgo",
    "name": "el musgo",
    "alive": true,
+   "week": "Se ha extendido por la piedra y asoman unas cápsulas con esporas.",
    "group": "planta",
    "born": "espora",
    "eats": "fotosintesis",
@@ -6525,6 +6645,7 @@
     "gen": "paloma"
    },
    "alive": true,
+   "week": "Ha traído ramitas y plumas: está haciendo un nido en un rincón.",
    "group": "ave",
    "cover": "plumas",
    "legs": 2,
@@ -6665,6 +6786,7 @@
     "gen": "árbol"
    },
    "alive": true,
+   "week": "Le han salido brotes nuevos, de un verde clarito.",
    "group": "planta",
    "born": "semilla",
    "eats": "fotosintesis",
@@ -6676,6 +6798,7 @@
   "lechuga": {
    "label": "lechuga de la huerta",
    "alive": true,
+   "week": "Tiene una hoja nueva en el centro y las raíces más largas.",
    "group": "planta",
    "born": "semilla",
    "eats": "fotosintesis",
@@ -6687,12 +6810,14 @@
   "semilla": {
    "label": "semilla",
    "alive": true,
+   "week": "Ha brotado: una raíz hacia abajo y dos hojitas hacia la luz.",
    "group": "planta",
    "note": "Parece dormida, pero lleva dentro una planta viva que espera el agua para crecer."
   },
   "cactus": {
    "label": "cactus",
    "alive": true,
+   "week": "Le ha salido un hijuelo al lado y tiene un capullo nuevo.",
    "group": "planta",
    "born": "semilla",
    "eats": "fotosintesis",
@@ -6704,6 +6829,7 @@
   "alga": {
    "label": "alga",
    "alive": true,
+   "week": "Ha crecido: sus cintas son más largas que antes.",
    "group": "alga",
    "eats": "fotosintesis",
    "habitat": [
@@ -6715,6 +6841,7 @@
   "coral": {
    "label": "coral",
    "alive": true,
+   "week": "Le ha salido una ramita nueva, y sus pólipos se abren para comer.",
    "group": "otroinvertebrado",
    "legs": 0,
    "habitat": [
@@ -6725,12 +6852,14 @@
   "levadura": {
    "label": "levadura",
    "alive": true,
+   "week": "Ha hecho burbujas: la masa ha subido y huele a pan.",
    "group": "hongo",
    "note": "Son hongos tan pequeños que no se ven, y hinchan la masa del pan porque se alimentan y crecen."
   },
   "bacteria": {
    "label": "bacteria",
    "alive": true,
+   "week": "Ahora son muchísimas más: se han dividido una y otra vez.",
    "group": "bacteria",
    "born": "division",
    "note": "No se ve sin microscopio, pero es un ser vivo de una sola célula."
@@ -6742,6 +6871,7 @@
   "agua": {
    "label": "gota de agua",
    "alive": false,
+   "week": "Ha bajado un poco: el agua se evapora, pero no come ni crece.",
    "note": "Todos los seres vivos la necesitan, pero el agua no está viva."
   },
   "sol": {
@@ -6762,6 +6892,7 @@
   "fuego": {
    "label": "fuego",
    "alive": false,
+   "week": "Se ha apagado: sin leña, el fuego se acaba. No se alimenta por sí solo.",
    "note": "Crece, se mueve y gasta leña, pero no se reproduce ni está hecho de células."
   },
   "rio": {
@@ -6772,6 +6903,7 @@
   "hojaseca": {
    "label": "hoja seca",
    "alive": false,
+   "week": "Se ha deshecho en trocitos: fue parte de un árbol vivo, pero ya no lo es.",
    "note": "Fue parte de un árbol vivo, pero ya no se nutre ni crece."
   },
   "concha": {

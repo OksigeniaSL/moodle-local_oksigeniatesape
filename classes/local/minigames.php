@@ -45,6 +45,11 @@ namespace local_oksigeniatesape\local;
  * the student touches only what is alive. A thing touched that is not alive is a slip, with its why; a living thing let
  * go is not caught.
  *
+ * The terrarium of the clearing (type terrarium): what is alive is a process, and here time passes. The student puts in
+ * a terrarium what they think is alive and lets a week go by: what is alive changes (it grows, eats, has young), what is
+ * not stays the same, or changes without being alive (water dries up, a dry leaf crumbles). They take out what did not
+ * change and try again, until everything inside is alive. Never lost: the weeks it took are what the teacher sees.
+ *
  * @package    local_oksigeniatesape
  * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -114,6 +119,8 @@ final class minigames {
         $game = $mission->data['games'][$code] ?? null;
         if (($game['type'] ?? '') === 'guesswho') {
             $config = self::guesswho_config($mission, $code, $game, $step, $charid, $plays);
+        } else if (($game['type'] ?? '') === 'terrarium') {
+            $config = self::terrarium_config($mission, $code, $game, $step);
         } else {
             $config = self::config_step($mission, $code, $step);
         }
@@ -491,6 +498,51 @@ final class minigames {
     }
 
     /**
+     * The terrarium of the clearing as a student of a step plays it: the things of their step, from the catalog, with
+     * what a week does to each one; how many living things the terrarium needs, and how many fit in it.
+     *
+     * @param \stdClass $mission With data.
+     * @param string $code
+     * @param array $game
+     * @param int $step
+     * @return array
+     */
+    private static function terrarium_config(\stdClass $mission, string $code, array $game, int $step): array {
+        $catalog = $mission->data['things'] ?? [];
+        $level = self::level($game, $step);
+        $things = [];
+        foreach ($level['things'] ?? [] as $id) {
+            $card = $catalog[$id] ?? null;
+            if (!$card) {
+                continue;
+            }
+            $alive = !empty($card['alive']);
+            $picture = self::picture($mission, (string) $id, $alive);
+            $things[] = ['id' => (string) $id, 'label' => self::variant($mission, $card['label'] ?? $id), 'alive' => $alive,
+                'week' => isset($card['week']) ? self::variant($mission, $card['week']) : '',
+                'why' => isset($card['note']) ? self::variant($mission, $card['note']) : '',
+                'picture' => $picture, 'weekpicture' => $picture . '.week'];
+        }
+        $living = count(array_filter($things, fn($x) => $x['alive']));
+        $most = max(2, (int) ($game['most'] ?? 8));
+        return [
+            'code' => $code,
+            'type' => 'terrarium',
+            'title' => missions::text($game['title'] ?? $code, $mission->skin),
+            'intro' => missions::text($game['intro'] ?? '', $mission->skin, $mission->variant),
+            'win' => missions::text($game['win'] ?? '', $mission->skin, $mission->variant),
+            'lose' => missions::text($game['lose'] ?? '', $mission->skin, $mission->variant),
+            'nets' => [],
+            'animals' => [],
+            'things' => $things,
+            'goal' => max(1, min($living, $most, (int) ($level['goal'] ?? 4))),
+            'most' => $most,
+            'shield' => 0,
+            'speed' => 0,
+        ];
+    }
+
+    /**
      * What the catalog says of a being for a question of Guess who: yes, no, or null if it does not say. What only
      * animals have (a cover, legs, a way of breathing) is a no for the rest.
      *
@@ -743,8 +795,11 @@ final class minigames {
             throw new \moodle_exception('nominigame', 'local_oksigeniatesape');
         }
         $golden = false;
+        $weeks = 0;
         if (($game['type'] ?? '') === 'guesswho') {
             [$caught, $missed, $wrong, $success, $golden] = self::count_guesswho($game, $events);
+        } else if (($game['type'] ?? '') === 'terrarium') {
+            [$caught, $missed, $wrong, $success, $weeks] = self::count_terrarium($game, $events);
         } else if (($game['type'] ?? '') === 'errors') {
             [$caught, $missed, $wrong, $success] = self::count_errors($game, $events);
         } else if (($game['type'] ?? '') === 'whack') {
@@ -759,7 +814,7 @@ final class minigames {
         $transaction = $DB->start_delegated_transaction();
         $tries = $DB->count_records(self::T . 'minigame', ['charid' => $char->id, 'courseid' => $courseid, 'game' => $code]) + 1;
         $detail = ['step' => (int) $member->step, 'caught' => $caught, 'missed' => $missed, 'wrong' => $wrong] +
-            ($golden ? ['golden' => true] : []);
+            ($golden ? ['golden' => true] : []) + ($weeks ? ['weeks' => $weeks] : []);
         $playrecord = (object) [
             'charid' => $char->id,
             'courseid' => $courseid,
@@ -1090,6 +1145,71 @@ final class minigames {
     }
 
     /**
+     * Counts a play of the terrarium: each thing put in or taken out (i, and in: 1 or 0, with as many inside as fit), each
+     * week let go by with something inside (w), and each look that shows a thing is not alive (l). Won at the first week
+     * with everything inside alive and as many as the goal; nothing comes after it.
+     *
+     * @param array $game As the student plays it.
+     * @param array $events
+     * @return array [living inside, things not alive that spent a week inside, wrong (thing => in), success, weeks]
+     */
+    private static function count_terrarium(array $game, array $events): array {
+        $alive = array_column($game['things'], 'alive', 'id');
+        $limit = (int) ($game['looks'] ?? 0) + (int) ($game['sniffs'] ?? 0);
+        $inside = [];
+        $weeks = 0;
+        $looks = 0;
+        $caught = 0;
+        $success = false;
+        $wrong = [];
+        foreach ($events as $event) {
+            if ($success) {
+                throw new \moodle_exception('invalidgameplay', 'local_oksigeniatesape');
+            }
+            if (isset($event['w'])) {
+                if (!$inside) {
+                    throw new \moodle_exception('invalidgameplay', 'local_oksigeniatesape');
+                }
+                $weeks++;
+                $living = 0;
+                foreach (array_keys($inside) as $id) {
+                    if ($alive[$id]) {
+                        $living++;
+                    } else {
+                        $wrong[$id] = 'in';
+                    }
+                }
+                if ($living === count($inside) && $living >= (int) $game['goal']) {
+                    $success = true;
+                    $caught = $living;
+                }
+                continue;
+            }
+            $id = (string) ($event['i'] ?? $event['l'] ?? '');
+            if (!isset($alive[$id])) {
+                throw new \moodle_exception('invalidgameplay', 'local_oksigeniatesape');
+            }
+            if (isset($event['l'])) {
+                // A look of the sage or the nose of the creature: a thing that is not alive, said without a week.
+                if ($alive[$id] || ++$looks > $limit) {
+                    throw new \moodle_exception('invalidgameplay', 'local_oksigeniatesape');
+                }
+            } else if (!empty($event['in'])) {
+                if (isset($inside[$id]) || count($inside) >= (int) $game['most']) {
+                    throw new \moodle_exception('invalidgameplay', 'local_oksigeniatesape');
+                }
+                $inside[$id] = true;
+            } else {
+                if (!isset($inside[$id])) {
+                    throw new \moodle_exception('invalidgameplay', 'local_oksigeniatesape');
+                }
+                unset($inside[$id]);
+            }
+        }
+        return [$caught, count($wrong), $wrong, $success, $weeks];
+    }
+
+    /**
      * Counts a play of a hunt for mistakes: each mistake found once (s, the sheet, and m, its number) and each blot of
      * ink (s and x, a word touched that was right).
      *
@@ -1254,6 +1374,14 @@ final class minigames {
                     $question = get_string_manager()->string_exists($string, 'local_oksigeniatesape') ?
                         get_string($string, 'local_oksigeniatesape') : $key;
                     $confusions[] = ['text' => get_string('minigame_guesswho_first', 'local_oksigeniatesape', $question),
+                        'count' => $count];
+                    continue;
+                }
+                if (($game['type'] ?? '') === 'terrarium') {
+                    // What spent a week in the terrarium without being alive.
+                    $id = explode('|', $key)[0];
+                    $label = self::variant($mission, $mission->data['things'][$id]['label'] ?? $id);
+                    $confusions[] = ['text' => get_string('minigame_terrarium_in', 'local_oksigeniatesape', $label),
                         'count' => $count];
                     continue;
                 }

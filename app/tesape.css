@@ -7225,6 +7225,173 @@ body.adapt-colours .errors-text .fixed ins {
   border-radius: 10px;
 }
 
+/* ---------- The terrarium of the clearing ---------- */
+
+/* A glass jar drawn here: the terrarium of the intro and the end. */
+.ter-glass {
+  display: block;
+  width: 64px;
+  height: 52px;
+  margin: 0 auto;
+  border: 3px solid rgba(220, 240, 255, .7);
+  border-top-width: 6px;
+  border-radius: 10px 10px 18px 18px;
+  background: linear-gradient(180deg, rgba(200, 235, 255, .12), rgba(var(--leaf-rgb), .35) 78%, #6b4a2b 78%);
+}
+
+.ter-glass.big {
+  width: 110px;
+  height: 88px;
+}
+
+.ter-glass.done {
+  box-shadow: 0 0 24px rgba(var(--leaf-rgb), .8);
+}
+
+.ter-box {
+  position: relative;
+  margin: 10px 0;
+  padding: 12px;
+  border: 3px solid rgba(220, 240, 255, .55);
+  border-radius: 14px 14px 22px 22px;
+  background: linear-gradient(180deg, rgba(200, 235, 255, .08), rgba(var(--leaf-rgb), .22));
+}
+
+.ter-box .ter-glass {
+  display: none;
+}
+
+.ter-box.done {
+  box-shadow: 0 0 0 3px var(--lantern), 0 0 24px rgba(var(--leaf-rgb), .6);
+}
+
+.ter-in,
+.ter-out {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  gap: 8px;
+}
+
+.ter-in {
+  min-height: 112px;
+}
+
+.ter-empty {
+  grid-column: 1 / -1;
+  align-self: center;
+  text-align: center;
+}
+
+.ter-clearing {
+  margin: 14px 0 6px;
+  font-size: 16px;
+}
+
+.ter-count {
+  font-weight: 700;
+}
+
+.ter-thing {
+  position: relative;
+  min-height: 104px;
+  padding: 6px 4px 8px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--parchment);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .25);
+}
+
+.ter-thing:disabled {
+  cursor: default;
+  opacity: .75;
+}
+
+.ter-box.done .ter-thing:disabled {
+  opacity: 1;
+}
+
+.ter-thing .thing-name {
+  display: block;
+  font-size: 14px;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.ter-thing:focus-visible {
+  outline: 3px solid var(--sky);
+  outline-offset: 2px;
+}
+
+/* What a week showed: alive, with a leaf of green; not, greyed a little. */
+.ter-thing.seen-alive {
+  box-shadow: 0 0 0 3px rgba(var(--leaf-rgb), .95), 0 2px 8px rgba(0, 0, 0, .25);
+}
+
+.ter-thing.seen-not {
+  filter: saturate(.55);
+}
+
+.ter-thing.grown .thing-pic {
+  animation: ter-grow .6s ease-out;
+}
+
+.ter-tag {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.ter-tag.alive {
+  color: #1f6b3a;
+}
+
+.ter-tag.not {
+  color: #7a4b2a;
+}
+
+.ter-say {
+  min-height: 1.5em;
+  margin: 6px 0 10px;
+}
+
+.ter-weeksay {
+  margin: 0 0 6px;
+}
+
+.ter-lines {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 15px;
+}
+
+.ter-lines li.alive::marker {
+  color: rgb(var(--leaf-rgb));
+}
+
+@keyframes ter-grow {
+  0% {
+    transform: scale(.85);
+  }
+
+  60% {
+    transform: scale(1.12);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ter-thing.grown .thing-pic {
+    animation: none;
+  }
+}
+
 .gw-say {
   min-height: 2.6em;
   margin: 6px 0 10px;
