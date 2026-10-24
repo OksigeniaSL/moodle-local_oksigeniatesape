@@ -1978,7 +1978,11 @@
       }
     }
     if (can('viewlog')) {
-      html += '<button class="btn btn-soft" data-studentlog>' + esc(t('teach_tab_log')) + '</button>';
+      html += '<button class="btn btn-soft" data-studentlog>' + esc(t('teach_tab_log')) + '</button>' +
+        '<a class="btn btn-soft" href="' + esc(familyUrl([s.userid])) + '">' + esc(t('teach_family_one')) + '</a>' +
+        // The place of now, on paper, for whoever follows it from home without a connection.
+        '<a class="btn btn-soft" href="' + esc(cfg.wwwroot + '/local/oksigeniatesape/homepack.php?id=' + cfg.courseid +
+        '&user=' + s.userid + '&sesskey=' + cfg.sesskey) + '">' + esc(t('teach_homepack')) + '</a>';
     }
     html += '</div></div></div></section>';
     var el = content(html);
@@ -2665,7 +2669,22 @@
     };
     return '<section class="card" style="margin-top:16px"><h2>' + esc(t('teach_report')) + '</h2><p style="color:' +
       'var(--text-soft)">' + esc(t('teach_report_help')) + '</p><div class="actions" style="justify-content:flex-start">' +
-      link('excel', 'Excel') + link('ods', 'ODS') + link('csv', 'CSV') + link('pdf', 'PDF') + '</div></section>';
+      link('excel', 'Excel') + link('ods', 'ODS') + link('csv', 'CSV') + link('pdf', 'PDF') + '</div></section>' +
+      // The summaries for the families: a page for each student, in words, without comparing anybody.
+      '<section class="card" style="margin-top:16px" data-familycard><h2>' + esc(t('teach_family')) + '</h2><p style="color:' +
+      'var(--text-soft)">' + esc(t('teach_family_help')) + '</p><div class="actions" style="justify-content:flex-start">' +
+      '<a class="btn btn-soft" href="' + esc(familyUrl([])) + '">' + esc(t('teach_family_all')) + '</a></div></section>';
+  }
+
+  /**
+   * Where the summaries for the families are downloaded: of some students, or of all of them.
+   *
+   * @param {number[]} users
+   * @return {string}
+   */
+  function familyUrl(users) {
+    return cfg.wwwroot + '/local/oksigeniatesape/family.php?id=' + cfg.courseid + (users.length ? '&users=' +
+      users.join(',') : '') + '&sesskey=' + cfg.sesskey;
   }
 
   /**

@@ -162,6 +162,31 @@ final class edits_test extends \advanced_testcase {
         edits::save_secrets($course->id, [['place' => 'nowhere', 'x' => 50, 'y' => 50, 'text' => 'Algo']]);
     }
 
+    public function test_the_words_of_the_glossary_of_the_scenes_are_changed_and_the_game_reads_them(): void {
+        $this->resetAfterTest();
+        $course = $this->make_course();
+        $words = edits::view($course->id)['glossary'];
+        $this->assertGreaterThanOrEqual(20, count($words));
+        $this->assertSame('ser vivo', $words[0]['word']);
+        $this->assertSame('glossary/ser-vivo/text', $words[0]['field']['path']);
+        $this->assertSame(edits::MAX_PIECE, $words[0]['field']['max']);
+        // What a living thing is, in the words of the teacher: changed in the Workshop and read in the game.
+        $this->assertTrue(edits::save($course->id, edits::MISSION, 'glossary/ser-vivo/text', 'Lo que come, crece y tiene crías.'));
+        $this->assertTrue(edits::view($course->id)['glossary'][0]['field']['changed']);
+        $user = $this->getDataGenerator()->create_and_enrol($course, 'student');
+        $char = characters::create($user->id, 'sage', 'f');
+        $member = engine::member($char, $course->id);
+        $glossary = array_column(view::mission($course->id, $char, $member)['glossary'], 'text', 'id');
+        $this->assertSame('Lo que come, crece y tiene crías.', $glossary['ser-vivo']);
+        // Read at a glance: not longer than a piece of the information shared out.
+        try {
+            edits::save($course->id, edits::MISSION, 'glossary/celula/text', str_repeat('a', edits::MAX_PIECE + 1));
+            $this->fail('A long meaning');
+        } catch (\moodle_exception $e) {
+            $this->assertSame('wspiecelong', $e->errorcode);
+        }
+    }
+
     public function test_the_teacher_switches_the_sniffing_of_the_creature_in_a_scene(): void {
         $this->resetAfterTest();
         $course = $this->make_course();

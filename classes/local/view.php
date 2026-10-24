@@ -436,6 +436,11 @@ final class view {
             'secrets' => secrets::album($mission, $secretsfound),
             // The secrets of the map itself, between the places (an owl dozing in a pine): those still hidden.
             'mapsecrets' => secrets::in_place($char, $mission, 'map', $secretsfound),
+            // The glossary of the scenes: the key words, with their forms, a short definition and a drawing if any.
+            'glossary' => array_values(array_map(fn($g) => ['id' => (string) ($g['id'] ?? ''),
+                'forms' => array_values(array_map('strval', (array) ($g['forms'] ?? []))),
+                'text' => missions::text($g['text'] ?? '', $skin, $mission->variant),
+                'picture' => (string) ($g['picture'] ?? '')], $data['glossary'] ?? [])),
             // The burst of the Embrollo, if the mission has one: it belongs to no place, it opens from the map.
             'burst' => (string) (array_keys(array_filter($data['games'] ?? [], fn($g) => ($g['type'] ?? '') === 'burst'))[0] ?? ''),
             // The names the Embrollo puts to the places, a prank a day on the map of each student.

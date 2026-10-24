@@ -142,7 +142,7 @@
     copy.querySelectorAll('details:not([open]) > :not(summary)').forEach(function(el) {
       el.remove();
     });
-    copy.querySelectorAll('p, h2, h3, li, div, blockquote, small, b, label, button, .what, .speaker, .kicker, .tag')
+    copy.querySelectorAll('p, h2, h3, li, div, blockquote, small, b, label, button:not(.gloss), .what, .speaker, .kicker, .tag')
       .forEach(function(el) {
         el.appendChild(document.createTextNode('. '));
       });
@@ -771,6 +771,110 @@
       return words.length ? tx(n.nature[words[0]]) : '';
     }
 
+    /**
+     * The words of the glossary in a text: the first time each one appears in a moment, a button that opens its card.
+     * The rest of the text, escaped. Not at the class screen.
+     *
+     * @param {string} text
+     * @param {Object} used The words already marked in this moment (by id), changed here.
+     * @return {string}
+     */
+    function glossify(text, used) {
+      var list = !cm && world && world.mission ? world.mission.glossary || [] : [];
+      if (!list.length || !text) {
+        return esc(text);
+      }
+      var low = String(text).toLowerCase();
+      var hits = [];
+      list.forEach(function(g) {
+        if (used[g.id]) {
+          return;
+        }
+        var best = null;
+        g.forms.forEach(function(f) {
+          var re = new RegExp('(^|[^a-záéíóúñü])(' + String(f).toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&') +
+            ')(?![a-záéíóúñü])');
+          var found = re.exec(low);
+          if (found && (!best || found.index + found[1].length < best.at)) {
+            best = {at: found.index + found[1].length, len: found[2].length, id: g.id};
+          }
+        });
+        if (best) {
+          hits.push(best);
+        }
+      });
+      hits.sort(function(a, b) {
+        return a.at - b.at || b.len - a.len;
+      });
+      var html = '';
+      var pos = 0;
+      hits.forEach(function(h) {
+        if (h.at < pos) {
+          return;
+        }
+        used[h.id] = true;
+        html += esc(text.slice(pos, h.at)) + '<button type="button" class="gloss" data-gloss="' + esc(h.id) + '">' +
+          esc(text.substr(h.at, h.len)) + '</button>';
+        pos = h.at + h.len;
+      });
+      return html + esc(text.slice(pos));
+    }
+
+    /**
+     * The card of a word of the glossary: what it means, its drawing if the pack has it, and to hear it.
+     *
+     * @param {string} id
+     * @param {string} said How it was written where it was touched.
+     */
+    function glossCard(id, said) {
+      var g = ((world && world.mission && world.mission.glossary) || []).filter(function(x) {
+        return x.id === id;
+      })[0];
+      if (!g) {
+        return;
+      }
+      var old = layer.querySelector('.gloss-card');
+      if (old) {
+        old.remove();
+      }
+      var art = g.picture ? T.artUrl([g.picture]) : null;
+      var card = document.createElement('div');
+      card.className = 'gloss-card';
+      card.setAttribute('role', 'dialog');
+      card.setAttribute('aria-labelledby', 'tesape-gloss-title');
+      card.innerHTML = (art ? '<img src="' + esc(art) + '" alt="">' : '') + '<div><h3 id="tesape-gloss-title">' +
+        esc(said.charAt(0).toLocaleUpperCase() + said.slice(1)) + '</h3><p>' + esc(g.text) + '</p><div class="actions">' +
+        (window.speechSynthesis ? '<button type="button" class="btn btn-soft" data-glosslisten>' + T.icon('sound') + ' ' +
+        esc(t('app_gloss_listen')) + '</button>' : '') + '<button type="button" class="btn btn-main" data-glossclose>' +
+        esc(t('app_close')) + '</button></div></div>';
+      layer.appendChild(card);
+      var close = card.querySelector('[data-glossclose]');
+      close.onclick = function() {
+        if (window.speechSynthesis) {
+          window.speechSynthesis.cancel();
+        }
+        card.remove();
+      };
+      var listen = card.querySelector('[data-glosslisten]');
+      if (listen) {
+        listen.onclick = function() {
+          window.speechSynthesis.cancel();
+          readAloud(card.querySelector('div'));
+        };
+      }
+      close.focus();
+    }
+
+    // A word of the glossary, touched anywhere in the scene: its card.
+    layer.addEventListener('click', function(ev) {
+      var b = ev.target.closest && ev.target.closest('[data-gloss]');
+      if (b && layer.contains(b)) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        glossCard(b.dataset.gloss, b.textContent);
+      }
+    });
+
     function missing(req) {
       if (req.item) {
         return t('app_needs', data.items[req.item] || req.item);
@@ -911,6 +1015,9 @@
      */
     function story(n) {
       var pieces = cut(tx(n.text));
+      // Each word of the glossary, marked the first time it appears in the moment (each piece, worked out once).
+      var glossed = {};
+      var marked = [];
       // Then, what is said to whoever is like this.
       var said = natureSay(n);
       if (said) {
@@ -935,7 +1042,8 @@
       var button = body.querySelector('[data-next]');
       function piece() {
         var last = at >= pieces.length - 1;
-        body.querySelector('[data-piece]').textContent = pieces[at];
+        marked[at] = marked[at] || glossify(pieces[at], glossed);
+        body.querySelector('[data-piece]').innerHTML = marked[at];
         body.querySelector('[data-dots]').innerHTML = pieces.length > 1 ? pieces.map(function(p, i) {
           return '<i class="' + (i === at ? 'on' : i < at ? 'seen' : '') + '"></i>';
         }).join('') : '';
@@ -1815,7 +1923,7 @@
       var said = natureSay(n);
       var body = show((n.image ? picture(n.image, data) : '') + clueBox() + pieces(n) + (n.recall ?
         '<p class="justify-about">' + esc(n.recall) + '</p>' : '') + (said ? '<p class="scene-nature">' + esc(said) + '</p>' : '') +
-        '<p class="scene-prompt">' + esc(tx(n.prompt)) + '</p>' +
+        '<p class="scene-prompt">' + glossify(tx(n.prompt), {}) + '</p>' +
         (voting ? '<div class="class-vote" data-vote><button class="btn btn-soft" data-voteopen>' +
         esc(t('board_scene_voteopen')) + '</button></div>' : '') +
         '<div class="opts">' + opts + '</div>' + (canSniff(n, tried) ? '<div class="sniff-row"><button type="button" ' +
@@ -2054,7 +2162,7 @@
       var right = {};
       var chosen = null;
       var trip = 1;
-      var body = show((n.image ? stage(n.image, n.speaker) : '') + pieces(n) + '<p class="scene-prompt">' + esc(tx(n.prompt)) +
+      var body = show((n.image ? stage(n.image, n.speaker) : '') + pieces(n) + '<p class="scene-prompt">' + glossify(tx(n.prompt), {}) +
         '</p><div data-cls></div><div data-out></div>');
       var box = body.querySelector('[data-cls]');
       hintArea(n, body);
@@ -2239,7 +2347,7 @@
           go(n.next);
           return;
         }
-        var body = show(pieces(n) + '<p class="scene-prompt">' + esc(tx(n.prompt)) + '</p><ol class="built">' +
+        var body = show(pieces(n) + '<p class="scene-prompt">' + glossify(tx(n.prompt), {}) + '</p><ol class="built">' +
           built.map(function(s) {
           return '<li>' + esc(tx(s.label)) + '</li>';
         }).join('') + '</ol><div class="opts">' + pool.filter(function(s) {
@@ -2325,7 +2433,7 @@
             esc(t('app_card_back', tx(o.label))) + '">' + esc(tx(o.label)) + '</button>' :
             '<span class="card-gap" aria-hidden="true"></span>');
         }
-        var body = show((n.image ? picture(n.image, data) : '') + pieces(n) + '<p class="scene-prompt">' + esc(tx(n.prompt)) +
+        var body = show((n.image ? picture(n.image, data) : '') + pieces(n) + '<p class="scene-prompt">' + glossify(tx(n.prompt), {}) +
           '</p><div class="fill-card" data-card><div class="fill-card-title">' + esc(tx(n.cardtitle || '')) + '</div>' +
           gaps.join('') + '</div><div class="card-pieces">' + usable.filter(function(o) {
             return placed.indexOf(o.id) < 0;
@@ -2558,7 +2666,7 @@
             esc(tx(s.label)) + '"' + (got || miss || done ? ' disabled' : '') + '>' + (got ? '<span>' + esc(tx(s.label)) +
             '</span>' : '') + '</button>';
         }).join('');
-        var body = show(pieces(n) + '<p class="scene-prompt">' + esc(tx(n.prompt)) + '</p><p class="find-count">' +
+        var body = show(pieces(n) + '<p class="scene-prompt">' + glossify(tx(n.prompt), {}) + '</p><p class="find-count">' +
           esc(t('app_find_count', found.length + '/' + need)) + '</p>' + (world ? '<div class="on-painting find-on" hidden>' + marks +
           '</div>' : '<div class="find-map">' + picture(image, data) + marks + '</div>') + '<div data-out>' + (said || '') +
           (done ? '<div class="actions"><button class="btn btn-main" data-go>' + esc(t('app_continue')) + '</button></div>' :
@@ -2648,7 +2756,7 @@
         var at = done.length ? done[done.length - 1] : from;
         // With the place alive, the journey is on its painting; else, on a picture in the page.
         var world = onPainting(image);
-        var body = show(pieces(n) + '<p class="scene-prompt">' + esc(tx(n.prompt)) + '</p>' + (world ?
+        var body = show(pieces(n) + '<p class="scene-prompt">' + glossify(tx(n.prompt), {}) + '</p>' + (world ?
           '<div class="on-painting path-on" hidden>' : '<div class="path-map">' + picture(image, data)) + n.steps.map(function(s, i) {
             var visited = done.indexOf(s) >= 0;
             return '<button type="button" class="path-stop' + (visited ? ' visited' : '') + '" data-id="' + esc(s.id) + '" ' +
@@ -2758,7 +2866,7 @@
           picture(last.image, data) : '') + '<p>' + esc(tx(last.text || '')) + '</p>' + (last.feedback ? '<small>' +
           esc(tx(last.feedback)) + '</small>' : '') + '</div>' : (n.image && !world ? picture(n.image, data) : '');
         var more = last && !last.correct && round < rounds;
-        var body = show(pieces(n) + shown + '<p class="scene-prompt">' + esc(tx(n.prompt)) + '</p>' + (last && (last.correct ||
+        var body = show(pieces(n) + shown + '<p class="scene-prompt">' + glossify(tx(n.prompt), {}) + '</p>' + (last && (last.correct ||
           !more) ? '' : '<div class="opts tend-items">' + items.map(function(it) {
           var on = chosen.indexOf(it.id) >= 0;
           return '<button type="button" class="opt' + (on ? ' sel' : '') + '" data-id="' + esc(it.id) + '" aria-pressed="' +

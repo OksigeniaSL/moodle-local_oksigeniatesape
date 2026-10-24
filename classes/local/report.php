@@ -58,8 +58,6 @@ final class report {
      * @return string The PDF.
      */
     public static function pdf(\stdClass $course): string {
-        global $CFG;
-        require_once($CFG->libdir . '/pdflib.php');
         $all = self::columns((int) $course->id);
         $columns = array_filter($all, fn($key) => strpos($key, 'how:') !== 0, ARRAY_FILTER_USE_KEY);
         $mission = missions::get((int) $course->id);
@@ -102,11 +100,8 @@ final class report {
             $html .= '</tr>';
         }
         $html .= '</tbody></table>' . self::class_notes((int) $course->id);
-        $pdf = new \pdf('L', 'mm', 'A4');
-        $pdf->setPrintHeader(false);
-        $pdf->setPrintFooter(false);
+        $pdf = paper::pdf('L', 10);
         $pdf->SetMargins(10, 10, 10);
-        $pdf->SetFont('freesans', '', 10);
         $pdf->AddPage();
         $pdf->writeHTML($html);
         return $pdf->Output('', 'S');

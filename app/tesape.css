@@ -2913,6 +2913,64 @@ body.in-scene {
   font-weight: 600;
 }
 
+/* A word of the glossary in a text: it reads as the text, underlined with dots, and opens its card. */
+.gloss {
+  display: inline;
+  padding: 0;
+  border: 0;
+  border-bottom: 2px dotted currentColor;
+  background: none;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+  cursor: help;
+}
+
+.gloss:hover,
+.gloss:focus-visible {
+  background: rgba(var(--lantern-rgb), .2);
+  outline: none;
+}
+
+/* Over the picture, not over the text it explains. */
+.gloss-card {
+  position: fixed;
+  top: 76px;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  width: min(560px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 14px 16px;
+  border-radius: var(--r);
+  background: var(--parchment);
+  color: var(--ink);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+}
+
+.gloss-card img {
+  flex: none;
+  width: 84px;
+  height: 84px;
+  object-fit: contain;
+}
+
+.gloss-card h3 {
+  margin: 0 0 4px;
+}
+
+.gloss-card p {
+  margin: 0 0 8px;
+}
+
+.gloss-card .actions {
+  justify-content: flex-start;
+  margin: 0;
+}
+
 /* What a moment says to whoever is like this: the voice of the place, to them. */
 .scene-nature {
   margin: 0 0 6px;

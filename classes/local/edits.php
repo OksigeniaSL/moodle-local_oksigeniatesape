@@ -409,6 +409,12 @@ final class edits {
                     self::field($texts, 'battle/knots/' . $knot['code'], $knot, ['name', 'claim', 'laugh', 'weakness', 'why']);
                 }
             }
+            // What each word of the glossary of the scenes means.
+            foreach ($definition['glossary'] ?? [] as $word) {
+                if (!empty($word['id'])) {
+                    self::field($texts, 'glossary/' . $word['id'], $word, ['text']);
+                }
+            }
             return $texts;
         }
         self::field($texts, '', $definition, ['title', 'whatif']);
@@ -531,6 +537,10 @@ final class edits {
         $value = trim(clean_param($value, PARAM_TEXT));
         if (\core_text::strlen($value) > self::MAX_TEXT) {
             throw new \invalid_parameter_exception('Too long');
+        }
+        // What a word of the glossary means, read at a glance too.
+        if (strpos($path, 'glossary/') === 0 && \core_text::strlen($value) > self::MAX_PIECE) {
+            throw new \moodle_exception('wspiecelong', 'local_oksigeniatesape', '', self::MAX_PIECE);
         }
         if ($value !== '' && preg_match('#^nodes/([^/]+)/views/([a-z]+)$#', $path, $m)) {
             if (\core_text::strlen($value) > self::MAX_PIECE) {
@@ -873,6 +883,11 @@ final class edits {
             'questions' => $questions,
             'questionschanged' => isset($changes[self::MISSION]['questions']),
             'ownsecrets' => array_values((array) ($changes[self::MISSION][self::OWNSECRETS] ?? [])),
+            // The glossary of the scenes: each word as it is written first, with what it means.
+            'glossary' => array_values(array_filter(array_map(function ($word) use ($places) {
+                $field = array_values(array_filter($places, fn($f) => $f['path'] === 'glossary/' . ($word['id'] ?? '') . '/text'));
+                return $field ? ['word' => (string) (((array) ($word['forms'] ?? []))[0] ?? $word['id']), 'field' => $field[0]] : null;
+            }, $original['glossary'] ?? []))),
             'secretsmost' => self::MAX_SECRETS,
             'secretmax' => self::MAX_SECRET,
             'objectives' => $objectives,
@@ -908,7 +923,7 @@ final class edits {
                 'text' => array_key_exists($path, $changes) ? (string) $changes[$path] : $original,
                 'original' => $original,
                 'changed' => array_key_exists($path, $changes),
-                'max' => $kind === 'views' ? self::MAX_PIECE : self::MAX_TEXT,
+                'max' => $kind === 'views' || $parts[0] === 'glossary' ? self::MAX_PIECE : self::MAX_TEXT,
             ];
         }
         return $fields;

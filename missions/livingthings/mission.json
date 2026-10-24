@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 75,
+ "version": 76,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 76,
+   "kind": "improvement",
+   "date": "2026-10-24",
+   "text": "El glosario de las escenas: las palabras clave (ser vivo, célula, mamífero, descomponedor…) salen subrayadas y, al tocarlas, su definición, con un dibujo si lo hay y para escucharla; y en cada lugar, dos preguntas para hablar en casa, para el resumen de las familias y el paquete para casa"
+  },
   {
    "version": 75,
    "kind": "improvement",
@@ -2586,6 +2592,252 @@
    }
   }
  },
+ "glossary": [
+  {
+   "id": "ser-vivo",
+   "forms": [
+    "ser vivo",
+    "seres vivos"
+   ],
+   "text": "Lo que se nutre, se relaciona y se reproduce. Una seta, un árbol y una hormiga son seres vivos.",
+   "picture": "being.seta"
+  },
+  {
+   "id": "nutrirse",
+   "forms": [
+    "se nutre",
+    "se nutren"
+   ],
+   "text": "Toma lo que necesita para vivir y crecer: come, o fabrica su alimento, como las plantas."
+  },
+  {
+   "id": "relacionarse",
+   "forms": [
+    "se relaciona",
+    "se relacionan"
+   ],
+   "text": "Nota lo que pasa a su alrededor y responde: busca la luz, huye, se esconde del frío."
+  },
+  {
+   "id": "reproducirse",
+   "forms": [
+    "se reproduce",
+    "se reproducen"
+   ],
+   "text": "Hace nuevos seres como él: con crías, huevos, semillas o esporas."
+  },
+  {
+   "id": "celula",
+   "forms": [
+    "célula",
+    "células"
+   ],
+   "text": "La parte más pequeña de un ser vivo. Algunos son una sola célula; otros tienen millones."
+  },
+  {
+   "id": "vertebrado",
+   "forms": [
+    "vertebrado",
+    "vertebrados"
+   ],
+   "text": "Animal con columna vertebral: un esqueleto por dentro, como los peces, las aves o las personas.",
+   "picture": "being.trucha"
+  },
+  {
+   "id": "invertebrado",
+   "forms": [
+    "invertebrado",
+    "invertebrados"
+   ],
+   "text": "Animal sin columna vertebral, como el caracol, la hormiga o la araña.",
+   "picture": "being.caracol"
+  },
+  {
+   "id": "mamifero",
+   "forms": [
+    "mamífero",
+    "mamíferos"
+   ],
+   "text": "Animal con pelo cuyas crías toman leche de su madre.",
+   "picture": "being.ciervo"
+  },
+  {
+   "id": "ave",
+   "forms": [
+    "ave",
+    "aves"
+   ],
+   "text": "Animal con plumas y pico que nace de un huevo.",
+   "picture": "being.paloma"
+  },
+  {
+   "id": "reptil",
+   "forms": [
+    "reptil",
+    "reptiles"
+   ],
+   "text": "Animal de piel seca con escamas que respira con pulmones.",
+   "picture": "being.lagartija"
+  },
+  {
+   "id": "anfibio",
+   "forms": [
+    "anfibio",
+    "anfibios"
+   ],
+   "text": "Animal de piel húmeda y sin escamas que de pequeño vive en el agua.",
+   "picture": "being.rana"
+  },
+  {
+   "id": "pez",
+   "forms": [
+    "pez",
+    "peces"
+   ],
+   "text": "Animal que vive en el agua, respira con branquias y nada con aletas.",
+   "picture": "being.trucha"
+  },
+  {
+   "id": "insecto",
+   "forms": [
+    "insecto",
+    "insectos"
+   ],
+   "text": "Animal sin columna vertebral, con seis patas y el cuerpo en tres partes.",
+   "picture": "being.hormiga"
+  },
+  {
+   "id": "aracnido",
+   "forms": [
+    "arácnido",
+    "arácnidos"
+   ],
+   "text": "Animal sin columna vertebral y con ocho patas, como la araña.",
+   "picture": "being.arana"
+  },
+  {
+   "id": "hongo",
+   "forms": [
+    "hongo",
+    "hongos"
+   ],
+   "text": "Ser vivo que no es planta ni animal: se alimenta de restos. Las setas y el moho son hongos.",
+   "picture": "being.seta"
+  },
+  {
+   "id": "planta",
+   "forms": [
+    "planta",
+    "plantas"
+   ],
+   "text": "Ser vivo que fabrica su alimento con la luz del sol, el agua y el aire.",
+   "picture": "being.girasol"
+  },
+  {
+   "id": "raiz",
+   "forms": [
+    "raíz",
+    "raíces"
+   ],
+   "text": "La parte de la planta que la sujeta a la tierra y toma el agua."
+  },
+  {
+   "id": "espora",
+   "forms": [
+    "espora",
+    "esporas"
+   ],
+   "text": "Grano diminuto con el que se reproducen los hongos y los musgos.",
+   "picture": "being.musgo"
+  },
+  {
+   "id": "cadena-alimentaria",
+   "forms": [
+    "cadena alimentaria",
+    "cadenas alimentarias"
+   ],
+   "text": "Quién se come a quién. La flecha va del que es comido al que come."
+  },
+  {
+   "id": "descomponedor",
+   "forms": [
+    "descomponedor",
+    "descomponedores"
+   ],
+   "text": "Ser vivo que se alimenta de restos, como el moho o la lombriz, y los devuelve a la tierra.",
+   "picture": "being.lombriz"
+  },
+  {
+   "id": "ecosistema",
+   "forms": [
+    "ecosistema",
+    "ecosistemas"
+   ],
+   "text": "Un lugar con todos sus seres vivos y lo que no está vivo: el agua, la luz, la tierra."
+  },
+  {
+   "id": "branquias",
+   "forms": [
+    "branquias"
+   ],
+   "text": "Lo que usan los peces para respirar en el agua: toman el oxígeno que va disuelto en ella.",
+   "picture": "being.trucha"
+  },
+  {
+   "id": "pulmones",
+   "forms": [
+    "pulmones"
+   ],
+   "text": "Lo que usan muchos animales para respirar el aire, como las aves, los mamíferos o nosotros."
+  },
+  {
+   "id": "escamas",
+   "forms": [
+    "escamas"
+   ],
+   "text": "Placas pequeñas y duras que cubren la piel de los peces y los reptiles.",
+   "picture": "being.lagartija"
+  },
+  {
+   "id": "omnivoro",
+   "forms": [
+    "omnívoro",
+    "omnívoros"
+   ],
+   "text": "Animal que come de todo: plantas y otros animales."
+  },
+  {
+   "id": "especie",
+   "forms": [
+    "especie",
+    "especies"
+   ],
+   "text": "Un grupo de seres vivos del mismo tipo, que pueden tener crías entre ellos."
+  },
+  {
+   "id": "reino",
+   "forms": [
+    "reino",
+    "reinos"
+   ],
+   "text": "Los grandes grupos de seres vivos: animales, plantas, hongos y los que son una sola célula."
+  },
+  {
+   "id": "germinar",
+   "forms": [
+    "germinar",
+    "germina"
+   ],
+   "text": "Cuando una semilla despierta y le sale la primera raíz y el primer tallo."
+  },
+  {
+   "id": "microscopio",
+   "forms": [
+    "microscopio"
+   ],
+   "text": "Aparato con lentes que deja ver lo que es demasiado pequeño para los ojos, como las células."
+  }
+ ],
  "pages": {
   "ser-vivo": {
    "title": "Ser vivo",
@@ -2809,6 +3061,10 @@
     "valley": "Claro del Despertar",
     "azara": "El campamento"
    },
+   "home": [
+    "¿Qué tienen en común una seta, un árbol y una hormiga? ¿Qué le falta a una piedra para estar viva?",
+    "¿Cuántos seres vivos ves en el camino de casa al colegio?"
+   ],
    "intro": {
     "valley": "El primer lugar del valle donde se apagaron las luces. Aquí despiertan las semillas.",
     "azara": "La primera noche de la expedición. El cuaderno pide distinguir lo que vive de lo que no."
@@ -3089,6 +3345,10 @@
     "valley": "Biblioteca de los Reinos",
     "azara": "Las cajas de la expedición"
    },
+   "home": [
+    "¿Por qué una seta no es una planta?",
+    "Si ordenaras en grupos los animales que conoces, ¿qué grupos harías?"
+   ],
    "intro": {
     "valley": "Los estantes del Gran Libro guardan a los seres vivos por grupos. El Embrollo los ha revuelto.",
     "azara": "Las muestras viajan en cajas por grupos, pero se han caído las etiquetas."
@@ -3331,6 +3591,10 @@
     "valley": "Bosque de las Huellas",
     "azara": "El monte"
    },
+   "home": [
+    "¿Qué animales tienen esqueleto por dentro? ¿Y cuáles no?",
+    "¿De quién podrían ser las huellas que vemos en el parque o en el campo?"
+   ],
    "intro": {
     "valley": "El Embrollo ha borrado los nombres de los animales. Solo quedan sus huellas.",
     "azara": "En el cuaderno hay descripciones de animales sin nombre."
@@ -3578,6 +3842,10 @@
     "valley": "Jardín de la Luz",
     "azara": "El huerto"
    },
+   "home": [
+    "¿Qué necesita una planta para vivir? ¿Cómo se alimenta si no tiene boca?",
+    "¿Cómo va la semilla del experimento de clase?"
+   ],
    "intro": {
     "valley": "El corazón del valle. Sus plantas daban la luz a la linterna mayor.",
     "azara": "Las plantas que viajaron a oscuras han salido pálidas."
@@ -3817,6 +4085,10 @@
     "valley": "El Gran Lago",
     "azara": "La orilla del río"
    },
+   "home": [
+    "En la comida de hoy, ¿quién se come a quién? Haz una cadena que acabe en ti.",
+    "¿Qué pasaría en un lago si desaparecieran todos los peces pequeños?"
+   ],
    "intro": {
     "valley": "A orillas del lago todo depende de todo. Cae la tarde y hay que pasar aquí la noche.",
     "azara": "La expedición llega a la orilla de un gran río al caer la tarde."
@@ -4077,6 +4349,10 @@
     "valley": "La Torre",
     "azara": "El cuaderno"
    },
+   "home": [
+    "¿Qué hacemos las personas que ayuda o daña a los seres vivos del barrio?",
+    "¿Qué cambiarías tú para cuidarlos?"
+   ],
    "intro": {
     "valley": "En lo alto de la torre se esconde el Embrollo. Las huellas de tinta acaban en su puerta.",
     "azara": "Antes de entregar el cuaderno hay que corregir lo que se mezcló."

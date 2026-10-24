@@ -108,10 +108,10 @@
     }
   }
 
-  function fieldHtml(scene, f) {
+  function fieldHtml(scene, f, name) {
     var rows = Math.min(8, Math.max(2, Math.ceil(f.text.length / 75)));
     return '<label class="ws-field' + (f.changed ? ' changed' : '') + '" data-field="' + esc(f.path) + '"><span>' +
-      esc(label(f)) + (f.changed ? ' <button type="button" class="ws-link" data-orig>' + esc(t('teach_ws_original')) +
+      esc(name || label(f)) + (f.changed ? ' <button type="button" class="ws-link" data-orig>' + esc(t('teach_ws_original')) +
       '</button>' : '') + '</span><textarea rows="' + rows + '"' + (f.max ? ' maxlength="' + f.max + '"' : '') +
       ' data-scene="' + esc(scene) + '" data-path="' +
       esc(f.path) + '">' + esc(f.text) + '</textarea>' + (f.changed ? '<small>' + esc(t('teach_ws_was', f.original)) +
@@ -249,6 +249,26 @@
         return '<details class="ws-scene" data-code="' + esc(sc.code) + '"><summary>' + sceneSummary(sc) + '</summary>' +
           '<div class="ws-body"></div></details>';
       }).join('') + '</details>';
+  }
+
+  /**
+   * The glossary of the scenes: what each key word means, as the students read it when they touch it in a scene.
+   *
+   * @return {string}
+   */
+  function glossaryHtml() {
+    if (!(state.data.glossary || []).length) {
+      return '';
+    }
+    return '<details class="card ws-chapter ws-scene" data-glossary><summary><h3>' + esc(t('teach_ws_glossary')) + '</h3>' +
+      glossaryChanges() + '</summary><p class="help">' + esc(t('teach_ws_glossary_help')) + '</p><div class="ws-body">' +
+      '</div></details>';
+  }
+
+  function glossaryChanges() {
+    return changes((state.data.glossary || []).filter(function(g) {
+      return g.field.changed;
+    }).length);
   }
 
   function findScene(code) {
@@ -623,7 +643,7 @@
     state.questions = state.data.questions.slice();
     state.secrets = state.data.ownsecrets.slice();
     state.el.innerHTML = '<section class="card ws-head" data-wshead></section>' +
-      state.data.chapters.map(chapterHtml).join('') + questionsHtml() + secretsHtml() + shareHtml();
+      state.data.chapters.map(chapterHtml).join('') + questionsHtml() + secretsHtml() + glossaryHtml() + shareHtml();
     header();
     bindQuestions();
     bindSecrets();
@@ -633,6 +653,12 @@
   /** Fills a scene or a place when it is opened: there are many texts, and most stay closed. */
   function fill(details) {
     var body = details.querySelector(':scope > .ws-body');
+    if (details.hasAttribute('data-glossary')) {
+      body.innerHTML = state.data.glossary.map(function(g) {
+        return fieldHtml(MISSION, g.field, g.word.charAt(0).toLocaleUpperCase() + g.word.slice(1));
+      }).join('');
+      return;
+    }
     if (details.dataset.place) {
       var ch = findChapter(details.dataset.place);
       // The class passes the place by, or comes back to it.
@@ -680,6 +706,10 @@
       box.querySelector('[data-place] > summary').innerHTML = '<b>' + esc(t('teach_ws_place')) + '</b>' +
         changes(placechanged);
     });
+    var glossary = state.el.querySelector('[data-glossary] > summary');
+    if (glossary) {
+      glossary.innerHTML = '<h3>' + esc(t('teach_ws_glossary')) + '</h3>' + glossaryChanges();
+    }
     header();
   }
 
