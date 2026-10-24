@@ -1611,6 +1611,10 @@
    * @return {Object} kind (scene, page, game, quest or board), and id, code, type, title and place as it needs.
    */
   function nextStep(m) {
+    // Before setting out, the first look.
+    if (state.world.entry) {
+      return {kind: 'entry', title: state.world.entry.title, place: t('app_entry_next')};
+    }
     var ch = todayChapter(m);
     var sc = ch.scenes.filter(function(x) {
       return !x.done;
@@ -1653,6 +1657,82 @@
       '</button>';
     return '<section class="card next-step">' + listen() + '<div class="kicker">' + esc(t('app_next_step')) + '</div>' + body +
       '</section>';
+  }
+
+  /**
+   * The first look: what it is for, said by the world; its questions one by one, with «Not yet» always there and no
+   * right or wrong shown; and at the end, that the world knows which way to take them. What they answered goes to their
+   * teacher as a suggested step.
+   */
+  function entryMoment() {
+    var e = state.world.entry;
+    var layer = document.createElement('div');
+    layer.className = 'badge-moment entry-moment' + (T.moves() ? '' : ' still');
+    layer.setAttribute('role', 'dialog');
+    layer.setAttribute('aria-modal', 'true');
+    layer.setAttribute('aria-labelledby', 'tesape-entry-title');
+    document.body.appendChild(layer);
+    var answers = [];
+    var onkey = function(ev) {
+      if (ev.key === 'Escape') {
+        close();
+      }
+    };
+    var close = function() {
+      document.removeEventListener('keydown', onkey);
+      layer.remove();
+    };
+    document.addEventListener('keydown', onkey);
+    var show = function(html) {
+      layer.innerHTML = '<div class="badge-card wide"><div class="kicker">' + esc(e.title) + '</div>' + html + '</div>';
+      var first = layer.querySelector('[data-entrygo], [data-entrypick], [data-entrydone]');
+      if (first) {
+        first.focus();
+      }
+    };
+    var question = function(i) {
+      var q = e.questions[i];
+      show('<p class="curio-count">' + esc(t('app_curio_question', {n: i + 1, total: e.questions.length})) + '</p><h2 ' +
+        'id="tesape-entry-title">' + esc(q.prompt) + '</h2><div class="whoami-options">' + q.options.map(function(o, k) {
+          var last = k === q.options.length - 1;
+          return '<button type="button" class="btn ' + (last ? 'btn-soft entry-notyet' : 'btn-soft') + '" data-entrypick="' +
+            esc(o) + '">' + esc(o) + '</button>';
+        }).join('') + '</div>');
+      layer.querySelectorAll('[data-entrypick]').forEach(function(b) {
+        b.onclick = function() {
+          answers[i] = b.dataset.entrypick;
+          if (i < e.questions.length - 1) {
+            question(i + 1);
+          } else {
+            end();
+          }
+        };
+      });
+    };
+    var end = function() {
+      T.api('entry_answer', {courseid: cfg.courseid, answers: answers}).then(function() {
+        if (T.fx) {
+          T.fx.sound('right');
+        }
+        show('<h2 id="tesape-entry-title">' + esc(t('app_entry_done')) + '</h2><p class="lead">' + esc(e.end) + '</p>' +
+          '<div class="actions"><button class="btn btn-main" type="button" data-entrydone>' + esc(t('app_continue')) +
+          '</button></div>');
+        layer.querySelector('[data-entrydone]').onclick = function() {
+          close();
+          refresh();
+        };
+      }).catch(function(err) {
+        T.toast(esc(err.message), true);
+        close();
+      });
+    };
+    show('<h2 id="tesape-entry-title">' + esc(t('app_entry_ask')) + '</h2><p class="lead">' + esc(e.intro) + '</p><div ' +
+      'class="actions"><button class="btn btn-soft" type="button" data-entrylater>' + esc(t('app_later')) + '</button>' +
+      '<button class="btn btn-main" type="button" data-entrygo>' + esc(t('app_entry_start')) + '</button></div>');
+    layer.querySelector('[data-entrylater]').onclick = close;
+    layer.querySelector('[data-entrygo]').onclick = function() {
+      question(0);
+    };
   }
 
   /**
@@ -3241,7 +3321,9 @@
     if (step && state.next) {
       step.onclick = function() {
         var n = state.next;
-        if (n.kind === 'page') {
+        if (n.kind === 'entry') {
+          entryMoment();
+        } else if (n.kind === 'page') {
           feedMoment();
         } else if (n.kind === 'game') {
           var play = T.gamePlayer(n.type);

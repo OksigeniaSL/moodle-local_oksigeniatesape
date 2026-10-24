@@ -1140,5 +1140,15 @@ function xmldb_local_oksigeniatesape_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026102433, 'local', 'oksigeniatesape');
     }
 
+    if ($oldversion < 2026102436) {
+        // The first look: the step it suggests for each student.
+        $table = new xmldb_table('local_oksigeniatesape_member');
+        $field = new xmldb_field('entrystep', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0', 'pausedto');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        upgrade_plugin_savepoint(true, 2026102436, 'local', 'oksigeniatesape');
+    }
+
     return true;
 }

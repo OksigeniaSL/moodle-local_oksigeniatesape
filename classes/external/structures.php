@@ -85,6 +85,7 @@ final class structures {
                 'status' => new external_value(PARAM_ALPHA, 'active, fallen or paused (away, for classmates)'),
                 'statusreason' => new external_value(PARAM_TEXT, 'Why, only for the student and the teachers'),
                 'pausedto' => new external_value(PARAM_INT, 'When the pause ends by itself, for them and the teachers', VALUE_DEFAULT, 0),
+                'entrystep' => new external_value(PARAM_INT, 'The step their first look suggests (0: not done)', VALUE_DEFAULT, 0),
                 'step' => new external_value(PARAM_INT, 'Step of the mission, 1 to 4'),
                 'lastseen' => new external_value(PARAM_INT, 'Last time they opened the game (0: not known)', VALUE_DEFAULT, 0),
                 'mood' => new external_value(PARAM_ALPHA, 'How their creature is: asleep, happy or empty', VALUE_DEFAULT, ''),

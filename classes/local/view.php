@@ -124,6 +124,11 @@ final class view {
         $world['market'] = market::for_student($char, $courseid, $userid);
         // The shop of the naturalist: what they can read beyond the mission, and the seals of what they read.
         $world['curiosities'] = curiosities::for_student($courseid, $char);
+        // The first look, while they have not done it.
+        $first = $member ? entry::for_student($courseid, $member) : null;
+        if ($first) {
+            $world['entry'] = $first;
+        }
         $album = album::for_student($courseid, $userid);
         if ($album) {
             $world['album'] = $album;
@@ -1042,6 +1047,7 @@ final class view {
                 'status' => !$private && $member->status === 'paused' ? 'away' : $member->status,
                 'statusreason' => $private ? (string) $member->statusreason : '',
                 'pausedto' => $private && $member->status === 'paused' ? (int) ($member->pausedto ?? 0) : 0,
+                'entrystep' => $private ? (int) ($member->entrystep ?? 0) : 0,
                 'step' => $private ? (int) $member->step : 0,
                 'lastseen' => $private ? (int) ($member->lastseen ?? 0) : 0,
                 'mood' => $private ? self::mood($char, $member) : '',

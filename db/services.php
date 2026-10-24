@@ -417,6 +417,20 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:award',
     ],
+    'local_oksigeniatesape_entry_answer' => [
+        'classname' => 'local_oksigeniatesape\\external\\entry_answer',
+        'description' => 'A student answers their first look: it keeps the step it suggests, for their teacher.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:play',
+    ],
+    'local_oksigeniatesape_apply_steps' => [
+        'classname' => 'local_oksigeniatesape\\external\\apply_steps',
+        'description' => 'The teacher puts the steps the first look of each student suggests.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:manageregion',
+    ],
     'local_oksigeniatesape_manage_games' => [
         'classname' => 'local_oksigeniatesape\\external\\manage_games',
         'description' => 'The games of a course: the one of the course and one more for each group that plays apart.',

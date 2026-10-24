@@ -1661,13 +1661,14 @@
       }).join('') + '</div>';
     var shown = studentsShown();
     var el = content(firstCard() + sessionCard() + remoteCard() + inboxCard() + signalsCard() + todayCard() + directorCard() +
-      teamsCard() + farCard() + '<section class="card"><div class="section-title"><h2>' +
+      teamsCard() + entryCard() + farCard() + '<section class="card"><div class="section-title"><h2>' +
       esc(t('teach_tab_class')) +
       '</h2><span class="section-tools"><label class="chip"><input type="checkbox" data-showres' + (state.showres ? ' checked' :
       '') + '> ' + esc(t('teach_showres')) + '</label><button class="btn btn-soft" data-all>' + esc(t('teach_selectall')) +
       '</button></span></div>' + teams +
       (shown.length ? '<ul class="list">' + shown.map(studentCard).join('') + '</ul>' : '<p class="empty">' +
       esc(t('teach_nostudents')) + '</p>') + '</section><div id="actionbar"></div>');
+    bindEntry(el);
     bindMakeTeams(el);
     bindSession(el);
     bindRemote(el);
@@ -1775,6 +1776,49 @@
    *
    * @return {string}
    */
+  /**
+   * The first look of the class: how many did it, and the steps it suggests for those whose step is another one, to put
+   * them all with one touch.
+   *
+   * @return {string}
+   */
+  function entryCard() {
+    var done = 0;
+    var differ = 0;
+    state.data.students.forEach(function(s) {
+      var m = s.character && s.character.member;
+      if (m && m.entrystep) {
+        done++;
+        differ += m.entrystep !== m.step ? 1 : 0;
+      }
+    });
+    if (!done) {
+      return '';
+    }
+    return '<section class="card" style="margin-bottom:16px" data-entrycard><h2>' + esc(t('teach_entry')) + '</h2>' +
+      '<p class="help-soft">' + esc(t('teach_entry_help', {done: done, total: state.data.students.length})) + '</p>' +
+      (differ && can('manageregion') ? '<div class="actions" style="justify-content:flex-start"><button class="btn btn-main" ' +
+      'type="button" data-applysteps>' + esc(t('teach_entry_apply', differ)) + '</button></div>' : '<p class="help-soft">' +
+      esc(t('teach_entry_same')) + '</p>') + '</section>';
+  }
+
+  function bindEntry(el) {
+    var b = el.querySelector('[data-applysteps]');
+    if (!b) {
+      return;
+    }
+    b.onclick = function() {
+      b.disabled = true;
+      T.api('apply_steps', {courseid: cfg.courseid}).then(function(r) {
+        T.toast(esc(t('teach_entry_applied', r.changed)));
+        load(true);
+      }).catch(function(e) {
+        b.disabled = false;
+        T.toast(esc(e.message), true);
+      });
+    };
+  }
+
   function teamsCard() {
     var d = state.data;
     if (!d.standings.length) {
@@ -2100,10 +2144,11 @@
             esc(T.roleName(fam, r, c.nameform)) + '</button>';
         }).join('') + '</div>';
     }
-    html += '<h3 style="margin-top:16px">' + esc(t('teach_step')) + '</h3><div class="pills" style="justify-content:' +
-      'flex-start">' + [1, 2, 3, 4].map(function(st) {
-        return '<button class="chip" data-step="' + st + '" aria-pressed="' + (m && m.step === st) + '"' +
-          (can('manageregion') ? '' : ' disabled') + '>' + esc(t('teach_step_' + st)) + '</button>';
+    html += '<h3 style="margin-top:16px">' + esc(t('teach_step')) + '</h3>' + (m && m.entrystep ? '<p class="help-soft">' +
+      esc(t('teach_entry_suggests', t('teach_step_' + m.entrystep))) + '</p>' : '') + '<div class="pills" style="' +
+      'justify-content:flex-start">' + [1, 2, 3, 4].map(function(st) {
+        return '<button class="chip' + (m && m.entrystep === st ? ' suggested' : '') + '" data-step="' + st + '" aria-pressed="' +
+          (m && m.step === st) + '"' + (can('manageregion') ? '' : ' disabled') + '>' + esc(t('teach_step_' + st)) + '</button>';
       }).join('') + '</div>';
     // What the game adapts for them: what they need, never a diagnosis; saved as soon as it is marked.
     var adapted = (m && (m.adaptteacher || m.adapt)) || [];

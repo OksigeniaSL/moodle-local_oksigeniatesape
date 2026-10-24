@@ -148,6 +148,15 @@ final class get_world extends external_api {
                 ),
             ], 'Team', VALUE_OPTIONAL),
             'market' => structures::market(),
+            'entry' => new external_single_structure([
+                'title' => new external_value(PARAM_TEXT, 'Its name'),
+                'intro' => new external_value(PARAM_TEXT, 'What it is for, said by the world'),
+                'end' => new external_value(PARAM_TEXT, 'What the world says at the end'),
+                'questions' => new external_multiple_structure(new external_single_structure([
+                    'prompt' => new external_value(PARAM_TEXT, 'The question'),
+                    'options' => new external_multiple_structure(new external_value(PARAM_TEXT, 'An answer, «Not yet» the last')),
+                ])),
+            ], 'The first look, while the student has not done it', VALUE_OPTIONAL),
             'curiosities' => new external_multiple_structure(new external_single_structure([
                 'code' => new external_value(PARAM_ALPHANUMEXT, 'Curiosity'),
                 'title' => new external_value(PARAM_TEXT, 'Its title'),

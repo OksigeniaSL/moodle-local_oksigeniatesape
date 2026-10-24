@@ -77,6 +77,7 @@
         <FIELD NAME="statusreason" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Why they were paused or fell; only the student and the teachers see it"/>
         <FIELD NAME="statusby" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Teacher who paused them"/>
         <FIELD NAME="pausedto" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="When their pause ends by itself"/>
+        <FIELD NAME="entrystep" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The step their first look suggests, 1 to 4 (0: not done)"/>
         <FIELD NAME="step" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="2" SEQUENCE="false" COMMENT="1 first steps, 2 core, 3 further, 4 expert"/>
         <FIELD NAME="lastregen" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Last daily refill of energy and breath"/>
         <FIELD NAME="lastseen" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Last time the student opened the game in the course"/>

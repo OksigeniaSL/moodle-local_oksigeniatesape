@@ -14146,3 +14146,19 @@ body.still .pet-me.patted .creature {
 .team-library small {
   display: block;
 }
+
+/* The first look: «Not yet» as calm as the rest, and the step it suggests, marked in the panel. */
+.entry-notyet {
+  border-style: dashed;
+}
+
+.chip.suggested::after {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-left: 6px;
+  vertical-align: middle;
+  border-radius: 50%;
+  background: var(--lantern);
+}

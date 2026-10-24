@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 84,
+ "version": 85,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 85,
+   "kind": "improvement",
+   "date": "2026-10-24",
+   "text": "La primera mirada: seis preguntas antes de salir que sugieren el escalón de cada alumno, sin nota a la vista; su docente lo confirma"
+  },
   {
    "version": 84,
    "kind": "improvement",
@@ -515,6 +521,76 @@
   "summer": "Es verano: los días son largos, las plantas fabrican mucho alimento con tanta luz y los frutos maduran.",
   "autumn": "Es otoño: los árboles de hoja caduca pierden sus hojas, algunos animales guardan comida para el invierno y muchas aves se van a lugares más cálidos.",
   "winter": "Es invierno: muchos árboles están sin hojas, algunos animales hibernan o pasan el frío escondidos y muchas semillas esperan bajo la tierra a la primavera."
+ },
+ "firstlook": {
+  "title": "La primera mirada",
+  "intro": {
+   "valley": "Antes de salir, Doña Hebra, la bibliotecaria, quiere saber qué sabes ya de los seres vivos, para que el camino te quede a tu medida. Si no sabes alguna, no pasa nada: para eso es la expedición.",
+   "azara": "Antes de salir, la archivera de la expedición quiere saber qué sabes ya de los seres vivos, para que el camino te quede a tu medida. Si no sabes alguna, no pasa nada: para eso es la expedición."
+  },
+  "end": "Gracias. Ya sé por dónde llevarte. Tu docente lo verá y elegirá contigo tu camino.",
+  "questions": [
+   {
+    "level": 1,
+    "prompt": "¿Cuál de estos es un ser vivo?",
+    "answer": "Una seta",
+    "options": [
+     "Una seta",
+     "Una piedra",
+     "Una nube"
+    ]
+   },
+   {
+    "level": 1,
+    "prompt": "¿Qué necesita una planta para crecer?",
+    "answer": "Luz, agua y aire",
+    "options": [
+     "Luz, agua y aire",
+     "Solo tierra",
+     "Nada, crece sola"
+    ]
+   },
+   {
+    "level": 2,
+    "prompt": "¿Qué hacen todos los seres vivos?",
+    "answer": "Se nutren, se relacionan y se reproducen",
+    "options": [
+     "Se nutren, se relacionan y se reproducen",
+     "Se mueven, comen y duermen",
+     "Crecen, hablan y corren"
+    ]
+   },
+   {
+    "level": 2,
+    "prompt": "El murciélago vuela, pero es…",
+    "answer": "Un mamífero",
+    "options": [
+     "Un mamífero",
+     "Un ave",
+     "Un insecto"
+    ]
+   },
+   {
+    "level": 3,
+    "prompt": "¿De qué están hechos todos los seres vivos?",
+    "answer": "De células",
+    "options": [
+     "De células",
+     "De hojas",
+     "Solo de agua"
+    ]
+   },
+   {
+    "level": 3,
+    "prompt": "En una cadena alimentaria, ¿quién fabrica su propio alimento?",
+    "answer": "Las plantas",
+    "options": [
+     "Las plantas",
+     "Los animales que cazan",
+     "Los hongos"
+    ]
+   }
+  ]
  },
  "curiosities": {
   "cazadoras": {
