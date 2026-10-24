@@ -3640,6 +3640,14 @@
       'align-items:flex-start;margin:4px 0"><input type="checkbox" name="gradebook"' + (r.gradebook ? ' checked' : '') +
       (editable ? '' : ' disabled') + '> <span>' + esc(t('teach_set_gradebook')) + '</span></label><small style="' +
       'display:block;color:var(--text-soft);margin-bottom:14px">' + esc(t('teach_set_gradebook_help')) + '</small>';
+    // The question bank of Moodle: a category of the course for half of the battles without turns.
+    var banks = r.qbanks || [];
+    var qbankCard = '<h3>' + esc(t('teach_qbank')) + '</h3><p class="help-soft">' + esc(t('teach_qbank_help')) + '</p>' +
+      (banks.length ? field('qbank', t('teach_qbank_category'), '<select name="qbank"' + (editable ? '' : ' disabled') +
+      '><option value="0">' + esc(t('teach_qbank_off')) + '</option>' + banks.map(function(b) {
+        return '<option value="' + b.id + '"' + (r.qbank === b.id ? ' selected' : '') + (b.count ? '' : ' disabled') + '>' +
+          esc(b.name) + ' (' + esc(t('teach_qbank_count', b.count)) + ')</option>';
+      }).join('') + '</select>') : '<p class="help-soft">' + esc(t('teach_qbank_none')) + '</p>');
     var check = function(name, on) {
       return '<label class="chip" style="display:inline-flex;gap:8px;align-items:center;margin:4px 0 14px"><input ' +
         'type="checkbox" name="' + name + '"' + (on ? ' checked' : '') + (editable ? '' : ' disabled') + '> ' +
@@ -3690,7 +3698,8 @@
       '</small>' + '<label class="chip" style="display:flex;gap:8px;align-items:flex-start;margin:4px 0"><input type="checkbox" ' +
       'name="skillson"' + (r.skillson !== false ? ' checked' : '') + (editable ? '' : ' disabled') + '> <span>' +
       esc(t('teach_set_skillson')) + '</span></label><small style="display:block;color:var(--text-soft);margin-bottom:14px">' +
-      esc(t('teach_set_skillson_help')) + '</small>' + touchesEditor(r, editable) + inside + lookCard + badgeCard + gradesCard + '</details>';
+      esc(t('teach_set_skillson_help')) + '</small>' + touchesEditor(r, editable) + inside + lookCard + badgeCard + gradesCard + qbankCard +
+      '</details>';
     var el = content('<section class="card"><h2>' + esc(t('teach_tab_settings')) + '</h2><form data-settings>' + daily +
       advanced + (editable ? '<div class="actions" style="justify-content:flex-start;margin-top:14px"><button ' +
       'class="btn btn-main" type="submit">' + esc(t('app_save')) + '</button></div>' : '') + '</form></section>');
@@ -3742,6 +3751,7 @@
         mischief: f.querySelector('[name="mischief"]:checked').value,
         secretsshown: Number(f.querySelector('[name="secretsshown"]:checked').value),
         sharelibrary: f.sharelibrary.checked,
+        qbank: f.qbank ? Number(f.qbank.value) : undefined,
         nicknames: picked ? Number(picked.value) : 0,
         timezone: f.timezone.value,
         portal: cover ? cover.value : 'door',

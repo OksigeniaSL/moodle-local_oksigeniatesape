@@ -38,6 +38,9 @@ final class questions {
      * @return array|null id, chapter, objective, text, options, correct (index in options), why.
      */
     public static function get(int $courseid, string $id, int $seed): ?array {
+        if (preg_match('/^' . moodlebank::PREFIX . '\d+$/', $id)) {
+            return moodlebank::get($courseid, $id, $seed);
+        }
         $mission = missions::get($courseid);
         if (!$mission) {
             return null;
@@ -90,7 +93,8 @@ final class questions {
 
     /**
      * Several questions without repeating, for a battle: from the chapters the class has reached first, then from the
-     * rest of the mission if those are not enough.
+     * rest of the mission if those are not enough. With a category of the question bank of Moodle chosen, half of them
+     * come from it, mixed.
      *
      * @param int $courseid
      * @param int $count
@@ -100,8 +104,12 @@ final class questions {
         $mission = missions::get($courseid);
         $usable = $mission ? self::usable($mission) : [];
         $all = count($usable);
+        $bank = moodlebank::usable($courseid);
+        shuffle($bank);
+        $frombank = min(count($bank), $all ? (int) ceil($count / 2) : $count);
+        $frombank = max($frombank, min(count($bank), $count - $all));
         $ids = [];
-        while (count($ids) < min($count, $all)) {
+        while (count($ids) < min($count - $frombank, $all)) {
             $id = self::pick($courseid, $ids);
             if (in_array($id, $ids, true)) {
                 // The chapters reached are used up: any other question of the mission.
@@ -109,6 +117,10 @@ final class questions {
                 $id = $rest[random_int(0, count($rest) - 1)];
             }
             $ids[] = $id;
+        }
+        if ($frombank) {
+            $ids = array_merge($ids, array_slice($bank, 0, $frombank));
+            shuffle($ids);
         }
         return $ids;
     }

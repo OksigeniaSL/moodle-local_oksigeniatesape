@@ -58,6 +58,8 @@ final class regions {
         'secrets' => 0,
         // The library of the class (the museum of its field guide) can be visited from other regions of the site (1).
         'library' => 0,
+        // The category of the question bank of Moodle half of the battles without turns come from (0: none).
+        'qbank' => 0,
     ];
 
     /**

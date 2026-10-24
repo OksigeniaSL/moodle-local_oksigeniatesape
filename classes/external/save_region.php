@@ -24,6 +24,7 @@ use core_external\external_value;
 use local_oksigeniatesape\local\characters;
 use local_oksigeniatesape\local\classroom;
 use local_oksigeniatesape\local\engine;
+use local_oksigeniatesape\local\moodlebank;
 use local_oksigeniatesape\local\regions;
 use local_oksigeniatesape\local\view;
 
@@ -122,6 +123,13 @@ final class save_region extends external_api {
                 null,
                 NULL_ALLOWED
             ),
+            'qbank' => new external_value(
+                PARAM_INT,
+                'Category of the question bank of Moodle for the battles (0: none)',
+                VALUE_DEFAULT,
+                null,
+                NULL_ALLOWED
+            ),
         ]);
     }
 
@@ -153,6 +161,7 @@ final class save_region extends external_api {
      * @param bool|null $skillson
      * @param int|null $secretsshown
      * @param bool|null $sharelibrary
+     * @param int|null $qbank
      * @return array
      */
     public static function execute(
@@ -180,7 +189,8 @@ final class save_region extends external_api {
         ?bool $talentson = null,
         ?bool $skillson = null,
         ?int $secretsshown = null,
-        ?bool $sharelibrary = null
+        ?bool $sharelibrary = null,
+        ?int $qbank = null
     ): array {
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
@@ -208,6 +218,7 @@ final class save_region extends external_api {
             'skillson' => $skillson,
             'secretsshown' => $secretsshown,
             'sharelibrary' => $sharelibrary,
+            'qbank' => $qbank,
         ]);
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
@@ -220,7 +231,8 @@ final class save_region extends external_api {
             $settings['talentson'],
             $settings['skillson'],
             $settings['secretsshown'],
-            $settings['sharelibrary']
+            $settings['sharelibrary'],
+            $settings['qbank']
         );
         if ($params['reasons'] !== null) {
             $list = $params['reasons'] === 'default' ? null : json_decode($params['reasons'], true);
@@ -243,6 +255,12 @@ final class save_region extends external_api {
         }
         if ($params['sharelibrary'] !== null) {
             $settings['rules'] = ($settings['rules'] ?? []) + ['library' => $params['sharelibrary'] ? 1 : 0];
+        }
+        if ($params['qbank'] !== null) {
+            if ($params['qbank'] && !moodlebank::allowed($params['courseid'], $params['qbank'])) {
+                throw new \invalid_parameter_exception('Not a question category of the course');
+            }
+            $settings['rules'] = ($settings['rules'] ?? []) + ['qbank' => max(0, $params['qbank'])];
         }
         if (!empty($settings['groupingid'])) {
             $grouping = groups_get_grouping($settings['groupingid']);

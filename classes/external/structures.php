@@ -729,6 +729,12 @@ final class structures {
             'talentson' => new external_value(PARAM_BOOL, 'The talents act in the course', VALUE_DEFAULT, true),
             'secretsshown' => new external_value(PARAM_INT, 'Secrets shown at a time in a painting (0: all)', VALUE_DEFAULT, 0),
             'sharelibrary' => new external_value(PARAM_BOOL, 'Other regions can visit the library', VALUE_DEFAULT, false),
+            'qbank' => new external_value(PARAM_INT, 'Category of the question bank for the battles (0: none)', VALUE_DEFAULT, 0),
+            'qbanks' => new external_multiple_structure(new external_single_structure([
+                'id' => new external_value(PARAM_INT, 'Category'),
+                'name' => new external_value(PARAM_TEXT, 'Its name, with its bank'),
+                'count' => new external_value(PARAM_INT, 'Questions of it the game can show'),
+            ]), 'Categories of the question banks of the course the teacher can use', VALUE_DEFAULT, []),
             'skillson' => new external_value(PARAM_BOOL, 'The named skills show to the students', VALUE_DEFAULT, true),
             'portal' => new external_value(PARAM_ALPHA, 'Cover: door, card, direct or menu', VALUE_DEFAULT, 'door'),
             'hideacts' => new external_value(PARAM_BOOL, 'Mission activities only inside the valley', VALUE_DEFAULT, false),

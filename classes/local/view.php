@@ -741,7 +741,7 @@ final class view {
         // How each team says it is doing today.
         $states = teams::states($courseid);
         $view = [
-            'region' => self::region($region),
+            'region' => self::region($region, !$board),
             'students' => $list,
             'teams' => array_values(array_map(fn($g) => ['id' => (int) $g->id, 'name' => format_string($g->name),
                 'banner' => market::team_owns($courseid, (int) $g->id), 'state' => $states[(int) $g->id] ?? '',
@@ -881,9 +881,10 @@ final class view {
      * The settings of a region, with the defaults when the game was never set up.
      *
      * @param \stdClass|null $region
+     * @param bool $banks With the categories of the question banks the teacher can choose (not for the class screen).
      * @return array
      */
-    public static function region(?\stdClass $region): array {
+    public static function region(?\stdClass $region, bool $banks = true): array {
         // The badge of the mission, for the teacher to know it is there and whether it is on.
         $badge = ['badge' => '', 'badgeid' => 0, 'badgeon' => false];
         $mission = $region && badges::enabled() ? missions::get((int) $region->courseid) : null;
@@ -908,6 +909,8 @@ final class view {
             'skillson' => !$region || regions::rule($region, 'skills') > 0,
             'secretsshown' => $region ? regions::rule($region, 'secrets') : 0,
             'sharelibrary' => $region && regions::rule($region, 'library') > 0,
+            'qbank' => $region ? regions::rule($region, 'qbank') : 0,
+            'qbanks' => $region && $banks ? moodlebank::categories((int) $region->courseid) : [],
             'portal' => (string) ($region->portal ?? 'door'),
             'hideacts' => (bool) ($region->hideacts ?? false),
             'allowstealth' => !empty($GLOBALS['CFG']->allowstealth),
