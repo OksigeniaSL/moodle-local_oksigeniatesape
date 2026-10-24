@@ -22,6 +22,7 @@ use core_external\external_single_structure;
 use core_external\external_value;
 use local_oksigeniatesape\local\live;
 use local_oksigeniatesape\local\regions;
+use local_oksigeniatesape\local\untangles;
 
 /**
  * The battle on the phone of a student: whether there is one, come in, answer.
@@ -105,6 +106,18 @@ final class live_play extends external_api {
                 throw new \moodle_exception('nobattle', 'local_oksigeniatesape');
             }
             return [];
+        }
+        if ($live->kind === untangles::KIND) {
+            // The great untangling: to come in, and the micro-challenges.
+            if ($params['action'] === 'join') {
+                live::join($live, $member, (int) $USER->id, $now);
+            } else if ($params['action'] === 'answer') {
+                $live = untangles::answer($live, $member, $params['round'], $params['answer'], $now);
+            } else if ($params['action'] !== 'state') {
+                throw new \invalid_parameter_exception('Not for the great untangling');
+            }
+            return ['live' => live::device_view($live, $member, $now) +
+                ['untangle' => json_encode(untangles::device($live, $member, $now))]];
         }
         switch ($params['action']) {
             case 'state':

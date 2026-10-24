@@ -19,7 +19,8 @@ namespace local_oksigeniatesape\local;
 /**
  * The strength of the expedition: what the class did during the mission weakens the Embrollo before the final battle.
  * The lanterns of the class lit weigh most; the stains cleaned and the pages recovered, and the tasks of the places
- * done by at least half of the class, the rest. The final battle starts with the Embrollo up to 30 % weaker. The knots
+ * done by at least half of the class, the rest. The final battle starts with the Embrollo up to 30 % weaker, and up to
+ * 20 % more with the strands the class loosened in the last great untangling. The knots
  * of what the class still mixes up in the scenes, unless it broke them in a practice battle since, are known to the
  * Embrollo: it keeps them for the end of the final battle.
  *
@@ -33,6 +34,9 @@ final class expedition {
 
     /** @var float How much weaker the Embrollo starts the final battle with the whole strength. */
     public const MOST = 0.3;
+
+    /** @var float How much weaker the last great untangling leaves it, with all its strands loose. */
+    public const UNTANGLE = 0.2;
 
     /** @var int Stains cleaned or pages recovered that count fully. */
     public const STAINS = 6;
@@ -51,12 +55,13 @@ final class expedition {
      *
      * @param int $courseid
      * @return array strength (from 0 to 1), weaker (the share of the threads the Embrollo starts without, as a
-     *     percentage), lanterns (lit and of how many), stains (cleaned) and tasks (done and of how many).
+     *     percentage), lanterns (lit and of how many), stains (cleaned), tasks (done and of how many) and untangled (the
+     *     strands loosened in the last great untangling, and of how many).
      */
     public static function strength(int $courseid): array {
         global $DB;
         $mission = missions::get($courseid);
-        $view = ['strength' => 0.0, 'weaker' => 0, 'lanterns' => [0, 0], 'stains' => 0, 'tasks' => [0, 0]];
+        $view = ['strength' => 0.0, 'weaker' => 0, 'lanterns' => [0, 0], 'stains' => 0, 'tasks' => [0, 0], 'untangled' => [0, 0]];
         if (!$mission) {
             return $view;
         }
@@ -88,8 +93,12 @@ final class expedition {
         $strength = ($chapters ? 0.6 * $lit / count($chapters) : 0) + 0.2 * min(1, $stains / self::STAINS) +
             ($tasks ? 0.2 * $done / count($tasks) : 0);
         $strength = round(min(1, $strength), 2);
-        return ['strength' => $strength, 'weaker' => (int) round(100 * self::MOST * $strength),
-            'lanterns' => [$lit, count($chapters)], 'stains' => $stains, 'tasks' => [$done, count($tasks)]];
+        // The great untangling, on top: each strand the class loosened in the last one.
+        [$loose, $strands] = untangles::last($courseid);
+        $untangled = $strands ? self::UNTANGLE * $loose / $strands : 0;
+        return ['strength' => $strength, 'weaker' => (int) round(100 * (self::MOST * $strength + $untangled)),
+            'lanterns' => [$lit, count($chapters)], 'stains' => $stains, 'tasks' => [$done, count($tasks)],
+            'untangled' => [$loose, $strands]];
     }
 
     /**

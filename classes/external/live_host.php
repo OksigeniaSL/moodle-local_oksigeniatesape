@@ -25,6 +25,7 @@ use local_oksigeniatesape\local\live;
 use local_oksigeniatesape\local\regions;
 use local_oksigeniatesape\local\sessions;
 use local_oksigeniatesape\local\teams;
+use local_oksigeniatesape\local\untangles;
 
 /**
  * The battle on the class screen: open it, the next question, show the answer, mark the teams that answered aloud,
@@ -45,7 +46,8 @@ final class live_host extends external_api {
             'courseid' => new external_value(PARAM_INT, 'Course'),
             'action' => new external_value(
                 PARAM_ALPHA,
-                'state, start, next, reveal, mark, argue, verb, boardplay, settle, finish, startvote, vote, pick, pause or resume'
+                'state, start, next, reveal, mark, argue, verb, boardplay, settle, finish, startvote, vote, pick, pause or resume;' .
+                    ' untangle and go for the great untangling'
             ),
             'mode' => new external_value(PARAM_ALPHA, 'start: phones or aloud', VALUE_DEFAULT, 'phones'),
             'count' => new external_value(PARAM_INT, 'start: questions', VALUE_DEFAULT, 6),
@@ -162,9 +164,11 @@ final class live_host extends external_api {
                 // A battle by turns moves on by itself when the time of a stage is over.
                 $award = has_capability('local/oksigeniatesape:award', $context);
                 $userid = (int) $USER->id;
-                $live = live::locked($courseid, fn() => live::tick(live::recent($courseid, $now, true) ?? $live, $userid, $award, $now));
+                $live = live::locked($courseid, fn() => $live->kind === untangles::KIND ?
+                    untangles::tick(live::recent($courseid, $now, true) ?? $live, $now) :
+                    live::tick(live::recent($courseid, $now, true) ?? $live, $userid, $award, $now));
             }
-            return ['live' => live::board_view($live, $now)] + $session;
+            return ['live' => self::view($live, $now)] + $session;
         }
         if (!regions::enabled($courseid)) {
             throw new \moodle_exception('gameoff', 'local_oksigeniatesape');
@@ -202,12 +206,28 @@ final class live_host extends external_api {
             $live = live::start_vote($courseid, $params['sceneid'], $now);
             return ['live' => live::board_view($live, $now)];
         }
+        if ($params['action'] === 'untangle') {
+            require_capability('local/oksigeniatesape:award', $context);
+            return ['live' => self::view(untangles::start($courseid, $now), $now)];
+        }
         $live = live::current($courseid, $now, true);
         if (!$live) {
             throw new \moodle_exception('nobattle', 'local_oksigeniatesape');
         }
         // Back on the session: the phones see it again.
         live::heartbeat($live, $now);
+        if ($live->kind === untangles::KIND) {
+            // The great untangling: started or ended from the class screen; the rest happens on the phones.
+            require_capability('local/oksigeniatesape:award', $context);
+            if ($params['action'] === 'go') {
+                $live = untangles::go($live, $now);
+            } else if ($params['action'] === 'finish') {
+                $live = untangles::finish($live, $now);
+            } else {
+                throw new \invalid_parameter_exception('Not for the great untangling');
+            }
+            return ['live' => self::view($live, $now)];
+        }
         if (in_array($params['action'], ['next', 'reveal'], true)) {
             // To go on by hand is to go on: a pause ends first.
             $live = live::resume($live, $now);
@@ -267,6 +287,21 @@ final class live_host extends external_api {
                 throw new \invalid_parameter_exception('Unknown action');
         }
         return ['live' => live::board_view($live, $now)];
+    }
+
+    /**
+     * What the class screen shows of a session; of the great untangling, also its knot.
+     *
+     * @param \stdClass $live
+     * @param int $now
+     * @return array
+     */
+    private static function view(\stdClass $live, int $now): array {
+        $view = live::board_view($live, $now);
+        if ($live->kind === untangles::KIND) {
+            $view['untangle'] = json_encode(untangles::board($live, $now));
+        }
+        return $view;
     }
 
     /**

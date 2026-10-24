@@ -88,7 +88,15 @@
     var playing = live && live.mode === 'phones' && state.dismissed !== live.id;
     state.inside = !!(playing && live.joined);
     // The seconds left change on every poll; the countdown shows them without drawing everything again.
-    var sig = JSON.stringify([live ? Object.assign({}, live, {left: 0, stageleft: 0}) : null, state.inside]);
+    var u = live && live.untangle ? JSON.parse(live.untangle) : null;
+    var sig = JSON.stringify([live ? Object.assign({}, live, {left: 0, stageleft: 0, untangle: u ? JSON.stringify(Object.assign({},
+      u, {left: 0})) : ''}) : null, state.inside]);
+    if (u) {
+      var uleft = layer.querySelector('[data-uleft]');
+      if (uleft) {
+        uleft.textContent = Math.floor(u.left / 60) + ':' + ('0' + (u.left % 60)).slice(-2);
+      }
+    }
     if (sig === state.sig) {
       return;
     }
@@ -104,10 +112,12 @@
       return;
     }
     var vote = live.kind === 'vote';
+    var knot = live.kind === 'untangle';
     if (!live.joined) {
       layer.innerHTML = '<div class="battle-call"><span class="battle-mini">' + (vote ? T.icon('world') : T.embrollo(1)) +
-        '</span><p>' + esc(t(vote ? 'app_vote_call' : 'app_battle_call')) + '</p><button class="btn btn-main" data-join>' +
-        esc(t(vote ? 'app_vote_join' : 'app_battle_join')) + '</button></div>';
+        '</span><p>' + esc(t(vote ? 'app_vote_call' : knot ? 'app_untangle_call' : 'app_battle_call')) + '</p><button ' +
+        'class="btn btn-main" data-join>' + esc(t(vote ? 'app_vote_join' : knot ? 'app_untangle_join' : 'app_battle_join')) +
+        '</button></div>';
       layer.querySelector('[data-join]').onclick = function(e) {
         e.target.disabled = true;
         api('join').then(function(r) {
@@ -120,6 +130,10 @@
       return;
     }
     document.body.classList.add('in-battle');
+    if (knot) {
+      untangle(live, u);
+      return;
+    }
     if (live.outcome && state.celebrated !== live.id && T.fx) {
       // The end of the battle, heard and seen once on each phone.
       state.celebrated = live.id;
@@ -134,6 +148,80 @@
       esc(t('app_battle_title')) + '">' + head(live) + body(live) + '</div>';
     bind(live);
     tell(live);
+  }
+
+  /**
+   * The great untangling on the phone: the strand of the team, the micro-challenge of the student, one after the other,
+   * and the end.
+   *
+   * @param {Object} live
+   * @param {Object} u Its untangling.
+   */
+  function untangle(live, u) {
+    var clock = Math.floor(u.left / 60) + ':' + ('0' + (u.left % 60)).slice(-2);
+    var head = '<div class="battle-head"><span class="battle-mini">' + T.embrollo(1) + '</span><div class="grow"><b>' +
+      esc(t('app_untangle')) + '</b>' + (u.phase === 'play' ? '<small>' + (u.mine > 0 ? esc(t('app_untangle_mine', u.mine)) :
+      esc(t('app_untangle_minefree'))) + '</small>' : '') + '</div>' + (u.phase === 'play' ? '<span class="untangle-clock small" ' +
+      'data-uleft>' + clock + '</span>' : '') + '</div>';
+    var body = '';
+    if (u.phase === 'lobby') {
+      body = '<p class="help">' + esc(t('app_untangle_wait')) + '</p>';
+    } else if (u.phase === 'play' && u.item) {
+      var last = u.last ? '<p class="untangle-last ' + (u.last.right ? 'good' : 'bad') + '" role="status">' +
+        esc(t(u.last.right ? 'app_untangle_right' : 'app_untangle_wrong')) + '</p>' : '';
+      body = last + (u.helping ? '<p class="help-soft">' + esc(t('app_untangle_helping', u.helping)) + '</p>' : '') +
+        '<div class="burst-word" aria-hidden="true">' + esc(u.item.word) + '</div>' + (u.item.picture && T.artUrl([u.item.picture]) ?
+        '<img class="untangle-pic" src="' + esc(T.artUrl([u.item.picture])) + '" alt="">' : '') + (u.item.label ?
+        '<p class="untangle-thing">' + esc(u.item.label) + '</p>' : '') + '<p class="burst-prompt"><b>' + esc(u.item.prompt) + '</b></p><div class="opts">' +
+        u.item.options.map(function(o, i) {
+          return '<button type="button" class="opt" data-ua="' + i + '">' + esc(o) + '</button>';
+        }).join('') + '</div>';
+    } else {
+      body = '<h2>' + esc(t(u.outcome === 'won' ? 'app_untangle_won' : 'app_untangle_time')) + '</h2><p>' +
+        esc(t('app_untangle_loose', {loose: u.loose, strands: u.strands})) + '</p><div class="actions"><button type="button" ' +
+        'class="btn btn-main" data-back>' + esc(t('app_continue')) + '</button></div>';
+    }
+    layer.innerHTML = '<div class="battle-phone untangle-phone" role="dialog" aria-modal="true" aria-label="' +
+      esc(t('app_untangle')) + '">' + head + body + '</div>';
+    layer.querySelectorAll('[data-ua]').forEach(function(b) {
+      b.onclick = function() {
+        layer.querySelectorAll('[data-ua]').forEach(function(x) {
+          x.disabled = true;
+        });
+        api('answer', {round: u.number, answer: Number(b.dataset.ua)}).then(function(r) {
+          show(r.live || null);
+        }).catch(function(e) {
+          T.toast(esc(e.message), true);
+          state.sig = '';
+          poll();
+        });
+      };
+    });
+    var back = layer.querySelector('[data-back]');
+    if (back) {
+      back.onclick = function() {
+        state.dismissed = live.id;
+        try {
+          window.sessionStorage.setItem(SEEN, String(live.id));
+        } catch (e) {
+          // Without storage, a reload shows the end once more.
+        }
+        state.sig = '';
+        show(live);
+      };
+    }
+    if (T.fx && u.last && state.untanglelast !== u.number) {
+      state.untanglelast = u.number;
+      T.fx.sound(u.last.right ? 'right' : 'wrong');
+    }
+    if (u.phase === 'end' && state.celebrated !== live.id && T.fx) {
+      state.celebrated = live.id;
+      T.fx.sound(u.outcome === 'won' ? 'win' : 'chime');
+    }
+    var first = layer.querySelector('[data-ua]:not([disabled]), [data-back]');
+    if (first) {
+      first.focus();
+    }
   }
 
   /**

@@ -103,6 +103,12 @@ final class get_board extends external_api {
                     'lanterns' => new external_multiple_structure(new external_value(PARAM_INT, 'Lit, of how many')),
                     'stains' => new external_value(PARAM_INT, 'Stains cleaned and pages recovered'),
                     'tasks' => new external_multiple_structure(new external_value(PARAM_INT, 'Done, of how many')),
+                    'untangled' => new external_multiple_structure(
+                        new external_value(PARAM_INT, 'Loosened, of how many'),
+                        'The strands loosened in the last great untangling',
+                        VALUE_DEFAULT,
+                        []
+                    ),
                     'known' => new external_multiple_structure(
                         new external_value(PARAM_TEXT, 'Name of a knot the class still mixes up'),
                         'Knots the Embrollo keeps for the end of the final battle',

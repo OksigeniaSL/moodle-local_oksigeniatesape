@@ -756,9 +756,108 @@
     return !!(l && l.kind === 'battle' && (!l.outcome || state.seen !== l.id));
   }
 
+  /**
+   * Whether the great untangling is on the class screen: going on, or its end not seen yet.
+   *
+   * @return {boolean}
+   */
+  function untangling() {
+    var l = state.live;
+    return !!(l && l.kind === 'untangle' && l.untangle && (!l.outcome || state.seen !== l.id));
+  }
+
+  /**
+   * The great untangling on the class screen: the knot of the Embrollo with a strand for each team, the clock, and
+   * what the teacher does (start it, end it).
+   */
+  function drawUntangle() {
+    var l = state.live;
+    var u = JSON.parse(l.untangle);
+    var sig = JSON.stringify([l.id, u.phase, u.strands, u.joined, u.outcome]);
+    var clock = Math.floor(u.left / 60) + ':' + ('0' + (u.left % 60)).slice(-2);
+    if (sig === state.untanglesig && app.querySelector('.untangle-board')) {
+      var left = app.querySelector('[data-uleft]');
+      if (left) {
+        left.textContent = clock;
+      }
+      return;
+    }
+    state.untanglesig = sig;
+    var total = u.strands.length * u.strand;
+    var knots = u.strands.reduce(function(sum, s) {
+      return sum + s.knots;
+    }, 0);
+    var strands = u.strands.map(function(s) {
+      var marks = '';
+      for (var i = 0; i < u.strand; i++) {
+        marks += '<i class="' + (i < s.knots ? 'tight' : '') + '"></i>';
+      }
+      return '<li class="untangle-strand' + (s.loose ? ' loose' : '') + '"><b>' + esc(s.name) + '</b><span class="untangle-knots" ' +
+        'role="img" aria-label="' + esc(s.loose ? t('board_untangle_free') : t('board_untangle_knots', s.knots)) + '">' + marks +
+        '</span><small>' + esc(s.loose ? t('board_untangle_free') : t('board_untangle_knots', s.knots)) + '</small></li>';
+    }).join('');
+    var main = '';
+    var buttons = '';
+    if (u.phase === 'lobby') {
+      main = '<p class="lead">' + esc(t('board_untangle_lobby')) + '</p><p><b>' + esc(t('board_untangle_joined', u.joined)) +
+        '</b></p>';
+      buttons = '<button class="btn btn-main" data-ugo' + (u.joined ? '' : ' disabled') + '>' + esc(t('board_untangle_go')) +
+        '</button><button class="btn btn-soft" data-ufinish>' + esc(t('board_untangle_cancel')) + '</button>';
+    } else if (u.phase === 'play') {
+      main = '<p class="untangle-clock" data-uleft>' + clock + '</p><p>' + esc(t('board_untangle_loose', {loose: u.loose,
+        strands: u.strands.length})) + '</p>';
+      buttons = '<button class="btn btn-soft" data-ufinish>' + esc(t('board_untangle_finish')) + '</button>';
+    } else {
+      var pct = u.strands.length ? Math.round(20 * u.loose / u.strands.length) : 0;
+      main = '<h1>' + esc(t(u.outcome === 'won' ? 'board_untangle_won' : u.outcome === 'time' ? 'board_untangle_time' :
+        'board_untangle_none')) + '</h1>' + (u.strands.length ? '<p>' + esc(t('board_untangle_loose', {loose: u.loose,
+        strands: u.strands.length})) + '</p><p><b>' + esc(t('board_untangle_weaker', pct)) + '</b></p>' : '');
+      buttons = '<button class="btn btn-main" data-dismiss-untangle>' + esc(t('board_untangle_back')) + '</button>';
+    }
+    app.innerHTML = '<div class="board battle-board untangle-board"><header class="board-top">' + T.emblem() + '<div><b>' +
+      esc(cfg.coursename) + '</b><small>' + esc(t('board_untangle')) + '</small></div><div class="board-tools">' + musicButton() +
+      lightButton() + '<button class="btn btn-soft" data-full>' + esc(t('board_fullscreen')) + '</button></div></header>' +
+      '<div class="battle-stage"><div class="battle-boss">' + bossArt(l, total ? knots / total : 1) + '</div><div ' +
+      'class="battle-main">' + main + '<div class="actions">' + buttons + '</div></div></div>' + (strands ? '<ol class=' +
+      '"untangle-strands">' + strands + '</ol>' : '') + '</div>';
+    var on = function(sel, fn) {
+      app.querySelectorAll(sel).forEach(function(el) {
+        el.onclick = function() {
+          fn(el);
+        };
+      });
+    };
+    on('[data-full]', fullscreen);
+    on('[data-light]', switchLight);
+    on('[data-music]', switchMusic);
+    on('[data-ugo]', function() {
+      host('go');
+    });
+    on('[data-ufinish]', function() {
+      host('finish');
+    });
+    on('[data-dismiss-untangle]', function() {
+      state.seen = l.id;
+      try {
+        window.sessionStorage.setItem(SEEN, String(l.id));
+      } catch (e) {
+        // Without storage, a reload shows the end once more.
+      }
+      render();
+      load(false);
+    });
+    if (u.phase === 'end' && T.fx && state.untanglefx !== l.id) {
+      state.untanglefx = l.id;
+      T.fx.sound(u.outcome === 'won' ? 'win' : 'chime');
+      if (u.outcome === 'won') {
+        T.fx.confetti();
+      }
+    }
+  }
+
   function schedule() {
     clearTimeout(state.timer);
-    if (battling() && !document.hidden) {
+    if ((battling() || untangling()) && !document.hidden) {
       state.timer = setTimeout(function() {
         host('state');
       }, LIVE);
@@ -795,6 +894,8 @@
       if (battling()) {
         // A poll that brings nothing new only moves the countdown; an action draws it all again.
         drawBattle(action !== 'state');
+      } else if (untangling()) {
+        drawUntangle();
       } else {
         load(false);
       }
@@ -847,7 +948,8 @@
       Math.round(100 * x.strength) + ' %</span></div><span class="meter level"><i style="width:' +
       Math.round(100 * x.strength) + '%"></i></span><small class="help-soft">' + esc(t('board_expedition_help', {
         lanterns: x.lanterns[0] + '/' + x.lanterns[1], stains: x.stains, tasks: x.tasks[0] + '/' + x.tasks[1],
-        weaker: x.weaker})) + '</small>' + (x.known && x.known.length ? '<p class="expedition-known"><b>' +
+        weaker: x.weaker})) + (x.untangled && x.untangled[1] ? ' ' + esc(t('board_expedition_untangled', {loose: x.untangled[0],
+        strands: x.untangled[1]})) : '') + '</small>' + (x.known && x.known.length ? '<p class="expedition-known"><b>' +
       esc(t('board_expedition_known', x.known.join(' · '))) + '</b> ' + esc(t('board_expedition_known_help')) + '</p>' : '') +
       '</div>';
   }
@@ -875,7 +977,9 @@
       expeditionBar(state.board.mission) +
       '<div class="actions"><button class="btn btn-main" data-battlestart>' + esc(t('board_battle_start')) +
       '</button><button class="btn btn-soft" data-battlerehearsal title="' + esc(t('board_battle_rehearsal_help')) + '">' +
-      esc(t('board_battle_rehearsal')) + '</button></div></section>';
+      esc(t('board_battle_rehearsal')) + '</button></div><div class="untangle-offer"><p class="help-soft">' +
+      esc(t('board_untangle_help')) + '</p><button class="btn btn-soft" data-untangle>' + esc(t('board_untangle_start')) +
+      '</button></div></section>';
   }
 
   /**
@@ -2869,6 +2973,10 @@
       drawBattle(true);
       return;
     }
+    if (untangling()) {
+      drawUntangle();
+      return;
+    }
     unliveBattle();
     if (state.print) {
       drawPrint();
@@ -2971,6 +3079,9 @@
       host('start', {mode: b.mode, count: b.count, secs: b.secs, final: !!b.final, turns: true});
     });
     // Three test questions to check the phones, without prizes nor the questions of the mission.
+    on('[data-untangle]', function() {
+      host('untangle');
+    });
     on('[data-battlerehearsal]', function() {
       var b = state.battle;
       host('start', {mode: b.mode, count: 4, secs: b.secs || 30, rehearsal: true});

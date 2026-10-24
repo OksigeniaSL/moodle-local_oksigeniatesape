@@ -861,8 +861,9 @@ final class structures {
      */
     private static function live_common(): array {
         return [
+            'untangle' => new external_value(PARAM_RAW, 'The great untangling, as this screen shows it (JSON)', VALUE_OPTIONAL),
             'id' => new external_value(PARAM_INT, 'Session'),
-            'kind' => new external_value(PARAM_ALPHA, 'battle or vote'),
+            'kind' => new external_value(PARAM_ALPHA, 'battle, vote or untangle'),
             'mode' => new external_value(PARAM_ALPHA, 'phones or aloud'),
             'round' => new external_value(PARAM_INT, 'Question being played (0: players coming in)'),
             'total' => new external_value(PARAM_INT, 'Questions of the battle'),

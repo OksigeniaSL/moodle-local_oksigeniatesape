@@ -13495,3 +13495,87 @@ body.still .pet-me.patted .creature {
     animation: none;
   }
 }
+
+/* The great untangling. */
+.untangle-strands {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin: 16px 0 0;
+  padding: 0;
+}
+
+.untangle-strand {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  border: 2px solid var(--line);
+  border-radius: 16px;
+  background: rgba(var(--lilac-rgb), .08);
+}
+
+.untangle-strand.loose {
+  border-color: var(--leaf);
+  background: rgba(var(--leaf-rgb), .12);
+}
+
+.untangle-knots {
+  display: flex;
+  gap: 6px;
+}
+
+.untangle-knots i {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--line);
+}
+
+.untangle-knots i.tight {
+  background: var(--lilac);
+  border-color: var(--lilac);
+}
+
+.untangle-clock {
+  font: 700 56px var(--f-title);
+  margin: 0;
+}
+
+.untangle-clock.small {
+  font-size: 22px;
+}
+
+.untangle-offer {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.untangle-last {
+  font-weight: 700;
+}
+
+.untangle-last.good {
+  color: var(--leaf-text);
+}
+
+.untangle-last.bad {
+  color: var(--danger-text);
+}
+
+.untangle-thing {
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.untangle-pic {
+  display: block;
+  width: 140px;
+  height: 140px;
+  margin: 0 auto;
+  object-fit: contain;
+}
