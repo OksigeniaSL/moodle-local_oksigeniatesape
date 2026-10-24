@@ -60,6 +60,9 @@ namespace local_oksigeniatesape\local;
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class minigames {
+    /** @var int The most a key of the leaf factory opens. */
+    public const LEAF_MOST = 4;
+
     /** @var string Prefix of the plugin tables. */
     private const T = 'local_oksigeniatesape_';
 
@@ -213,6 +216,9 @@ final class minigames {
         }
         if (($game['type'] ?? '') === 'whoami') {
             return self::whoami_config($mission, $code, $game, $step);
+        }
+        if (($game['type'] ?? '') === 'leaf') {
+            return self::leaf_config($mission, $code, $game, $step);
         }
         $level = self::level($game, $step);
         $nets = [];
@@ -439,6 +445,98 @@ final class minigames {
             'shield' => 0,
             'speed' => 0,
         ];
+    }
+
+    /**
+     * The leaf factory as a student of a step plays it: rounds of a recipe (light, water and air, each from 0 to 4, to
+     * fill the jar with as much sugar as the round asks, wasting nothing: the leaf makes as much as the least of the
+     * three lets it) and rounds of a question, with their options in an order of their own.
+     *
+     * @param \stdClass $mission With data.
+     * @param string $code
+     * @param array $game
+     * @param int $step
+     * @return array
+     */
+    private static function leaf_config(\stdClass $mission, string $code, array $game, int $step): array {
+        $text = fn($t) => missions::text($t ?? '', $mission->skin, $mission->variant);
+        $rounds = [];
+        foreach ($game['rounds'] ?? [] as $round) {
+            $out = ['id' => (string) $round['id'], 'kind' => (string) ($round['kind'] ?? 'recipe'),
+                'title' => $text($round['title'] ?? ''), 'prompt' => $text($round['prompt'] ?? ''),
+                'why' => $text($round['why'] ?? '')];
+            if ($out['kind'] === 'question') {
+                $options = array_values(array_map($text, (array) ($round['options'] ?? [])));
+                shuffle($options);
+                $out += ['answer' => $text($round['answer'] ?? ''), 'options' => $options];
+            } else {
+                $caps = (array) ($round['caps'] ?? []);
+                $out += ['target' => (int) ($round['target'] ?? 3), 'caps' => ['light' => (int) ($caps['light'] ?? self::LEAF_MOST),
+                    'water' => (int) ($caps['water'] ?? self::LEAF_MOST), 'air' => (int) ($caps['air'] ?? self::LEAF_MOST)]];
+            }
+            $rounds[] = $out;
+        }
+        $misses = self::misses($game, $step);
+        return [
+            'code' => $code,
+            'type' => 'leaf',
+            'title' => missions::text($game['title'] ?? $code, $mission->skin),
+            'intro' => $text($game['intro'] ?? ''),
+            'win' => $text($game['win'] ?? ''),
+            'lose' => $text($game['lose'] ?? ''),
+            'nets' => [],
+            'animals' => [],
+            'rounds' => $rounds,
+            'goal' => max(1, count($rounds) - $misses),
+            'misses' => $misses,
+            'most' => self::LEAF_MOST,
+            'shield' => 0,
+            'speed' => 0,
+        ];
+    }
+
+    /**
+     * Counts a play of the leaf factory: each round once. A recipe is right when the three keys are the same and give
+     * the sugar the round asks, within what it lets (the cloud, the dry root); a question, when the answer is its own.
+     *
+     * @param array $game As the student plays it.
+     * @param array $events Each one: r (the round) and l, w, a (a recipe) or g (the answer, as shown).
+     * @return array [right, wrong rounds, wrong (round => what was done), success]
+     */
+    private static function count_leaf(array $game, array $events): array {
+        $rounds = array_column($game['rounds'], null, 'id');
+        $seen = [];
+        $right = 0;
+        $wrong = [];
+        foreach ($events as $event) {
+            $id = (string) ($event['r'] ?? '');
+            $round = $rounds[$id] ?? null;
+            if (!$round || isset($seen[$id])) {
+                throw new \moodle_exception('invalidgameplay', 'local_oksigeniatesape');
+            }
+            $seen[$id] = true;
+            if ($round['kind'] === 'question') {
+                $guess = trim((string) ($event['g'] ?? ''));
+                $ok = \core_text::strtolower($guess) === \core_text::strtolower($round['answer']);
+                $what = $guess;
+            } else {
+                $keys = ['light' => (int) ($event['l'] ?? -1), 'water' => (int) ($event['w'] ?? -1), 'air' => (int) ($event['a'] ?? -1)];
+                foreach ($keys as $key => $value) {
+                    if ($value < 0 || $value > $round['caps'][$key]) {
+                        throw new \moodle_exception('invalidgameplay', 'local_oksigeniatesape');
+                    }
+                }
+                $ok = count(array_unique($keys)) === 1 && min($keys) === $round['target'];
+                $what = implode('-', $keys);
+            }
+            if ($ok) {
+                $right++;
+            } else {
+                $wrong[$id] = $what;
+            }
+        }
+        $missed = count($rounds) - $right;
+        return [$right, $missed, $wrong, $missed <= (int) $game['misses']];
     }
 
     /**
@@ -971,6 +1069,8 @@ final class minigames {
             [$caught, $missed, $wrong, $success] = self::count_venn($game, $events);
         } else if (($game['type'] ?? '') === 'whoami') {
             [$caught, $missed, $wrong, $success] = self::count_whoami($game, $events);
+        } else if (($game['type'] ?? '') === 'leaf') {
+            [$caught, $missed, $wrong, $success] = self::count_leaf($game, $events);
         } else {
             [$caught, $missed, $wrong, $success] = self::count_nest($game, $events);
         }
@@ -1573,6 +1673,20 @@ final class minigames {
                 }
                 if (($game['type'] ?? '') === 'whoami') {
                     $confusions[] = ['text' => self::mistaken($mission, $game, (string) $key), 'count' => $count];
+                    continue;
+                }
+                if (($game['type'] ?? '') === 'leaf') {
+                    // The round of the leaf the class gets wrong most, and what it does there.
+                    [$id, $what] = array_pad(explode('|', (string) $key, 2), 2, '');
+                    $round = array_column($game['rounds'] ?? [], null, 'id')[$id] ?? [];
+                    $confusions[] = ['text' => get_string('minigame_leaf_wrong', 'local_oksigeniatesape', (object) [
+                        'round' => missions::text($round['title'] ?? $id, $mission->skin, $mission->variant),
+                        'what' => preg_match('/^(\d)-(\d)-(\d)$/', $what, $m) ? get_string(
+                            'minigame_leaf_recipe',
+                            'local_oksigeniatesape',
+                            (object) ['light' => $m[1], 'water' => $m[2], 'air' => $m[3]]
+                        ) : $what]),
+                        'count' => $count];
                     continue;
                 }
                 if (($game['type'] ?? '') === 'guesswho') {

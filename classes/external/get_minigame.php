@@ -179,6 +179,26 @@ final class get_minigame extends external_api {
                 'clues' => new external_multiple_structure(new external_value(PARAM_TEXT, 'A clue, hardest first')),
                 'options' => new external_multiple_structure(new external_value(PARAM_TEXT, 'An answer to choose')),
             ]), 'The shadows of Who am I?', VALUE_DEFAULT, []),
+            'rounds' => new external_multiple_structure(new external_single_structure([
+                'id' => new external_value(PARAM_ALPHANUMEXT, 'Round'),
+                'kind' => new external_value(PARAM_ALPHA, 'recipe or question'),
+                'title' => new external_value(PARAM_TEXT, 'Its title'),
+                'prompt' => new external_value(PARAM_TEXT, 'What it asks'),
+                'why' => new external_value(PARAM_TEXT, 'Why, once played'),
+                'target' => new external_value(PARAM_INT, 'A recipe: the sugar to make', VALUE_DEFAULT, 0),
+                'caps' => new external_single_structure([
+                    'light' => new external_value(PARAM_INT, 'Most light'),
+                    'water' => new external_value(PARAM_INT, 'Most water'),
+                    'air' => new external_value(PARAM_INT, 'Most air'),
+                ], 'A recipe: the most each key opens', VALUE_OPTIONAL),
+                'answer' => new external_value(PARAM_TEXT, 'A question: its answer', VALUE_DEFAULT, ''),
+                'options' => new external_multiple_structure(
+                    new external_value(PARAM_TEXT, 'An answer to choose'),
+                    'A question: the answers',
+                    VALUE_DEFAULT,
+                    []
+                ),
+            ]), 'The rounds of the leaf factory', VALUE_DEFAULT, []),
             'cards' => new external_multiple_structure(new external_single_structure([
                 'id' => new external_value(PARAM_ALPHANUMEXT, 'Being of the catalog'),
                 'label' => new external_value(PARAM_TEXT, 'Name'),
@@ -194,7 +214,12 @@ final class get_minigame extends external_api {
             'secret' => new external_value(PARAM_ALPHANUMEXT, 'Guess who: the being that hides', VALUE_DEFAULT, ''),
             'seed' => new external_value(PARAM_INT, 'Guess who: plays kept when this one began', VALUE_DEFAULT, 0),
             'golden' => new external_value(PARAM_INT, 'Guess who: questions at most for a golden card', VALUE_DEFAULT, 0),
-            'most' => new external_value(PARAM_INT, 'The terrarium: things that fit in it', VALUE_DEFAULT, 0),
+            'most' => new external_value(
+                PARAM_INT,
+                'The terrarium: things that fit in it; the leaf factory: the most a key opens',
+                VALUE_DEFAULT,
+                0
+            ),
             'burst' => new external_multiple_structure(new external_single_structure([
                 'kind' => new external_value(PARAM_ALPHA, 'alive, group, question or boss (three things at once)'),
                 'word' => new external_value(PARAM_TEXT, 'The order, in one word'),

@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 80,
+ "version": 81,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 81,
+   "kind": "improvement",
+   "date": "2026-10-24",
+   "text": "La fábrica de la hoja, en el Jardín de la Luz: luz, agua y aire en su medida para que la hoja fabrique su alimento, la nube del Embrollo, la noche y la raíz seca"
+  },
   {
    "version": 80,
    "kind": "improvement",
@@ -4252,6 +4258,7 @@
    "y": 260,
    "games": [
     "sombrasjardin",
+    "fabricahoja",
     "enredojardin"
    ],
    "spots": {
@@ -4274,6 +4281,10 @@
     "C4-5": [
      68,
      32
+    ],
+    "fabricahoja": [
+     32,
+     80
     ],
     "sombrasjardin": [
      50,
@@ -5847,6 +5858,85 @@
       4
      ],
      "text": "= clorofila\nEstoy dentro de las hojas, pero no me ves a simple vista.\nAtrapo la luz del sol.\nSoy lo que hace verdes a las plantas."
+    }
+   ]
+  },
+  "fabricahoja": {
+   "type": "leaf",
+   "title": "La fábrica de la hoja",
+   "intro": "En el Jardín de la Luz, cada hoja es una fábrica: con la luz del sol, el agua que sube de la raíz y el aire que entra por sus poros, fabrica el alimento de la planta y suelta oxígeno. Abre las tres llaves y llena el tarro sin desperdiciar nada: la hoja solo fabrica tanto como le deja lo que menos tiene.",
+   "scene": {
+    "embrollo": {
+     "valley": "«¡Ji, ji! He revuelto las llaves de la fábrica de la hoja. A ver quién la pone en marcha.»",
+     "azara": "Una hoja grande del herbario parece de cristal: por dentro se ven la luz, las gotas y las burbujas."
+    },
+    "creature": {
+     "valley": "{{creature}} se sienta junto al tarro vacío y mira la hoja con hambre.",
+     "azara": "{{creature}} acerca el hocico a la hoja y la mira con curiosidad."
+    }
+   },
+   "win": "El tarro está lleno y la hoja, verde y brillante. Ya sabes cómo fabrica su alimento una planta: con luz, agua y aire, y lo que menos tiene es lo que la frena.",
+   "lose": "Esta vez la fábrica se ha atascado. Abajo tienes lo que pasó en cada ronda: léelo y vuelve a intentarlo.",
+   "misses": {
+    "1": 2,
+    "2": 1
+   },
+   "reward": {
+    "gems": 5
+   },
+   "rounds": [
+    {
+     "id": "receta",
+     "kind": "recipe",
+     "title": "La receta",
+     "prompt": "Llena el tarro con 3 de azúcar sin desperdiciar luz, agua ni aire.",
+     "target": 3,
+     "why": "La hoja fabrica tanto como le deja lo que menos tiene; lo que sobra de lo demás se pierde."
+    },
+    {
+     "id": "nube",
+     "kind": "recipe",
+     "title": "La nube del Embrollo",
+     "prompt": "El Embrollo ha puesto una nube delante del sol: la luz no pasa de 2. Fabrica todo el azúcar que puedas sin desperdiciar nada.",
+     "target": 2,
+     "caps": {
+      "light": 2
+     },
+     "why": "Con la nube, la luz es lo que frena a la hoja. Más agua o más aire no la hacen fabricar más."
+    },
+    {
+     "id": "noche",
+     "kind": "question",
+     "title": "De noche",
+     "prompt": "Se hace de noche y no hay luz. ¿Qué hace la hoja?",
+     "answer": "Respira y gasta un poco del azúcar que guardó",
+     "options": [
+      "Fabrica más azúcar con el agua y el aire",
+      "Se queda dormida y no hace nada",
+      "Respira y gasta un poco del azúcar que guardó"
+     ],
+     "why": "Sin luz no hay fábrica. Pero la planta está viva y respira de día y de noche: gasta parte del alimento que fabricó."
+    },
+    {
+     "id": "raiz",
+     "kind": "question",
+     "title": "La raíz seca",
+     "prompt": "Una raíz se ha secado y el agua no llega a la hoja. ¿Por dónde sube el agua hasta las hojas?",
+     "answer": "Desde la raíz, por el tallo",
+     "options": [
+      "Entra por las hojas cuando llueve",
+      "Desde la raíz, por el tallo",
+      "Baja desde las flores"
+     ],
+     "why": "La raíz toma el agua del suelo y el tallo la sube hasta las hojas."
+    },
+    {
+     "id": "tarro",
+     "kind": "recipe",
+     "title": "El tarro lleno",
+     "prompt": "La raíz ya bebe y el sol ha vuelto. Llena el tarro hasta arriba con 4 de azúcar, sin desperdiciar nada.",
+     "target": 4,
+     "why": "Con las tres llaves abiertas del todo y a la par, la hoja fabrica todo lo que puede."
     }
    ]
   },
