@@ -7620,6 +7620,115 @@ body.adapt-colours .errors-text .fixed ins {
   height: 100%;
 }
 
+/* ---------- Be the Embrollo ---------- */
+
+.landmark-btn.tangles .landmark-pic svg {
+  width: 100%;
+  height: 100%;
+}
+
+.tangle-write label.field {
+  display: block;
+  margin: 10px 0;
+  text-align: left;
+}
+
+.tangle-write label.field > span {
+  display: block;
+  font-weight: 700;
+}
+
+.tangle-write label.field > small {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text-soft);
+}
+
+.tangle-write textarea {
+  width: 100%;
+}
+
+.tangle-mine {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+  margin: 10px 0;
+}
+
+.tangle-mine dt {
+  color: var(--text-soft);
+  font-size: .9em;
+}
+
+.tangle-mine dd {
+  margin: 0;
+}
+
+.tangle-claim {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin: 8px 0;
+}
+
+.tangle-claim .battle-mini {
+  flex: none;
+  width: 64px;
+  height: 64px;
+}
+
+.tangle-said {
+  margin: 0;
+  color: var(--lilac);
+  font-size: 1.25em;
+  font-weight: 700;
+}
+
+.tangle-options {
+  display: grid;
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.tangle-opt {
+  justify-content: flex-start;
+  min-height: 52px;
+  text-align: left;
+}
+
+.tangle-opt.right {
+  box-shadow: 0 0 0 3px rgb(var(--leaf-rgb));
+}
+
+.tangle-opt.wrong {
+  box-shadow: 0 0 0 3px var(--ember);
+}
+
+.tangle-back .good {
+  color: var(--leaf-text);
+}
+
+.tangle-item small {
+  display: block;
+}
+
+.tangle-board .tangle-claim {
+  justify-content: center;
+}
+
+.tangle-board .tangle-claim h1 {
+  color: var(--lilac);
+}
+
+.tangle-board .tangle-claim .battle-mini {
+  width: 120px;
+  height: 120px;
+}
+
+.tangle-board .why {
+  font-size: clamp(20px, 2.2vw, 30px);
+}
+
 /* ---------- The terrarium of the clearing ---------- */
 
 /* A glass jar drawn here: the terrarium of the intro and the end. */

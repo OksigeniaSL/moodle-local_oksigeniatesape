@@ -647,6 +647,16 @@
       // The burst of the Embrollo, to start the class: each challenge big, the class answers aloud, then the answer.
       html = '<div class="show-card burst-board"><div class="kicker">' + esc(t('board_burst')) + '</div><div data-sburst></div>' +
         '</div>';
+    } else if (s.shown === 'tangle' && s.tangle) {
+      // The tangle of the week, written by a team: the class argues aloud and then sees what is true and why.
+      html = '<div class="show-card tangle-board"><div class="kicker">' + esc(t('board_tangle')) + '</div><p class="lead">' +
+        esc(t('board_tangle_by', s.tangle.team)) + '</p><div class="tangle-claim"><span class="battle-mini" aria-hidden="true">' +
+        T.embrollo(0.3) + '</span><h1>«' + esc(s.tangle.claim.replace(/^«|»$/g, '')) + '»</h1></div><p class="lead">' +
+        esc(t('board_tangle_ask')) + '</p><ol class="burst-board-options">' + s.tangle.options.map(function(o, k) {
+          return '<li' + (o === s.tangle.truth ? ' data-truth' : '') + '><b>' + 'ABC'.charAt(k) + '</b>' + esc(o) + '</li>';
+        }).join('') + '</ol><div class="actions" style="justify-content:center"><button type="button" class="btn btn-main" ' +
+        'data-tangleshow>' + esc(t('board_tangle_show')) + '</button></div><p class="why" data-tanglewhy hidden>' +
+        esc(s.tangle.why) + '</p></div>';
     } else if (s.shown === 'council') {
       // The teams in council: each one, on a tablet, looks at its task and chooses who starts the hand.
       var ev = state.board && state.board.event;
@@ -673,6 +683,21 @@
     }
     if (s.shown === 'burst') {
       boardBurst(el.querySelector('[data-sburst]'), s.burst || [], 0);
+    }
+    var tangleshow = el.querySelector('[data-tangleshow]');
+    if (tangleshow) {
+      // What is true, when the class has said what it thinks.
+      tangleshow.onclick = function() {
+        var right = el.querySelector('[data-truth]');
+        if (right) {
+          right.classList.add('right');
+        }
+        el.querySelector('[data-tanglewhy]').hidden = false;
+        tangleshow.remove();
+        if (T.fx) {
+          T.fx.sound('right');
+        }
+      };
     }
     if (end) {
       var total = end - Date.now();

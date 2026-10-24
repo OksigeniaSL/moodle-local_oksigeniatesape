@@ -36,15 +36,15 @@ final class sessions {
 
     /** @var string[] What a step launches. */
     public const ACTIONS = ['enter', 'card', 'scene', 'game', 'battle', 'timer', 'pacts', 'light', 'challenge', 'council',
-        'firstday', 'burst', 'none'];
+        'firstday', 'burst', 'tangle', 'none'];
 
     /**
      * @var string[] What the class screen shows for a session: the place entered, the card, a timer, the commitments, a
-     * scene, the lantern lit, the teams in council, the phases of a session, the first day (the heroes being made) or the
-     * burst of the Embrollo, to start a class.
+     * scene, the lantern lit, the teams in council, the phases of a session, the first day (the heroes being made), the
+     * burst of the Embrollo, to start a class, or the tangle of the week, written by a team.
      */
     public const SHOWS = ['enter', 'card', 'timer', 'pacts', 'scene', 'light', 'council', 'campfire', 'dawn', 'expedition',
-        'encounter', 'loot', 'firstday', 'burst'];
+        'encounter', 'loot', 'firstday', 'burst', 'tangle'];
 
     /** @var int Minutes of the soft hourglass of the expedition, when the teacher does not say. */
     public const EXPEDITION = 20;
@@ -479,6 +479,10 @@ final class sessions {
         if ($open->shown === 'burst') {
             // Another burst each time it is put on the screen.
             $out['burst'] = minigames::class_burst($mission, (int) $open->shownat);
+        }
+        if ($open->shown === 'tangle') {
+            // A tangle a team wrote and the teacher approved: another each time it is put on the screen.
+            $out['tangle'] = tangles::for_board($courseid, (int) $open->shownat);
         }
         return $out;
     }

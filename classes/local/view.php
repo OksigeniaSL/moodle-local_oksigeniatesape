@@ -206,6 +206,8 @@ final class view {
             foreach ($myteam ? photos::of_team($courseid, (int) $char->userid) : [] as $code => $photo) {
                 $world['photos'][] = ['chapter' => (string) $code] + $photo;
             }
+            // Be the Embrollo: the tangle of the team this week, and those of other teams to undo.
+            $world['tangles'] = self::tangles($courseid, (int) $char->userid);
             if (!empty($world['team'])) {
                 // Where each one of the team is: the place where they last played, for the map (without names).
                 $at = self::team_places($courseid, (int) $mission['id'], array_column($world['team']['members'], 'userid'));
@@ -714,6 +716,8 @@ final class view {
             'ideasunread' => ideas::unread($courseid),
             'pactspending' => pacts::pending($courseid),
             'namespending' => names::pending($courseid),
+            // The tangles of the teams: those waiting for the teacher, and those approved with how they went.
+            'tangles' => $board ? ['pending' => [], 'approved' => []] : tangles::for_teacher($courseid),
             // The photos of the classroom: those waiting for the teacher and those on the map; the class screen, only these.
             'photos' => photos::of_course($courseid, $board),
         ];
@@ -1212,6 +1216,22 @@ final class view {
         }
         $rows->close();
         return $at;
+    }
+
+    /**
+     * Be the Embrollo, for a student: the tangle of their team this week, those of other teams to undo, and whether the
+     * team can write one now (none this week, or the one waiting, or the one given back).
+     *
+     * @param int $courseid
+     * @param int $userid
+     * @param int|null $now
+     * @return array mine (if any), others, canwrite.
+     */
+    public static function tangles(int $courseid, int $userid, ?int $now = null): array {
+        $mine = tangles::for_team($courseid, $userid, $now);
+        $out = ['others' => tangles::for_student($courseid, $userid),
+            'canwrite' => teams::of($courseid, $userid) !== null && (!$mine || $mine['status'] !== 'approved')];
+        return $mine ? ['mine' => $mine] + $out : $out;
     }
 
     /**

@@ -685,6 +685,16 @@
           '</span></li>';
       })));
     }
+    // The tangles the teams wrote: nobody sees them before the teacher.
+    var tangles = (d.tangles || {}).pending || [];
+    if (tangles.length && marks) {
+      groups.push(group(t('teach_inbox_tangles', tangles.length), t('teach_tangles_help'), '', tangles.map(function(x) {
+        return '<li class="item tangle-item"><span class="grow"><b>«' + esc(x.claim) + '»</b><small>' + esc(x.team) + ' · ' +
+          esc(x.author) + '</small>' + tangleLines(x) + '</span><span class="row-actions"><button class="chip" type="button" ' +
+          'data-inboxtangle="' + x.id + ':approve">' + esc(t('teach_tangle_ok')) + '</button><button class="chip" ' +
+          'type="button" data-inboxtangle="' + x.id + ':reject">' + esc(t('teach_tangle_no')) + '</button></span></li>';
+      })));
+    }
     var queue = d.powersqueue || [];
     if (queue.length) {
       groups.push(group(t('teach_inbox_powers', queue.length), '', queue.length > 1 ? '<button class="btn btn-soft" ' +
@@ -811,6 +821,17 @@
         T.toast(esc(t(left ? 'teach_inbox_names_left' : 'app_saved')));
       }).catch(failed);
     };
+    el.querySelectorAll('[data-inboxtangle]').forEach(function(b) {
+      b.onclick = function() {
+        var parts = b.dataset.inboxtangle.split(':');
+        busy();
+        T.api('review_tangle', {courseid: cfg.courseid, tangleid: Number(parts[0]), action: parts[1]}).then(function(res) {
+          d.tangles = res.tangles;
+          refreshInbox();
+          T.toast(esc(t(parts[1] === 'approve' ? 'teach_tangle_done' : 'app_saved')));
+        }).catch(failed);
+      };
+    });
     el.querySelectorAll('[data-inboxphoto]').forEach(function(b) {
       b.onclick = function() {
         var parts = b.dataset.inboxphoto.split(':');
@@ -1042,6 +1063,9 @@
         case 'burst':
           return '<button type="button" class="btn btn-main" data-sshow="burst">' + esc(t('teach_session_act_burst')) +
             '</button>';
+        case 'tangle':
+          return '<button type="button" class="btn btn-main" data-sshow="tangle">' + esc(t('teach_session_act_tangle')) +
+            '</button>';
         case 'challenge':
           return '<button type="button" class="btn btn-soft" data-sgoto="challenges">' + esc(t('teach_session_act_challenge')) +
             '</button>';
@@ -1193,7 +1217,10 @@
           'class="btn btn-soft" data-sshow="council">' + esc(t('teach_session_act_council')) + '</button>') +
           // The burst of the Embrollo, to start: on the class screen, the class answers aloud.
           (v.shown === 'burst' ? '' : '<button type="button" class="btn btn-soft" data-sshow="burst">' +
-          esc(t('teach_session_act_burst')) + '</button>') + '<button type="button" class="btn btn-main" data-sclose>' +
+          esc(t('teach_session_act_burst')) + '</button>') +
+          // A tangle a team wrote, for the class to hunt: once there is one approved.
+          (v.shown === 'tangle' || !((state.data.tangles || {}).approved || []).length ? '' : '<button type="button" ' +
+          'class="btn btn-soft" data-sshow="tangle">' + esc(t('teach_session_act_tangle')) + '</button>') + '<button type="button" class="btn btn-main" data-sclose>' +
           esc(t('teach_session_close')) + '</button></div>' + subButton();
       } else {
         box.innerHTML = '<div class="kicker">' + esc(t('teach_session_next')) + (v.optional ? ' · ' +
@@ -2892,6 +2919,35 @@
 
   /* ---------- Classroom challenges ---------- */
 
+  /**
+   * What is true, the other wrong idea and why, of the tangle of a team.
+   *
+   * @param {Object} x
+   * @return {string}
+   */
+  function tangleLines(x) {
+    return '<small>✓ ' + esc(x.truth) + '</small>' + (x.trap ? '<small>✗ ' + esc(x.trap) + '</small>' : '') + '<small>' +
+      esc(t('teach_tangle_why', x.why)) + '</small>';
+  }
+
+  /**
+   * Be the Embrollo: the tangles approved, how many undid each, and the way to take one to the battle.
+   *
+   * @return {string}
+   */
+  function tanglesSection() {
+    var list = (state.data.tangles || {}).approved || [];
+    return '<section class="card" style="margin-top:16px" data-tanglecard><h2>' + esc(t('teach_tangles')) + '</h2><p ' +
+      'style="color:var(--text-soft)">' + esc(t('teach_tangles_about')) + '</p>' + (list.length ? '<ul class="list">' +
+      list.map(function(x) {
+        return '<li class="item tangle-item"><span class="grow"><b>«' + esc(x.claim) + '»</b><small>' + esc(x.team) + ' · ' +
+          esc(t('teach_tangle_count', {tried: x.tried, undone: x.undone})) + '</small>' + tangleLines(x) + '</span>' +
+          (x.inbattle ? '<span class="tag done">' + esc(t('teach_tangle_inbattle')) + '</span>' : can('manageregion') ?
+          '<button type="button" class="chip" data-tanglebattle="' + x.id + '">' + esc(t('teach_tangle_battle')) +
+          '</button>' : '') + '</li>';
+      }).join('') + '</ul>' : '<p class="empty">' + esc(t('teach_tangles_none')) + '</p>') + '</section>';
+  }
+
   function tabChallenges() {
     var d = state.data;
     if (state.challenge) {
@@ -2922,7 +2978,21 @@
       list + '</ul>' : '<p class="empty">' + esc(t('app_nochallenges')) + '</p>') + '</section><div id="form"></div>' +
       '<section class="card" style="margin-top:16px"><h2>' + esc(t('teach_act_title')) + '</h2><p style="color:' +
       'var(--text-soft)">' + esc(t('teach_act_help')) + '</p>' + (acts ? '<ul class="list">' + acts + '</ul>' :
-      '<p class="empty">' + esc(t('teach_act_none')) + '</p>') + '</section>');
+      '<p class="empty">' + esc(t('teach_act_none')) + '</p>') + '</section>' + tanglesSection());
+    el.querySelectorAll('[data-tanglebattle]').forEach(function(b) {
+      b.onclick = function() {
+        b.disabled = true;
+        T.api('review_tangle', {courseid: cfg.courseid, tangleid: Number(b.dataset.tanglebattle), action: 'battle'})
+          .then(function(res) {
+            d.tangles = res.tangles;
+            render();
+            T.toast(esc(t('teach_tangle_battle_done')));
+          }).catch(function(e) {
+            b.disabled = false;
+            T.toast(esc(e.message), true);
+          });
+      };
+    });
     el.querySelectorAll('[data-open]').forEach(function(li) {
       li.onclick = function() {
         state.challenge = Number(li.dataset.open);

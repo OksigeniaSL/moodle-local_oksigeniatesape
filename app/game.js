@@ -2076,11 +2076,15 @@
     var burst = w.mission && w.mission.burst ? '<button type="button" class="landmark-btn burst" data-game="' +
       esc(w.mission.burst) + '" data-gametype="burst"><span class="landmark-pic" aria-hidden="true">' + T.embrollo(0.6) +
       '</span><span>' + esc(t('app_landmark_burst')) + '</span></button>' : '';
-    return list.length || burst ? '<div class="map-landmarks">' + list.map(function(l) {
+    // The tangles other teams wrote, while there are some to undo.
+    var mixed = w.tangles && w.tangles.others.length ? '<button type="button" class="landmark-btn tangles" data-tangles>' +
+      '<span class="landmark-pic" aria-hidden="true">' + T.embrollo(0.4) + '</span><span>' + esc(t('app_landmark_tangles',
+      w.tangles.others.length)) + '</span></button>' : '';
+    return list.length || burst || mixed ? '<div class="map-landmarks">' + list.map(function(l) {
       return '<button type="button" class="landmark-btn ' + l[0] + '" data-landmark="' + l[0] + '"><span class="landmark-pic" ' +
         'aria-hidden="true">' + (l[1] ? '<img src="' + esc(l[1]) + '" alt="">' : T.icon(l[2])) + '</span><span>' +
         esc(t('app_landmark_' + l[0])) + '</span></button>';
-    }).join('') + burst + '</div>' : '';
+    }).join('') + burst + mixed + '</div>' : '';
   }
 
   /**
@@ -3224,6 +3228,10 @@
         }});
       };
     });
+    var mixed = app.querySelector('[data-tangles]');
+    if (mixed) {
+      mixed.onclick = undoTangle;
+    }
     app.querySelectorAll('[data-activity]').forEach(function(b) {
       b.onclick = function() {
         openActivity(Number(b.dataset.activity));
@@ -3350,7 +3358,8 @@
             '<span class="meter energy" ' +
             'title="' + esc(t('app_energy')) + '"><i style="width:' + Math.round(100 * m.energy / w.energymax) +
             '%"></i></span></span>' : '') + '</li>';
-        }).join('') + '</ul></section>' + councilCard(team) + reserveCard(team.reserve) + pactsCard(team.pacts);
+        }).join('') + '</ul></section>' + councilCard(team) + reserveCard(team.reserve) + pactsCard(team.pacts) +
+        tangleCard();
     }
     html += powersCard();
     if (w.standings.length > 1) {
@@ -3555,6 +3564,10 @@
   }
 
   function bindTeam() {
+    var tanglewrite = app.querySelector('[data-tanglewrite]');
+    if (tanglewrite) {
+      tanglewrite.onclick = writeTangle;
+    }
     app.querySelectorAll('[data-reserve]').forEach(function(b) {
       b.onclick = function() {
         b.disabled = true;
@@ -4590,6 +4603,132 @@
   }
 
   /** The words of the hero, chosen again: saved at once, the scenes read them from the next play. */
+  /**
+   * Be the Embrollo, in the tab of the team: write the tangle of the team this week, or see how it is going.
+   *
+   * @return {string}
+   */
+  function tangleCard() {
+    var tg = state.world.tangles;
+    if (!tg) {
+      return '';
+    }
+    var mine = tg.mine;
+    var shown = function(m) {
+      return '<dl class="tangle-mine"><dt>' + esc(t('app_tangle_claim')) + '</dt><dd>«' + esc(m.claim) + '»</dd><dt>' +
+        esc(t('app_tangle_truth')) + '</dt><dd>' + esc(m.truth) + '</dd>' + (m.trap ? '<dt>' + esc(t('app_tangle_trap')) +
+        '</dt><dd>' + esc(m.trap) + '</dd>' : '') + '<dt>' + esc(t('app_tangle_why')) + '</dt><dd>' + esc(m.why) + '</dd></dl>';
+    };
+    var body = '';
+    if (mine && mine.status === 'approved') {
+      body = '<p>' + esc(t('app_tangle_mine_ok')) + '</p>' + shown(mine) + '<p class="help-soft">' +
+        esc(t('app_tangle_mine_count', {tried: mine.tried, undone: mine.undone})) + '</p>';
+    } else if (mine && mine.status === 'pending') {
+      body = '<p>' + esc(t('app_tangle_mine_wait')) + '</p>' + shown(mine) + '<div class="actions" style="justify-content:' +
+        'flex-start"><button type="button" class="btn btn-soft" data-tanglewrite>' + esc(t('app_tangle_change')) +
+        '</button></div>';
+    } else {
+      body = (mine ? '<p>' + esc(t('app_tangle_mine_back')) + '</p>' : '') + '<p class="help">' + esc(t('app_tangle_help')) +
+        '</p><div class="actions" style="justify-content:flex-start"><button type="button" class="btn btn-main" ' +
+        'data-tanglewrite>' + esc(t('app_tangle_write')) + '</button></div>';
+    }
+    return '<section class="card tangle-card"><div class="kicker">' + esc(t('app_tangle_title')) + '</div>' + body +
+      '</section>';
+  }
+
+  /** The tangle of the team, written or changed: it goes to the teacher. */
+  function writeTangle() {
+    var mine = state.world.tangles.mine;
+    var old = mine && mine.status === 'pending' ? mine : {};
+    var field = function(key, rows, max) {
+      return '<label class="field"><span>' + esc(t('app_tangle_' + key)) + '</span><small>' + esc(t('app_tangle_' + key +
+        '_help')) + '</small><textarea rows="' + rows + '" maxlength="' + max + '" data-tf="' + key + '">' + esc(old[key] || '') +
+        '</textarea></label>';
+    };
+    var layer = moment('<h2 id="tesape-tangle-write">' + esc(t('app_tangle_title')) + '</h2><p class="help">' +
+      esc(t('app_tangle_write_help')) + '</p><div class="tangle-write">' + field('claim', 2, 160) + field('truth', 2, 160) +
+      field('trap', 2, 160) + field('why', 3, 300) + '</div><div class="actions"><button type="button" class="btn btn-main" data-tanglesend>' +
+      esc(t('app_tangle_send')) + '</button></div>', 'tesape-tangle-write');
+    var close = layer.querySelector('[data-close]');
+    close.textContent = t('app_cancel');
+    close.className = 'btn btn-soft';
+    // The help first: the focus goes to the first box without scrolling past the title.
+    layer.querySelector('[data-tf="claim"]').focus({preventScroll: true});
+    var send = layer.querySelector('[data-tanglesend]');
+    send.onclick = function() {
+      var args = {courseid: cfg.courseid, action: 'write'};
+      layer.querySelectorAll('[data-tf]').forEach(function(f) {
+        args[f.dataset.tf] = f.value.trim();
+      });
+      send.disabled = true;
+      T.api('play_tangle', args).then(function(r) {
+        state.world.tangles = r.tangles;
+        close.click();
+        world();
+        T.toast(esc(t('app_tangle_sent')));
+      }).catch(function(e) {
+        send.disabled = false;
+        T.toast(esc(e.message), true);
+      });
+    };
+  }
+
+  /** The tangle of another team, to undo: one try, what is true and why, and the next one if there is. */
+  function undoTangle() {
+    var one = ((state.world.tangles || {}).others || [])[0];
+    if (!one) {
+      return;
+    }
+    var more = false;
+    var layer = moment('<div class="kicker">' + esc(t('app_tangle_kicker')) + '</div><h2 id="tesape-tangle-title">' +
+      esc(t('app_tangle_by', one.team)) + '</h2><div class="tangle-claim"><span class="battle-mini" aria-hidden="true">' +
+      T.embrollo(0.25) + '</span><p class="tangle-said">«' + esc(one.claim.replace(/^«|»$/g, '')) + '»</p></div><p class="help">' +
+      esc(t('app_tangle_ask')) + '</p><div class="tangle-options">' + one.options.map(function(o, k) {
+        return '<button type="button" class="btn btn-soft tangle-opt" data-ta="' + k + '">' + esc(o) + '</button>';
+      }).join('') + '</div><div class="tangle-back" data-tsay aria-live="polite"></div>', 'tesape-tangle-title', function() {
+      if (more) {
+        undoTangle();
+      } else {
+        world();
+      }
+    });
+    var close = layer.querySelector('[data-close]');
+    close.textContent = t('app_later');
+    close.className = 'btn btn-soft';
+    layer.querySelector('[data-ta]').focus();
+    layer.querySelectorAll('[data-ta]').forEach(function(b) {
+      b.onclick = function() {
+        layer.querySelectorAll('[data-ta]').forEach(function(x) {
+          x.disabled = true;
+        });
+        T.api('play_tangle', {courseid: cfg.courseid, action: 'undo', tangleid: one.id, answer: Number(b.dataset.ta)})
+          .then(function(r) {
+            var res = r.result;
+            state.world.tangles = r.tangles;
+            b.classList.add(res.right ? 'right' : 'wrong');
+            layer.querySelectorAll('[data-ta]').forEach(function(x) {
+              if (x.textContent === res.truth) {
+                x.classList.add('right');
+              }
+            });
+            if (T.fx) {
+              T.fx.sound(res.right ? 'right' : 'giggle');
+            }
+            layer.querySelector('[data-tsay]').innerHTML = '<p class="' + (res.right ? 'good' : 'bad') + '"><b>' +
+              esc(res.right ? t('app_tangle_right') : t('app_tangle_wrong')) + '</b>' + (res.gems ? ' ' +
+              esc(t(res.gems === 1 ? 'app_tangle_gem' : 'app_tangle_gems', res.gems)) : '') + '</p><p>' + esc(t('app_tangle_true', res.truth)) + '</p><p class="why">' +
+              esc(res.why) + '</p>';
+            more = r.tangles.others.length > 0;
+            close.textContent = more ? t('app_tangle_next') : t('app_continue');
+            close.className = 'btn btn-main';
+            close.focus();
+          }).catch(function(e) {
+            T.toast(esc(e.message), true);
+          });
+      };
+    });
+  }
+
   function natureMoment() {
     var c = state.world.character;
     var chosen = String(c.nature || '').split(',').filter(Boolean);

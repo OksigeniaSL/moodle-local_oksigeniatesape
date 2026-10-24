@@ -164,6 +164,7 @@ final class get_class extends external_api {
             'pacts' => structures::teacher_pacts(),
             'pactspending' => new external_value(PARAM_INT, 'Commitments still to mark'),
             'namespending' => structures::names_pending(),
+            'tangles' => structures::tangles_teacher(),
             'photos' => new external_multiple_structure(new external_single_structure([
                 'id' => new external_value(PARAM_INT, 'The photo'),
                 'team' => new external_value(PARAM_TEXT, 'The team that sent it'),

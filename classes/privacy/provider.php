@@ -46,7 +46,8 @@ class provider implements
 
     /** @var string[] Tables of a character in a course, all with charid and courseid. */
     public const COURSE_TABLES = ['member', 'ledger', 'inventory', 'sceneattempt', 'minigame', 'validation', 'found', 'idea',
-        'livein', 'livetoken', 'pact', 'daily', 'purchase', 'huddle', 'huddlein', 'challengepart', 'teamspend', 'photo'];
+        'livein', 'livetoken', 'pact', 'daily', 'purchase', 'huddle', 'huddlein', 'challengepart', 'teamspend', 'photo',
+        'tangle'];
 
     /**
      * What is stored.
@@ -82,6 +83,8 @@ class provider implements
             'challengepart' => ['challengeid', 'courseid', 'groupid', 'part', 'charid', 'timecreated'],
             'teamspend' => ['courseid', 'groupid', 'kind', 'charid', 'confirmedby', 'status', 'timecreated'],
             'photo' => ['courseid', 'groupid', 'chapter', 'charid', 'status', 'reviewedby', 'timecreated', 'timemodified'],
+            'tangle' => ['courseid', 'groupid', 'charid', 'claim', 'truth', 'trap', 'why', 'status', 'reviewedby', 'inbattle',
+                'timecreated', 'timemodified'],
         ];
         foreach ($fields as $table => $names) {
             $described = [];
@@ -170,6 +173,13 @@ class provider implements
         $contextlist->add_from_sql(
             'SELECT ctx.id
                FROM {context} ctx
+               JOIN {' . self::T . 'tangle} t ON t.courseid = ctx.instanceid AND ctx.contextlevel = :level
+              WHERE t.reviewedby = :userid',
+            ['level' => CONTEXT_COURSE, 'userid' => $userid]
+        );
+        $contextlist->add_from_sql(
+            'SELECT ctx.id
+               FROM {context} ctx
                JOIN {' . self::T . 'pact} p ON p.courseid = ctx.instanceid AND ctx.contextlevel = :level
               WHERE p.decidedby = :userid',
             ['level' => CONTEXT_COURSE, 'userid' => $userid]
@@ -224,6 +234,11 @@ class provider implements
         $userlist->add_from_sql(
             'reviewedby',
             'SELECT reviewedby FROM {' . self::T . 'photo} WHERE courseid = :courseid AND reviewedby > 0',
+            $params
+        );
+        $userlist->add_from_sql(
+            'reviewedby',
+            'SELECT reviewedby FROM {' . self::T . 'tangle} WHERE courseid = :courseid AND reviewedby > 0',
             $params
         );
         $userlist->add_from_sql(
@@ -340,7 +355,13 @@ class provider implements
             'timemodified',
             'id, status, timemodified'
         );
-        if (!$given && !$paused && !$powers && !$pacts && !$validations && !$photos) {
+        $tangles = $DB->get_records(
+            self::T . 'tangle',
+            ['courseid' => $courseid, 'reviewedby' => $userid],
+            'timemodified',
+            'id, status, timemodified'
+        );
+        if (!$given && !$paused && !$powers && !$pacts && !$validations && !$photos && !$tangles) {
             return;
         }
         $when = fn($time) => $time ? transform::datetime($time) : null;
@@ -360,6 +381,10 @@ class provider implements
             'photos' => array_values(array_map(
                 fn($p) => ['status' => $p->status, 'time' => $when($p->timemodified)],
                 $photos
+            )),
+            'tangles' => array_values(array_map(
+                fn($t) => ['status' => $t->status, 'time' => $when($t->timemodified)],
+                $tangles
             )),
         ]);
     }
@@ -530,6 +555,20 @@ class provider implements
             foreach ($photos as $p) {
                 $writer->export_area_files(self::path('photos'), 'local_oksigeniatesape', 'photo', (int) $p->id);
             }
+        }
+        // The tangles they wrote for their team.
+        $tangles = $DB->get_records(self::T . 'tangle', ['charid' => $charid, 'courseid' => $courseid], 'timecreated');
+        if ($tangles) {
+            $writer->export_data(self::path('tangles'), (object) [
+                'tangles' => array_values(array_map(fn($t) => [
+                    'claim' => $t->claim,
+                    'truth' => $t->truth,
+                    'trap' => $t->trap,
+                    'why' => $t->why,
+                    'status' => $t->status,
+                    'timecreated' => transform::datetime($t->timecreated),
+                ], $tangles)),
+            ]);
         }
         $spends = $DB->get_records_select(
             self::T . 'teamspend',
@@ -735,6 +774,10 @@ class provider implements
             array_merge([$courseid], $params)
         );
         $DB->execute(
+            'UPDATE {' . self::T . "tangle} SET reviewedby = 0 WHERE courseid = ? AND reviewedby $insql",
+            array_merge([$courseid], $params)
+        );
+        $DB->execute(
             'UPDATE {' . self::T . "pact} SET decidedby = 0 WHERE courseid = ? AND decidedby $insql",
             array_merge([$courseid], $params)
         );
@@ -808,6 +851,7 @@ class provider implements
         $DB->set_field(self::T . 'pact', 'decidedby', 0, ['decidedby' => $userid]);
         $DB->set_field(self::T . 'powerreq', 'decidedby', 0, ['decidedby' => $userid]);
         $DB->set_field(self::T . 'photo', 'reviewedby', 0, ['reviewedby' => $userid]);
+        $DB->set_field(self::T . 'tangle', 'reviewedby', 0, ['reviewedby' => $userid]);
     }
 
     /**

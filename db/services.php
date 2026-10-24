@@ -53,6 +53,20 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:play',
     ],
+    'local_oksigeniatesape_play_tangle' => [
+        'classname' => 'local_oksigeniatesape\external\play_tangle',
+        'description' => 'Writes the tangle of the current student\'s team, or undoes the tangle of another team.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:play',
+    ],
+    'local_oksigeniatesape_review_tangle' => [
+        'classname' => 'local_oksigeniatesape\external\review_tangle',
+        'description' => 'Approves the tangle of a team, gives it back, or takes it to the battle.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:award',
+    ],
     'local_oksigeniatesape_get_class' => [
         'classname' => 'local_oksigeniatesape\external\get_class',
         'description' => 'The class of a course for its teachers: settings, students and their characters, teams and challenges.',

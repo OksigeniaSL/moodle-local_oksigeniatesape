@@ -482,6 +482,59 @@ final class structures {
     }
 
     /**
+     * Be the Embrollo, for a student: the tangle of their team this week and those of other teams to undo.
+     *
+     * @param int $required
+     * @return external_single_structure
+     */
+    public static function tangles_student(int $required = VALUE_REQUIRED): external_single_structure {
+        return new external_single_structure([
+            'mine' => new external_single_structure([
+                'id' => new external_value(PARAM_INT, 'Tangle'),
+                'status' => new external_value(PARAM_ALPHA, 'pending, approved or rejected'),
+                'claim' => new external_value(PARAM_TEXT, 'What the Embrollo says'),
+                'truth' => new external_value(PARAM_TEXT, 'What is true'),
+                'trap' => new external_value(PARAM_TEXT, 'Another wrong idea, or empty'),
+                'why' => new external_value(PARAM_TEXT, 'Why'),
+                'tried' => new external_value(PARAM_INT, 'Students who tried it'),
+                'undone' => new external_value(PARAM_INT, 'Students who undid it'),
+            ], 'The tangle of the team this week', VALUE_OPTIONAL),
+            'others' => new external_multiple_structure(new external_single_structure([
+                'id' => new external_value(PARAM_INT, 'Tangle'),
+                'team' => new external_value(PARAM_TEXT, 'The team that wrote it'),
+                'claim' => new external_value(PARAM_TEXT, 'What the Embrollo says'),
+                'options' => new external_multiple_structure(new external_value(PARAM_TEXT, 'An answer')),
+            ]), 'Tangles of other teams not tried yet'),
+            'canwrite' => new external_value(PARAM_BOOL, 'Whether the team can write one now'),
+        ], 'Be the Embrollo', $required);
+    }
+
+    /**
+     * The tangles of the teams for the teacher: those waiting, and those approved with how they went.
+     *
+     * @return external_single_structure
+     */
+    public static function tangles_teacher(): external_single_structure {
+        $row = [
+            'id' => new external_value(PARAM_INT, 'Tangle'),
+            'team' => new external_value(PARAM_TEXT, 'Team'),
+            'author' => new external_value(PARAM_TEXT, 'Who wrote it'),
+            'claim' => new external_value(PARAM_TEXT, 'What the Embrollo says'),
+            'truth' => new external_value(PARAM_TEXT, 'What is true'),
+            'trap' => new external_value(PARAM_TEXT, 'Another wrong idea, or empty'),
+            'why' => new external_value(PARAM_TEXT, 'Why'),
+        ];
+        return new external_single_structure([
+            'pending' => new external_multiple_structure(new external_single_structure($row)),
+            'approved' => new external_multiple_structure(new external_single_structure($row + [
+                'tried' => new external_value(PARAM_INT, 'Students who tried it'),
+                'undone' => new external_value(PARAM_INT, 'Students who undid it'),
+                'inbattle' => new external_value(PARAM_BOOL, 'Taken to the battle'),
+            ])),
+        ], 'Be the Embrollo', VALUE_DEFAULT, ['pending' => [], 'approved' => []]);
+    }
+
+    /**
      * Own names waiting for a teacher.
      *
      * @return external_multiple_structure

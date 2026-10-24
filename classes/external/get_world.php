@@ -147,6 +147,7 @@ final class get_world extends external_api {
                 'untangled' => new external_value(PARAM_BOOL, 'Beaten by the student with the page of the day'),
             ]), 'The minions of the Embrollo of the places the student has played', VALUE_DEFAULT, []),
             'museum' => structures::museum(),
+            'tangles' => structures::tangles_student(VALUE_OPTIONAL),
             'names' => new external_single_structure([
                 'heroes' => new external_value(PARAM_BOOL, 'Hero names allowed in the course'),
                 'own' => new external_value(PARAM_BOOL, 'Own names allowed, read by a teacher first'),
