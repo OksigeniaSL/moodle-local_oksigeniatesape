@@ -144,6 +144,13 @@ final class save_region extends external_api {
                 null,
                 NULL_ALLOWED
             ),
+            'stage' => new external_value(
+                PARAM_ALPHA,
+                'The stage of the class: primary, early, firstyears, secondary or adults',
+                VALUE_DEFAULT,
+                null,
+                NULL_ALLOWED
+            ),
         ]);
     }
 
@@ -178,6 +185,7 @@ final class save_region extends external_api {
      * @param int|null $qbank
      * @param array|null $pauses
      * @param bool|null $lightart
+     * @param string|null $stage
      * @return array
      */
     public static function execute(
@@ -208,7 +216,8 @@ final class save_region extends external_api {
         ?bool $sharelibrary = null,
         ?int $qbank = null,
         ?array $pauses = null,
-        ?bool $lightart = null
+        ?bool $lightart = null,
+        ?string $stage = null
     ): array {
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid,
@@ -239,6 +248,7 @@ final class save_region extends external_api {
             'qbank' => $qbank,
             'pauses' => $pauses,
             'lightart' => $lightart,
+            'stage' => $stage,
         ]);
         $context = \local_oksigeniatesape\local\games::require_enter($params['courseid']);
         self::validate_context($context);
@@ -253,7 +263,8 @@ final class save_region extends external_api {
             $settings['secretsshown'],
             $settings['sharelibrary'],
             $settings['qbank'],
-            $settings['lightart']
+            $settings['lightart'],
+            $settings['stage']
         );
         if ($params['reasons'] !== null) {
             $list = $params['reasons'] === 'default' ? null : json_decode($params['reasons'], true);
@@ -273,6 +284,13 @@ final class save_region extends external_api {
         }
         if ($params['skillson'] !== null) {
             $settings['rules'] = ($settings['rules'] ?? []) + ['skills' => $params['skillson'] ? 1 : 0];
+        }
+        if ($params['stage'] !== null) {
+            $index = array_search($params['stage'], regions::STAGES, true);
+            if ($index === false) {
+                throw new \invalid_parameter_exception('Unknown stage: ' . $params['stage']);
+            }
+            $settings['rules'] = ($settings['rules'] ?? []) + ['stage' => $index];
         }
         if ($params['lightart'] !== null) {
             $settings['rules'] = ($settings['rules'] ?? []) + ['lightart' => $params['lightart'] ? 1 : 0];

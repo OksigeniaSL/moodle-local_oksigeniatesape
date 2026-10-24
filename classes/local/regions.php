@@ -24,6 +24,12 @@ namespace local_oksigeniatesape\local;
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class regions {
+    /**
+     * @var string[] The stages a class can be in: primary (from 9 to 11, the game as it is), early (infant school),
+     *     firstyears (the first years of primary), secondary and adults.
+     */
+    public const STAGES = ['primary', 'early', 'firstyears', 'secondary', 'adults'];
+
     /** @var int Most reasons that pause the game a course can have. */
     public const PAUSES_MAX = 5;
 
@@ -71,6 +77,8 @@ final class regions {
         'qbank' => 0,
         // The tablets of the class take the small copy of the big images, as those with little memory do by themselves.
         'lightart' => 0,
+        // The stage of the class, as a number of STAGES.
+        'stage' => 0,
     ];
 
     /**
@@ -269,6 +277,16 @@ final class regions {
         }
         return array_map(fn($r) => ['text' => get_string($r[0], 'local_oksigeniatesape'), 'resource' => $r[1],
             'amount' => $r[2]], self::REASONS);
+    }
+
+    /**
+     * The stage of the class of a course.
+     *
+     * @param \stdClass|null $region
+     * @return string One of STAGES.
+     */
+    public static function stage(?\stdClass $region): string {
+        return self::STAGES[$region ? self::rule($region, 'stage') : 0] ?? 'primary';
     }
 
     /**

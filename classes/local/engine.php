@@ -77,6 +77,11 @@ final class engine {
             'timecreated' => $now,
             'timemodified' => $now,
         ];
+        // In the first years of primary, everybody starts on the first steps.
+        $region = regions::get($courseid);
+        if ($region && regions::stage($region) === 'firstyears') {
+            $member->step = 1;
+        }
         try {
             $member->id = $DB->insert_record(self::T . 'member', $member);
         } catch (\dml_write_exception $e) {

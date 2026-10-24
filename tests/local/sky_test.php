@@ -74,4 +74,29 @@ final class sky_test extends \advanced_testcase {
         $this->assertStringContainsString('1781', $cine['prologo']['steps'][0]['text']);
         $this->assertSame(['boss', 'in'], [$cine['embrollo']['steps'][1]['image'], $cine['embrollo']['steps'][1]['move']]);
     }
+
+    public function test_the_stage_of_the_class(): void {
+        $this->resetAfterTest();
+        $gen = $this->getDataGenerator();
+        $course = $gen->create_course();
+        $c = (int) $course->id;
+        $region = regions::save($c, ['enabled' => 1]);
+        $this->assertSame('primary', regions::stage($region));
+        $early = $gen->create_and_enrol($course, 'student');
+        $this->assertSame(2, (int) engine::member(characters::create($early->id, 'sage', 'm'), $c)->step);
+        // The first years of primary: whoever comes in starts on the first steps.
+        $this->setUser($gen->create_and_enrol($course, 'editingteacher'));
+        $saved = \local_oksigeniatesape\external\save_region::execute($c, stage: 'firstyears');
+        $this->assertSame('firstyears', $saved['stage']);
+        $late = $gen->create_and_enrol($course, 'student');
+        $this->assertSame(1, (int) engine::member(characters::create($late->id, 'scout', 'f'), $c)->step);
+        // Those who were there keep theirs.
+        $this->assertSame(2, (int) engine::member(characters::get($early->id), $c)->step);
+        try {
+            \local_oksigeniatesape\external\save_region::execute($c, stage: 'kinder');
+            $this->fail('A stage that is not');
+        } catch (\invalid_parameter_exception $e) {
+            $this->assertStringContainsString('stage', $e->getMessage());
+        }
+    }
 }

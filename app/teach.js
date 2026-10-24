@@ -3850,6 +3850,21 @@
     };
   }
 
+  /** @var {string[]} The stages a class can be in. */
+  var STAGES = ['early', 'firstyears', 'primary', 'secondary', 'adults'];
+
+  /**
+   * @var {Object} What suits each stage: the family of characters, the devices, the talents and the energy one can lose
+   *     in a day.
+   */
+  var STAGE_PRESETS = {
+    early: {family: 'animals', devices: '0', talents: false},
+    firstyears: {family: 'animals', talents: false},
+    primary: {family: 'storyheroes'},
+    secondary: {family: 'epic'},
+    adults: {family: 'nomagic', energyloss: 0}
+  };
+
   function tabSettings() {
     var r = state.data.region;
     var editable = can('manageregion');
@@ -3946,9 +3961,16 @@
         }).join('') + '</div>';
     };
     // Two layers: what a teacher touches any day, and folded, what is set once or rarely.
+    // The stage of the class: choosing it puts in the form what suits it, to see and change before saving.
+    var stages = '<h3>' + esc(t('teach_stage')) + '</h3><p class="help-soft">' + esc(t('teach_stage_help')) + '</p><div ' +
+      'class="stage-options" role="radiogroup" aria-label="' + esc(t('teach_stage')) + '">' + STAGES.map(function(st) {
+        return '<label class="chip stage-option"><input type="radio" name="stage" value="' + st + '"' + ((r.stage || 'primary') ===
+          st ? ' checked' : '') + (editable ? '' : ' disabled') + '> <span><b>' + esc(t('teach_stage_' + st)) + '</b><small>' +
+          esc(t('teach_stage_' + st + '_help')) + '</small></span></label>';
+      }).join('') + '</div><p class="help-soft" data-stagenote aria-live="polite"></p>';
     var daily = '<label class="chip" style="display:inline-flex;gap:8px;align-items:center;margin-bottom:14px"><input ' +
       'type="checkbox" name="enabled"' + (r.enabled ? ' checked' : '') + (editable ? '' : ' disabled') + '> ' +
-      esc(t('teach_set_enabled')) + '</label><h3>' + esc(t('teach_family')) + '</h3><div class="pills" style="' +
+      esc(t('teach_set_enabled')) + '</label>' + stages + '<h3>' + esc(t('teach_family')) + '</h3><div class="pills" style="' +
       'justify-content:flex-start;margin-bottom:14px">' + families(r.family) + '</div><h3>' + esc(t('board_devices')) +
       '</h3><p class="help-soft">' + esc(t('teach_set_devices_help')) + '</p><div class="pills" style="justify-content:' +
       'flex-start" role="radiogroup" ' +
@@ -3998,6 +4020,23 @@
     bindFamilies(function(f) {
       family = f;
     });
+    // A stage chosen: what suits it, in the form.
+    el.querySelectorAll('[name="stage"]').forEach(function(radio) {
+      radio.onchange = function() {
+        var p = STAGE_PRESETS[radio.value];
+        var pill = el.querySelector('[data-family="' + p.family + '"]');
+        if (pill) {
+          pill.click();
+        }
+        var f = el.querySelector('form[data-settings]');
+        if (p.devices !== undefined) {
+          f.querySelector('[name="devices"][value="' + p.devices + '"]').checked = true;
+        }
+        f.talentson.checked = p.talents !== false;
+        f.dailyenergylosscap.value = p.energyloss === undefined ? r.dailyenergylosscap : p.energyloss;
+        el.querySelector('[data-stagenote]').textContent = t('teach_stage_set');
+      };
+    });
     bindMakeTeams(el);
     // The theme of the class is saved and seen as soon as it is chosen.
     el.querySelectorAll('[name="look"]').forEach(function(input) {
@@ -4039,6 +4078,7 @@
         secretsshown: Number(f.querySelector('[name="secretsshown"]:checked').value),
         sharelibrary: f.sharelibrary.checked,
         lightart: f.lightart.checked,
+        stage: (f.querySelector('[name="stage"]:checked') || {}).value || 'primary',
         qbank: f.qbank ? Number(f.qbank.value) : undefined,
         nicknames: picked ? Number(picked.value) : 0,
         timezone: f.timezone.value,

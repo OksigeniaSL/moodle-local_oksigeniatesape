@@ -927,6 +927,7 @@ final class view {
             'secretsshown' => $region ? regions::rule($region, 'secrets') : 0,
             'sharelibrary' => $region && regions::rule($region, 'library') > 0,
             'lightart' => $region && regions::rule($region, 'lightart') > 0,
+            'stage' => regions::stage($region),
             'qbank' => $region ? regions::rule($region, 'qbank') : 0,
             'qbanks' => $region && $banks ? moodlebank::categories((int) $region->courseid) : [],
             'portal' => (string) ($region->portal ?? 'door'),

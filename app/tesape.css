@@ -14294,3 +14294,23 @@ body.still .pet-me.patted .creature {
     animation: none;
   }
 }
+
+/* The stage of the class, in the settings. */
+.stage-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.stage-option {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  border-radius: 12px;
+}
+
+.stage-option small {
+  display: block;
+  color: var(--text-soft);
+}
