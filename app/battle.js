@@ -191,6 +191,25 @@
   }
 
   /**
+   * By turns, the deck of the team: a card for each thing its members carry, played once a battle by anyone in it.
+   *
+   * @param {Object} live
+   * @return {string}
+   */
+  function deck(live) {
+    var cards = live.cards || [];
+    if (!cards.length) {
+      return '';
+    }
+    return '<div class="battle-deck"><p class="help-soft">' + esc(t('app_deck')) + '</p><div class="battle-cards">' +
+      cards.map(function(c) {
+        return '<button type="button" class="battle-card' + (c.used ? ' used' : '') + '" data-card="' + esc(c.item) + '"' +
+          (c.used ? ' disabled' : '') + '><b>' + esc(t('app_card_' + c.item)) + '</b><small>' + esc(c.used ?
+          t('app_card_used') : t('app_card_' + c.item + '_what')) + '</small></button>';
+      }).join('') + '</div></div>';
+  }
+
+  /**
    * The double techniques of the team this turn: two verbs of the team together, with their name and what they do.
    *
    * @param {Object} live
@@ -356,8 +375,9 @@
     // By turns, the verb is ready from the moment the knot is announced, in big while the roles get ready.
     var ready = live.open || live.stage === 'intent' || live.stage === 'prep';
     var big = live.stage === 'intent' || live.stage === 'prep';
-    // The verbs of a missing role, while the roles get ready: during the lane, the lane is what matters.
-    ahead += big ? covers(live) : '';
+    // The verbs of a missing role and the deck of the team, while the roles get ready: during the lane, the lane is what
+    // matters.
+    ahead += big ? covers(live) + deck(live) : '';
     // A glance or a trail another team aimed at this one, and the weak point of the knot a glance read.
     if (live.glancefrom) {
       ahead = '<p class="battle-trail">' + esc(t('app_token_glance_from', live.glancefrom)) + '</p>' + ahead;
@@ -556,6 +576,24 @@
             b.disabled = false;
           });
           T.toast(esc(e.message), true);
+        });
+      };
+    });
+    layer.querySelectorAll('[data-card]').forEach(function(card) {
+      card.onclick = function() {
+        layer.querySelectorAll('[data-card]').forEach(function(b) {
+          b.disabled = true;
+        });
+        api('card', {item: card.dataset.card}).then(function(r) {
+          state.sig = '';
+          show(r.live || null);
+          if (T.fx) {
+            T.fx.sound('chime');
+          }
+        }).catch(function(e) {
+          state.sig = '';
+          T.toast(esc(e.message), true);
+          poll();
         });
       };
     });

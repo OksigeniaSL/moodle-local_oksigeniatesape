@@ -7313,6 +7313,40 @@ body.adapt-colours .errors-text .fixed ins {
   border-radius: 10px;
 }
 
+/* By turns, the deck of the team: a card for each thing its members carry. */
+.battle-deck {
+  margin: 10px 0;
+}
+
+.battle-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.battle-card {
+  display: grid;
+  gap: 2px;
+  flex: 1 1 140px;
+  min-height: 60px;
+  padding: 8px 10px;
+  border: 2px solid rgba(var(--lantern-rgb), .5);
+  border-radius: var(--r-s);
+  background: rgba(var(--lantern-rgb), .1);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.battle-card small {
+  color: var(--text-soft);
+}
+
+.battle-card.used {
+  opacity: .55;
+  cursor: default;
+}
+
 /* A double technique: two verbs of a team in the same turn. */
 .battle-combo {
   margin: 8px 0;

@@ -1012,6 +1012,10 @@ final class structures {
             'tokenused' => new external_value(PARAM_BOOL, 'They used it in this battle', VALUE_DEFAULT, false),
             'struck' => new external_value(PARAM_INT, 'A wrong option struck out by the glance of their team', VALUE_OPTIONAL),
             'struck2' => new external_value(PARAM_INT, 'By turns: another, by the owl\'s eye of their team', VALUE_OPTIONAL),
+            'cards' => new external_multiple_structure(new external_single_structure([
+                'item' => new external_value(PARAM_ALPHA, 'lantern, magnifier or net'),
+                'used' => new external_value(PARAM_BOOL, 'The team played it in this battle'),
+            ]), 'By turns: the deck of their team', VALUE_OPTIONAL),
             'combos' => new external_multiple_structure(
                 new external_value(PARAM_ALPHA, 'oak, owl, lantern or path'),
                 'By turns: the double techniques of their team this turn',

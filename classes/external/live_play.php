@@ -42,7 +42,7 @@ final class live_play extends external_api {
             'action' => new external_value(
                 PARAM_ALPHA,
                 'state, join, answer, strike (by turns, a lane of another engine), token, carry (by turns, a dizzy team), ' .
-                    'pull or parry (by turns: answer 1 if the touch came in time)'
+                    'pull or parry (by turns: answer 1 if the touch came in time), card (by turns: item, a card of the deck)'
             ),
             'round' => new external_value(PARAM_INT, 'answer: the round', VALUE_DEFAULT, 0),
             'answer' => new external_value(PARAM_INT, 'answer: index of the option', VALUE_DEFAULT, -1),
@@ -54,6 +54,7 @@ final class live_play extends external_api {
             ),
             'payload' => new external_value(PARAM_RAW, 'strike, by turns: what was done in a lane (JSON)', VALUE_DEFAULT, ''),
             'cover' => new external_value(PARAM_ALPHA, 'token, by turns: the verb of a role missing in the team', VALUE_DEFAULT, ''),
+            'item' => new external_value(PARAM_ALPHA, 'card, by turns: the thing the card is', VALUE_DEFAULT, ''),
         ]);
     }
 
@@ -67,6 +68,7 @@ final class live_play extends external_api {
      * @param int $target
      * @param string $payload
      * @param string $cover
+     * @param string $item
      * @return array
      */
     public static function execute(
@@ -76,7 +78,8 @@ final class live_play extends external_api {
         int $answer = -1,
         int $target = 0,
         string $payload = '',
-        string $cover = ''
+        string $cover = '',
+        string $item = ''
     ): array {
         global $USER;
         $params = self::validate_parameters(self::execute_parameters(), [
@@ -87,6 +90,7 @@ final class live_play extends external_api {
             'target' => $target,
             'payload' => $payload,
             'cover' => $cover,
+            'item' => $item,
         ]);
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
@@ -125,6 +129,9 @@ final class live_play extends external_api {
                 break;
             case 'parry':
                 live::parry($live, $member, $params['answer'] === 1, $now);
+                break;
+            case 'card':
+                live::card($live, $member, $params['item'], $now);
                 break;
             default:
                 throw new \invalid_parameter_exception('Unknown action');

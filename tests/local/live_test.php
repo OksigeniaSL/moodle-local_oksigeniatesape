@@ -1079,6 +1079,52 @@ final class live_test extends \advanced_testcase {
         $this->assertSame(2, live::board_view($live, self::NOW + 60)['damage']);
     }
 
+    public function test_by_turns_the_deck_of_the_team(): void {
+        global $DB;
+        $this->resetAfterTest();
+        [$course, $members, $groups, $live] = $this->turns_with_roles(['scout', 'healer', 'sage', 'scout']);
+        [$first, $second] = [(int) $groups[0]->id, (int) $groups[1]->id];
+        // The first team carries a lantern and a net between its members; the second, nothing.
+        foreach (['lantern' => 0, 'net' => 1] as $item => $i) {
+            engine::item($members[$i], missions::item_id($item), 'scene', 0, 0, self::NOW);
+        }
+        $this->assertSame([['item' => 'lantern', 'used' => false], ['item' => 'net', 'used' => false]], live::deck($live, $first));
+        $this->assertSame([], live::deck($live, $second));
+        $this->assertSame(2, count(live::device_view($live, $members[1], self::NOW + 2)['cards']));
+        // The lane of the first team, one to choose among four; the knot goes for it.
+        $live = $this->set_state($live, function (array $state) use ($first) {
+            unset($state['rounds'][1]['lanes'][$first]['engine']);
+            $state['rounds'][1]['lanes'][$first]['options'] = 4;
+            $state['rounds'][1]['lanes'][$first]['correct'] = 0;
+            $state['rounds'][1]['intent'] = 'team';
+            $state['rounds'][1]['target'] = $first;
+            return $state;
+        });
+        // The lantern strikes out a wrong option for the whole team, and the net keeps its candle.
+        live::card($live, $members[1], 'lantern', self::NOW + 2);
+        live::card($live, $members[0], 'net', self::NOW + 2);
+        $strike = self::NOW + live::INTENT + live::PREP;
+        $view = live::device_view($live, $members[0], $strike + 1);
+        $this->assertNotSame(0, $view['struck']);
+        $this->assertSame([true, true], array_column($view['cards'], 'used'));
+        $this->assertArrayNotHasKey('struck', live::device_view($live, $members[2], $strike + 1));
+        // Once a battle, and only what the team carries.
+        foreach ([[$members[0], 'lantern'], [$members[2], 'net']] as [$member, $item]) {
+            try {
+                live::card($live, $member, $item, self::NOW + 3);
+                $this->fail('A card twice or not carried');
+            } catch (\moodle_exception $e) {
+                $this->assertSame('tokenused', $e->errorcode);
+            }
+        }
+        $candles = (int) json_decode($live->state, true)['candles'];
+        $live = $this->play_turn($live, $members, $groups, [false, true], self::NOW);
+        $view = live::board_view($live, self::NOW + 60);
+        $this->assertTrue($view['shielded']);
+        $this->assertSame($candles, $view['candles']);
+        $this->assertContains('cardnet', array_column($view['tokens'], 'kind'));
+    }
+
     public function test_by_turns_a_team_tangled_twice_is_dizzy_until_another_team_carries_its_lane(): void {
         $this->resetAfterTest();
         [$course, $members, $groups] = $this->make_class();

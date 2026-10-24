@@ -85,6 +85,14 @@ final class live {
     public const COMBOS = ['oak' => ['shield', 'cheer'], 'owl' => ['glance', 'trail'], 'lantern' => ['shield', 'glance'],
         'path' => ['cheer', 'trail']];
 
+    /**
+     * @var array By turns, the deck of the team: the things its members carry, each one a card the team plays once a
+     * battle, in the preparation of a turn. The lantern strikes out a wrong option of its lane, as a glance; the lens says
+     * where the answer is, as a trail; the net keeps the candle of the team lit if the blow falls on it, as a shield.
+     * Item code => kind of the token.
+     */
+    public const CARDS = ['lantern' => 'cardlamp', 'magnifier' => 'cardlens', 'net' => 'cardnet'];
+
     /** @var int Aloud: gems for each member of a team whose spokesperson argued its answer, right or not. */
     public const ARGUED = 1;
 
@@ -1112,6 +1120,67 @@ final class live {
     }
 
     /**
+     * By turns, a player plays a card of the deck of their team in the open turn: once a battle for the team.
+     *
+     * @param \stdClass $live
+     * @param \stdClass $member
+     * @param string $item The thing the card is (lantern, magnifier or net).
+     * @param int|null $now
+     */
+    public static function card(\stdClass $live, \stdClass $member, string $item, ?int $now = null): void {
+        global $DB;
+        $now = $now ?? time();
+        $state = self::state($live);
+        $joined = $DB->get_record(self::T . 'livein', ['liveid' => $live->id, 'round' => 0, 'charid' => $member->charid]);
+        $turns = !empty($state['knots']) && $live->kind === 'battle' && $state['mode'] === 'phones' && $state['outcome'] === '';
+        if (!$turns || !$joined || (int) $live->round < 1 || !self::is_live($state, $now) || $member->status === 'paused') {
+            throw new \moodle_exception('roundclosed', 'local_oksigeniatesape');
+        }
+        $team = (int) $joined->team;
+        $deck = array_column(self::deck($live, $team), 'used', 'item');
+        if (!isset($deck[$item]) || $deck[$item]) {
+            throw new \moodle_exception('tokenused', 'local_oksigeniatesape');
+        }
+        $DB->insert_record(self::T . 'livetoken', (object) ['liveid' => $live->id, 'courseid' => $live->courseid,
+            'charid' => $member->charid, 'round' => (int) $live->round, 'team' => $team, 'kind' => self::CARDS[$item],
+            'target' => 0, 'parried' => 0, 'timecreated' => $now]);
+    }
+
+    /**
+     * The deck of a team in a battle by turns: the cards of the things its members carry, and whether it played each one.
+     *
+     * @param \stdClass $live
+     * @param int $team
+     * @return array Each: item, used.
+     */
+    public static function deck(\stdClass $live, int $team): array {
+        global $DB;
+        if (!$team) {
+            return [];
+        }
+        $charids = array_map(fn($m) => (int) $m->charid, teams::members((int) $live->courseid, $team, true));
+        if (!$charids) {
+            return [];
+        }
+        [$inchar, $params] = $DB->get_in_or_equal($charids);
+        $carried = $DB->get_fieldset_sql(
+            'SELECT DISTINCT i.code
+               FROM {' . self::T . 'inventory} v
+               JOIN {' . self::T . "item} i ON i.id = v.itemid
+              WHERE v.courseid = ? AND v.charid $inchar",
+            array_merge([(int) $live->courseid], $params)
+        );
+        $played = $DB->get_fieldset_select(self::T . 'livetoken', 'kind', 'liveid = ? AND team = ?', [$live->id, $team]);
+        $out = [];
+        foreach (self::CARDS as $item => $kind) {
+            if (in_array($item, $carried, true)) {
+                $out[] = ['item' => $item, 'used' => in_array($kind, $played, true)];
+            }
+        }
+        return $out;
+    }
+
+    /**
      * A player uses the verb of their role in the open round: the glance of the sage strikes out a wrong option for their
      * team, the trail of the scout tells their team in which chapter the answer is (by turns, also the next knot), the
      * shield of the protector stops a blow, and the cheer of the healer (without turns, each right answer of their team
@@ -1362,6 +1431,8 @@ final class live {
             $rest = $round > 0 ? self::rest($live, $team, $kind, $member, $round) : 0;
             $view['tokenused'] = $rest > 0;
             $view['tokenrest'] = $rest;
+            // The deck of the team: the cards of what its members carry, once a battle each.
+            $view['cards'] = self::deck($live, $team);
             // And the verb of a role missing in the team, which anyone in it can use once.
             $view['covers'] = $round > 0 && empty($state['rounds'][$round]['revealed']) ? self::covers($live, $team) : [];
             if ($view['covers'] && self::cover_paid($live, $team)) {
@@ -1405,7 +1476,9 @@ final class live {
         }
         // By turns, what the team plays is its lane; the glance strikes out an option only in one to choose.
         $info = array_merge($state['rounds'][$round], $state['rounds'][$round]['lanes'][$team] ?? []);
-        if ((in_array('glance', $kinds, true) || isset($from['glance'])) && $info['options'] > 1 && empty($info['engine'])) {
+        // The lantern of the deck of the team strikes out as a glance; the lens tells where the answer is, as a trail.
+        $glanced = in_array('glance', $kinds, true) || in_array(self::CARDS['lantern'], $kinds, true) || isset($from['glance']);
+        if ($glanced && $info['options'] > 1 && empty($info['engine'])) {
             // Always the same wrong option for the round, so that the phones of the team agree.
             $wrong = array_values(array_diff(range(0, $info['options'] - 1), [(int) $info['correct']]));
             $view['struck'] = $wrong[self::seed($live, $round) % count($wrong)];
@@ -1427,7 +1500,8 @@ final class live {
             $view['sniffed'] = $sniffed;
             $view['sniffplace'] = (string) ($info['trail'] ?? self::chapter_name((int) $live->courseid, $info['chapter']));
         }
-        if ((in_array('trail', $kinds, true) || isset($from['trail'])) && $info['chapter'] !== '') {
+        $trailed = in_array('trail', $kinds, true) || in_array(self::CARDS['magnifier'], $kinds, true) || isset($from['trail']);
+        if ($trailed && $info['chapter'] !== '') {
             // Battles opened before the name was kept with the round look it up.
             $view['trail'] = $info['trail'] ?? self::chapter_name((int) $live->courseid, $info['chapter']);
         }
@@ -1924,6 +1998,10 @@ final class live {
         // The shield and the cheer go to the team they were put on (their own, if none).
         $on = fn($kind) => array_map(fn($t) => (int) ($t->target ?: $t->team), array_filter($tokens, fn($t) => $t->kind === $kind));
         $shields = $on('shield');
+        // The net of the deck of a team keeps its own candle, as a shield on it.
+        foreach (array_filter($tokens, fn($t) => $t->kind === self::CARDS['net']) as $token) {
+            $shields[] = (int) $token->team;
+        }
         // The double techniques of the turn; and the shields an oak embrace left from the turn before.
         $combos = self::combos($tokens);
         $info['combos'] = $combos;
