@@ -7748,6 +7748,26 @@ body.adapt-colours .errors-text .fixed ins {
   width: min(900px, 100%);
 }
 
+/* ---------- The gift of the place ---------- */
+
+.gift-options {
+  display: grid;
+  gap: 8px;
+}
+
+.gift-opt {
+  display: grid;
+  justify-items: start;
+  gap: 2px;
+  min-height: 60px;
+  text-align: left;
+}
+
+.gift-opt small {
+  color: var(--text-soft);
+  font-weight: 400;
+}
+
 /* ---------- Be the Embrollo ---------- */
 
 .landmark-btn.tangles .landmark-pic svg {

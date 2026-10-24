@@ -66,6 +66,18 @@ final class reserve {
     }
 
     /**
+     * The row of a team, made if it is not there yet.
+     *
+     * @param int $courseid
+     * @param int $groupid
+     * @param int|null $now
+     * @return \stdClass
+     */
+    public static function row(int $courseid, int $groupid, ?int $now = null): \stdClass {
+        return self::team($courseid, $groupid, $now);
+    }
+
+    /**
      * Breath in the reserve of a team.
      *
      * @param int $groupid

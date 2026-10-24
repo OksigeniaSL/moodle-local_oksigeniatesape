@@ -208,6 +208,11 @@ final class view {
             }
             // The libraries of other regions of the site whose teachers share them.
             $world['libraries'] = museum::shared($courseid);
+            // The gift of the place where the class is now, for the team.
+            $gift = gifts::for_student($courseid, (int) $char->userid);
+            if ($gift) {
+                $world['gift'] = $gift;
+            }
             // Be the Embrollo: the tangle of the team this week, and those of other teams to undo.
             $world['tangles'] = self::tangles($courseid, (int) $char->userid);
             if (!empty($world['team'])) {

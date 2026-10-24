@@ -349,6 +349,7 @@ final class scenes {
         bool $free = false,
         bool $together = false
     ): int {
+        global $DB;
         // With «more help» or the aids of the first steps, the hints are free.
         $free = $free || adapt::has($member, 'hints');
         // The sage: the first free (the first two with «Hints of the house») and half for the rest.
@@ -356,6 +357,9 @@ final class scenes {
         $team = teams::of((int) $member->courseid, (int) $char->userid);
         $brought = $team && events::brought((int) $member->courseid, (int) $team->id, $now) ? 1 : 0;
         $brought += $team && $together ? banners::free_hints((int) $member->courseid, (int) $team->id) : 0;
+        // The lamp, the gift of the place the team chose: the first hint of each scene of the place is free.
+        $chapterid = (int) $DB->get_field(self::T . 'scene', 'chapterid', ['id' => $sceneid]);
+        $brought += gifts::has((int) $member->courseid, (int) $char->userid, $chapterid, 'lamp') ? 1 : 0;
         $cost = $free ? 0 : ($char->role === 'sage' ? (int) ceil(max(0, $hints - $gift - $brought) / 2) :
             max(0, $hints - $brought));
         $fresh = engine::member($char, (int) $member->courseid, $now);
@@ -820,6 +824,10 @@ final class scenes {
                     $target[$resource] += (int) $effect[$resource];
                 }
             }
+        }
+        // The heron's step, the gift of the place the team chose: a scene of the place that goes well, a gem more.
+        if ($result['outcome'] === 'success' && gifts::has((int) $member->courseid, (int) $char->userid, (int) $scene->chapterid, 'heron')) {
+            $target['gems']++;
         }
         // Saber and gems: what is missing up to what this ending gives (what a cap left out counts as given).
         foreach (['saber', 'gems'] as $resource) {

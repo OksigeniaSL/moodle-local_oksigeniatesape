@@ -53,6 +53,13 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:play',
     ],
+    'local_oksigeniatesape_choose_gift' => [
+        'classname' => 'local_oksigeniatesape\external\choose_gift',
+        'description' => 'Chooses the gift of the team of the current student for the place where the class is now.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:play',
+    ],
     'local_oksigeniatesape_direct' => [
         'classname' => 'local_oksigeniatesape\external\direct',
         'description' => 'Gives a mark of the story to a team or to the class, as the director of the game.',

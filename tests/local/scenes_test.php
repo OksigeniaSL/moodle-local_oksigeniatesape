@@ -403,6 +403,54 @@ final class scenes_test extends \advanced_testcase {
         $this->assertSame(3, $scout['rewards']['hints']);
     }
 
+    public function test_the_gift_of_the_place_the_lamp_the_herons_step_and_the_breath_of_the_wood(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $w = $this->make_class(3);
+        $c = (int) $w->course->id;
+        $gen = $this->getDataGenerator();
+        $groups = [];
+        foreach ([0, 1, 2] as $i) {
+            $groups[$i] = $gen->create_group(['courseid' => $c]);
+            $gen->create_group_member(['groupid' => $groups[$i]->id, 'userid' => $w->users[$i]->id]);
+            $DB->set_field(self::T . 'char', 'role', 'scout', ['userid' => $w->users[$i]->id]);
+        }
+        // The class lit the clearing: it is in the library now, and each team chooses its gift there, once.
+        $DB->set_field(self::T . 'chapter', 'litat', time(), ['missionid' => $w->mission->id, 'code' => 'claro']);
+        $gift = gifts::for_student($c, $w->users[0]->id);
+        $this->assertSame(['lamp', 'heron', 'breath'], array_column($gift['gifts'], 'code'));
+        $this->assertSame('', $gift['chosen']);
+        gifts::choose($c, $w->users[0]->id, 'lamp');
+        gifts::choose($c, $w->users[1]->id, 'heron');
+        gifts::choose($c, $w->users[2]->id, 'breath');
+        $this->assertSame('lamp', gifts::for_student($c, $w->users[0]->id)['chosen']);
+        try {
+            gifts::choose($c, $w->users[0]->id, 'heron');
+            $this->fail('Twice in a place');
+        } catch (\moodle_exception $e) {
+            $this->assertSame('giftchosen', $e->errorcode);
+        }
+        // The breath of the wood: the reserve of the team, at once.
+        $this->assertSame(gifts::BREATH, reserve::amount((int) $groups[2]->id));
+        $this->assertSame(0, reserve::amount((int) $groups[1]->id));
+        // A scene of the library with three hints: with the lamp, the first is free; with the heron's step, a gem more.
+        $scene = $DB->get_record(self::T . 'scene', ['missionid' => $w->mission->id, 'code' => 'C2-2']);
+        $def = json_decode($scene->definition, true);
+        $def['nodes']['colocar']['hints'] = ['Una', 'Dos', 'Tres'];
+        $DB->set_field(self::T . 'scene', 'definition', json_encode($def), ['id' => $scene->id]);
+        $hints = [['n' => 'colocar', 'hint' => 0], ['n' => 'colocar', 'hint' => 1], ['n' => 'colocar', 'hint' => 2]];
+        $events = function (\stdClass $user) use ($w, $def, $hints): array {
+            [$items, $roles, $flags, $role] = scenes::context(characters::get($user->id), $w->course->id);
+            return array_merge($hints, autoplayer::play($def, $items, $roles, $flags, $role));
+        };
+        $lamp = scenes::play($c, $w->users[0]->id, $scene->id, $events($w->users[0]), null);
+        $heron = scenes::play($c, $w->users[1]->id, $scene->id, $events($w->users[1]), null);
+        $this->assertSame('success', $heron['outcome']);
+        $this->assertSame(2, $lamp['rewards']['hints']);
+        $this->assertSame(3, $heron['rewards']['hints']);
+        $this->assertSame($lamp['rewards']['gems'] + 1, $heron['rewards']['gems']);
+    }
+
     public function test_the_messengers_bring_the_first_hint_of_each_scene_of_the_day(): void {
         global $DB;
         $this->resetAfterTest();

@@ -3384,7 +3384,7 @@
             '<span class="meter energy" ' +
             'title="' + esc(t('app_energy')) + '"><i style="width:' + Math.round(100 * m.energy / w.energymax) +
             '%"></i></span></span>' : '') + '</li>';
-        }).join('') + '</ul></section>' + councilCard(team) + reserveCard(team.reserve) + pactsCard(team.pacts) +
+        }).join('') + '</ul></section>' + councilCard(team) + giftCard() + reserveCard(team.reserve) + pactsCard(team.pacts) +
         tangleCard();
     }
     html += powersCard();
@@ -3590,6 +3590,26 @@
   }
 
   function bindTeam() {
+    app.querySelectorAll('[data-gift]').forEach(function(b) {
+      b.onclick = function() {
+        if (!window.confirm(t('app_gift_confirm', b.querySelector('b').textContent))) {
+          return;
+        }
+        app.querySelectorAll('[data-gift]').forEach(function(x) {
+          x.disabled = true;
+        });
+        T.api('choose_gift', {courseid: cfg.courseid, gift: b.dataset.gift}).then(function(r) {
+          state.world.gift = r.gift;
+          world();
+          if (T.fx) {
+            T.fx.sound('chime');
+          }
+        }).catch(function(e) {
+          T.toast(esc(e.message), true);
+          world();
+        });
+      };
+    });
     var tanglewrite = app.querySelector('[data-tanglewrite]');
     if (tanglewrite) {
       tanglewrite.onclick = writeTangle;
@@ -4629,6 +4649,27 @@
   }
 
   /** The words of the hero, chosen again: saved at once, the scenes read them from the next play. */
+  /**
+   * The gift of the place where the class is now: the team chooses one of three, once a place.
+   *
+   * @return {string}
+   */
+  function giftCard() {
+    var g = state.world.gift;
+    if (!g) {
+      return '';
+    }
+    var chosen = g.gifts.filter(function(x) {
+      return x.code === g.chosen;
+    })[0];
+    return '<section class="card gift-card"><div class="kicker">' + esc(t('app_gift_title', g.place)) + '</div>' + (chosen ?
+      '<p><b>' + esc(t('app_gift_chosen', chosen.name)) + '</b></p><p class="help-soft">' + esc(chosen.text) + '</p>' :
+      '<p class="help">' + esc(t('app_gift_help')) + '</p><div class="gift-options">' + g.gifts.map(function(x) {
+        return '<button type="button" class="btn btn-soft gift-opt" data-gift="' + esc(x.code) + '"><b>' + esc(x.name) +
+          '</b><small>' + esc(x.text) + '</small></button>';
+      }).join('') + '</div>') + '</section>';
+  }
+
   /**
    * Be the Embrollo, in the tab of the team: write the tangle of the team this week, or see how it is going.
    *

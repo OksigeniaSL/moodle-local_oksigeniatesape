@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 77,
+ "version": 78,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 78,
+   "kind": "improvement",
+   "date": "2026-10-24",
+   "text": "El regalo del lugar: la lámpara de Doña Hebra, el paso de la garza y el aliento del bosque, para que cada equipo elija uno en cada lugar"
+  },
   {
    "version": 77,
    "kind": "improvement",
@@ -2598,6 +2604,41 @@
    }
   }
  },
+ "gifts": [
+  {
+   "code": "lamp",
+   "name": {
+    "valley": "La lámpara de Doña Hebra",
+    "azara": "El candil de la archivera"
+   },
+   "text": {
+    "valley": "En este lugar, la primera pista de cada escena no cuesta aliento.",
+    "azara": "En este lugar, la primera pista de cada escena no cuesta aliento."
+   }
+  },
+  {
+   "code": "heron",
+   "name": {
+    "valley": "El paso de la garza",
+    "azara": "El paso de la garza"
+   },
+   "text": {
+    "valley": "En este lugar, cada escena que sale bien da una gema más.",
+    "azara": "En este lugar, cada escena que sale bien da una gema más."
+   }
+  },
+  {
+   "code": "breath",
+   "name": {
+    "valley": "El aliento del bosque",
+    "azara": "El aliento del monte"
+   },
+   "text": {
+    "valley": "Al elegirlo, la reserva del equipo gana 4 de aliento.",
+    "azara": "Al elegirlo, la reserva del equipo gana 4 de aliento."
+   }
+  }
+ ],
  "director": [
   {
    "flag": "garza-amiga",

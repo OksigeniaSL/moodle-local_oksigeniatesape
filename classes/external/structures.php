@@ -511,6 +511,24 @@ final class structures {
     }
 
     /**
+     * The gift of the place where the class is now, for a student: the gifts to choose from and the one their team chose.
+     *
+     * @param int $required
+     * @return external_single_structure
+     */
+    public static function gift(int $required = VALUE_OPTIONAL): external_single_structure {
+        return new external_single_structure([
+            'place' => new external_value(PARAM_TEXT, 'The place'),
+            'gifts' => new external_multiple_structure(new external_single_structure([
+                'code' => new external_value(PARAM_ALPHA, 'lamp, heron or breath'),
+                'name' => new external_value(PARAM_TEXT, 'Its name in the story'),
+                'text' => new external_value(PARAM_TEXT, 'What it does'),
+            ])),
+            'chosen' => new external_value(PARAM_ALPHA, 'The gift the team chose, empty if none yet'),
+        ], 'The gift of the place', $required);
+    }
+
+    /**
      * The tangles of the teams for the teacher: those waiting, and those approved with how they went.
      *
      * @return external_single_structure

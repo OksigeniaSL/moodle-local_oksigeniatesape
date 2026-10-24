@@ -103,6 +103,7 @@
         <FIELD NAME="banner" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Banner and unlocked decorations (JSON)"/>
         <FIELD NAME="breath" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The reserve of breath of the team, spent together"/>
         <FIELD NAME="filled" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="What filled the reserve, so that it fills once (JSON: key => breath)"/>
+        <FIELD NAME="gifts" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="The gift the team chose in each place (JSON: place => gift)"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>
