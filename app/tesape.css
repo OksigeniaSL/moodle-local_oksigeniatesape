@@ -14162,3 +14162,135 @@ body.still .pet-me.patted .creature {
   border-radius: 50%;
   background: var(--lantern);
 }
+
+/* The cinematics of the class screen: the painting with its camera, what floats in the air, and what is told in big. */
+.cine-show {
+  overflow: hidden;
+  padding: 0;
+  background: #05101a;
+}
+
+.cine-art {
+  position: absolute;
+  inset: 0;
+  animation: 12s ease-in-out both;
+}
+
+.cine-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(.7);
+}
+
+.cine-art.cine-boss img {
+  object-fit: contain;
+  filter: drop-shadow(0 0 40px rgba(139, 92, 246, .6));
+}
+
+.cine-art svg,
+.cine-tint {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.cine-tint {
+  background: linear-gradient(transparent 45%, rgba(5, 16, 26, .9));
+}
+
+.cine-in {
+  animation-name: tesape-cine-in;
+}
+
+.cine-out {
+  animation-name: tesape-cine-out;
+}
+
+.cine-left {
+  animation-name: tesape-cine-left;
+}
+
+.cine-right {
+  animation-name: tesape-cine-right;
+}
+
+.cine-show.paused .cine-art {
+  animation-play-state: paused;
+}
+
+.cine-caption {
+  position: absolute;
+  left: 4vw;
+  right: 4vw;
+  bottom: 12vh;
+  text-align: center;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, .8);
+  animation: tesape-rise 1.2s .6s ease-out both;
+}
+
+.cine-caption p {
+  margin: 8px 0 0;
+  font: 600 clamp(22px, 3vw, 42px) / 1.35 var(--f-text);
+}
+
+.cine-controls {
+  position: absolute;
+  right: 3vw;
+  bottom: 3vh;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cine-count {
+  color: #c9d6df;
+}
+
+@keyframes tesape-cine-in {
+  from {
+    transform: scale(1);
+  }
+
+  to {
+    transform: scale(1.14);
+  }
+}
+
+@keyframes tesape-cine-out {
+  from {
+    transform: scale(1.14);
+  }
+
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes tesape-cine-left {
+  from {
+    transform: scale(1.1) translateX(3%);
+  }
+
+  to {
+    transform: scale(1.1) translateX(-3%);
+  }
+}
+
+@keyframes tesape-cine-right {
+  from {
+    transform: scale(1.1) translateX(-3%);
+  }
+
+  to {
+    transform: scale(1.1) translateX(3%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cine-art,
+  .cine-caption {
+    animation: none;
+  }
+}

@@ -79,6 +79,15 @@ final class get_board extends external_api {
                     'autumn' => new external_value(PARAM_TEXT, 'What happens in autumn'),
                     'winter' => new external_value(PARAM_TEXT, 'What happens in winter'),
                 ], 'What happens in the world of the mission in each season', VALUE_OPTIONAL),
+                'cinematics' => new external_multiple_structure(new external_single_structure([
+                    'code' => new external_value(PARAM_ALPHANUMEXT, 'Cinematic'),
+                    'title' => new external_value(PARAM_TEXT, 'Its title'),
+                    'steps' => new external_multiple_structure(new external_single_structure([
+                        'image' => new external_value(PARAM_ALPHANUMEXT, 'The painting: of a scene, or boss for the Embrollo'),
+                        'move' => new external_value(PARAM_ALPHA, 'How the camera moves: in, out, left or right'),
+                        'text' => new external_value(PARAM_TEXT, 'What is told'),
+                    ])),
+                ]), 'The cinematics of the mission for the class screen', VALUE_DEFAULT, []),
                 'chapters' => new external_multiple_structure(new external_single_structure([
                     'id' => new external_value(PARAM_INT, 'Chapter'),
                     'code' => new external_value(PARAM_ALPHANUMEXT, 'Code'),

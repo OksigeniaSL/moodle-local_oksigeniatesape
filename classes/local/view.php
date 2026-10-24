@@ -627,6 +627,7 @@ final class view {
                 'mapworld' => (string) ($mission->data['maplayers']['world'] ?? ''),
                 'mapheight' => (int) ($mission->data['maplayers']['height'] ?? 0),
                 'seasons' => self::seasons($mission),
+                'cinematics' => self::cinematics($mission),
                 'chapters' => $chapters,
                 // The final battle, if the mission saves something for the end, and the text of its end.
                 'final' => !empty($mission->data['battle']['final']),
@@ -1370,6 +1371,26 @@ final class view {
         $out = [];
         foreach (['spring', 'summer', 'autumn', 'winter'] as $season) {
             $out[$season] = missions::text($mission->data['seasons'][$season] ?? '', $mission->skin, $mission->variant);
+        }
+        return $out;
+    }
+
+    /**
+     * The cinematics of a mission for the class screen, in its story: each one with its steps (a painting, how the
+     * camera moves, what is told).
+     *
+     * @param \stdClass $mission With data.
+     * @return array code, title, steps (image, move, text).
+     */
+    public static function cinematics(\stdClass $mission): array {
+        $out = [];
+        foreach ($mission->data['cinematics'] ?? [] as $code => $cine) {
+            $steps = [];
+            foreach ($cine['steps'] ?? [] as $step) {
+                $steps[] = ['image' => (string) ($step['image'] ?? ''), 'move' => (string) ($step['move'] ?? 'in'),
+                    'text' => missions::text($step['text'] ?? '', $mission->skin, $mission->variant)];
+            }
+            $out[] = ['code' => (string) $code, 'title' => missions::text($cine['title'] ?? $code, $mission->skin), 'steps' => $steps];
         }
         return $out;
     }

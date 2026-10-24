@@ -1862,8 +1862,142 @@
   var MINUTES = [1, 2, 3, 5, 10, 15, 20];
 
   function toolButtons() {
+    var cine = state.board && state.board.mission && (state.board.mission.cinematics || []).length;
     return '<button class="btn btn-soft" type="button" data-hourglass>' + esc(t('board_hourglass')) + '</button>' +
-      '<button class="btn btn-soft" type="button" data-wheel>' + esc(t('board_wheel')) + '</button>';
+      '<button class="btn btn-soft" type="button" data-wheel>' + esc(t('board_wheel')) + '</button>' + (cine ?
+      '<button class="btn btn-soft" type="button" data-cine>' + esc(t('board_cine')) + '</button>' : '');
+  }
+
+  /* ---------- The cinematics of the mission ---------- */
+
+  /** The cinematics of the mission, to tell the class: which one, when there is more than one. */
+  function cinematics() {
+    var list = state.board.mission.cinematics;
+    if (list.length === 1) {
+      playCine(list[0]);
+      return;
+    }
+    var el = toolLayer('<h2 id="tesape-cine-pick">' + esc(t('board_cine')) + '</h2><div class="actions" style="justify-content:' +
+      'center;flex-wrap:wrap">' + list.map(function(c, i) {
+        return '<button class="btn btn-main" type="button" data-cinepick="' + i + '">' + esc(c.title) + '</button>';
+      }).join('') + '</div>', 'tesape-cine-pick');
+    el.querySelectorAll('[data-cinepick]').forEach(function(b) {
+      b.onclick = function() {
+        playCine(list[Number(b.dataset.cinepick)]);
+      };
+    });
+    el.querySelector('[data-cinepick]').focus();
+  }
+
+  /**
+   * A cinematic over the class screen: each painting with its camera, what floats in the air and what is told, in big;
+   * its voice, if the art brings it, or else the time to read it. The teacher pauses, skips or leaves.
+   *
+   * @param {Object} c code, title, steps (image, move, text).
+   */
+  function playCine(c) {
+    closeTool();
+    var skin = state.board.mission.skin;
+    var sky = T.sky();
+    var el = document.createElement('div');
+    el.className = 'session-show cine-show sky-' + sky.light;
+    el.setAttribute('role', 'dialog');
+    el.setAttribute('aria-modal', 'true');
+    el.setAttribute('aria-label', c.title);
+    document.body.appendChild(el);
+    state.tool = el;
+    var i = -1;
+    var timer = null;
+    var audio = null;
+    var paused = false;
+    var onkey = function(ev) {
+      if (ev.key === 'Escape') {
+        close();
+      }
+    };
+    var stop = function() {
+      clearTimeout(timer);
+      if (audio) {
+        audio.pause();
+      }
+    };
+    var close = function() {
+      stop();
+      audio = null;
+      document.removeEventListener('keydown', onkey);
+      el.remove();
+      if (state.tool === el) {
+        state.tool = null;
+      }
+    };
+    var next = function() {
+      stop();
+      audio = null;
+      paused = false;
+      i++;
+      if (i >= c.steps.length) {
+        close();
+        return;
+      }
+      show();
+    };
+    // About fourteen letters a second, and five seconds at least: the time to read it aloud.
+    var reading = function(text) {
+      return Math.max(5, Math.round(text.length / 14)) * 1000;
+    };
+    var show = function() {
+      var st = c.steps[i];
+      var picture = st.image === 'boss' ? T.artUrl(['boss.embrollo.3', 'boss.embrollo']) :
+        T.artUrl(['scene.' + st.image + '.' + skin, 'scene.' + st.image]);
+      var time = reading(st.text);
+      el.classList.remove('paused');
+      el.innerHTML = '<div class="cine-art cine-' + esc(st.move) + (st.image === 'boss' ? ' cine-boss' : '') + '" style="' +
+        'animation-duration:' + (time / 1000 + 3) + 's" aria-hidden="true">' + (picture ? '<img src="' + esc(picture) +
+        '" alt="">' : '') + '<i class="cine-tint"></i><svg viewBox="0 0 400 225" preserveAspectRatio="xMidYMid slice">' +
+        T.skyAir(sky.season, 400, 225, 16, i + 3) + '</svg></div><div class="cine-caption" aria-live="polite"><div ' +
+        'class="kicker">' + esc(c.title) + '</div><p>' + esc(st.text) + '</p></div><div class="cine-controls"><span ' +
+        'class="cine-count">' + esc(t('board_cine_count', {n: i + 1, total: c.steps.length})) + '</span><button class="btn ' +
+        'btn-soft" type="button" data-cinepause>' + esc(t('board_cine_pause')) + '</button><button class="btn btn-soft" ' +
+        'type="button" data-cinenext>' + esc(t(i === c.steps.length - 1 ? 'board_cine_end' : 'board_cine_next')) +
+        '</button><button class="btn btn-soft" type="button" data-cineclose>' + esc(t('app_close')) + '</button></div>';
+      el.querySelector('[data-cinenext]').onclick = next;
+      el.querySelector('[data-cineclose]').onclick = close;
+      var pause = el.querySelector('[data-cinepause]');
+      pause.onclick = function() {
+        paused = !paused;
+        el.classList.toggle('paused', paused);
+        pause.textContent = t(paused ? 'board_cine_go' : 'board_cine_pause');
+        if (paused) {
+          stop();
+        } else if (audio) {
+          audio.play().catch(function() {
+            timer = setTimeout(next, 3000);
+          });
+        } else {
+          timer = setTimeout(next, 3000);
+        }
+      };
+      // Its voice in the story of the class, from the art, when there is one; the time to read it, when there is not or it
+      // cannot play.
+      var voice = T.artUrl(['voice.cine.' + c.code + '.' + (i + 1) + '.' + skin]);
+      if (voice) {
+        audio = new Audio(voice);
+        audio.onended = function() {
+          if (!paused) {
+            timer = setTimeout(next, 1500);
+          }
+        };
+        audio.play().catch(function() {
+          audio = null;
+          timer = setTimeout(next, time);
+        });
+      } else {
+        timer = setTimeout(next, time);
+      }
+    };
+    document.addEventListener('keydown', onkey);
+    next();
+    el.querySelector('[data-cinepause]').focus();
   }
 
   /**
@@ -3137,6 +3271,7 @@
     on('[data-music]', switchMusic);
     on('[data-hourglass]', hourglass);
     on('[data-wheel]', wheel);
+    on('[data-cine]', cinematics);
     on('[data-openerhide]', function() {
       state.openerhidden = true;
       render();

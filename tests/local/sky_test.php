@@ -62,4 +62,16 @@ final class sky_test extends \advanced_testcase {
         $this->assertSame(['spring', 'summer', 'autumn', 'winter'], array_keys($seasons));
         $this->assertStringContainsString('hoja caduca', $seasons['autumn']);
     }
+
+    public function test_the_cinematics_of_the_class_screen_in_their_story(): void {
+        $this->resetAfterTest();
+        $course = $this->getDataGenerator()->create_course();
+        regions::save((int) $course->id, ['enabled' => 1]);
+        missions::install((int) $course->id, 'livingthings', 'azara', 'py');
+        $cine = array_column(view::cinematics(missions::get((int) $course->id)), null, 'code');
+        $this->assertSame(['prologo', 'embrollo'], array_keys($cine));
+        $this->assertCount(5, $cine['prologo']['steps']);
+        $this->assertStringContainsString('1781', $cine['prologo']['steps'][0]['text']);
+        $this->assertSame(['boss', 'in'], [$cine['embrollo']['steps'][1]['image'], $cine['embrollo']['steps'][1]['move']]);
+    }
 }

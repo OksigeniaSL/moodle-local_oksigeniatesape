@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 85,
+ "version": 86,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 86,
+   "kind": "improvement",
+   "date": "2026-10-24",
+   "text": "Dos cinemáticas para la pantalla de clase: el prólogo y la llegada del Embrollo, narradas con el arte de la misión"
+  },
   {
    "version": 85,
    "kind": "improvement",
@@ -521,6 +527,90 @@
   "summer": "Es verano: los días son largos, las plantas fabrican mucho alimento con tanta luz y los frutos maduran.",
   "autumn": "Es otoño: los árboles de hoja caduca pierden sus hojas, algunos animales guardan comida para el invierno y muchas aves se van a lugares más cálidos.",
   "winter": "Es invierno: muchos árboles están sin hojas, algunos animales hibernan o pasan el frío escondidos y muchas semillas esperan bajo la tierra a la primavera."
+ },
+ "cinematics": {
+  "prologo": {
+   "title": "El prólogo",
+   "steps": [
+    {
+     "image": "prologue",
+     "move": "in",
+     "text": {
+      "valley": "Es de noche en el Valle de Tesapé. En cada sendero brilla una linterna, y todas se alimentan del Gran Libro de la Vida.",
+      "azara": "Año 1781. Un barco llega al Río de la Plata. Entre los baúles viaja un cuaderno de campo con las tapas mojadas."
+     }
+    },
+    {
+     "image": "prologue",
+     "move": "out",
+     "text": {
+      "valley": "De pronto, una linterna tiembla… y se apaga. Luego otra. Y otra más.",
+      "azara": "En él, un naturalista ha ido anotando cada ser vivo que encontraba: cómo es, qué come, dónde vive."
+     }
+    },
+    {
+     "image": "libro",
+     "move": "left",
+     "text": {
+      "valley": "Por la mañana, el Gran Libro aparece revuelto y manchado de tinta. Junto a él, en el barro, hay unas huellas que no son de ningún animal conocido.",
+      "azara": "Al abrir el cuaderno, las páginas están mezcladas y la tinta, corrida. Nadie sabe explicar esas manchas."
+     }
+    },
+    {
+     "image": "semilla",
+     "move": "in",
+     "text": {
+      "valley": "Los sabios del valle llaman a una expedición nueva: recorrer el valle, observar a cada ser vivo, seguir las huellas y volver a encender las linternas.",
+      "azara": "Hay que rehacerlo: recorrer el monte y el río, observar a cada ser vivo y anotarlo bien, página a página."
+     }
+    },
+    {
+     "image": "claro",
+     "move": "right",
+     "text": {
+      "valley": "Esa expedición es esta clase. Sale al amanecer.",
+      "azara": "Esa expedición es esta clase. Sale al amanecer."
+     }
+    }
+   ]
+  },
+  "embrollo": {
+   "title": "La llegada del Embrollo",
+   "steps": [
+    {
+     "image": "torre",
+     "move": "in",
+     "text": {
+      "valley": "En lo alto de la Torre, alguien se ríe bajito.",
+      "azara": "Entre las páginas del cuaderno, algo se mueve y se ríe bajito."
+     }
+    },
+    {
+     "image": "boss",
+     "move": "in",
+     "text": {
+      "valley": "Es el Embrollo: un enredo de tinta y de hilos que lo mezcla todo. Le encantan las pompas que brillan y no hacen preguntas.",
+      "azara": "Es el Embrollo: un enredo de tinta y de hilos que lo mezcla todo. Le encantan las pompas que brillan y no hacen preguntas."
+     }
+    },
+    {
+     "image": "noche",
+     "move": "left",
+     "text": {
+      "valley": "Por donde pasa, los nombres se borran, los grupos se mezclan y las linternas se apagan.",
+      "azara": "Por donde pasa, los nombres se borran, los grupos se mezclan y las anotaciones se tuercen."
+     }
+    },
+    {
+     "image": "torre-ficha",
+     "move": "out",
+     "text": {
+      "valley": "Para devolver la luz al valle, la clase tendrá que observar, pensar en equipo y desenredar cada nudo. ¿Lista la expedición?",
+      "azara": "Para dejar el cuaderno bien, la clase tendrá que observar, pensar en equipo y desenredar cada nudo. ¿Lista la expedición?"
+     }
+    }
+   ]
+  }
  },
  "firstlook": {
   "title": "La primera mirada",
