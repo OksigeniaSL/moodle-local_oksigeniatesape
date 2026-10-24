@@ -56,9 +56,12 @@ final class minions {
         }
         $tried = $DB->record_exists(self::T . 'found', ['charid' => $char->id, 'missionid' => $mission->id,
             'kind' => 'miniontry', 'code' => $knot['code'] . '-' . $day]);
+        // A fight of today not finished goes on.
+        $fight = (int) $DB->get_field(self::T . 'fight', 'id', ['charid' => $char->id, 'minion' => (string) $knot['code'],
+            'day' => $day, 'outcome' => '']);
         return ['code' => (string) $knot['code'], 'name' => missions::text($knot['name'] ?? '', $mission->skin),
             'claim' => missions::text($knot['claim'] ?? '', $mission->skin), 'picture' => 'minion.' . $knot['code'],
-            'question' => $question['text'], 'options' => $question['options'], 'tried' => $tried];
+            'question' => $question['text'], 'options' => $question['options'], 'tried' => $tried && !$fight, 'fight' => $fight];
     }
 
     /**
@@ -76,13 +79,7 @@ final class minions {
         $now = $now ?? time();
         $courseid = (int) $member->courseid;
         $mission = missions::get($courseid);
-        $knot = null;
-        foreach ($mission ? self::places($mission) : [] as $place) {
-            $standing = self::knot_of($char, $mission, $place);
-            if ($standing && (string) $standing['code'] === $code) {
-                $knot = $standing;
-            }
-        }
+        $knot = $mission ? self::standing($char, $mission, $code) : null;
         if (!$knot || $member->status === 'paused') {
             throw new \moodle_exception('nominion', 'local_oksigeniatesape');
         }
@@ -100,16 +97,48 @@ final class minions {
         $out = ['right' => $right, 'correct' => (int) $question['correct'], 'why' => (string) ($question['why'] ?? ''),
             'gems' => 0, 'weakness' => ''];
         if ($right) {
-            $DB->insert_record(self::T . 'found', (object) ['charid' => $char->id, 'courseid' => $courseid,
-                'missionid' => $mission->id, 'kind' => 'untangled', 'code' => $code, 'timecreated' => $now]);
-            // With «Minions out walking» as the card of the day, twice.
-            $gems = self::GEMS * (events::active($courseid, 'minionday', $now) ? 2 : 1);
-            if (engine::gems($member, $gems, 'minion', 0, 0, 0, $now)) {
-                $out['gems'] = $gems;
-            }
+            $out['gems'] = self::untangle($char, $member, $mission, $knot, $now);
             $out['weakness'] = missions::text($knot['weakness'] ?? '', $mission->skin);
         }
         return $out;
+    }
+
+    /**
+     * A minion standing on the road of a student, by its code.
+     *
+     * @param \stdClass $char
+     * @param \stdClass $mission
+     * @param string $code
+     * @return array|null The knot.
+     */
+    public static function standing(\stdClass $char, \stdClass $mission, string $code): ?array {
+        foreach (self::places($mission) as $place) {
+            $knot = self::knot_of($char, $mission, $place);
+            if ($knot && (string) $knot['code'] === $code) {
+                return $knot;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * A student untangles a minion: it is gone from their road, and gives its gems.
+     *
+     * @param \stdClass $char
+     * @param \stdClass $member
+     * @param \stdClass $mission
+     * @param array $knot
+     * @param int $now
+     * @return int The gems given.
+     */
+    public static function untangle(\stdClass $char, \stdClass $member, \stdClass $mission, array $knot, int $now): int {
+        global $DB;
+        $courseid = (int) $member->courseid;
+        $DB->insert_record(self::T . 'found', (object) ['charid' => $char->id, 'courseid' => $courseid,
+            'missionid' => $mission->id, 'kind' => 'untangled', 'code' => (string) $knot['code'], 'timecreated' => $now]);
+        // With «Minions out walking» as the card of the day, twice.
+        $gems = self::GEMS * (events::active($courseid, 'minionday', $now) ? 2 : 1);
+        return engine::gems($member, $gems, 'minion', 0, 0, 0, $now) ? $gems : 0;
     }
 
     /**

@@ -47,7 +47,7 @@ class provider implements
     /** @var string[] Tables of a character in a course, all with charid and courseid. */
     public const COURSE_TABLES = ['member', 'ledger', 'inventory', 'sceneattempt', 'minigame', 'validation', 'found', 'idea',
         'livein', 'livetoken', 'pact', 'daily', 'purchase', 'huddle', 'huddlein', 'challengepart', 'teamspend', 'photo',
-        'tangle'];
+        'tangle', 'fight'];
 
     /**
      * What is stored.
@@ -85,6 +85,7 @@ class provider implements
             'photo' => ['courseid', 'groupid', 'chapter', 'charid', 'status', 'reviewedby', 'timecreated', 'timemodified'],
             'tangle' => ['courseid', 'groupid', 'charid', 'claim', 'truth', 'trap', 'why', 'status', 'reviewedby', 'inbattle',
                 'timecreated', 'timemodified'],
+            'fight' => ['charid', 'courseid', 'minion', 'state', 'outcome', 'timecreated'],
         ];
         foreach ($fields as $table => $names) {
             $described = [];
@@ -585,6 +586,18 @@ class provider implements
                     'status' => $s->status,
                     'timecreated' => transform::datetime($s->timecreated),
                 ], $spends)),
+            ]);
+        }
+        // The fights of their creature with the minions on the road.
+        $fights = $DB->get_records(self::T . 'fight', ['charid' => $charid, 'courseid' => $courseid], 'timecreated');
+        if ($fights) {
+            $writer->export_data(self::path('fights'), (object) [
+                'fights' => array_values(array_map(fn($f) => [
+                    'minion' => $f->minion,
+                    'outcome' => $f->outcome,
+                    'what' => json_decode((string) $f->state, true)['log'] ?? [],
+                    'time' => transform::datetime($f->timecreated),
+                ], $fights)),
             ]);
         }
         $huddles = $DB->get_records(self::T . 'huddlein', ['charid' => $charid, 'courseid' => $courseid], 'huddleid');

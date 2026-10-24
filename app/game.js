@@ -2297,6 +2297,137 @@
   }
 
   /**
+   * The little knots: the fight of the creature of the student with a minion on the road, in three turns. Each turn,
+   * the net (the idea that undoes what it claims), the strike (a question of its knot) and the thread it throws, which
+   * the student dodges moving the creature. The server keeps the fight and decides; this only draws it.
+   *
+   * @param {Object} minion code, name, claim, picture, fight.
+   */
+  function fightMoment(minion) {
+    var c = state.world.character || {};
+    var art = T.artUrl([minion.picture]);
+    var layer = document.createElement('div');
+    layer.className = 'badge-moment fight-moment';
+    layer.setAttribute('role', 'dialog');
+    layer.setAttribute('aria-modal', 'true');
+    layer.setAttribute('aria-labelledby', 'tesape-fight-title');
+    document.body.appendChild(layer);
+    var timer = 0;
+    var where = 1;
+    var close = function() {
+      clearTimeout(timer);
+      layer.remove();
+      refresh();
+    };
+    var marks = function(n, max, cls) {
+      var out = '';
+      for (var i = 0; i < max; i++) {
+        out += '<i class="' + cls + (i < n ? ' on' : '') + '"></i>';
+      }
+      return out;
+    };
+    var send = function(f, action, value) {
+      clearTimeout(timer);
+      layer.querySelectorAll('button[data-v]').forEach(function(x) {
+        x.disabled = true;
+      });
+      T.api('minion_fight', {courseid: cfg.courseid, action: action, fightid: f.id, value: value}).then(draw).catch(function(e) {
+        T.toast(esc(e.message), true);
+        close();
+      });
+    };
+    var said = function(f) {
+      var l = f.last;
+      if (!l.kind) {
+        return '';
+      }
+      var text = {hit: t(l.cut > 2 ? 'app_fight_double' : 'app_fight_hit', l.cut), weak: t('app_fight_weak'),
+        miss: t('app_fight_miss'), dodged: t('app_fight_dodged'), leapt: t('app_fight_leapt'), caught: t('app_fight_caught')}[l.kind];
+      var good = ['hit', 'weak', 'dodged', 'leapt'].indexOf(l.kind) >= 0;
+      return '<p class="fight-said ' + (good ? 'good' : 'bad') + '" role="status">' + esc(text) + '</p>' + (l.kind === 'miss' &&
+        f.laugh ? '<p class="knot-laugh">' + esc(f.laugh) + '</p>' : '') + (['hit', 'weak', 'miss'].indexOf(l.kind) >= 0 && l.why ?
+        '<p class="help">' + esc(l.why) + '</p>' : '');
+    };
+    var draw = function(f) {
+      clearTimeout(timer);
+      var face = art ? '<img src="' + esc(art) + '" alt="">' : T.embrollo(0.8);
+      var body = '';
+      if (f.phase === 'net') {
+        body = '<p class="fight-turn">' + esc(t('app_fight_turn', {n: f.turn + 1, turns: f.turns})) + '</p>' + (f.tangled ?
+          '<p class="help-soft">' + esc(t('app_fight_tangled')) + '</p>' : '') + '<p><b>' + esc(t('app_fight_net')) +
+          '</b></p><div class="fight-nets">' + f.nets.map(function(n, i) {
+            return '<button type="button" class="btn btn-soft fight-net' + (n.struck ? ' struck' : '') + '" data-v="net" ' +
+              'data-i="' + i + '"' + (n.struck ? ' disabled aria-label="' + esc(t('app_teamknot_struck', n.text)) + '"' : '') + '>' +
+              esc(n.text) + '</button>';
+          }).join('') + '</div>' + (f.cansniff ? '<div class="actions" style="justify-content:flex-start"><button type="button" ' +
+          'class="btn btn-soft" data-v="sniff">' + esc(t('app_fight_sniff')) + '</button><small class="help-soft">' +
+          esc(t('app_fight_sniff_help')) + '</small></div>' : '');
+      } else if (f.phase === 'strike') {
+        body = '<p class="fight-turn">' + esc(t('app_fight_turn', {n: f.turn + 1, turns: f.turns})) + '</p><p>' +
+          esc(t('app_fight_strike', f.net)) + '</p><p><b>' + esc(f.question) + '</b></p><div class="page-options">' +
+          f.options.map(function(o, i) {
+            return '<button type="button" class="btn btn-soft" data-v="strike" data-i="' + i + '">' + esc(o) + '</button>';
+          }).join('') + '</div>';
+      } else if (f.phase === 'dodge') {
+        where = f.aim === 1 ? 1 : where;
+        body = '<p><b>' + esc(t('app_fight_dodge')) + '</b></p><div class="fight-holes" role="group" aria-label="' +
+          esc(t('app_fight_dodge')) + '">' + [0, 1, 2].map(function(h) {
+            var place = t('app_fight_hole_' + h);
+            return '<button type="button" class="fight-hole' + (h === f.aim ? ' aimed' : '') + (h === where ? ' here' : '') +
+              '" data-v="dodge" data-i="' + h + '" aria-label="' + esc(t('app_fight_hole_label', place) + (h === f.aim ? '. ' +
+              t('app_fight_falls', place) : '')) + '"><span class="fight-shadow" aria-hidden="true"></span>' +
+              (h === where ? '<span class="fight-pet" aria-hidden="true">' + T.creature(c.creature, c.creaturestage) + '</span>' : '') +
+              '<small>' + esc(place) + '</small></button>';
+          }).join('') + '</div>' + (T.adapted.notime ? '' : '<span class="meter fight-clock"><i style="animation-duration:' +
+          f.dodge + 's"></i></span>');
+      } else {
+        body = '<h3 class="fight-end ' + esc(f.outcome) + '">' + esc(t(f.outcome === 'won' ? 'app_fight_won' :
+          'app_fight_escaped')) + '</h3>' + (f.outcome === 'won' ? (f.gems ? '<p><b>' + esc(t(f.gems === 1 ? 'app_encounter_gem' :
+          'app_encounter_gems', f.gems)) + '</b></p>' : '') + (f.weakness ? '<p>' + esc(t('app_minion_weakness', f.weakness)) +
+          '</p>' : '') : '<p class="help">' + esc(t('app_fight_escaped_help')) + '</p>');
+      }
+      var moves = f.moves.length ? '<p class="fight-moves"><small>' + esc(t('app_fight_moves')) + ' ' + f.moves.map(function(m) {
+        return esc(t('app_fight_move_' + m));
+      }).join(', ') + '</small></p>' : '<p class="fight-moves"><small>' + esc(t('app_fight_nomoves')) + '</small></p>';
+      layer.innerHTML = '<div class="badge-card"><div class="kicker">' + esc(t('app_minion_on_road')) + '</div><h2 ' +
+        'id="tesape-fight-title">' + esc(T.capital(f.name)) + '</h2><div class="fight-arena"><div class="fight-side minion' +
+        (f.outcome === 'won' ? ' flees' : '') + '"><div class="minion-face" aria-hidden="true">' + face + '</div><span class="' +
+        'fight-marks" role="img" aria-label="' + esc(t('app_fight_threads', f)) + '">' + marks(f.threads, f.maxthreads,
+        'thread') + '</span></div><div class="fight-side pet"><div class="fight-pet big" aria-hidden="true">' +
+        T.creature(c.creature, c.creaturestage) + '</div><span class="fight-marks" role="img" aria-label="' +
+        esc(t('app_fight_bonds', f)) + '">' + marks(f.bonds, f.maxbonds, 'bond') + '</span></div></div>' + (f.claim &&
+        f.phase !== 'end' ? '<p class="knot-laugh">' + esc(f.claim) + '</p>' : '') + said(f) + body + moves +
+        '<div class="actions"><button type="button" class="btn ' + (f.phase === 'end' ? 'btn-main' : 'btn-soft') +
+        '" data-close>' + esc(t(f.phase === 'end' ? 'app_continue' : 'app_fight_later')) + '</button></div></div>';
+      layer.querySelector('[data-close]').onclick = close;
+      layer.querySelectorAll('button[data-v]').forEach(function(b) {
+        b.onclick = function() {
+          if (b.dataset.v === 'dodge') {
+            where = Number(b.dataset.i);
+          }
+          send(f, b.dataset.v, Number(b.dataset.i || 0));
+        };
+      });
+      if (f.phase === 'dodge' && !T.adapted.notime) {
+        // Not moved in time: the creature stays where it is.
+        timer = setTimeout(function() {
+          send(f, 'dodge', where);
+        }, f.dodge * 1000);
+      }
+      if (T.fx && f.last.kind) {
+        T.fx.sound(f.outcome === 'won' ? 'win' : {hit: 'hit', weak: 'right', miss: 'giggle', caught: 'wrong', dodged: 'chime',
+          leapt: 'chime'}[f.last.kind] || 'chime');
+      }
+      var first = layer.querySelector('button[data-v]:not([disabled])') || layer.querySelector('[data-close]');
+      first.focus();
+    };
+    T.api('minion_fight', {courseid: cfg.courseid, action: 'start', code: minion.code}).then(draw).catch(function(e) {
+      T.toast(esc(e.message), true);
+      close();
+    });
+  }
+
+  /**
    * A page of the Great Book the Embrollo stole: what it claims and the question of today; one try a day for each
    * student, and the first right answer brings it back to the whole class, with a gem, the page and the why.
    *
@@ -3189,7 +3320,11 @@
           return x.id === Number(b.dataset.minion);
         })[0];
         if (ch && ch.minion) {
-          minionMoment(ch.minion);
+          if (ch.minion.tried) {
+            minionMoment(ch.minion);
+          } else {
+            fightMoment(ch.minion);
+          }
         }
       };
     });

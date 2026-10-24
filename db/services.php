@@ -53,6 +53,13 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:play',
     ],
+    'local_oksigeniatesape_minion_fight' => [
+        'classname' => 'local_oksigeniatesape\external\minion_fight',
+        'description' => 'The fight of the creature of the current student with a minion of the Embrollo on the road.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:play',
+    ],
     'local_oksigeniatesape_play_deferred' => [
         'classname' => 'local_oksigeniatesape\external\play_deferred',
         'description' => 'The current student, who follows from far, plays the last battle of the class in deferred.',

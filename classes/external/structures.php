@@ -205,6 +205,7 @@ final class structures {
                     'question' => new external_value(PARAM_TEXT, 'The question of today'),
                     'options' => new external_multiple_structure(new external_value(PARAM_TEXT, 'Option')),
                     'tried' => new external_value(PARAM_BOOL, 'Answered today already'),
+                    'fight' => new external_value(PARAM_INT, 'The fight of today with it, not finished (0: none)', VALUE_DEFAULT, 0),
                 ], 'A minion of the Embrollo on the road to the place, until the class lights it', VALUE_OPTIONAL),
                 'route' => new external_single_structure([
                     'routes' => new external_multiple_structure(new external_single_structure([

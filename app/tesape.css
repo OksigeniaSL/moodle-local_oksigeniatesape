@@ -13314,3 +13314,184 @@ body.still .pet-me.patted .creature {
   padding-left: 18px;
   color: var(--text-soft);
 }
+
+/* The little knots: the fight of the creature with a minion on the road. */
+.fight-arena {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+  gap: 16px;
+  margin: 8px 0 12px;
+}
+
+.fight-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.fight-side.minion.flees .minion-face {
+  animation: tesape-flee 1.2s ease-in forwards;
+}
+
+@keyframes tesape-flee {
+  to {
+    opacity: 0;
+    transform: translateY(-30px) rotate(20deg) scale(.6);
+  }
+}
+
+.fight-pet.big {
+  width: 96px;
+  height: 96px;
+}
+
+.fight-pet svg {
+  width: 100%;
+  height: 100%;
+}
+
+.fight-marks {
+  display: flex;
+  gap: 5px;
+}
+
+.fight-marks i {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--line);
+}
+
+.fight-marks i.thread.on {
+  background: var(--lilac);
+  border-color: var(--lilac);
+}
+
+.fight-marks i.bond.on {
+  background: var(--leaf);
+  border-color: var(--leaf);
+}
+
+.fight-turn {
+  margin: 4px 0;
+  color: var(--text-soft);
+  font-weight: 700;
+}
+
+.fight-said {
+  margin: 6px 0;
+  font-weight: 700;
+}
+
+.fight-said.good {
+  color: var(--leaf-text);
+}
+
+.fight-said.bad {
+  color: var(--danger-text);
+}
+
+.fight-nets {
+  display: grid;
+  gap: 8px;
+}
+
+.fight-net.struck {
+  text-decoration: line-through;
+  opacity: .5;
+}
+
+.fight-holes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.fight-hole {
+  position: relative;
+  min-height: 96px;
+  border: 2px solid var(--line);
+  border-radius: 16px;
+  background: rgba(var(--leaf-rgb), .10);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 8px;
+  cursor: pointer;
+}
+
+.fight-hole .fight-pet {
+  width: 56px;
+  height: 56px;
+}
+
+.fight-hole .fight-shadow {
+  position: absolute;
+  z-index: 2;
+  top: 10px;
+  left: 50%;
+  width: 46px;
+  height: 14px;
+  margin-left: -23px;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.fight-hole.aimed {
+  border-color: var(--lilac);
+}
+
+.fight-hole.aimed .fight-shadow {
+  background: rgba(var(--lilac-rgb), .8);
+  box-shadow: 0 0 10px rgba(var(--lilac-rgb), .8);
+  animation: tesape-shadow 1s ease-in-out infinite alternate;
+}
+
+@keyframes tesape-shadow {
+  from {
+    transform: scale(.7);
+  }
+  to {
+    transform: scale(1.15);
+  }
+}
+
+.fight-clock {
+  display: block;
+  margin: 6px 0;
+}
+
+.fight-clock i {
+  width: 100%;
+  animation-name: tesape-clock;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+@keyframes tesape-clock {
+  to {
+    width: 0;
+  }
+}
+
+.fight-end.won {
+  color: var(--leaf-text);
+}
+
+.fight-moves {
+  margin: 8px 0 0;
+  color: var(--text-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fight-hole.aimed .fight-shadow,
+  .fight-side.minion.flees .minion-face {
+    animation: none;
+  }
+}
