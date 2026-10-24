@@ -747,9 +747,13 @@ final class view {
                 'banner' => market::team_owns($courseid, (int) $g->id), 'state' => $states[(int) $g->id] ?? '',
                 'bannerstage' => banners::view($courseid, (int) $g->id)], $groups)),
             'groupings' => array_values(array_map(
-                fn($g) => ['id' => (int) $g->id, 'name' => format_string($g->name)],
+                fn($g) => ['id' => (int) $g->id, 'name' => format_string($g->name),
+                    'classtools' => str_starts_with((string) ($g->idnumber ?? ''), 'oksigeniaclasstools-')],
                 groups_get_all_groupings($courseid)
             )),
+            // Oksigenia Classtools, if the site has it: its random teams, with the photos of the class, saved as a grouping.
+            'classtools' => \core_component::get_component_directory('local_oksigeniaclasstools') ?
+                (new \moodle_url('/local/oksigeniaclasstools/index.php', ['id' => $courseid]))->out(false) : '',
             'challenges' => $challenges,
             'energymax' => engine::ENERGY_MAX,
             'breathmax' => engine::BREATH_MAX,

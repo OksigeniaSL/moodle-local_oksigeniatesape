@@ -951,6 +951,11 @@ final class live {
         $DB->set_field(self::T . 'live', 'timeend', $now, ['id' => $live->id]);
         $transaction->allow_commit();
         $live->timeend = $now;
+        if ($live->kind === 'battle') {
+            \local_oksigeniatesape\event\battle_ended::create(['context' => \context_course::instance((int) $live->courseid),
+                'objectid' => $live->id, 'other' => ['outcome' => (string) $state['outcome'],
+                'final' => !empty($state['final'])]])->trigger();
+        }
         return $live;
     }
 
@@ -2346,7 +2351,11 @@ final class live {
         if ($final && !empty($final['lantern'])) {
             // The whole class has beaten the Embrollo: the lantern of its place lights for everybody.
             $where = 'missionid = ? AND code = ? AND litat = 0';
+            $tower = $DB->get_record_select(self::T . 'chapter', $where, [$mission->id, $final['lantern']], 'id, code');
             $DB->set_field_select(self::T . 'chapter', 'litat', $now, $where, [$mission->id, $final['lantern']]);
+            if ($tower) {
+                sessions::lit($courseid, $tower);
+            }
         }
         $rewarded = [];
         foreach ($players as $charid => $team) {

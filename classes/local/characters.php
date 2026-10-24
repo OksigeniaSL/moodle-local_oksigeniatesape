@@ -94,6 +94,8 @@ final class characters {
             'timemodified' => $now,
         ];
         $char->id = $DB->insert_record(self::TABLE, $char);
+        \local_oksigeniatesape\event\character_created::create(['context' => \context_user::instance($userid),
+            'objectid' => $char->id, 'userid' => $userid, 'relateduserid' => $userid])->trigger();
         return $DB->get_record(self::TABLE, ['id' => $char->id], '*', MUST_EXIST);
     }
 

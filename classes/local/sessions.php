@@ -330,6 +330,7 @@ final class sessions {
         $chapter = reset($ready);
         $DB->update_record(self::T . 'chapter', (object) ['id' => $chapter->id, 'litat' => $now, 'readyat' => 0,
             'timemodified' => $now]);
+        self::lit($courseid, $chapter);
         return self::show($courseid, 'light', 0, (int) $chapter->id, $now);
     }
 
@@ -363,8 +364,23 @@ final class sessions {
             if (!$late || $chapter->readyat <= $now - self::READY_WAIT) {
                 $DB->update_record(self::T . 'chapter', (object) ['id' => $chapter->id, 'litat' => $now, 'readyat' => 0,
                     'timemodified' => $now]);
+                $courseid = (int) $DB->get_field(self::T . 'mission', 'courseid', ['id' => $missionid]);
+                if ($courseid) {
+                    self::lit($courseid, $chapter);
+                }
             }
         }
+    }
+
+    /**
+     * Tells Moodle the class lit the lantern of a place (its log, and what reads it).
+     *
+     * @param int $courseid
+     * @param \stdClass $chapter With id and code.
+     */
+    public static function lit(int $courseid, \stdClass $chapter): void {
+        \local_oksigeniatesape\event\lantern_lit::create(['context' => \context_course::instance($courseid),
+            'objectid' => $chapter->id, 'other' => ['place' => (string) $chapter->code]])->trigger();
     }
 
     /**

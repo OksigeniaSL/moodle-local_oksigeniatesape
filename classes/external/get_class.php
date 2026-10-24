@@ -109,7 +109,14 @@ final class get_class extends external_api {
             'groupings' => new external_multiple_structure(new external_single_structure([
                 'id' => new external_value(PARAM_INT, 'Grouping'),
                 'name' => new external_value(PARAM_TEXT, 'Name'),
+                'classtools' => new external_value(PARAM_BOOL, 'Made with Oksigenia Classtools', VALUE_DEFAULT, false),
             ])),
+            'classtools' => new external_value(
+                PARAM_URL,
+                'Oksigenia Classtools for the course, if the site has it',
+                VALUE_DEFAULT,
+                ''
+            ),
             'challenges' => new external_multiple_structure(new external_single_structure([
                 'id' => new external_value(PARAM_INT, 'Challenge'),
                 'name' => new external_value(PARAM_TEXT, 'Name'),

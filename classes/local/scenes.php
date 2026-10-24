@@ -615,6 +615,9 @@ final class scenes {
                 'timefinished' => $now,
             ];
             $one->id = $DB->insert_record(self::T . 'sceneattempt', $one);
+            \local_oksigeniatesape\event\scene_completed::create(['context' => \context_course::instance($courseid),
+                'objectid' => $one->id, 'userid' => (int) $player['char']->userid, 'other' => ['scene' => (string) $scene->code,
+                'ending' => (string) $result['ending'], 'team' => (bool) $team]])->trigger();
             if ($team && !$game) {
                 $game = (int) $one->id;
                 $DB->set_field(self::T . 'sceneattempt', 'teamplay', $game, ['id' => $one->id]);
@@ -1035,6 +1038,7 @@ final class scenes {
             return false;
         }
         $DB->update_record(self::T . 'chapter', (object) ['id' => $chapter->id, 'litat' => $now, 'timemodified' => $now]);
+        sessions::lit((int) $mission->courseid, $chapter);
         return true;
     }
 

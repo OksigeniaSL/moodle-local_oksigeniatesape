@@ -1697,7 +1697,9 @@
       esc(t('teach_teams_size')) + ' <select data-teamsize>' + [3, 4, 5, 6].map(function(n) {
         return '<option value="' + n + '"' + (n === 4 ? ' selected' : '') + '>' + n + '</option>';
       }).join('') + '</select></label><button class="btn btn-main" type="button" data-maketeams>' +
-      esc(t('teach_teams_make')) + '</button></div>';
+      esc(t('teach_teams_make')) + '</button></div>' + (state.data && state.data.classtools ? '<p class="help-soft">' +
+      esc(t('teach_teams_classtools')) + ' <a href="' + esc(state.data.classtools) + '" target="_blank" rel="noopener">' +
+      esc(t('teach_teams_classtools_open')) + '</a></p>' : '');
   }
 
   function bindMakeTeams(el) {
@@ -3582,7 +3584,8 @@
     };
     var groupings = '<select name="groupingid"' + (editable ? '' : ' disabled') + '><option value="0">' +
       esc(t('teach_allgroups')) + '</option>' + state.data.groupings.map(function(g) {
-        return '<option value="' + g.id + '"' + (r.groupingid === g.id ? ' selected' : '') + '>' + esc(g.name) + '</option>';
+        return '<option value="' + g.id + '"' + (r.groupingid === g.id ? ' selected' : '') + '>' + esc(g.name) +
+          (g.classtools ? ' · Classtools' : '') + '</option>';
       }).join('') + '</select>';
     // The days of the game (caps, event of the day, energy and breath) start at midnight in this time zone.
     var zones = ['99', 'Europe/Madrid', 'Atlantic/Canary', 'America/Asuncion', 'America/Argentina/Buenos_Aires',

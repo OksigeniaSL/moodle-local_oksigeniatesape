@@ -990,6 +990,9 @@ final class minigames {
             'timecreated' => $now,
         ];
         $playrecord->id = $DB->insert_record(self::T . 'minigame', $playrecord);
+        \local_oksigeniatesape\event\minigame_completed::create(['context' => \context_course::instance($courseid),
+            'objectid' => $playrecord->id, 'userid' => $userid, 'other' => ['game' => $code, 'success' => (bool) $success]])
+            ->trigger();
         $result = ['success' => $success, 'caught' => $caught, 'missed' => $missed, 'goal' => $game['goal'],
             'tries' => $tries, 'first' => false, 'items' => [], 'coat' => false, 'gems' => 0, 'grew' => false,
             'golden' => false, 'card' => '', 'newcard' => false, 'training' => false];
