@@ -96,7 +96,8 @@ class mobile {
                 'mission' => $game['mission'],
                 'line' => $game['line'],
                 'note' => $game['note'],
-                'image' => $game['image'] !== '' ? art::small($game['image']) : '',
+                // The app has no session of the site: the address carries the key of the user.
+                'image' => $game['image'] !== '' ? art::small($game['image'], true) : '',
                 'buttons' => array_map(fn($b) => ['url' => $b[0]->out(false), 'label' => $b[1], 'main' => $b[2]], $game['buttons']),
             ];
         }

@@ -296,6 +296,13 @@ final class art_test extends \advanced_testcase {
         $this->assertSame([0, 'png', 1], $client['files']['scene.big']);
         $this->assertSame([0, 'png'], $client['files']['stage.big']);
         $this->assertSame([0, 'png'], $client['files']['scene.small']);
+        // For phones, the address of the small copy where there is one; with the key of the user, for the Moodle app.
+        $manifest = art::manifest()['files'];
+        $this->assertStringEndsWith('/valle/small/scene/scene.big.png', art::small($manifest['scene.big']));
+        $this->assertSame($manifest['scene.small'], art::small($manifest['scene.small']));
+        $this->setAdminUser();
+        $this->assertStringContainsString('/tokenpluginfile.php/', art::small($manifest['scene.big'], true));
+        $this->setUser(null);
         // Made again by the task, the same.
         (new \local_oksigeniatesape\task\small_art())->execute();
         $this->expectOutputRegex('/Small copies of valle: 1/');

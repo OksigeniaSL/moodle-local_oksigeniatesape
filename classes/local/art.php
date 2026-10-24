@@ -381,16 +381,19 @@ final class art {
     }
 
     /**
-     * The address of the small copy of an image of the art, where it has one; if not, the same address. For phones.
+     * The address of the small copy of an image of the art, where it has one; if not, of the image. For phones; with the
+     * key of the user in it, for where there is no session (the Moodle app).
      *
      * @param string $url An address of manifest().
+     * @param bool $token With the key of the user.
      * @return string
      */
-    public static function small(string $url): string {
+    public static function small(string $url, bool $token = false): string {
         $art = self::manifest();
+        $context = \context_system::instance()->id;
         foreach ($art ? $art['layers'] : [] as $layer) {
             $root = \moodle_url::make_pluginfile_url(
-                \context_system::instance()->id,
+                $context,
                 self::COMPONENT,
                 self::FILEAREA,
                 $layer['version'],
@@ -400,9 +403,19 @@ final class art {
             if (strpos($url, $root) !== 0) {
                 continue;
             }
-            $rest = substr($url, strlen($root));
-            return in_array(rawurldecode($rest), (array) (self::pack($layer['code'])['small'] ?? []), true) ?
-                $root . self::SMALL . $rest : $url;
+            $rest = rawurldecode(substr($url, strlen($root)));
+            $small = in_array($rest, (array) (self::pack($layer['code'])['small'] ?? []), true) ? self::SMALL : '';
+            $dir = dirname($rest) === '.' ? '' : dirname($rest) . '/';
+            return \moodle_url::make_pluginfile_url(
+                $context,
+                self::COMPONENT,
+                self::FILEAREA,
+                $layer['version'],
+                '/' . $layer['code'] . '/' . $small . $dir,
+                basename($rest),
+                false,
+                $token
+            )->out(false);
         }
         return $url;
     }
