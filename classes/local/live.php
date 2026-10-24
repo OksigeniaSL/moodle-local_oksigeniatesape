@@ -454,6 +454,66 @@ final class live {
     }
 
     /**
+     * By turns, the finishing pull: once a player answered in the open round, a touch at the right moment pulls the thread.
+     * It counts at the resolution only if their answer was right, and the lane takes a thread more if most of who got it
+     * right in the team pulled in time. Not with «no hurry», nor aloud.
+     *
+     * @param \stdClass $live
+     * @param \stdClass $member
+     * @param int $round
+     * @param bool $hit Whether the touch came in time.
+     * @param int|null $now
+     */
+    public static function pull(\stdClass $live, \stdClass $member, int $round, bool $hit, ?int $now = null): void {
+        global $DB;
+        $now = $now ?? time();
+        $state = self::state($live);
+        $mine = $DB->get_record(self::T . 'livein', ['liveid' => $live->id, 'round' => $round, 'charid' => $member->charid]);
+        if (!$mine || $round !== (int) $live->round || !self::is_open($state, $now) || !self::finisher($live, $state, $member)) {
+            throw new \moodle_exception('roundclosed', 'local_oksigeniatesape');
+        }
+        if ($hit && !$mine->pulled) {
+            $DB->set_field(self::T . 'livein', 'pulled', 1, ['id' => $mine->id]);
+        }
+    }
+
+    /**
+     * By turns, the parry: the protector who put their shield on a team raises it at the right moment, and if the blow
+     * falls on that team it bounces back on the Embrollo (a thread). Not with «no hurry», nor aloud.
+     *
+     * @param \stdClass $live
+     * @param \stdClass $member
+     * @param bool $hit Whether the touch came in time.
+     * @param int|null $now
+     */
+    public static function parry(\stdClass $live, \stdClass $member, bool $hit, ?int $now = null): void {
+        global $DB;
+        $now = $now ?? time();
+        $state = self::state($live);
+        $shield = $DB->get_record(self::T . 'livetoken', ['liveid' => $live->id, 'round' => (int) $live->round,
+            'charid' => $member->charid, 'kind' => 'shield']);
+        if (!$shield || !self::is_live($state, $now) || !self::finisher($live, $state, $member)) {
+            throw new \moodle_exception('roundclosed', 'local_oksigeniatesape');
+        }
+        if ($hit && !$shield->parried) {
+            $DB->set_field(self::T . 'livetoken', 'parried', 1, ['id' => $shield->id]);
+        }
+    }
+
+    /**
+     * Whether a player may pull or parry: a battle by turns on the phones, and the player without «no hurry».
+     *
+     * @param \stdClass $live
+     * @param array $state
+     * @param \stdClass $member
+     * @return bool
+     */
+    private static function finisher(\stdClass $live, array $state, \stdClass $member): bool {
+        return $live->kind === 'battle' && $state['mode'] === 'phones' && !empty($state['knots']) &&
+            !in_array('notime', explode(',', (string) ($member->adapt ?? '')), true);
+    }
+
+    /**
      * Runs an action of the class screen on the session of a course with nobody else acting on it at the same time:
      * two taps on a button, or two class screens, would otherwise act twice.
      *
@@ -947,7 +1007,7 @@ final class live {
                         $view['lanes'][] = ['teamid' => (int) $team, 'team' => (string) ($byid[$team] ?? ''),
                             'question' => self::question(['question' => $lane['question'], 'revealed' => $info['revealed']]),
                             'done' => !empty($lane['done']), 'right' => (int) ($lane['right'] ?? 0),
-                            'answered' => (int) ($lane['answered'] ?? 0)] +
+                            'answered' => (int) ($lane['answered'] ?? 0), 'pulled' => !empty($lane['pulled'])] +
                             (self::aloud_turns($state) ? self::aloud_lane($info, (int) $team, $lane) : []);
                     }
                 }
@@ -989,7 +1049,7 @@ final class live {
         $state = self::state($live);
         $round = (int) $live->round;
         $conditions = ['liveid' => $live->id, 'charid' => $member->charid];
-        $mine = $DB->get_records(self::T . 'livein', $conditions, '', 'round, answer, team');
+        $mine = $DB->get_records(self::T . 'livein', $conditions, '', 'round, answer, team, pulled');
         $view = self::common($live, $state, $now) + ['joined' => array_key_exists(0, $mine), 'mine' => -1,
             'myteam' => (int) ($mine[0]->team ?? 0)];
         if ($round > 0) {
@@ -1013,6 +1073,17 @@ final class live {
             }
             if ($info['revealed'] && $live->kind === 'vote') {
                 $view['tally'] = $info['tally'];
+            }
+            // The finishing pull, once they answered, while the turn takes answers; the parry, once they put their shield, while
+            // it goes on.
+            if (self::finisher($live, $state, $member)) {
+                if (self::is_open($state, $now)) {
+                    $view['pull'] = isset($mine[$round]) && empty($mine[$round]->pulled);
+                }
+                if (self::is_live($state, $now)) {
+                    $view['parry'] = $DB->record_exists(self::T . 'livetoken', ['liveid' => $live->id, 'round' => $round,
+                        'charid' => $member->charid, 'kind' => 'shield', 'parried' => 0]);
+                }
             }
         }
         if ($state['outcome'] === 'won') {
@@ -1574,6 +1645,7 @@ final class live {
             'rematch' => (int) round(100 * (float) ($state['rematch'] ?? 0)),
             'counter' => $round > 0 ? (int) ($state['rounds'][$round]['counter'] ?? 0) : 0,
             'shielded' => $round > 0 && !empty($state['rounds'][$round]['shielded']),
+            'parried' => $round > 0 && !empty($state['rounds'][$round]['parried']),
             // By turns, the candles of the tower from the lobby to the end: the screens know it is a battle by turns.
             'candles' => (int) ($state['candles'] ?? 0),
             'maxcandles' => (int) ($state['maxcandles'] ?? 0),
@@ -1698,7 +1770,12 @@ final class live {
         global $DB;
         $round = (int) $live->round;
         $info = $state['rounds'][$round];
-        $answers = $DB->get_records(self::T . 'livein', ['liveid' => $live->id, 'round' => $round], '', 'id, charid, team, answer');
+        $answers = $DB->get_records(
+            self::T . 'livein',
+            ['liveid' => $live->id, 'round' => $round],
+            '',
+            'id, charid, team, answer, pulled'
+        );
         $info['answered'] = count($answers);
         if ($live->kind === 'vote') {
             $info['tally'] = array_fill(0, (int) $info['options'], 0);
@@ -1773,13 +1850,13 @@ final class live {
     private static function resolve(\stdClass $live, array $state, array $info, array $answers): array {
         global $DB;
         $round = (int) $live->round;
-        $fields = 'id, charid, team, kind, target';
+        $fields = 'id, charid, team, kind, target, parried';
         $tokens = $DB->get_records(self::T . 'livetoken', ['liveid' => $live->id, 'round' => $round], '', $fields);
         // Aloud, the verbs the teams said and the teacher marked, without talents (nobody's character).
         $aloud = $state['mode'] === 'aloud';
         foreach ($info['verbs'] ?? [] as $i => $verb) {
             $tokens['aloud' . $i] = (object) ['id' => 0, 'charid' => 0, 'team' => (int) $verb['team'],
-                'kind' => (string) $verb['kind'], 'target' => (int) $verb['target']];
+                'kind' => (string) $verb['kind'], 'target' => (int) $verb['target'], 'parried' => 0];
         }
         // The shield and the cheer go to the team they were put on (their own, if none).
         $on = fn($kind) => array_map(fn($t) => (int) ($t->target ?: $t->team), array_filter($tokens, fn($t) => $t->kind === $kind));
@@ -1840,7 +1917,10 @@ final class live {
             // Sorted for the team by one player: that one counts.
             $players = isset($lane['speaker']) || $aloud ? 1 : (int) ($present[$team] ?? 0);
             $undone = $players > 0 && 2 * $right > $players && !in_array((int) $team, $dizzy, true);
-            $info['lanes'][$team] += ['answered' => count($mine), 'right' => $right, 'done' => $undone];
+            // The finishing pull: most of who got it right pulled in time (the one who sorts, alone).
+            $pulled = count(array_filter($mine, fn($a) => (int) $a->answer === (int) $lane['correct'] && !empty($a->pulled)));
+            $info['lanes'][$team] += ['answered' => count($mine), 'right' => $right, 'done' => $undone,
+                'pulled' => $undone && !$aloud && $right > 0 && 2 * $pulled > $right];
             $info['teams'][$team] = $right;
             $info['right'] += $right;
         }
@@ -1854,8 +1934,8 @@ final class live {
         foreach ($info['lanes'] as $team => $lane) {
             if (!empty($lane['done'])) {
                 $done++;
-                // «Strong cheer»: a thread more if the team it cheers undoes its lane.
-                $damage += isset($strong[(int) $team]) ? 2 : 1;
+                // «Strong cheer»: a thread more if the team it cheers undoes its lane; and the finishing pull, another.
+                $damage += (isset($strong[(int) $team]) ? 2 : 1) + (!empty($lane['pulled']) ? 1 : 0);
                 unset($state['tangled'][$team], $state['dizzy'][$team]);
             }
         }
@@ -1883,6 +1963,14 @@ final class live {
             if (($info['intent'] ?? '') === 'team' && $intarget && empty($info['lanes'][$target]['done'])) {
                 if (in_array($target, $shields, true)) {
                     $info['shielded'] = $target;
+                    // Raised in time, the shield sends the blow back: a thread off the Embrollo.
+                    $raised = array_filter($tokens, fn($t) => $t->kind === 'shield' &&
+                        (int) ($t->target ?: $t->team) === $target && !empty($t->parried));
+                    if ($raised) {
+                        $state['hp'] = max(0, $state['hp'] - 1);
+                        $info['damage']++;
+                        $info['parried'] = true;
+                    }
                 } else {
                     $state['candles'] = max(0, $state['candles'] - 1);
                     // Tangled again, the team is dizzy: it does not strike until another team carries its lane.

@@ -7233,6 +7233,73 @@ body.adapt-colours .errors-text .fixed ins {
   border-radius: 10px;
 }
 
+/* ---------- The finishing pull and the parry, in the battle by turns ---------- */
+
+.timing {
+  display: grid;
+  gap: 8px;
+  margin: 10px 0;
+  padding: 10px 12px;
+  border-radius: var(--r-s);
+  background: rgba(var(--lantern-rgb), .12);
+}
+
+.timing-title {
+  margin: 0;
+}
+
+.timing-track {
+  position: relative;
+  height: 22px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .1);
+  overflow: hidden;
+}
+
+.timing-zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: rgba(var(--leaf-rgb), .45);
+}
+
+/* The knot crosses the bar once: where it is when touched says whether it was in time. */
+.timing-knot {
+  position: absolute;
+  top: 2px;
+  left: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--lilac);
+  box-shadow: 0 0 8px rgba(0, 0, 0, .4);
+  animation: timing-run linear forwards;
+}
+
+@keyframes timing-run {
+  from {
+    left: 0;
+  }
+
+  to {
+    left: calc(100% - 18px);
+  }
+}
+
+.timing .btn {
+  justify-self: start;
+  min-height: 52px;
+}
+
+.timing-said {
+  margin: 8px 0;
+  font-weight: 700;
+}
+
+.timing-said.good {
+  color: var(--leaf-text);
+}
+
 /* ---------- The burst of the Embrollo ---------- */
 
 /* The order in one word, big, as the Embrollo shouts it. */

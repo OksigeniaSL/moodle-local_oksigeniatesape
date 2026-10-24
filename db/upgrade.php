@@ -1022,5 +1022,20 @@ function xmldb_local_oksigeniatesape_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026102404, 'local', 'oksigeniatesape');
     }
 
+    if ($oldversion < 2026102407) {
+        // By turns, the finishing pull after a right answer and the shield raised in time.
+        $table = new xmldb_table('local_oksigeniatesape_livein');
+        $field = new xmldb_field('pulled', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'answer');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        $table = new xmldb_table('local_oksigeniatesape_livetoken');
+        $field = new xmldb_field('parried', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'target');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        upgrade_plugin_savepoint(true, 2026102407, 'local', 'oksigeniatesape');
+    }
+
     return true;
 }

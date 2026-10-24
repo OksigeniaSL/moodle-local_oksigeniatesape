@@ -937,6 +937,58 @@ final class live_test extends \advanced_testcase {
         $this->assertNotSame('', $targets['shield']);
     }
 
+    public function test_by_turns_the_finishing_pull_and_the_parry(): void {
+        global $DB;
+        $this->resetAfterTest();
+        [$course, $members, $groups] = $this->make_class();
+        $DB->set_field(self::T . 'char', 'role', 'protector', ['id' => $members[2]->charid]);
+        $live = live::start($course->id, 'phones', 8, 30, self::NOW, false, true);
+        foreach ($members as $member) {
+            live::join($live, $member, $member->userid, self::NOW);
+        }
+        $live = live::next($live, self::NOW);
+        $round = (int) $live->round;
+        [$first, $second] = [(int) $groups[0]->id, (int) $groups[1]->id];
+        // The protector shields the first team, the one the knot goes for, and raises the shield in time.
+        live::token($live, $members[2], self::NOW + 2, $first);
+        $this->assertTrue(live::device_view($live, $members[2], self::NOW + 3)['parry']);
+        live::parry($live, $members[2], true, self::NOW + 3);
+        $this->assertFalse(live::device_view($live, $members[2], self::NOW + 4)['parry']);
+        // The first team fails its lane; the second gets it right, and both of them pull the thread in time.
+        $strike = self::NOW + live::INTENT + live::PREP;
+        foreach ($members as $i => $member) {
+            $team = $i < 2 ? $first : $second;
+            $correct = $this->lane_correct($live, $team);
+            live::answer($live, $member, $round, $team === $second ? $correct : ($correct + 1) % 2, $strike + 1);
+        }
+        $this->assertTrue(live::device_view($live, $members[3], $strike + 2)['pull']);
+        live::pull($live, $members[2], $round, true, $strike + 2);
+        live::pull($live, $members[3], $round, true, $strike + 2);
+        $this->assertFalse(live::device_view($live, $members[3], $strike + 3)['pull']);
+        $live = live::tick($live, 2, true, $strike + 31);
+        $view = live::board_view($live, $strike + 40);
+        // The lane undone takes its thread and one more for the pull; the blow on the shield bounces back, one more.
+        $this->assertTrue($view['shielded']);
+        $this->assertTrue($view['parried']);
+        $this->assertSame(3, $view['damage']);
+        $lanes = array_column($view['lanes'], 'pulled', 'teamid');
+        $this->assertTrue($lanes[$second]);
+        $this->assertFalse($lanes[$first]);
+        // With «no hurry» there is no pull: the turn has no clock for them.
+        $DB->set_field(self::T . 'member', 'adapt', 'notime', ['id' => $members[0]->id]);
+        $at = $strike + 31 + live::RESOLVE;
+        $live = live::tick($live, 2, true, $at);
+        $member = $DB->get_record(self::T . 'member', ['id' => $members[0]->id]);
+        live::answer($live, $member, (int) $live->round, 0, $at + live::INTENT + live::PREP + 1);
+        $this->assertArrayNotHasKey('pull', live::device_view($live, $member, $at + live::INTENT + live::PREP + 2));
+        try {
+            live::pull($live, $member, (int) $live->round, true, $at + live::INTENT + live::PREP + 2);
+            $this->fail('A pull with no hurry');
+        } catch (\moodle_exception $e) {
+            $this->assertSame('roundclosed', $e->errorcode);
+        }
+    }
+
     public function test_by_turns_a_team_tangled_twice_is_dizzy_until_another_team_carries_its_lane(): void {
         $this->resetAfterTest();
         [$course, $members, $groups] = $this->make_class();

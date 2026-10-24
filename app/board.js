@@ -1385,7 +1385,15 @@
         t('board_turn_undone', l.target) : t('board_turn_spared_' + (l.intent || 'team'))) + '</p>' : '';
       return spared + (l.knot.broken ? '<p class="turn-outcome undone knot-broken">' + esc(t('board_turn_broken')) + '</p>' +
         (l.knot.why ? '<p class="why">' + esc(l.knot.why) + '</p>' : '') : '') + (l.shielded ? '<p class="turn-outcome">' +
-        esc(l.intent === 'all' ? t('board_turn_shield_all') : t('board_turn_shield', l.target)) + '</p>' : '') + (l.counter && !l.recovered ? '<p class="turn-outcome fell">' +
+        esc(l.intent === 'all' ? t('board_turn_shield_all') : t('board_turn_shield', l.target)) + '</p>' : '') +
+        // The shield raised in time: the blow bounces back.
+        (l.parried ? '<p class="turn-outcome undone parried">' + esc(t('board_battle_parried')) + '</p>' : '') +
+        // The teams that pulled the thread in time, a thread more each.
+        l.lanes.filter(function(lane) {
+          return lane.pulled;
+        }).map(function(lane) {
+          return '<p class="turn-outcome undone pulled">' + esc(t('board_turn_pulled', lane.team)) + '</p>';
+        }).join('') + (l.counter && !l.recovered ? '<p class="turn-outcome fell">' +
         esc(t(l.intent === 'all' ? 'board_turn_candle_all' : 'board_turn_candle', l.target)) + '</p>' : '') +
         (l.recovered ? '<p class="turn-outcome fell">' + esc(t('board_turn_recovered', l.counter)) + '</p>' : '') +
         // A team carried by another, and the one the blow left dizzy.

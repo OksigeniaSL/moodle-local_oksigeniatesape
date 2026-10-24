@@ -27,7 +27,11 @@
   said.className = 'sr-only';
   said.setAttribute('aria-live', 'polite');
   document.body.appendChild(said);
-  var state = {live: null, inside: false, dismissed: 0, timer: 0, sig: '', sending: false, tick: 0, idle: 0};
+  var state = {live: null, inside: false, dismissed: 0, timer: 0, sig: '', sending: false, tick: 0, idle: 0, timing: {}};
+
+  /** Milliseconds the knot takes to cross the bar of the pull or the parry, and where its clear zone is. */
+  var TIMING = 3000;
+  var ZONE = [0.58, 0.82];
   // The result of a battle shows for a few minutes after it ends: once closed, not again on the next page.
   var SEEN = 'tesape-battle-' + cfg.courseid + '-' + cfg.userid;
   try {
@@ -186,6 +190,33 @@
       '" aria-label="' + esc(t('board_music')) + '" title="' + esc(t('board_music')) + '">♪</button>' : '') + '</div>';
   }
 
+  /**
+   * By turns, the pull after answering or the parry after the shield: a knot crosses a bar in three seconds and the
+   * touch counts if it is in the clear zone. Drawn again on each poll, it goes on from where it was; once touched, or
+   * once the knot has crossed, it is not there any more.
+   *
+   * @param {Object} live
+   * @param {string} kind pull or parry.
+   * @return {string}
+   */
+  function timing(live, kind) {
+    var key = live.id + ':' + live.round + ':' + kind;
+    var at = state.timing[key] = state.timing[key] || {start: Date.now(), done: ''};
+    var gone = Date.now() - at.start;
+    if (at.done) {
+      return '<p class="timing-said ' + (at.done === 'hit' ? 'good' : '') + '">' + esc(t('app_' + kind + '_' + at.done)) + '</p>';
+    }
+    if (gone >= TIMING) {
+      return '';
+    }
+    return '<div class="timing ' + kind + '" data-timing="' + kind + '"><p class="timing-title"><b>' +
+      esc(t('app_' + kind + '_title')) + '</b> ' + esc(t('app_' + kind + '_help')) + '</p><div class="timing-track" ' +
+      'aria-hidden="true"><span class="timing-zone" style="left:' + (ZONE[0] * 100) + '%;width:' + ((ZONE[1] - ZONE[0]) * 100) +
+      '%"></span><span class="timing-knot" style="animation-duration:' + TIMING + 'ms;animation-delay:-' + gone + 'ms">' +
+      '</span></div><button type="button" class="btn btn-main" data-timingtap="' + kind + '">' + esc(t('app_' + kind + '_tap')) +
+      '</button></div>';
+  }
+
   function body(live) {
     if (live.kind === 'vote') {
       return voteBody(live);
@@ -231,7 +262,8 @@
         '';
       return (live.stage === 'strike' ? '<p class="knot-name">' + esc(t('app_turn_strike', live.knot.name)) + '</p>' : '') +
         '<div class="lane-play" data-lane></div>' + (live.trail && !live.revealed ? '<p class="battle-trail">' +
-        esc(t('app_token_trail_shown', live.trail)) + '</p>' : '') + laneNote + turnNote(live) + token(live);
+        esc(t('app_token_trail_shown', live.trail)) + '</p>' : '') + laneNote + (live.pull ? timing(live, 'pull') : '') +
+        turnNote(live) + token(live);
     }
     var q = live.question;
     var answered = live.mine >= 0;
@@ -249,7 +281,7 @@
       note = live.mine < 0 ? t('app_battle_none') : live.mine === q.correct ? t('app_battle_right') : t('app_battle_wrong');
       note = '<p class="battle-note">' + esc(note) + '</p><p class="help-soft">' + esc(q.why || '') + '</p>';
     } else if (answered) {
-      note = '<p class="battle-note">' + esc(t('app_battle_answered')) + '</p>';
+      note = '<p class="battle-note">' + esc(t('app_battle_answered')) + '</p>' + (live.pull ? timing(live, 'pull') : '');
     } else if (!live.open) {
       note = '<p class="battle-note">' + esc(t('app_battle_closed')) + '</p>';
     } else if (live.left >= 0 && !T.adapted.notime) {
@@ -263,7 +295,8 @@
     } else if (live.stage === 'resolve' && live.target) {
       var fell = live.counter || live.shielded;
       note += '<p class="turn-outcome' + (fell ? ' fell' : ' undone') + '">' + esc(t(!fell ? 'app_turn_undone' : live.shielded ?
-        'app_turn_shield' : 'app_turn_fell', live.target)) + '</p>' + (live.knot.laugh ? '<p class="knot-laugh">«' +
+        'app_turn_shield' : 'app_turn_fell', live.target)) + '</p>' + (live.parried ? '<p class="turn-outcome undone">' +
+        esc(t('app_turn_parried')) + '</p>' : '') + (live.knot.laugh ? '<p class="knot-laugh">«' +
         esc(live.knot.laugh.replace(/^«|»$/g, '')) + '»</p>' : '');
     }
     return (live.stage === 'strike' ? '<p class="knot-name">' + esc(t('app_turn_strike', live.knot.name)) + '</p>' : '') +
@@ -337,8 +370,9 @@
         }).join('') + '</div>';
     }
     if (live.tokenused) {
+      // The shield just put: raised in time, a blow on it bounces back.
       return ahead + '<p class="help-soft battle-token-used">' + esc(live.tokenrest ? t('app_token_rest', live.tokenrest) :
-        t('app_token_used')) + '</p>';
+        t('app_token_used')) + '</p>' + (live.parry ? timing(live, 'parry') : '');
     }
     if (!ready) {
       return ahead;
@@ -424,6 +458,30 @@
   }
 
   function bind(live) {
+    layer.querySelectorAll('[data-timingtap]').forEach(function(b) {
+      b.onclick = function() {
+        var kind = b.dataset.timingtap;
+        var at = state.timing[live.id + ':' + live.round + ':' + kind];
+        if (!at || at.done) {
+          return;
+        }
+        var where = (Date.now() - at.start) / TIMING;
+        var hit = where >= ZONE[0] && where <= ZONE[1];
+        at.done = hit ? 'hit' : 'miss';
+        if (T.fx) {
+          T.fx.sound(hit ? (kind === 'parry' ? 'shield' : 'right') : 'tap');
+        }
+        if (navigator.vibrate && hit) {
+          navigator.vibrate([20, 30, 20]);
+        }
+        var box = b.closest('[data-timing]');
+        box.outerHTML = '<p class="timing-said ' + (hit ? 'good' : '') + '">' + esc(t('app_' + kind + '_' + at.done)) + '</p>';
+        api(kind, {round: live.round, answer: hit ? 1 : 0}).catch(function() {
+          // A touch that did not arrive is a touch that did not count.
+          return null;
+        });
+      };
+    });
     var tune = layer.querySelector('[data-music]');
     if (tune) {
       tune.onclick = function() {

@@ -41,7 +41,8 @@ final class live_play extends external_api {
             'courseid' => new external_value(PARAM_INT, 'Course'),
             'action' => new external_value(
                 PARAM_ALPHA,
-                'state, join, answer, strike (by turns, a lane of another engine), token or carry (by turns, a dizzy team)'
+                'state, join, answer, strike (by turns, a lane of another engine), token, carry (by turns, a dizzy team), ' .
+                    'pull or parry (by turns: answer 1 if the touch came in time)'
             ),
             'round' => new external_value(PARAM_INT, 'answer: the round', VALUE_DEFAULT, 0),
             'answer' => new external_value(PARAM_INT, 'answer: index of the option', VALUE_DEFAULT, -1),
@@ -118,6 +119,12 @@ final class live_play extends external_api {
                 break;
             case 'strike':
                 live::strike($live, $member, $params['round'], (array) (json_decode($params['payload'], true) ?: []), $now);
+                break;
+            case 'pull':
+                live::pull($live, $member, $params['round'], $params['answer'] === 1, $now);
+                break;
+            case 'parry':
+                live::parry($live, $member, $params['answer'] === 1, $now);
                 break;
             default:
                 throw new \invalid_parameter_exception('Unknown action');

@@ -776,6 +776,12 @@ final class structures {
             'rematch' => new external_value(PARAM_INT, 'By turns: threads the Embrollo is back with (percent)', VALUE_DEFAULT, 0),
             'counter' => new external_value(PARAM_INT, 'Life the Embrollo got back after the round', VALUE_DEFAULT, 0),
             'shielded' => new external_value(PARAM_BOOL, 'A protector\'s shield stopped that', VALUE_DEFAULT, false),
+            'parried' => new external_value(
+                PARAM_BOOL,
+                'By turns: the shield was raised in time and the blow bounced back',
+                VALUE_DEFAULT,
+                false
+            ),
             'stage' => new external_value(PARAM_ALPHA, 'By turns: intent, prep, strike or resolve', VALUE_DEFAULT, ''),
             'stageleft' => new external_value(PARAM_INT, 'By turns: seconds left of the stage (-1: no limit)', VALUE_DEFAULT, 0),
             'knot' => new external_single_structure([
@@ -873,6 +879,7 @@ final class structures {
                 'done' => new external_value(PARAM_BOOL, 'The team undid it'),
                 'right' => new external_value(PARAM_INT, 'Right answers of the team'),
                 'answered' => new external_value(PARAM_INT, 'Answers of the team'),
+                'pulled' => new external_value(PARAM_BOOL, 'Most of who got it right pulled the thread in time', VALUE_DEFAULT, false),
                 'play' => new external_value(PARAM_RAW, 'By turns aloud: the lane to play on the screen, in JSON', VALUE_DEFAULT, ''),
                 'played' => new external_value(PARAM_BOOL, 'By turns aloud: it was played on the screen', VALUE_DEFAULT, false),
                 'struck' => new external_value(PARAM_INT, 'By turns aloud: the option a glance struck out', VALUE_DEFAULT, -1),
@@ -907,6 +914,8 @@ final class structures {
             'mine' => new external_value(PARAM_INT, 'Their answer in the round (-1: none)'),
             'done' => new external_value(PARAM_BOOL, 'By turns: their team undid its lane, once resolved', VALUE_OPTIONAL),
             'lane' => new external_value(PARAM_RAW, 'By turns: their lane when it is not one to choose (JSON)', VALUE_OPTIONAL),
+            'pull' => new external_value(PARAM_BOOL, 'By turns: they may pull the thread now, after answering', VALUE_OPTIONAL),
+            'parry' => new external_value(PARAM_BOOL, 'By turns: they may raise their shield in time now', VALUE_OPTIONAL),
             'prize' => new external_single_structure([
                 'saber' => new external_value(PARAM_INT, 'Saber'),
                 'capped' => new external_value(PARAM_INT, 'Saber left out by the weekly cap', VALUE_DEFAULT, 0),
