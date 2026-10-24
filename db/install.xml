@@ -858,7 +858,7 @@
         <FIELD NAME="minion" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false" COMMENT="The knot of the minion"/>
         <FIELD NAME="day" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Start of the day of the fight"/>
         <FIELD NAME="state" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Threads, bonds, turn, phase and what was done (JSON)"/>
-        <FIELD NAME="outcome" TYPE="char" LENGTH="10" NOTNULL="true" DEFAULT="" SEQUENCE="false" COMMENT="won or escaped, at the end"/>
+        <FIELD NAME="outcome" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="won or escaped, at the end (empty while it goes on)"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>

@@ -1094,7 +1094,7 @@ function xmldb_local_oksigeniatesape_upgrade($oldversion) {
         $table->add_field('minion', XMLDB_TYPE_CHAR, '40', null, XMLDB_NOTNULL, null, null);
         $table->add_field('day', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
         $table->add_field('state', XMLDB_TYPE_TEXT, null, null, null, null, null);
-        $table->add_field('outcome', XMLDB_TYPE_CHAR, '10', null, XMLDB_NOTNULL, null, '');
+        $table->add_field('outcome', XMLDB_TYPE_CHAR, '10', null, XMLDB_NOTNULL, null, null);
         $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
         $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
         $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
