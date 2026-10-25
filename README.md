@@ -84,6 +84,10 @@ is today:
   that the teacher confirms or changes. A report of the class for the teacher (Excel, ODS, CSV or PDF), with what each
   student did and, by objective, the share right at the first try and how the answers came; its PDF adds what confuses
   the class (also what it voted on the class screen, as nobody's try) and the knots left hanging.
+- **The Moodle app and other platforms**: in the Moodle app, an entry «Tesapé» in the menu and a tab in each course with
+  a game, which open the game inside the app. A course published with Moodle's «Publish as LTI tool» (LTI 1.3) sends
+  who comes from another platform as a student straight into the valley; the settings of the teacher say whether the
+  course is published.
 - **The workshop**: the teacher changes the texts and questions of a mission (kept apart, as a layer), sees each scene
   as a student and with the evidence each answer leaves, takes a scene out of the game, skips a place, chooses the
   classroom challenge of each place and, with the AI of the site, gets lanes proposed for each knot, taken one by
@@ -114,7 +118,8 @@ maps, scenes, sounds and music, is distributed apart from the plugin.
 
 ## Requirements
 
-- Moodle 4.5 to 5.3: the branches that still get security fixes. Developed on 5.3.
+- Moodle 4.5 to 5.3: the branches that still get security fixes. Developed on 5.3; also tested on the development
+  branch of Moodle 6.0.
 - PHP as required by your Moodle.
 
 ## Install
@@ -163,7 +168,7 @@ php local/oksigeniatesape/cli/art.php --install=/path/to/pack.zip
 
 Code, comments and commit messages in English; texts in the language packs (`lang/en`, `lang/es`). The tests run
 with `moodle-plugin-ci` in GitHub Actions on Moodle 4.5, 5.2 and 5.3 (PostgreSQL), on 5.3 with MariaDB 11.4 too, and on
-`main` to see what is coming. See
+`main` (Moodle 6.0 in development, PHP 8.4) on every push. See
 [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License

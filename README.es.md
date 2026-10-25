@@ -67,6 +67,10 @@ El juego está preparado para **paquetes de arte** (`cli/art.php`), y el primero
   cuando la clase enciende todas las linternas; la valoración puede ir al calificador, si el docente quiere. Un informe
   de la clase para el docente (Excel, ODS, CSV o PDF), con lo hecho por cada alumno y, por objetivo, el porcentaje de
   aciertos a la primera.
+- **La app de Moodle y otras plataformas**: en la app de Moodle, una entrada «Tesapé» en el menú y una pestaña en cada
+  curso con juego, que abren el juego dentro de la app. Un curso publicado con «Publicar como herramienta LTI» de Moodle
+  (LTI 1.3) lleva directo al valle a quien llega como alumno desde otra plataforma; los ajustes del docente dicen si el
+  curso está publicado.
 - **El taller**: el docente cambia los textos y las preguntas de una misión (guardados aparte, como una capa) o crea una
   desde cero en seis pasos con escenas guiadas, un comprobador y «Probar esta escena»; una misión se exporta como
   paquete y se carga en otro curso o sitio. La IA del sitio puede hacer el borrador de una escena, si el sitio lo
@@ -92,7 +96,8 @@ los mapas, las escenas, los sonidos y la música, se distribuye aparte del plugi
 
 ## Requisitos
 
-- Moodle 4.5 a 5.3: las ramas que siguen recibiendo parches de seguridad. Se desarrolla sobre 5.3.
+- Moodle 4.5 a 5.3: las ramas que siguen recibiendo parches de seguridad. Se desarrolla sobre 5.3; probado también en
+  la rama de desarrollo de Moodle 6.0.
 - PHP según pida tu Moodle.
 
 ## Instalación
@@ -134,7 +139,7 @@ php local/oksigeniatesape/cli/art.php --install=/ruta/al/paquete.zip
 
 Código, comentarios y mensajes de commit en inglés; los textos, en los paquetes de idioma (`lang/en`, `lang/es`).
 Las pruebas pasan con `moodle-plugin-ci` en GitHub Actions sobre Moodle 4.5, 5.2 y 5.3 (PostgreSQL), sobre 5.3 también
-con MariaDB 11.4, y sobre `main` para ver lo que viene. Ver [CONTRIBUTING.md](CONTRIBUTING.md).
+con MariaDB 11.4, y sobre `main` (Moodle 6.0 en desarrollo, PHP 8.4) en cada subida. Ver [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Licencia
 
