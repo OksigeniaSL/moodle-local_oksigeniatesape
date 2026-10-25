@@ -157,4 +157,45 @@ final class portal_test extends \advanced_testcase {
         $this->assertSame('student', $world[0]['role']);
         $this->assertSame('Los seres vivos', $world[0]['mission']);
     }
+
+    public function test_who_comes_from_another_platform_goes_straight_into_the_valley(): void {
+        global $DB;
+        $this->resetAfterTest();
+        \core\plugininfo\enrol::enable_plugin('lti', 1);
+        $gen = $this->getDataGenerator();
+        $course = $gen->create_course();
+        $c = (int) $course->id;
+        regions::save($c, ['enabled' => 1]);
+        // Not published yet: the site can, the course is not.
+        $this->setAdminUser();
+        $this->assertSame([true, 0, ''], array_slice(array_values(portal::lti($c)), 0, 3));
+        $this->assertStringContainsString('/enrol/editinstance.php', portal::lti($c)['addurl']);
+        $tool = $gen->create_lti_tool((object) ['courseid' => $c, 'ltiversion' => 'LTI-1p3']);
+        $this->assertSame(1, portal::lti($c)['published']);
+        $this->assertStringContainsString('/enrol/lti/index.php', portal::lti($c)['manageurl']);
+        // A student who comes by LTI, a student of the course and a teacher who comes by LTI.
+        $instance = $DB->get_record('enrol', ['id' => $tool->enrolid]);
+        $student = $DB->get_field('role', 'id', ['shortname' => 'student']);
+        $teacher = $DB->get_field('role', 'id', ['shortname' => 'editingteacher']);
+        $far = $gen->create_user();
+        enrol_get_plugin('lti')->enrol_user($instance, $far->id, $student);
+        $here = $gen->create_and_enrol($course, 'student');
+        $farteacher = $gen->create_user();
+        enrol_get_plugin('lti')->enrol_user($instance, $farteacher->id, $teacher);
+        $this->assertSame([true, false], [portal::from_lti($c, (int) $far->id), portal::from_lti($c, (int) $here->id)]);
+        $this->setUser($far);
+        $this->assertTrue(portal::goes_straight_in($c));
+        $this->setUser($here);
+        $this->assertFalse(portal::goes_straight_in($c));
+        // The teacher keeps the course, with the panel on its cover.
+        $this->setUser($farteacher);
+        $this->assertFalse(portal::goes_straight_in($c));
+        // Who is also in the course in another way is not from another platform.
+        $gen->enrol_user($far->id, $c, 'student');
+        $this->assertFalse(portal::from_lti($c, (int) $far->id));
+        // Without «Publish as LTI tool» on the site.
+        \core\plugininfo\enrol::enable_plugin('lti', 0);
+        $this->setAdminUser();
+        $this->assertSame([false, 0], array_slice(array_values(portal::lti($c)), 0, 2));
+    }
 }

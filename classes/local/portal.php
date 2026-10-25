@@ -50,7 +50,8 @@ final class portal {
     }
 
     /**
-     * Whether a student opening the course goes straight into the valley.
+     * Whether a student opening the course goes straight into the valley: where the teacher chose so, and always for
+     * who comes from another platform (LTI), for whom the game is the tool.
      *
      * @param int $courseid
      * @return bool
@@ -60,7 +61,58 @@ final class portal {
         // A course: the game of the student in it.
         $key = $courseid > 0 && !empty($USER->id) ? games::key($courseid, (int) $USER->id) : $courseid;
         $region = regions::get($key);
-        return $region && $region->enabled && $region->portal === 'direct' && self::role($key) === 'student';
+        return $region && $region->enabled && self::role($key) === 'student' &&
+            ($region->portal === 'direct' || self::from_lti(games::course($key), (int) $USER->id));
+    }
+
+    /**
+     * Whether someone is in a course only through «Publish as LTI tool»: they come from another platform.
+     *
+     * @param int $courseid
+     * @param int $userid
+     * @return bool
+     */
+    public static function from_lti(int $courseid, int $userid): bool {
+        global $DB;
+        if (!$userid) {
+            return false;
+        }
+        $sql = 'SELECT e.enrol
+                  FROM {user_enrolments} ue
+                  JOIN {enrol} e ON e.id = ue.enrolid
+                 WHERE ue.userid = ? AND e.courseid = ? AND ue.status = ? AND e.status = ?';
+        $methods = $DB->get_fieldset_sql($sql, [$userid, $courseid, ENROL_USER_ACTIVE, ENROL_INSTANCE_ENABLED]);
+        return $methods && !array_diff($methods, ['lti']);
+    }
+
+    /**
+     * The game from another platform (LTI 1.3), for the teachers of a course: whether the site can publish courses as
+     * LTI tools, how many times this course is published, and the pages of Moodle to publish it and to see what the other
+     * platform needs.
+     *
+     * @param int $courseid
+     * @return array site, published, manageurl, addurl.
+     */
+    public static function lti(int $courseid): array {
+        global $DB;
+        $context = \context_course::instance($courseid);
+        $site = enrol_is_enabled('lti');
+        $published = $site ? $DB->count_records_sql(
+            'SELECT COUNT(1)
+               FROM {enrol_lti_tools} t
+               JOIN {enrol} e ON e.id = t.enrolid
+              WHERE e.courseid = ? AND e.enrol = ? AND e.status = ? AND t.contextid = ? AND t.ltiversion = ?',
+            [$courseid, 'lti', ENROL_INSTANCE_ENABLED, $context->id, 'LTI-1p3']
+        ) : 0;
+        $manage = $published && has_capability('moodle/course:enrolreview', $context);
+        $add = $site && has_capability('enrol/lti:config', $context);
+        return [
+            'site' => $site,
+            'published' => $published,
+            'manageurl' => $manage ? (new \moodle_url('/enrol/lti/index.php', ['courseid' => $courseid]))->out(false) : '',
+            'addurl' => $add ? (new \moodle_url('/enrol/editinstance.php', ['type' => 'lti', 'courseid' => $courseid]))->out(false)
+                : '',
+        ];
     }
 
     /**

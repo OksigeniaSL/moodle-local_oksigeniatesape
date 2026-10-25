@@ -933,7 +933,9 @@ final class view {
         }
         // The campaign with other courses, with its code for the teachers.
         $campaign = $region ? campaigns::view((int) $region->courseid, true) : null;
-        return $badge + ($campaign ? ['campaign' => $campaign] : []) + [
+        // The game from another platform: a course is published, not a game more.
+        $lti = $region && (int) $region->courseid > 0 ? ['lti' => portal::lti((int) $region->courseid)] : [];
+        return $badge + ($campaign ? ['campaign' => $campaign] : []) + $lti + [
             'enabled' => (bool) ($region->enabled ?? false),
             'family' => $region->family ?? 'storyheroes',
             'groupingid' => (int) ($region->groupingid ?? 0),

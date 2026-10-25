@@ -1,9 +1,9 @@
 # Moodle Plugin CI — the suite that Moodle Marketplace reviewers expect (validate, lint, codechecker, phpdoc,
 # savepoints, mustache, grunt) plus the plugin's PHPUnit and Behat tests.
 #
-# Pushes and pull requests run a short matrix (the lowest and the highest supported branch); tags or a manual run
-# go through every branch that still gets security fixes, plus main. main tracks the next Moodle release and is
-# allowed to fail, so upstream breakage shows up early.
+# Pushes and pull requests run a short matrix (the lowest and the highest supported branch, and main); tags or a manual
+# run go through every branch that still gets security fixes, plus main. main tracks the next Moodle release (6.0) and
+# is allowed to fail, so upstream breakage shows up early.
 #
 # Reference template: https://github.com/moodlehq/moodle-plugin-ci
 name: Moodle Plugin CI
@@ -38,7 +38,7 @@ jobs:
           if [[ "$GITHUB_REF" == refs/tags/* || "$GITHUB_EVENT_NAME" == workflow_dispatch ]]; then
             echo "include=[$low,$b502,$high,$next]" >> "$GITHUB_OUTPUT"
           else
-            echo "include=[$low,$high]" >> "$GITHUB_OUTPUT"
+            echo "include=[$low,$high,$next]" >> "$GITHUB_OUTPUT"
           fi
 
   test:

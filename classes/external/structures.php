@@ -785,6 +785,12 @@ final class structures {
             'lightart' => new external_value(PARAM_BOOL, 'The tablets take the small copy of the big images', VALUE_DEFAULT, false),
             'stage' => new external_value(PARAM_ALPHA, 'The stage of the class', VALUE_DEFAULT, 'primary'),
             'campaign' => self::campaign(),
+            'lti' => new external_single_structure([
+                'site' => new external_value(PARAM_BOOL, 'The site can publish courses as LTI tools'),
+                'published' => new external_value(PARAM_INT, 'How many times the course is published with LTI 1.3'),
+                'manageurl' => new external_value(PARAM_URL, 'The page of Moodle with what the other platform needs'),
+                'addurl' => new external_value(PARAM_URL, 'The page of Moodle to publish the course'),
+            ], 'The game from another platform, for a course', VALUE_OPTIONAL),
             'creaturename' => new external_value(PARAM_TEXT, 'In infant school, the name of the creature of the class', VALUE_DEFAULT, ''),
             'completion' => new external_value(
                 PARAM_BOOL,

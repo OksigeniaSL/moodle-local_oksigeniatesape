@@ -312,6 +312,27 @@
   }
 
   /**
+   * The card of the game from another platform (LTI 1.3), in the settings: whether the site can publish the course, and
+   * the pages of Moodle to publish it and to see what the other platform needs.
+   *
+   * @param {Object} [lti]
+   * @return {string}
+   */
+  function ltiCard(lti) {
+    if (!lti || !can('manageregion')) {
+      return '';
+    }
+    var state = !lti.site ? t('teach_lti_off') : lti.published ? t('teach_lti_published') : t('teach_lti_none');
+    var actions = (lti.manageurl ? '<a class="btn btn-main" href="' + esc(lti.manageurl) + '">' + esc(t('teach_lti_manage')) +
+      '</a>' : '') + (lti.addurl && !lti.published ? '<a class="btn btn-soft" href="' + esc(lti.addurl) + '">' +
+      esc(t('teach_lti_add')) + '</a>' : '');
+    return '<section class="card" style="margin-top:16px" data-lti><h2>' + esc(t('teach_lti')) + '</h2><p class="help-soft">' +
+      esc(t('teach_lti_help')) + '</p><p><b>' + esc(state) + '</b></p>' + (actions ? '<div class="actions" style="' +
+      'justify-content:flex-start">' + actions + '</div>' : '') + '<p class="help-soft">' + esc(t('teach_lti_grades')) +
+      '</p></section>';
+  }
+
+  /**
    * The card of the campaign with other courses, in the settings: filled when it is bound.
    *
    * @return {string}
@@ -4083,7 +4104,7 @@
     var el = content('<section class="card"><h2>' + esc(t('teach_tab_settings')) + '</h2><form data-settings>' + daily +
       advanced + (editable ? '<div class="actions" style="justify-content:flex-start;margin-top:14px"><button ' +
       'class="btn btn-main" type="submit">' + esc(t('app_save')) + '</button></div>' : '') + '</form></section>' + gamesCard() +
-      campaignCard());
+      campaignCard() + ltiCard(r.lti));
     bindGames(el);
     bindCampaign(el, r.campaign);
     el.querySelector('.settings-advanced').ontoggle = function() {
