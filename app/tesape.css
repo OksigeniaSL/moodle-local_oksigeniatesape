@@ -2423,21 +2423,22 @@ body.still .team-huddle {
   }
 }
 
+/* The colour of a creature (--paint) stays under the light. */
 @keyframes reveal {
   0% {
     opacity: 0;
     transform: scale(.6) translateY(30px);
-    filter: brightness(3) blur(6px);
+    filter: var(--paint, brightness(1)) brightness(3) blur(6px);
   }
 
   60% {
     opacity: 1;
-    filter: brightness(1.4) blur(0);
+    filter: var(--paint, brightness(1)) brightness(1.4) blur(0);
   }
 
   100% {
     transform: none;
-    filter: none;
+    filter: var(--paint, none);
   }
 }
 
@@ -9176,6 +9177,32 @@ body.adapt-colours .errors-text .fixed ins {
 
 .rise .ring.big b {
   font-size: 44px;
+}
+
+/* With the sheet of the light of evolution in the pack: the light covers the figure of before and, at its flash, the
+   one of now is there; the sheet does what the glow and the timings of the CSS do without it. */
+.rise.sheet .rise-from,
+.rise.sheet .rise-to {
+  animation: none;
+}
+
+.rise.sheet .rise-to,
+.rise.sheet.swapped .rise-from {
+  opacity: 0;
+}
+
+.rise.sheet.swapped .rise-to {
+  opacity: 1;
+}
+
+.rise.sheet::after {
+  display: none;
+}
+
+.rise > .fx-sheet {
+  z-index: 2;
+  background-repeat: no-repeat;
+  pointer-events: none;
 }
 
 /* The seed of the creature: touched three times, it cracks open. */

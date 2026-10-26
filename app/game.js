@@ -1045,12 +1045,44 @@
       esc(t('app_stageup_help')) + '</p>' : ''), 'tesape-rise-title', then);
     if (T.fx) {
       T.fx.sound('drumroll');
-      setTimeout(function() {
+      var cheer = function() {
         T.fx.sound('levelup');
         T.fx.sparkles();
-      }, T.moves() ? 1100 : 0);
+      };
+      if (!staged || !evolve(layer, cheer)) {
+        setTimeout(cheer, T.moves() ? 1100 : 0);
+      }
     }
     return layer;
+  }
+
+  /**
+   * The light of evolution over a figure that changes (the creature that grows, the hero of a new stage), if the pack
+   * has its sheet: the light covers the one of before and, at its flash, the one of now is there. Without it, the
+   * change as always.
+   *
+   * @param {Element} layer The moment.
+   * @param {Function} [flash] At the flash.
+   */
+  function evolve(layer, flash) {
+    var rise = layer.querySelector('.rise');
+    var to = rise && rise.querySelector('.rise-to');
+    if (!rise || !to || !T.fx || !T.fx.sprite) {
+      return false;
+    }
+    rise.classList.add('sheet');
+    var played = T.fx.sprite(rise, 'evolution', to.firstElementChild || to, function(name) {
+      if (name === 'swap') {
+        rise.classList.add('swapped');
+        if (flash) {
+          flash();
+        }
+      }
+    });
+    if (!played) {
+      rise.classList.remove('sheet');
+    }
+    return played;
   }
 
   /**
@@ -1072,16 +1104,19 @@
    * @param {Function} [then]
    */
   function creatureMoment(from, c, then) {
-    moment('<div class="kicker">' + esc(t('app_creature_kicker')) + '</div><div class="rise"><div class="rise-from">' +
+    var layer = moment('<div class="kicker">' + esc(t('app_creature_kicker')) + '</div><div class="rise"><div class="rise-from">' +
       T.creature(c.creature, from, true) + '</div><div class="rise-to">' + T.creature(c.creature, c.creaturestage, true) +
       '</div></div><h2 id="tesape-creature-title">' + esc(t('app_creaturegrew', {name: creatureName(c),
       stage: stageName(c.creaturestage)})) + '</h2><p class="help">' +
       esc(t('app_creature_grew_help')) + '</p>', 'tesape-creature-title', then);
     if (T.fx) {
-      setTimeout(function() {
+      var cheer = function() {
         T.fx.sound('hatch');
         T.fx.sparkles();
-      }, T.moves() ? 1100 : 0);
+      };
+      if (!evolve(layer, cheer)) {
+        setTimeout(cheer, T.moves() ? 1100 : 0);
+      }
     }
   }
 

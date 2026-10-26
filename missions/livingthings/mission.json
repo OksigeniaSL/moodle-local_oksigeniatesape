@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 87,
+ "version": 88,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 88,
+   "kind": "fix",
+   "date": "2026-10-26",
+   "text": "«El sótano»: el momento de las plantas pálidas, con su pintura"
+  },
   {
    "version": 87,
    "kind": "improvement",

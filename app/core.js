@@ -1439,13 +1439,14 @@
     var art = T.artUrl(['creature.' + st + '.' + (c.coat || 'none'), 'creature.' + st, 'creature.' + low + '.' +
       (c.coat || 'none'), 'creature.' + low, 'creature']);
     if (art) {
-      // One image for every creature: its own hue, or the paint bought in the market; and its own mark on the belly,
-      // drawn into the image on the device (at once, when this device already drew it).
+      // One image for every creature: its own hue, or the paint bought in the market (in --paint, so that a light that
+      // plays over it keeps it); and its own mark on the belly, drawn into the image on the device (at once, when this
+      // device already drew it).
       var mark = [Number(c.ears) || 0, Number(c.eyes) || 0, Number(c.round) || 0, low].join(',');
       var marked = MARKED[art + '|' + mark];
       return '<img class="creature art' + (big ? ' born' : '') + '" src="' + T.esc(typeof marked === 'string' ? marked :
         art) + '"' + (typeof marked === 'string' ? '' : ' data-mark="' + mark + '"') + ' alt="' + T.esc(c.name || '') +
-        '" style="filter:' + (paint ? paint.filter : 'hue-rotate(' + h + 'deg)') + '">';
+        '" style="--paint:' + (paint ? paint.filter : 'hue-rotate(' + h + 'deg)') + ';filter:var(--paint)">';
     }
     var s = 1 + (st - 1) * 0.12;
     var body = 'hsl(' + h + ' 60% 62%)';

@@ -746,6 +746,100 @@
     div.innerHTML = html;
   }
 
+  /** The sheets of frames of the pack already read (anim.fx.<name>), by key. */
+  var sheets = {};
+
+  /**
+   * A sheet of frames of the pack played over a figure, once (anim.fx.<name> and its picture fx.<name>, as Gaudí draws
+   * them: frame, cols, rows, frames, fps, anchor, fit, cues, still): its frame fits the box of the figure (fit), its
+   * anchor sits on the centre of the figure, and each cue calls back at its frame (swap: where the light covers the
+   * figure). Without movement, the still frame, with the cues called at once.
+   *
+   * @param {HTMLElement} host Where it goes, over the figure (a grid where each child is in the same cell).
+   * @param {string} name evolution…
+   * @param {HTMLElement} figure The figure it goes over: its width is the box.
+   * @param {Function} cue Gets the name of each cue.
+   * @return {boolean} Whether the pack has the sheet: if not, nothing is played and no cue is called.
+   */
+  function sprite(host, name, figure, cue) {
+    var metaUrl = T.artUrl && T.artUrl(['anim.fx.' + name]);
+    var picture = T.artUrl && T.artUrl(['fx.' + name]);
+    if (!metaUrl || !picture) {
+      return false;
+    }
+    var fail = function() {
+      // Without the sheet after all: the figure of now, at once.
+      cue('swap');
+    };
+    var ready = sheets[name] ? Promise.resolve(sheets[name]) : fetch(metaUrl, {credentials: 'same-origin'}).then(function(r) {
+      return r.json();
+    }).then(function(meta) {
+      // The picture, loaded before the first frame.
+      return new Promise(function(done) {
+        var img = new Image();
+        img.onload = function() {
+          sheets[name] = meta;
+          done(meta);
+        };
+        img.onerror = function() {
+          done(null);
+        };
+        img.src = picture;
+      });
+    });
+    ready.then(function(meta) {
+      if (!meta || !meta.frame || !meta.cols || !meta.rows || !host.isConnected) {
+        fail();
+        return;
+      }
+      var box = figure.getBoundingClientRect().width || 150;
+      var w = box * (meta.fit || 1);
+      var h = w * meta.frame[1] / meta.frame[0];
+      var anchor = meta.anchor || [0.5, 0.5];
+      var el = document.createElement('div');
+      el.className = 'fx-sheet';
+      el.setAttribute('aria-hidden', 'true');
+      el.style.width = w + 'px';
+      el.style.height = h + 'px';
+      el.style.backgroundImage = 'url("' + picture + '")';
+      el.style.backgroundSize = meta.cols * 100 + '% ' + meta.rows * 100 + '%';
+      el.style.transform = 'translate(' + (0.5 - anchor[0]) * w + 'px, ' + (0.5 - anchor[1]) * h + 'px)';
+      var show = function(f) {
+        el.style.backgroundPosition = (f % meta.cols) / (meta.cols - 1) * 100 + '% ' +
+          Math.floor(f / meta.cols) / (meta.rows - 1) * 100 + '%';
+      };
+      host.appendChild(el);
+      var cues = meta.cues || {};
+      if (!T.moves()) {
+        Object.keys(cues).forEach(cue);
+        if (meta.still === null || meta.still === undefined) {
+          el.remove();
+        } else {
+          show(meta.still);
+        }
+        return;
+      }
+      var t0 = performance.now();
+      var fired = {};
+      (function tick(now) {
+        var f = Math.floor((now - t0) / 1000 * (meta.fps || 12));
+        Object.keys(cues).forEach(function(c) {
+          if (f >= cues[c] && !fired[c]) {
+            fired[c] = true;
+            cue(c);
+          }
+        });
+        if (f >= (meta.frames || meta.cols * meta.rows) || !el.isConnected) {
+          el.remove();
+          return;
+        }
+        show(f);
+        requestAnimationFrame(tick);
+      })(t0);
+    }).catch(fail);
+    return true;
+  }
+
   T.fx = {
     /**
      * A sound, by name: tap, choose, right, wrong, heart, lantern, levelup, hatch, hit, win, applause, drumroll, path.
@@ -868,6 +962,7 @@
     sparkles: function() {
       floating('✦', 16, 'fx-sparkle');
     },
+    sprite: sprite,
     /**
      * The drum roll before a result: heard and seen on an element, for a moment.
      *
