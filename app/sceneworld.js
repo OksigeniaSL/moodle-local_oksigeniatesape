@@ -59,6 +59,11 @@
       };
       // Where what is read is: a function that tells its top, left and right in pixels of the page, asked at each layout.
       var room = null;
+      // The suspects standing in the place (lineup): by id, each with its picture, where it stands and whether it stepped
+      // back; in their order; and what a touch on one of them does, while they can be chosen.
+      var suspects = {};
+      var row = [];
+      var picking = null;
       // While something is looked for on the painting: told where the painting is, and where the bar on top ends.
       var searching = null;
       var bar = 0;
@@ -135,6 +140,28 @@
         place(S.pet, beside ? Math.min(petX, side - size * 0.14) : petX, ground - size * 0.03, size * 0.5 / (S.pet ?
           S.pet.sprite.height : 1));
         place(S.speaker, speakerX, ground, unit * (S.speaker && TALL[S.speaker.code] ? 1.1 : 1));
+        // The suspects, in a row on the floor just above what is read (beside it, over its width; on a phone, behind
+        // the figures, between them).
+        if (row.length) {
+          var from = beside ? box.left * ratio : w * (tall ? 0.06 : 0.3);
+          var to = beside ? box.right * ratio : w * (tall ? 0.94 : 0.7);
+          var line = box ? Math.max(h * 0.3, top - 6 * ratio) : h * 0.62;
+          if (!beside) {
+            line = Math.min(line, ground - size * 0.45);
+          }
+          var each = (to - from) / row.length;
+          var high = Math.max(40 * ratio, Math.min(h * 0.24, each * 1.05, (line - 70 * ratio) * 0.75));
+          row.forEach(function(id, i) {
+            var one = suspects[id];
+            one.tx = from + each * (i + 0.5);
+            one.ty = line;
+            one.size = high;
+            if (snap || one.x === undefined) {
+              one.x = one.tx;
+              one.y = one.ty;
+            }
+          });
+        }
       };
       var world = {
         /**
@@ -254,6 +281,9 @@
           }
           searching = on ? told : null;
           bar = top || 0;
+          row.forEach(function(id) {
+            suspects[id].hidden = on;
+          });
           [S.hero, S.pet, S.speaker].forEach(function(f) {
             if (f) {
               S.tweens.add({targets: [f.sprite, f.shadow], alpha: on ? 0 : 1, duration: still ? 1 : 300});
@@ -306,16 +336,25 @@
         }),
 
         /**
-         * The world answers what was chosen: a light, a shadow, a shake or something that grows; the creature looks.
+         * The world answers what was chosen: a light, a shadow, a shake or something that grows. Who speaks and the
+         * creature take it as it went: a nod and a jump of joy with a few sparks when it went well, a start and an
+         * alert look when not; with neither, a nod and a look.
          *
          * @param {string} fx light, dark, shake, grow, or nothing.
+         * @param {string} [mood] good, bad, or nothing.
          */
-        answer: later(function(fx) {
+        answer: later(function(fx, mood) {
           if (S.pet) {
-            T.cast.act(S.pet, 'alert');
+            T.cast.act(S.pet, mood === 'good' ? 'hop' : 'alert');
+            if (mood === 'good' && !still) {
+              S.sparks.explode(10, S.pet.x, S.pet.y - S.pet.sprite.displayHeight * 0.6);
+            }
           }
           if (S.speaker && S.speaker.puppet) {
-            T.cast.act(S.speaker, fx === 'shake' || fx === 'dark' ? 'surprise' : 'nod');
+            T.cast.act(S.speaker, fx === 'shake' || fx === 'dark' || mood === 'bad' ? 'surprise' : 'nod');
+          }
+          if (S.hero && mood === 'good') {
+            T.cast.act(S.hero, 'celebrate');
           }
           if (still) {
             return;
@@ -333,6 +372,116 @@
             cam.shake(320, 0.006);
           } else if (fx === 'grow') {
             S.tweens.add({targets: cam, zoom: 1.05, duration: 420, yoyo: true, ease: 'Sine.easeInOut'});
+          }
+        }),
+
+        /**
+         * The suspects stand in the place (the options of a choice of candidates, each with its drawing), or go; those
+         * that stepped back stay in the shade, a little behind. A suspect that steps back now does it with a puff.
+         *
+         * @param {Array|null} list id, url, out; null, and they go.
+         */
+        lineup: later(function(list) {
+          if (!list) {
+            row.forEach(function(id) {
+              var one = suspects[id];
+              S.tweens.add({targets: [one.sprite, one.shadow], alpha: 0, duration: still ? 1 : 300, onComplete: function() {
+                one.sprite.destroy();
+                one.shadow.destroy();
+              }});
+            });
+            suspects = {};
+            row = [];
+            picking = null;
+            return;
+          }
+          var missing = list.filter(function(one) {
+            return !S.textures.exists('suspect.' + one.id);
+          });
+          var stand = function() {
+            if (row.length && row.join() !== list.map(function(one) {
+              return one.id;
+            }).join()) {
+              world.lineup(null);
+            }
+            list.forEach(function(one) {
+              var was = suspects[one.id];
+              if (!was) {
+                var sprite = S.add.image(0, 0, 'suspect.' + one.id).setOrigin(0.5, 0.99).setAlpha(still ? 1 : 0);
+                was = suspects[one.id] = {id: one.id, sprite: sprite, out: false, k: 1, a: still ? 1 : 0, hop: 0,
+                  shadow: S.add.ellipse(0, 0, 10, 10, 0x0b1a10, 0.28)};
+                row.push(one.id);
+                sprite.on('pointerdown', function() {
+                  if (picking && !was.out) {
+                    picking(one.id);
+                  }
+                });
+                sprite.on('pointerover', function() {
+                  was.over = true;
+                });
+                sprite.on('pointerout', function() {
+                  was.over = false;
+                });
+              }
+              if (one.out && !was.out && !still && was.x !== undefined) {
+                if (!S.puff) {
+                  S.puff = S.add.particles(0, 0, 'dot', {lifespan: 520, speed: {min: 20, max: 70}, scale: {start: 0.6,
+                    end: 0}, alpha: {start: 0.55, end: 0}, tint: 0xb9c2c9, emitting: false}).setDepth(5000);
+                }
+                S.puff.explode(10, was.x, was.y - (was.size || 100) * 0.4);
+              }
+              was.out = !!one.out;
+            });
+            world.pick(picking);
+            layout(false);
+          };
+          if (missing.length) {
+            missing.forEach(function(one) {
+              S.load.image('suspect.' + one.id, one.url);
+            });
+            S.load.once('complete', stand);
+            S.load.start();
+          } else {
+            stand();
+          }
+        }),
+
+        /**
+         * The suspects can be chosen with a touch, those still in the light; null, and they cannot.
+         *
+         * @param {Function|null} then Gets the id of the one touched.
+         */
+        pick: later(function(then) {
+          picking = then || null;
+          row.forEach(function(id) {
+            var one = suspects[id];
+            if (picking && !one.out) {
+              one.sprite.setInteractive({useHandCursor: true, pixelPerfect: false});
+            } else {
+              one.sprite.disableInteractive();
+            }
+          });
+        }),
+
+        /**
+         * The suspect chosen answers: the right one jumps in a shower of sparks, another one steps back.
+         *
+         * @param {string} id
+         * @param {boolean} right
+         */
+        chosen: later(function(id, right) {
+          var one = suspects[id];
+          if (!one) {
+            return;
+          }
+          if (right) {
+            if (!still) {
+              S.tweens.add({targets: one, hop: (one.size || 100) * 0.18, duration: 220, yoyo: true, repeat: 1,
+                ease: 'Sine.easeOut'});
+              S.sparks.explode(24, one.x, one.y - (one.size || 100) * 0.6);
+            }
+          } else {
+            one.out = true;
           }
         }),
 
@@ -394,6 +543,21 @@
           }
         }),
 
+        /**
+         * For the tests of the browser: a touch on a suspect in the place, as a finger would give it.
+         *
+         * @param {string} id
+         * @return {boolean} Whether it could be touched.
+         */
+        touch: function(id) {
+          var one = suspects[id];
+          if (!picking || !one || one.out) {
+            return false;
+          }
+          one.sprite.emit('pointerdown');
+          return true;
+        },
+
         /** For the tests of the browser. */
         state: function() {
           return {ready: !!S, image: shown, speaker: who, figure: !!(S && S.speaker),
@@ -402,7 +566,11 @@
               '',
             pet: S && S.pet && S.pet.puppet ? S.pet.puppet.clipName : '',
             aura: !!(S && S.hero && S.hero.aura),
-            paint: !!(S && S.pet && S.pet.sprite.filters && S.pet.sprite.filters.internal.list.length)};
+            paint: !!(S && S.pet && (S.pet.puppet ? S.pet.puppet.parts[0].image.texture.key :
+              S.pet.sprite.texture.key).indexOf('.paint.') >= 0),
+            lineup: row.map(function(id) {
+              return id + (suspects[id].out ? ' fuera' : '');
+            }).join(', '), picking: !!picking};
         },
         close: function() {
           pending = [];
@@ -459,6 +627,31 @@
             if (f) {
               T.cast.move(S, f, 1, time, dt, 7, still);
             }
+          });
+          // The suspects go to their place, step back into the shade or come out of it, and breathe.
+          row.forEach(function(id, i) {
+            var one = suspects[id];
+            if (one.tx === undefined) {
+              return;
+            }
+            var q = still ? 1 : k;
+            one.x += (one.tx - one.x) * q;
+            one.y += (one.ty - one.y) * q;
+            one.k += ((one.out ? 0.82 : one.over && picking ? 1.08 : 1) - one.k) * q;
+            one.a += ((one.hidden ? 0 : one.out ? 0.45 : 1) - one.a) * q;
+            var base = one.size / Math.max(one.sprite.width, one.sprite.height);
+            // Those that can be chosen now beat a little: the only thing that moves to ask for a touch.
+            var breathe = still || one.out ? 1 : 1 + Math.sin(time / (picking ? 260 : 700) + i) * (picking ? 0.03 : 0.012);
+            var back = one.out ? one.size * 0.08 : 0;
+            one.sprite.setPosition(one.x, one.y - back - one.hop).setScale(base * one.k, base * one.k * breathe)
+              .setAlpha(one.a).setDepth(one.y - back);
+            if (one.out) {
+              one.sprite.setTint(0x5a6478);
+            } else {
+              one.sprite.clearTint();
+            }
+            one.shadow.setPosition(one.x, one.y - back - 2).setSize(one.size * 0.5 * one.k, one.size * 0.07)
+              .setAlpha(one.a).setDepth(one.y - back - 1);
           });
           var sp = S.speaker;
           if (sp && sp.puppet) {

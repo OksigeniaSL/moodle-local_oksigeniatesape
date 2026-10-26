@@ -100,6 +100,7 @@
   },
   "p1": {
    "type": "choice",
+   "lineup": "adivinar",
    "prompt": "Primera pregunta",
    "hints": [
     "La mejor pregunta es la que deja fuera a más animales de golpe.",
@@ -169,6 +170,7 @@
   },
   "p2": {
    "type": "choice",
+   "lineup": "adivinar",
    "prompt": "Segunda pregunta",
    "hints": [
     "Si no tiene huesos, ¿qué invertebrados conocemos y en qué se diferencian unos de otros?"
@@ -265,6 +267,7 @@
   },
   "p3": {
    "type": "choice",
+   "lineup": "adivinar",
    "extra": true,
    "prompt": {
     "valley": "Última pregunta (o dos, si el búho regaló una)",
@@ -366,6 +369,7 @@
   },
   "adivinar": {
    "type": "choice",
+   "lineup": "adivinar",
    "shuffle": true,
    "prompt": "¿De quién es el rastro?",
    "image": "cuatro-candidatos",
@@ -434,6 +438,7 @@
   },
   "porque": {
    "type": "choice",
+   "lineup": "adivinar",
    "prompt": {
     "valley": "Antes de devolverle el nombre al Gran Libro: ¿qué respuestas del búho nos dicen que es un caracol?",
     "azara": "Antes de apuntarlo en el cuaderno: ¿qué respuestas del baqueano nos dicen que es un caracol?"
@@ -453,6 +458,9 @@
      "correct": true,
      "points": 2,
      "say": "La tortuga se aparta del rastro, despacio.",
+     "away": [
+      "tortuga"
+     ],
      "feedback": "La tortuga es la única de los cuatro que tiene huesos: su caparazón está unido a su esqueleto. Esa respuesta la deja fuera."
     },
     {
@@ -461,6 +469,10 @@
      "correct": true,
      "points": 2,
      "say": "El escarabajo y el cangrejo se apartan del rastro.",
+     "away": [
+      "escarabajo",
+      "cangrejo"
+     ],
      "feedback": "El escarabajo y el cangrejo tienen un caparazón duro, pero no una concha, y el de la tortuga está unido a sus huesos. Solo el caracol lleva concha."
     },
     {
@@ -469,6 +481,11 @@
      "correct": true,
      "points": 2,
      "say": "El escarabajo, la tortuga y el cangrejo se quedan atrás.",
+     "away": [
+      "escarabajo",
+      "tortuga",
+      "cangrejo"
+     ],
      "feedback": "Ni el escarabajo, ni la tortuga, ni el cangrejo tienen la piel húmeda y blanda, ni dejan un hilo de baba al moverse: esa respuesta deja fuera a los tres."
     },
     {
@@ -476,6 +493,7 @@
      "label": "Pone huevos",
      "correct": false,
      "say": "Nadie se aparta: los cuatro siguen junto al rastro.",
+     "away": [],
      "feedback": "El escarabajo, la tortuga y el cangrejo también ponen huevos: una respuesta que vale para todos no ayuda a elegir."
     },
     {
@@ -483,6 +501,7 @@
      "label": "Es pequeño",
      "correct": false,
      "say": "Nadie se aparta: los cuatro se miran unos a otros.",
+     "away": [],
      "feedback": "El escarabajo y muchos cangrejos también son pequeños, y hay tortugas pequeñas: lo que vale para todos no separa a nadie."
     }
    ],
@@ -500,6 +519,7 @@
   },
   "bien": {
    "type": "ending",
+   "lineup": "adivinar",
    "outcome": "success",
    "text": {
     "valley": "El nombre del caracol vuelve al Gran Libro y una luciérnaga se enciende sobre el rastro. El búho abre las alas: «Preguntar bien es la mitad de saber». Después mira las otras marcas, las que no se parecen a nada, y tarda todavía más en contestar: «Esas no son de ningún animal. Son de una idea mal escrita». {{creature}} intenta seguirlas y se mancha la nariz de tinta.",
@@ -551,6 +571,7 @@
   },
   "p1-muda": {
    "type": "choice",
+   "lineup": "adivinar-muda",
    "prompt": "Primera pregunta",
    "hints": [
     "La mejor pregunta es la que deja fuera a más animales de golpe.",
@@ -620,6 +641,7 @@
   },
   "p2-muda": {
    "type": "choice",
+   "lineup": "adivinar-muda",
    "prompt": "Segunda pregunta",
    "hints": [
     "Si tiene huesos y deja la piel vacía, ¿qué animales conocemos así, y en qué se diferencian unos de otros?"
@@ -719,6 +741,7 @@
   },
   "p3-muda": {
    "type": "choice",
+   "lineup": "adivinar-muda",
    "extra": true,
    "prompt": {
     "valley": "Última pregunta (o dos, si el búho regaló una)",
@@ -823,6 +846,7 @@
   },
   "adivinar-muda": {
    "type": "choice",
+   "lineup": "adivinar-muda",
    "shuffle": true,
    "prompt": "¿De quién es la piel vacía?",
    "image": "cuatro-candidatos-muda",
@@ -888,6 +912,7 @@
   },
   "porque-muda": {
    "type": "choice",
+   "lineup": "adivinar-muda",
    "prompt": {
     "valley": "Antes de devolverle el nombre al Gran Libro: ¿qué respuestas del búho nos dicen que es una culebra?",
     "azara": "Antes de apuntarlo en el cuaderno: ¿qué respuestas del baqueano nos dicen que es una culebra?"
@@ -907,6 +932,10 @@
      "correct": true,
      "points": 2,
      "say": "La lagartija y la araña se apartan de la piel vacía.",
+     "away": [
+      "lagartija",
+      "arana"
+     ],
      "feedback": "La lagartija y la araña tienen patas; la culebra, no. La lombriz tampoco las tiene, y para ella hace falta otra respuesta."
     },
     {
@@ -915,6 +944,10 @@
      "correct": true,
      "points": 2,
      "say": "La araña y la lombriz se apartan de la piel vacía.",
+     "away": [
+      "arana",
+      "lombriz"
+     ],
      "feedback": "La araña y la lombriz no tienen huesos: esa respuesta las deja fuera. La lagartija sí los tiene, como la culebra."
     },
     {
@@ -922,6 +955,7 @@
      "label": "Pone huevos",
      "correct": false,
      "say": "Nadie se aparta: los cuatro siguen junto a la piel vacía.",
+     "away": [],
      "feedback": "La lagartija, la araña y la lombriz también ponen huevos: una respuesta que vale para todos no ayuda a elegir."
     },
     {
@@ -930,6 +964,10 @@
      "correct": true,
      "points": 2,
      "say": "La araña y la lombriz se quedan atrás.",
+     "away": [
+      "arana",
+      "lombriz"
+     ],
      "feedback": "Ni la araña ni la lombriz tienen escamas. La lagartija sí: es un reptil, como la culebra, y para ella hace falta otra respuesta."
     },
     {
@@ -937,6 +975,7 @@
      "label": "No tiene plumas",
      "correct": false,
      "say": "Nadie se aparta: los cuatro se miran unos a otros.",
+     "away": [],
      "feedback": "Ninguno de los cuatro tiene plumas: lo que vale para todos no separa a nadie."
     }
    ],
@@ -954,6 +993,7 @@
   },
   "bien-muda": {
    "type": "ending",
+   "lineup": "adivinar-muda",
    "outcome": "success",
    "text": {
     "valley": "El nombre de la culebra vuelve al Gran Libro y una luciérnaga se enciende sobre la piel vacía. Entre las piedras, algo largo se desliza y desaparece. El búho abre las alas: «Preguntar bien es la mitad de saber». Después mira las otras marcas, las que no se parecen a nada, y tarda todavía más en contestar: «Esas no son de ningún animal. Son de una idea mal escrita». {{creature}} intenta seguirlas y se mancha la nariz de tinta.",
@@ -1005,6 +1045,7 @@
   },
   "p1-ave": {
    "type": "choice",
+   "lineup": "adivinar-ave",
    "prompt": "Primera pregunta",
    "hints": [
     "Antes de preguntar, miremos lo que ya nos dice la pluma.",
@@ -1077,6 +1118,7 @@
   },
   "p2-ave": {
    "type": "choice",
+   "lineup": "adivinar-ave",
    "prompt": "Segunda pregunta",
    "hints": [
     "Si es un ave, ¿en qué se diferencian unas aves de otras? Pensemos en cómo y dónde busca cada una su comida."
@@ -1176,6 +1218,7 @@
   },
   "p3-ave": {
    "type": "choice",
+   "lineup": "adivinar-ave",
    "extra": true,
    "prompt": {
     "valley": "Última pregunta (o dos, si el búho regaló una)",
@@ -1280,6 +1323,7 @@
   },
   "adivinar-ave": {
    "type": "choice",
+   "lineup": "adivinar-ave",
    "shuffle": true,
    "prompt": "¿De quién es la pluma?",
    "image": "cuatro-candidatos-ave",
@@ -1349,6 +1393,7 @@
   },
   "porque-ave": {
    "type": "choice",
+   "lineup": "adivinar-ave",
    "prompt": {
     "valley": "Antes de devolverle el nombre al Gran Libro: ¿qué respuestas del búho nos dicen que es un pájaro carpintero?",
     "azara": "Antes de apuntarlo en el cuaderno: ¿qué respuestas del baqueano nos dicen que es un pájaro carpintero?"
@@ -1367,6 +1412,7 @@
      "label": "Vuela",
      "correct": false,
      "say": "Nadie se aparta: los cuatro siguen junto a la pluma.",
+     "away": [],
      "feedback": "El pájaro carpintero, el martín pescador, la lechuza y el murciélago vuelan: una respuesta que vale para todos no ayuda a elegir."
     },
     {
@@ -1375,6 +1421,10 @@
      "correct": true,
      "points": 2,
      "say": "El martín pescador y la lechuza se apartan de la pluma.",
+     "away": [
+      "martinpescador",
+      "lechuza"
+     ],
      "feedback": "Ni el martín pescador ni la lechuza trepan por los troncos: esa respuesta deja fuera a los dos."
     },
     {
@@ -1383,6 +1433,10 @@
      "correct": true,
      "points": 2,
      "say": "La lechuza y el murciélago se apartan de la pluma.",
+     "away": [
+      "lechuza",
+      "murcielago"
+     ],
      "feedback": "La lechuza tiene el pico en gancho, y el murciélago no tiene pico: esa respuesta deja fuera a los dos. El martín pescador, en cambio, también lo tiene recto."
     },
     {
@@ -1390,6 +1444,7 @@
      "label": "Tiene huesos por dentro",
      "correct": false,
      "say": "Nadie se aparta: los cuatro se miran unos a otros.",
+     "away": [],
      "feedback": "Los cuatro tienen huesos por dentro, también el murciélago, que es un mamífero: lo que vale para todos no separa a nadie."
     },
     {
@@ -1398,6 +1453,9 @@
      "correct": true,
      "points": 2,
      "say": "El murciélago se aparta, sin hacer ruido.",
+     "away": [
+      "murcielago"
+     ],
      "feedback": "Solo las aves tienen plumas: el murciélago, que tiene pelo, se queda fuera. Ya lo decía la pluma del barro."
     }
    ],
@@ -1415,6 +1473,7 @@
   },
   "bien-ave": {
    "type": "ending",
+   "lineup": "adivinar-ave",
    "outcome": "success",
    "text": {
     "valley": "El nombre del pájaro carpintero vuelve al Gran Libro y una luciérnaga se enciende sobre la pluma. Arriba, el toc, toc, toc no para. El búho abre las alas: «Preguntar bien es la mitad de saber». Después mira las otras marcas, las que no se parecen a nada, y tarda todavía más en contestar: «Esas no son de ningún animal. Son de una idea mal escrita». {{creature}} intenta seguirlas y se mancha la nariz de tinta.",

@@ -1618,6 +1618,62 @@ body.still .path-traveler {
   margin: 0 0 12px;
 }
 
+/* On one device, what each role sees, folded under its name, in a row: the decision comes first. */
+.pieces.folded {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 6px 8px;
+}
+
+.pieces-title {
+  flex: 0 0 100%;
+  color: var(--text-soft);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.pieces.folded .piece {
+  padding: 0;
+  border-left: 0;
+  border-radius: 999px;
+  background: rgba(255, 200, 87, .12);
+}
+
+.pieces.folded .piece[open] {
+  flex: 0 0 100%;
+  border-radius: 12px;
+  border-left: 4px solid var(--lantern);
+}
+
+.pieces.folded summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 4px 14px 4px 6px;
+  list-style: none;
+  cursor: pointer;
+}
+
+.pieces.folded summary::-webkit-details-marker {
+  display: none;
+}
+
+.pieces.folded summary svg {
+  width: 28px;
+  height: 28px;
+  padding: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--ink);
+}
+
+.pieces.folded .piece p {
+  margin: 0;
+  padding: 0 14px 10px;
+}
+
 /* The team session: the tablets of a team joined to a scene. */
 .huddle-layer:empty {
   display: none;
@@ -6298,6 +6354,50 @@ body.in-battle .badge-moment {
   font-size: 26px;
 }
 
+details.whatif summary {
+  cursor: pointer;
+}
+
+/* Once chosen, with the place alive, the options are put away. */
+.scene-body .opts[hidden],
+.scene-body .counter[hidden],
+.scene-body .sniff-row[hidden],
+.scene-body [data-confirm][hidden] {
+  display: none;
+}
+
+/* What was won, a thing at a time: each one comes in with its sound. */
+.loot ul {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.loot li {
+  padding: 4px 0;
+  font-size: 18px;
+  font-weight: 700;
+  animation: loot-in .45s cubic-bezier(.2, 1.4, .4, 1) both;
+  animation-delay: calc(.7s + var(--i, 0) * .38s);
+}
+
+@keyframes loot-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(.9);
+  }
+}
+
+body.still .loot li {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loot li {
+    animation: none;
+  }
+}
+
 /* The welcome of who comes back, or arrives late. */
 .welcome-moment .badge-card {
   text-align: left;
@@ -8477,7 +8577,7 @@ body.adapt-colours .errors-text .fixed ins {
   position: relative;
   display: flex;
   flex-direction: column;
-  min-height: 100%;
+  height: 100%;
 }
 
 .scene-layer.live .scene-top {
@@ -8489,8 +8589,10 @@ body.adapt-colours .errors-text .fixed ins {
 }
 
 .scene-layer.live .scene-body {
+  min-height: 0;
   margin-top: auto;
   padding: 14px;
+  overflow-y: auto;
   border: 2px solid rgba(255, 200, 87, .55);
   border-radius: 16px;
   background: rgba(15, 33, 49, .93);
@@ -8498,6 +8600,7 @@ body.adapt-colours .errors-text .fixed ins {
 
 .scene-layer.live .scene-body:has(> .dlg) {
   padding: 0;
+  overflow: visible;
   border: 0;
   background: none;
 }

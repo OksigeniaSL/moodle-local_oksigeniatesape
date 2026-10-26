@@ -12,6 +12,8 @@
   var cfg = T.cfg;
   var t = T.t;
   var esc = T.esc;
+  /** The medallion of each role, as on its verb. */
+  var ROLEICON = {protector: 'shield', sage: 'log', healer: 'cheer', scout: 'trail'};
 
   /**
    * The keys of the art pack for the picture of a node, from the most precise to the most general: the image of the
@@ -499,12 +501,15 @@
      *
      * @param {string} outcome
      * @param {Object} r What it gave, if anything.
+     * @param {boolean} [told] The place already answered, while how it ends was told.
      */
-    function celebrate(outcome, r) {
+    function celebrate(outcome, r, told) {
       if (!T.fx) {
         return;
       }
-      alive('ending', outcome);
+      if (!told) {
+        alive('ending', outcome);
+      }
       if (outcome === 'success') {
         T.fx.sound('win');
         T.fx.confetti();
@@ -969,6 +974,9 @@
 
     function next() {
       var n = sc.nodes[run.node];
+      if (!n.lineup && n.type !== 'branch') {
+        alive('lineup', null);
+      }
       // In a play as a team, each new decision passes to the next one of the team.
       if (/^(choice|classify|order|path|tend|find|use|justify)$/.test(n.type)) {
         if (run.decided && run.decided !== run.node) {
@@ -1029,6 +1037,20 @@
      * @param {Object} n The node.
      */
     function story(n) {
+      tell(n, function() {
+        go(n.next);
+      });
+    }
+
+    /**
+     * A text told in the box of words, a piece at a time, with the recorded voice of each piece: a told moment, or how
+     * a scene ends. Who speaks is in the place; `nolabel` leaves their name out of the box (the narrator tells it, and
+     * they only say what goes between «»).
+     *
+     * @param {Object} n text, image, speaker, nolabel.
+     * @param {Function} done When the last piece is passed.
+     */
+    function tell(n, done) {
       var pieces = cut(tx(easy(n, 'text')));
       // Each word of the glossary, marked the first time it appears in the moment (each piece, worked out once).
       var glossed = {};
@@ -1043,22 +1065,25 @@
       var figure = n.speaker ? T.artUrl(['figure.' + n.speaker + '.' + data.skin, 'figure.' + n.speaker]) : null;
       layer.classList.toggle('has-figure', !!figure);
       // The recorded voice of each piece, if the pack has it (not for who has reading aloud: they hear it already).
-      var voices = T.fx && T.lineKey && !T.adapted.readaloud ? pieces.map(function(p) {
-        var key = T.lineKey(p);
-        return T.artUrl([key]) ? key : null;
-      }) : [];
+      var voices = pieces.map(voiceOf);
       if (voices.some(Boolean)) {
         T.fx.fetch(voices.filter(Boolean));
       }
-      var body = show('<div class="dlg">' + stage(n.image, n.speaker) + '<div class="dlg-box">' + (n.speaker ?
+      var body = show('<div class="dlg">' + stage(n.image, n.speaker) + '<div class="dlg-box">' + (n.speaker && !n.nolabel ?
         '<span class="dlg-name">' + esc(data.speakers[n.speaker] || n.speaker) + '</span>' : '') +
         '<p class="scene-text" data-piece></p><span class="dlg-dots" data-dots aria-hidden="true"></span>' +
         '<div class="actions"><button class="btn btn-main" data-focus data-next></button></div></div></div>');
       var button = body.querySelector('[data-next]');
+      // The name of who speaks, over the pieces where they speak: in a text with «», only those that have them.
+      var quotes = pieces.join(' ').indexOf('«') >= 0;
       function piece() {
         var last = at >= pieces.length - 1;
         marked[at] = marked[at] || glossify(pieces[at], glossed);
         body.querySelector('[data-piece]').innerHTML = marked[at];
+        var label = body.querySelector('.dlg-name');
+        if (label) {
+          label.hidden = quotes && pieces[at].indexOf('«') < 0;
+        }
         body.querySelector('[data-dots]').innerHTML = pieces.length > 1 ? pieces.map(function(p, i) {
           return '<i class="' + (i === at ? 'on' : i < at ? 'seen' : '') + '"></i>';
         }).join('') : '';
@@ -1071,7 +1096,7 @@
       }
       button.onclick = function() {
         if (at >= pieces.length - 1) {
-          go(n.next);
+          done();
           return;
         }
         at++;
@@ -1079,6 +1104,100 @@
         button.focus();
       };
       piece();
+    }
+
+    /**
+     * The recorded voice of a text the scene shows, if the art pack has it (looked for by the text itself, as the pieces
+     * told); none for who has reading aloud, who hears it already.
+     *
+     * @param {string} text
+     * @return {string|null}
+     */
+    function voiceOf(text) {
+      if (!text || !T.fx || !T.lineKey || T.adapted.readaloud) {
+        return null;
+      }
+      var key = T.lineKey(text);
+      if (T.artUrl([key])) {
+        return key;
+      }
+      // A text with the name of the creature or of the student has its voice without the sentences that carry it (no
+      // recording can say a name the student chose): those stay as text.
+      var names = [creatureName(), myName()].filter(Boolean);
+      var sentences = text.match(/[^.!?…]+[.!?…]+[»"”)]*\s*|[^.!?…]+$/g) || [text];
+      var rest = sentences.filter(function(x) {
+        return !names.some(function(name) {
+          return x.indexOf(name) >= 0;
+        });
+      }).join('').trim();
+      key = rest && rest !== text ? T.lineKey(rest) : '';
+      return key && T.artUrl([key]) ? key : null;
+    }
+
+    /**
+     * What happens, said aloud: the voice of each text, one after the other; who speaks in the place moves while
+     * someone says something between «».
+     *
+     * @param {string[]} texts
+     */
+    function sayAloud(texts) {
+      var said = texts.filter(function(text) {
+        return voiceOf(text);
+      });
+      var i = 0;
+      (function one() {
+        if (i < said.length) {
+          var text = said[i++];
+          if (text.indexOf('«') >= 0) {
+            alive('talk', Math.max(1500, text.length * 45));
+          }
+          T.fx.voice(voiceOf(text), one);
+        }
+      })();
+    }
+
+    /**
+     * Who says what goes between «» where nobody is named: the one who speaks most in the told moments of the scene.
+     *
+     * @return {string|null}
+     */
+    function mainSpeaker() {
+      var count = {};
+      Object.keys(sc.nodes).forEach(function(k) {
+        var who = sc.nodes[k].type === 'story' && sc.nodes[k].speaker;
+        if (who) {
+          count[who] = (count[who] || 0) + 1;
+        }
+      });
+      return Object.keys(count).sort(function(a, b) {
+        return count[b] - count[a];
+      })[0] || null;
+    }
+
+    /**
+     * The suspects of a node standing in the place (`lineup`: the options of a choice of candidates, each with its
+     * drawing): those that what is known contradicts have stepped back, or those `out` says. Without the place alive,
+     * or with a drawing missing, nobody stands, and the page is as always.
+     *
+     * @param {Object} n The node.
+     * @param {Function} [out] Whether a suspect (an option) has stepped back, if not by what is known.
+     * @return {boolean} Whether they stand.
+     */
+    function lineup(n, out) {
+      var line = n.lineup && sc.nodes[n.lineup];
+      var list = line && layer.classList.contains('live') ? (line.options || []).map(function(o) {
+        return {id: o.id, url: T.artUrl(['being.' + o.id]), out: out ? out(o) : (o.contradicts || []).some(function(c) {
+          return run.clues.indexOf(c) >= 0;
+        })};
+      }) : [];
+      if (!list.length || list.some(function(one) {
+        return !one.url;
+      })) {
+        alive('lineup', null);
+        return false;
+      }
+      alive('lineup', list);
+      return true;
     }
 
     /**
@@ -1143,7 +1262,7 @@
      */
     function answer(body, o) {
       var pic = body.querySelector('.scene-pic');
-      alive('answer', o.fx || '');
+      alive('answer', o.fx || '', o.correct === true || (o.points || 0) > 0 ? 'good' : o.correct === false ? 'bad' : '');
       if (o.image && T.artUrl(pictureKeys(o.image, data))) {
         alive('image', T.artUrl(pictureKeys(o.image, data)));
       }
@@ -1396,10 +1515,12 @@
             T.roleName(world ? world.family : '', r, 'm'))) + '</b><p>' + esc(tx(views[r])) + '</p></div>';
         }).join('');
       }
-      return '<div class="pieces">' + roles.map(function(r) {
-        return '<div class="piece"><b>' + esc(t('app_piece_of', T.roleName(world ? world.family : '', r, 'm'))) + '</b><p>' +
-          esc(tx(views[r])) + '</p></div>';
-      }).join('') + '</div>';
+      // On one device, what each role sees, folded under its name: the decision first, and each piece when wanted.
+      return '<div class="pieces folded"><span class="pieces-title">' + esc(t('app_pieces_title')) + '</span>' +
+        roles.map(function(r) {
+          return '<details class="piece"><summary>' + T.icon(ROLEICON[r] || 'log') + '<b>' + esc(t('app_piece_of',
+            T.roleName(world ? world.family : '', r, 'm'))) + '</b></summary><p>' + esc(tx(views[r])) + '</p></details>';
+        }).join('') + '</div>';
     }
 
     /**
@@ -1942,7 +2063,15 @@
       }).join('');
       var voting = cm && cm.vote && !multi && open.length >= 2;
       var said = natureSay(n);
-      var body = show((n.image ? picture(n.image, data) : '') + clueBox() + pieces(n) + (n.recall ?
+      // The suspects in the place: in a choice of several (`away`), all of them in the light until it is confirmed.
+      var multiAway = multi && n.options.some(function(o) {
+        return o.away;
+      });
+      var standing = !cm && lineup(n, multiAway ? function() {
+        return false;
+      } : null);
+      // The painting of the candidates is not needed when they stand in the place.
+      var body = show((n.image && !standing ? picture(n.image, data) : '') + clueBox() + pieces(n) + (n.recall ?
         '<p class="justify-about">' + esc(n.recall) + '</p>' : '') + (said ? '<p class="scene-nature">' + esc(said) + '</p>' : '') +
         '<p class="scene-prompt">' + glossify(tx(easy(n, 'prompt')), {}) + '</p>' +
         (voting ? '<div class="class-vote" data-vote><button class="btn btn-soft" data-voteopen>' +
@@ -1959,6 +2088,13 @@
       if (voting) {
         classVote(body, n, open);
       }
+      // The choice of the suspects themselves: they are chosen with a touch in the place, too.
+      alive('pick', standing && n.lineup === run.node ? function(id) {
+        var b = body.querySelector('.opt[data-id="' + id + '"]');
+        if (b && !b.disabled) {
+          b.click();
+        }
+      } : null);
       function pick(id) {
         return n.options.filter(function(o) {
           return o.id === id;
@@ -2004,6 +2140,11 @@
             });
             b.classList.add('sel');
             run.events.push(by({n: run.node, pick: [id]}));
+            alive('pick', null);
+            gather(body);
+            if (standing && n.lineup === run.node) {
+              alive('chosen', id, pick(id).correct !== false);
+            }
             reveal(body, [pick(id)], function() {
               var o = pick(id);
               (o.effects || []).forEach(function(e) {
@@ -2017,6 +2158,10 @@
                 mistake();
               }
               var target = o.next || n.next;
+              // What the answer told sends back the suspects it contradicts.
+              if (standing && n.lineup !== run.node) {
+                lineup(n);
+              }
               if (target === run.node) {
                 run.tried[run.node] = (run.tried[run.node] || []).concat([id]);
                 next();
@@ -2050,6 +2195,7 @@
           });
           this.disabled = true;
           run.events.push(by({n: run.node, pick: selected.slice()}));
+          gather(body);
           selected.forEach(function(id) {
             (pick(id).effects || []).forEach(function(e) {
               run.extra += e.extraquestion || 0;
@@ -2062,11 +2208,36 @@
               mistake();
             }
           });
+          // Each answer chosen sends back the suspects it leaves out (`away`).
+          if (standing && multiAway) {
+            var away = [];
+            selected.forEach(function(id) {
+              away = away.concat(pick(id).away || []);
+            });
+            lineup(n, function(o) {
+              return away.indexOf(o.id) >= 0;
+            });
+          }
           reveal(body, selected.map(pick), function() {
             revealAfter(n, selected.map(pick), n.next);
           });
         };
       }
+    }
+
+    /**
+     * Once chosen, with the place alive, the options are put away: what was chosen and what happens are said below, and
+     * the box of words stays short, so that the place is seen.
+     *
+     * @param {Element} body
+     */
+    function gather(body) {
+      if (!layer.classList.contains('live')) {
+        return;
+      }
+      body.querySelectorAll('.opts, [data-count], .sniff-row, [data-confirm]').forEach(function(x) {
+        x.hidden = true;
+      });
     }
 
     /**
@@ -2088,6 +2259,9 @@
           list.forEach(function(o) {
             answer(body, o);
           });
+          sayAloud(list.map(function(o) {
+            return tx(o.say || '');
+          }));
           out.innerHTML = '<div class="conseq said"><ul class="cls-said">' + list.map(function(o) {
             // What the world says, and why, folded, when the option has both.
             return '<li><b>' + esc(tx(o.label)) + '</b> ' + esc(tx(o.say || o.feedback || '')) + (o.say && o.feedback ?
@@ -2117,6 +2291,7 @@
           }
           answer(body, o);
           var said = tx(o.say || o.feedback || '');
+          sayAloud([tx(o.say || '')]);
           var why = o.say && o.feedback ? '<details class="why-more"><summary>' + esc(t('app_why')) + '</summary><p>' +
             esc(tx(o.feedback)) + '</p></details>' : '';
           out.innerHTML = '<div class="conseq said"><span class="what">' + esc(tx(o.label)) + '</span>' + esc(said) + why +
@@ -3042,15 +3217,18 @@
      * A question to think about when a scene is over, «what if…?»: alone, with the team, or with the whole class.
      *
      * @param {boolean} ok The scene was done (a good ending or halfway).
+     * @param {boolean} [folded] Under its title, to open.
      * @return {string}
      */
-    function whatif(ok) {
+    function whatif(ok, folded) {
       if (!ok || !sc || !sc.whatif) {
         return '';
       }
-      return '<div class="whatif"><span class="what">' + esc(t('app_whatif')) + '</span><p>' + esc(tx(sc.whatif)) +
-        '</p><small>' + esc(t(cm ? 'board_whatif_help' : opts.team && opts.team.length ? 'app_whatif_team' :
-        'app_whatif_help')) + '</small></div>';
+      var inside = '<p>' + esc(tx(sc.whatif)) + '</p><small>' + esc(t(cm ? 'board_whatif_help' : opts.team &&
+        opts.team.length ? 'app_whatif_team' : 'app_whatif_help')) + '</small>';
+      // After what was won, folded: one more thing to think about, for who wants it.
+      return folded ? '<details class="whatif"><summary class="what">' + esc(t('app_whatif')) + '</summary>' + inside +
+        '</details>' : '<div class="whatif"><span class="what">' + esc(t('app_whatif')) + '</span>' + inside + '</div>';
     }
 
     function classEnding(n) {
@@ -3252,71 +3430,113 @@
         var pet = before.creature && !r.hatched ? '<div class="end-creature ' + (success ? 'happy' : 'smudged') + '">' +
           '<span class="end-pet" aria-hidden="true">' + T.creature(before.creature, world.character.creaturestage) +
           '</span><small>' + esc(t(success ? 'app_creature_happy' : 'app_creature_smudged', creatureName())) + '</small></div>' : '';
-        var body = show(picture(n.image || sceneImage(), data) + '<p class="scene-text">' + glossify(tx(easy(n, 'text')), {}) + '</p>' + pet + hatch + levelup +
-          (lines.length ? '<div class="conseq good"><span class="what">' + esc(t('app_forcharacter')) + '</span>' +
-          lines.map(esc).join('<br>') + '</div>' : '') + done + better(result) + whatif(success) + '<div class="actions">' +
-          (success ?
-          '<button class="btn btn-main" data-focus data-map>' + esc(t('app_backtomap')) + '</button>' + replay(result) :
-          '<button class="btn btn-main" data-focus data-retry>' + esc(t('app_tryagain')) + '</button>') + '</div>');
-        onReplay(body);
-        celebrate(result.outcome, r);
-        hatching(body, n);
-        // The lantern of the place lit with this scene: the Embrollo of the place comes out.
-        var place = (world.mission.chapters || []).filter(function(ch) {
-          return (ch.scenes || []).some(function(x) {
-            return x.id === data.id;
+        // First how it ends, told in the box of words with its voice, in the place; then what was won, a thing at a time.
+        var told = tx(easy(n, 'text'));
+        var quoted = told.indexOf('«') >= 0 ? mainSpeaker() : null;
+        alive('ending', result.outcome);
+        if (n.lineup) {
+          lineup(n, function(o) {
+            return o.correct !== true;
           });
-        })[0];
-        if (place && place.embrollo && r.lanterns.indexOf(place.name) >= 0 && !r.hatched) {
-          setTimeout(function() {
-            embrolloMoment(place.embrollo, world.mission.skin);
-          }, T.moves() ? 1400 : 300);
         }
-        var map = body.querySelector('[data-map]');
-        if (map) {
-          map.onclick = close;
-        } else {
-          body.querySelector('[data-retry]').onclick = function() {
-            start(result.retry || n.retry);
-          };
-        }
+        tell({text: told, image: n.image, speaker: quoted, nolabel: true}, function() {
+          var body = show(pet + hatch + levelup + (lines.length ? '<div class="conseq good loot"><span class="what">' +
+            esc(t('app_forcharacter')) + '</span><ul>' + lines.map(function(line, i) {
+              return '<li style="--i: ' + i + '">' + esc(line) + '</li>';
+            }).join('') + '</ul></div>' : '') + done + better(result) + whatif(success, true) + '<div class="actions">' +
+            (success ?
+            '<button class="btn btn-main" data-focus data-map>' + esc(t('app_backtomap')) + '</button>' + replay(result) :
+            '<button class="btn btn-main" data-focus data-retry>' + esc(t('app_tryagain')) + '</button>') + '</div>');
+          ended(body, result, r, n);
+        });
       }).catch(function(e) {
-        saving = false;
-        if ((e.network || e.retry) && T.keepPlay({sceneid: data.id, title: sc.title || '', events: JSON.stringify(run.events),
-          start: run.from || '', team: opts.team && opts.team.length ? JSON.stringify(opts.team) : '', at: Date.now(),
-          playid: run.playid})) {
-          // No connection: the play is kept on the device and goes by itself when the connection comes back.
-          var kept = show('<p class="scene-text">' + esc(tx(n.text || '')) + '</p><div class="conseq good"><span ' +
-            'class="what">' + esc(t('app_offline_kept')) + '</span>' + esc(t('app_offline_kept_help')) + '</div>' +
-            whatif(n.outcome !== 'retry') + '<div class="actions"><button class="btn btn-main" data-focus data-map>' +
-            esc(t('app_backtomap')) +
-            '</button></div>');
-          kept.querySelector('[data-map]').onclick = close;
-          return;
-        }
-        if (!e.network && !e.retry && !e.errorcode) {
-          // Not the server: the play was kept, and something failed while showing its end. Playing it again would count
-          // it twice; back to the map, where it shows as done.
-          window.console.error(e);
-          show('<p class="scene-text">' + esc(t('app_saved')) + '</p><div class="actions"><button class="btn btn-main" ' +
-            'data-focus data-map>' + esc(t('app_backtomap')) + '</button></div>').querySelector('[data-map]').onclick = close;
-          return;
-        }
-        if (!e.network && !e.retry) {
-          // The server did not take what was played: sending it again would not help, playing it again does.
-          var tangled = show('<p class="scene-text">' + esc(t('app_scene_tangled')) + '</p><div class="actions">' +
-            '<button class="btn btn-main" data-focus data-restart>' + esc(t('app_scene_restart')) + '</button></div>');
-          tangled.querySelector('[data-restart]').onclick = function() {
-            start(run.from);
-          };
-          return;
-        }
-        var body = show('<p class="scene-text">' + esc(t('app_error')) + '</p><p class="help">' + esc(e.message) + '</p>' +
-          '<div class="actions"><button class="btn btn-main" data-again>' + esc(t('app_retry')) + '</button></div>');
-        body.querySelector('[data-again]').onclick = function() {
-          ending(n);
-        };
+        caught(e, n);
       });
+    }
+
+    /**
+     * What was won, on the screen after how the scene ends: each thing comes in with its sound, the creature and the
+     * seed, the Embrollo of the place if its lantern was lit, and the way back to the map or to try again.
+     *
+     * @param {Element} body
+     * @param {Object} result What the server said.
+     * @param {Object} r The rewards.
+     * @param {Object} n The ending.
+     */
+    function ended(body, result, r, n) {
+      onReplay(body);
+      celebrate(result.outcome, r, true);
+      hatching(body, n);
+      if (T.fx && T.moves()) {
+        body.querySelectorAll('.loot li').forEach(function(li, i) {
+          setTimeout(function() {
+            T.fx.sound('coin');
+          }, 700 + i * 380);
+        });
+      }
+      // The lantern of the place lit with this scene: the Embrollo of the place comes out.
+      var place = (world.mission.chapters || []).filter(function(ch) {
+        return (ch.scenes || []).some(function(x) {
+          return x.id === data.id;
+        });
+      })[0];
+      if (place && place.embrollo && r.lanterns.indexOf(place.name) >= 0 && !r.hatched) {
+        setTimeout(function() {
+          embrolloMoment(place.embrollo, world.mission.skin);
+        }, T.moves() ? 1400 : 300);
+      }
+      var map = body.querySelector('[data-map]');
+      if (map) {
+        map.onclick = close;
+      } else {
+        body.querySelector('[data-retry]').onclick = function() {
+          start(result.retry || n.retry);
+        };
+      }
+    }
+
+    /**
+     * When the play of an ending could not be kept: on the device until the connection comes back, or to play again.
+     *
+     * @param {Error} e
+     * @param {Object} n The ending.
+     */
+    function caught(e, n) {
+      saving = false;
+      if ((e.network || e.retry) && T.keepPlay({sceneid: data.id, title: sc.title || '', events: JSON.stringify(run.events),
+        start: run.from || '', team: opts.team && opts.team.length ? JSON.stringify(opts.team) : '', at: Date.now(),
+        playid: run.playid})) {
+        // No connection: the play is kept on the device and goes by itself when the connection comes back.
+        var kept = show('<p class="scene-text">' + esc(tx(n.text || '')) + '</p><div class="conseq good"><span ' +
+          'class="what">' + esc(t('app_offline_kept')) + '</span>' + esc(t('app_offline_kept_help')) + '</div>' +
+          whatif(n.outcome !== 'retry') + '<div class="actions"><button class="btn btn-main" data-focus data-map>' +
+          esc(t('app_backtomap')) +
+          '</button></div>');
+        kept.querySelector('[data-map]').onclick = close;
+        return;
+      }
+      if (!e.network && !e.retry && !e.errorcode) {
+        // Not the server: the play was kept, and something failed while showing its end. Playing it again would count
+        // it twice; back to the map, where it shows as done.
+        window.console.error(e);
+        show('<p class="scene-text">' + esc(t('app_saved')) + '</p><div class="actions"><button class="btn btn-main" ' +
+          'data-focus data-map>' + esc(t('app_backtomap')) + '</button></div>').querySelector('[data-map]').onclick = close;
+        return;
+      }
+      if (!e.network && !e.retry) {
+        // The server did not take what was played: sending it again would not help, playing it again does.
+        var tangled = show('<p class="scene-text">' + esc(t('app_scene_tangled')) + '</p><div class="actions">' +
+          '<button class="btn btn-main" data-focus data-restart>' + esc(t('app_scene_restart')) + '</button></div>');
+        tangled.querySelector('[data-restart]').onclick = function() {
+          start(run.from);
+        };
+        return;
+      }
+      var body = show('<p class="scene-text">' + esc(t('app_error')) + '</p><p class="help">' + esc(e.message) + '</p>' +
+        '<div class="actions"><button class="btn btn-main" data-again>' + esc(t('app_retry')) + '</button></div>');
+      body.querySelector('[data-again]').onclick = function() {
+        ending(n);
+      };
     }
 
     show('<div class="loading-inline"><div class="lamp"></div>' + esc(t('app_loading')) + '</div>');

@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 86,
+ "version": 87,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 87,
+   "kind": "improvement",
+   "date": "2026-10-26",
+   "text": "«Las preguntas al búho», en el lugar: los cuatro sospechosos de pie, que se apartan con cada respuesta del búho y se eligen tocándolos"
+  },
   {
    "version": 86,
    "kind": "improvement",

@@ -818,6 +818,7 @@ $string['app_photo_title'] = 'Classroom photo';
 $string['app_piece_mine'] = 'Only you see this';
 $string['app_piece_of'] = '{$a}';
 $string['app_piece_tell'] = 'The others do not see it: tell them.';
+$string['app_pieces_title'] = 'What your team knows';
 $string['app_play'] = 'Go in';
 $string['app_play_lost'] = 'Your play of «{$a}» could not be counted. Play it again: what you already had is not lost.';
 $string['app_playagain'] = 'Go in again';
