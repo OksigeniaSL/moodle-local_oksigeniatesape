@@ -124,13 +124,15 @@
    * @param {string} name What it was loaded as.
    * @param {boolean} still Without movement.
    * @param {string|null} tone The tone of skin (t1, t2, t3), or null for the one it is painted in.
+   * @param {string} [from] The texture its pieces are cut from, if not the one it was loaded as (a copy in other colours).
    */
-  function Puppet(scene, name, still, tone) {
+  function Puppet(scene, name, still, tone, from) {
     var self = this;
     var atlas = scene.cache.json.get(name + '.atlas');
     var skeleton = scene.cache.json.get(name + '.skeleton');
     var rig = atlas.meta.rig;
-    var texture = scene.textures.get(name);
+    var key = from || name;
+    var texture = scene.textures.get(key);
     var override = rig.override || {};
     this.anims = scene.cache.json.get(name + '.anims');
     this.still = still;
@@ -155,14 +157,14 @@
       }
       var origin = [f.pivot ? f.pivot.x : 0.5, f.pivot ? f.pivot.y : 0.5];
       var part = {name: s.name, parent: 'parent' in ov ? ov.parent : s.parent, z: 'z' in ov ? ov.z : s.z,
-        at: rig.joints[s.name], image: scene.add.image(0, 0, name, s.name).setOrigin(origin[0], origin[1]), over: null};
+        at: rig.joints[s.name], image: scene.add.image(0, 0, key, s.name).setOrigin(origin[0], origin[1]), over: null};
       // The same piece with the skin in the tone of the student, over it.
       var skin = tone && atlas.frames[s.name + '.skin.' + tone];
       if (skin) {
         if (!texture.has(s.name + '.skin.' + tone)) {
           texture.add(s.name + '.skin.' + tone, 0, skin.frame.x, skin.frame.y, skin.frame.w, skin.frame.h);
         }
-        part.over = scene.add.image(0, 0, name, s.name + '.skin.' + tone).setOrigin(origin[0], origin[1]);
+        part.over = scene.add.image(0, 0, key, s.name + '.skin.' + tone).setOrigin(origin[0], origin[1]);
       }
       self.parts.push(part);
       self.byName[s.name] = part;
@@ -349,9 +351,10 @@
      * @param {string} name
      * @param {boolean} still Without movement.
      * @param {string|null} [tone] t1, t2 or t3; null for the tone it is painted in.
+     * @param {string} [from] The texture to cut its pieces from, if not the one it was loaded as.
      * @return {Puppet|null}
      */
-    make: function(scene, name, still, tone) {
+    make: function(scene, name, still, tone, from) {
       try {
         var atlas = scene.cache.json.get(name + '.atlas');
         var skeleton = scene.cache.json.get(name + '.skeleton');
@@ -364,7 +367,8 @@
         if (tone && (!skin || (tone !== skin.own && (skin.tones || []).indexOf(tone) < 0))) {
           return null;
         }
-        var puppet = new Puppet(scene, name, still, tone && skin && tone !== skin.own ? tone : null);
+        var puppet = new Puppet(scene, name, still, tone && skin && tone !== skin.own ? tone : null,
+          from && scene.textures.exists(from) ? from : null);
         return puppet.parts.length ? puppet : null;
       } catch (e) {
         return null;

@@ -1143,9 +1143,42 @@ body.stage-open {
 
 .stage-panel .encounter-options {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
   margin: 10px 0;
+}
+
+/* The beings drawn: four in a row when they fit, else two and two; never one alone in a row. */
+.encounter-options.drawn {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.encounter-options.drawn .btn {
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 6px 10px;
+  white-space: normal;
+}
+
+.encounter-options.drawn img {
+  width: 100%;
+  max-width: 104px;
+  aspect-ratio: 1;
+  object-fit: contain;
+}
+
+.encounter-options.drawn .crossed img {
+  filter: grayscale(1);
+  opacity: .45;
+}
+
+@media (max-width: 520px) {
+  .encounter-options.drawn {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 /* The hero sheet of one page and the cards of the knots, on paper. */
@@ -6318,7 +6351,9 @@ body.in-battle .badge-moment {
   padding: 0;
 }
 
-.scene-still + .scene-read {
+.scene-still + .scene-read,
+.role-bar + .scene-still,
+.role-bar + .scene-read {
   margin-left: 0;
 }
 
@@ -8700,20 +8735,39 @@ body.adapt-colours .errors-text .fixed ins {
   vertical-align: -5px;
 }
 
-/* The role of the student, at hand in every decision: a medallion with its verb. */
+/* The role of the student, at hand in every decision: a medallion with its verb, in the bar on top, beside the title, so
+   that it never covers what is read or chosen. */
 .role-bar {
-  position: sticky;
-  bottom: 10px;
-  z-index: 2;
   display: flex;
-  justify-content: center;
-  margin: 16px 0 4px;
-  pointer-events: none;
+  margin: 0 auto 0 4px;
 }
 
 .role-bar .role-verb {
-  pointer-events: auto;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, .45);
+  min-height: 44px;
+  padding: 4px 14px 4px 4px;
+  font-size: 15px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .35);
+}
+
+.role-bar .role-verb svg {
+  width: 34px;
+  height: 34px;
+}
+
+/* On a narrow screen, only the medallion; its name stays for who does not see it. */
+@media (max-width: 560px) {
+  .role-bar .role-verb {
+    padding: 4px;
+  }
+
+  .role-bar .role-verb span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
 }
 
 .role-verb {
@@ -13872,10 +13926,16 @@ body.still .pet-me.patted .creature {
   margin-bottom: 4px;
 }
 
-/* On the map of the student, a landmark more: the sky of the hour in its picture, and its text under the row. */
+/* On the map of the student, a landmark more: the sky of the hour in its picture, and its text under the row. The row
+   spans the map, but only its buttons take a touch: the places under the gaps can be touched. */
 .map-landmarks {
   right: 8px;
   flex-wrap: wrap;
+  pointer-events: none;
+}
+
+.map-landmarks > * {
+  pointer-events: auto;
 }
 
 .map-landmarks .sky-say {

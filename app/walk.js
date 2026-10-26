@@ -178,14 +178,9 @@
         if (state.solved || state.busy || !state.found) {
           return;
         }
-        var opts = e.options.map(function(o) {
-          var out = state.crossed.indexOf(o.id) >= 0;
-          return '<button type="button" class="btn btn-soft' + (out ? ' crossed' : '') + '" data-who="' + esc(o.id) + '"' +
-            (out ? ' disabled' : '') + '>' + (out ? '<s>' + esc(o.name) + '</s>' : esc(o.name)) + '</button>';
-        }).join('');
         var panel = moment.panel('<h3>' + esc(t('app_encounter_who')) + '</h3><p class="help-soft">' +
-          esc(t('app_stage_clues', state.found + '/' + traces.length)) + '</p><div class="encounter-options">' + opts +
-          '</div><div class="actions"><button type="button" class="btn btn-soft" data-keep>' +
+          esc(t('app_stage_clues', state.found + '/' + traces.length)) + '</p>' + T.whoOptions(e.options, state.crossed) +
+          '<div class="actions"><button type="button" class="btn btn-soft" data-keep>' +
           esc(t('app_stage_keep')) + '</button></div>', 'top');
         panel.querySelector('[data-keep]').onclick = function() {
           moment.hidePanel();

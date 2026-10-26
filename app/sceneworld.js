@@ -57,8 +57,8 @@
           }
         };
       };
-      // Where what is read starts, in pixels of the page: the figures stand above it.
-      var room = 0;
+      // Where what is read is: a function that tells its top, left and right in pixels of the page, asked at each layout.
+      var room = null;
       // While something is looked for on the painting: told where the painting is, and where the bar on top ends.
       var searching = null;
       var bar = 0;
@@ -67,21 +67,41 @@
         var h = S.scale.height;
         var ratio = h / (window.innerHeight || h);
         var tall = h > w;
-        // The figures stand on a line above the box of words; the hero and the creature on one side, who speaks on the
-        // other, facing them. The line goes up when the box is tall, never above a third of the screen.
-        var ground = h * (tall ? 0.56 : 0.66);
-        if (room) {
-          ground = Math.max(h * 0.36, Math.min(ground, room * ratio - 6 * ratio));
+        var box = room ? room() : null;
+        var top = box ? box.top * ratio : 0;
+        // On a wide screen with room on both sides of what is read, the figures stand on the floor of the place, big,
+        // beside it: the hero and the creature on one side, who speaks on the other, facing them.
+        var side = box && !tall ? Math.min(box.left, (window.innerWidth || w / ratio) - box.right) * ratio : 0;
+        var beside = side >= w * 0.17;
+        var ground;
+        var size;
+        var heroX;
+        var speakerX;
+        if (beside) {
+          ground = h * 0.97;
+          size = Math.min(h * 0.7, side * 1.5);
+          heroX = Math.max(side * 0.42, size * 0.3);
+          speakerX = w - side * 0.5;
+        } else {
+          // Else they stand on a line above the box of words; the line goes up when the box is tall, never above a
+          // third of the screen.
+          ground = h * (tall ? 0.56 : 0.66);
+          if (box) {
+            ground = Math.max(h * 0.36, Math.min(ground, top - 6 * ratio));
+          }
+          size = Math.min(h * (tall ? 0.34 : 0.42), w * (tall ? 0.5 : 0.3), (ground - 64 * ratio) * 0.92);
+          heroX = w * (tall ? 0.26 : 0.22);
+          speakerX = w * (tall ? 0.76 : 0.74);
         }
-        var size = Math.min(h * (tall ? 0.34 : 0.42), w * (tall ? 0.5 : 0.3), (ground - 64 * ratio) * 0.92);
         // Looking for something on the painting, it is seen whole between the bar on top and what is read; else, it
         // fills the screen.
-        var top = (bar || 64) * ratio;
-        var bottom = room ? room * ratio - 8 * ratio : h * 0.62;
+        var above = (bar || 64) * ratio;
+        var bottom = box ? top - 8 * ratio : h * 0.62;
         S.bgs.forEach(function(bg) {
           if (bg.texture && bg.texture.key !== '__MISSING') {
-            if (searching && bottom - top > 40) {
-              bg.setPosition(w / 2, top + (bottom - top) / 2).setScale(Math.min(w / bg.width, (bottom - top) / bg.height));
+            if (searching && bottom - above > 40) {
+              bg.setPosition(w / 2, above + (bottom - above) / 2).setScale(Math.min(w / bg.width, (bottom - above) /
+                bg.height));
             } else {
               bg.setPosition(w / 2, h / 2).setScale(Math.max(w / bg.width, h / bg.height));
             }
@@ -109,10 +129,12 @@
         // The figures are drawn on one canvas (768 × 896, the feet in the same place): the same scale keeps their
         // heights; the grown-ups who speak, a little taller than the hero (as Gaudí draws them).
         var unit = size / 896;
-        place(S.hero, w * (tall ? 0.26 : 0.22), ground, unit);
-        place(S.pet, (S.hero ? S.hero.tx : w * 0.22) + size * 0.38, ground - size * 0.03, size * 0.5 / (S.pet ?
+        place(S.hero, heroX, ground, unit);
+        // The creature beside the hero, in front of what is read, never under it.
+        var petX = (S.hero ? S.hero.tx : heroX) + size * 0.38;
+        place(S.pet, beside ? Math.min(petX, side - size * 0.14) : petX, ground - size * 0.03, size * 0.5 / (S.pet ?
           S.pet.sprite.height : 1));
-        place(S.speaker, w * (tall ? 0.76 : 0.74), ground, unit * (S.speaker && TALL[S.speaker.code] ? 1.1 : 1));
+        place(S.speaker, speakerX, ground, unit * (S.speaker && TALL[S.speaker.code] ? 1.1 : 1));
       };
       var world = {
         /**
@@ -209,12 +231,12 @@
         }),
 
         /**
-         * Where what is read starts now, in pixels of the page: the figures move to stand above it.
+         * Where what is read is now: the figures move to stand beside it, or above it.
          *
-         * @param {number} top
+         * @param {Function} where Tells its top, left and right, in pixels of the page.
          */
-        room: later(function(top) {
-          room = top;
+        room: later(function(where) {
+          room = where;
           layout(false);
         }),
 

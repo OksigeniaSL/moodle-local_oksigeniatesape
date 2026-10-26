@@ -4849,12 +4849,7 @@
             i + '" aria-label="' + esc(t('app_encounter_hear', i + 1)) + '">' + T.icon('sound') + '</button>' : '') + '</li>';
         }).join('') + '</ol>' + (shown < e.clues.length ? '<div class="actions" style="justify-content:flex-start">' +
         '<button type="button" class="btn btn-soft" data-clue>' + esc(t('app_encounter_clue')) + '</button></div>' : '') +
-        '<p><b>' + esc(t('app_encounter_who')) + '</b></p><div class="encounter-options">' + e.options.map(function(o) {
-          if (crossed.indexOf(o.id) >= 0) {
-            return '<button type="button" class="btn btn-soft crossed" disabled><s>' + esc(o.name) + '</s></button>';
-          }
-          return '<button type="button" class="btn btn-soft" data-who="' + esc(o.id) + '">' + esc(o.name) + '</button>';
-        }).join('') + '</div><div data-said>' + (crossed.length ? '<p class="help-soft">' + esc(t('app_encounter_again',
+        '<p><b>' + esc(t('app_encounter_who')) + '</b></p>' + T.whoOptions(e.options, crossed) + '<div data-said>' + (crossed.length ? '<p class="help-soft">' + esc(t('app_encounter_again',
           petName)) + '</p>' : '') + '</div>' + (ch && T.stage && T.stage.asList() && T.moves() ? '<div class="actions" ' +
           'style="justify-content:flex-start"><button type="button" class="btn btn-soft" data-walkagain>' +
           esc(t('app_stage_walk')) + '</button></div>' : '') + '</div>';
@@ -4876,7 +4871,7 @@
         clue.onclick = function() {
           shown++;
           draw();
-          layer.querySelector('[data-who]').focus();
+          layer.querySelector('[data-who]:not([disabled])').focus();
         };
       }
       layer.querySelectorAll('[data-who]').forEach(function(b) {

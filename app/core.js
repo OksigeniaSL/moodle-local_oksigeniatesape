@@ -1369,6 +1369,31 @@
   };
 
   /**
+   * The names to choose in an encounter, as buttons: with the drawing of each being when the art pack has all four (a
+   * being of the mission by its id, another of the group by its name: la levadura, being.levadura), so that the student
+   * calls what they see; with only some of them, all in words, for a missing drawing would say which one is not it.
+   *
+   * @param {Object[]} options id, name.
+   * @param {string[]} crossed The ids already missed: crossed out.
+   * @return {string}
+   */
+  T.whoOptions = function(options, crossed) {
+    var pics = options.map(function(o) {
+      var bare = String(o.name || '').replace(/^(el|la|los|las)\s+/i, '').toLowerCase().normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '').replace(/[^a-z]/g, '');
+      return T.artUrl([/^decoy-/.test(o.id) ? '' : 'being.' + o.id, 'being.' + bare]);
+    });
+    var drawn = pics.every(Boolean);
+    return '<div class="encounter-options' + (drawn ? ' drawn' : '') + '">' + options.map(function(o, i) {
+      var out = (crossed || []).indexOf(o.id) >= 0;
+      var name = T.esc(T.capital(o.name));
+      return '<button type="button" class="btn btn-soft' + (out ? ' crossed' : '') + '" data-who="' + T.esc(o.id) + '"' +
+        (out ? ' disabled' : '') + '>' + (drawn ? '<img src="' + T.esc(pics[i]) + '" alt="">' : '') + '<span>' +
+        (out ? '<s>' + name + '</s>' : name) + '</span></button>';
+    }).join('') + '</div>';
+  };
+
+  /**
    * The mark of a creature told in words, for its sheet: «two leaves in a row on its belly».
    *
    * @param {Object|string} traits

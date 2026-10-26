@@ -110,6 +110,58 @@
     g.destroy();
   }
 
+  /**
+   * A copy of a picture with the colour of the creature in it: its turn of hue, or its paint of the market. Without it
+   * (a picture the browser does not let read), the picture as it is.
+   *
+   * @param {Object} S The scene.
+   * @param {string} key The texture of the picture.
+   * @param {number} hue
+   * @param {string} paint
+   * @return {string} The texture of the copy.
+   */
+  function painted(S, key, hue, paint) {
+    var name = key + '.paint.' + (PAINTS[paint] ? paint : hue);
+    if (S.textures.exists(name)) {
+      return name;
+    }
+    try {
+      var source = S.textures.get(key).getSourceImage();
+      var canvas = document.createElement('canvas');
+      canvas.width = source.width;
+      canvas.height = source.height;
+      var ctx = canvas.getContext('2d', {willReadFrequently: true});
+      ctx.drawImage(source, 0, 0);
+      var pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      var d = pixels.data;
+      var m = new window.Phaser.Display.ColorMatrix();
+      if (PAINTS[paint]) {
+        PAINTS[paint](m);
+      } else {
+        m.hue(hue);
+      }
+      // Rows of five: red, green, blue and alpha in, and what is added (already out of 1).
+      var k = m.getData();
+      for (var i = 0; i < d.length; i += 4) {
+        if (!d[i + 3]) {
+          continue;
+        }
+        var r = d[i] / 255;
+        var g = d[i + 1] / 255;
+        var b = d[i + 2] / 255;
+        var a = d[i + 3] / 255;
+        d[i] = 255 * (k[0] * r + k[1] * g + k[2] * b + k[3] * a + k[4]);
+        d[i + 1] = 255 * (k[5] * r + k[6] * g + k[7] * b + k[8] * a + k[9]);
+        d[i + 2] = 255 * (k[10] * r + k[11] * g + k[12] * b + k[13] * a + k[14]);
+      }
+      ctx.putImageData(pixels, 0, 0);
+      S.textures.addCanvas(name, canvas);
+      return name;
+    } catch (e) {
+      return key;
+    }
+  }
+
   T.cast = {
     heroKey: heroKey,
     creature: creature,
@@ -161,25 +213,18 @@
      * @return {Object} The figure: x, y, sprite, puppet, shadow, base, facing, lift, tilt, pose…
      */
     actor: function(S, which, x, y, height, still, hue, paint) {
-      var puppet = T.puppet && T.puppet.make(S, 'puppet.' + which, still, which === 'hero' ? S.castTone || null : null);
+      // The colour of the creature goes into a copy of its picture, not in a filter over the figure: the filter is cut
+      // to the box of the figure, and a puppet stands on its feet, so it cut its head.
+      var from = (hue || PAINTS[paint]) && S.textures.exists('puppet.' + which) ?
+        painted(S, 'puppet.' + which, hue, paint) : null;
+      var puppet = T.puppet && T.puppet.make(S, 'puppet.' + which, still, which === 'hero' ? S.castTone || null : null,
+        from);
       if (!puppet && !S.textures.exists(which)) {
         figure(S, which, which === 'hero' ? 0xffc857 : 0x7cc67f);
       }
-      var sprite = puppet ? puppet.container.setPosition(x, y) : S.add.image(x, y, which).setOrigin(0.5, 1);
+      var image = !puppet && (hue || PAINTS[paint]) ? painted(S, which, hue, paint) : which;
+      var sprite = puppet ? puppet.container.setPosition(x, y) : S.add.image(x, y, image).setOrigin(0.5, 1);
       var shadow = S.add.ellipse(x, y, 10, 10, 0x0b1a10, 0.32);
-      if (hue || PAINTS[paint]) {
-        try {
-          sprite.enableFilters();
-          var matrix = sprite.filters.internal.addColorMatrix().colorMatrix;
-          if (PAINTS[paint]) {
-            PAINTS[paint](matrix);
-          } else {
-            matrix.hue(hue);
-          }
-        } catch (err) {
-          // Without filters, the creature keeps the colour of its picture.
-        }
-      }
       return {x: x, y: y, sprite: sprite, puppet: puppet, shadow: shadow, base: height / sprite.height, walk: 0,
         moving: false, facing: 1, lift: 0, tilt: 0, pose: null};
     },

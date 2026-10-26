@@ -628,7 +628,10 @@
         var room = function() {
           var now = layer.querySelector('.scene-body');
           if (now) {
-            alive('room', now.getBoundingClientRect().top);
+            alive('room', function() {
+              var r = now.getBoundingClientRect();
+              return {top: r.top, left: r.left, right: r.right};
+            });
           }
         };
         room();
@@ -1323,11 +1326,17 @@
       if (!verb) {
         return;
       }
+      // In the bar on top, beside the title: it never covers what is read or chosen.
       var bar = document.createElement('div');
       bar.className = 'role-bar';
       bar.innerHTML = '<button type="button" class="role-verb ' + esc(role) + (role === 'protector' && spent ? ' used' : '') +
         '" data-role>' + T.icon(verb.icon) + '<span>' + esc(verb.label) + '</span></button>';
-      body.appendChild(bar);
+      var top = layer.querySelector('.scene-top .scene-title');
+      if (top) {
+        top.insertAdjacentElement('afterend', bar);
+      } else {
+        body.appendChild(bar);
+      }
       bar.querySelector('[data-role]').onclick = function() {
         if (role === 'sage') {
           var lens = body.querySelector('[data-hint]');
