@@ -5680,5 +5680,49 @@
     };
   }
 
+  /**
+   * The browser made bigger with Ctrl and + (it happens on the Chromebooks of a classroom), so much that the game no
+   * longer fits: a note says how to put it back, as games do (the common guide of design by ages, point 13). The game
+   * fits by itself up to some 1100 × 540, a zoom of 125 % there; past that it is said. The note goes when the page fits
+   * again, or when it is closed (and stays closed until the zoom changes). Not with a finger: there the page is pinched.
+   */
+  function zoomWatch() {
+    var closed = 0;
+    var check = function() {
+      var ratio = window.outerWidth && window.innerWidth ? window.outerWidth / window.innerWidth : 1;
+      var finger = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+      var big = !finger && ratio > 1.2 && (window.innerHeight < 500 || window.innerWidth < 760);
+      var note = document.querySelector('.zoom-note');
+      if (!big || Math.abs(closed - ratio) < 0.05) {
+        if (note) {
+          note.remove();
+        }
+        return;
+      }
+      if (note) {
+        return;
+      }
+      var mac = /Mac|iPhone|iPad/.test(navigator.platform || '');
+      note = document.createElement('div');
+      note.className = 'zoom-note';
+      note.setAttribute('role', 'status');
+      note.innerHTML = '<span>' + t('app_zoom', {key: '<kbd>' + (mac ? 'Cmd' : 'Ctrl') + '</kbd>', zero: '<kbd>0</kbd>'}) +
+        '</span><button type="button" class="btn btn-soft" aria-label="' + esc(t('app_close')) + '">' + T.icon('close') +
+        '</button>';
+      document.body.appendChild(note);
+      note.querySelector('button').onclick = function() {
+        closed = ratio;
+        note.remove();
+      };
+    };
+    var timer = 0;
+    window.addEventListener('resize', function() {
+      clearTimeout(timer);
+      timer = setTimeout(check, 300);
+    });
+    check();
+  }
+
+  zoomWatch();
   load();
 })();

@@ -101,7 +101,10 @@
   "p1": {
    "type": "choice",
    "lineup": "adivinar",
-   "prompt": "Primera pregunta",
+   "prompt": {
+    "valley": "¿Qué le preguntamos primero al búho?",
+    "azara": "¿Qué le preguntamos primero al baqueano?"
+   },
    "hints": [
     "La mejor pregunta es la que deja fuera a más animales de golpe.",
     "Hay una pregunta que parte a todos los animales en dos grupos grandes."
@@ -171,7 +174,7 @@
   "p2": {
    "type": "choice",
    "lineup": "adivinar",
-   "prompt": "Segunda pregunta",
+   "prompt": "¿Y ahora, qué le preguntamos?",
    "hints": [
     "Si no tiene huesos, ¿qué invertebrados conocemos y en qué se diferencian unos de otros?"
    ],
@@ -270,8 +273,8 @@
    "lineup": "adivinar",
    "extra": true,
    "prompt": {
-    "valley": "Última pregunta (o dos, si el búho regaló una)",
-    "azara": "Última pregunta (o dos, si el baqueano regaló una)"
+    "valley": "¿Qué le preguntamos por último? Si el búho nos regaló una, aún quedan dos.",
+    "azara": "¿Qué le preguntamos por último? Si el baqueano nos regaló una, aún quedan dos."
    },
    "hints": [
     "Una pregunta que confirme lo que ya sospechamos vale más que una al azar."
@@ -572,7 +575,10 @@
   "p1-muda": {
    "type": "choice",
    "lineup": "adivinar-muda",
-   "prompt": "Primera pregunta",
+   "prompt": {
+    "valley": "¿Qué le preguntamos primero al búho?",
+    "azara": "¿Qué le preguntamos primero al baqueano?"
+   },
    "hints": [
     "La mejor pregunta es la que deja fuera a más animales de golpe.",
     "Hay una pregunta que parte a todos los animales en dos grupos grandes."
@@ -642,7 +648,7 @@
   "p2-muda": {
    "type": "choice",
    "lineup": "adivinar-muda",
-   "prompt": "Segunda pregunta",
+   "prompt": "¿Y ahora, qué le preguntamos?",
    "hints": [
     "Si tiene huesos y deja la piel vacía, ¿qué animales conocemos así, y en qué se diferencian unos de otros?"
    ],
@@ -744,8 +750,8 @@
    "lineup": "adivinar-muda",
    "extra": true,
    "prompt": {
-    "valley": "Última pregunta (o dos, si el búho regaló una)",
-    "azara": "Última pregunta (o dos, si el baqueano regaló una)"
+    "valley": "¿Qué le preguntamos por último? Si el búho nos regaló una, aún quedan dos.",
+    "azara": "¿Qué le preguntamos por último? Si el baqueano nos regaló una, aún quedan dos."
    },
    "hints": [
     "Una pregunta que confirme lo que ya sospechamos vale más que una al azar."
@@ -1046,7 +1052,10 @@
   "p1-ave": {
    "type": "choice",
    "lineup": "adivinar-ave",
-   "prompt": "Primera pregunta",
+   "prompt": {
+    "valley": "¿Qué le preguntamos primero al búho?",
+    "azara": "¿Qué le preguntamos primero al baqueano?"
+   },
    "hints": [
     "Antes de preguntar, miremos lo que ya nos dice la pluma.",
     "Una pregunta cuya respuesta ya sabemos no deja fuera a nadie."
@@ -1119,7 +1128,7 @@
   "p2-ave": {
    "type": "choice",
    "lineup": "adivinar-ave",
-   "prompt": "Segunda pregunta",
+   "prompt": "¿Y ahora, qué le preguntamos?",
    "hints": [
     "Si es un ave, ¿en qué se diferencian unas aves de otras? Pensemos en cómo y dónde busca cada una su comida."
    ],
@@ -1221,8 +1230,8 @@
    "lineup": "adivinar-ave",
    "extra": true,
    "prompt": {
-    "valley": "Última pregunta (o dos, si el búho regaló una)",
-    "azara": "Última pregunta (o dos, si el baqueano regaló una)"
+    "valley": "¿Qué le preguntamos por último? Si el búho nos regaló una, aún quedan dos.",
+    "azara": "¿Qué le preguntamos por último? Si el baqueano nos regaló una, aún quedan dos."
    },
    "hints": [
     "Una pregunta que confirme lo que ya sospechamos vale más que una al azar."

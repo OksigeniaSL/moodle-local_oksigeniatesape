@@ -2378,6 +2378,46 @@ body.still .team-huddle {
   animation: rise .3s ease both;
 }
 
+/* The note of a browser made too big: at the top, over the game, with the keys drawn as keys. */
+.zoom-note {
+  position: fixed;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: max-content;
+  max-width: calc(100% - 16px);
+  padding: 6px 6px 6px 14px;
+  border-radius: 12px;
+  background: rgba(var(--night-rgb), .96);
+  border: 1px solid var(--accent);
+  box-shadow: var(--shadow);
+  font-weight: 600;
+}
+
+.zoom-note kbd {
+  padding: 1px 8px;
+  border: 1px solid currentColor;
+  border-bottom-width: 3px;
+  border-radius: 6px;
+  background: none;
+  color: inherit;
+  font: inherit;
+}
+
+.zoom-note .btn {
+  flex: none;
+  padding: 6px;
+}
+
+.zoom-note .btn svg {
+  width: 20px;
+  height: 20px;
+}
+
 .toast.bad {
   border-color: var(--ember);
 }
@@ -4975,14 +5015,57 @@ body.in-battle .badge-moment {
   border: 1px dashed var(--accent);
 }
 
+/* The note the help brought by itself, and who brought it. */
+.scene-hints .hint small {
+  display: block;
+  margin-top: 4px;
+  color: var(--accent);
+  font-weight: 600;
+}
+
 .scene-hints .hint svg {
   width: 1.2em;
   height: 1.2em;
   flex: none;
 }
 
+/* The help that comes by itself: a ring on what there is to touch, that beats three times as it comes and then stays. */
+.nudge {
+  box-shadow: 0 0 0 3px var(--accent);
+  animation: nudge-ring 1.1s ease-out 3;
+}
+
+@keyframes nudge-ring {
+  0% {
+    box-shadow: 0 0 0 3px var(--accent), 0 0 0 3px rgba(var(--lantern-rgb), .7);
+  }
+
+  100% {
+    box-shadow: 0 0 0 3px var(--accent), 0 0 0 18px rgba(var(--lantern-rgb), 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nudge {
+    animation: none;
+  }
+}
+
+body.still .nudge,
+body.adapt-still .nudge {
+  animation: none;
+}
+
 .scene-hints .btn {
   justify-self: start;
+}
+
+/* The helps of a decision (the creature that sniffs, the notebook), lighter than the options under which they go: what
+   is to be done is choosing, and they only help to do it. As big to touch. */
+.scene .sniff-btn,
+.scene-hints .btn {
+  background: transparent;
+  font-weight: 500;
 }
 
 /* The class screen of a battle: tokens used in the round, the Embrollo pulling itself together, the end of the mission. */

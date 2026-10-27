@@ -895,6 +895,10 @@
     },
     voice: voice,
     hush: hush,
+    /** Whether someone is speaking now. */
+    speaking: function() {
+      return !!speaking;
+    },
     /**
      * Brings some sounds or voices of the pack ahead, those a moment is going to use.
      *

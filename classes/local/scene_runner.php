@@ -25,7 +25,8 @@ namespace local_oksigeniatesape\local;
  * - {"n": node, "item": item id, "bin": bin id} for each try to put an item of a classify in a group;
  * - {"n": node, "step": step id} for each step put in an order, or each place a path goes on to;
  * - {"n": node, "give": [item ids]} for each round of a tend (things given to a being, and «days go by»);
- * - {"n": node, "hint": index} for each hint opened, before answering that node.
+ * - {"n": node, "hint": index} for each hint opened, before answering that node; with "idle": 1, the first, opened
+ *   free by the help that comes by itself when the student stays still (it is help all the same).
  * - {"n": node, "look": id} for each option, item or step looked at with its tool, before answering that node.
  * - {"n": node, "sniff": 1} when the creature of the student sniffs a choice before it is answered (see sniffs()).
  *
@@ -66,6 +67,9 @@ final class scene_runner {
 
     /** @var array Hints opened: node => [index => true]. */
     private array $hints = [];
+
+    /** @var array Nodes whose first hint the help that comes by itself opened, free: node => true. */
+    private array $idle = [];
 
     /** @var bool Played with the aids of the first steps. */
     private bool $aided = false;
@@ -347,8 +351,9 @@ final class scene_runner {
                         'points' => $this->points,
                         'objectives' => $this->objectives,
                         'path' => $path,
-                        // Looking with a tool costs as a hint does.
-                        'hints' => array_sum(array_map('count', $this->hints)) + array_sum(array_map('count', $this->looks)),
+                        // Looking with a tool costs as a hint does; the note the help that comes by itself opened does not.
+                        'hints' => array_sum(array_map('count', $this->hints)) - count($this->idle) +
+                            array_sum(array_map('count', $this->looks)),
                         'shielded' => $this->shielded,
                         // The creature sniffing is free: it is not a hint.
                         'sniffed' => count($this->sniffed),
@@ -778,6 +783,13 @@ final class scene_runner {
             $index = (int) $event['hint'];
             if (($event['n'] ?? null) !== $node || !isset($hints[$index]) || isset($this->hints[$node][$index])) {
                 $this->fail('hint not available in ' . $node);
+            }
+            // The help that comes by itself, when the student stays still, opens the first note of a node free.
+            if (!empty($event['idle'])) {
+                if ($index !== 0 || !empty($this->hints[$node])) {
+                    $this->fail('hint not available in ' . $node);
+                }
+                $this->idle[$node] = true;
             }
             $this->hints[$node][$index] = true;
             $event = array_shift($this->events);

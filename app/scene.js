@@ -1888,7 +1888,123 @@
       });
     }
 
+    /**
+     * The help that comes by itself (the ladder of the common guide of design by ages): with a decision on screen and the
+     * student still, a clock runs, not while somebody speaks nor with the page out of sight, and every 15 s of it brings
+     * the next step. First the question, said aloud; then a ring on what there is to touch, and the hero points at it;
+     * then it is done together: the creature sniffs out an option that is not it, if it can, or the notebook opens by
+     * itself at its first note, without breath. A touch, a key or the wheel puts the clock back and takes the ring away.
+     * Each step comes once a decision, and again if the decision comes back after a mistake (it is not the same question
+     * then). What is hidden to be found in a painting is never shown by the ring. Not at the class screen: the teacher
+     * leads there.
+     *
+     * @param {Object} n The node.
+     * @param {Element} body
+     */
+    function ladder(n, body) {
+      if (cm || opts.preview) {
+        return;
+      }
+      var WAIT = 15;
+      var key = run.node + '#' + (run.tried[run.node] || []).length;
+      run.ladder = run.ladder || {};
+      var done = run.ladder[key] = run.ladder[key] || {};
+      var quiet = 0;
+      var all = function(selector) {
+        return [].filter.call(layer.querySelectorAll(selector), function(el) {
+          return !el.disabled && !el.hidden && el.offsetParent !== null;
+        });
+      };
+      var OPEN = '.opts .opt[data-id]:not(.sel), .cls-thing[data-thing], .card-piece, .path-stop:not(.visited)';
+      // What there is to touch now: the boxes, with a thing in hand; the button that confirms, with all chosen; what is
+      // left to choose or to place; and else, what goes on.
+      var touch = function() {
+        var lists = [all('.bin'), all('.scene-body [data-confirm], .scene-body [data-days]'), all(OPEN),
+          all('.scene-body [data-next], .scene-body [data-go], .scene-body [data-goon]')];
+        return lists.filter(function(l) {
+          return l.length;
+        })[0] || [];
+      };
+      var asking = function() {
+        return all(OPEN + ', .bin, .find-spot:not(.found)').length > 0;
+      };
+      var steps = {
+        say: function() {
+          var prompt = body.querySelector('.scene-prompt');
+          var text = tx(easy(n, 'prompt'));
+          if (!prompt || !text || !asking()) {
+            return false;
+          }
+          if (T.adapted.readaloud && T.readAloud) {
+            T.readAloud(prompt);
+            return true;
+          }
+          if (!voiceOf(text)) {
+            return false;
+          }
+          sayAloud([text]);
+          return true;
+        },
+        ring: function() {
+          var there = touch();
+          if (!there.length) {
+            return false;
+          }
+          there.forEach(function(el) {
+            el.classList.add('nudge');
+          });
+          alive('hint');
+          return true;
+        },
+        together: function() {
+          if (!asking()) {
+            return false;
+          }
+          var sniff = all('.scene-body [data-sniff]')[0];
+          if (sniff) {
+            sniff.click();
+            return true;
+          }
+          var notes = body.querySelector('.scene-hints');
+          return !!(notes && notes.freeNote && notes.freeNote());
+        }
+      };
+      var wake = function() {
+        quiet = 0;
+        layer.querySelectorAll('.nudge').forEach(function(el) {
+          el.classList.remove('nudge');
+        });
+      };
+      var EVENTS = ['pointerdown', 'keydown', 'wheel'];
+      EVENTS.forEach(function(e) {
+        layer.addEventListener(e, wake, true);
+      });
+      var timer = setInterval(function() {
+        if (!body.isConnected) {
+          clearInterval(timer);
+          EVENTS.forEach(function(e) {
+            layer.removeEventListener(e, wake, true);
+          });
+          return;
+        }
+        var talking = (T.fx && T.fx.speaking && T.fx.speaking()) || (window.speechSynthesis && window.speechSynthesis.speaking);
+        if (document.hidden || talking || ++quiet < WAIT) {
+          return;
+        }
+        quiet = 0;
+        // The next step not given yet; one that has nothing to do here gives way to the one after, at once.
+        Object.keys(steps).some(function(step) {
+          if (done[step]) {
+            return false;
+          }
+          done[step] = true;
+          return steps[step]();
+        });
+      }, 1000);
+    }
+
     function hintArea(n, body) {
+      ladder(n, body);
       if (run.keep && run.node === run.from) {
         var keep = document.createElement('p');
         keep.className = 'aid-note keep-note';
@@ -1924,27 +2040,44 @@
         var cost = hintCost();
         run.hintDraw = box.isConnected ? draw : null;
         // The field notebook: what the expedition wrote down that makes one think, not the answer.
+        // The note the help brought by itself says who brought it, without breath.
+        var brought = (run.brought || {})[run.node];
         box.innerHTML = opened.map(function(i) {
-          return '<p class="hint">' + T.icon('log') + ' ' + esc(tx(n.hints[i])) + '</p>';
+          return '<p class="hint">' + T.icon('log') + ' <span>' + esc(tx(n.hints[i])) + (brought === i ? '<small>' +
+            esc(world && world.character && world.character.creaturestage >= 1 ? t('app_freenote_brought', creatureName()) :
+            t('app_freenote_open')) + '</small>' : '') + '</span></p>';
         }).join('') + (opened.length < n.hints.length ? '<button class="btn btn-soft" type="button" data-hint>' +
           T.icon('log') + ' ' + esc(cost ? t('app_hint_cost', {cost: cost, left: Math.max(0, (data.breath || 0) - run.spent)}) :
           t('app_hint_free')) + '</button>' : '');
         var b = box.querySelector('[data-hint]');
-        if (b) {
-          b.onclick = function() {
-            if (cost > (data.breath || 0) - run.spent) {
-              T.toast(esc(t('app_hint_nobreath')), true);
-              return;
-            }
-            alive('hint');
-            var index = opened.length;
-            run.events.push({n: run.node, hint: index});
-            run.opened[run.node] = opened.concat([index]);
+        // A note opened: paid, or brought by the help that comes by itself, free (the first of the node, if none is open).
+        var open = function(free) {
+          if (!free && cost > (data.breath || 0) - run.spent) {
+            T.toast(esc(t('app_hint_nobreath')), true);
+            return;
+          }
+          alive('hint');
+          var index = opened.length;
+          run.events.push(free ? {n: run.node, hint: index, idle: 1} : {n: run.node, hint: index});
+          run.opened[run.node] = opened.concat([index]);
+          if (free) {
+            run.brought = run.brought || {};
+            run.brought[run.node] = index;
+          } else {
             run.hints++;
             run.spent += cost;
-            draw();
+          }
+          draw();
+        };
+        if (b) {
+          b.onclick = function() {
+            open(false);
           };
         }
+        box.freeNote = opened.length || !b ? null : function() {
+          open(true);
+          return true;
+        };
       };
       draw();
     }

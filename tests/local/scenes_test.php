@@ -403,6 +403,36 @@ final class scenes_test extends \advanced_testcase {
         $this->assertSame(3, $scout['rewards']['hints']);
     }
 
+    public function test_the_note_the_help_that_comes_by_itself_opens_is_free(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $w = $this->make_class(1);
+        $scene = $DB->get_record(self::T . 'scene', ['missionid' => $w->mission->id, 'code' => 'C2-2']);
+        $def = json_decode($scene->definition, true);
+        $def['nodes']['colocar']['hints'] = ['Una', 'Dos', 'Tres'];
+        $DB->set_field(self::T . 'scene', 'definition', json_encode($def), ['id' => $scene->id]);
+        $DB->set_field(self::T . 'char', 'role', 'scout', ['userid' => $w->users[0]->id]);
+        [$items, $roles, $flags, $role] = scenes::context(characters::get($w->users[0]->id), $w->course->id);
+        $play = autoplayer::play($def, $items, $roles, $flags, $role);
+        // Still for a while: the first note opens by itself, free; the next one is asked for and paid.
+        $hints = [['n' => 'colocar', 'hint' => 0, 'idle' => 1], ['n' => 'colocar', 'hint' => 1]];
+        $r = scenes::play($w->course->id, $w->users[0]->id, $scene->id, array_merge($hints, $play), null);
+        $this->assertSame(1, $r['rewards']['hints']);
+        // Only the first note of a node, and only if none is open.
+        $wrongs = [
+            [['n' => 'colocar', 'hint' => 1, 'idle' => 1]],
+            [['n' => 'colocar', 'hint' => 0], ['n' => 'colocar', 'hint' => 1, 'idle' => 1]],
+        ];
+        foreach ($wrongs as $wrong) {
+            try {
+                scenes::play($w->course->id, $w->users[0]->id, $scene->id, array_merge($wrong, $play), null);
+                $this->fail('A free note that is not the first');
+            } catch (\moodle_exception $e) {
+                $this->assertSame('invalidscenepath', $e->errorcode);
+            }
+        }
+    }
+
     public function test_the_gift_of_the_place_the_lamp_the_herons_step_and_the_breath_of_the_wood(): void {
         global $DB;
         $this->resetAfterTest();
