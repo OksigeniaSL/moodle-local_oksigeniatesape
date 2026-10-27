@@ -276,6 +276,10 @@
     "valley": "¿Qué le preguntamos por último? Si el búho nos regaló una, aún quedan dos.",
     "azara": "¿Qué le preguntamos por último? Si el baqueano nos regaló una, aún quedan dos."
    },
+   "extraprompt": {
+    "valley": "Aún queda la pregunta que nos regaló el búho. ¿Qué le preguntamos?",
+    "azara": "Aún queda la pregunta que nos regaló el baqueano. ¿Qué le preguntamos?"
+   },
    "hints": [
     "Una pregunta que confirme lo que ya sospechamos vale más que una al azar."
    ],
@@ -752,6 +756,10 @@
    "prompt": {
     "valley": "¿Qué le preguntamos por último? Si el búho nos regaló una, aún quedan dos.",
     "azara": "¿Qué le preguntamos por último? Si el baqueano nos regaló una, aún quedan dos."
+   },
+   "extraprompt": {
+    "valley": "Aún queda la pregunta que nos regaló el búho. ¿Qué le preguntamos?",
+    "azara": "Aún queda la pregunta que nos regaló el baqueano. ¿Qué le preguntamos?"
    },
    "hints": [
     "Una pregunta que confirme lo que ya sospechamos vale más que una al azar."
@@ -1232,6 +1240,10 @@
    "prompt": {
     "valley": "¿Qué le preguntamos por último? Si el búho nos regaló una, aún quedan dos.",
     "azara": "¿Qué le preguntamos por último? Si el baqueano nos regaló una, aún quedan dos."
+   },
+   "extraprompt": {
+    "valley": "Aún queda la pregunta que nos regaló el búho. ¿Qué le preguntamos?",
+    "azara": "Aún queda la pregunta que nos regaló el baqueano. ¿Qué le preguntamos?"
    },
    "hints": [
     "Una pregunta que confirme lo que ya sospechamos vale más que una al azar."

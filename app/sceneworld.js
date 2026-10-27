@@ -141,11 +141,12 @@
           S.pet.sprite.height : 1));
         place(S.speaker, speakerX, ground, unit * (S.speaker && TALL[S.speaker.code] ? 1.1 : 1));
         // The suspects, in a row on the floor just above what is read (beside it, over its width; on a phone, behind
-        // the figures, between them).
+        // the figures, between them). When what is read grows tall, they go up with it, and smaller, up to the bar on
+        // top: they are never behind it.
         if (row.length) {
           var from = beside ? box.left * ratio : w * (tall ? 0.06 : 0.3);
           var to = beside ? box.right * ratio : w * (tall ? 0.94 : 0.7);
-          var line = box ? Math.max(h * 0.3, top - 6 * ratio) : h * 0.62;
+          var line = box ? Math.max(Math.min(h * 0.3, ((bar || 64) + 40) * ratio), top - 6 * ratio) : h * 0.62;
           if (!beside) {
             line = Math.min(line, ground - size * 0.45);
           }
@@ -570,7 +571,12 @@
               S.pet.sprite.texture.key).indexOf('.paint.') >= 0),
             lineup: row.map(function(id) {
               return id + (suspects[id].out ? ' fuera' : '');
-            }).join(', '), picking: !!picking};
+            }).join(', '), picking: !!picking,
+            // Where the suspects stand, in pixels of the page: the line of their feet, and the top of the tallest.
+            feet: S && row.length ? suspects[row[0]].ty * (window.innerHeight || S.scale.height) / S.scale.height : 0,
+            heads: S && row.length ? Math.min.apply(null, row.map(function(id) {
+              return suspects[id].ty - suspects[id].size;
+            })) * (window.innerHeight || S.scale.height) / S.scale.height : 0};
         },
         close: function() {
           pending = [];

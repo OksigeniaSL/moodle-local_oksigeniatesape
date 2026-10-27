@@ -1626,8 +1626,11 @@ body.still .path-traveler {
   gap: 6px 8px;
 }
 
+/* The title on the same line as the roles, so the question keeps its room. */
 .pieces-title {
-  flex: 0 0 100%;
+  flex: 0 0 auto;
+  align-self: center;
+  margin-right: 2px;
   color: var(--text-soft);
   font-size: 14px;
   font-weight: 700;
@@ -8682,6 +8685,29 @@ body.adapt-colours .errors-text .fixed ins {
   background: rgba(15, 33, 49, .93);
 }
 
+/* On a low screen (a Chromebook zoomed in, a tablet lying down), what is read is tighter, so that who stands in the
+   place still has room above it. The options keep a touch target of 44 px. */
+@media (max-height: 620px) {
+  .scene-layer.live .scene-body {
+    padding: 10px 12px;
+  }
+
+  .scene-layer.live .opts {
+    gap: 8px;
+    margin: 8px 0;
+  }
+
+  .scene-layer.live .opt {
+    min-height: 44px;
+    padding: 8px 12px;
+    font-size: 16px;
+  }
+
+  .scene-layer.live .scene-hints {
+    margin-top: 8px;
+  }
+}
+
 .scene-layer.live .scene-body:has(> .dlg) {
   padding: 0;
   overflow: visible;
@@ -10452,10 +10478,15 @@ body.adapt-still .mission-grid .chapter.as-sheet {
   margin-top: 4px;
 }
 
-/* What the answers told, written down; what contradicts it, crossed out by itself. */
+/* What the answers told, written down; what contradicts it, crossed out by itself. Each thing known follows the one
+   before on the line, so the box grows little and what stands in the place is not left behind it. */
 .clues {
-  margin: 0 0 12px;
-  padding: 10px 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 14px;
+  margin: 0 0 10px;
+  padding: 8px 12px;
   border-radius: var(--r-s);
   border: 1px dashed rgba(var(--lantern-rgb), .5);
   background: rgba(var(--lantern-rgb), .06);
@@ -10475,8 +10506,19 @@ body.adapt-still .mission-grid .chapter.as-sheet {
 }
 
 .clues ul {
-  margin: 6px 0 0;
-  padding-left: 20px;
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  gap: 2px 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.clues li::before {
+  content: "•";
+  margin-right: 6px;
+  color: var(--lantern);
 }
 
 .opt.crossed {

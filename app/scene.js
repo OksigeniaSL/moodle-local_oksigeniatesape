@@ -2196,6 +2196,8 @@
       }).join('');
       var voting = cm && cm.vote && !multi && open.length >= 2;
       var said = natureSay(n);
+      // Back with the question that was given: its own question (`extraprompt`), or the usual one, said to be the extra.
+      var given = !!run.extraused[run.node];
       // The suspects in the place: in a choice of several (`away`), all of them in the light until it is confirmed.
       var multiAway = multi && n.options.some(function(o) {
         return o.away;
@@ -2206,7 +2208,8 @@
       // The painting of the candidates is not needed when they stand in the place.
       var body = show((n.image && !standing ? picture(n.image, data) : '') + clueBox() + pieces(n) + (n.recall ?
         '<p class="justify-about">' + esc(n.recall) + '</p>' : '') + (said ? '<p class="scene-nature">' + esc(said) + '</p>' : '') +
-        '<p class="scene-prompt">' + glossify(tx(easy(n, 'prompt')), {}) + '</p>' +
+        (given && !n.extraprompt ? '<p class="scene-nature">' + esc(t('app_extraquestion')) + '</p>' : '') +
+        '<p class="scene-prompt">' + glossify(tx(given && n.extraprompt ? n.extraprompt : easy(n, 'prompt')), {}) + '</p>' +
         (voting ? '<div class="class-vote" data-vote><button class="btn btn-soft" data-voteopen>' +
         esc(t('board_scene_voteopen')) + '</button></div>' : '') +
         '<div class="opts">' + opts + '</div>' + (canSniff(n, tried) ? '<div class="sniff-row"><button type="button" ' +
@@ -2299,9 +2302,10 @@
                 run.tried[run.node] = (run.tried[run.node] || []).concat([id]);
                 next();
               } else if (run.extra > 0 && n.extra && !run.extraused[run.node]) {
+                // The question given: the same decision once more, without what was just asked.
                 run.extra--;
                 run.extraused[run.node] = true;
-                T.toast(esc(t('app_extraquestion')));
+                run.tried[run.node] = (run.tried[run.node] || []).concat([id]);
                 next();
               } else {
                 revealAfter(n, [o], target);
