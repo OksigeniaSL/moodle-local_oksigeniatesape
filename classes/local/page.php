@@ -28,9 +28,11 @@ final class page {
     /** @var array Scripts of each app, after the core. */
     private const SCRIPTS = [
         'game' => ['fx', 'critters', 'scene', 'minigame', 'nest', 'errors', 'whack', 'venn', 'whoami', 'guesswho', 'terrarium', 'leaf', 'chain',
-            'burst', 'stage', 'puppet', 'cast', 'walk', 'sceneworld', 'nestworld', 'game', 'exercises', 'battle', 'huddle'],
+            'burst', 'stage', 'puppet', 'sheet', 'cast', 'walk', 'sceneworld', 'nestworld', 'game', 'exercises', 'battle',
+            'huddle'],
         'teach' => ['fx', 'scene', 'workshop', 'author', 'teach'],
-        'board' => ['fx', 'critters', 'scene', 'stage', 'puppet', 'cast', 'sceneworld', 'battleworld', 'exercises', 'board'],
+        'board' => ['fx', 'critters', 'scene', 'stage', 'puppet', 'sheet', 'cast', 'sceneworld', 'battleworld', 'exercises',
+            'board'],
     ];
 
     /** @var string[] Prefixes of the language strings the client uses. */

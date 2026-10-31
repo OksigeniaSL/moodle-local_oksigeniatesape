@@ -401,6 +401,11 @@
       if (!picture) {
         return null;
       }
+      // Drawn in 3D: its sheets, if the packs bring them, before its puppet.
+      var sheets = T.sheet && T.sheet.find(picture.replace(/^character\./, ''));
+      if (sheets) {
+        return {sheets: sheets};
+      }
       var key = 'rig.' + picture.replace(/^character\./, '');
       var found = {image: T.artUrl([key]), atlas: T.artUrl([key + '.atlas']), skeleton: T.artUrl(['rig.' + body]),
         anims: T.artUrl(['anim.rig.' + body])};
@@ -415,6 +420,12 @@
      * @param {Object} found As find() gives it.
      */
     load: function(scene, name, found) {
+      if (found.sheets) {
+        scene.sheetsOf = scene.sheetsOf || {};
+        scene.sheetsOf[name] = found.sheets;
+        T.sheet.load(scene, found.sheets);
+        return;
+      }
       scene.load.image(name, found.image);
       scene.load.json(name + '.atlas', found.atlas);
       scene.load.json(name + '.skeleton', found.skeleton);
@@ -434,6 +445,10 @@
      */
     make: function(scene, name, still, tone, from) {
       try {
+        // Drawn in 3D: the figure of its sheets.
+        if (scene.sheetsOf && scene.sheetsOf[name]) {
+          return T.sheet.make(scene, scene.sheetsOf[name], still);
+        }
         var atlas = scene.cache.json.get(name + '.atlas');
         var skeleton = scene.cache.json.get(name + '.skeleton');
         var anims = scene.cache.json.get(name + '.anims');

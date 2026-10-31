@@ -51,13 +51,20 @@ final class art {
     public const SOUNDS = ['mp3', 'ogg', 'm4a'];
 
     /**
-     * @var string[] Data a pack can have, under keys that start with «rig.» or «anim.»: the puppets (the pieces of each
-     *     figure in its atlas, the skeleton of each kind of body and its animations). Read as JSON and written again.
+     * @var string[] Data a pack can have, under keys that start with «rig.» or «anim.» (the puppets: the pieces of each
+     *     figure in its atlas, the skeleton of each kind of body and its animations) or «spr.» (the sheets of the
+     *     characters drawn in 3D: each gesture, frame by frame). Read as JSON and written again.
      */
     public const DATA = ['json'];
 
     /** @var int The most a file of data can weigh, in bytes. */
     private const DATAMAX = 262144;
+
+    /** @var string[] Videos a pack can have, under keys that start with «vid.»: the moments of a story, drawn in 3D. */
+    public const VIDEOS = ['mp4'];
+
+    /** @var int The most a video can weigh, in bytes. */
+    private const VIDEOMAX = 8388608;
 
     /** @var int Images wider than this get a small copy, of half their size, for tablets with little memory. */
     public const SMALL_FROM = 640;
@@ -105,12 +112,16 @@ final class art {
             $path = ltrim(clean_param((string) $path, PARAM_PATH), '/');
             $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
             $sound = preg_match('/^(sound|voice)\./', (string) $key) === 1;
-            $data = $extension === 'json' && preg_match('/^(rig|anim)\./', (string) $key) === 1;
+            $data = $extension === 'json' && preg_match('/^(rig|anim|spr)\./', (string) $key) === 1;
+            // A moment of a story as a video, under «vid.» (its poster, the first frame, is an image under the same name).
+            $video = $extension === 'mp4' && preg_match('/^vid\./', (string) $key) === 1;
+            $allowed = $sound ? self::SOUNDS : ($data ? self::DATA : ($video ? self::VIDEOS : self::EXTENSIONS));
             if (
                 !preg_match('/^[a-z0-9_.-]{1,80}$/', (string) $key) || $path === '' || !is_file($tmp . '/' . $path)
-                || !in_array($extension, $sound ? self::SOUNDS : ($data ? self::DATA : self::EXTENSIONS), true)
+                || !in_array($extension, $allowed, true)
                 || ($sound && !self::is_sound($tmp . '/' . $path))
                 || ($data && !self::clean_data($tmp . '/' . $path))
+                || ($video && !self::is_video($tmp . '/' . $path))
             ) {
                 continue;
             }
@@ -477,5 +488,16 @@ final class art {
         $head = (string) @file_get_contents($path, false, null, 0, 12);
         return strpos($head, 'ID3') === 0 || strpos($head, 'OggS') === 0 || substr($head, 4, 4) === 'ftyp'
             || (strlen($head) > 1 && ord($head[0]) === 0xFF && (ord($head[1]) & 0xE0) === 0xE0);
+    }
+
+    /**
+     * Whether a file is an MP4 video (it says so in its first bytes) that does not weigh too much.
+     *
+     * @param string $path
+     * @return bool
+     */
+    private static function is_video(string $path): bool {
+        $head = (string) @file_get_contents($path, false, null, 0, 12);
+        return substr($head, 4, 4) === 'ftyp' && filesize($path) <= self::VIDEOMAX;
     }
 }

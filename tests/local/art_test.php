@@ -47,6 +47,10 @@ final class art_test extends \advanced_testcase {
             if (str_ends_with($path, '.ogg') || str_ends_with($path, '.mp3')) {
                 $content = str_contains($path, 'fake') ? 'not a sound' : 'OggS' . str_repeat("\0", 40);
             }
+            // A video starts with its «ftyp» box; a «fake» one is only text.
+            if (str_ends_with($path, '.mp4')) {
+                $content = str_contains($path, 'fake') ? 'not a video' : "\0\0\0\x18ftypmp42" . str_repeat("\0", 40);
+            }
             // The data of a puppet: an atlas, or something that is not JSON.
             if (str_ends_with($path, '.json')) {
                 $content = str_contains($path, 'fake') ? '<script>alert(1)</script>' :
@@ -259,6 +263,35 @@ final class art_test extends \advanced_testcase {
         $file = get_file_storage()->get_file($context->id, 'local_oksigeniatesape', 'art', 0, '/valley/rig/', 'creature.atlas.json');
         $this->assertStringNotContainsString('<', $file->get_content());
         $this->assertSame('<b>', json_decode($file->get_content(), true)['meta']['note']);
+    }
+
+    public function test_a_mission_brings_its_sheets_and_videos_in_3d(): void {
+        $this->resetAfterTest();
+        $manifest = art::install($this->make_zip([
+            'code' => 'livingthings-3d',
+            'name' => 'The mission in 3D',
+            'kind' => 'mission',
+            'version' => 1,
+            'files' => [
+                'spr.creature.2.fur.celebrate.d' => 'spr/celebrate.d.webp',
+                'spr.creature.2.fur.celebrate.d.atlas' => 'spr/celebrate.d.atlas.json',
+                'spr.creature.2.fur.fake.d.atlas' => 'spr/fake.json',
+                'vid.claro.huellas' => 'vid/claro.mp4',
+                'vid.claro.huellas.poster' => 'vid/claro.webp',
+                'vid.claro.fake' => 'vid/fake.mp4',
+                'map.livingthings' => 'vid/claro.mp4',
+            ],
+        ], [
+            'spr/celebrate.d.webp',
+            'spr/celebrate.d.atlas.json',
+            'spr/fake.json',
+            'vid/claro.mp4',
+            'vid/claro.webp',
+            'vid/fake.mp4',
+        ]));
+        // The sheets and their JSON under «spr.»; a video only under «vid.» and only if it is an MP4.
+        $this->assertSame(['spr.creature.2.fur.celebrate.d', 'spr.creature.2.fur.celebrate.d.atlas', 'vid.claro.huellas',
+            'vid.claro.huellas.poster'], array_keys($manifest['files']));
     }
 
     public function test_big_paintings_get_their_small_copy(): void {
