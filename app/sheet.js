@@ -36,8 +36,11 @@
     person: {canvas: [768, 896], feet: [384, 860], tall: 790},
     small: {canvas: [512, 512], feet: [256, 457], tall: 430}
   };
-  /** @var {string[]} The gestures loaded with the place: the rest are loaded when they are asked for. */
-  var FIRST = ['idle', 'talk', 'walk'];
+  /**
+   * @var {Object} The gestures each body uses at once, loaded with the place: the hero and the creature rest and walk,
+   *     who speaks rests and talks. The rest are loaded when they are asked for.
+   */
+  var FIRST = {hero: ['idle', 'walk'], creature: ['idle', 'walk'], speaker: ['idle', 'talk'], bird: ['idle', 'talk']};
   /** @var {number} Milliseconds the frame of the gesture before stays over the new one, fading. */
   var BLEND = 100;
 
@@ -247,13 +250,14 @@
     find: find,
 
     /**
-     * Asks the engine, while the place loads, for the sheets of rest, talk and walk of a figure (those it has).
+     * Asks the engine, while the place loads, for the sheets its body uses at once (those it has).
      *
      * @param {Object} scene
      * @param {Object} sheets As find() gives them.
+     * @param {string} [body] The kind of puppet it stands for.
      */
-    load: function(scene, sheets) {
-      FIRST.forEach(function(name) {
+    load: function(scene, sheets, body) {
+      (FIRST[body] || ['idle']).forEach(function(name) {
         if (sheets[name] && sheets[name].d) {
           queue(scene, sheets[name].d);
         }

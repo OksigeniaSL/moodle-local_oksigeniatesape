@@ -423,7 +423,7 @@
       if (found.sheets) {
         scene.sheetsOf = scene.sheetsOf || {};
         scene.sheetsOf[name] = found;
-        T.sheet.load(scene, found.sheets);
+        T.sheet.load(scene, found.sheets, found.body);
         return;
       }
       scene.load.image(name, found.image);
