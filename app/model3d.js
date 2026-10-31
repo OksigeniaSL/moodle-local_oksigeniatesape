@@ -36,6 +36,11 @@
     person: {canvas: [768, 896], feet: [384, 860], tall: 790},
     small: {canvas: [512, 512], feet: [256, 457], tall: 430}
   };
+  /**
+   * @var {number} Metres of a person as tall as a puppet: the models are measured in metres, so each one keeps its own
+   *     height (a dwarf, shorter than a druid; the creature, its size beside them).
+   */
+  var PERSON = 1.7;
   /** @var {number} How much a model turns to the side it faces, in radians: three quarters. */
   var YAW = 0.45;
   /** @var {number} Seconds of passage from one gesture to the next. */
@@ -264,6 +269,7 @@
     var small = body === 'creature' || body === 'minion';
     this.scene = scene;
     this.still = still;
+    this.small = small;
     this.body = BODIES[small ? 'small' : 'person'];
     this.feet = this.body.feet.slice();
     this.mirror = false;
@@ -276,6 +282,7 @@
     this.container = scene.add.container(0, 0);
     this.container.setSize(this.body.canvas[0], this.body.canvas[1]);
     // As a puppet, one piece, for what reads them.
+    this.id = found.id;
     this.parts = [{name: 'body', frame: 'body', image: {texture: {key: 'model:' + found.id}}}];
     this.layer = layerOf(scene);
     this.blink = 2 + Math.random() * 3;
@@ -324,6 +331,8 @@
     });
     var box = new THREE.Box3().setFromObject(root);
     this.metres = Math.max(0.01, box.max.y);
+    // For the tests of the browser: how tall each model stands, in metres.
+    T.model.metres[this.id] = Math.round(this.metres * 100) / 100;
     this.face = face;
     this.mixer = new THREE.AnimationMixer(root);
     this.clips = {};
@@ -470,8 +479,9 @@
   };
 
   /**
-   * The model where the engine has put its figure: at its feet, as tall as its puppet, turned three quarters to the
-   * side it faces, shown when it shows.
+   * The model where the engine has put its figure: at its feet, in metres of the place (a person of 1.7 m as tall as a
+   * puppet of a person; the creature, whose puppet is drawn at half the size of a person, at the same metres), turned
+   * three quarters to the side it faces, shown when it shows.
    */
   Model.prototype.sync = function() {
     var c = this.container;
@@ -479,13 +489,19 @@
       return;
     }
     this.root.visible = !!c.scene && c.visible && c.alpha > 0.05;
-    var k = Math.abs(c.scaleY) * this.body.tall / this.metres;
+    // Pixels of the place per metre: from the scale the engine gives the figure (the one of a person, or of the
+    // creature, which it draws at half the size of a person in a canvas of 512).
+    var perPerson = this.small ? Math.abs(c.scaleY) * 1024 : Math.abs(c.scaleY) * BODIES.person.canvas[1];
+    var k = perPerson * (BODIES.person.tall / BODIES.person.canvas[1]) / PERSON;
     this.root.position.set(c.x, -c.y, c.depth || 0);
     this.root.scale.set(k, k, k);
     this.root.rotation.set(0, c.scaleX < 0 ? -YAW : YAW, 0);
   };
 
   T.model = {
+    /** @var {Object} How tall each model stands, in metres, once it has come (for the tests). */
+    metres: {},
+
     /**
      * The model of a figure in the art packs, if the device can draw it; null if not.
      *

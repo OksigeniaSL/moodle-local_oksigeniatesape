@@ -139,7 +139,8 @@
         var unit = size / 896;
         place(S.hero, heroX, ground, unit);
         // The creature beside the hero, in front of what is read, never under it.
-        var petX = (S.hero ? S.hero.tx : heroX) + size * 0.38;
+        // A creature in live 3D takes more room beside the hero than its picture: a little further.
+        var petX = (S.hero ? S.hero.tx : heroX) + size * (S.pet && S.pet.puppet && S.pet.puppet.root !== undefined ? 0.5 : 0.38);
         place(S.pet, beside ? Math.min(petX, side - size * 0.14) : petX, ground - size * 0.03, size * 0.5 / (S.pet ?
           S.pet.sprite.height : 1));
         place(S.speaker, speakerX, ground, unit * (S.speaker && TALL[S.speaker.code] ? 1.1 : 1));
