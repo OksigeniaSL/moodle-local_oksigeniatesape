@@ -703,6 +703,55 @@
     return 'voice.line.' + ('0000000' + h.toString(16)).slice(-8);
   };
 
+  /** @var {Object} How many ways each thing the hero says has (app_hero_<name>, app_hero_<name>2…). */
+  var HEROWAYS = {fight: 2, sniff: 2, secret: 2, levelup: 2, won: 2, lost: 2};
+
+  /**
+   * The recorded voice of the hero of a character saying a text, if the art pack has it: a girl or a boy, younger in
+   * infant school and the first years and older from then on (voice.hero.<f1|f2|m1|m2>.<key of the line>). None for who
+   * has reading aloud.
+   *
+   * @param {Object|null} c The character.
+   * @param {string} stage The stage of the class: early, firstyears, primary, secondary or adults.
+   * @param {string} text
+   * @return {string|null}
+   */
+  T.heroKey = function(c, stage, text) {
+    if (!c || !text || !T.artUrl || (T.adapted && T.adapted.readaloud)) {
+      return null;
+    }
+    var young = ['early', 'firstyears'].indexOf(stage) >= 0;
+    var key = 'voice.hero.' + (c.nameform === 'f' ? 'f' : 'm') + (young ? '1' : '2') + '.' +
+      T.lineKey(String(text).trim()).replace(/^voice\.line\./, '');
+    return T.artUrl([key]) ? key : null;
+  };
+
+  /**
+   * What the hero of the student says at a moment (fight, sniff, secret, levelup, won, lost): one of its ways, as the
+   * key of its voice, if the art pack has it.
+   *
+   * @param {Object} world With its character and the stage of the class.
+   * @param {string} name
+   * @return {string|null}
+   */
+  T.heroLine = function(world, name) {
+    var i = Math.floor(Math.random() * (HEROWAYS[name] || 1));
+    return world ? T.heroKey(world.character, world.classstage, T.t('app_hero_' + name + (i ? i + 1 : ''))) : null;
+  };
+
+  /**
+   * The hero of the student says something of a moment, if the art pack has it in their voice.
+   *
+   * @param {Object} world
+   * @param {string} name
+   */
+  T.heroSays = function(world, name) {
+    var key = T.fx ? T.heroLine(world, name) : null;
+    if (key) {
+      T.fx.voice(key);
+    }
+  };
+
   /* ---------- The map of a mission ---------- */
 
   /** @var {string[]} The zones of a map in layers, from the bottom up. */

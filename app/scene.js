@@ -510,6 +510,10 @@
       if (!told) {
         alive('ending', outcome);
       }
+      // The hero of the student says how it went: glad when it went well, ready for another day when not.
+      if (!cm && outcome !== 'partial') {
+        T.heroSays(world, outcome === 'success' ? 'won' : 'lost');
+      }
       if (outcome === 'success') {
         T.fx.sound('win');
         T.fx.confetti();
@@ -652,6 +656,16 @@
       if (cross) {
         cross.onclick = leave;
       }
+      // A piece of what the team knows, opened: the hero of the student reads it aloud, if the art pack has it in their
+      // voice.
+      layer.querySelectorAll('.scene-body details.piece').forEach(function(piece) {
+        piece.addEventListener('toggle', function() {
+          var key = piece.open ? heroKey(piece.querySelector('p').textContent) : null;
+          if (key) {
+            T.fx.voice(key);
+          }
+        });
+      });
       var read = layer.querySelector('[data-read]');
       if (read) {
         read.onclick = function() {
@@ -2260,6 +2274,9 @@
           }
           sniff.closest('.sniff-row').classList.add('done');
           sniff.disabled = true;
+          if (!cm) {
+            T.heroSays(world, 'sniff');
+          }
           if (T.fx && !T.fx.sound('sniff')) {
             T.fx.sound('tap');
           }
@@ -2384,18 +2401,22 @@
      * has reading aloud.
      *
      * @param {Object} o The option.
+     * @param {boolean} [any] Whatever it says: the reasons chosen in a decision of several are said too.
      * @return {string|null}
      */
-    function heroLine(o) {
-      var c = !cm && world && world.character;
+    function heroLine(o, any) {
       var label = o && o.label ? tx(o.label) : '';
-      if (!c || !T.fx || !T.lineKey || T.adapted.readaloud || !/^[¿¡«—]/.test(label)) {
-        return null;
-      }
-      var young = ['early', 'firstyears'].indexOf(world.classstage) >= 0;
-      var key = 'voice.hero.' + (c.nameform === 'f' ? 'f' : 'm') + (young ? '1' : '2') + '.' +
-        T.lineKey(label).replace(/^voice\.line\./, '');
-      return T.artUrl([key]) ? key : null;
+      return any || /^[¿¡«—]/.test(label) ? heroKey(label) : null;
+    }
+
+    /**
+     * The recorded voice of the hero of the student saying a text, if the art pack has it.
+     *
+     * @param {string} text
+     * @return {string|null}
+     */
+    function heroKey(text) {
+      return !cm && world && T.fx ? T.heroKey(world.character, world.classstage, text) : null;
     }
 
     /**
@@ -2408,30 +2429,48 @@
     function reveal(body, list, done) {
       var out = body.querySelector('[data-out]');
       if (list.length > 1) {
-        // Several chosen at once: the world answers for all of them in one view.
+        // Several chosen at once: the hero of the student says them, one after the other, and the world answers for all
+        // of them in one view.
         out.innerHTML = '<div class="conseq wait" aria-hidden="true"><span></span><span></span><span></span></div>';
-        setTimeout(function() {
-          if (T.fx) {
-            T.fx.sound('choose');
-          }
-          list.forEach(function(o) {
-            answer(body, o);
-          });
-          sayAloud(list.map(function(o) {
-            return tx(o.say || '');
-          }));
-          out.innerHTML = '<div class="conseq said"><ul class="cls-said">' + list.map(function(o) {
-            // What the world says, and why, folded, when the option has both.
-            return '<li><b>' + esc(tx(o.label)) + '</b> ' + esc(tx(o.say || o.feedback || '')) + (o.say && o.feedback ?
-              '<details class="why-more"><summary>' + esc(t('app_why')) + '</summary><p>' + esc(tx(o.feedback)) + '</p></details>' :
-              '') + '</li>';
-          }).join('') + '</ul></div><div class="actions"><button class="btn btn-main" data-more>' +
-            esc(t('app_continue')) + '</button></div>';
-          var more = out.querySelector('[data-more]');
-          more.focus();
-          more.onclick = done;
-          out.scrollIntoView({behavior: 'smooth', block: 'nearest'});
-        }, T.adapted.still ? 0 : 300);
+        var reasons = list.map(function(o) {
+          return heroLine(o, true);
+        }).filter(Boolean);
+        var answerAll = function() {
+          setTimeout(function() {
+            if (T.fx) {
+              T.fx.sound('choose');
+            }
+            list.forEach(function(o) {
+              answer(body, o);
+            });
+            sayAloud(list.map(function(o) {
+              return tx(o.say || '');
+            }));
+            out.innerHTML = '<div class="conseq said"><ul class="cls-said">' + list.map(function(o) {
+              // What the world says, and why, folded, when the option has both.
+              return '<li><b>' + esc(tx(o.label)) + '</b> ' + esc(tx(o.say || o.feedback || '')) + (o.say && o.feedback ?
+                '<details class="why-more"><summary>' + esc(t('app_why')) + '</summary><p>' + esc(tx(o.feedback)) + '</p></details>' :
+                '') + '</li>';
+            }).join('') + '</ul></div><div class="actions"><button class="btn btn-main" data-more>' +
+              esc(t('app_continue')) + '</button></div>';
+            var more = out.querySelector('[data-more]');
+            more.focus();
+            more.onclick = done;
+            out.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+          }, T.adapted.still ? 0 : 300);
+        };
+        if (reasons.length) {
+          alive('say');
+          (function next() {
+            if (reasons.length) {
+              T.fx.voice(reasons.shift(), next);
+            } else {
+              answerAll();
+            }
+          })();
+        } else {
+          answerAll();
+        }
         return;
       }
       var i = 0;

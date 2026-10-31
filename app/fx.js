@@ -12,6 +12,10 @@
 
   var T = window.Tesape;
   var KEY = 'tesape-sound';
+  /** @var {string} The volume of the device, one for all the games of Oksigenia on this site: 0 to 1. */
+  var VOLUME = 'oksigenia-volume';
+  /** @var {number} Low to start: in a class, many devices sound at once, and a voice that comes loud scares the youngest. */
+  var VOLUME_START = 0.4;
   var ctx = null;
   var master = null;
   var sampleOut = null;
@@ -33,6 +37,20 @@
    * download them.
    */
   var RARE = ['applause', 'drumroll', 'hatch', 'heart', 'lantern', 'levelup', 'path', 'win'];
+
+  /**
+   * The volume of the device, as it was left; low the first time.
+   *
+   * @return {number} 0 to 1.
+   */
+  function volume() {
+    try {
+      var v = parseFloat(window.localStorage.getItem(VOLUME));
+      return isNaN(v) ? VOLUME_START : Math.min(1, Math.max(0, v));
+    } catch (e) {
+      return VOLUME_START;
+    }
+  }
 
   function muted() {
     if (quiet) {
@@ -57,11 +75,11 @@
       }
       ctx = new Context();
       master = ctx.createGain();
-      master.gain.value = 0.45;
+      master.gain.value = 0.45 * volume();
       master.connect(ctx.destination);
       // The sounds of the pack come with their level made: they do not go through the one of the sounds made here.
       sampleOut = ctx.createGain();
-      sampleOut.gain.value = 1;
+      sampleOut.gain.value = volume();
       sampleOut.connect(ctx.destination);
     }
     // Suspended, or interrupted (a call, the tablet locked, on iPad): it comes back at the next touch.
@@ -1102,6 +1120,29 @@
       quiet = !!on;
       if (quiet) {
         stopAmbient();
+      }
+    },
+    /**
+     * The volume of the device.
+     *
+     * @return {number} 0 to 1.
+     */
+    volume: volume,
+    /**
+     * Sets the volume of the device, remembered for all the games of Oksigenia on this site.
+     *
+     * @param {number} v 0 to 1.
+     */
+    setVolume: function(v) {
+      v = Math.min(1, Math.max(0, Number(v) || 0));
+      try {
+        window.localStorage.setItem(VOLUME, String(v));
+      } catch (e) {
+        // Without storage, only for this page.
+      }
+      if (ctx) {
+        master.gain.setTargetAtTime(0.45 * v, ctx.currentTime, 0.05);
+        sampleOut.gain.setTargetAtTime(v, ctx.currentTime, 0.05);
       }
     },
     /** Silence on or off, remembered on the device. */

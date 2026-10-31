@@ -1048,6 +1048,7 @@
       var cheer = function() {
         T.fx.sound('levelup');
         T.fx.sparkles();
+        T.heroSays(state.world, 'levelup');
       };
       if (!staged || !evolve(layer, cheer)) {
         setTimeout(cheer, T.moves() ? 1100 : 0);
@@ -1314,6 +1315,22 @@
     }
   }
 
+  /**
+   * The sound of the device, up in the bar: the loudspeaker opens its volume (low to start, one for all the games of
+   * Oksigenia on this site) and the silence.
+   *
+   * @return {string}
+   */
+  function volumeMenu() {
+    var on = !T.fx.muted();
+    var v = Math.round(T.fx.volume() * 100);
+    return '<details class="volume"><summary aria-label="' + esc(t('app_volume')) + '" title="' + esc(t('app_volume')) + '">' +
+      T.icon(on ? 'sound' : 'mute') + '</summary><div class="volume-menu"><label>' + esc(t('app_volume')) +
+      '<input type="range" min="0" max="100" step="5" value="' + v + '" data-level aria-valuetext="' + v + ' %"></label>' +
+      '<button type="button" class="btn btn-soft" data-sound aria-pressed="' + !on + '">' +
+      esc(t(on ? 'app_sound_off' : 'app_sound_on')) + '</button></div></details>';
+  }
+
   /** @var {string[]} The places of the map that open as a page: the market, the album and the museum. */
   var LANDMARKS = ['market', 'album', 'museum'];
   var TABS = ['world', 'team', 'challenges', 'log', 'me'];
@@ -1357,9 +1374,7 @@
       '</span><span class="who"><b>' + esc(myName()) + '</b> <small>' + esc(title(c)) + '</small></span><span class="sr-only">' +
       ' · ' + esc(t('app_tab_me')) + '</span></button><button type="button" class="ring" data-tab="me" style="--p:' + pct + '" title="' + esc(t('app_level')) +
       ' ' + c.level + '"><b>' + c.level + '</b><span class="sr-only"> · ' + esc(t('app_level')) + ' · ' + esc(t('app_tab_me')) +
-      '</span></button>' + (T.fx && !w.quiet && !T.adapted.quiet ? '<button type="button" class="sound" data-sound aria-pressed="' + !T.fx.muted() +
-      '" aria-label="' + esc(t('app_sound')) + '" title="' + esc(t('app_sound')) + '">' + T.icon(T.fx.muted() ? 'mute' : 'sound') +
-      '</button>' : '') + (T.fx && w.devicemusic === 2 && T.fx.musicAllowed() ? '<button type="button" class="sound" ' +
+      '</span></button>' + (T.fx && !w.quiet && !T.adapted.quiet ? volumeMenu() : '') + (T.fx && w.devicemusic === 2 && T.fx.musicAllowed() ? '<button type="button" class="sound" ' +
       'data-music aria-pressed="' + T.fx.musicOn() + '" aria-label="' + esc(t('board_music')) + '" title="' +
       esc(t('board_music')) + '">♪</button>' : '') + '<details class="exit"><summary aria-label="' + esc(t('app_leave')) + '" title="' +
       esc(t('app_leave')) + '">⎋</summary><div class="exit-menu">' +
@@ -1405,8 +1420,20 @@
     if (sound) {
       sound.onclick = function() {
         var on = T.fx.toggle();
-        sound.innerHTML = T.icon(on ? 'sound' : 'mute');
-        sound.setAttribute('aria-pressed', String(on));
+        sound.textContent = t(on ? 'app_sound_off' : 'app_sound_on');
+        sound.setAttribute('aria-pressed', String(!on));
+        app.querySelector('.volume > summary').innerHTML = T.icon(on ? 'sound' : 'mute');
+      };
+    }
+    var level = app.querySelector('[data-level]');
+    if (level) {
+      level.oninput = function() {
+        T.fx.setVolume(level.value / 100);
+        level.setAttribute('aria-valuetext', level.value + ' %');
+      };
+      // Let go, a sound at the new volume, to hear how it is.
+      level.onchange = function() {
+        T.fx.sound('tap');
       };
     }
     app.querySelectorAll('[data-tab]').forEach(function(b) {
@@ -2486,7 +2513,7 @@
     var opened = false;
     var speak = function(lines) {
       var keys = !T.fx || !T.lineKey || T.adapted.readaloud ? [] : lines.filter(Boolean).map(function(x) {
-        return T.lineKey(x);
+        return /^voice\./.test(x) ? x : T.lineKey(x);
       }).filter(function(k) {
         return T.artUrl([k]);
       });
@@ -2674,8 +2701,8 @@
       // that said it would come too late.
       var opening = !opened && !l.kind && f.phase === 'net';
       opened = true;
-      speak((opening ? [f.turn ? '' : f.claim, t('app_fight_net')] : []).concat([told, l.kind === 'miss' ? f.laugh : '',
-        ending]));
+      speak((opening ? [T.heroLine(state.world, 'fight'), f.turn ? '' : f.claim, t('app_fight_net')] : []).concat([told,
+        l.kind === 'miss' ? f.laugh : '', ending]));
       if (actor) {
         // What it does, seen: the blow it takes, then the thread it throws when the creature has to dodge, or undone.
         actor.queue = (['hit', 'weak'].indexOf(f.last.kind) >= 0 ? ['hit'] : []).concat(f.outcome === 'won' ? ['untangle'] :
@@ -2686,6 +2713,10 @@
         b.onclick = function() {
           if (b.dataset.v === 'dodge') {
             where = Number(b.dataset.i);
+          }
+          if (b.dataset.v === 'sniff') {
+            // Through what is said in the fight, so that it cuts what was being said instead of talking over it.
+            speak([T.heroLine(state.world, 'sniff')]);
           }
           send(f, b.dataset.v, Number(b.dataset.i || 0));
         };
@@ -3079,6 +3110,7 @@
         (r.set ? '<div class="conseq good"><span class="what">' + esc(r.set) + '</span></div>' : '') + '<div class="actions">' +
         '<button type="button" class="btn btn-main" data-close>' + esc(t('app_continue')) + '</button></div></div>';
       document.body.appendChild(layer);
+      T.heroSays(state.world, 'secret');
       var close = layer.querySelector('[data-close]');
       close.onclick = function() {
         layer.remove();
