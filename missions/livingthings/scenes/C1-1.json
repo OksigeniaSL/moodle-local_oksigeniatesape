@@ -55,6 +55,7 @@
   },
   "elegir": {
    "type": "choice",
+   "lineup": "elegir",
    "prompt": "¿Quiénes son como ella? Buscamos tres o cuatro.",
    "select": {
     "min": 3,
@@ -82,6 +83,7 @@
     },
     {
      "id": "flor",
+     "art": "being.flormustia",
      "label": "una flor mustia, con la cabeza caída",
      "correct": true,
      "points": 2,
@@ -90,6 +92,7 @@
     },
     {
      "id": "juguete",
+     "art": "thing.cochecuerda",
      "label": "{{local:juguete}}",
      "correct": false,
      "objective": "SV-01",
@@ -112,6 +115,7 @@
     },
     {
      "id": "pez",
+     "art": "being.pezcubo",
      "label": "{{local:pez}}",
      "correct": true,
      "points": 2,

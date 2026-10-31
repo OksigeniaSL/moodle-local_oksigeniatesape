@@ -8764,6 +8764,76 @@ body.adapt-colours .errors-text .fixed ins {
   }
 }
 
+/* With the candidates or the things standing in the place, what is read takes less height, so that they are seen:
+   many options, tighter; the things to sort, without their drawing (it is in the place) and their groups, low. The
+   touch targets keep 44 px. */
+.scene-layer.live .scene-body.standing .opts.many {
+  gap: 6px;
+  margin: 6px 0;
+}
+
+.scene-layer.live .scene-body.standing .opts.many .opt {
+  min-height: 44px;
+  padding: 6px 12px;
+  font-size: 15px;
+}
+
+.scene-layer.live .scene-body.standing .cls-pic {
+  display: none;
+}
+
+.scene-layer.live .scene-body.standing .cls-table {
+  margin: 4px 0 8px;
+  min-height: 44px;
+}
+
+.scene-layer.live .scene-body.standing .cls-thing {
+  min-height: 44px;
+  padding: 6px 12px;
+  font-size: 15px;
+}
+
+.scene-layer.live .scene-body.standing .cls-bin {
+  min-height: 0;
+}
+
+/* With every thing in a group, the empty table goes; the names of the groups, lower. */
+.scene-layer.live .scene-body.standing .cls-table:empty {
+  display: none;
+}
+
+.scene-layer.live .scene-body.standing .bin {
+  min-height: 44px;
+  padding: 6px 8px;
+}
+
+.scene-layer.live .scene-body.standing .bins {
+  gap: 8px;
+}
+
+/* What is in a group shows in the place: in the box, small, to be taken back with a touch. */
+.scene-layer.live .scene-body.standing .cls-in .cls-thing {
+  min-height: 32px;
+  padding: 3px 8px;
+  font-size: 13px;
+}
+
+/* The list of many candidates, folded: they are chosen in the place. */
+.opts-list > summary {
+  cursor: pointer;
+  color: var(--text-soft);
+  font-weight: 600;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+.picked {
+  margin: 4px 0 8px;
+  color: var(--text);
+  font-weight: 600;
+}
+
 .scene-layer.live .scene-body:has(> .dlg) {
   padding: 0;
   overflow: visible;

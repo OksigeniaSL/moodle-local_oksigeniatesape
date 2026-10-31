@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 91,
+ "version": 92,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 92,
+   "kind": "improvement",
+   "date": "2026-10-31",
+   "text": "Capítulo 1 como «Las preguntas al búho»: los candidatos de «¿Quién tiene hambre?» y de «El Nido de la Vida», de pie en el lugar; las cosas de «Bajo la lupa», de pie y a su caja; y cada caso del tribunal, delante mientras se juzga"
+  },
   {
    "version": 91,
    "kind": "fix",

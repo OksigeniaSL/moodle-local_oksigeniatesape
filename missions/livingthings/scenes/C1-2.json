@@ -130,6 +130,7 @@
   },
   "elegir": {
    "type": "choice",
+   "lineup": "elegir",
    "prompt": {
     "valley": "¿Qué cinco cosas llevamos al nido?",
     "azara": "¿Qué cinco cosas van al cajón de muestras?"
@@ -238,6 +239,7 @@
     },
     {
      "id": "pompa",
+     "art": "thing.pompajabon",
      "label": "Llevar una pompa de jabón",
      "correct": false,
      "objective": "SV-01",

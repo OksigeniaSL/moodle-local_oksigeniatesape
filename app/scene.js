@@ -1200,7 +1200,7 @@
     function lineup(n, out) {
       var line = n.lineup && sc.nodes[n.lineup];
       var list = line && layer.classList.contains('live') ? (line.options || []).map(function(o) {
-        return {id: o.id, url: T.artUrl(['being.' + o.id]), out: out ? out(o) : (o.contradicts || []).some(function(c) {
+        return {id: o.id, url: drawing(o), out: out ? out(o) : (o.contradicts || []).some(function(c) {
           return run.clues.indexOf(c) >= 0;
         })};
       }) : [];
@@ -1208,6 +1208,38 @@
         return !one.url;
       })) {
         alive('lineup', null);
+        return false;
+      }
+      alive('lineup', list);
+      return true;
+    }
+
+    /**
+     * The drawing of who or what an option or a thing of the table is, to stand in the place: the one it names (`art`),
+     * the picture the server found for it (by its catalog entry or its name in the course), or the being or the thing of
+     * its id.
+     *
+     * @param {Object} o
+     * @return {string|null}
+     */
+    function drawing(o) {
+      return T.artUrl([o.art || '', (data.pictures || {})[o.id] || '', 'being.' + o.id, 'thing.' + o.id]);
+    }
+
+    /**
+     * Who a decision is about, standing in the place while it is decided (`stand`: the being of a case, which is not
+     * chosen but judged); without the place alive, or with a drawing missing, nobody.
+     *
+     * @param {Object} n The node.
+     * @return {boolean} Whether they stand.
+     */
+    function standUp(n) {
+      var list = n.stand && layer.classList.contains('live') ? n.stand.map(function(id) {
+        return {id: id, url: drawing({id: id}), out: false};
+      }) : [];
+      if (!list.length || list.some(function(one) {
+        return !one.url;
+      })) {
         return false;
       }
       alive('lineup', list);
@@ -2219,6 +2251,11 @@
       var standing = !cm && lineup(n, multiAway ? function() {
         return false;
       } : null);
+      // Or who the decision is about, judged and not chosen.
+      var judged = !cm && !standing && standUp(n);
+      // Many candidates standing (more than eight): they are chosen with a touch in the place, and the list, folded, is
+      // there for who prefers to read it; what was chosen, said in words below.
+      var crowd = standing && multi && n.options.length > 8;
       // The painting of the candidates is not needed when they stand in the place.
       var body = show((n.image && !standing ? picture(n.image, data) : '') + clueBox() + pieces(n) + (n.recall ?
         '<p class="justify-about">' + esc(n.recall) + '</p>' : '') + (said ? '<p class="scene-nature">' + esc(said) + '</p>' : '') +
@@ -2226,15 +2263,24 @@
         '<p class="scene-prompt">' + glossify(tx(given && n.extraprompt ? n.extraprompt : easy(n, 'prompt')), {}) + '</p>' +
         (voting ? '<div class="class-vote" data-vote><button class="btn btn-soft" data-voteopen>' +
         esc(t('board_scene_voteopen')) + '</button></div>' : '') +
-        '<div class="opts">' + opts + '</div>' + (canSniff(n, tried) ? '<div class="sniff-row"><button type="button" ' +
+        (crowd ? '<p class="help-soft">' + esc(t('app_pick_in_place')) + '</p><details class="opts-list"><summary>' +
+        esc(t('app_see_list')) + '</summary>' : '') + '<div class="opts">' + opts + '</div>' + (crowd ? '</details>' : '') +
+        (canSniff(n, tried) ? '<div class="sniff-row"><button type="button" ' +
         'class="btn btn-soft sniff-btn" data-sniff>' + '<span class="sniff-pet" aria-hidden="true">' +
         T.creature(world.character.creature, world.character.creaturestage) + '</span>' +
         esc(t('app_sniff', creatureName())) + '</button></div>' : '') +
         (multi ? '<div class="counter" data-count>' + esc(t('app_chosen', '0/' + max)) +
-        '</div><div class="actions"><button class="btn btn-main" data-confirm disabled>' + esc(t('app_confirm')) +
+        '</div>' + (crowd ? '<p class="picked" data-picked aria-live="polite"></p>' : '') + '<div class="actions"><button class="btn btn-main" data-confirm disabled>' + esc(t('app_confirm')) +
         '</button></div>' : '') + '<div data-out></div>');
       hintArea(n, body);
       roleBar(n, body);
+      if (standing) {
+        // What is read, tighter, so that they are seen.
+        body.classList.add('standing');
+        if (n.options.length > 6) {
+          body.querySelector('.opts').classList.add('many');
+        }
+      }
       if (voting) {
         classVote(body, n, open);
       }
@@ -2298,6 +2344,11 @@
             if (standing && n.lineup === run.node) {
               alive('chosen', id, pick(id).correct !== false);
             }
+            if (judged) {
+              n.stand.forEach(function(who) {
+                alive('chosen', who, pick(id).correct !== false, true);
+              });
+            }
             reveal(body, [pick(id)], function() {
               var o = pick(id);
               (o.effects || []).forEach(function(e) {
@@ -2339,6 +2390,15 @@
             b.classList.add('sel');
           }
           body.querySelector('[data-count]').textContent = t('app_chosen', selected.length + '/' + max);
+          var picked = body.querySelector('[data-picked]');
+          if (picked) {
+            picked.textContent = selected.map(function(x) {
+              return tx(pick(x).label);
+            }).join(' · ');
+          }
+          if (standing && n.lineup === run.node) {
+            alive('mark', selected.slice());
+          }
           body.querySelector('[data-confirm]').disabled = selected.length < min;
         };
       });
@@ -2362,6 +2422,13 @@
               mistake();
             }
           });
+          // Those chosen among the candidates standing answer: the right ones jump, the others step back.
+          if (standing && n.lineup === run.node) {
+            alive('mark', []);
+            selected.forEach(function(id) {
+              alive('chosen', id, pick(id).correct !== false);
+            });
+          }
           // Each answer chosen sends back the suspects it leaves out (`away`).
           if (standing && multiAway) {
             var away = [];
@@ -2571,6 +2638,24 @@
       var box = body.querySelector('[data-cls]');
       hintArea(n, body);
       roleBar(n, body);
+      // The things of the table, standing in the place, if all of them have a drawing: each one goes to its group when
+      // it is put in it and back to the table when it is taken out, the one in hand stands out, and they are taken with
+      // a touch there too.
+      var standing = !cm && layer.classList.contains('live') && items.length > 0 && items.every(function(it) {
+        return drawing(it);
+      });
+      if (standing) {
+        body.classList.add('standing');
+        alive('lineup', items.map(function(it) {
+          return {id: it.id, url: drawing(it), out: false};
+        }));
+        alive('pick', function(id) {
+          var b = box.querySelector('[data-thing="' + id + '"]') || box.querySelector('[data-take="' + id + '"]');
+          if (b && !b.disabled) {
+            b.click();
+          }
+        });
+      }
       function table() {
         return items.filter(function(it) {
           return !right[it.id] && !place[it.id];
@@ -2653,6 +2738,24 @@
         } else if (all) {
           box.querySelector('[data-confirm]').focus();
         }
+        stage();
+      }
+      // In the place: each thing in the part of its group, or on the table, and the one in hand raised.
+      function stage() {
+        if (!standing) {
+          return;
+        }
+        var zones = {};
+        var bins = n.bins.map(function(b) {
+          return b.id;
+        });
+        items.forEach(function(it) {
+          if (right[it.id] || place[it.id]) {
+            zones[it.id] = bins.indexOf(right[it.id] || place[it.id]);
+          }
+        });
+        alive('sort', zones, bins.length);
+        alive('mark', chosen ? [chosen] : []);
       }
       // The tool for the thing in hand, if it can be looked at, and what was seen of the things of the table.
       function lookArea() {
@@ -2719,6 +2822,12 @@
         });
         var finished = items.every(function(it) {
           return right[it.id];
+        });
+        // In the place, what went to its group jumps and stays; what did not shakes and goes back to the table.
+        chosen = null;
+        stage();
+        moved.forEach(function(it) {
+          alive('chosen', it.id, put[it.id] === it.bin, true);
         });
         box.innerHTML = '';
         out.innerHTML = '<div class="conseq said"><ul class="cls-said">' + lines + '</ul>' + (general ? '<p>' +

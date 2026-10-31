@@ -84,6 +84,7 @@
     },
     {
      "id": "bacterias",
+     "art": "being.bacteria",
      "label": "las bacterias del yogur",
      "bin": "vivo",
      "objective": "SV-01",
@@ -135,6 +136,7 @@
     },
     {
      "id": "bichito",
+     "art": "being.dafnia",
      "label": "un bichito transparente de una gota del charco",
      "bin": "vivo",
      "objective": "SV-01",

@@ -48,6 +48,9 @@
   },
   "fuego": {
    "type": "choice",
+   "stand": [
+    "fuego"
+   ],
    "prompt": "Primer caso: el fuego. Crece, consume leña y «salta» a otros sitios. ¿Está vivo?",
    "hints": [
     "Antes de mirar lo que hace, mirar de qué está hecho: ¿tiene células?",
@@ -82,6 +85,9 @@
   },
   "mula": {
    "type": "choice",
+   "stand": [
+    "mula"
+   ],
    "prompt": "Segundo caso: una mula. Está hecha de células, se nutre, crece y responde, pero no puede tener crías. ¿Está viva?",
    "hints": [
     "Un abuelo que ya no tendrá hijos, ¿está vivo?",
@@ -115,6 +121,9 @@
   },
   "tardigrado": {
    "type": "choice",
+   "stand": [
+    "tardigrado"
+   ],
    "prompt": "Tercer caso: un tardígrado seco. Lleva años sin moverse ni comer, y con una gota de agua «revive». ¿Estaba vivo mientras estuvo seco?",
    "hints": [
     "Ya conocemos algo que parece muerto y guarda vida dentro: la semilla.",
@@ -149,6 +158,9 @@
   },
   "virus": {
    "type": "choice",
+   "stand": [
+    "virus"
+   ],
    "prompt": "Cuarto caso: un virus. Hace copias de sí mismo, pero solo dentro de una célula ajena; fuera, no come, no crece, no responde. ¿Está vivo?",
    "hints": [
     "Repasemos la lista prueba por prueba: ¿cuántas cumple solo? ¿Cuántas cumple con ayuda?",
@@ -200,6 +212,9 @@
   },
   "semilla": {
    "type": "choice",
+   "stand": [
+    "semilla"
+   ],
    "prompt": "Quinto caso: una semilla guardada en seco desde hace unos dos mil años, que germinó al plantarla. ¿Estaba viva?",
    "hints": [
     "Se parece a un caso de hoy. ¿A cuál?",

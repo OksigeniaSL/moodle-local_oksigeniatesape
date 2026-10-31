@@ -64,6 +64,9 @@
       var suspects = {};
       var row = [];
       var picking = null;
+      // Sorting in the place (a decision of groups): how many groups there are; each thing stands on the table, in front,
+      // or behind, in the part of the row of its group (`zone`). 0: they are suspects, not things to sort.
+      var sortBins = 0;
       // While something is looked for on the painting: told where the painting is, and where the bar on top ends.
       var searching = null;
       var bar = 0;
@@ -150,18 +153,54 @@
           if (!beside) {
             line = Math.min(line, ground - size * 0.45);
           }
-          var each = (to - from) / row.length;
+          // In front, a row; with many (more than seven), two, the second a little behind and smaller. Sorting, the table
+          // in front and, behind, the groups, each in its part of the row.
+          var front = sortBins ? row.filter(function(id) {
+            return suspects[id].zone < 0;
+          }) : row.length > 7 ? row.slice(0, Math.ceil((row.length + 1) / 2)) : row;
+          var behind = row.filter(function(id) {
+            return front.indexOf(id) < 0;
+          });
+          // As big as the most crowded stretch lets them: a group has its part of the row for its things.
+          var zoneOf = function(z) {
+            return behind.filter(function(id) {
+              return suspects[id].zone === z;
+            });
+          };
+          var crowd = Math.max(1, front.length, sortBins ? 0 : behind.length);
+          for (var g = 0; g < sortBins; g++) {
+            crowd = Math.max(crowd, sortBins * zoneOf(g).length);
+          }
+          var each = (to - from) / crowd;
           var high = Math.max(40 * ratio, Math.min(h * 0.24, each * 1.05, (line - 70 * ratio) * 0.75));
-          row.forEach(function(id, i) {
+          var stand = function(id, x, y, k) {
             var one = suspects[id];
-            one.tx = from + each * (i + 0.5);
-            one.ty = line;
-            one.size = high;
+            one.tx = x;
+            one.ty = y;
+            one.size = high * k;
             if (snap || one.x === undefined) {
               one.x = one.tx;
               one.y = one.ty;
             }
+          };
+          front.forEach(function(id, i) {
+            stand(id, from + (to - from) / front.length * (i + 0.5), line, 1);
           });
+          if (sortBins) {
+            var part = (to - from) / sortBins;
+            for (var z = 0; z < sortBins; z++) {
+              zoneOf(z).forEach(function(id, i, group) {
+                stand(id, from + part * (this + (i + 0.5) / group.length), line - high * 0.42, 0.82);
+              }, z);
+            }
+          } else {
+            // In the gaps between those in front, from the middle out, so that each one is seen.
+            var step = (to - from) / front.length;
+            var skip = Math.floor((front.length - 1 - behind.length) / 2);
+            behind.forEach(function(id, i) {
+              stand(id, from + step * (i + skip + 1), line - high * 0.42, 0.82);
+            });
+          }
         }
       };
       var world = {
@@ -394,11 +433,41 @@
             suspects = {};
             row = [];
             picking = null;
+            sortBins = 0;
             return;
           }
           var missing = list.filter(function(one) {
             return !S.textures.exists('suspect.' + one.id);
           });
+          // A touch on them: of those under the finger (they may overlap, and a thin one, as a worm, has little to
+          // touch), the one whose middle is nearest. What is read lies over the canvas, so for the engine a touch comes
+          // from outside it.
+          if (!S.picker) {
+            S.picker = function(pointer) {
+              if (!picking) {
+                return;
+              }
+              var best = null;
+              var near = Infinity;
+              row.forEach(function(id) {
+                var one = suspects[id];
+                var b = one.sprite.getBounds();
+                if (one.out || !b.contains(pointer.x, pointer.y)) {
+                  return;
+                }
+                var d = Math.hypot(pointer.x - b.centerX, pointer.y - b.centerY);
+                if (d < near) {
+                  near = d;
+                  best = id;
+                }
+              });
+              if (best) {
+                picking(best);
+              }
+            };
+            S.input.on('pointerdown', S.picker);
+            S.input.on('pointerdownoutside', S.picker);
+          }
           var stand = function() {
             if (row.length && row.join() !== list.map(function(one) {
               return one.id;
@@ -409,14 +478,10 @@
               var was = suspects[one.id];
               if (!was) {
                 var sprite = S.add.image(0, 0, 'suspect.' + one.id).setOrigin(0.5, 0.99).setAlpha(still ? 1 : 0);
-                was = suspects[one.id] = {id: one.id, sprite: sprite, out: false, k: 1, a: still ? 1 : 0, hop: 0,
+                was = suspects[one.id] = {id: one.id, sprite: sprite, out: false, k: 1, a: still ? 1 : 0, hop: 0, zone: -1,
+                  mark: false, shake: 0,
                   shadow: S.add.ellipse(0, 0, 10, 10, 0x0b1a10, 0.28)};
                 row.push(one.id);
-                sprite.on('pointerdown', function() {
-                  if (picking && !was.out) {
-                    picking(one.id);
-                  }
-                });
                 sprite.on('pointerover', function() {
                   was.over = true;
                 });
@@ -448,6 +513,31 @@
         }),
 
         /**
+         * Those chosen so far stand out a little, raised (in a choice of several, the thing in hand when sorting).
+         *
+         * @param {string[]} ids
+         */
+        mark: later(function(ids) {
+          row.forEach(function(id) {
+            suspects[id].mark = (ids || []).indexOf(id) >= 0;
+          });
+        }),
+
+        /**
+         * Sorting in the place: each thing goes to the group it was put in, or back to the table.
+         *
+         * @param {Object} zones By id, the number of its group; those not given, on the table.
+         * @param {number} bins How many groups.
+         */
+        sort: later(function(zones, bins) {
+          sortBins = bins;
+          row.forEach(function(id) {
+            suspects[id].zone = id in zones ? zones[id] : -1;
+          });
+          layout(false);
+        }),
+
+        /**
          * The suspects can be chosen with a touch, those still in the light; null, and they cannot.
          *
          * @param {Function|null} then Gets the id of the one touched.
@@ -457,7 +547,7 @@
           row.forEach(function(id) {
             var one = suspects[id];
             if (picking && !one.out) {
-              one.sprite.setInteractive({useHandCursor: true, pixelPerfect: false});
+              one.sprite.setInteractive({useHandCursor: true});
             } else {
               one.sprite.disableInteractive();
             }
@@ -469,13 +559,17 @@
          *
          * @param {string} id
          * @param {boolean} right
+         * @param {boolean} [stays] It stands there whatever is answered (who a case is about): a wrong answer shakes it,
+         *     it does not step back.
          */
-        chosen: later(function(id, right) {
+        chosen: later(function(id, right, stays) {
           var one = suspects[id];
           if (!one) {
             return;
           }
-          if (right) {
+          if (!right && stays) {
+            one.shake = still ? 0 : 1;
+          } else if (right) {
             if (!still) {
               S.tweens.add({targets: one, hop: (one.size || 100) * 0.18, duration: 220, yoyo: true, repeat: 1,
                 ease: 'Sine.easeOut'});
@@ -568,7 +662,7 @@
           if (!picking || !one || one.out) {
             return false;
           }
-          one.sprite.emit('pointerdown');
+          picking(id);
           return true;
         },
 
@@ -583,9 +677,18 @@
             paint: !!(S && S.pet && (S.pet.puppet ? S.pet.puppet.parts[0].image.texture.key :
               S.pet.sprite.texture.key).indexOf('.paint.') >= 0),
             lineup: row.map(function(id) {
-              return id + (suspects[id].out ? ' fuera' : '');
+              var one = suspects[id];
+              return id + (one.out ? ' fuera' : '') + (one.mark ? ' alzado' : '') + (one.zone >= 0 ? ' en ' + one.zone : '');
             }).join(', '), picking: !!picking,
             // Where the suspects stand, in pixels of the page: the line of their feet, and the top of the tallest.
+            // Where each one stands, in pixels of the page (the middle of its body), to touch it.
+            spots: S ? row.reduce(function(at, id) {
+              var one = suspects[id];
+              var r = (window.innerHeight || S.scale.height) / S.scale.height;
+              var b = one.sprite.getBounds();
+              at[id] = [Math.round(b.centerX * r), Math.round(b.centerY * r)];
+              return at;
+            }, {}) : {},
             feet: S && row.length ? suspects[row[0]].ty * (window.innerHeight || S.scale.height) / S.scale.height : 0,
             heads: S && row.length ? Math.min.apply(null, row.map(function(id) {
               return suspects[id].ty - suspects[id].size;
@@ -656,20 +759,25 @@
             var q = still ? 1 : k;
             one.x += (one.tx - one.x) * q;
             one.y += (one.ty - one.y) * q;
-            one.k += ((one.out ? 0.82 : one.over && picking ? 1.08 : 1) - one.k) * q;
+            one.k += ((one.out ? 0.82 : one.mark ? 1.12 : one.over && picking ? 1.08 : 1) - one.k) * q;
+            one.shake = Math.max(0, one.shake - dt * 1.4);
+            var lift = one.mark && !one.out ? one.size * 0.1 : 0;
+            var wobble = one.shake ? Math.sin(time / 45) * one.shake * one.size * 0.06 : 0;
             one.a += ((one.hidden ? 0 : one.out ? 0.45 : 1) - one.a) * q;
             var base = one.size / Math.max(one.sprite.width, one.sprite.height);
             // Those that can be chosen now beat a little: the only thing that moves to ask for a touch.
             var breathe = still || one.out ? 1 : 1 + Math.sin(time / (picking ? 260 : 700) + i) * (picking ? 0.03 : 0.012);
             var back = one.out ? one.size * 0.08 : 0;
-            one.sprite.setPosition(one.x, one.y - back - one.hop).setScale(base * one.k, base * one.k * breathe)
+            one.sprite.setPosition(one.x + wobble, one.y - back - one.hop - lift).setScale(base * one.k, base * one.k * breathe)
               .setAlpha(one.a).setDepth(one.y - back);
             if (one.out) {
               one.sprite.setTint(0x5a6478);
             } else {
               one.sprite.clearTint();
             }
-            one.shadow.setPosition(one.x, one.y - back - 2).setSize(one.size * 0.5 * one.k, one.size * 0.07)
+            // Chosen, a ring of lantern light at its feet, as the edge of the option chosen.
+            one.shadow.setPosition(one.x, one.y - back - 2).setSize(one.size * (one.mark ? 0.62 : 0.5) * one.k,
+              one.size * (one.mark ? 0.1 : 0.07)).setFillStyle(one.mark ? 0xffc857 : 0x0b1a10, one.mark ? 0.6 : 0.28)
               .setAlpha(one.a).setDepth(one.y - back - 1);
           });
           var sp = S.speaker;
