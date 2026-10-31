@@ -47,6 +47,10 @@ final class art_test extends \advanced_testcase {
             if (str_ends_with($path, '.ogg') || str_ends_with($path, '.mp3')) {
                 $content = str_contains($path, 'fake') ? 'not a sound' : 'OggS' . str_repeat("\0", 40);
             }
+            // A model starts with «glTF»; a «fake» one is only text.
+            if (str_ends_with($path, '.glb')) {
+                $content = str_contains($path, 'fake') ? 'not a model' : 'glTF' . pack('V', 2) . str_repeat("\0", 40);
+            }
             // A video starts with its «ftyp» box; a «fake» one is only text.
             if (str_ends_with($path, '.mp4')) {
                 $content = str_contains($path, 'fake') ? 'not a video' : "\0\0\0\x18ftypmp42" . str_repeat("\0", 40);
@@ -280,6 +284,10 @@ final class art_test extends \advanced_testcase {
                 'vid.claro.huellas.poster' => 'vid/claro.webp',
                 'vid.claro.fake' => 'vid/fake.mp4',
                 'map.livingthings' => 'vid/claro.mp4',
+                'mdl.creature.2.fur' => 'mdl/creature.glb',
+                'mdl.creature.2.fur.cara' => 'mdl/cara.json',
+                'mdl.creature.3.fur' => 'mdl/fake.glb',
+                'creature.4.fur' => 'mdl/creature.glb',
             ],
         ], [
             'spr/celebrate.d.webp',
@@ -288,10 +296,14 @@ final class art_test extends \advanced_testcase {
             'vid/claro.mp4',
             'vid/claro.webp',
             'vid/fake.mp4',
+            'mdl/creature.glb',
+            'mdl/cara.json',
+            'mdl/fake.glb',
         ]));
-        // The sheets and their JSON under «spr.»; a video only under «vid.» and only if it is an MP4.
+        // The sheets and their JSON under «spr.»; a video only under «vid.» and only if it is an MP4; a model only under
+        // «mdl.» and only if it is a glTF, with its data.
         $this->assertSame(['spr.creature.2.fur.celebrate.d', 'spr.creature.2.fur.celebrate.d.atlas', 'vid.claro.huellas',
-            'vid.claro.huellas.poster'], array_keys($manifest['files']));
+            'vid.claro.huellas.poster', 'mdl.creature.2.fur', 'mdl.creature.2.fur.cara'], array_keys($manifest['files']));
     }
 
     public function test_big_paintings_get_their_small_copy(): void {

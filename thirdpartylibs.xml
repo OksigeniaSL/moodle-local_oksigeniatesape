@@ -40,4 +40,12 @@
         <license>MIT</license>
         <licenseversion></licenseversion>
     </library>
+    <library>
+        <location>app/engine/three.min.js</location>
+        <name>three.js</name>
+        <description>3D library by the three.js authors, with its GLB loader, its meshopt decoder and its skeleton tools, built as one classic script (window.THREE) for the characters in live 3D. Loaded only when the art packs bring models. License text in app/engine/three-LICENSE.md.</description>
+        <version>0.186.1</version>
+        <license>MIT</license>
+        <licenseversion></licenseversion>
+    </library>
 </libraries>

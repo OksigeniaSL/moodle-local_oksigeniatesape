@@ -111,8 +111,16 @@
      * @return {Promise}
      */
     load: function() {
+      // With models in live 3D in the packs, three.js comes with the engine.
+      var three = function(phaser) {
+        return T.model && T.model.wanted() ? T.model.load().then(function() {
+          return phaser;
+        }, function() {
+          return phaser;
+        }) : phaser;
+      };
       if (window.Phaser) {
-        return Promise.resolve(window.Phaser);
+        return Promise.resolve(three(window.Phaser));
       }
       if (!loading) {
         loading = new Promise(function(resolve, reject) {
@@ -142,7 +150,7 @@
             reject(new Error('Phaser'));
           };
           document.head.appendChild(script);
-        });
+        }).then(three);
       }
       return loading;
     },

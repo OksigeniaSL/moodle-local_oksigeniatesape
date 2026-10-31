@@ -401,8 +401,13 @@
       if (!picture) {
         return null;
       }
-      // Drawn in 3D: its sheets, if the packs bring them, before its puppet.
-      var sheets = T.sheet && T.sheet.find(picture.replace(/^character\./, ''));
+      // In 3D: its model in live 3D, if the packs bring it and the device can draw it; else its sheets; else its puppet.
+      var id = picture.replace(/^character\./, '');
+      var model = T.model && T.model.find(id);
+      if (model) {
+        return {model: model, body: body};
+      }
+      var sheets = T.sheet && T.sheet.find(id);
       if (sheets) {
         return {sheets: sheets, body: body};
       }
@@ -420,6 +425,12 @@
      * @param {Object} found As find() gives it.
      */
     load: function(scene, name, found) {
+      if (found.model) {
+        scene.modelsOf = scene.modelsOf || {};
+        scene.modelsOf[name] = found;
+        T.model.prefetch(found.model);
+        return;
+      }
       if (found.sheets) {
         scene.sheetsOf = scene.sheetsOf || {};
         scene.sheetsOf[name] = found;
@@ -445,7 +456,10 @@
      */
     make: function(scene, name, still, tone, from) {
       try {
-        // Drawn in 3D: the figure of its sheets.
+        // In 3D: the figure of its model, or of its sheets.
+        if (scene.modelsOf && scene.modelsOf[name]) {
+          return T.model.make(scene, scene.modelsOf[name].model, still, scene.modelsOf[name].body);
+        }
         if (scene.sheetsOf && scene.sheetsOf[name]) {
           return T.sheet.make(scene, scene.sheetsOf[name].sheets, still, scene.sheetsOf[name].body);
         }

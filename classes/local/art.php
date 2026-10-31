@@ -60,6 +60,12 @@ final class art {
     /** @var int The most a file of data can weigh, in bytes. */
     private const DATAMAX = 262144;
 
+    /** @var string[] Models a pack can have, under keys that start with «mdl.»: the characters in live 3D (GLB). */
+    public const MODELS = ['glb'];
+
+    /** @var int The most a model can weigh, in bytes. */
+    private const MODELMAX = 2097152;
+
     /** @var string[] Videos a pack can have, under keys that start with «vid.»: the moments of a story, drawn in 3D. */
     public const VIDEOS = ['mp4'];
 
@@ -112,16 +118,20 @@ final class art {
             $path = ltrim(clean_param((string) $path, PARAM_PATH), '/');
             $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
             $sound = preg_match('/^(sound|voice)\./', (string) $key) === 1;
-            $data = $extension === 'json' && preg_match('/^(rig|anim|spr)\./', (string) $key) === 1;
+            $data = $extension === 'json' && preg_match('/^(rig|anim|spr|mdl)\./', (string) $key) === 1;
+            // A character in live 3D, under «mdl.» (its face and the light of each place, as data under the same name).
+            $model = $extension === 'glb' && preg_match('/^mdl\./', (string) $key) === 1;
             // A moment of a story as a video, under «vid.» (its poster, the first frame, is an image under the same name).
             $video = $extension === 'mp4' && preg_match('/^vid\./', (string) $key) === 1;
-            $allowed = $sound ? self::SOUNDS : ($data ? self::DATA : ($video ? self::VIDEOS : self::EXTENSIONS));
+            $allowed = $sound ? self::SOUNDS : ($data ? self::DATA : ($video ? self::VIDEOS : ($model ? self::MODELS :
+                self::EXTENSIONS)));
             if (
                 !preg_match('/^[a-z0-9_.-]{1,80}$/', (string) $key) || $path === '' || !is_file($tmp . '/' . $path)
                 || !in_array($extension, $allowed, true)
                 || ($sound && !self::is_sound($tmp . '/' . $path))
                 || ($data && !self::clean_data($tmp . '/' . $path))
                 || ($video && !self::is_video($tmp . '/' . $path))
+                || ($model && !self::is_model($tmp . '/' . $path))
             ) {
                 continue;
             }
@@ -450,7 +460,7 @@ final class art {
         $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
         if (
             !$file || $file->is_directory()
-            || !in_array($extension, array_merge(self::EXTENSIONS, self::SOUNDS, self::DATA), true)
+            || !in_array($extension, array_merge(self::EXTENSIONS, self::SOUNDS, self::DATA, self::VIDEOS, self::MODELS), true)
         ) {
             return false;
         }
@@ -499,5 +509,15 @@ final class art {
     private static function is_video(string $path): bool {
         $head = (string) @file_get_contents($path, false, null, 0, 12);
         return substr($head, 4, 4) === 'ftyp' && filesize($path) <= self::VIDEOMAX;
+    }
+
+    /**
+     * Whether a file is a binary glTF model (it starts with «glTF») that does not weigh too much.
+     *
+     * @param string $path
+     * @return bool
+     */
+    private static function is_model(string $path): bool {
+        return (string) @file_get_contents($path, false, null, 0, 4) === 'glTF' && filesize($path) <= self::MODELMAX;
     }
 }

@@ -214,6 +214,9 @@
             return;
           }
           shown = url;
+          if (T.model) {
+            T.model.place(S, url);
+          }
           var key = 'bg.' + (S.bgCount = (S.bgCount || 0) + 1);
           S.load.image(key, url);
           S.load.once('complete', function() {
@@ -720,6 +723,10 @@
         create: function() {
           S = this;
           S.bgs = [];
+          // The light of the painting on the figures in live 3D.
+          if (T.model) {
+            T.model.place(S, shown);
+          }
           if (S.textures.exists('bg.0')) {
             S.bgs.push(S.add.image(0, 0, 'bg.0').setDepth(-10));
           }
