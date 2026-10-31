@@ -2583,22 +2583,26 @@
         close();
       });
     };
+    // Each thing that happens has a few ways of being said (app_fight_dodged, app_fight_dodged2…), one of them each
+    // time, on the screen and in the voice: so that it does not always sound the same.
+    var WAYS = {hit: 3, double: 2, miss: 2, dodged: 3, leapt: 2, caught: 2, won: 3};
+    var oneOf = function(name, a) {
+      var i = Math.floor(Math.random() * (WAYS[name] || 1));
+      return t('app_fight_' + name + (i ? i + 1 : ''), a);
+    };
     // What the last move did, in words.
     var outcome = function(l) {
+      if (l.kind === 'hit') {
+        return oneOf(l.cut > 2 ? 'double' : 'hit', l.cut);
+      }
       // One thread with the right net: the creature was tangled, not the net wrong.
-      return {hit: t(l.cut > 2 ? 'app_fight_double' : 'app_fight_hit', l.cut), weak: t(l.goodnet ? 'app_fight_tangledhit' :
-        'app_fight_weak'),
-        miss: t('app_fight_miss'), dodged: t('app_fight_dodged'), leapt: t('app_fight_leapt'), caught: t('app_fight_caught')}[l.kind];
+      return l.kind === 'weak' ? t(l.goodnet ? 'app_fight_tangledhit' : 'app_fight_weak') : oneOf(l.kind);
     };
-    // What happens, said aloud when the art pack has its voice: the minion says what it claims when the fight opens and
-    // laughs when an answer misses; the narrator says the blow, what to do now and how it ends. A turn that comes cuts
-    // what was still being said.
-    var said = function(f) {
+    var said = function(f, text) {
       var l = f.last;
       if (!l.kind) {
         return '';
       }
-      var text = outcome(l);
       var good = ['hit', 'weak', 'dodged', 'leapt'].indexOf(l.kind) >= 0;
       return '<p class="fight-said ' + (good ? 'good' : 'bad') + '" role="status">' + esc(text) + '</p>' + (l.kind === 'miss' &&
         f.laugh ? '<p class="knot-laugh">' + esc(f.laugh) + '</p>' : '') + (['hit', 'weak', 'miss'].indexOf(l.kind) >= 0 && l.why ?
@@ -2606,6 +2610,9 @@
     };
     var draw = function(f) {
       clearTimeout(timer);
+      var l = f.last;
+      var told = l.kind ? outcome(l) : '';
+      var ending = f.phase !== 'end' ? '' : f.outcome === 'won' ? oneOf('won') : t('app_fight_escaped');
       var face = art ? '<img src="' + esc(art) + '" alt="">' : T.embrollo(0.8);
       var body = '';
       if (f.phase === 'net') {
@@ -2637,8 +2644,7 @@
           }).join('') + '</div>' + (T.adapted.notime ? '' : '<span class="meter fight-clock"><i style="animation-duration:' +
           f.dodge + 's"></i></span>');
       } else {
-        body = '<h3 class="fight-end ' + esc(f.outcome) + '">' + esc(t(f.outcome === 'won' ? 'app_fight_won' :
-          'app_fight_escaped')) + '</h3>' + (f.outcome === 'won' ? (f.gems ? '<p><b>' + esc(t(f.gems === 1 ? 'app_encounter_gem' :
+        body = '<h3 class="fight-end ' + esc(f.outcome) + '">' + esc(ending) + '</h3>' + (f.outcome === 'won' ? (f.gems ? '<p><b>' + esc(t(f.gems === 1 ? 'app_encounter_gem' :
           'app_encounter_gems', f.gems)) + '</b></p>' : '') + (f.weakness ? '<p>' + esc(t('app_minion_weakness', f.weakness)) +
           '</p>' : '') : '<p class="help">' + esc(t('app_fight_escaped_help')) + '</p>');
       }
@@ -2652,25 +2658,24 @@
         'thread') + '</span></div><div class="fight-side pet"><div class="fight-pet big" aria-hidden="true">' +
         T.creature(c.creature, c.creaturestage) + '</div><span class="fight-marks" role="img" aria-label="' +
         esc(t('app_fight_bonds', f)) + '">' + marks(f.bonds, f.maxbonds, 'bond') + '</span></div></div>' + (f.claim &&
-        f.phase !== 'end' ? '<p class="knot-laugh">' + esc(f.claim) + '</p>' : '') + said(f) + body + moves +
+        f.phase !== 'end' ? '<p class="knot-laugh">' + esc(f.claim) + '</p>' : '') + said(f, told) + body + moves +
         '<div class="actions"><button type="button" class="btn ' + (f.phase === 'end' ? 'btn-main' : 'btn-soft') +
         '" data-close>' + esc(t(f.phase === 'end' ? 'app_continue' : 'app_fight_later')) + '</button></div></div>';
-      var face = layer.querySelector('.minion-face');
+      var holder = layer.querySelector('.minion-face');
       if (actor) {
-        face.appendChild(actor.el);
-        face.classList.toggle('puppet', !!actor.figure);
+        holder.appendChild(actor.el);
+        holder.classList.toggle('puppet', !!actor.figure);
       } else if (rig) {
-        perform(face);
+        perform(holder);
       }
-      var l = f.last;
-      // What it claims and what to do, once: when the fight opens, not again after sniffing.
+      // What happens, said aloud when the art pack has its voice: the minion says what it claims when the fight opens
+      // (once, not again after sniffing) and laughs when an answer misses; the narrator says what to do, each blow and how
+      // it ends. While the creature dodges (a few seconds), only the blow or the laugh: what to do is in sight, and a voice
+      // that said it would come too late.
       var opening = !opened && !l.kind && f.phase === 'net';
       opened = true;
-      // While the creature dodges (a few seconds), only the blow or the laugh: what to do is in sight, and a voice that
-      // said it would come too late.
-      speak((opening ? [f.turn ? '' : f.claim, t('app_fight_net')] : []).concat(l.kind ? [outcome(l),
-        l.kind === 'miss' ? f.laugh : ''] : [], f.phase === 'end' ? [t(f.outcome === 'won' ? 'app_fight_won' :
-        'app_fight_escaped')] : []));
+      speak((opening ? [f.turn ? '' : f.claim, t('app_fight_net')] : []).concat([told, l.kind === 'miss' ? f.laugh : '',
+        ending]));
       if (actor) {
         // What it does, seen: the blow it takes, then the thread it throws when the creature has to dodge, or undone.
         actor.queue = (['hit', 'weak'].indexOf(f.last.kind) >= 0 ? ['hit'] : []).concat(f.outcome === 'won' ? ['untangle'] :
