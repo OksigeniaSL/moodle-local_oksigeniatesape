@@ -675,6 +675,11 @@
         state: function() {
           return {ready: !!S, image: shown, speaker: who, figure: !!(S && S.speaker), talking: speaking,
             speakerPuppet: S && S.speaker && S.speaker.puppet ? S.speaker.puppet.clipName : '', rigs: cast.rigs || {},
+            speakerPieces: S && S.speaker && S.speaker.puppet ? S.speaker.puppet.parts.filter(function(p) {
+              return p.frame !== p.name;
+            }).map(function(p) {
+              return p.frame;
+            }).join(' ') : '',
             hero: S && S.hero && S.hero.puppet ? S.hero.puppet.clipName + (S.hero.puppet.tone ? ' ' + S.hero.puppet.tone : '') :
               '',
             pet: S && S.pet && S.pet.puppet ? S.pet.puppet.clipName : '',

@@ -159,13 +159,32 @@
       }
       var origin = [f.pivot ? f.pivot.x : 0.5, f.pivot ? f.pivot.y : 0.5];
       var part = {name: s.name, parent: 'parent' in ov ? ov.parent : s.parent, z: 'z' in ov ? ov.z : s.z,
-        at: rig.joints[s.name], image: scene.add.image(0, 0, key, s.name).setOrigin(origin[0], origin[1]), over: null};
+        at: rig.joints[s.name], image: scene.add.image(0, 0, key, s.name).setOrigin(origin[0], origin[1]), over: null,
+        frame: s.name, origins: {}, variants: {}};
+      part.origins[s.name] = origin;
+      // Other pieces for the same place, that a gesture may ask for (<piece>.<name>: the free hand at rest, hanging,
+      // beside the one that offers), each with its own pivot and the direction it was painted in (dirs).
+      Object.keys(atlas.frames).forEach(function(name) {
+        var v = atlas.frames[name];
+        if (name.indexOf(s.name + '.') !== 0 || name.indexOf('.skin.') >= 0) {
+          return;
+        }
+        if (!texture.has(name)) {
+          texture.add(name, 0, v.frame.x, v.frame.y, v.frame.w, v.frame.h);
+        }
+        part.variants[name.slice(s.name.length + 1)] = name;
+        part.origins[name] = [v.pivot ? v.pivot.x : 0.5, v.pivot ? v.pivot.y : 0.5];
+      });
       // The same piece with the skin in the tone of the student, over it.
       var skin = tone && atlas.frames[s.name + '.skin.' + tone];
       if (skin) {
-        if (!texture.has(s.name + '.skin.' + tone)) {
-          texture.add(s.name + '.skin.' + tone, 0, skin.frame.x, skin.frame.y, skin.frame.w, skin.frame.h);
-        }
+        Object.keys(atlas.frames).forEach(function(name) {
+          var v = atlas.frames[name];
+          if (name.indexOf(s.name + '.') === 0 && name.slice(-('.skin.' + tone).length) === '.skin.' + tone &&
+              !texture.has(name)) {
+            texture.add(name, 0, v.frame.x, v.frame.y, v.frame.w, v.frame.h);
+          }
+        });
         part.over = scene.add.image(0, 0, key, s.name + '.skin.' + tone).setOrigin(origin[0], origin[1]);
       }
       self.parts.push(part);
@@ -209,6 +228,8 @@
     // From one gesture to the next, a moment of passage (a quarter of a second): an arm that was raised comes down, it
     // does not jump.
     this.from = this.clip && !this.still ? this.pose() : null;
+    // The pieces the gesture before asked for stay until halfway through the passage.
+    this.fromUse = this.clip ? this.clip.use || {} : null;
     this.fade = 0;
     this.clipName = name;
     this.clip = extra ? Object.assign({}, clip, {tracks: Object.assign({}, clip.tracks, extra)}) : clip;
@@ -306,10 +327,31 @@
     var world = {};
     var turned = {};
     // How much each piece has turned from the pose it was cut in: towards a direction, or from its parent.
+    // The piece each part shows: the one this gesture asks for, if the figure has it (until halfway through the
+    // passage, the one of the gesture before).
+    var use = this.fromUse && this.fade < FADE / 2 ? this.fromUse : this.clip && this.clip.use || {};
+    this.parts.forEach(function(p) {
+      var src = self.mirror ? p.name.replace(/_(l|r)$/, function(m, side) {
+        return side === 'l' ? '_r' : '_l';
+      }) : p.name;
+      var want = use[src] && p.variants[use[src]] || p.name;
+      if (p.frame !== want) {
+        p.frame = want;
+        p.image.setFrame(want).setOrigin(p.origins[want][0], p.origins[want][1]);
+        if (p.over && self.tone) {
+          var skin = want + '.skin.' + self.tone;
+          p.over.setVisible(p.over.texture.has(skin));
+          if (p.over.texture.has(skin)) {
+            p.over.setFrame(skin).setOrigin(p.origins[want][0], p.origins[want][1]);
+          }
+        }
+      }
+    });
     var turn = function(p) {
       if (!(p.name in turned)) {
         var v = pose[p.name];
-        turned[p.name] = 'a' in v ? v.a - (self.dirs[p.name] || 0) : (up(p) ? turn(up(p)) : 0) + v.r;
+        var dir = p.frame in self.dirs ? self.dirs[p.frame] : self.dirs[p.name] || 0;
+        turned[p.name] = 'a' in v ? v.a - dir : (up(p) ? turn(up(p)) : 0) + v.r;
       }
       return turned[p.name];
     };
