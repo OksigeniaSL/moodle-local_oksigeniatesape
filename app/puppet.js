@@ -267,6 +267,10 @@
         t = Math.min(1, this.time / clip.duration);
       }
     }
+    // Follow-through: a piece in `overlap` (seconds) takes the gesture that much later, so a forearm, a tool or a head
+    // arrives a beat after what pulls it, instead of moving stiff with it, as a paper cut-out. Not without movement.
+    var overlap = !this.still && clip && this.anims.overlap || {};
+    var length = clip ? clip.duration : 1;
     ['root'].concat(Object.keys(this.byName)).forEach(function(name) {
       // Mirrored, the left piece does what the right one would, the other way round.
       var src = mirror ? name.replace(/_(l|r)$/, function(m, side) {
@@ -274,7 +278,12 @@
       }) : name;
       var v = Object.assign({}, ZERO, base[src] || {});
       if (clip && clip.tracks[src]) {
-        Object.assign(v, sample(clip.tracks[src], t));
+        var ts = t;
+        if (overlap[src]) {
+          ts = t - overlap[src] / length;
+          ts = clip.loop ? (ts % 1 + 1) % 1 : Math.max(0, ts);
+        }
+        Object.assign(v, sample(clip.tracks[src], ts));
       }
       if (rigid.indexOf(name) >= 0) {
         delete v.a;
