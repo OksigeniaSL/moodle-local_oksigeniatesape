@@ -383,6 +383,7 @@ $string['app_fight_sniff'] = 'Sniff';
 $string['app_fight_sniff_help'] = 'Your creature strikes out a net that does not work.';
 $string['app_fight_strike'] = 'With the net «{$a}», answer:';
 $string['app_fight_tangled'] = 'Your creature is tangled: this strike cuts one thread at most.';
+$string['app_fight_tangledhit'] = 'Strike! But your creature was tangled: it cuts one thread.';
 $string['app_fight_threads'] = 'Threads of the minion: {$a->threads} of {$a->maxthreads}';
 $string['app_fight_turn'] = 'Turn {$a->n} of {$a->turns}';
 $string['app_fight_weak'] = 'Right, but with another net: it cuts one thread.';

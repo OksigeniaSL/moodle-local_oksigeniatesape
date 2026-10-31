@@ -2471,18 +2471,42 @@
     document.body.appendChild(layer);
     var timer = 0;
     var where = 1;
-    // The fight has its own sounds: the sound of the place stops while it lasts, and comes back with the map; where
-    // music may play here, the music of the battle.
+    // The fight has its own sound instead of that of the place (sound.ambient.fight: threads that tangle, a soft pulse;
+    // without it, the soft sound of the night), and the place comes back with the map; where music may play here, the
+    // music of the battle.
     if (T.fx) {
-      T.fx.ambient(null);
+      T.fx.ambient('night', 'fight');
       T.fx.moment('battle1');
     }
     // Its puppet, when the art pack brings it and things move here: it waits, throws its thread, takes the blows and,
     // untangled, comes undone. Meanwhile, and without it, its picture.
     var rig = art && T.puppet && T.stage && T.stage.available() ? T.puppet.find(minion.picture, 'minion') : null;
     var actor = null;
+    var speaking = 0;
+    var opened = false;
+    var speak = function(lines) {
+      var keys = !T.fx || !T.lineKey || T.adapted.readaloud ? [] : lines.filter(Boolean).map(function(x) {
+        return T.lineKey(x);
+      }).filter(function(k) {
+        return T.artUrl([k]);
+      });
+      // A turn with nothing to say (a sniff) lets what was being said go on.
+      if (!keys.length) {
+        return;
+      }
+      var mine = ++speaking;
+      (function next() {
+        if (mine === speaking && keys.length) {
+          T.fx.voice(keys.shift(), next);
+        }
+      })();
+    };
     var close = function() {
       clearTimeout(timer);
+      speaking++;
+      if (T.fx) {
+        T.fx.hush();
+      }
       if (actor && actor.made) {
         actor.made.close();
       }
@@ -2559,13 +2583,22 @@
         close();
       });
     };
+    // What the last move did, in words.
+    var outcome = function(l) {
+      // One thread with the right net: the creature was tangled, not the net wrong.
+      return {hit: t(l.cut > 2 ? 'app_fight_double' : 'app_fight_hit', l.cut), weak: t(l.goodnet ? 'app_fight_tangledhit' :
+        'app_fight_weak'),
+        miss: t('app_fight_miss'), dodged: t('app_fight_dodged'), leapt: t('app_fight_leapt'), caught: t('app_fight_caught')}[l.kind];
+    };
+    // What happens, said aloud when the art pack has its voice: the minion says what it claims when the fight opens and
+    // laughs when an answer misses; the narrator says the blow, what to do now and how it ends. A turn that comes cuts
+    // what was still being said.
     var said = function(f) {
       var l = f.last;
       if (!l.kind) {
         return '';
       }
-      var text = {hit: t(l.cut > 2 ? 'app_fight_double' : 'app_fight_hit', l.cut), weak: t('app_fight_weak'),
-        miss: t('app_fight_miss'), dodged: t('app_fight_dodged'), leapt: t('app_fight_leapt'), caught: t('app_fight_caught')}[l.kind];
+      var text = outcome(l);
       var good = ['hit', 'weak', 'dodged', 'leapt'].indexOf(l.kind) >= 0;
       return '<p class="fight-said ' + (good ? 'good' : 'bad') + '" role="status">' + esc(text) + '</p>' + (l.kind === 'miss' &&
         f.laugh ? '<p class="knot-laugh">' + esc(f.laugh) + '</p>' : '') + (['hit', 'weak', 'miss'].indexOf(l.kind) >= 0 && l.why ?
@@ -2629,6 +2662,15 @@
       } else if (rig) {
         perform(face);
       }
+      var l = f.last;
+      // What it claims and what to do, once: when the fight opens, not again after sniffing.
+      var opening = !opened && !l.kind && f.phase === 'net';
+      opened = true;
+      // While the creature dodges (a few seconds), only the blow or the laugh: what to do is in sight, and a voice that
+      // said it would come too late.
+      speak((opening ? [f.turn ? '' : f.claim, t('app_fight_net')] : []).concat(l.kind ? [outcome(l),
+        l.kind === 'miss' ? f.laugh : ''] : [], f.phase === 'end' ? [t(f.outcome === 'won' ? 'app_fight_won' :
+        'app_fight_escaped')] : []));
       if (actor) {
         // What it does, seen: the blow it takes, then the thread it throws when the creature has to dodge, or undone.
         actor.queue = (['hit', 'weak'].indexOf(f.last.kind) >= 0 ? ['hit'] : []).concat(f.outcome === 'won' ? ['untangle'] :

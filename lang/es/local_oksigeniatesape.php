@@ -383,6 +383,7 @@ $string['app_fight_sniff'] = 'Olfatear';
 $string['app_fight_sniff_help'] = 'Tu criatura tacha una red que no sirve.';
 $string['app_fight_strike'] = 'Con la red «{$a}», responde:';
 $string['app_fight_tangled'] = 'Tu criatura está enredada: este golpe corta un hilo como mucho.';
+$string['app_fight_tangledhit'] = '¡Golpe! Pero tu criatura estaba enredada: corta un hilo.';
 $string['app_fight_threads'] = 'Hilos del esbirro: {$a->threads} de {$a->maxthreads}';
 $string['app_fight_turn'] = 'Turno {$a->n} de {$a->turns}';
 $string['app_fight_weak'] = 'Bien respondido, pero con otra red: corta un hilo.';
