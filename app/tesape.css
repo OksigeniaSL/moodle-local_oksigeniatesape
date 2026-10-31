@@ -13644,6 +13644,26 @@ body.still .pet-me.patted .creature {
   animation: tesape-flee 1.2s ease-in forwards;
 }
 
+/* Its puppet, on a stage twice its face and centred on it, so that what it does is not cut; its picture stays under it
+   until the puppet is there, and the puppet comes undone by itself. */
+.fight-side.minion .minion-face {
+  position: relative;
+}
+
+.minion-stage {
+  position: absolute;
+  inset: -50%;
+  pointer-events: none;
+}
+
+.minion-face.puppet > img {
+  visibility: hidden;
+}
+
+.fight-side.minion.flees .minion-face.puppet {
+  animation: none;
+}
+
 @keyframes tesape-flee {
   to {
     opacity: 0;

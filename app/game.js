@@ -2471,10 +2471,67 @@
     document.body.appendChild(layer);
     var timer = 0;
     var where = 1;
+    // Its puppet, when the art pack brings it and things move here: it waits, throws its thread, takes the blows and,
+    // untangled, comes undone. Meanwhile, and without it, its picture.
+    var rig = art && T.puppet && T.stage && T.stage.available() ? T.puppet.find(minion.picture, 'minion') : null;
+    var actor = null;
     var close = function() {
       clearTimeout(timer);
+      if (actor && actor.made) {
+        actor.made.close();
+      }
+      actor = null;
       layer.remove();
       refresh();
+    };
+    /**
+     * The puppet on a stage of its own over its face, bigger than it, so that what it does is not cut at its edges.
+     * The stage is kept from one turn to the next: each turn only moves it into the new face.
+     *
+     * @param {Element} face
+     */
+    var perform = function(face) {
+      var el = document.createElement('div');
+      el.className = 'minion-stage';
+      face.appendChild(el);
+      var mine = {el: el, figure: null, queue: [], made: null};
+      actor = mine;
+      T.stage.backdrop(el, {
+        preload: function() {
+          T.puppet.load(this, 'puppet.minion', rig);
+        },
+        create: function() {
+          mine.figure = T.puppet.make(this, 'puppet.minion', false);
+          if (mine.figure && mine.el.parentNode) {
+            mine.el.parentNode.classList.add('puppet');
+          }
+        },
+        update: function(time, delta) {
+          var f = mine.figure;
+          if (!f) {
+            return;
+          }
+          if (mine.queue.length && !f.busy() && f.clipName !== 'untangle') {
+            f.play(mine.queue.shift(), true);
+          } else if (!f.busy() && f.clipName !== 'untangle') {
+            f.play('idle');
+          }
+          f.draw(Math.min(delta, 50) / 1000);
+          // As big as its face (half the stage), on its feet where the picture has them, and turned to the creature,
+          // on its right: it is drawn throwing to its left.
+          var k = this.scale.width / 2 / 512;
+          f.container.setPosition(this.scale.width / 4 + f.feet[0] * k, this.scale.height / 4 + f.feet[1] * k)
+            .setScale(-k, k).setVisible(f.clipName !== 'untangle' || f.busy());
+        }
+      }, {fit: true, clear: true}).then(function(made) {
+        if (actor === mine) {
+          mine.made = made;
+        } else {
+          made.close();
+        }
+      }).catch(function() {
+        // The picture stays.
+      });
     };
     var marks = function(n, max, cls) {
       var out = '';
@@ -2556,6 +2613,18 @@
         f.phase !== 'end' ? '<p class="knot-laugh">' + esc(f.claim) + '</p>' : '') + said(f) + body + moves +
         '<div class="actions"><button type="button" class="btn ' + (f.phase === 'end' ? 'btn-main' : 'btn-soft') +
         '" data-close>' + esc(t(f.phase === 'end' ? 'app_continue' : 'app_fight_later')) + '</button></div></div>';
+      var face = layer.querySelector('.minion-face');
+      if (actor) {
+        face.appendChild(actor.el);
+        face.classList.toggle('puppet', !!actor.figure);
+      } else if (rig) {
+        perform(face);
+      }
+      if (actor) {
+        // What it does, seen: the blow it takes, then the thread it throws when the creature has to dodge, or undone.
+        actor.queue = (['hit', 'weak'].indexOf(f.last.kind) >= 0 ? ['hit'] : []).concat(f.outcome === 'won' ? ['untangle'] :
+          f.phase === 'dodge' ? ['attack'] : []);
+      }
       layer.querySelector('[data-close]').onclick = close;
       layer.querySelectorAll('button[data-v]').forEach(function(b) {
         b.onclick = function() {
