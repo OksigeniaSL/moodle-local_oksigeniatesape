@@ -59,6 +59,8 @@
     }
   };
   var ZERO = {r: 0, x: 0, y: 0, sx: 1, sy: 1};
+  /** @var {number} Seconds to pass from one gesture to the next. */
+  var FADE = 0.25;
 
   /**
    * The values of a track at a moment of its clip.
@@ -204,6 +206,10 @@
       return true;
     }
     var extra = (this.byTool.clips || {})[name];
+    // From one gesture to the next, a moment of passage (a quarter of a second): an arm that was raised comes down, it
+    // does not jump.
+    this.from = this.clip && !this.still ? this.pose() : null;
+    this.fade = 0;
     this.clipName = name;
     this.clip = extra ? Object.assign({}, clip, {tracks: Object.assign({}, clip.tracks, extra)}) : clip;
     this.time = 0;
@@ -262,6 +268,26 @@
       }
       out[name] = v;
     });
+    // Passing from the gesture before: each value goes from where it was to where this one wants it, eased.
+    var from = this.from;
+    if (from && this.fade < FADE) {
+      var k = EASE['Sine.easeInOut'](this.fade / FADE);
+      Object.keys(out).forEach(function(name) {
+        var was = from[name];
+        var now = out[name];
+        if (!was) {
+          return;
+        }
+        ['x', 'y', 'r', 'sx', 'sy'].forEach(function(f) {
+          now[f] = was[f] + (now[f] - was[f]) * k;
+        });
+        if ('a' in now && 'a' in was) {
+          // The shorter way round.
+          var d = ((now.a - was.a) % 360 + 540) % 360 - 180;
+          now.a = was.a + d * k;
+        }
+      });
+    }
     return out;
   };
 
@@ -273,6 +299,7 @@
   Puppet.prototype.draw = function(dt) {
     var self = this;
     this.time += dt || 0;
+    this.fade += dt || 0;
     var pose = this.pose();
     var root = pose.root;
     var origin = times(local(root.x, root.y, root.r, root.sx, root.sy), local(-this.feet[0], -this.feet[1], 0, 1, 1));

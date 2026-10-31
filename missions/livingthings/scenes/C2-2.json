@@ -180,6 +180,7 @@
     },
     {
      "id": "bacterias",
+     "art": "being.bacteria",
      "label": "las bacterias del yogur",
      "bin": "micro",
      "objective": "SV-03",

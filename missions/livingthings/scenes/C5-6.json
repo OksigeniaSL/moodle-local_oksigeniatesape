@@ -121,6 +121,7 @@
     },
     {
      "id": "humano",
+     "art": "being.persona",
      "label": "el ser humano",
      "bin": "ab",
      "objective": "SV-06",
@@ -187,6 +188,7 @@
     },
     {
      "id": "hierba",
+     "art": "being.hierba",
      "label": "la hierba del prado",
      "bin": "a",
      "objective": "SV-06",

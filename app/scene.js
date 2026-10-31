@@ -1170,6 +1170,28 @@
       })();
     }
 
+    /** @var {Object} How many ways each thing who speaks in the place says has (app_classify_<name>, <name>2…). */
+    var SPEAKERWAYS = {allright: 3, somewrong: 3};
+
+    /**
+     * Who speaks most in the scene says something of a moment (allright, somewrong), one of its ways, if the art pack
+     * has it in their voice (voice.say.<who>.<key of the line>). Not at the class screen, nor for who has reading aloud.
+     *
+     * @param {string} name
+     */
+    function speakerSays(name) {
+      var who = mainSpeaker();
+      if (cm || !who || !T.fx || !T.lineKey || T.adapted.readaloud) {
+        return;
+      }
+      var i = Math.floor(Math.random() * (SPEAKERWAYS[name] || 1));
+      var key = 'voice.say.' + who + '.' + T.lineKey(t('app_classify_' + name + (i ? i + 1 : ''))).replace(/^voice\.line\./,
+        '');
+      if (T.artUrl([key])) {
+        T.fx.voice(key);
+      }
+    }
+
     /**
      * Who says what goes between «» where nobody is named: the one who speaks most in the told moments of the scene.
      *
@@ -1223,7 +1245,21 @@
      * @return {string|null}
      */
     function drawing(o) {
-      return T.artUrl([o.art || '', (data.pictures || {})[o.id] || '', 'being.' + o.id, 'thing.' + o.id]);
+      var name = plainName(o.label ? tx(o.label) : '');
+      return T.artUrl([o.art || '', (data.pictures || {})[o.id] || '', 'being.' + o.id, 'thing.' + o.id,
+        name ? 'being.' + name : '', name ? 'thing.' + name : '']);
+    }
+
+    /**
+     * The name of a being or a thing as its drawing is named: without the article, without what follows a comma, in
+     * plain letters (la gallina, gallina; el mirikiná, el mono de noche, mirikina; un perro, perro).
+     *
+     * @param {string} label
+     * @return {string}
+     */
+    function plainName(label) {
+      var words = String(label).split(',')[0].toLowerCase().trim().replace(/^(un|una|unos|unas|el|la|los|las)\s+/, '');
+      return words.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z]/g, '');
     }
 
     /**
@@ -2025,6 +2061,16 @@
       EVENTS.forEach(function(e) {
         layer.addEventListener(e, wake, true);
       });
+      // The question, asked aloud as the decision opens, by who speaks in the place: not a silence while it is read.
+      // The first step of the ladder is then given.
+      if (!done.say) {
+        setTimeout(function() {
+          if (body.isConnected && !done.say) {
+            done.say = true;
+            steps.say();
+          }
+        }, 600);
+      }
       var timer = setInterval(function() {
         if (!body.isConnected) {
           clearInterval(timer);
@@ -2511,7 +2557,7 @@
               answer(body, o);
             });
             sayAloud(list.map(function(o) {
-              return tx(o.say || '');
+              return tx(o.say || o.feedback || '');
             }));
             out.innerHTML = '<div class="conseq said"><ul class="cls-said">' + list.map(function(o) {
               // What the world says, and why, folded, when the option has both.
@@ -2566,7 +2612,7 @@
           }
           answer(body, o);
           var said = tx(o.say || o.feedback || '');
-          sayAloud([tx(o.say || '')]);
+          sayAloud([tx(o.say || o.feedback || '')]);
           var why = o.say && o.feedback ? '<details class="why-more"><summary>' + esc(t('app_why')) + '</summary><p>' +
             esc(tx(o.feedback)) + '</p></details>' : '';
           out.innerHTML = '<div class="conseq said"><span class="what">' + esc(tx(o.label)) + '</span>' + esc(said) + why +
@@ -2661,6 +2707,17 @@
           return !right[it.id] && !place[it.id];
         });
       }
+      // Groups with long names (a sentence each), three in a row, so that each name takes fewer lines.
+      var wide = n.mode !== 'venn' && n.bins.some(function(b) {
+        return tx(b.label).length > 36;
+      }) ? ' wide' : '';
+      // The name of a thing as its chip shows it: standing in the place, with its drawing, what goes before the first
+      // comma; the rest, for screen readers, and whole in the line of what is in hand (and in the voice of the hero).
+      function named(it) {
+        var full = tx(it.label);
+        var cut = standing ? full.indexOf(', ') : -1;
+        return cut > 0 ? esc(full.slice(0, cut)) + '<span class="sr-only">' + esc(full.slice(cut)) + '</span>' : esc(full);
+      }
       function draw(focus) {
         var left = table();
         if (chosen && left.map(function(it) {
@@ -2674,16 +2731,20 @@
         var all = items.every(function(it) {
           return right[it.id] || place[it.id];
         });
-        box.innerHTML = '<p class="help">' + esc(trip > 1 ? t('app_classify_again') : t('app_classify_help')) + '</p>' +
+        var hand = standing && chosen ? items.filter(function(it) {
+          return it.id === chosen;
+        })[0] : null;
+        box.innerHTML = '<p class="help">' + esc(hand ? t('app_classify_inhand', tx(hand.label)) : trip > 1 ?
+          t('app_classify_again') : t('app_classify_help')) + '</p>' +
           '<div class="cls-table" role="group" aria-label="' + esc(t('app_classify_table')) + '">' + left.map(function(it) {
             return '<button type="button" class="cls-thing" data-thing="' + esc(it.id) + '" aria-pressed="' +
-              (chosen === it.id) + '">' + clsPic(it) + esc(tx(it.label)) + evidenceTag(n, it, tx((n.bins.filter(function(b) {
+              (chosen === it.id) + '">' + clsPic(it) + named(it) + evidenceTag(n, it, tx((n.bins.filter(function(b) {
                 return b.id === it.bin;
               })[0] || {}).label || it.bin)) + '</button>';
           }).join('') + locked.map(function(it) {
             return '<button type="button" class="cls-thing locked" disabled>' + esc(tx(it.label)) + '<small>' +
               esc(it.locked ? tx(it.locked) : missing(it.requires)) + '</small></button>';
-          }).join('') + '</div>' + lookArea() + '<div class="bins' + (n.mode === 'venn' ? ' venn' : '') + '">' + n.bins.map(function(b) {
+          }).join('') + '</div>' + lookArea() + '<div class="bins' + (n.mode === 'venn' ? ' venn' : '') + wide + '">' + n.bins.map(function(b) {
             var inside = items.filter(function(it) {
               return (right[it.id] || place[it.id]) === b.id;
             });
@@ -2691,15 +2752,22 @@
               'class="bin" data-bin="' + esc(b.id) + '"' +
               (chosen ? '' : ' disabled') + '>' + esc(tx(b.label)) + '</button><span class="cls-in">' +
               inside.map(function(it) {
-                return right[it.id] ? '<span class="cls-thing kept">' + esc(tx(it.label)) + '</span>' :
+                return right[it.id] ? '<span class="cls-thing kept">' + named(it) + '</span>' :
                   '<button type="button" class="cls-thing placed" data-take="' + esc(it.id) + '" aria-label="' +
-                  esc(t('app_classify_take', tx(it.label))) + '">' + clsPic(it) + esc(tx(it.label)) + '</button>';
+                  esc(t('app_classify_take', tx(it.label))) + '">' + clsPic(it) + named(it) + '</button>';
               }).join('') + '</span></div>';
           }).join('') + '</div><div class="actions"><button class="btn btn-main" data-confirm' + (all ? '' : ' disabled') +
           '>' + esc(n.commit ? tx(n.commit) : t('app_confirm')) + '</button></div>';
         box.querySelectorAll('[data-thing]').forEach(function(b) {
           b.onclick = function() {
             chosen = b.dataset.thing;
+            // The hero says what is in hand.
+            var key = heroKey(tx(items.filter(function(it) {
+              return it.id === chosen;
+            })[0].label));
+            if (key) {
+              T.fx.voice(key);
+            }
             draw('[data-thing="' + chosen + '"]');
           };
         });
@@ -2823,6 +2891,10 @@
         var finished = items.every(function(it) {
           return right[it.id];
         });
+        // Who speaks in the place says how it went, in one of its ways.
+        speakerSays(moved.every(function(it) {
+          return put[it.id] === it.bin;
+        }) ? 'allright' : 'somewrong');
         // In the place, what went to its group jumps and stays; what did not shakes and goes back to the table.
         chosen = null;
         stage();

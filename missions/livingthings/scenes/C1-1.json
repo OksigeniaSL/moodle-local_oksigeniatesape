@@ -111,7 +111,7 @@
      "correct": true,
      "points": 2,
      "objective": "SV-01",
-     "feedback": "La semilla se calienta. «El caracol come, crece y pone huevos.»"
+     "feedback": "La semilla late un poco. «El caracol come, crece y pone huevos.»"
     },
     {
      "id": "pez",
@@ -120,7 +120,7 @@
      "correct": true,
      "points": 2,
      "objective": "SV-01",
-     "feedback": "La semilla se calienta. «El pez come, crece y pone huevos en el agua.»"
+     "feedback": "Algo se mueve dentro de la semilla. «El pez come, crece y pone huevos en el agua.»"
     }
    ],
    "next": "resultado"

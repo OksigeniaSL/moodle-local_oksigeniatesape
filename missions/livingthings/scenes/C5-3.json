@@ -178,12 +178,14 @@
     },
     {
      "id": "luz",
+     "art": "thing.sol",
      "label": "la luz del sol",
      "bin": "novivo",
      "objective": "SV-06"
     },
     {
      "id": "temperatura",
+     "art": "thing.termometro",
      "label": "la temperatura",
      "bin": "novivo",
      "objective": "SV-06",
@@ -191,18 +193,21 @@
     },
     {
      "id": "piedras",
+     "art": "thing.piedra",
      "label": "las piedras del fondo",
      "bin": "novivo",
      "objective": "SV-06"
     },
     {
      "id": "peces",
+     "art": "being.carpa",
      "label": "los peces",
      "bin": "vivo",
      "objective": "SV-06"
     },
     {
      "id": "algas",
+     "art": "being.alga",
      "label": "las algas",
      "bin": "vivo",
      "objective": "SV-06",
@@ -212,12 +217,14 @@
     },
     {
      "id": "ranas",
+     "art": "being.rana",
      "label": "las ranas",
      "bin": "vivo",
      "objective": "SV-06"
     },
     {
      "id": "bacterias",
+     "art": "being.bacteria",
      "label": "las bacterias del fondo",
      "look": "Con la lupa no se ven: hace falta un microscopio. Pero en el fondo las hojas muertas se deshacen, y alguien lo está haciendo.",
      "bin": "vivo",
@@ -229,6 +236,7 @@
     },
     {
      "id": "larvas",
+     "art": "being.larvamosquito",
      "label": "las larvas de mosquito de la orilla",
      "look": {
       "text": "En la red, la larva se retuerce: respira por un tubito que saca al aire y un día saldrá volando.",
@@ -250,6 +258,7 @@
     },
     {
      "id": "lata",
+     "art": "thing.lata",
      "label": "una lata tirada",
      "bin": "fuera",
      "objective": "SV-06",

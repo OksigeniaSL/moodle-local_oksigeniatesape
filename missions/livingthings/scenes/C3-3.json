@@ -116,6 +116,7 @@
     },
     {
      "id": "caballito",
+     "art": "being.caballitodemar",
      "label": "un caballito de mar",
      "look": "De cerca, tiene aletas finísimas y, a los lados de la cabeza, branquias que se abren y se cierran.",
      "bin": "peces",

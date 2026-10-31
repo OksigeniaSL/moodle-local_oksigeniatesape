@@ -83,7 +83,7 @@
      "label": "Cuánto cuesta",
      "correct": false,
      "objective": "SV-07",
-     "feedback": "Doña Hebra arruga la nariz: «Los seres vivos del valle no se venden. Eso no ayuda a reconocerlo»."
+     "feedback": "Doña Hebra niega con la cabeza: «Los seres vivos del valle no se venden. Eso no ayuda a reconocerlo»."
     },
     {
      "id": "come",

@@ -90,6 +90,7 @@
     },
     {
      "id": "flor",
+     "art": "being.floramarilla",
      "label": "una flor amarilla",
      "bin": "plantas",
      "objective": "SV-03",
@@ -100,6 +101,7 @@
     },
     {
      "id": "pez",
+     "art": "being.pezcolores",
      "label": "un pez de colores",
      "bin": "animales",
      "objective": "SV-03",

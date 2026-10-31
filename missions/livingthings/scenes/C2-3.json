@@ -54,6 +54,7 @@
    "items": [
     {
      "id": "ladrillos",
+     "art": "thing.celulasladrillo",
      "label": "células con pared, ordenadas como ladrillos, sin nada verde dentro",
      "bin": "cebolla",
      "objective": "SV-02",
@@ -64,6 +65,7 @@
     },
     {
      "id": "redondas",
+     "art": "thing.celulasredondas",
      "label": "células redondeadas, sueltas, sin pared",
      "bin": "mejilla",
      "objective": "SV-02",
@@ -74,6 +76,7 @@
     },
     {
      "id": "verdes",
+     "art": "thing.celulasverdes",
      "label": "células con pared y cuerpecillos verdes dentro",
      "bin": "hoja",
      "objective": "SV-02",
@@ -84,6 +87,7 @@
     },
     {
      "id": "entero",
+     "art": "being.paramecio",
      "label": "un ser entero de una sola célula, con pelillos que se mueven",
      "bin": "charco",
      "objective": "SV-02",

@@ -87,6 +87,7 @@
    "items": [
     {
      "id": "algas",
+     "art": "being.alga",
      "label": "las algas",
      "bin": "productores",
      "objective": "SV-06",
@@ -96,6 +97,7 @@
     },
     {
      "id": "juncos",
+     "art": "being.junco",
      "label": "los juncos y las plantas de la orilla",
      "bin": "productores",
      "objective": "SV-06"
@@ -138,6 +140,7 @@
     },
     {
      "id": "pez",
+     "art": "being.carpa",
      "label": "el pez pequeño, que come algas y larvas",
      "bin": "omnivoros",
      "objective": "SV-06",
@@ -168,6 +171,7 @@
     },
     {
      "id": "hongos",
+     "art": "being.bacteria",
      "label": "los hongos y las bacterias del fondo",
      "bin": "descomponedores",
      "objective": "SV-06",

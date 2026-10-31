@@ -8811,6 +8811,42 @@ body.adapt-colours .errors-text .fixed ins {
   gap: 8px;
 }
 
+/* Groups with long names, three in a row: each name in fewer lines. */
+.scene-layer.live .scene-body.standing .bins.wide {
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
+.scene-layer.live .scene-body.standing .bins.wide .bin {
+  font-size: 15px;
+  line-height: 1.25;
+}
+
+/* What the team knows, folded, on one line. */
+.scene-layer.live .scene-body.standing .pieces.folded {
+  margin-bottom: 8px;
+}
+
+.scene-layer.live .scene-body.standing .pieces.folded summary {
+  min-height: 36px;
+  padding: 3px 10px 3px 4px;
+  font-size: 15px;
+}
+
+.scene-layer.live .scene-body.standing .pieces.folded summary svg {
+  width: 24px;
+  height: 24px;
+  padding: 4px;
+}
+
+/* On a wide screen, while no note of the notebook is open, its button goes up beside «Confirmar»: one row less, so that
+   what is read starts lower and the figures standing above it are bigger. Only the button covers the row. */
+@media (min-width: 720px) {
+  .scene-layer.live .scene-body.standing > .scene-hints:not(:has(.hint)) {
+    width: fit-content;
+    margin: -48px 0 0 auto;
+  }
+}
+
 /* What is in a group shows in the place: in the box, small, to be taken back with a touch. */
 .scene-layer.live .scene-body.standing .cls-in .cls-thing {
   min-height: 32px;

@@ -425,6 +425,10 @@
 
   /* ---------- What the characters say ---------- */
 
+  /** @var {number} Seconds over which the end of a voice fades out. */
+  var VOICE_FADE = 0.07;
+  /** @var {number} Milliseconds of breath between a voice that ends and the next one. */
+  var VOICE_GAP = 260;
   /** @var {Object|null} The voice that speaks now (source, finish): one at a time. */
   var speaking = null;
 
@@ -489,11 +493,19 @@
         return;
       }
       hush();
-      var source = playSample(key);
+      // The voices come trimmed tight to the last word: their end fades out in a moment instead of stopping dry, and
+      // the next one waits a breath.
+      var c = audio();
+      var level = c.createGain();
+      level.connect(sampleOut);
+      var source = playSample(key, level);
       if (!source) {
         finish();
         return;
       }
+      var end = c.currentTime + source.buffer.duration;
+      level.gain.setValueAtTime(1, Math.max(c.currentTime, end - VOICE_FADE));
+      level.gain.linearRampToValueAtTime(0.0001, end);
       var now = {source: source, finish: finish};
       speaking = now;
       duck(true);
@@ -502,7 +514,7 @@
           speaking = null;
           duck(false);
         }
-        finish();
+        setTimeout(finish, VOICE_GAP);
       };
     };
     if (samples[key] && typeof samples[key] !== 'string') {

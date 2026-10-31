@@ -507,7 +507,7 @@
      "id": "pequeno",
      "label": "Es pequeño",
      "correct": false,
-     "say": "Nadie se aparta: los cuatro se miran unos a otros.",
+     "say": "Los cuatro se miran unos a otros, y ninguno se mueve.",
      "away": [],
      "feedback": "El escarabajo y muchos cangrejos también son pequeños, y hay tortugas pequeñas: lo que vale para todos no separa a nadie."
     }
@@ -977,7 +977,7 @@
      "label": "Tiene escamas",
      "correct": true,
      "points": 2,
-     "say": "La araña y la lombriz se quedan atrás.",
+     "say": "La lombriz se va hacia la hierba, y la araña la sigue.",
      "away": [
       "arana",
       "lombriz"
@@ -988,7 +988,7 @@
      "id": "sinplumas",
      "label": "No tiene plumas",
      "correct": false,
-     "say": "Nadie se aparta: los cuatro se miran unos a otros.",
+     "say": "Los cuatro se miran unos a otros, y ninguno se mueve.",
      "away": [],
      "feedback": "Ninguno de los cuatro tiene plumas: lo que vale para todos no separa a nadie."
     }
@@ -1464,7 +1464,7 @@
      "id": "huesos",
      "label": "Tiene huesos por dentro",
      "correct": false,
-     "say": "Nadie se aparta: los cuatro se miran unos a otros.",
+     "say": "Los cuatro se miran unos a otros, y ninguno se mueve.",
      "away": [],
      "feedback": "Los cuatro tienen huesos por dentro, también el murciélago, que es un mamífero: lo que vale para todos no separa a nadie."
     },

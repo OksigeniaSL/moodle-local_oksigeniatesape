@@ -50,6 +50,7 @@
    "items": [
     {
      "id": "libro",
+     "art": "thing.libro",
      "label": "un libro de la biblioteca, con autor y año",
      "bin": "fiamos",
      "objective": "SV-07",
@@ -59,6 +60,7 @@
     },
     {
      "id": "parque",
+     "art": "thing.guiaparque",
      "label": "la guía de un parque natural",
      "bin": "fiamos",
      "hard": true,
@@ -69,6 +71,7 @@
     },
     {
      "id": "video",
+     "art": "thing.video",
      "label": "un vídeo sin autor ni fecha",
      "bin": "contrastar",
      "objective": "SV-07",
@@ -78,6 +81,7 @@
     },
     {
      "id": "museo",
+     "art": "thing.webmuseo",
      "label": "la web de un museo de ciencias",
      "bin": "fiamos",
      "objective": "SV-07",
@@ -87,6 +91,7 @@
     },
     {
      "id": "abuelo",
+     "art": "being.abuelo",
      "label": "el abuelo de alguien, que se crio en el campo",
      "bin": "testimonio",
      "objective": "SV-07",
@@ -97,6 +102,7 @@
     },
     {
      "id": "mensaje",
+     "art": "thing.mensaje",
      "label": "un mensaje reenviado en un grupo",
      "bin": "contrastar",
      "objective": "SV-07",

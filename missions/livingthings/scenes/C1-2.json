@@ -155,8 +155,8 @@
      "points": 2,
      "objective": "SV-01",
      "say": {
-      "valley": "El nido se ilumina, y de la seta cae un polvillo finísimo.",
-      "azara": "Las semillas del cajón se calientan un poco, y de la seta cae un polvillo finísimo."
+      "valley": "Una luz tibia sube del nido, y de la seta cae un polvillo finísimo.",
+      "azara": "Las semillas del cajón se entibian, y de la seta cae un polvillo finísimo."
      },
      "feedback": "La seta es solo la parte que asoma de un hongo: el resto vive bajo tierra o dentro del tronco y se alimenta de restos. El polvillo son esporas, de las que nacen hongos nuevos."
     },
@@ -178,8 +178,8 @@
      "points": 2,
      "objective": "SV-01",
      "say": {
-      "valley": "El nido se ilumina, y la lombriz se encoge al tocarla.",
-      "azara": "Las semillas del cajón se calientan un poco, y la lombriz se encoge al tocarla."
+      "valley": "La lombriz se encoge al tocarla, y una rama del nido se enciende.",
+      "azara": "La lombriz se encoge al tocarla, y una semilla del cajón se templa."
      },
      "feedback": "La lombriz se alimenta de restos de hojas, se encoge si la tocan y pone huevos: se nutre, se relaciona y se reproduce, como todo ser vivo."
     },
@@ -215,8 +215,8 @@
      "points": 2,
      "objective": "SV-01",
      "say": {
-      "valley": "El nido se ilumina, y el musgo se pone de un verde más vivo.",
-      "azara": "Las semillas del cajón se calientan un poco, y el musgo se pone de un verde más vivo."
+      "valley": "El musgo se pone de un verde más vivo, y el nido brilla un poco más.",
+      "azara": "El musgo se pone de un verde más vivo, y el cajón se calienta un poco."
      },
      "feedback": "El musgo es una planta pequeña: fabrica su alimento con la luz, toma el agua por toda su superficie y se reproduce con esporas."
     },
@@ -253,8 +253,8 @@
      "points": 2,
      "objective": "SV-01",
      "say": {
-      "valley": "El nido se ilumina, y la hormiga sigue cargando su hoja.",
-      "azara": "Las semillas del cajón se calientan un poco, y la hormiga sigue cargando su hoja."
+      "valley": "La hormiga sigue cargando su hoja, y el nido le responde con un destello.",
+      "azara": "La hormiga sigue cargando su hoja, y otra semilla del cajón se calienta."
      },
      "feedback": "La hormiga se alimenta, se comunica con las demás por el olor y nace de un huevo que puso la reina del hormiguero: es un ser vivo."
     },
@@ -273,8 +273,8 @@
      "points": 2,
      "objective": "SV-01",
      "say": {
-      "valley": "El nido se ilumina, y la rana parpadea sin moverse.",
-      "azara": "Las semillas del cajón se calientan un poco, y la rana parpadea sin moverse."
+      "valley": "La rana parpadea sin moverse, y el nido se templa a su lado.",
+      "azara": "La rana parpadea sin moverse, y el cajón se entibia a su lado."
      },
      "feedback": "Estar quieta no quiere decir no estar viva: la rana respira, caza insectos para alimentarse y pone huevos en el agua."
     },
@@ -289,8 +289,8 @@
      },
      "locked": "Esto lo haría alguien que sabe mirar de cerca: el sabio del equipo tiene lupa.",
      "say": {
-      "valley": "Bajo la lupa, en la gota nadan seres diminutos. El nido se ilumina.",
-      "azara": "Bajo la lupa, en la gota nadan seres diminutos. Las semillas del cajón se calientan un poco."
+      "valley": "Bajo la lupa, en la gota nadan seres diminutos. El nido se enciende de golpe.",
+      "azara": "Bajo la lupa, en la gota nadan seres diminutos. Las semillas del cajón se calientan de golpe."
      },
      "feedback": "En el agua del charco viven seres de una sola célula, tan pequeños que no se ven a simple vista. Se alimentan y se reproducen partiéndose en dos."
     }

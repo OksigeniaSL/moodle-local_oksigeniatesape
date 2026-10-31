@@ -99,6 +99,7 @@
     },
     {
      "id": "pez",
+     "art": "being.carpa",
      "label": "un pez",
      "bin": "escamas",
      "objective": "SV-04",

@@ -65,6 +65,7 @@
    "items": [
     {
      "id": "diente",
+     "art": "thing.semilladientedeleon",
      "label": "una semilla de diente de león, con su paracaídas de pelillos",
      "bin": "viento",
      "objective": "SV-05",
@@ -86,6 +87,7 @@
     },
     {
      "id": "cadillo",
+     "art": "thing.cadillo",
      "label": "un cadillo, con ganchitos por todas partes",
      "bin": "pelo",
      "objective": "SV-05",
@@ -96,6 +98,7 @@
     },
     {
      "id": "fruta",
+     "art": "thing.mora",
      "label": "{{local:fruta}}, con las semillas dentro",
      "bin": "pajaro",
      "objective": "SV-05",
@@ -106,6 +109,7 @@
     },
     {
      "id": "vaina",
+     "art": "thing.vaina",
      "label": "una vaina seca que se retuerce al sol",
      "bin": "salto",
      "hard": true,

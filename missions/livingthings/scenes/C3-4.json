@@ -99,7 +99,7 @@
      "correct": true,
      "points": 2,
      "objective": "SV-04",
-     "feedback": "Solo uno dice que sí, y lo dirá siempre."
+     "feedback": "Uno solo tiene pelo, y lo tendrá siempre."
     },
     {
      "id": "patas",
@@ -115,7 +115,7 @@
      "correct": true,
      "points": 2,
      "objective": "SV-04",
-     "feedback": "Solo uno dice que sí. Una concha no se la quita nadie."
+     "feedback": "Un único ejemplar dice que sí. Una concha no se la quita nadie."
     },
     {
      "id": "color",
