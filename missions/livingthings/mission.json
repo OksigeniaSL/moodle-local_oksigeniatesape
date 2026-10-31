@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 90,
+ "version": 91,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 91,
+   "kind": "fix",
+   "date": "2026-10-31",
+   "text": "«Las preguntas al búho» y «Los abrigos»: las manchas de tinta que no son de ningún animal, dichas claro: son del Embrollo y salen donde alguien escribe algo sin comprobarlo"
+  },
   {
    "version": 90,
    "kind": "fix",

@@ -529,8 +529,8 @@
    "lineup": "adivinar",
    "outcome": "success",
    "text": {
-    "valley": "El nombre del caracol vuelve al Gran Libro y una luciérnaga se enciende sobre el rastro. El búho abre las alas: «Preguntar bien es la mitad de saber». Después mira las otras marcas, las que no se parecen a nada, y tarda todavía más en contestar: «Esas no son de ningún animal. Son de una idea mal escrita». {{creature}} intenta seguirlas y se mancha la nariz de tinta.",
-    "azara": "El baqueano sonríe y el cuaderno recupera su página. «Así trabajaba el naturalista: preguntando a cada rastro.» Mira las otras marcas y tarda todavía más en contestar: «Esas no son de ningún bicho. Son de alguien que escribió sin mirar». {{creature}} intenta seguirlas y se mancha la nariz de tinta."
+    "valley": "El nombre del caracol vuelve al Gran Libro y una luciérnaga se enciende sobre el rastro. El búho abre las alas: «Preguntar bien es la mitad de saber». Después, el búho mira las otras marcas, las que no se parecen a nada, y tarda todavía más en contestar: «Esas no son de ningún animal: son manchas de tinta del Embrollo. Salen donde alguien escribe algo sin comprobarlo». {{creature}} intenta seguirlas y se mancha la nariz de tinta.",
+    "azara": "El baqueano sonríe y el cuaderno recupera su página. «Así trabajaba el naturalista: preguntando a cada rastro.» El baqueano mira las otras marcas y tarda todavía más en contestar: «Esas no son de ningún bicho: son manchas de tinta del Embrollo. Salen donde alguien escribe algo sin comprobarlo». {{creature}} intenta seguirlas y se mancha la nariz de tinta."
    },
    "effects": [
     {
@@ -1010,8 +1010,8 @@
    "lineup": "adivinar-muda",
    "outcome": "success",
    "text": {
-    "valley": "El nombre de la culebra vuelve al Gran Libro y una luciérnaga se enciende sobre la piel vacía. Entre las piedras, algo largo se desliza y desaparece. El búho abre las alas: «Preguntar bien es la mitad de saber». Después mira las otras marcas, las que no se parecen a nada, y tarda todavía más en contestar: «Esas no son de ningún animal. Son de una idea mal escrita». {{creature}} intenta seguirlas y se mancha la nariz de tinta.",
-    "azara": "El baqueano sonríe y el cuaderno recupera su página. Entre las piedras, algo largo se desliza y desaparece. «Así trabajaba el naturalista: preguntando a cada rastro.» Mira las otras marcas y tarda todavía más en contestar: «Esas no son de ningún bicho. Son de alguien que escribió sin mirar». {{creature}} intenta seguirlas y se mancha la nariz de tinta."
+    "valley": "El nombre de la culebra vuelve al Gran Libro y una luciérnaga se enciende sobre la piel vacía. Entre las piedras, algo largo se desliza y desaparece. El búho abre las alas: «Preguntar bien es la mitad de saber». Después, el búho mira las otras marcas, las que no se parecen a nada, y tarda todavía más en contestar: «Esas no son de ningún animal: son manchas de tinta del Embrollo. Salen donde alguien escribe algo sin comprobarlo». {{creature}} intenta seguirlas y se mancha la nariz de tinta.",
+    "azara": "El baqueano sonríe y el cuaderno recupera su página. Entre las piedras, algo largo se desliza y desaparece. «Así trabajaba el naturalista: preguntando a cada rastro.» El baqueano mira las otras marcas y tarda todavía más en contestar: «Esas no son de ningún bicho: son manchas de tinta del Embrollo. Salen donde alguien escribe algo sin comprobarlo». {{creature}} intenta seguirlas y se mancha la nariz de tinta."
    },
    "effects": [
     {
@@ -1497,8 +1497,8 @@
    "lineup": "adivinar-ave",
    "outcome": "success",
    "text": {
-    "valley": "El nombre del pájaro carpintero vuelve al Gran Libro y una luciérnaga se enciende sobre la pluma. Arriba, el toc, toc, toc no para. El búho abre las alas: «Preguntar bien es la mitad de saber». Después mira las otras marcas, las que no se parecen a nada, y tarda todavía más en contestar: «Esas no son de ningún animal. Son de una idea mal escrita». {{creature}} intenta seguirlas y se mancha la nariz de tinta.",
-    "azara": "El baqueano sonríe y el cuaderno recupera su página. Arriba, el toc, toc, toc no para. «Así trabajaba el naturalista: preguntando a cada rastro.» Mira las otras marcas y tarda todavía más en contestar: «Esas no son de ningún bicho. Son de alguien que escribió sin mirar». {{creature}} intenta seguirlas y se mancha la nariz de tinta."
+    "valley": "El nombre del pájaro carpintero vuelve al Gran Libro y una luciérnaga se enciende sobre la pluma. Arriba, el toc, toc, toc no para. El búho abre las alas: «Preguntar bien es la mitad de saber». Después, el búho mira las otras marcas, las que no se parecen a nada, y tarda todavía más en contestar: «Esas no son de ningún animal: son manchas de tinta del Embrollo. Salen donde alguien escribe algo sin comprobarlo». {{creature}} intenta seguirlas y se mancha la nariz de tinta.",
+    "azara": "El baqueano sonríe y el cuaderno recupera su página. Arriba, el toc, toc, toc no para. «Así trabajaba el naturalista: preguntando a cada rastro.» El baqueano mira las otras marcas y tarda todavía más en contestar: «Esas no son de ningún bicho: son manchas de tinta del Embrollo. Salen donde alguien escribe algo sin comprobarlo». {{creature}} intenta seguirlas y se mancha la nariz de tinta."
    },
    "effects": [
     {

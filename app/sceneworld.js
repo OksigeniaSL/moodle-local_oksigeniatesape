@@ -32,7 +32,7 @@
      *
      * @param {Element} parent Where the canvas goes, behind the scene.
      * @param {Object} opts world (with its character), image (the address of the painting), still.
-     * @return {Promise} The world: image(), speak(), answer(), ending(), ask(), close(), state().
+     * @return {Promise} The world: image(), speak(), answer(), ending(), ask(), say(), close(), state().
      */
     open: function(parent, opts) {
       var c = opts.world && opts.world.character;
@@ -505,6 +505,19 @@
         hint: later(function() {
           if (S.hero) {
             T.cast.act(S.hero, 'point');
+          }
+        }),
+
+        /**
+         * The hero says what the student chose (a question to who speaks there): they point at them, and the creature
+         * looks at the hero.
+         */
+        say: later(function() {
+          if (S.hero) {
+            T.cast.act(S.hero, 'point');
+          }
+          if (S.pet && S.hero) {
+            S.pet.facing = Math.sign(S.hero.x - S.pet.x) || -1;
           }
         }),
 

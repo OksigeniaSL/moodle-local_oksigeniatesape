@@ -381,7 +381,7 @@
     /**
      * Tells the place alive behind the scene, if there is one, what happens.
      *
-     * @param {string} what image, speak, talk, answer, ask or ending.
+     * @param {string} what image, speak, talk, answer, ask, say (the hero says what was chosen) or ending.
      */
     function alive(what) {
       var args = [].slice.call(arguments, 1);
@@ -2378,6 +2378,27 @@
     }
 
     /**
+     * The recorded voice of the hero of the student saying an option, when the option is something said (a question,
+     * an exclamation, «…» or —…) and the art pack has it in the voice of their hero: a girl or a boy, younger in infant
+     * school and the first years (f1, m1) and older from then on (f2, m2); none on the screen of the class, or for who
+     * has reading aloud.
+     *
+     * @param {Object} o The option.
+     * @return {string|null}
+     */
+    function heroLine(o) {
+      var c = !cm && world && world.character;
+      var label = o && o.label ? tx(o.label) : '';
+      if (!c || !T.fx || !T.lineKey || T.adapted.readaloud || !/^[¿¡«—]/.test(label)) {
+        return null;
+      }
+      var young = ['early', 'firstyears'].indexOf(world.classstage) >= 0;
+      var key = 'voice.hero.' + (c.nameform === 'f' ? 'f' : 'm') + (young ? '1' : '2') + '.' +
+        T.lineKey(label).replace(/^voice\.line\./, '');
+      return T.artUrl([key]) ? key : null;
+    }
+
+    /**
      * Shows what each choice brings, one by one: the consequences are the explanation.
      *
      * @param {Element} body
@@ -2421,7 +2442,18 @@
         }
         var o = list[i++];
         // A moment of waiting, and then the world answers: what happens, in the voice of the place, never a referee.
+        // What was chosen, when it is something said (a question, «…», —…), the hero of the student says it first.
         out.innerHTML = '<div class="conseq wait" aria-hidden="true"><span></span><span></span><span></span></div>';
+        var line = list.length === 1 ? heroLine(o) : null;
+        if (line) {
+          alive('say');
+          T.fx.voice(line, answerNow);
+        } else {
+          answerNow();
+        }
+      }
+      function answerNow() {
+        var o = list[i - 1];
         setTimeout(function() {
           if (T.fx) {
             T.fx.sound(o.sound || 'choose');

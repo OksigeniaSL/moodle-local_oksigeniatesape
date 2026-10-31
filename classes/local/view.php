@@ -55,6 +55,8 @@ final class view {
             'enabled' => $enabled,
             'family' => $region->family ?? 'storyheroes',
             'nicknames' => (int) ($region->nicknames ?? 0),
+            // The stage of the class: the voice of the heroes is that of younger children in the first years.
+            'classstage' => regions::stage($region),
             // What puts a student in pause, agreed with the class: they can read it on their sheet.
             'pauses' => regions::pauses($region),
             'quiet' => (bool) ($region->quiet ?? false),

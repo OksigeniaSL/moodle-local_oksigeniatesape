@@ -83,6 +83,7 @@ final class get_world extends external_api {
             ], 'In infant school, the creature of the class', VALUE_OPTIONAL),
             'family' => new external_value(PARAM_ALPHA, 'Family of role names'),
             'nicknames' => new external_value(PARAM_INT, 'Hero names allowed'),
+            'classstage' => new external_value(PARAM_ALPHA, 'Stage of the class: early, firstyears, primary, secondary or adults'),
             'pauses' => new external_multiple_structure(
                 new external_value(PARAM_TEXT, 'A reason'),
                 'What puts a student in pause in the game, agreed with the class',

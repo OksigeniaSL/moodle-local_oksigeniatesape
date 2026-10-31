@@ -152,8 +152,8 @@
    "type": "ending",
    "outcome": "success",
    "text": {
-    "valley": "Cada animal sale del escondite con su abrigo. «¡Soy un mamífero!», «¡soy un ave!», «¡soy un pez!», «¡soy un anfibio!», «¡soy un reptil!». Todos ellos tienen huesos por dentro: son vertebrados. El caracol se asoma el último: «Yo no tengo huesos. Soy un invertebrado, como los insectos y las lombrices». El búho vuelve a mirar las huellas raras del barro: «Esas no son de ningún animal. Son de una idea mal escrita». {{creature}} las olisquea y estornuda.",
-    "azara": "Cada animal sale del escondite con su abrigo: mamífero, ave, pez, anfibio, reptil. Todos tienen huesos por dentro: son vertebrados. El caracol se asoma el último: «Yo no tengo huesos. Soy un invertebrado». El baqueano vuelve a mirar las huellas raras del barro: «Esas no son de ningún bicho. Son de alguien que escribió sin mirar». {{creature}} las olisquea y estornuda."
+    "valley": "Cada animal sale del escondite con su abrigo. «¡Soy un mamífero!», «¡soy un ave!», «¡soy un pez!», «¡soy un anfibio!», «¡soy un reptil!». Todos ellos tienen huesos por dentro: son vertebrados. El caracol se asoma el último: «Yo no tengo huesos. Soy un invertebrado, como los insectos y las lombrices». El búho vuelve a mirar las huellas raras del barro: «Esas no son de ningún animal: son manchas de tinta del Embrollo. Salen donde alguien escribe algo sin comprobarlo». {{creature}} las olisquea y estornuda.",
+    "azara": "Cada animal sale del escondite con su abrigo: mamífero, ave, pez, anfibio, reptil. Todos tienen huesos por dentro: son vertebrados. El caracol se asoma el último: «Yo no tengo huesos. Soy un invertebrado». El baqueano vuelve a mirar las huellas raras del barro: «Esas no son de ningún bicho: son manchas de tinta del Embrollo. Salen donde alguien escribe algo sin comprobarlo». {{creature}} las olisquea y estornuda."
    },
    "effects": [
     {

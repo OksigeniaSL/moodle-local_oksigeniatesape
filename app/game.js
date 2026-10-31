@@ -2471,6 +2471,12 @@
     document.body.appendChild(layer);
     var timer = 0;
     var where = 1;
+    // The fight has its own sounds: the sound of the place stops while it lasts, and comes back with the map; where
+    // music may play here, the music of the battle.
+    if (T.fx) {
+      T.fx.ambient(null);
+      T.fx.moment('battle1');
+    }
     // Its puppet, when the art pack brings it and things move here: it waits, throws its thread, takes the blows and,
     // untangled, comes undone. Meanwhile, and without it, its picture.
     var rig = art && T.puppet && T.stage && T.stage.available() ? T.puppet.find(minion.picture, 'minion') : null;
@@ -2481,6 +2487,9 @@
         actor.made.close();
       }
       actor = null;
+      if (T.fx) {
+        T.fx.moment('');
+      }
       layer.remove();
       refresh();
     };
