@@ -2759,7 +2759,8 @@
         var hand = standing && chosen ? items.filter(function(it) {
           return it.id === chosen;
         })[0] : null;
-        box.innerHTML = '<p class="help">' + esc(hand ? t('app_classify_inhand', tx(hand.label)) : trip > 1 ?
+        box.innerHTML = '<p class="help"' + (standing ? ' aria-live="polite"' : '') + '>' + esc(hand ?
+          t('app_classify_inhand', tx(hand.label)) : trip > 1 ?
           t('app_classify_again') : t('app_classify_help')) + '</p>' +
           '<div class="cls-table" role="group" aria-label="' + esc(t('app_classify_table')) + '">' + left.map(function(it) {
             return '<button type="button" class="cls-thing" data-thing="' + esc(it.id) + '" aria-pressed="' +

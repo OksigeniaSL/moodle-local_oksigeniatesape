@@ -994,7 +994,6 @@ body.tesape {
   }
   100% {
     opacity: 0;
-    filter: none;
   }
 }
 
@@ -2467,21 +2466,20 @@ body.still .team-huddle {
 }
 
 /* The colour of a creature (--paint) stays under the light. */
+/* Only what the graphics card moves by itself (opacity and transform), never a filter: digital whiteboards paint each
+   frame of a filter again, and stutter (shared/diseno-por-edades.md). The colour of the creature stays in its own filter. */
 @keyframes reveal {
   0% {
     opacity: 0;
     transform: scale(.6) translateY(30px);
-    filter: var(--paint, brightness(1)) brightness(3) blur(6px);
   }
 
   60% {
     opacity: 1;
-    filter: var(--paint, brightness(1)) brightness(1.4) blur(0);
   }
 
   100% {
     transform: none;
-    filter: var(--paint, none);
   }
 }
 
@@ -5204,21 +5202,12 @@ body.adapt-still .nudge {
   background: rgba(233, 138, 138, .12);
 }
 
-/* Three days in a row: the creature glows. */
+/* Three days in a row: the creature glows, with a halo that stays (and its own colour, in --paint), and breathes. */
 .glow .creature {
-  animation: tesape-glow 2.4s ease-in-out infinite, tesape-breathe 3.6s ease-in-out infinite;
+  filter: var(--paint, none) drop-shadow(0 0 9px rgba(var(--lantern-rgb), .8)) !important;
+  animation: tesape-breathe 3.6s ease-in-out infinite;
 }
 
-@keyframes tesape-glow {
-  0%,
-  100% {
-    filter: drop-shadow(0 0 4px rgba(var(--lantern-rgb), .45));
-  }
-
-  50% {
-    filter: drop-shadow(0 0 14px rgba(var(--lantern-rgb), .95));
-  }
-}
 
 @media (prefers-reduced-motion: reduce) {
   .glow .creature {
@@ -7441,7 +7430,6 @@ body.adapt-colours .errors-text .fixed ins {
 
   55% {
     transform: scale(1.1);
-    filter: drop-shadow(0 0 12px rgba(var(--lantern-rgb), .85));
   }
 
   100% {
@@ -8838,6 +8826,15 @@ body.adapt-colours .errors-text .fixed ins {
   padding: 4px;
 }
 
+/* On a wide but short screen (the window of a Chromebook, 1366 × 630), with the things standing in the place, the
+   table is the place: the row of their names goes, and they are taken there, or one after another as they come into
+   the hand (the line above says which, and the hero names it); what is read starts lower and the figures are seen. */
+@media (min-width: 720px) and (max-height: 700px) {
+  .scene-layer.live .scene-body.standing .cls-table {
+    display: none;
+  }
+}
+
 /* On a wide screen, while no note of the notebook is open, its button goes up beside «Confirmar»: one row less, so that
    what is read starts lower and the figures standing above it are bigger. Only the button covers the row. */
 @media (min-width: 720px) {
@@ -8974,11 +8971,26 @@ body.adapt-colours .errors-text .fixed ins {
   opacity: 0;
 }
 
-.scene-pic.fx-light {
+.scene-pic.fx-light,
+.scene-pic.fx-dark {
+  position: relative;
+}
+
+.scene-pic.fx-light::after,
+.scene-pic.fx-dark::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.scene-pic.fx-light::after {
+  background: rgba(255, 241, 189, .5);
   animation: fx-light 1.2s ease both;
 }
 
-.scene-pic.fx-dark {
+.scene-pic.fx-dark::after {
+  background: rgba(10, 18, 30, .45);
   animation: fx-dark 1.2s ease both;
 }
 
@@ -9001,14 +9013,23 @@ body.adapt-colours .errors-text .fixed ins {
 }
 
 @keyframes fx-light {
+  0%,
+  100% {
+    opacity: 0;
+  }
+
   50% {
-    filter: brightness(1.6) saturate(1.2);
+    opacity: 1;
   }
 }
 
 @keyframes fx-dark {
+  from {
+    opacity: 0;
+  }
+
   to {
-    filter: brightness(.55);
+    opacity: 1;
   }
 }
 
@@ -9393,12 +9414,12 @@ body.adapt-colours .errors-text .fixed ins {
   0%,
   60% {
     opacity: 1;
-    filter: brightness(1);
+    transform: none;
   }
 
   100% {
     opacity: 0;
-    filter: brightness(2.2);
+    transform: scale(1.08);
   }
 }
 
@@ -9486,6 +9507,7 @@ body.adapt-colours .errors-text .fixed ins {
   border: 0;
   background: none;
   cursor: pointer;
+  filter: drop-shadow(0 0 10px rgba(var(--lantern-rgb), .7));
   animation: seed-glow 1.8s ease-in-out infinite;
 }
 
@@ -9537,7 +9559,7 @@ body.adapt-colours .errors-text .fixed ins {
 
 @keyframes seed-glow {
   50% {
-    filter: drop-shadow(0 0 14px rgba(var(--lantern-rgb), .8));
+    transform: scale(1.05);
   }
 }
 
@@ -9592,6 +9614,7 @@ body.adapt-colours .errors-text .fixed ins {
 
 /* A lantern lit since the map was last seen lights in front of the student. */
 .map .place.mine.lighting .flame {
+  filter: drop-shadow(0 0 6px rgba(var(--lantern-rgb), .9));
   animation: flame-on 1.4s ease .9s both;
 }
 
@@ -9602,17 +9625,14 @@ body.adapt-colours .errors-text .fixed ins {
 @keyframes flame-on {
   0% {
     fill: #6b7a86;
-    filter: none;
   }
 
   50% {
     fill: #fff3c4;
-    filter: drop-shadow(0 0 18px rgba(var(--lantern-rgb), 1));
   }
 
   100% {
     fill: var(--lantern);
-    filter: drop-shadow(0 0 6px rgba(var(--lantern-rgb), .9));
   }
 }
 
@@ -10082,6 +10102,7 @@ body.adapt-still .feed-face.eating .creature {
 }
 
 .map .place.mine.lighting .lamp-on {
+  filter: drop-shadow(0 0 12px rgba(var(--lantern-rgb), .9));
   animation: lamp-on 1.4s ease .9s both;
 }
 
@@ -10092,7 +10113,6 @@ body.adapt-still .feed-face.eating .creature {
 
   50% {
     opacity: 1;
-    filter: drop-shadow(0 0 22px rgba(var(--lantern-rgb), 1));
   }
 }
 
@@ -12309,7 +12329,6 @@ body.battle-live .battle-board .team-heroes {
   from {
     opacity: 0;
     transform: scale(.6);
-    filter: brightness(.3);
   }
 
   60% {
@@ -12980,10 +12999,10 @@ body.still .campfire-fire i {
 
 @keyframes dawn-light {
   from {
-    filter: brightness(.3) saturate(.4);
+    opacity: .3;
   }
   to {
-    filter: brightness(1) saturate(1);
+    opacity: 1;
   }
 }
 
@@ -13502,12 +13521,8 @@ body.still .minion-face.flees {
 }
 
 @keyframes secret-glint {
-  0%, 80%, 100% {
-    filter: none;
-  }
-
   88% {
-    filter: drop-shadow(0 0 6px #fff3b0) brightness(1.6);
+    opacity: 1;
   }
 }
 
