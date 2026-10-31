@@ -28,10 +28,18 @@
   'use strict';
 
   var T = window.Tesape;
-  /** @var {number[]} The canvas the figures are measured in, as the puppets (the feet at 860). */
-  var CANVAS = [768, 896];
+  /**
+   * @var {Object} The canvas of the puppet each body replaces, where its feet are, and how tall the figure stands in it:
+   *     a figure of sheets is measured as the puppet it stands for, so it is as big in the place.
+   */
+  var BODIES = {
+    person: {canvas: [768, 896], feet: [384, 860], tall: 790},
+    small: {canvas: [512, 512], feet: [256, 457], tall: 430}
+  };
   /** @var {string[]} The gestures loaded with the place: the rest are loaded when they are asked for. */
   var FIRST = ['idle', 'talk', 'walk'];
+  /** @var {number} Milliseconds the frame of the gesture before stays over the new one, fading. */
+  var BLEND = 100;
 
   /**
    * The sheets of a figure in the art packs, by gesture and view, each with its atlas and its pages; null without its
@@ -119,12 +127,13 @@
    * @param {Object} sheets As find() gives them.
    * @param {boolean} still Without movement.
    */
-  function Sheet(scene, sheets, still) {
+  function Sheet(scene, sheets, still, body) {
     this.scene = scene;
     this.sheets = sheets;
     this.still = still;
     this.view = 'd';
-    this.feet = [CANVAS[0] / 2, 860];
+    this.body = BODIES[body === 'creature' || body === 'minion' ? 'small' : 'person'];
+    this.feet = this.body.feet.slice();
     this.mirror = false;
     this.tone = null;
     this.clipName = '';
@@ -133,8 +142,10 @@
     this.loading = {};
     var first = animOf(scene, sheets.idle.d);
     this.image = scene.add.sprite(0, 0, first.frames[0].key, first.frames[0].frame);
-    this.container = scene.add.container(0, 0, [this.image]);
-    this.container.setSize(CANVAS[0], CANVAS[1]);
+    // The last frame of the gesture before, over the new one for a moment, fading: no jump from one sheet to the next.
+    this.ghost = scene.add.image(0, 0, first.frames[0].key, first.frames[0].frame).setVisible(false);
+    this.container = scene.add.container(0, 0, [this.image, this.ghost]);
+    this.container.setSize(this.body.canvas[0], this.body.canvas[1]);
     // As a puppet, one piece: what reads the pieces (its texture, whether it shows another drawing) finds this one.
     this.parts = [{name: 'body', frame: 'body', image: this.image}];
     this.play('idle');
@@ -163,13 +174,23 @@
       return true;
     }
     this.want = '';
+    if (this.clipName && !this.still && this.image.frame) {
+      var ghost = this.ghost;
+      this.scene.tweens.killTweensOf(ghost);
+      ghost.setTexture(this.image.texture.key, this.image.frame.name).setOrigin(this.image.originX, this.image.originY)
+        .setScale(this.image.scaleX, this.image.scaleY).setPosition(0, 0).setAlpha(1).setVisible(true);
+      this.scene.tweens.add({targets: ghost, alpha: 0, duration: BLEND, onComplete: function() {
+        ghost.setVisible(false);
+      }});
+    }
     this.clipName = name;
     this.meta = anim.meta;
     var cell = anim.meta.cell || {w: 256, h: 256};
     var anchor = anim.meta.anchor || {x: cell.w / 2, y: cell.h - 24};
-    // The cell, to the canvas of the puppets: its feet where the feet of a puppet are (the origin of the figure), as tall
-    // as one.
-    this.image.setOrigin(anchor.x / cell.w, anchor.y / cell.h).setScale(CANVAS[1] / cell.h).setPosition(0, 0);
+    // The cell, to the canvas of the puppet it stands for: its feet where the feet of the puppet are (the origin of the
+    // figure), the figure standing as tall as the puppet (meta.height: its height in the cell, standing at rest).
+    var tall = anim.meta.height || cell.h * 0.6;
+    this.image.setOrigin(anchor.x / cell.w, anchor.y / cell.h).setScale(this.body.tall / tall).setPosition(0, 0);
     if (this.still) {
       var at = anim.frames[Math.min(anim.frames.length - 1, anim.meta.still || 0)];
       this.image.anims.stop();
@@ -245,10 +266,11 @@
      * @param {Object} scene
      * @param {Object} sheets
      * @param {boolean} still
+     * @param {string} [body] The kind of puppet it stands for: hero, speaker, creature, minion…
      * @return {Sheet|null}
      */
-    make: function(scene, sheets, still) {
-      return animOf(scene, sheets.idle.d) ? new Sheet(scene, sheets, still) : null;
+    make: function(scene, sheets, still, body) {
+      return animOf(scene, sheets.idle.d) ? new Sheet(scene, sheets, still, body) : null;
     }
   };
 })();
