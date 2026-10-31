@@ -472,9 +472,10 @@
    *
    * @param {string} key voice.<…>
    * @param {Function} [end] When it has been said (or will not be).
+   * @param {Function} [start] When it starts to sound, with its length in seconds.
    * @return {boolean} Whether the pack has it and the page may sound.
    */
-  function voice(key, end) {
+  function voice(key, end, start) {
     var finish = function() {
       if (end) {
         var e = end;
@@ -509,6 +510,9 @@
       var now = {source: source, finish: finish};
       speaking = now;
       duck(true);
+      if (start) {
+        start(source.buffer.duration);
+      }
       source.onended = function() {
         if (speaking === now) {
           speaking = null;

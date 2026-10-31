@@ -351,6 +351,8 @@
     document.body.classList.add('in-scene');
     var world = opts.world;
     var data = null;
+    // When who speaks says their part in the recorded voices: asked now, so it is here for the first one.
+    T.talkCues();
     var sc = null;
     var run = null;
     // The seed of the creature, warm and alive, with the cracks that open as it is touched: over the painting of the pack
@@ -1103,9 +1105,11 @@
         }).join('') : '';
         button.textContent = last ? t('app_continue') : t('app_next');
         alive('speak', n.speaker || null, figure);
-        alive('talk', Math.max(1500, pieces[at].length * 45));
         if (voices[at]) {
-          T.fx.voice(voices[at]);
+          voiced(voices[at]);
+        } else {
+          // Without a recorded voice, who speaks moves while their words are read: those of the pieces with their name.
+          alive('talk', label && !label.hidden ? Math.max(1500, pieces[at].length * 45) : 0);
         }
       }
       button.onclick = function() {
@@ -1149,8 +1153,7 @@
     }
 
     /**
-     * What happens, said aloud: the voice of each text, one after the other; who speaks in the place moves while
-     * someone says something between «».
+     * What happens, said aloud: the voice of each text, one after the other.
      *
      * @param {string[]} texts
      */
@@ -1161,13 +1164,35 @@
       var i = 0;
       (function one() {
         if (i < said.length) {
-          var text = said[i++];
-          if (text.indexOf('«') >= 0) {
-            alive('talk', Math.max(1500, text.length * 45));
-          }
-          T.fx.voice(voiceOf(text), one);
+          voiced(voiceOf(said[i++]), one);
         }
       })();
+    }
+
+    /** @var {number[]} The moments, already counted, when who speaks starts to move. */
+    var talkTimes = [];
+
+    /**
+     * A recorded voice, said; who speaks in the place moves while their own stretches sound and stays still while the
+     * narrator tells (anim.talk of the packs says who says what, and when, in each line; a line of who speaks,
+     * voice.say.<who>, is theirs whole).
+     *
+     * @param {string} key
+     * @param {Function} [end]
+     * @return {boolean} As T.fx.voice.
+     */
+    function voiced(key, end) {
+      return T.fx.voice(key, end, function(length) {
+        talkTimes.forEach(clearTimeout);
+        talkTimes = [];
+        alive('talk', 0);
+        var said = key.indexOf('voice.say.') === 0 ? [[0, length, key.split('.')[2]]] : T.talkCues()[key] || [];
+        said.forEach(function(s) {
+          talkTimes.push(setTimeout(function() {
+            alive('talk', Math.max(300, (s[1] - s[0]) * 1000), s[2]);
+          }, s[0] * 1000));
+        });
+      });
     }
 
     /** @var {Object} How many ways each thing who speaks in the place says has (app_classify_<name>, <name>2…). */
@@ -1188,7 +1213,7 @@
       var key = 'voice.say.' + who + '.' + T.lineKey(t('app_classify_' + name + (i ? i + 1 : ''))).replace(/^voice\.line\./,
         '');
       if (T.artUrl([key])) {
-        T.fx.voice(key);
+        voiced(key);
       }
     }
 

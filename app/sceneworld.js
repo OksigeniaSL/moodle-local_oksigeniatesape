@@ -361,11 +361,16 @@
         }),
 
         /**
-         * Who speaks moves for as long as the words take to read; 0, and they go quiet.
+         * Who speaks moves for as long as they speak; 0, and they go quiet. With who says it, only if that is the one in
+         * the place.
          *
          * @param {number} ms
+         * @param {string} [who]
          */
-        talk: later(function(ms) {
+        talk: later(function(ms, who) {
+          if (who && (!S.speaker || S.speaker.code !== who)) {
+            return;
+          }
           clearTimeout(hush);
           speaking = ms > 0;
           if (speaking) {
@@ -668,7 +673,7 @@
 
         /** For the tests of the browser. */
         state: function() {
-          return {ready: !!S, image: shown, speaker: who, figure: !!(S && S.speaker),
+          return {ready: !!S, image: shown, speaker: who, figure: !!(S && S.speaker), talking: speaking,
             speakerPuppet: S && S.speaker && S.speaker.puppet ? S.speaker.puppet.clipName : '', rigs: cast.rigs || {},
             hero: S && S.hero && S.hero.puppet ? S.hero.puppet.clipName + (S.hero.puppet.tone ? ' ' + S.hero.puppet.tone : '') :
               '',

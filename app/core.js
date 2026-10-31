@@ -670,6 +670,35 @@
     return null;
   };
 
+  /** @var {Object|null} When each character speaks in the recorded voices, once loaded. */
+  var talkCues = null;
+
+  /**
+   * When each character speaks in the recorded voices of the packs (anim.talk.<pack>: for each line with a stretch said
+   * by somebody who is not the narrator, [from, to, who] in seconds). Loaded the first time it is asked; until then,
+   * and without them, empty.
+   *
+   * @return {Object} By key of the voice.
+   */
+  T.talkCues = function() {
+    if (!talkCues) {
+      talkCues = {};
+      var files = (cfg.art && cfg.art.files) || {};
+      Object.keys(files).filter(function(k) {
+        return k.indexOf('anim.talk.') === 0;
+      }).forEach(function(k) {
+        window.fetch(files[k], {credentials: 'same-origin'}).then(function(r) {
+          return r.ok ? r.json() : {};
+        }).then(function(cues) {
+          Object.assign(talkCues, cues || {});
+        }).catch(function() {
+          // Without them, who speaks only moves with the lines that are theirs whole.
+        });
+      });
+    }
+    return talkCues;
+  };
+
   /**
    * Which of some keys the art pack of the site has first, from the most precise to the most general; or null.
    *
