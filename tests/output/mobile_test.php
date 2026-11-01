@@ -30,6 +30,31 @@ use local_oksigeniatesape\local\regions;
  */
 #[\PHPUnit\Framework\Attributes\CoversClass(mobile::class)]
 final class mobile_test extends \advanced_testcase {
+    public function test_a_name_is_read_in_the_app_and_never_compiled(): void {
+        $this->resetAfterTest();
+        $gen = $this->getDataGenerator();
+        $names = ['{{ 1 + 1 }}', '@let a = 1;', '@if (1) { b }', '@switch', 'Clase @mates'];
+        $game = $gen->create_course(['fullname' => implode(' ', $names)]);
+        regions::save((int) $game->id, ['enabled' => 1]);
+        missions::install((int) $game->id, 'livingthings', 'valley', 'es');
+        $this->setUser($gen->create_and_enrol($game, 'student'));
+        foreach ([mobile::mobile_games_view([]), mobile::mobile_course_view(['courseid' => $game->id])] as $page) {
+            $html = $page['templates'][0]['html'];
+            // Nothing that starts a binding, an expansion or a block of Angular (a block: an at sign and a letter).
+            $this->assertStringNotContainsString('{', $html);
+            $this->assertStringNotContainsString('}', $html);
+            $this->assertDoesNotMatchRegularExpression('/@[a-z]/i', $html);
+            // And it is read the same.
+            $this->assertStringContainsString('｛｛ 1 + 1 ｝｝', $html);
+            $this->assertStringContainsString('Clase ＠mates', $html);
+            // The ways in still go where they went.
+            $this->assertStringContainsString('href="' . (new \moodle_url(
+                '/local/oksigeniatesape/play.php',
+                ['id' => $game->id]
+            ))->out(false) . '"', $html);
+        }
+    }
+
     public function test_the_games_of_the_user_in_the_app(): void {
         $this->resetAfterTest();
         $gen = $this->getDataGenerator();
