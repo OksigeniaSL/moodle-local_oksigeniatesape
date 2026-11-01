@@ -740,6 +740,7 @@
         state: function() {
           return {ready: !!S, image: shown, speaker: who, figure: !!(S && S.speaker), talking: speaking, acted: acted.slice(),
             speakerPuppet: S && S.speaker && S.speaker.puppet ? S.speaker.puppet.clipName : '', rigs: cast.rigs || {},
+            speakerFace: S && S.speaker && S.speaker.puppet ? S.speaker.puppet.faceNow || '' : '',
             speakerPieces: S && S.speaker && S.speaker.puppet ? S.speaker.puppet.parts.filter(function(p) {
               return p.frame !== p.name;
             }).map(function(p) {

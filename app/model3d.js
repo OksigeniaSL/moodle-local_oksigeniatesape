@@ -44,6 +44,18 @@
   var PERSON = 1.7;
   /** @var {number} How much taller than a hero the puppet of a grown-up who speaks is drawn (sceneworld.js). */
   var GROWN = 1.1;
+  /** @var {Object} For a state of the face that a model lacks, the nearest (FORMATO.md of Gaudí). */
+  var NEAREST = {wide: 'open', happy: 'closed', laugh: 'a'};
+
+  /**
+   * How the eyes are at a moment of a blink: half, closed for three frames at 24 a second, half.
+   *
+   * @param {number} b Seconds since the blink began; before it or after it, open.
+   * @return {string}
+   */
+  function blinkAt(b) {
+    return b < 0 || b >= 5 / 24 ? 'open' : b < 1 / 24 || b >= 4 / 24 ? 'half' : 'closed';
+  }
   /** @var {number} How much a model turns to the side it faces, in radians: three quarters. */
   var YAW = 0.45;
   /** @var {number} Seconds of passage from one gesture to the next. */
@@ -477,32 +489,41 @@
     if (!this.face) {
       return;
     }
-    var eyes = 'open';
+    var clip = (this.face.clips || {})[this.clipName] || {};
+    var t = this.current ? this.current.time : 0;
+    // The eyes: open, with a loose blink every few seconds, those of the gesture and what the gesture asks of them.
     this.blink -= dt || 0;
     if (this.blink < 0) {
       this.blinking = 0;
       this.blink = 2.5 + Math.random() * 3;
     }
+    var eyes = 'open';
     if (this.blinking >= 0) {
       this.blinking += dt || 0;
-      var b = this.blinking;
-      eyes = b < 1 / 24 ? 'half' : b < 4 / 24 ? 'closed' : b < 5 / 24 ? 'half' : 'open';
-      if (b >= 5 / 24) {
+      eyes = blinkAt(this.blinking);
+      if (this.blinking >= 5 / 24) {
         this.blinking = -1;
       }
     }
+    (clip.blink || []).forEach(function(at) {
+      eyes = eyes === 'open' ? blinkAt(t - at) : eyes;
+    });
+    (clip.eyes || []).forEach(function(e) {
+      if (t >= e[0] && t < e[1]) {
+        eyes = e[2];
+      }
+    });
+    // The mouth: what the gesture says; while it talks without saying, one of its own.
     var mouth = 'closed';
-    if (this.clipName === 'talk') {
-      this.talkClock += dt || 0;
-      mouth = ['a', 'o', 'closed', 'a', 'closed', 'o'][Math.floor(this.talkClock / 0.11) % 6];
-    } else {
-      var clip = (this.face.clips || {})[this.clipName] || {};
-      var t = this.current ? this.current.time : 0;
-      (clip.mouth || []).forEach(function(m) {
+    if ((clip.mouth || []).length) {
+      clip.mouth.forEach(function(m) {
         if (t >= m[0] && t < m[1]) {
           mouth = m[2];
         }
       });
+    } else if (this.clipName === 'talk') {
+      this.talkClock += dt || 0;
+      mouth = ['a', 'o', 'closed', 'a', 'closed', 'o'][Math.floor(this.talkClock / 0.11) % 6];
     }
     this.setFace(eyes, mouth);
   };
@@ -515,8 +536,11 @@
    */
   Model.prototype.setFace = function(eyes, mouth) {
     var face = this.face;
+    this.faceNow = eyes + ' ' + mouth;
     [[this.eyes, 'eyes', eyes], [this.mouth, 'mouth', mouth]].forEach(function(one) {
-      var off = one[0] && one[0].material.map && face[one[1]] && face[one[1]].states[one[2]];
+      var states = one[0] && one[0].material.map && face[one[1]] && face[one[1]].states;
+      // A state this face lacks (it was made before that one): the nearest it has.
+      var off = states && (states[one[2]] || states[NEAREST[one[2]]]);
       if (off) {
         one[0].material.map.offset.set(off[0], off[1]);
       }
