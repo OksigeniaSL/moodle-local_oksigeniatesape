@@ -870,7 +870,8 @@
               sp.puppet.play(speaking ? 'talk' : 'idle');
             }
             sp.puppet.draw(dt);
-            sp.sprite.setPosition(sp.x, sp.y).setScale(sp.base, sp.base).setDepth(sp.y);
+            // A puppet is drawn looking towards the others; a model turns by the side of its scale: towards them too.
+            sp.sprite.setPosition(sp.x, sp.y).setScale(modelled(sp) ? -sp.base : sp.base, sp.base).setDepth(sp.y);
             sp.shadow.setPosition(sp.x, sp.y - 2).setSize(sp.sprite.displayHeight * 0.4, sp.sprite.displayHeight * 0.08)
               .setDepth(sp.y - 1);
           } else if (sp) {
