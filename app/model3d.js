@@ -66,6 +66,8 @@
   var webgl = null;
   var models = {};
   var faces = {};
+  /** @var {Object} The masks of skin, by their address. */
+  var masks = {};
   var lights = null;
 
   /**
@@ -184,6 +186,55 @@
           '( gl_FrontFacing ? 1.0 : -1.0 ), uSun );\n\t\t' + band + '\n\t\toutgoingLight *= lt;\n\t}');
     };
     return m;
+  }
+
+  /**
+   * A mask of skin, once: which part of a texture is skin, grey, in the same layout, for one channel.
+   *
+   * @param {string} url
+   * @return {Promise}
+   */
+  function maskOf(url) {
+    var THREE = window.THREE;
+    if (!masks[url]) {
+      masks[url] = new Promise(function(resolve, reject) {
+        new THREE.TextureLoader().load(url, function(map) {
+          map.flipY = false;
+          map.colorSpace = THREE.NoColorSpace;
+          map.wrapS = THREE.RepeatWrapping;
+          map.wrapT = THREE.RepeatWrapping;
+          map.format = THREE.RedFormat;
+          map.internalFormat = 'R8';
+          map.needsUpdate = true;
+          resolve(map);
+        }, null, reject);
+      });
+    }
+    return masks[url];
+  }
+
+  /**
+   * The tone of skin the student chose, on a material: the skin takes its colour, by its mask, and nothing else changes.
+   *
+   * @param {Object} m A material of toonMaterial().
+   * @param {Object} mask
+   * @param {Object} gain Of the tone, in linear colour.
+   */
+  function skinTone(m, mask, gain) {
+    var compile = m.onBeforeCompile;
+    var key = m.customProgramCacheKey();
+    m.customProgramCacheKey = function() {
+      return key + 'S';
+    };
+    m.onBeforeCompile = function(sh) {
+      compile(sh);
+      sh.uniforms.uSkinMask = {value: mask};
+      sh.uniforms.uSkinGain = {value: gain};
+      sh.fragmentShader = sh.fragmentShader
+        .replace('#include <common>', '#include <common>\nuniform sampler2D uSkinMask;\nuniform vec3 uSkinGain;')
+        .replace('#include <map_fragment>', '#include <map_fragment>\n\tdiffuseColor.rgb = ' +
+          'mix( diffuseColor.rgb, diffuseColor.rgb * uSkinGain, texture2D( uSkinMask, vMapUv ).r );');
+    };
   }
 
   /**
@@ -331,9 +382,11 @@
    * @param {Object} found As find() gives it.
    * @param {boolean} still Without movement.
    * @param {string} [body] The kind of puppet it stands for.
+   * @param {string|null} [tone] The tone of skin chosen (t1, t2, t3).
    */
-  function Model(scene, found, still, body) {
+  function Model(scene, found, still, body, tone) {
     var self = this;
+    this.chosenTone = tone || null;
     var small = body === 'creature' || body === 'minion';
     this.scene = scene;
     this.still = still;
@@ -359,6 +412,19 @@
     Promise.all([gltfOf(found.glb), found.face ? once(faces, found.face, false).catch(function() {
       return null;
     }) : null]).then(function(got) {
+      // A tone that is not the one the model was painted in: its masks. Without them, the model as it comes.
+      var extras = got[0].scene.userData || {};
+      var gain = tone && tone !== extras.tone && (extras.tones || {})[tone];
+      if (!gain || !found.skin) {
+        return got;
+      }
+      return Promise.all([maskOf(found.skin), found.skinFace ? maskOf(found.skinFace) : null]).then(function(both) {
+        self.skin = {gain: new window.THREE.Vector3(gain[0], gain[1], gain[2]), body: both[0], face: both[1]};
+        return got;
+      }).catch(function() {
+        return got;
+      });
+    }).then(function(got) {
       if (self.container.scene) {
         self.attach(got[0], got[1]);
       }
@@ -391,6 +457,10 @@
       o.frustumCulled = false;
       o.material = o.material.name === 'outline' ? outlineMaterial(o.material, self.layer.outline) :
         toonMaterial(o.material, painted, self.layer.light, self.tint);
+      var mask = self.skin && o.material.name !== 'outline' && (o.material.name.indexOf('face_') === 0 ? self.skin.face : self.skin.body);
+      if (mask) {
+        skinTone(o.material, mask, self.skin.gain);
+      }
       if (o.material.name === 'face_eyes') {
         self.eyes = o;
       } else if (o.material.name === 'face_mouth') {
@@ -403,6 +473,9 @@
     this.presence = Number((gltf.scene && gltf.scene.userData && gltf.scene.userData.presence) || 1);
     // For the tests of the browser: how tall each model stands, in metres.
     T.model.metres[this.id] = Math.round(this.metres * 100) / 100;
+    if (this.skin) {
+      T.model.toned[this.id] = this.chosenTone;
+    }
     this.face = face;
     this.mixer = new THREE.AnimationMixer(root);
     this.clips = {};
@@ -609,6 +682,8 @@
   T.model = {
     /** @var {Object} How tall each model stands, in metres, once it has come (for the tests). */
     metres: {},
+    /** @var {Object} The tone of skin each model took by its mask, once it has come (for the tests). */
+    toned: {},
 
     /**
      * Whether a figure is a model: it brings its height in metres, so the place does not make it taller.
@@ -632,7 +707,8 @@
       if (!glb || !/\.glb(\?|$)/.test(glb) || !canDraw()) {
         return null;
       }
-      return {glb: glb, face: f['mdl.' + id + '.cara'] || null, id: id};
+      return {glb: glb, face: f['mdl.' + id + '.cara'] || null, id: id, skin: f['mdl.' + id + '.piel'] || null,
+        skinFace: f['mdl.' + id + '.piel.cara'] || null};
     },
 
     /**
@@ -710,10 +786,11 @@
      * @param {Object} found As find() gives it.
      * @param {boolean} still
      * @param {string} [body]
+     * @param {string|null} [tone] The skin chosen by the student, when the model has it by mask.
      * @return {Model|null}
      */
-    make: function(scene, found, still, body) {
-      return window.THREE && window.THREE.GLTFLoader ? new Model(scene, found, still, body) : null;
+    make: function(scene, found, still, body, tone) {
+      return window.THREE && window.THREE.GLTFLoader ? new Model(scene, found, still, body, tone) : null;
     },
 
     /**

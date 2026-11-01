@@ -403,10 +403,11 @@
         return null;
       }
       // In 3D: its model in live 3D, if the packs bring it and the device can draw it; else its sheets; else its puppet.
-      // With a tone of skin chosen, its puppet, which has it: who you are comes before how it is drawn.
+      // With a tone of skin chosen, a model that can take it (its mask of skin), or its puppet, which has it: who you are
+      // comes before how it is drawn.
       var id = picture.replace(/^character\./, '');
-      var model = !tone && T.model && T.model.find(id);
-      if (model) {
+      var model = T.model && T.model.find(id);
+      if (model && (!tone || model.skin)) {
         return {model: model, body: body};
       }
       var sheets = !tone && T.sheet && T.sheet.find(id);
@@ -460,7 +461,7 @@
       try {
         // In 3D: the figure of its model, or of its sheets.
         if (scene.modelsOf && scene.modelsOf[name]) {
-          return T.model.make(scene, scene.modelsOf[name].model, still, scene.modelsOf[name].body);
+          return T.model.make(scene, scene.modelsOf[name].model, still, scene.modelsOf[name].body, tone);
         }
         if (scene.sheetsOf && scene.sheetsOf[name]) {
           return T.sheet.make(scene, scene.sheetsOf[name].sheets, still, scene.sheetsOf[name].body);

@@ -14,6 +14,8 @@
   var T = window.Tesape;
   /** @var {Object} Who is drawn as a grown-up, a little taller than the hero. */
   var TALL = {'druida-mayor': true, 'bibliotecaria': true, 'jardinera': true, 'barquero': true};
+  /** @var {number} How much of the bottom of a painting is the floor to stand on. */
+  var FLOOR = 0.1;
   /** @var {Object} Who is a bird: their puppet has the body of a bird (rig.bird), the others that of a speaker. */
   var BIRD = {buho: true, garza: true};
 
@@ -54,6 +56,8 @@
       var speaking = false;
       // What the place has done of what the text tells (for the tests of the browser).
       var acted = [];
+      // Whether what is read leaves no room for the suspects.
+      var noRoom = false;
       var hush = 0;
       var pending = [];
       // Until the world is ready, what it is asked to do waits.
@@ -141,16 +145,32 @@
         // fills the screen.
         var above = (bar || 64) * ratio;
         var bottom = box ? top - 8 * ratio : h * 0.62;
+        // Where a painting that went up ends: it melts into the colour of the place.
+        var fade = 0;
         S.bgs.forEach(function(bg) {
           if (bg.texture && bg.texture.key !== '__MISSING') {
             if (searching && bottom - above > 40) {
               bg.setPosition(w / 2, above + (bottom - above) / 2).setScale(Math.min(w / bg.width, (bottom - above) /
                 bg.height));
             } else {
-              bg.setPosition(w / 2, h / 2).setScale(Math.max(w / bg.width, h / bg.height));
+              // Standing above what is read, the floor of the painting would be hidden behind it and the figures in the
+              // middle of the picture: it goes up, always the same on this screen, until its floor is under their feet.
+              var cover = Math.max(w / bg.width, h / bg.height);
+              var lift = beside ? 0 : Math.max(0, h - (h * (tall ? 0.56 : 0.66) + bg.height * cover * FLOOR));
+              bg.setPosition(w / 2, h / 2 - lift).setScale(cover);
+              fade = Math.max(fade, lift ? h - lift : 0);
             }
           }
         });
+        if (!S.bgFade) {
+          S.bgFade = S.add.graphics().setDepth(-5);
+        }
+        S.bgFade.clear();
+        if (fade) {
+          var melt = h * 0.09;
+          S.bgFade.fillGradientStyle(0x0f2131, 0x0f2131, 0x0f2131, 0x0f2131, 0, 0, 1, 1);
+          S.bgFade.fillRect(0, fade - melt, w, melt);
+        }
         var painting = S.bgs[S.bgs.length - 1];
         if (searching && painting) {
           searching({left: (painting.x - painting.displayWidth / 2) / ratio,
@@ -214,8 +234,13 @@
           }
           var each = (to - from) / crowd;
           var high = Math.max(40 * ratio, Math.min(h * 0.24, each * 1.05, (line - 70 * ratio) * 0.75));
+          // What is read reaches the bar on top (a browser zoomed in): no room for them. They go, rather than peep out from
+          // behind it; they are still chosen with the buttons.
+          var noroom = !!box && line - high * 0.2 > top;
+          noRoom = noroom;
           var stand = function(id, x, y, k) {
             var one = suspects[id];
+            one.noroom = noroom;
             one.tx = x;
             one.ty = y;
             one.size = high * k;
@@ -656,11 +681,11 @@
         }),
 
         /**
-         * The hero says what the student chose (a question to who speaks there): they point at them, and the creature
-         * looks at the hero.
+         * The hero says what the student chose (a question to who speaks there): a puppet points at them; a model talks
+         * as its voice sounds. The creature looks at the hero.
          */
         say: later(function() {
-          if (S.hero) {
+          if (S.hero && !modelled(S.hero)) {
             T.cast.act(S.hero, 'point');
           }
           if (S.pet && S.hero) {
@@ -729,6 +754,7 @@
             }).map(function(p) {
               return p.frame;
             }).join(' ') : '',
+            noRoom: noRoom,
             heroModel: modelled(S && S.hero),
             hero: S && S.hero && S.hero.puppet ? S.hero.puppet.clipName + (S.hero.puppet.tone ? ' ' + S.hero.puppet.tone : '') :
               '',
@@ -833,7 +859,7 @@
             one.shake = Math.max(0, one.shake - dt * 1.4);
             var lift = one.mark && !one.out ? one.size * 0.1 : 0;
             var wobble = one.shake ? Math.sin(time / 45) * one.shake * one.size * 0.06 : 0;
-            one.a += ((one.hidden ? 0 : one.out ? 0.45 : 1) - one.a) * q;
+            one.a += ((one.hidden || one.noroom ? 0 : one.out ? 0.45 : 1) - one.a) * q;
             var base = one.size / Math.max(one.sprite.width, one.sprite.height);
             // Those that can be chosen now beat a little: the only thing that moves to ask for a touch.
             var breathe = still || one.out ? 1 : 1 + Math.sin(time / (picking ? 260 : 700) + i) * (picking ? 0.03 : 0.012);

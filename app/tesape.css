@@ -8838,7 +8838,7 @@ body.adapt-colours .errors-text .fixed ins {
 /* On a wide screen, while no note of the notebook is open, its button goes up beside «Confirmar»: one row less, so that
    what is read starts lower and the figures standing above it are bigger. Only the button covers the row. */
 @media (min-width: 720px) {
-  .scene-layer.live .scene-body.standing > .scene-hints:not(:has(.hint)) {
+  .scene-layer.live .scene-body.standing:has([data-confirm]:not([hidden])) > .scene-hints:not(:has(.hint)) {
     width: fit-content;
     margin: -48px 0 0 auto;
   }

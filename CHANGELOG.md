@@ -1,5 +1,836 @@
 # Changelog
 
+## 0.239.0 (2026-11-01)
+
+The skin chosen in live 3D, and the small things of a narrow screen.
+
+- A hero model can bring the mask of its skin: the skin the student chose paints it, and only
+  it, in the body and the face. A model without the mask gives way to the puppet, which does
+  have that skin.
+- A hero model moves its mouth while its voice sounds, instead of pointing and staying still.
+- On a phone or a narrow tablet the painting of the place goes up, so that the figures keep
+  the floor under their feet, and it fades into the colour behind what is read.
+- With a single answer to give, «Open the notebook» no longer falls over the options.
+- When what is read reaches the bar on top (a browser zoomed in on a small screen), the
+  suspects go away instead of peeping out from behind it; they are still chosen with the
+  buttons.
+- How to share a mission or a layer, in CONTRIBUTING.
+
+## 0.238.0 (2026-11-01)
+
+A mission travels with the course, and can bring its images.
+
+- A course backup carries the package of a mission of the catalog; on a site without it, it
+  comes back as a copy for that course, with the changes of the teacher, never for the whole
+  site.
+- A mission package can bring images/ (PNG, WebP or JPEG, real pictures, within a cap, named by
+  a key of a mission): an art pack of the mission, added over the others.
+- Two examples of other subjects with the same data and engines, in missions/examples: the
+  nest with primes and composites, the terrarium with words.
+
+## 0.237.0 (2026-11-01)
+
+A class keeps the version of its mission.
+
+- A mission package says what it is and what it needs (format, requires, world, art,
+  publisher_id, languages); one of a format the plugin cannot read, or that needs a newer
+  plugin, is refused saying what to do.
+- Once a class has played, its mission keeps its version: nothing changes in the middle of a
+  place. The teacher is offered the new one in the tray, with what it brings; it comes in by
+  itself when the class lights its next lantern, or when the teacher applies it. Before
+  anything is played, it comes in at once.
+- A site setting asks for every new version at once, for a demo site.
+
+## 0.236.0 (2026-11-01)
+
+What the student chose, and who speaks, in live 3D.
+
+- A creature in live 3D takes its colour: its turn of hue, or its paint of the market.
+- With a tone of skin chosen, the hero stands as the puppet, which has it.
+- The hero and the creature talk while their voice sounds, if their body has that gesture.
+- A figure without a gesture does the one most like it everywhere, not only in the scenes.
+
+## 0.235.0 (2026-11-01)
+
+Who speaks in live 3D looks at the others.
+
+- A model who speaks turns towards the others: it stood on their side of the place turned
+  outwards.
+- A small one who speaks can stand larger than its metres: presence, in the extras of the
+  scene of its model.
+
+## 0.234.0 (2026-11-01)
+
+The faces of live 3D, and devices with the light art.
+
+- Live 3D: the face follows its gesture (the eyes and the blinks of each clip, the mouth as
+  the clip says); a state a model lacks shows the nearest one.
+- A figure without a gesture does the most similar one it has, also when it reacts to an
+  answer.
+- With the light art (little memory, saving data, or a class whose teacher asked for it),
+  neither three.js nor the models are brought: the puppets stand; a figure with no puppet,
+  its picture.
+- In the live place, each figure is drawn by its own height: a picture from a small copy
+  keeps its size. A picture stands on its feet, as its puppet does.
+- App page: what goes into it is read and never compiled as part of its template.
+
+## 0.233.0 (2026-11-01)
+
+The place does what the text tells.
+
+- A told moment or an ending can bring acts: who speaks points, raises a hand, nods, laughs
+  or is surprised; the hero points, is surprised or celebrates; the creature hops, sniffs,
+  looks up or is happy; or the place lights up, darkens, shakes or grows. Each one when the
+  piece with its words shows (words per skin, or none: at the start); a figure without
+  that gesture does the one most like it; without the live place, nothing changes.
+- The mission of the living things, version 95: 76 acts in 37 moments of its six chapters.
+
+## 0.232.0 (2026-11-01)
+
+Live 3D on the walking stage, steps at the pace they go forward.
+
+- The layer of the models follows the camera of a place that scrolls and zooms (the
+  encounter of the day): the models stand where their figures are.
+- What stands in front of a place (scene.<code>.front) is drawn in front of the models.
+- A model or a sheet plays its walk at the pace the figure goes forward (the speed of its
+  walk), between half and twice, so the feet keep to the ground.
+- On the walking stage, further back is slower on the screen: the same steps over the
+  ground.
+- Grown-ups in metres: a grown-up of 1.7 m is as tall as the puppet of a grown-up who
+  speaks; a model of who speaks is not made taller again.
+
+## 0.231.0 (2026-11-01)
+
+Characters in 3D, live or as sheets, where the puppets stand.
+
+- Live 3D: a GLB model of the art packs (mdl.<key>; its face in mdl.<key>.cara, the light of
+  each painting in mdl.luz) stands where its puppet would, with the same calls, drawn by
+  three.js 0.186.1 (app/engine/three.min.js, with its GLB loader and meshopt decoder; loaded
+  with the engine only when the packs bring models and the device has WebGL 2) in a layer over
+  the place: in metres (a person of 1.7 m as tall as a person's puppet), turned three quarters
+  to the side it faces, in two tones of the light of the painting; the face blinks and talks.
+- Sheets: a figure drawn in 3D as sheets per gesture and view (spr.<key>.<gesture>.<view> and
+  its atlas) stands where its puppet would, measured in the canvas of the puppet it replaces;
+  each body loads at once the gestures it uses and the rest when asked; a short fade between
+  gestures.
+- The order: the model, else the sheets, else the puppet. Without models or sheets in the
+  packs, nothing changes.
+- Art packs take spr JSON, mdl GLB models (glTF header, up to 2 MB) and their data, and vid
+  MP4 videos (up to 8 MB) with their posters, and serve them.
+
+## 0.230.0 (2026-10-31)
+
+Puppets with follow-through and pieces at rest.
+
+- Follow-through: a piece listed in the gestures' overlap (seconds) takes the gesture that much
+  later, so a forearm, a tool or a head arrives a beat after what pulls it (not without movement).
+- A gesture may ask a piece for another drawing of it (use: {piece: name}; the atlas brings
+  <piece>.<name>, with its pivot and its direction): who speaks shows a hand at rest while still
+  or nodding, and the hand that offers while talking, pointing, greeting or laughing. Without that
+  drawing, nothing changes.
+
+## 0.229.0 (2026-10-31)
+
+Short classroom screens and whiteboards.
+
+- On a wide but short screen (a Chromebook window, 1366 x 630), with the things of a sorting
+  standing in the place, the row of their names goes: they are taken in the place, or one after
+  another as they come into the hand; the line of what is in hand is announced (aria-live).
+- No animation changes a filter any more (there were 13): what glowed without end (the creature
+  of the streak, the seed, the secrets) keeps a still halo and moves by its size or opacity; the
+  dawn of the class screen and the light or shade of an answer, by the opacity of a veil; what
+  appeared with a flash, by opacity and movement only. The glowing creature keeps its colour.
+
+## 0.228.0 (2026-10-31)
+
+Who speaks moves while they speak, and only then.
+
+- T.fx.voice takes a third callback, called when the voice starts to sound, with its length.
+- The packs may bring when each character speaks in their recorded voices (anim.talk.<pack>:
+  for each line with a stretch said by somebody who is not the narrator, [from, to, who] in
+  seconds); T.talkCues loads them once, at the opening of a scene.
+- Who speaks in the place moves during their own stretches of each voice and stays still while
+  the narrator tells; a line voice.say.<who> is theirs whole. Without a recorded voice, they
+  move while the pieces with their name are read. talk() in the place takes who says it and
+  does nothing if that is not the figure in the place; state() says whether they are talking.
+
+## 0.227.0 (2026-10-31)
+
+Who speaks asks and explains, sorting with the place in view, mission v94.
+
+- Who speaks in the scene says the question 600 ms after a decision opens and says the
+  explanation of what was chosen (the option's say or feedback).
+- Sorting: the hero names the thing taken; who speaks says how it went, three ways each
+  (app_classify_allright, app_classify_somewrong and their 2 and 3, voice.say.<speaker>.<hash>).
+- With the things of a sorting standing in the place: each chip shows what goes before the
+  first comma (the rest for screen readers), the help line says what is in hand in full
+  (app_classify_inhand), groups with long names go three in a row, the folded team bar
+  stays on one line, and on wide screens the notebook button goes beside the confirm button
+  while no note is open; what is read starts lower and the figures above it are seen.
+- The drawing of an option or a thing is also looked for by the name read, without the
+  article or what follows a comma.
+- Each voice fades out in 70 ms and leaves 260 ms before the next one; each puppet blends
+  from one gesture into the next in a quarter of a second.
+- The title font: the inverted question and exclamation marks sit on the line.
+- Mission v94: repeated openings varied; drawings named for what is sorted in chapters 2 to 6.
+
+## 0.226.0 (2026-10-31)
+
+Chapter 1 played in the place.
+
+- A choice of several can stand its own candidates in the place (lineup on its own node): those chosen are raised,
+  with a ring of light at their feet, and at the confirmation the right ones jump and the others step back. More than
+  seven stand in two rows, the second in the gaps of the first; more than eight are chosen in the place, with the list
+  folded for who prefers it and what was chosen said in words below.
+- The drawing of an option or a thing of the table can be named (art: being.<id> or thing.<id>), else the picture the
+  server found for it, or that of its id.
+- Who a decision is about can stand in the place while it is judged (stand: [ids]): it jumps if the answer is right
+  and shakes its head if not.
+- In a decision of groups, the things of the table stand in the place if all of them have a drawing: on the table in
+  front, behind in the part of their group once placed, the one in hand raised; they are taken with a touch there too,
+  and at the check the right ones jump and the others shake and go back to the table.
+- With figures standing, what is read is tighter, so that they are seen.
+- A touch in the place picks, of those under the finger, the one whose middle is nearest.
+- Mission v92: «¿Quién tiene hambre?», «El Nido de la Vida», «Bajo la lupa: ¿está vivo?» and «El tribunal de la vida»
+  staged so.
+
+## 0.225.0 (2026-10-31)
+
+The hero says the reasons, reads the clues and speaks at its moments; the volume of the device.
+
+- In a decision of several, the hero of the student says the reasons chosen before the world answers; a piece of
+  what the team knows, opened, is read aloud in the hero's voice; and the hero says something of its own when a fight
+  on the road starts, when the creature sniffs, at a secret found, at a new level and when a scene ends
+  (app_hero_<moment>, each with two ways). T.heroKey and T.heroSays in core.js. Without their voices in the art pack,
+  as before.
+- The loudspeaker of the bar opens the volume of the device (0.4 the first time; one for all the games of Oksigenia on
+  the site, in localStorage oksigenia-volume) and the silence.
+
+## 0.224.0 (2026-10-31)
+
+Each moment of the road fight said in a few ways.
+
+- What happens in the fight with a minion on the road (the blow, the dodge, the leap, the catch, the miss, the end)
+  has two or three ways of being said (app_fight_dodged, app_fight_dodged2…), one of them each time, on the screen and
+  in the voice.
+
+## 0.223.0 (2026-10-31)
+
+The road fight speaks.
+
+- The fight with a minion on the road says what happens when the art pack has its voice: the minion says what it
+  claims when the fight opens and laughs when an answer misses; the narrator says what to do, each blow and how it
+  ends. While the creature dodges, only the blow or the laugh.
+- The fight plays its own sound (sound.ambient.fight; without it, the soft sound of the night) instead of that of the
+  place.
+- A right answer with the right net while the creature is tangled says so (app_fight_tangledhit), instead of «with
+  another net».
+
+## 0.222.0 (2026-10-31)
+
+The hero says what the student asks, the ink marks said plainly, the road fight without the sound of the place.
+
+- An option that is said (a question, an exclamation, «…» or —…) is said aloud by the hero of the student before the
+  world answers, if the art pack brings it in their voice (voice.hero.<f1|f2|m1|m2>.<key of the line>: a girl or a boy,
+  younger in infant school and the first years); the hero points at who is asked. Without it, as before.
+- get_world gives the stage of the class (classstage).
+- The fight with a minion on the road stops the sound of the place while it lasts, and plays the music of the battle
+  where music may play.
+- Mission v91: in «Las preguntas al búho» and «Los abrigos», the ink marks that are no animal's are said to be the
+  Embrollo's, and where they come from.
+
+## 0.221.0 (2026-10-31)
+
+The minion on the road as a puppet in the fight.
+
+- In the fight with a minion on the road, its puppet, when the art pack brings it (rig.minion.<code> with the skeleton
+  rig.minion and the gestures anim.rig.minion, the same for every minion): it waits floating, takes each blow, throws
+  its thread when the creature has to dodge, and comes undone when it is untangled. It plays on a clear stage of its
+  own over its face, twice as big, kept from one turn to the next and turned towards the creature.
+- Without movement, without WebGL or with the moments as a list, its picture, as before.
+
+## 0.220.0 (2026-10-27)
+
+The question the owl gives, the suspects above what is read.
+
+- A decision played again with an extra question asks its own question (extraprompt) when the scene has one, and no
+  longer offers the option that was just chosen; the note over the options is gone.
+- The suspects standing in the place go up with the box of what is read when it grows, smaller if they must, up to the
+  bar on top, instead of staying behind it.
+- What is known (clues) follows on the line, the title of what the team knows shares the row of the roles, and on low
+  screens the box of a live scene is tighter.
+- Mission v90: the question the owl gives in «Las preguntas al búho».
+
+## 0.219.0 (2026-10-27)
+
+Help that comes by itself, the zoom note, the questions said aloud.
+
+- With a decision on screen and the student still, every 15 s brings the next step: the
+  question said aloud; a ring on what there is to touch, with the hero pointing at it;
+  then it is done together: the creature sniffs out an option that is not it (once a
+  play), or the notebook opens by itself at its first note, without breath, saying who
+  brought it. The clock stops while someone speaks; a touch, a key or the wheel puts it
+  back and takes the ring away. Each step comes once a decision. Spots hidden in a
+  painting are never ringed. Not at the class screen.
+- The server takes {"n", "hint": 0, "idle": 1}: the first note of a node opened by that
+  help, only if no other is open. It counts as help in the evidence and is not charged.
+- When the browser is zoomed so far that the game no longer fits (from 150 % on a
+  Chromebook), a note at the top says to press Ctrl (Cmd) and 0; it goes when the page
+  fits again or when it is closed.
+- The helps of a decision (sniffing, the notebook) look lighter than its options.
+- Mission v89: the three questions to the owl, written as questions.
+
+## 0.218.0 (2026-10-26)
+
+The light of evolution, the colour of the creature when it is born and grows, the painting of the basement.
+
+- When the creature grows, and when the hero reaches a new stage, a sheet of frames of the art pack plays over the
+  figure (anim.fx.<name> and fx.<name>: frame, cols, rows, frames, fps, anchor, fit, cues, still): the light of
+  evolution comes in, covers the figure of before and, at its flash (cue swap), the one of now is there. Without the
+  sheet in the pack, the change as before; without movement, its still frame and the one of now at once.
+  `T.fx.sprite(host, name, figure, cue)` plays any sheet of the pack.
+- The creature drawn big (when it is born and when it grows) kept the colour of its picture instead of its own: the
+  animation that brings it in replaced its filter. Its colour, or the paint of the market, now goes in `--paint`, and
+  the animation keeps it.
+- Mission v88: «The basement» shows its painting of the pale plants (its key was not the one of the pack).
+
+## 0.217.0 (2026-10-26)
+
+A scene played in the place, said aloud: the suspects of the owl, the voice of what happens, the ending told.
+
+- The suspects stand in the place (`lineup` in a node, mission v87): the options of a choice of candidates, each with its
+  drawing (`being.<id>`; with one missing, none stand). Each answer sends to the shade, a little behind, those that what
+  is known contradicts; in the choice of the suspects, they beat a little and are chosen with a touch in the place (or
+  with the buttons, as always); in a choice of several, `away` in each option says whom it sends away; in a good
+  ending, only the right one stays. First in «The questions to the owl», with its three trails.
+- What happens when something is chosen (`say`) is said aloud with its recorded voice, if the art pack has it, looked
+  for by its text as the pieces told; a piece with the name of the creature or of the student has its voice without
+  the sentence that carries it, which stays as text.
+- How a scene ends is told first, in the box of words, in the place and with its voice; then what was won comes, a
+  thing at a time with its sound; «What if…?», folded.
+- The place answers how it went: who speaks nods or starts, the creature jumps with a few sparks or looks up, the hero
+  celebrates.
+- On one device, what each role sees goes folded under its name («What your team knows»): the decision comes first.
+- With the place alive, once chosen, the options are put away, and the box of words scrolls inside: a long answer no
+  longer goes under the title. The name of who speaks shows only over the pieces where they speak.
+- Mission v87: the suspects of the owl. Art: the mission layer v13 brings the voices of the answers and the endings of
+  the owl, and those of the told pieces that had none.
+
+## 0.216.0 (2026-10-26)
+
+The head of a coloured creature, nothing over what is read, bigger figures, the beings drawn.
+
+- The creature with a colour of its own (a turn of hue or a paint of the market) had its head cut in the moments that
+  are played: the colour was a filter over the puppet, and the engine cuts a filter to the box of the figure, which a
+  puppet standing on its feet goes out of. The colour now goes into a copy of its picture, once, so the whole figure is
+  drawn, with no filter each frame, and it also shows where the browser has no filters.
+- In a scene, the verb of the role (Shield ready, Balm, the lens, the trail) goes in the bar on top, beside the title:
+  it no longer floats over the options, the notebook or the hints. On a narrow screen, only its medallion.
+- On a wide screen, the hero, the creature and who speaks stand on the floor of the place, big, on both sides of what is
+  read, instead of small above it. On a phone, as before.
+- «Who is it?» in the encounter of the day: the four beings drawn, when the art pack has the four, in a row (two and two
+  on a phone); with a drawing missing, all four in words, two and two, so that no row has one alone.
+- On the map of a phone, the row of the landmarks no longer takes the touches of the places under its gaps.
+- provenance: GitPython 3.2.1.
+
+## 0.215.0 (2026-10-25)
+
+The game from another platform (LTI 1.3), and Moodle 6.0.
+
+- Who is in a course only through «Publish as LTI tool» (LTI 1.3) goes straight into the valley as a student, even
+  where the teacher did not choose it; a teacher who comes that way lands on the course, with the cover of the game.
+- In the settings, the card «From another platform (LTI 1.3)»: whether the site can publish courses as LTI tools,
+  whether this course is published, and the pages of Moodle to publish it and to see what the other platform needs.
+- Moodle 6.0: supported up to it (the development branch passes the whole suite); the CI runs main on every push.
+
+## 0.214.0 (2026-10-24)
+
+The image of the app card with the key of the user.
+
+- The template of the app had core-external-content on an img, which the HTML check of the templates does not allow;
+  art::small() now gives the address with the key of the user (tokenpluginfile), which the app loads without it.
+
+## 0.214.0 (2026-10-24)
+
+The game in the Moodle app.
+
+- db/mobile.php: an entry «Tesapé» in the main menu with the games of the user, and a tab «Tesapé» in each course with
+  a game, as on «my world»: the mission, where the class is, the note of the day and the ways in, which open the game
+  in the browser of the app with the session. The entry and the tab only show where the user plays or teaches.
+- art::small() gives the small copy of an image of the art, for phones.
+
+## 0.213.0 (2026-10-24)
+
+Campaigns of several courses.
+
+- A teacher makes a campaign from the settings of their course and gives its code to the teachers of the other
+  courses, who join with it. Each course plays its mission, and the lanterns of all of them are seen together on the
+  class screen and on the map of the students. Only the names of the courses and their lanterns go from one to another.
+- New table campaign and field campaignid of the region; a course leaves its campaign when its game goes, and a
+  campaign goes when no course is left in it.
+
+## 0.212.0 (2026-10-24)
+
+The creature of the class, in infant school.
+
+- In infant school there are no characters: the class has one creature (new field creature of the region: its name,
+  given by the teacher in the settings, its colour and what it has grown). It grows with what the class does
+  together: a lantern lit, a battle won (not a rehearsal), a scene played well all together; and it changes at some
+  points, as the creature of a student does.
+- The class screen shows it with how much it lacks to change, and in big when it changes; a student who opens the game
+  sees only the creature and that the class plays on the class screen.
+
+## 0.211.0 (2026-10-24)
+
+The stage of the class.
+
+- «Stage of the class», first in the settings: infant school, years 1 and 2 of primary, years 3 to 6, secondary and
+  adults (a rule of the course). Choosing it puts in the form what suits that age (the family of roles, the devices,
+  the talents and the energy one can lose in a day), to check before saving.
+- In years 1 and 2, whoever comes into the game starts on «First steps».
+
+## 0.210.0 (2026-10-24)
+
+The cinematics of the class screen (mission v86).
+
+- «Tell the story», on the class screen: the prologue and the arrival of the Embrollo, told with the paintings of the
+  mission in full screen (a camera that comes closer, moves away or slides, what floats in the air in the season, and
+  what is told in big), with «Pause», «Next» and «Close».
+- The voice of each step, in the story of the class, comes from the art when it brings it
+  (voice.cine.<cinematic>.<step>.<skin>); without it, each step lasts the time to read it.
+
+## 0.209.0 (2026-10-24)
+
+The light pack.
+
+- The paintings, characters, portraits and maps of an art pack wider than 640 px get a copy of half their size, made
+  when the pack is installed; for the packs already there, by a task the upgrade queues. The pieces of puppets, the
+  sets and the figures, measured in pixels of their own, keep only theirs.
+- The game takes the small copies on tablets with little memory or that save data, and on every tablet of a class
+  whose teacher ticks «Light images on every tablet of the class» in the settings. The class screen never.
+- The painting of the place of today and of the next one are asked for in the background, before they are opened.
+
+## 0.208.0 (2026-10-24)
+
+The first look (mission v85).
+
+- Before their first scene, each student has «The first look» as their next step: six questions of three levels
+  about living things, with «I do not know yet» always there, and no mark and no right or wrong shown; at the end the
+  world says it knows which way to take them.
+- What they answer suggests their step (all right, expert; all but one, further; most, core; half or less, first
+  steps), kept for their teacher: beside the step of each student in the panel, marked; and in «Class», how many did
+  it and «Put the suggested steps» with one touch. Nothing changes until the teacher puts it.
+- New field entrystep (member), added by the upgrade.
+
+## 0.207.0 (2026-10-24)
+
+The library of the team, the fact of the explorer and «Explorer of knowledge».
+
+- The library of the team: a book for each curiosity someone of the team read, in its card; with three, the lantern
+  of the banner of the team is theirs, without gems (also in the market).
+- The fact of the explorer: in the panel, the curiosities a student read; when they tell the class the fact of one,
+  their teacher marks it and everybody in their team gets one breath for their powers, once for each curiosity.
+- «Explorer of knowledge», a badge of Moodle made with the mission (turned off, like the one of the mission): turned
+  on, it goes to whoever has three seals of curiosity.
+- The tests of games in a course and of the curiosities do not depend on the order the database gives (PostgreSQL).
+
+## 0.206.0 (2026-10-24)
+
+The shop of the naturalist (mission v84).
+
+- «Do you want to know more?»: in the market of the map, the shop of the naturalist with three curiosities of the
+  mission (plants that hunt, living lights and the champions of endurance), short readings beyond what is essential,
+  bought with gems.
+- Read, with their two questions right (a wrong one waits for another try, with nothing lost), they give the gems
+  back and two more, a seal of curiosity on the sheet and a golden card of their topic in the album, once; and the
+  fact of the explorer, what to tell the class. They give no knowledge.
+- The documentation of engine::pause lists all its parameters (the PHPDoc check of 0.205.0).
+
+## 0.205.0 (2026-10-24)
+
+The pause, for a reason agreed with the class.
+
+- Each course has what puts a student in pause in the game, agreed with the class: Tesapé proposes three reasons and
+  the teacher changes them (five at most) in the settings; the students read them on their sheet.
+- A pause is always for one of them, with a note if the teacher wants, and lasts from one to seven days. It ends by
+  itself (when the student comes in, and in the task of each hour), or before with «Back to the game».
+- The panel and the map of the student say the reason and until when.
+- New fields: pauses (region) and pausedto (member), added by the upgrade.
+
+## 0.204.0 (2026-10-24)
+
+Teams of five, with what their roles mean.
+
+- Making the teams, the panel proposes the size that shares out the class best (of four, or of five if those come out
+  even: 25 are five teams of five) and says first how they will come out, again when the size changes.
+- The roles are dealt round the table, each one going on where the one before stopped: every team gets each role
+  and, in teams of five, one of them twice.
+- Under each team, the role two of its members have (in the battle they share its verb; in the scenes each one has
+  their option) and the one nobody has (anyone in the team covers it in the battle).
+
+## 0.203.0 (2026-10-24)
+
+More than one game in a course.
+
+- A course can have more games, one for each group of Moodle that plays apart (5th A and 5th B): each with its
+  world, its teams, its class screen and its report. The game of the course is the course itself, as always; a game
+  more keeps its data with its key (minus its id) where they say course, and only what asks Moodle (the context, the
+  groups, the badges, the competencies, the activities) goes to the course.
+- Each student plays in the game of their group: the game page takes them there, and the web services let a student
+  into their own game only. Teachers go into any, and the panel has the way between the games of the course.
+- «Games of the course», in the settings of the panel: open a game for a group, go to it, or close it with all it had.
+  A game with the same mission as another one of the course takes the same sections and activities; the team
+  submissions use a grouping with the teams of all the games. If the teams of the course were all its groups, they go
+  as they are to a grouping of their own when a class plays apart.
+- The privacy provider, the observers of Moodle, the cover of the course page and «my world» see every game of a
+  course; deleting or resetting a course takes its games more with it.
+- The signals test runs at midday of its day: near midnight in the zone of the tests it failed.
+
+## 0.202.0 (2026-10-24)
+
+Seasons and the hour of the day (mission v83).
+
+- The map of the student and the one of the class screen take the sky of the place of the course: its time zone
+  gives the hour and the season (in the south, the other way round, from the latitude of the zone). Dawn, dusk and
+  night tint the world; petals, pollen, leaves or snow float in the air, still for who has no movement.
+- On the map of the student, the sky is one more landmark of its row (its picture shows the light, its name the
+  season); on the class screen, a label. Touched, it tells what happens in the world in that season (the seasons of
+  the mission).
+- When the class lights a lantern, the class screen shows a short scene: the painting of the place under the sky of
+  now, slowly closer, with its lantern and what is told of it (the lantern line of each place).
+
+## 0.201.0 (2026-10-24)
+
+Eslabón (mission v82).
+
+- A minigame of a new type, chain, in the Great Lake: the links of a food chain, shuffled, with their drawings, put
+  in their order from the sun by touching them (a link put wrong goes back with a touch). Joined, the energy runs
+  along the chain and less of it reaches each link.
+- Five rounds: the chain of the lake, why there are many algae and few kingfishers, the chain of the meadow, what
+  happens to the snails when the Embrollo takes the toads away, and who uses what is left (the decomposers). The
+  server counts the play again; the results of the teacher show the chains put wrong.
+- The rounds of the leaf factory and of Eslabón say «Next round».
+
+## 0.200.0 (2026-10-24)
+
+The leaf factory (mission v81).
+
+- A minigame of a new type, leaf, in the Garden of Light: a leaf seen inside with three keys (sunlight, water and
+  air, from 0 to 4). It makes as much sugar as the least of the three lets it, and what is left of the others is
+  wasted; the leaf goes pale without light, wrinkles without water and shines when the three go together.
+- Five rounds: the recipe, the cloud of the Embrollo (light up to 2: what holds the leaf back), the night (the leaf
+  breathes and spends sugar), the dry root (the water comes up from the root, through the stem) and the full jar. Two
+  rounds may go wrong on the first step, one on the others; the server counts the play again.
+- The results of the teacher say what the class does wrong in each round, with the recipe used.
+
+## 0.199.0 (2026-10-24)
+
+The game in the log of Moodle, and the teams of Classtools.
+
+- Six events of Moodle (classes/event): a hero created, a scene of the mission finished, a minigame finished, the
+  lantern of a place lit (by the class playing, from a session or by the final battle), a battle ended and a minion
+  untangled. They go to the log of the course and to whatever reads it, an xAPI log store included.
+- With Oksigenia Classtools on the site, the settings of the teacher link to it to make the teams there, at random and
+  with the photos of the class, and the groupings it saves are marked in the list.
+
+## 0.198.0 (2026-10-24)
+
+Nest defence on the class screen, and what a team stakes in a turn.
+
+Nest defence on the class screen for a team, with the tablets as controls (nestboards):
+- A live session of its own kind, nest, for one team: its tablets come in and the nets of the game are shared out
+  among them. The animals come down on the class screen one at a time (fifteen seconds each); only the net of their
+  group works, and one tablet has it, so the team has to talk.
+- A wrong net, or none in time, and the animal gets into the nest, which loses one of its three eggs; the class
+  screen says which net it needed and why. An egg left at the end: a gem for each one, once a day.
+
+What a team stakes in a turn of the battle by turns (live::tactic):
+- While the knot is announced, any of the team chooses: on the safe side, a strong pull (its lane undone cuts a
+  thread more; failed, the Embrollo gets one back) or support (its lane undone cuts nothing, but shields the team
+  attacked, or keeps the candle when the Embrollo goes for everybody). The last one chosen counts.
+- The class screen shows the stake on each team, and what it did when the turn is resolved.
+
+## 0.197.0 (2026-10-24)
+
+The great untangling, the whole class against the knot.
+
+- A live session of its own kind, untangle, beside the battle and the vote (untangles), with the fields of a battle
+  left empty so that what reads the sessions of a course goes on working. The class screen opens it from the card of
+  the battle, the phones come in from the call, and the class screen starts it: five minutes.
+- The knot has a strand of six knots for each team that came in. Each phone gets micro-challenges of the burst of the
+  mission, one after the other, which the server checks: right, the strand of the team loosens; wrong, it tightens a
+  little. A team with its strand loose helps the team with the tightest one.
+- The strands loosened in the last great untangling weaken the Embrollo for the final battle, up to 20 points more, in
+  the strength of the expedition; the class screen says it at the end and in the bar of the expedition.
+
+## 0.196.1 (2026-10-24)
+
+The outcome of a fight without an empty default.
+
+A fresh install refused a NOT NULL char column with '' as its default (XMLDB fixes it with a debugging message, which
+stops the install of the CI). The column has no default; every fight is created with an empty outcome.
+
+## 0.196.0 (2026-10-24)
+
+The little knots, the fight of the creature with a minion on the road.
+
+- The minion on the road is now a fight of three turns of the student's creature (fights, table fight; one a day for
+  each minion, kept and decided by the server; minion_fight).
+- Each turn: the net (the idea that undoes what the minion claims; the right one cuts two threads, another one), a
+  question of its knot, and the thread it throws, which the student dodges moving the creature to another place in
+  four seconds (without a time limit with «no hurry»). Caught, the creature loses a bond and its next strike cuts one
+  at most.
+- Three threads untangle the minion, with its gem as before; three bonds lost or three turns, and it escapes until
+  tomorrow. A fight left halfway goes on the same day.
+- The creature learns a move by stage: sniffing a wrong net (2), leaping away from the first thread (3) and the double
+  strike (4).
+
+## 0.195.0 (2026-10-24)
+
+Questions from the question bank of Moodle in the battles.
+
+- The teacher picks, in the settings, a category of the question banks of the course (the course up to Moodle 4.5,
+  its question banks from 5.0) where they can use the questions (moodlebank).
+- Half of the questions of the battles without turns come from it, mixed with those of the mission; those by turns
+  keep the knots of the mission.
+- Only questions the screens show as they are: the last ready version of a multiple choice question with one right
+  answer (two to five options) or of a true or false one, as plain text. Each category says how many are usable.
+- A category of another course (a course restored elsewhere) brings nothing.
+
+## 0.194.0 (2026-10-24)
+
+The knot of a team, without the class screen.
+
+- A team session without a scene, opened from the Team tab with two tablets at least: the others get the call and
+  come in (teamknots, on the huddle tables; any tablet in keeps it alive).
+- One turn each, three to five, with the knots of the places reached and those the class mixes up last. One answers;
+  the others help with the verb of their role: the sage strikes out a false option, the scout shows the weak point, the
+  protector shields the candle and the healer cheers for another try.
+- A right answer cuts a thread; a wrong one without a shield blows one of the two candles. Won with 60% of the threads
+  and a candle lit: a gem for each one, once a day.
+- A knot over does not hold the team; a scene on the tablets does.
+
+## 0.193.0 (2026-10-24)
+
+The turn in deferred, for whoever follows from far.
+
+- Whoever follows the expedition from far and was not in a battle of the class plays four of its questions afterwards,
+  in the three days after it, from «Your turn, from far» (play_deferred).
+- Each right answer gives a gem (three at most) and, if the class lost, takes threads off the Embrollo for the rematch.
+- The class screen says from whom the strength came, by the name the class sees. Once a battle.
+
+## 0.192.0 (2026-10-24)
+
+The class screen as a game board.
+
+- The fog of the Embrollo covers the places the class has opened where, in the last try of each student at each scene,
+  less than 60% was right (with five answers at least); it goes away by itself when the class gets it right again. The
+  map says which places it covers.
+- With the fog over three places, the next battle by turns has a knot more (grown), and its lobby says so.
+- Each team has its token, with its initial, beside the place where most of its members played last.
+- Nothing new is kept: it is read from the tries (fog).
+
+## 0.191.0 (2026-10-24)
+
+The route of the team.
+
+- Two ways into each place, with the same scenes and another arrival. While the class is in a place, the scout of the
+  team chooses the way (anyone, if the team has no scout), once (choose_route); then the place tells the team how it
+  arrived, and the second way lists the games and the quests of the place the other way round.
+- Field routes in the team table.
+- Mission v80: two ways into each place, with their arrival in each story.
+
+## 0.190.0 (2026-10-24)
+
+A stop on the way in each place.
+
+- Once a student has played a scene of a place, they stop there once (take_stop) and choose: rest by the fire (2 breath
+  back) or listen to who lives there (a short tale of the place). Nothing at random.
+- In Spanish, who someone is inside a sentence goes with the preposition and the article joined (al barquero).
+- Mission v79: a stop in each place, with six short tales.
+
+## 0.189.0 (2026-10-24)
+
+The deck of the team in the battle by turns.
+
+- In the preparation of a turn, the tablet shows a card for each thing the members of the team carry (live::deck); anyone
+  in the team plays it once a battle (live_play card): the lantern strikes out a wrong option of the lane of the team, the
+  lens tells in which place the answer is, and the net keeps the candle of the team lit if the blow falls on it.
+- The class screen announces each card played.
+
+## 0.188.0 (2026-10-24)
+
+The gift of the place.
+
+- While the class is in a place, each team chooses one of the gifts of the mission for it, once (choose_gift, in the
+  «Team» tab): the lamp (the first hint of each scene of the place is free), the heron's step (a scene of the place that
+  goes well gives a gem more) or the breath of the wood (the reserve of the team gets 4 breath at once).
+- Field gifts in the team table; reserve::row makes the row of a team.
+- Mission v78: the three gifts, with their names in each story.
+
+## 0.187.0 (2026-10-24)
+
+The teacher as the director of the game.
+
+- In «Class», «What do they do?»: who (a team or the whole class), what they did in a line, which the students see on
+  their tablet, and what happens: some knowledge, a gem, or a mark of the story with a gem (direct).
+- The mission lists the marks the teacher can give (director); each one who plays gets it, and the scenes and the
+  memory of the places read it as any other mark.
+- Mission v77: three marks (the heron is a friend of the class, the owl trusts it, the garden is looked after), their
+  memory in their places, and in «The night by the lake» an option for whoever has the one of the heron.
+
+## 0.186.0 (2026-10-24)
+
+The hourglass and the wheel of fate on the class screen; the libraries of other regions.
+
+- On the class screen, «Hourglass»: one to twenty minutes, the sand falling with the time left in big; it can stop and
+  get a minute more, and says when the time is over.
+- «Wheel of fate»: a team or a student with a hero at random, by the name the classmates see, without repeating until
+  everybody has come out (kept in the browser session).
+- A teacher can share the Library of the class (the museum of its field guide) with the other regions of the site
+  (rule library, save_region sharelibrary). The students of other courses see the shared libraries in their Library
+  and visit their shelves (get_library): what the entries say, without names or pictures.
+- PDFs, region rules and tests updated.
+
+## 0.185.0 (2026-10-24)
+
+Double techniques in the battle by turns.
+
+- Two verbs of the same team in the same turn make a double technique, with its name and its effect: the oak embrace
+  (shield and cheer) keeps the shield on its team the next turn too; the owl's eye (glance and trail) strikes out two
+  wrong options of the lane when the right one and another are left; the steady lantern (shield and glance) keeps the
+  candle lit when the Embrollo goes for everybody; the clear path (cheer and trail) takes a thread more if the team
+  undoes its lane.
+- Announced on the tablets of the team (combos, struck2) and on the class screen (combos).
+
+## 0.184.0 (2026-10-24)
+
+Be the Embrollo.
+
+- In the «Team» tab, a team writes its tangle of the week: what the Embrollo says (a false idea), what is true, another
+  wrong idea if it wants, and why (play_tangle write). A new one replaces the one waiting; one approved a week.
+- The teacher approves it or gives it back from the tray (review_tangle); approved, each member of the team gets 2 gems.
+- The other teams undo it from the map («Tangles of the class»): one try each, a gem at the first try, then what is true
+  and why (play_tangle undo).
+- In «Challenges», the approved tangles with how many tried and undid them, without names, and «Take to the battle»: a
+  question of the place of now, with what is true as the right answer.
+- In a session, «The tangle of the week» puts one on the class screen, to argue aloud and then see what is true.
+- Table tangle, in the privacy provider and cleared with the course.
+
+## 0.183.0 (2026-10-24)
+
+The easy reading of the scenes.
+
+- A new adaptation, «Easy reading», marked by the teacher (also in the profile «Reading support») or by the student in
+  «How you see it»: the scenes say the easy version of each narration and question where there is one.
+- In the workshop, each scene has a block «Easy reading» with the easy version of each of its texts, empty by default.
+  «Propose with the AI» fills them with the AI of the site (edit_mission easydraft); nothing is used until the teacher
+  saves it. Proposals that bring plural forms of address or words the texts never use with students are left out.
+
+## 0.182.0 (2026-10-24)
+
+The glossary of the scenes, the summaries for the families and the pack for home.
+
+- Glossary: the key words of the mission are underlined in the scenes the first time they appear in a moment; touched,
+  a card tells what they mean, with the drawing of a being when the art pack has it and a button to hear it. Not on
+  the class screen. The teacher changes each meaning in the workshop (block «Glossary of the scenes»).
+- Summaries for the families: a PDF with a page for each student (family.php), of the whole class or from the sheet of
+  a student: the places of the expedition, how each objective is going in words, what they found, questions to talk
+  about at home, what the teams aim at and what comes next. No marks, gems, positions or adaptations.
+- Pack for home: the place where the class is now on paper for a student (homepack.php): the story up to the first
+  decision and every decision, with boxes and lines, only the options of their role and words, without endings; the
+  words of the glossary that come up and the questions for home.
+- The PDFs without the line of the library at the end (paper::pdf), the report of the class too.
+- Mission v76: glossary (29 words) and two questions for home in each place.
+
+## 0.181.0 (2026-10-24)
+
+The finishing pull and the parry, in the battle by turns.
+
+- After answering their lane on the tablet, a knot crosses a bar in three seconds and a touch in its clear zone pulls
+  the thread (live_play pull): if most of who got the lane right in the team pulled in time, the lane takes a thread
+  more from the Embrollo.
+- The protector who puts their shield on a team can raise it in time the same way (live_play parry): if the blow falls
+  on that team, it bounces back and takes a thread.
+- Neither with «no hurry», nor aloud. The class screen tells the pulls and the parry at the resolution.
+- Fields pulled (livein) and parried (livetoken).
+
+## 0.180.0 (2026-10-24)
+
+The burst of the Embrollo on the class screen.
+
+- In a session, «The burst of the Embrollo» puts it on the class screen (show burst; also as the action of a step of a
+  session sheet): each micro-challenge big, with its clock and its options lettered; the class answers aloud and the
+  screen shows what was right before the next one. Another burst each time it is put on the screen.
+- minigames::class_burst gives the micro-challenges of the burst of the mission with no student.
+
+## 0.179.0 (2026-10-24)
+
+The burst of the Embrollo (mission v75).
+
+- A minigame of a new type, burst, opened from the map: nine micro-challenges of one word, «Alive!» (is it a living
+  thing?), «Group!» (the group of an animal, a plant or a fungus) and «Think!» (a question of the battle from the places
+  the class has lit and the one it is opening), each faster after right answers in a row, and at the end three things
+  at once, to touch those that are alive. Three misses end it (the protector holds one more); without hurry, no clock.
+- Made from the catalog and the questions of the mission, another one each play; the server counts it again and the
+  teacher sees what the class misses most.
+- get_world says which game is the burst of the mission.
+
+## 0.178.0 (2026-10-24)
+
+Two words that describe the hero (mission v74).
+
+- On creating the hero, after the look, the student may choose two words that describe them (curious, brave, calm,
+  cheerful, tenacious, dreamy); on their sheet in «Me» they see them and change them at any time (set_nature).
+- A node of a scene may say something to whoever is described by one of their words (nature): the last piece of a
+  story, or a line before the question of a choice; an option may ask for a word (requires: {nature}), and only they
+  see it. Neither at the class screen.
+- The mission: what is said in the intro of the core scenes of each place to each word, in both skins, and three
+  options for the curious, the calm and the dreamy.
+- The workshop lets the teacher change what each word hears.
+- The character keeps its words (field nature).
+
+## 0.177.0 (2026-10-24)
+
+Secrets on the map itself, between the places (mission v73).
+
+- A secret of the mission can be on the map (place: map, in the units of the map): a glint to touch, found as those
+  of the paintings, counted in the album and shown at the pace of «Secrets in the paintings».
+- The mission brings two: an owl dozing at the top of a pine and a lilac thread at the greenhouse.
+- get_world sends them with the mission (mapsecrets).
+
+## 0.176.0 (2026-10-24)
+
+The terrarium of the clearing (mission v72).
+
+- A minigame of a new type, terrarium: the student puts in a terrarium what they think is alive (a touch puts it in or
+  takes it out, eight fit) and lets a week go by. What is alive changes, with what the catalog says a week does to it;
+  what is not stays the same, or changes without being alive. Won when everything inside is alive and there are as
+  many as the step asks; never lost.
+- With the drawing a week later from the art pack (being.<id>.week, thing.<id>.week) when it comes; meanwhile the same
+  drawing grows for a moment.
+- The look of the sage and the nose of the creature say a thing that is not alive without a week.
+- The server counts the play again (the things in and out, the weeks, the looks) and keeps the weeks; the teacher
+  sees what spent a week inside without being alive.
+
+## 0.175.0 (2026-10-24)
+
+The secrets of the class, hidden by the teacher in the paintings of the places.
+
+- In the workshop, «Your class's secrets»: up to twelve, each in the painting of its place (touched on it, or moved with
+  the arrow keys, inside the band a phone shows; the secrets of the mission shown faint) and with what it says.
+- They go after the secrets of the mission: found the same way, counted in the album, shown at the pace of «Secrets in
+  the paintings», and taken to another course with the other changes.
+- edit_mission takes the action secrets.
+
+## 0.174.0 (2026-10-24)
+
+Cracks over the painted seed, the accessible name of a renamed place, and pieces of a role up to 220 characters in the workshop.
+
+- The seed of the creature from the art pack gets the three cracks that open as it is touched, drawn over it.
+- A place whose name the Embrollo changed says first the name read on the map, then the real one (label in name).
+- In the workshop, the piece of a role is kept only up to 220 characters, as missions are checked; its field says so.
+
 ## 0.173.0 (2026-10-20)
 
 - **How many secrets at a time.** In the settings of the course, «Secrets in the paintings»: all at once (as before),
