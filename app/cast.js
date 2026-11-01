@@ -52,6 +52,10 @@
     return skin < 0 ? null : 't' + (skin < 2 ? 1 : skin < 4 ? 2 : 3);
   }
 
+  /** @var {Object} For a figure without a gesture, the ones most like it, in order (a model names some otherwise). */
+  var ALIKE = {happy: ['celebrate', 'hop'], alert: ['surprise', 'nod'], laugh: ['nod'], celebrate: ['hop', 'nod'],
+    surprise: ['alert', 'nod']};
+
   /**
    * The paints of the market as colour matrices, the same as the tablet paints them with filters: one over the hue of
    * the creature.
@@ -111,6 +115,23 @@
   }
 
   /**
+   * The colour of the creature, as a matrix: its turn of hue, or its paint of the market.
+   *
+   * @param {number} hue
+   * @param {string} paint
+   * @return {number[]} Rows of five: red, green, blue and alpha in, and what is added (already out of 1).
+   */
+  function colourOf(hue, paint) {
+    var m = new window.Phaser.Display.ColorMatrix();
+    if (PAINTS[paint]) {
+      PAINTS[paint](m);
+    } else {
+      m.hue(hue);
+    }
+    return m.getData();
+  }
+
+  /**
    * A copy of a picture with the colour of the creature in it: its turn of hue, or its paint of the market. Without it
    * (a picture the browser does not let read), the picture as it is.
    *
@@ -134,14 +155,7 @@
       ctx.drawImage(source, 0, 0);
       var pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
       var d = pixels.data;
-      var m = new window.Phaser.Display.ColorMatrix();
-      if (PAINTS[paint]) {
-        PAINTS[paint](m);
-      } else {
-        m.hue(hue);
-      }
-      // Rows of five: red, green, blue and alpha in, and what is added (already out of 1).
-      var k = m.getData();
+      var k = colourOf(hue, paint);
       for (var i = 0; i < d.length; i += 4) {
         if (!d[i + 3]) {
           continue;
@@ -180,7 +194,7 @@
       // The puppet is cut from the picture in the tone it is painted in, and brings the other tones it can take.
       var tone = c.role ? toneOf(c) : null;
       var pet = creature(c);
-      var rigs = T.puppet ? {hero: c.role ? T.puppet.find(heroKey(c, family, true), 'hero') : null,
+      var rigs = T.puppet ? {hero: c.role ? T.puppet.find(heroKey(c, family, true), 'hero', tone) : null,
         pet: T.puppet.find(pet.key, 'creature')} : {};
       if (rigs.hero) {
         T.puppet.load(scene, 'puppet.hero', rigs.hero);
@@ -223,6 +237,10 @@
         figure(S, which, which === 'hero' ? 0xffc857 : 0x7cc67f);
       }
       var image = !puppet && (hue || PAINTS[paint]) ? painted(S, which, hue, paint) : which;
+      // A model takes the colour of the creature itself, in its own material.
+      if (puppet && T.model && T.model.is(puppet) && (hue || PAINTS[paint])) {
+        puppet.colour(colourOf(hue, paint), PAINTS[paint] ? paint : String(hue));
+      }
       // A picture stands on its feet, in the same place of its canvas as those of its puppet.
       var sprite = puppet ? puppet.container.setPosition(x, y) : S.add.image(x, y, image).setOrigin(0.5, which === 'hero' ?
         860 / 896 : 457 / 512);
@@ -276,14 +294,36 @@
     },
 
     /**
-     * A figure does something once (surprise, point, sniff…), if it is a puppet.
+     * A figure does something once (surprise, point, sniff…), if it is a puppet; without that gesture, the one most like
+     * it that its body has.
      *
      * @param {Object} who
      * @param {string} clip
      * @return {boolean} Whether it did.
      */
     act: function(who, clip) {
-      return !!who.puppet && who.puppet.play(clip, true);
+      if (!who || !who.puppet) {
+        return false;
+      }
+      return [clip].concat(ALIKE[clip] || []).some(function(one) {
+        return who.puppet.play(one, true);
+      });
+    },
+
+    /**
+     * A figure talks for a while (the hero or the creature, while their voice sounds), if its body has that gesture.
+     *
+     * @param {Object} [who]
+     * @param {number} ms
+     */
+    says: function(who, ms) {
+      if (who) {
+        clearTimeout(who.sayTimer);
+        who.saying = true;
+        who.sayTimer = setTimeout(function() {
+          who.saying = false;
+        }, ms);
+      }
     },
 
     /**
@@ -325,8 +365,8 @@
         squash = 1 + Math.sin(time / 520 + who.x) * 0.012;
       }
       if (who.puppet) {
-        if (!who.puppet.busy()) {
-          who.puppet.play(who.moving ? 'walk' : who.pose || 'idle');
+        if (!who.puppet.busy() && !who.puppet.play(who.moving ? 'walk' : who.saying ? 'talk' : who.pose || 'idle')) {
+          who.puppet.play('idle');
         }
         who.puppet.draw(dt);
         bob = 0;

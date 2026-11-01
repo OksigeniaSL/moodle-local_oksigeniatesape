@@ -144,19 +144,29 @@
    * @param {Object} src The material of the model.
    * @param {boolean} painted Its texture carries its own shading.
    * @param {Object} light key, shade and sunView of the layer.
+   * @param {number[]} [tint] The colour of the creature, as a matrix (rows of five), in the colours of the picture.
    * @return {Object}
    */
-  function toonMaterial(src, painted, light) {
+  function toonMaterial(src, painted, light, tint) {
     var THREE = window.THREE;
     // The two pieces of the face share one texture: each one, its own copy, to move its offset.
     var map = src.map && src.name.indexOf('face_') === 0 ? src.map.clone() : src.map;
     var m = new THREE.MeshBasicMaterial({map: map, color: 0xffffff, side: src.side, transparent: src.transparent,
       alphaTest: src.alphaTest});
     m.name = src.name;
+    // Each kind, its own program: they all have this same function.
+    m.customProgramCacheKey = function() {
+      return 'toon' + (painted ? 'P' : 'D') + (tint ? 'T' : '');
+    };
     m.onBeforeCompile = function(sh) {
       sh.uniforms.uSun = {value: light.sunView};
       sh.uniforms.uKey = {value: light.key};
       sh.uniforms.uShade = {value: light.shade};
+      if (tint) {
+        sh.uniforms.uTint = {value: new THREE.Matrix3().set(tint[0], tint[1], tint[2], tint[5], tint[6], tint[7], tint[10], tint[11],
+          tint[12])};
+        sh.uniforms.uTintAdd = {value: new THREE.Vector3(tint[4], tint[9], tint[14])};
+      }
       sh.vertexShader = sh.vertexShader
         .replace('#include <common>', '#include <common>\nvarying vec3 vToonN;')
         .replace('#include <project_vertex>', '#include <project_vertex>\n\tvToonN = normalize( transformedNormal );');
@@ -165,7 +175,10 @@
         'float b2 = smoothstep( 0.66 - fw, 0.66 + fw, ndl );\n\t\tvec3 lt = mix( uShade, uKey, b1 ) * ( 1.0 + 0.07 * b2 );';
       sh.fragmentShader = sh.fragmentShader
         .replace('#include <common>', '#include <common>\nvarying vec3 vToonN;\nuniform vec3 uSun;\nuniform vec3 uKey;\n' +
-          'uniform vec3 uShade;')
+          'uniform vec3 uShade;' + (tint ? '\nuniform mat3 uTint;\nuniform vec3 uTintAdd;' : ''))
+        .replace('#include <map_fragment>', '#include <map_fragment>' + (tint ?
+          '\n\tdiffuseColor.rgb = pow( clamp( uTint * pow( diffuseColor.rgb, vec3( 0.4545 ) ) + uTintAdd, 0.0, 1.0 ), vec3( 2.2 ) );' :
+          ''))
         .replace('vec3 outgoingLight = reflectedLight.indirectDiffuse;',
           'vec3 outgoingLight = reflectedLight.indirectDiffuse;\n\t{\n\t\tfloat ndl = dot( normalize( vToonN ) * ' +
           '( gl_FrontFacing ? 1.0 : -1.0 ), uSun );\n\t\t' + band + '\n\t\toutgoingLight *= lt;\n\t}');
@@ -377,7 +390,7 @@
       }
       o.frustumCulled = false;
       o.material = o.material.name === 'outline' ? outlineMaterial(o.material, self.layer.outline) :
-        toonMaterial(o.material, painted, self.layer.light);
+        toonMaterial(o.material, painted, self.layer.light, self.tint);
       if (o.material.name === 'face_eyes') {
         self.eyes = o;
       } else if (o.material.name === 'face_mouth') {
@@ -407,6 +420,17 @@
     this.clipName = '';
     this.play(this.clips[want] ? want : 'idle', true);
     this.sync();
+  };
+
+  /**
+   * The colour of the creature on its model, asked before the model comes: its turn of hue, or its paint.
+   *
+   * @param {number[]} matrix Rows of five: red, green, blue and alpha in, and what is added.
+   * @param {string} name Which colour.
+   */
+  Model.prototype.colour = function(matrix, name) {
+    this.tint = matrix;
+    this.parts[0].image.texture.key += '.paint.' + name;
   };
 
   /**

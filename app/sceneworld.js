@@ -14,26 +14,6 @@
   var T = window.Tesape;
   /** @var {Object} Who is drawn as a grown-up, a little taller than the hero. */
   var TALL = {'druida-mayor': true, 'bibliotecaria': true, 'jardinera': true, 'barquero': true};
-  /** @var {Object} For a figure without a gesture, the ones most like it, in order (a model names some otherwise). */
-  var ALIKE = {happy: ['celebrate', 'hop'], alert: ['surprise', 'nod'], laugh: ['nod'], celebrate: ['hop', 'nod'],
-    surprise: ['alert', 'nod']};
-
-  /**
-   * A gesture of a figure of the place, or the one most like it that its body has.
-   *
-   * @param {Object} f The figure.
-   * @param {string} what
-   * @return {boolean} Whether it did one.
-   */
-  var gesture = function(f, what) {
-    var tries = [what].concat(ALIKE[what] || []);
-    for (var i = 0; f && i < tries.length; i++) {
-      if (T.cast.act(f, tries[i])) {
-        return true;
-      }
-    }
-    return false;
-  };
   /** @var {Object} Who is a bird: their puppet has the body of a bird (rig.bird), the others that of a speaker. */
   var BIRD = {buho: true, garza: true};
 
@@ -454,16 +434,16 @@
          */
         answer: later(function(fx, mood) {
           if (S.pet) {
-            gesture(S.pet, mood === 'good' ? 'hop' : 'alert');
+            T.cast.act(S.pet, mood === 'good' ? 'hop' : 'alert');
             if (mood === 'good' && !still) {
               S.sparks.explode(10, S.pet.x, S.pet.y - S.pet.sprite.displayHeight * 0.6);
             }
           }
           if (S.speaker && S.speaker.puppet) {
-            gesture(S.speaker, fx === 'shake' || fx === 'dark' || mood === 'bad' ? 'surprise' : 'nod');
+            T.cast.act(S.speaker, fx === 'shake' || fx === 'dark' || mood === 'bad' ? 'surprise' : 'nod');
           }
           if (S.hero && mood === 'good') {
-            gesture(S.hero, 'celebrate');
+            T.cast.act(S.hero, 'celebrate');
           }
           effect(fx);
         }),
@@ -484,7 +464,7 @@
           }
           var f = who === 'hero' ? S.hero : who === 'pet' ? S.pet : who === 'speaker' ? S.speaker : null;
           if (f && f.puppet) {
-            gesture(f, what);
+            T.cast.act(f, what);
           }
         }),
 
@@ -661,7 +641,7 @@
             S.pet.pose = 'sniff';
             S.time.delayedCall(still ? 0 : 1600, function() {
               S.pet.pose = null;
-              gesture(S.pet, 'alert');
+              T.cast.act(S.pet, 'alert');
             });
           }
         }),
@@ -671,7 +651,7 @@
          */
         hint: later(function() {
           if (S.hero) {
-            gesture(S.hero, 'point');
+            T.cast.act(S.hero, 'point');
           }
         }),
 
@@ -681,7 +661,7 @@
          */
         say: later(function() {
           if (S.hero) {
-            gesture(S.hero, 'point');
+            T.cast.act(S.hero, 'point');
           }
           if (S.pet && S.hero) {
             S.pet.facing = Math.sign(S.hero.x - S.pet.x) || -1;
@@ -705,14 +685,14 @@
         ending: later(function(outcome) {
           if (outcome === 'success') {
             if (S.hero) {
-              gesture(S.hero, 'celebrate');
+              T.cast.act(S.hero, 'celebrate');
             }
             if (S.speaker && S.speaker.puppet) {
-              gesture(S.speaker, 'laugh');
+              T.cast.act(S.speaker, 'laugh');
             }
             if (S.pet) {
               S.pet.pose = 'happy';
-              gesture(S.pet, 'hop');
+              T.cast.act(S.pet, 'hop');
             }
             S.sparks.explode(still ? 6 : 30, S.hero ? S.hero.x : S.scale.width / 2, S.ground - S.scale.height * 0.3);
           } else if (outcome === 'partial') {
@@ -720,7 +700,7 @@
               S.pet.pose = 'happy';
             }
           } else if (S.pet) {
-            gesture(S.pet, 'hop');
+            T.cast.act(S.pet, 'hop');
           }
         }),
 
@@ -749,6 +729,7 @@
             }).map(function(p) {
               return p.frame;
             }).join(' ') : '',
+            heroModel: modelled(S && S.hero),
             hero: S && S.hero && S.hero.puppet ? S.hero.puppet.clipName + (S.hero.puppet.tone ? ' ' + S.hero.puppet.tone : '') :
               '',
             pet: S && S.pet && S.pet.puppet ? S.pet.puppet.clipName : '',
@@ -789,6 +770,12 @@
         create: function() {
           S = this;
           S.bgs = [];
+          // What the hero or the creature says, in their voice: their figure talks while it sounds.
+          if (T.fx) {
+            T.fx.figureSays = function(which, ms) {
+              T.cast.says(which === 'hero' ? S.hero : S.pet, ms);
+            };
+          }
           // The light of the painting on the figures in live 3D.
           if (T.model) {
             T.model.place(S, shown);

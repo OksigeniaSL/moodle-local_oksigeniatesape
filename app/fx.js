@@ -513,6 +513,11 @@
       if (start) {
         start(source.buffer.duration);
       }
+      // What the hero or the creature says: their figure, in the place, talks while it sounds.
+      var figure = key.indexOf('voice.hero.') === 0 ? 'hero' : key.indexOf('voice.creature.') === 0 ? 'pet' : '';
+      if (figure && T.fx.figureSays) {
+        T.fx.figureSays(figure, source.buffer.duration * 1000);
+      }
       source.onended = function() {
         if (speaking === now) {
           speaking = null;

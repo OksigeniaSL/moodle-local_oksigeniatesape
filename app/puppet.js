@@ -395,19 +395,21 @@
      *
      * @param {string|null} picture The key of the picture: character.storyheroes.healer.human.f.1, creature.2.fur…
      * @param {string} body hero or creature.
+     * @param {string|null} [tone] The tone of skin chosen (t1, t2, t3).
      * @return {Object|null} image, atlas, skeleton, anims: their addresses.
      */
-    find: function(picture, body) {
+    find: function(picture, body, tone) {
       if (!picture) {
         return null;
       }
       // In 3D: its model in live 3D, if the packs bring it and the device can draw it; else its sheets; else its puppet.
+      // With a tone of skin chosen, its puppet, which has it: who you are comes before how it is drawn.
       var id = picture.replace(/^character\./, '');
-      var model = T.model && T.model.find(id);
+      var model = !tone && T.model && T.model.find(id);
       if (model) {
         return {model: model, body: body};
       }
-      var sheets = T.sheet && T.sheet.find(id);
+      var sheets = !tone && T.sheet && T.sheet.find(id);
       if (sheets) {
         return {sheets: sheets, body: body};
       }

@@ -269,6 +269,12 @@
               S.front = S.add.image(0, 0, 'front').setOrigin(0).setDepth(5000);
             }
             var start = point(place.start);
+            // What the hero or the creature says, in their voice: their figure talks while it sounds.
+            if (T.fx) {
+              T.fx.figureSays = function(which, ms) {
+                T.cast.says(which === 'hero' ? S.hero : S.pet, ms);
+              };
+            }
             S.hero = T.cast.actor(S, 'hero', start.x, start.y, 250, still);
             T.cast.aura(S, S.hero, c.aura, still);
             S.pet = T.cast.actor(S, 'pet', start.x - 85, start.y + 12, 124, still, pet.hue, pet.paint);
