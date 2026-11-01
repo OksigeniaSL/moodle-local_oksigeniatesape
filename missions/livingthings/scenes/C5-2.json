@@ -227,6 +227,13 @@
   },
   "noche-alto": {
    "type": "story",
+   "acts": [
+    {
+     "who": "pet",
+     "do": "alert",
+     "when": "levanta las orejas"
+    }
+   ],
    "image": "noche-buho",
    "text": "La expedición duerme bien. De madrugada se oye un aleteo y un chillido corto: un búho ha cazado un ratón. {{creature}} levanta las orejas.",
    "next": "farol"
@@ -327,6 +334,22 @@
   },
   "buho-conocido": {
    "type": "story",
+   "acts": [
+    {
+     "who": "speaker",
+     "do": "nod",
+     "when": {
+      "valley": "ladea la cabeza"
+     }
+    },
+    {
+     "who": "speaker",
+     "do": "greet",
+     "when": {
+      "azara": "se toca el sombrero"
+     }
+    }
+   ],
    "speaker": "buho",
    "image": "noche-buho",
    "text": {

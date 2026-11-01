@@ -234,6 +234,17 @@
   },
   "limpia": {
    "type": "ending",
+   "acts": [
+    {
+     "who": "hero",
+     "do": "celebrate"
+    },
+    {
+     "who": "pet",
+     "do": "sniff",
+     "when": "olisquea los papeles"
+    }
+   ],
    "outcome": "success",
    "text": {
     "valley": "La guía queda sin manchas: cada dato con su fuente, lo dudoso comprobado y el recuerdo del abuelo con su nombre al pie. «Así se escribe una guía que otros puedan comprobar», dice Doña Hebra. «Y así el Embrollo no tiene de qué beber.» {{creature}} olisquea los papeles del visitante y estornuda sobre el vídeo.",

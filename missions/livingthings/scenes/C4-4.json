@@ -227,6 +227,17 @@
   },
   "lejos": {
    "type": "ending",
+   "acts": [
+    {
+     "who": "hero",
+     "do": "celebrate"
+    },
+    {
+     "who": "pet",
+     "do": "sniff",
+     "when": "estornuda y un diente de león"
+    }
+   ],
    "outcome": "success",
    "text": {
     "valley": "Cada semilla llega a su sitio: una cruza el valle volando, otra navega hasta la otra orilla, otra viaja en un perro, otra en un pájaro y la última salta. La jardinera apunta: «Las plantas no andan, pero viajan». Dentro de unos meses, en todos esos sitios, habrá brotes. {{creature}} estornuda y un diente de león sale volando.",
@@ -243,6 +254,13 @@
   },
   "cerca": {
    "type": "ending",
+   "acts": [
+    {
+     "who": "pet",
+     "do": "sniff",
+     "when": "estornuda y un diente de león"
+    }
+   ],
    "outcome": "partial",
    "text": {
     "valley": "Tres semillas llegan lejos; las otras caen al pie de la madre y crecerán a su sombra, si crecen. «No todas han viajado», dice la jardinera. «Otro día, cada una con su manera de irse, y el jardín llegará más lejos.» {{creature}} estornuda y un diente de león sale volando.",

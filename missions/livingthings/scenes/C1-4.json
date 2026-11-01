@@ -327,6 +327,13 @@
   },
   "otra": {
    "type": "ending",
+   "acts": [
+    {
+     "who": "speaker",
+     "do": "point",
+     "when": "señala la lista"
+    }
+   ],
    "outcome": "retry",
    "text": {
     "valley": "El consejo devuelve la regla: «Con esta, el fuego y la piedra que rueda estarían vivos». La druida mayor señala la lista de las cinco pruebas: «La regla tiene que salir de aquí».",

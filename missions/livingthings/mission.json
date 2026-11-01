@@ -1,12 +1,18 @@
 {
  "code": "livingthings",
- "version": 94,
+ "version": 95,
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 95,
+   "kind": "improvement",
+   "date": "2026-11-01",
+   "text": "El lugar hace lo que cuenta el texto: quien habla señala, levanta la mano o asiente cuando lo dicen sus palabras; la criatura salta, olisquea o se pone alerta; y las linternas que se encienden lo hacen con un destello, en treinta y siete momentos de los seis capítulos"
+  },
   {
    "version": 94,
    "kind": "fix",

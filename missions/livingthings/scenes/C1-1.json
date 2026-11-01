@@ -31,6 +31,13 @@
  "nodes": {
   "intro": {
    "type": "story",
+   "acts": [
+    {
+     "who": "pet",
+     "do": "alert",
+     "when": "tiembla un poco"
+    }
+   ],
    "nature": {
     "curious": {
      "valley": "«A ti, que todo lo preguntas: pregúntale al barro. Las huellas también cuentan cosas.»",
@@ -140,6 +147,20 @@
   },
   "despierta": {
    "type": "ending",
+   "acts": [
+    {
+     "who": "hero",
+     "do": "celebrate"
+    },
+    {
+     "who": "place",
+     "do": "light",
+     "when": {
+      "valley": "La linterna del claro se enciende",
+      "azara": "El cuaderno recupera su primera página"
+     }
+    }
+   ],
    "outcome": "success",
    "text": {
     "valley": "La semilla tiembla en la mano y se calienta: algo se mueve dentro. La linterna del claro se enciende y en el Gran Libro aparece la primera página: «Ser vivo: el que se nutre, se relaciona y se reproduce».",
@@ -166,6 +187,13 @@
   },
   "duerme": {
    "type": "ending",
+   "acts": [
+    {
+     "who": "speaker",
+     "do": "nod",
+     "when": "La druida mayor sonríe"
+    }
+   ],
    "outcome": "retry",
    "text": "La semilla sigue quieta. La druida mayor sonríe: «Moverse o cambiar de forma no basta. ¿Quién necesita comer para crecer?».",
    "retry": "elegir",

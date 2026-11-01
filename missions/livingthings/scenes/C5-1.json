@@ -137,6 +137,24 @@
   },
   "fin": {
    "type": "ending",
+   "acts": [
+    {
+     "who": "hero",
+     "do": "celebrate"
+    },
+    {
+     "who": "place",
+     "do": "light",
+     "when": {
+      "valley": "Las flechas se encienden"
+     }
+    },
+    {
+     "who": "pet",
+     "do": "alert",
+     "when": "mete una pata en el agua"
+    }
+   ],
    "outcome": "success",
    "text": {
     "valley": "Las flechas se encienden en el barro. Las dos cadenas empiezan igual: por una planta, que fabrica su alimento con la luz. Sin plantas no hay nada que comer en el lago. La garza señala con el pico la orilla: «Por ahí se fue el Embrollo, hacia la torre, chorreando tinta». {{creature}} mete una pata en el agua y la saca corriendo. La linterna del lago se enciende.",

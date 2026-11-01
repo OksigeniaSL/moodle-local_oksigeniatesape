@@ -394,6 +394,27 @@
   },
   "fin": {
    "type": "ending",
+   "acts": [
+    {
+     "who": "hero",
+     "do": "celebrate"
+    },
+    {
+     "who": "place",
+     "do": "light",
+     "when": {
+      "valley": "se enciende con una luz verde"
+     }
+    },
+    {
+     "who": "pet",
+     "do": "happy",
+     "when": {
+      "valley": "se tumba bajo la luz",
+      "azara": "se tumba al sol"
+     }
+    }
+   ],
    "outcome": "success",
    "text": {
     "valley": "Las plantas vuelven al Jardín de la Luz y se inclinan hacia el sol. La linterna mayor del valle se enciende con una luz verde y dorada. Por eso el valle se llama así: tesapé, en guaraní, es «iluminar». La jardinera se guarda una etiqueta en el bolsillo: «Esta letra la conozco. Es de alguien del valle que escribe de memoria». {{creature}} se tumba bajo la luz y se pone de un verde que no era el suyo.",

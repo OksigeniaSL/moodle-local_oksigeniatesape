@@ -14,6 +14,8 @@
   var T = window.Tesape;
   /** @var {Object} Who is drawn as a grown-up, a little taller than the hero. */
   var TALL = {'druida-mayor': true, 'bibliotecaria': true, 'jardinera': true, 'barquero': true};
+  /** @var {Object} For a figure without a gesture, the one most like it (a model names some of them otherwise). */
+  var ALIKE = {happy: 'celebrate', alert: 'surprise', laugh: 'nod', celebrate: 'hop', surprise: 'alert'};
   /** @var {Object} Who is a bird: their puppet has the body of a bird (rig.bird), the others that of a speaker. */
   var BIRD = {buho: true, garza: true};
 
@@ -52,6 +54,8 @@
       var shown = opts.image;
       var who = null;
       var speaking = false;
+      // What the place has done of what the text tells (for the tests of the browser).
+      var acted = [];
       var hush = 0;
       var pending = [];
       // Until the world is ready, what it is asked to do waits.
@@ -66,6 +70,30 @@
             });
           }
         };
+      };
+      /**
+       * A light, a shadow, a shake or something that grows, over the whole place (nothing without movement).
+       *
+       * @param {string} fx light, dark, shake, grow, or nothing.
+       */
+      var effect = function(fx) {
+        if (still || !S) {
+          return;
+        }
+        var cam = S.cameras.main;
+        if (fx === 'light') {
+          cam.flash(500, 255, 241, 189);
+        } else if (fx === 'dark') {
+          cam.fade(260, 10, 18, 30, false, function(c, p) {
+            if (p >= 1) {
+              cam.fadeIn(600, 10, 18, 30);
+            }
+          });
+        } else if (fx === 'shake') {
+          cam.shake(320, 0.006);
+        } else if (fx === 'grow') {
+          S.tweens.add({targets: cam, zoom: 1.05, duration: 420, yoyo: true, ease: 'Sine.easeInOut'});
+        }
       };
       // Where what is read is: a function that tells its top, left and right in pixels of the page, asked at each layout.
       var room = null;
@@ -416,22 +444,26 @@
           if (S.hero && mood === 'good') {
             T.cast.act(S.hero, 'celebrate');
           }
-          if (still) {
+          effect(fx);
+        }),
+
+        /**
+         * What the text tells, done in the place (acts of a told moment): a gesture of who speaks, of the hero or of the
+         * creature, or a light, a shadow, a shake or something that grows. Who is not standing there does nothing; a
+         * figure without that gesture does the one most like it.
+         *
+         * @param {string} who speaker, hero, pet or place.
+         * @param {string} what The gesture, or what happens to the place.
+         */
+        act: later(function(who, what) {
+          acted.push(who + ' ' + what);
+          if (who === 'place') {
+            effect(what);
             return;
           }
-          var cam = S.cameras.main;
-          if (fx === 'light') {
-            cam.flash(500, 255, 241, 189);
-          } else if (fx === 'dark') {
-            cam.fade(260, 10, 18, 30, false, function(c, p) {
-              if (p >= 1) {
-                cam.fadeIn(600, 10, 18, 30);
-              }
-            });
-          } else if (fx === 'shake') {
-            cam.shake(320, 0.006);
-          } else if (fx === 'grow') {
-            S.tweens.add({targets: cam, zoom: 1.05, duration: 420, yoyo: true, ease: 'Sine.easeInOut'});
+          var f = who === 'hero' ? S.hero : who === 'pet' ? S.pet : who === 'speaker' ? S.speaker : null;
+          if (f && f.puppet && !T.cast.act(f, what) && ALIKE[what]) {
+            T.cast.act(f, ALIKE[what]);
           }
         }),
 
@@ -688,7 +720,7 @@
 
         /** For the tests of the browser. */
         state: function() {
-          return {ready: !!S, image: shown, speaker: who, figure: !!(S && S.speaker), talking: speaking,
+          return {ready: !!S, image: shown, speaker: who, figure: !!(S && S.speaker), talking: speaking, acted: acted.slice(),
             speakerPuppet: S && S.speaker && S.speaker.puppet ? S.speaker.puppet.clipName : '', rigs: cast.rigs || {},
             speakerPieces: S && S.speaker && S.speaker.puppet ? S.speaker.puppet.parts.filter(function(p) {
               return p.frame !== p.name;

@@ -33,6 +33,22 @@
  "nodes": {
   "intro": {
    "type": "story",
+   "acts": [
+    {
+     "who": "pet",
+     "do": "hop",
+     "when": {
+      "valley": "salta de un círculo al otro"
+     }
+    },
+    {
+     "who": "pet",
+     "do": "sniff",
+     "when": {
+      "azara": "empuja una ficha con el hocico"
+     }
+    }
+   ],
    "speaker": "bibliotecaria",
    "image": "biblioteca-torre",
    "text": {
@@ -223,6 +239,24 @@
   },
   "brillan": {
    "type": "ending",
+   "acts": [
+    {
+     "who": "hero",
+     "do": "celebrate"
+    },
+    {
+     "who": "place",
+     "do": "light",
+     "when": {
+      "valley": "brillan en orden"
+     }
+    },
+    {
+     "who": "pet",
+     "do": "happy",
+     "when": "se sienta justo en el centro"
+    }
+   ],
    "outcome": "success",
    "text": {
     "valley": "Los dos círculos brillan en orden y el Embrollo recoge su última ficha del suelo, de mala gana. «Un mismo ser vivo puede estar en dos grupos a la vez», dice Doña Hebra. «El alga no tiene que elegir.» {{creature}} se sienta justo en el centro, donde se cruzan.",
@@ -249,6 +283,15 @@
   },
   "otra": {
    "type": "ending",
+   "acts": [
+    {
+     "who": "place",
+     "do": "dark",
+     "when": {
+      "valley": "se apagan"
+     }
+    }
+   ],
    "outcome": "retry",
    "text": {
     "valley": "Los círculos se apagan y las fichas vuelven al suelo. El Embrollo aplaude. Doña Hebra las recoge una a una: «Dos preguntas para cada ficha: ¿fabrica su alimento con la luz? ¿Vive dentro del agua?».",

@@ -220,6 +220,16 @@
   },
   "otra": {
    "type": "ending",
+   "acts": [
+    {
+     "who": "speaker",
+     "do": "point",
+     "when": {
+      "valley": "señala las dos páginas",
+      "azara": "Señala las dos páginas"
+     }
+    }
+   ],
    "outcome": "retry",
    "text": {
     "valley": "El consejo devuelve la página: «Con esto, el mirikiná seguiría siendo pariente de los gatos». La druida mayor señala las dos páginas: «¿Qué cambió entre una y otra, y por qué?».",

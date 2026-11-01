@@ -296,6 +296,17 @@
   },
   "aprobado": {
    "type": "ending",
+   "acts": [
+    {
+     "who": "hero",
+     "do": "celebrate"
+    },
+    {
+     "who": "pet",
+     "do": "alert",
+     "when": "se queda vigilando las macetas"
+    }
+   ],
    "outcome": "success",
    "text": {
     "valley": "El consejo aprueba el experimento: una sola cosa cambia, el resto igual, una medida que vale para todos, varias macetas por cantidad y una predicción escrita antes de sembrar. La jardinera reparte la tierra: «Cuando la tabla esté llena, sabremos por qué ha pasado lo que ha pasado». {{creature}} se queda vigilando las macetas como si fueran a crecer esa misma tarde.",

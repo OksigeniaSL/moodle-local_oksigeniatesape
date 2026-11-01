@@ -17,6 +17,15 @@
  "nodes": {
   "intro": {
    "type": "story",
+   "acts": [
+    {
+     "who": "speaker",
+     "do": "point",
+     "when": {
+      "valley": "señala una carretilla"
+     }
+    }
+   ],
    "nature": {
     "curious": {
      "valley": "«Tú, que lo preguntas todo: pregunta qué tiene cada ser por dentro y por fuera. Así se sabe su estante.»",
@@ -380,6 +389,24 @@
   },
   "fin": {
    "type": "ending",
+   "acts": [
+    {
+     "who": "hero",
+     "do": "celebrate"
+    },
+    {
+     "who": "place",
+     "do": "light",
+     "when": {
+      "valley": "se enciende una linterna"
+     }
+    },
+    {
+     "who": "pet",
+     "do": "sniff",
+     "when": "le olisquea los dedos"
+    }
+   ],
    "outcome": "success",
    "text": {
     "valley": "La torre deja de crujir. En lo alto se enciende una linterna con cuatro cristales de colores: uno por cada gran grupo de seres vivos. Doña Hebra cuenta las páginas una vez más y baja la voz: «La noche del enredo yo estaba aquí, copiando páginas de memoria, sin comprobar. A la mañana siguiente, el Embrollo». {{creature}} le olisquea los dedos manchados y estornuda.",

@@ -151,6 +151,22 @@
   },
   "fin": {
    "type": "ending",
+   "acts": [
+    {
+     "who": "hero",
+     "do": "celebrate"
+    },
+    {
+     "who": "pet",
+     "do": "sniff",
+     "when": "las olisquea y estornuda"
+    },
+    {
+     "who": "speaker",
+     "do": "point",
+     "when": "vuelve a mirar las huellas"
+    }
+   ],
    "outcome": "success",
    "text": {
     "valley": "Cada animal sale del escondite con su abrigo. «¡Soy un mamífero!», «¡soy un ave!», «¡soy un pez!», «¡soy un anfibio!», «¡soy un reptil!». Todos ellos tienen huesos por dentro: son vertebrados. El caracol se asoma el último: «Yo no tengo huesos. Soy un invertebrado, como los insectos y las lombrices». El búho vuelve a mirar las huellas raras del barro: «Esas no son de ningún animal: son manchas de tinta del Embrollo. Salen donde alguien escribe algo sin comprobarlo». {{creature}} las olisquea y estornuda.",

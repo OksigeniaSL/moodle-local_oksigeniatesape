@@ -1077,6 +1077,21 @@
         pieces.push(said);
       }
       var at = 0;
+      // What the place does while it is told (acts): each thing when the piece with its words shows; without words, with
+      // the first. What is not found (the easy text says it otherwise) does not happen.
+      var acts = (n.acts || []).map(function(a) {
+        var words = a.when && typeof a.when === 'object' ? a.when[data.skin] : a.when;
+        // Words for other skins only: not in this one.
+        var i = words || !a.when ? (words ? -1 : 0) : -1;
+        pieces.forEach(function(p, j) {
+          if (i < 0 && words && p.indexOf(words) >= 0) {
+            i = j;
+          }
+        });
+        return {at: i, who: a.who, what: a.do};
+      }).filter(function(a) {
+        return a.at >= 0;
+      });
       // Who speaks stands in the place, if the pack has their figure; then their round portrait is not needed.
       var figure = n.speaker ? T.artUrl(['figure.' + n.speaker + '.' + data.skin, 'figure.' + n.speaker]) : null;
       layer.classList.toggle('has-figure', !!figure);
@@ -1105,6 +1120,17 @@
         }).join('') : '';
         button.textContent = last ? t('app_continue') : t('app_next');
         alive('speak', n.speaker || null, figure);
+        // A moment after the words come, what they tell.
+        var now = at;
+        acts.forEach(function(a) {
+          if (a.at === now) {
+            setTimeout(function() {
+              if (at === now) {
+                alive('act', a.who, a.what);
+              }
+            }, 450);
+          }
+        });
         if (voices[at]) {
           voiced(voices[at]);
         } else {
@@ -3854,7 +3880,7 @@
             return o.correct !== true;
           });
         }
-        tell({text: told, image: n.image, speaker: quoted, nolabel: true}, function() {
+        tell({text: told, image: n.image, speaker: quoted, nolabel: true, acts: n.acts}, function() {
           var body = show(pet + hatch + levelup + (lines.length ? '<div class="conseq good loot"><span class="what">' +
             esc(t('app_forcharacter')) + '</span><ul>' + lines.map(function(line, i) {
               return '<li style="--i: ' + i + '">' + esc(line) + '</li>';

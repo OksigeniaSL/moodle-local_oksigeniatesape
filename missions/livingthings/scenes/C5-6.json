@@ -252,6 +252,24 @@
   },
   "brillan": {
    "type": "ending",
+   "acts": [
+    {
+     "who": "hero",
+     "do": "celebrate"
+    },
+    {
+     "who": "place",
+     "do": "light",
+     "when": {
+      "valley": "brillan en orden sobre el agua"
+     }
+    },
+    {
+     "who": "pet",
+     "do": "happy",
+     "when": "se sienta justo en el centro"
+    }
+   ],
    "outcome": "success",
    "text": {
     "valley": "Los dos círculos brillan en orden sobre el agua. «Quien come plantas y también animales va en el centro: es omnívoro», dice la garza, y mira a la clase de reojo. «Como ustedes.» {{creature}} se sienta justo en el centro.",
@@ -278,6 +296,15 @@
   },
   "otra": {
    "type": "ending",
+   "acts": [
+    {
+     "who": "place",
+     "do": "dark",
+     "when": {
+      "valley": "se apagan"
+     }
+    }
+   ],
    "outcome": "retry",
    "text": {
     "valley": "Los círculos se apagan y se mezclan con el agua. La garza da un paso: «Una pregunta para cada uno: ¿qué come de verdad? Plantas, animales o de los dos».",

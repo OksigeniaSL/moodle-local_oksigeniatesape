@@ -126,6 +126,17 @@
   },
   "aceptada": {
    "type": "ending",
+   "acts": [
+    {
+     "who": "hero",
+     "do": "celebrate"
+    },
+    {
+     "who": "pet",
+     "do": "sniff",
+     "when": "estornuda sobre la ficha"
+    }
+   ],
    "outcome": "success",
    "text": {
     "valley": "La ficha queda aceptada en el Gran Libro. «Ahora cualquiera podrá reconocerlo», dice Doña Hebra. «Y si cada ficha se escribe mirando, el Embrollo no tendrá de qué alimentarse: está hecho de lo que se da por cierto sin comprobar.» Con fichas así se hace la guía de campo de la clase. {{creature}} estornuda sobre la ficha y no la mancha: ya no queda tinta corrida.",

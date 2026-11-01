@@ -317,6 +317,13 @@
   },
   "rota": {
    "type": "ending",
+   "acts": [
+    {
+     "who": "speaker",
+     "do": "point",
+     "when": "la levanta con el pico"
+    }
+   ],
    "outcome": "retry",
    "text": "La red se deshace: demasiados hilos cruzados donde no tocaba. La garza la levanta con el pico: «Empecemos por quien fabrica su alimento con la luz. Luego, quién se lo come. Y al final, quién come lo que ya está muerto».",
    "retry": "tejer",

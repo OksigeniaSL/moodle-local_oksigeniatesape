@@ -155,6 +155,27 @@
   },
   "fin": {
    "type": "ending",
+   "acts": [
+    {
+     "who": "hero",
+     "do": "celebrate"
+    },
+    {
+     "who": "pet",
+     "do": "sniff",
+     "when": {
+      "valley": "le olisquea la manga",
+      "azara": "estornuda tinta"
+     }
+    },
+    {
+     "who": "place",
+     "do": "light",
+     "when": {
+      "valley": "La linterna de la biblioteca se enciende"
+     }
+    }
+   ],
    "outcome": "success",
    "text": {
     "valley": "Los estantes dejan de crujir. En la caja pequeña se ha quedado la seta: Doña Hebra le pone una etiqueta nueva, «hongos». «Hay más grupos que animales y plantas», dice, «y algunos son tan pequeños que solo se ven con lupa.» Baja la voz: «La noche del enredo yo estaba copiando páginas de memoria, sin comprobar. Las etiquetas deprisa… son mías». {{creature}} le olisquea la manga y estornuda tinta. La linterna de la biblioteca se enciende.",

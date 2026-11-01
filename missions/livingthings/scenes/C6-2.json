@@ -60,6 +60,16 @@
   },
   "frasco": {
    "type": "story",
+   "acts": [
+    {
+     "who": "speaker",
+     "do": "point",
+     "when": {
+      "valley": "levanta el frasco hacia la luz",
+      "azara": "saca de una caja un frasco"
+     }
+    }
+   ],
    "speaker": "bibliotecaria",
    "image": "torre-ensayo",
    "text": {
@@ -82,6 +92,21 @@
   },
   "pluma": {
    "type": "story",
+   "acts": [
+    {
+     "who": "speaker",
+     "do": "point",
+     "when": {
+      "valley": "saca del frasco una pluma",
+      "azara": "saca del cajón una pluma"
+     }
+    },
+    {
+     "who": "pet",
+     "do": "alert",
+     "when": "mira la pluma con la cabeza ladeada"
+    }
+   ],
    "speaker": "druida-mayor",
    "image": "torre-ensayo",
    "text": {
@@ -442,6 +467,13 @@
   },
   "confiesa": {
    "type": "story",
+   "acts": [
+    {
+     "who": "speaker",
+     "do": "greet",
+     "when": "levanta la mano"
+    }
+   ],
    "speaker": "bibliotecaria",
    "image": "torre-ensayo",
    "text": {
@@ -452,6 +484,13 @@
   },
   "confiesa-letra": {
    "type": "story",
+   "acts": [
+    {
+     "who": "speaker",
+     "do": "greet",
+     "when": "levanta la mano"
+    }
+   ],
    "speaker": "bibliotecaria",
    "image": "torre-ensayo",
    "text": {

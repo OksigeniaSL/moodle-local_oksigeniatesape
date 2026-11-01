@@ -526,6 +526,38 @@
   },
   "bien": {
    "type": "ending",
+   "acts": [
+    {
+     "who": "hero",
+     "do": "celebrate"
+    },
+    {
+     "who": "place",
+     "do": "light",
+     "when": {
+      "valley": "una luciérnaga se enciende"
+     }
+    },
+    {
+     "who": "pet",
+     "do": "sniff",
+     "when": "intenta seguirlas"
+    },
+    {
+     "who": "speaker",
+     "do": "greet",
+     "when": {
+      "valley": "El búho abre las alas"
+     }
+    },
+    {
+     "who": "speaker",
+     "do": "nod",
+     "when": {
+      "azara": "El baqueano sonríe"
+     }
+    }
+   ],
    "lineup": "adivinar",
    "outcome": "success",
    "text": {
@@ -1007,6 +1039,38 @@
   },
   "bien-muda": {
    "type": "ending",
+   "acts": [
+    {
+     "who": "hero",
+     "do": "celebrate"
+    },
+    {
+     "who": "place",
+     "do": "light",
+     "when": {
+      "valley": "una luciérnaga se enciende"
+     }
+    },
+    {
+     "who": "pet",
+     "do": "sniff",
+     "when": "intenta seguirlas"
+    },
+    {
+     "who": "speaker",
+     "do": "greet",
+     "when": {
+      "valley": "El búho abre las alas"
+     }
+    },
+    {
+     "who": "speaker",
+     "do": "nod",
+     "when": {
+      "azara": "El baqueano sonríe"
+     }
+    }
+   ],
    "lineup": "adivinar-muda",
    "outcome": "success",
    "text": {
@@ -1494,6 +1558,38 @@
   },
   "bien-ave": {
    "type": "ending",
+   "acts": [
+    {
+     "who": "hero",
+     "do": "celebrate"
+    },
+    {
+     "who": "place",
+     "do": "light",
+     "when": {
+      "valley": "una luciérnaga se enciende"
+     }
+    },
+    {
+     "who": "pet",
+     "do": "sniff",
+     "when": "intenta seguirlas"
+    },
+    {
+     "who": "speaker",
+     "do": "greet",
+     "when": {
+      "valley": "El búho abre las alas"
+     }
+    },
+    {
+     "who": "speaker",
+     "do": "nod",
+     "when": {
+      "azara": "El baqueano sonríe"
+     }
+    }
+   ],
    "lineup": "adivinar-ave",
    "outcome": "success",
    "text": {

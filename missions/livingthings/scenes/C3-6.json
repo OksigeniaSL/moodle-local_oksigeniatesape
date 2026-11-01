@@ -221,6 +221,24 @@
   },
   "brillan": {
    "type": "ending",
+   "acts": [
+    {
+     "who": "hero",
+     "do": "celebrate"
+    },
+    {
+     "who": "place",
+     "do": "light",
+     "when": {
+      "valley": "brillan en orden"
+     }
+    },
+    {
+     "who": "pet",
+     "do": "happy",
+     "when": "se sienta justo en el centro"
+    }
+   ],
    "outcome": "success",
    "text": {
     "valley": "Los dos círculos brillan en orden. «Lo que hace un animal no siempre dice a qué grupo pertenece», dice el búho. «El murciélago vuela y no es un pájaro; el ornitorrinco pone huevos y es un mamífero.» {{creature}} se sienta justo en el centro, donde se cruzan.",
@@ -247,6 +265,15 @@
   },
   "otra": {
    "type": "ending",
+   "acts": [
+    {
+     "who": "place",
+     "do": "dark",
+     "when": {
+      "valley": "se apagan"
+     }
+    }
+   ],
    "outcome": "retry",
    "text": {
     "valley": "Los círculos se apagan y los animales vuelven a revolverse. El búho cierra los ojos: «Dos preguntas para cada uno: ¿sus crías salen de un huevo? ¿Tiene pelo?».",
