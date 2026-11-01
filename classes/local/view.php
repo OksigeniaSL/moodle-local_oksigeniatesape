@@ -797,6 +797,9 @@ final class view {
             'ideasunread' => ideas::unread($courseid),
             'pactspending' => pacts::pending($courseid),
             'namespending' => names::pending($courseid),
+            // A newer version of the mission, for who can install one.
+            'missionupdate' => !$board && has_capability('local/oksigeniatesape:manageregion', games::context($courseid)) ?
+                missions::update_offered($courseid) : null,
             // The marks of the mission the teacher can give as the director of the game.
             'director' => $board ? [] : director::marks($courseid),
             // The tangles of the teams: those waiting for the teacher, and those approved with how they went.

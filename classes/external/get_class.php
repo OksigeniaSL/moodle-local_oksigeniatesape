@@ -183,6 +183,13 @@ final class get_class extends external_api {
             'pacts' => structures::teacher_pacts(),
             'pactspending' => new external_value(PARAM_INT, 'Commitments still to mark'),
             'namespending' => structures::names_pending(),
+            'missionupdate' => new external_single_structure([
+                'code' => new external_value(PARAM_ALPHANUMEXT, 'The mission'),
+                'skin' => new external_value(PARAM_ALPHANUMEXT, 'Its skin'),
+                'variant' => new external_value(PARAM_ALPHANUMEXT, 'Its local examples'),
+                'version' => new external_value(PARAM_INT, 'The newer version'),
+                'changes' => new external_multiple_structure(new external_value(PARAM_TEXT, 'What a version brings')),
+            ], 'A newer version of the mission the teacher can take', VALUE_OPTIONAL, null, NULL_ALLOWED),
             'tangles' => structures::tangles_teacher(),
             'director' => new external_multiple_structure(new external_single_structure([
                 'flag' => new external_value(PARAM_ALPHANUMEXT, 'Mark'),

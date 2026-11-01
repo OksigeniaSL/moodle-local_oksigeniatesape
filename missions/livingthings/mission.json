@@ -1,12 +1,28 @@
 {
  "code": "livingthings",
- "version": 95,
+ "version": 96,
+ "format": 1,
+ "world": "valle",
+ "art": {
+  "pack": "mission-livingthings",
+  "min": 23
+ },
+ "publisher_id": "oksigenia",
+ "languages": [
+  "es"
+ ],
  "method": "SV-07",
  "edition": 1,
  "licence": "free",
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 96,
+   "kind": "fix",
+   "date": "2026-11-01",
+   "text": "Nada cambia en el juego: el paquete de la misión dice ahora qué necesita para funcionar"
+  },
   {
    "version": 95,
    "kind": "improvement",

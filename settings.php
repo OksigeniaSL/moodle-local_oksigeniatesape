@@ -57,6 +57,17 @@ if ($hassiteconfig) {
             get_string('settings_suggestions_desc', 'local_oksigeniatesape'),
             0
         ));
+        // A newer version of a mission: offered to each teacher, so it never changes in the middle of a place; or at once.
+        $settings->add(new admin_setting_configselect(
+            'local_oksigeniatesape/missionupdates',
+            get_string('settings_missionupdates', 'local_oksigeniatesape'),
+            get_string('settings_missionupdates_desc', 'local_oksigeniatesape'),
+            'offer',
+            [
+                'offer' => get_string('settings_missionupdates_offer', 'local_oksigeniatesape'),
+                'auto' => get_string('settings_missionupdates_auto', 'local_oksigeniatesape'),
+            ]
+        ));
         // What the game needs from the site, asked when the plugin is installed.
         $settings->add(new admin_setting_heading(
             'local_oksigeniatesape/requirements',

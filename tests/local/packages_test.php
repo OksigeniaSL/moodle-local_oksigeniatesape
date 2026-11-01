@@ -97,6 +97,100 @@ final class packages_test extends \advanced_testcase {
         missions::upload($this->package(['version' => $version]));
     }
 
+    public function test_a_package_it_cannot_read_is_refused_saying_why(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $version = (int) missions::packages()['livingthings']['version'];
+        foreach (
+            [
+                'missionformat' => ['version' => $version + 1, 'format' => missions::FORMAT + 1],
+                'missionrequires' => ['version' => $version + 1, 'requires' => 2099010100],
+            ] as $why => $changes
+        ) {
+            try {
+                missions::upload($this->package($changes));
+                $this->fail('It should not take it');
+            } catch (\moodle_exception $e) {
+                $this->assertSame($why, $e->errorcode);
+            }
+        }
+        $this->assertSame($version, (int) missions::packages()['livingthings']['version']);
+    }
+
+    public function test_a_class_that_has_started_keeps_its_version(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $prefix = 'local_oksigeniatesape_';
+        $course = $this->getDataGenerator()->create_course();
+        regions::save($course->id, ['enabled' => 1]);
+        $old = (int) missions::install($course->id, 'livingthings', 'valley', 'gen')->version;
+        $mission = missions::get($course->id);
+        $scene = $DB->get_field($prefix . 'scene', 'id', ['missionid' => $mission->id, 'code' => 'C1-2']);
+        // The class has played something.
+        $DB->insert_record($prefix . 'sceneattempt', (object) ['sceneid' => $scene, 'charid' => 1, 'courseid' => $course->id,
+            'teamplay' => 0, 'score' => 0, 'attempt' => 1, 'timestarted' => 1000, 'timefinished' => 0]);
+        // A place closed long ago does not count.
+        $places = array_values($DB->get_fieldset_select($prefix . 'chapter', 'id', 'missionid = ? ORDER BY id', [$mission->id]));
+        $DB->set_field($prefix . 'chapter', 'litat', 1000, ['id' => $places[0]]);
+        missions::upload($this->package(['version' => $old + 1, 'changes' => [['version' => $old + 1, 'text' => 'Lo nuevo'],
+            ['version' => $old, 'text' => 'Lo de antes']]]));
+        missions::forget();
+        // It keeps its version, and the teacher is told what the new one brings.
+        $this->assertSame($old, (int) missions::get($course->id)->version);
+        $offered = missions::update_offered($course->id);
+        $this->assertSame($old + 1, $offered['version']);
+        $this->assertSame(['Lo nuevo'], $offered['changes']);
+        $this->assertSame('valley', $offered['skin']);
+        // Closing a place after the version came, it takes it, and there is nothing to offer.
+        $DB->set_field($prefix . 'chapter', 'litat', time() + 10, ['id' => $places[1]]);
+        missions::forget();
+        $this->assertSame($old + 1, (int) missions::get($course->id)->version);
+        $this->assertNull(missions::update_offered($course->id));
+    }
+
+    public function test_a_site_can_ask_for_every_new_version_at_once(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $prefix = 'local_oksigeniatesape_';
+        $course = $this->getDataGenerator()->create_course();
+        regions::save($course->id, ['enabled' => 1]);
+        $old = (int) missions::install($course->id, 'livingthings', 'valley', 'gen')->version;
+        $mission = missions::get($course->id);
+        $scene = $DB->get_field($prefix . 'scene', 'id', ['missionid' => $mission->id, 'code' => 'C1-2']);
+        $DB->insert_record($prefix . 'sceneattempt', (object) ['sceneid' => $scene, 'charid' => 1, 'courseid' => $course->id,
+            'teamplay' => 0, 'score' => 0, 'attempt' => 1, 'timestarted' => 1000, 'timefinished' => 0]);
+        missions::upload($this->package(['version' => $old + 1]));
+        missions::forget();
+        $this->assertSame($old, (int) missions::get($course->id)->version);
+        // A site that asks for always (a demo) takes it the next time it is opened.
+        set_config('missionupdates', 'auto', 'local_oksigeniatesape');
+        missions::forget();
+        $this->assertSame($old + 1, (int) missions::get($course->id)->version);
+    }
+
+    public function test_the_teacher_can_take_the_new_version_at_once(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $prefix = 'local_oksigeniatesape_';
+        $course = $this->getDataGenerator()->create_course();
+        regions::save($course->id, ['enabled' => 1]);
+        $old = (int) missions::install($course->id, 'livingthings', 'valley', 'gen')->version;
+        $mission = missions::get($course->id);
+        $scene = $DB->get_field($prefix . 'scene', 'id', ['missionid' => $mission->id, 'code' => 'C1-2']);
+        $DB->insert_record($prefix . 'sceneattempt', (object) ['sceneid' => $scene, 'charid' => 1, 'courseid' => $course->id,
+            'teamplay' => 0, 'score' => 0, 'attempt' => 1, 'timestarted' => 1000, 'timefinished' => 0]);
+        missions::upload($this->package(['version' => $old + 1]));
+        missions::forget();
+        $this->assertSame($old, (int) missions::get($course->id)->version);
+        missions::install($course->id, 'livingthings', 'valley', 'gen');
+        missions::forget();
+        $this->assertSame($old + 1, (int) missions::get($course->id)->version);
+        $this->assertNull(missions::update_offered($course->id));
+    }
+
     public function test_a_zip_that_is_not_a_mission(): void {
         $this->resetAfterTest();
         $this->expectException(\moodle_exception::class);

@@ -60,6 +60,9 @@ final class missions {
         return (string) (self::index()[$code]['origin'] ?? '');
     }
 
+    /** @var int The format of mission package this plugin reads, and every one before it. */
+    public const FORMAT = 1;
+
     /** @var array The licences a mission can have, by their SPDX code: how they are named and where they are read. */
     private const RIGHTS = [
         'CC-BY-4.0' => ['CC BY 4.0', 'https://creativecommons.org/licenses/by/4.0/'],
@@ -125,8 +128,9 @@ final class missions {
 
     /**
      * Keeps on the site the package of a mission, from a zip with its mission.json and its scenes (scenes/*.json),
-     * at the top of the zip or in one folder. It replaces an older version of the same mission; courses with it are
-     * brought up to date when they are opened, keeping what the students did and the changes of the teacher.
+     * at the top of the zip or in one folder. It replaces an older version of the same mission; a course with it takes it
+     * as get() says, keeping what the students did and the changes of the teacher. A package of a format this plugin
+     * cannot read, or that needs a newer plugin, is refused saying so.
      *
      * @param string $zippath
      * @return array The mission.json of the package.
@@ -150,6 +154,12 @@ final class missions {
             throw new \moodle_exception('missionbad', 'local_oksigeniatesape', '', 'size');
         }
         $mission = json_decode((string) file_get_contents($found[0]), true);
+        if (is_array($mission) && (int) ($mission['format'] ?? 1) > self::FORMAT) {
+            throw new \moodle_exception('missionformat', 'local_oksigeniatesape', '', (int) $mission['format']);
+        }
+        if (is_array($mission) && (int) ($mission['requires'] ?? 0) > (int) get_config('local_oksigeniatesape', 'version')) {
+            throw new \moodle_exception('missionrequires', 'local_oksigeniatesape');
+        }
         $code = (string) ($mission['code'] ?? '');
         $version = (int) ($mission['version'] ?? 0);
         if (
@@ -407,10 +417,13 @@ final class missions {
             self::cache()->set($courseid, 0);
             return null;
         }
-        // A newer package came with the plugin: bring the mission up to date, keeping what the students did. Once:
-        // the first requests after an upgrade come all at the same time.
+        // A newer package came: bring the mission up to date if it can be now, keeping what the students did. Once: the
+        // first requests after an upgrade come all at the same time.
         $package = self::packages()[$mission->code] ?? null;
-        if ($mission->origin === 'catalog' && $package && (int) ($package['version'] ?? 1) > (int) $mission->version) {
+        if (
+            $mission->origin === 'catalog' && $package && (int) ($package['version'] ?? 1) > (int) $mission->version
+            && self::update_now($mission, (int) ($package['version'] ?? 1))
+        ) {
             $factory = \core\lock\lock_config::get_lock_factory('local_oksigeniatesape');
             $lock = $factory->get_lock('mission-' . $courseid, 30);
             try {
@@ -433,6 +446,63 @@ final class missions {
         );
         self::cache()->set($courseid, $mission);
         return clone $mission;
+    }
+
+    /**
+     * Whether a course takes now the newer version of its mission. Once a class has started, its version stays: nothing
+     * changes in the middle of a place (scenes played, marks, endings to try again). It takes the new one when it closes a
+     * place after the version came, or when the teacher says; before anything is played, there is nothing to break. A site
+     * can ask for always (settings: a demo that follows the last version).
+     *
+     * @param \stdClass $mission As it is in its table.
+     * @param int $version Of the package.
+     * @return bool
+     */
+    private static function update_now(\stdClass $mission, int $version): bool {
+        global $DB;
+        if (get_config('local_oksigeniatesape', 'missionupdates') === 'auto') {
+            return true;
+        }
+        $played = $DB->record_exists_sql(
+            'SELECT 1 FROM {' . self::T . 'sceneattempt} a JOIN {' . self::T . 'scene} s ON s.id = a.sceneid WHERE s.missionid = ?',
+            [$mission->id]
+        );
+        if (!$played) {
+            return true;
+        }
+        // When the site first saw this version: a place closed before that does not count.
+        $name = 'missionseen_' . $mission->code;
+        $seen = explode(':', (string) get_config('local_oksigeniatesape', $name) . ':0');
+        if ((int) $seen[0] !== $version) {
+            $seen = [$version, time()];
+            set_config($name, $version . ':' . $seen[1], 'local_oksigeniatesape');
+        }
+        return $DB->record_exists_select(self::T . 'chapter', 'missionid = ? AND litat > ?', [$mission->id, (int) $seen[1]]);
+    }
+
+    /**
+     * The newer version a course can take and has not taken yet: what its teacher is offered.
+     *
+     * @param int $courseid
+     * @return array|null code, skin, variant, version and changes (what each version brings, the newest first).
+     */
+    public static function update_offered(int $courseid): ?array {
+        $mission = self::get($courseid);
+        $package = $mission ? (self::packages()[$mission->code] ?? null) : null;
+        if (!$package || $mission->origin !== 'catalog' || (int) ($package['version'] ?? 1) <= (int) $mission->version) {
+            return null;
+        }
+        $changes = array_values(array_filter(
+            $package['changes'] ?? [],
+            fn($change) => (int) ($change['version'] ?? 0) > (int) $mission->version
+        ));
+        return [
+            'code' => (string) $mission->code,
+            'skin' => (string) $mission->skin,
+            'variant' => (string) $mission->variant,
+            'version' => (int) $package['version'],
+            'changes' => array_map(fn($change) => (string) ($change['text'] ?? ''), array_slice($changes, 0, 5)),
+        ];
     }
 
     /**

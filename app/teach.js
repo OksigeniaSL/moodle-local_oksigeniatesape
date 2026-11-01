@@ -863,6 +863,13 @@
             'type="button" data-inboxname="' + key + ':0">' + esc(t('teach_name_no')) + '</button></span>' : '') + '</li>';
         })));
     }
+    // A newer version of the mission: it comes in alone when the class closes a place; or now, if the teacher says.
+    if (d.missionupdate) {
+      groups.push(group(t('teach_inbox_update', d.missionupdate.version), t('teach_update_help'), '<button class="btn btn-soft" ' +
+        'type="button" data-missionupdate>' + esc(t('teach_update_now')) + '</button>', d.missionupdate.changes.map(function(text) {
+          return '<li class="item"><span class="grow"><small>' + esc(text) + '</small></span></li>';
+        })));
+    }
     // The photos of the classroom a team sent: nobody sees them before the teacher.
     var photos = (d.photos || []).filter(function(p) {
       return p.status === 'pending';
@@ -1013,6 +1020,17 @@
         T.toast(esc(t(left ? 'teach_inbox_names_left' : 'app_saved')));
       }).catch(failed);
     };
+    el.querySelectorAll('[data-missionupdate]').forEach(function(b) {
+      b.onclick = function() {
+        var u = d.missionupdate;
+        b.disabled = true;
+        T.api('install_mission', {courseid: cfg.courseid, code: u.code, skin: u.skin, variant: u.variant}).then(function() {
+          d.missionupdate = null;
+          render();
+          T.toast(esc(t('app_saved')));
+        }).catch(failed);
+      };
+    });
     el.querySelectorAll('[data-inboxtangle]').forEach(function(b) {
       b.onclick = function() {
         var parts = b.dataset.inboxtangle.split(':');
