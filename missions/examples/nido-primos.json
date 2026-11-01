@@ -1,0 +1,241 @@
+{
+ "about": "Un ejemplo, no una misión: la Defensa del nido con números en vez de animales, con los mismos datos y el mismo motor. Se copia su juego en «games» de una misión.",
+ "games": {
+  "nidoprimos": {
+   "title": "Defensa del nido: primos y compuestos",
+   "intro": "Los números bajan hacia el nido. Atrápalos con la red que les toca: la de los primos, que solo se pueden repartir entre 1 y entre sí mismos, o la de los compuestos, que se pueden repartir en grupos iguales.",
+   "scene": {
+    "embrollo": "«¡Ji, ji! He mezclado los números. ¿A que ya no sabes cuál se puede repartir?»",
+    "creature": "{{creature}} intenta hacer montoncitos iguales con las patas."
+   },
+   "win": "El nido está a salvo: cada número, en su red.",
+   "lose": "El nido se ha quedado frío esta vez. Prueba a repartir cada número en grupos iguales antes de lanzar la red.",
+   "nets": {
+    "prime": {
+     "label": "Primo",
+     "hint": "Solo se puede repartir entre 1 y entre sí mismo."
+    },
+    "composite": {
+     "label": "Compuesto",
+     "hint": "Se puede repartir en grupos iguales de más de 1."
+    }
+   },
+   "covers": {},
+   "parents": {},
+   "animals": {
+    "n2": {
+     "label": "2",
+     "group": "prime",
+     "why": "Solo se puede repartir entre 1 y entre 2. Es primo."
+    },
+    "n3": {
+     "label": "3",
+     "group": "prime",
+     "why": "Solo se puede repartir entre 1 y entre 3. Es primo."
+    },
+    "n5": {
+     "label": "5",
+     "group": "prime",
+     "why": "Solo se puede repartir entre 1 y entre 5. Es primo."
+    },
+    "n7": {
+     "label": "7",
+     "group": "prime",
+     "why": "Solo se puede repartir entre 1 y entre 7. Es primo."
+    },
+    "n11": {
+     "label": "11",
+     "group": "prime",
+     "why": "Solo se puede repartir entre 1 y entre 11. Es primo."
+    },
+    "n13": {
+     "label": "13",
+     "group": "prime",
+     "why": "Solo se puede repartir entre 1 y entre 13. Es primo."
+    },
+    "n17": {
+     "label": "17",
+     "group": "prime",
+     "why": "Solo se puede repartir entre 1 y entre 17. Es primo."
+    },
+    "n19": {
+     "label": "19",
+     "group": "prime",
+     "why": "Solo se puede repartir entre 1 y entre 19. Es primo."
+    },
+    "n23": {
+     "label": "23",
+     "group": "prime",
+     "why": "Solo se puede repartir entre 1 y entre 23. Es primo."
+    },
+    "n29": {
+     "label": "29",
+     "group": "prime",
+     "why": "Solo se puede repartir entre 1 y entre 29. Es primo."
+    },
+    "n4": {
+     "label": "4",
+     "group": "composite",
+     "why": "4 = 2 × 2: se puede repartir en grupos iguales. Es compuesto."
+    },
+    "n6": {
+     "label": "6",
+     "group": "composite",
+     "why": "6 = 2 × 3: se puede repartir en grupos iguales. Es compuesto."
+    },
+    "n8": {
+     "label": "8",
+     "group": "composite",
+     "why": "8 = 2 × 4: se puede repartir en grupos iguales. Es compuesto."
+    },
+    "n9": {
+     "label": "9",
+     "group": "composite",
+     "why": "9 = 3 × 3: se puede repartir en grupos iguales. Es compuesto."
+    },
+    "n10": {
+     "label": "10",
+     "group": "composite",
+     "why": "10 = 2 × 5: se puede repartir en grupos iguales. Es compuesto."
+    },
+    "n12": {
+     "label": "12",
+     "group": "composite",
+     "why": "12 = 3 × 4: se puede repartir en grupos iguales. Es compuesto."
+    },
+    "n14": {
+     "label": "14",
+     "group": "composite",
+     "why": "14 = 2 × 7: se puede repartir en grupos iguales. Es compuesto."
+    },
+    "n15": {
+     "label": "15",
+     "group": "composite",
+     "why": "15 = 3 × 5: se puede repartir en grupos iguales. Es compuesto."
+    },
+    "n16": {
+     "label": "16",
+     "group": "composite",
+     "why": "16 = 4 × 4: se puede repartir en grupos iguales. Es compuesto."
+    },
+    "n18": {
+     "label": "18",
+     "group": "composite",
+     "why": "18 = 3 × 6: se puede repartir en grupos iguales. Es compuesto."
+    },
+    "n21": {
+     "label": "21",
+     "group": "composite",
+     "why": "21 = 3 × 7: se puede repartir en grupos iguales. Es compuesto."
+    },
+    "n25": {
+     "label": "25",
+     "group": "composite",
+     "why": "25 = 5 × 5: se puede repartir en grupos iguales. Es compuesto."
+    },
+    "n27": {
+     "label": "27",
+     "group": "composite",
+     "why": "27 = 3 × 9: se puede repartir en grupos iguales. Es compuesto."
+    },
+    "n35": {
+     "label": "35",
+     "group": "composite",
+     "why": "35 = 5 × 7: se puede repartir en grupos iguales. Es compuesto."
+    }
+   },
+   "levels": {
+    "1": {
+     "nets": [
+      "prime",
+      "composite"
+     ],
+     "animals": [
+      "n2",
+      "n3",
+      "n4",
+      "n5",
+      "n6",
+      "n7",
+      "n8",
+      "n9",
+      "n10",
+      "n11"
+     ],
+     "goal": 8,
+     "shield": 4,
+     "speed": 1
+    },
+    "2": {
+     "nets": [
+      "prime",
+      "composite"
+     ],
+     "animals": [
+      "n2",
+      "n3",
+      "n5",
+      "n7",
+      "n9",
+      "n11",
+      "n12",
+      "n13",
+      "n14",
+      "n15",
+      "n16",
+      "n17"
+     ],
+     "goal": 10,
+     "shield": 4,
+     "speed": 2
+    },
+    "3": {
+     "nets": [
+      "prime",
+      "composite"
+     ],
+     "animals": [
+      "n13",
+      "n14",
+      "n15",
+      "n16",
+      "n17",
+      "n18",
+      "n19",
+      "n21",
+      "n23",
+      "n25",
+      "n27",
+      "n29"
+     ],
+     "goal": 10,
+     "shield": 4,
+     "speed": 3
+    },
+    "4": {
+     "nets": [
+      "prime",
+      "composite"
+     ],
+     "animals": [
+      "n17",
+      "n18",
+      "n19",
+      "n21",
+      "n23",
+      "n25",
+      "n27",
+      "n29",
+      "n35",
+      "n9",
+      "n15",
+      "n11"
+     ],
+     "goal": 10,
+     "shield": 4,
+     "speed": 3
+    }
+   }
+  }
+ }
+}

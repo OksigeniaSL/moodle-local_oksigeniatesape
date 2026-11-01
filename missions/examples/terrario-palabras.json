@@ -1,0 +1,149 @@
+{
+ "about": "Un ejemplo, no una misión: el terrario con palabras en vez de seres vivos, con los mismos datos y el mismo motor. Se copian su juego en «games» y sus palabras en «things» de una misión.",
+ "things": {
+  "cantar": {
+   "label": "canta",
+   "alive": true,
+   "week": "Una semana después: cantó. El verbo cambia con el tiempo."
+  },
+  "correr": {
+   "label": "corre",
+   "alive": true,
+   "week": "Una semana después: corrió. El verbo cambia con el tiempo."
+  },
+  "saltar": {
+   "label": "salta",
+   "alive": true,
+   "week": "Una semana después: saltó. El verbo cambia con el tiempo."
+  },
+  "comer": {
+   "label": "come",
+   "alive": true,
+   "week": "Una semana después: comió. El verbo cambia con el tiempo."
+  },
+  "vivir": {
+   "label": "vive",
+   "alive": true,
+   "week": "Una semana después: vivió. El verbo cambia con el tiempo."
+  },
+  "leer": {
+   "label": "lee",
+   "alive": true,
+   "week": "Una semana después: leyó. El verbo cambia con el tiempo."
+  },
+  "mesa": {
+   "label": "mesa",
+   "alive": false,
+   "note": "Es un sustantivo: nombra algo, y una semana después se sigue escribiendo igual."
+  },
+  "nube": {
+   "label": "nube",
+   "alive": false,
+   "note": "Es un sustantivo: nombra algo, y una semana después se sigue escribiendo igual."
+  },
+  "libro": {
+   "label": "libro",
+   "alive": false,
+   "note": "Es un sustantivo: nombra algo, y una semana después se sigue escribiendo igual."
+  },
+  "perro": {
+   "label": "perro",
+   "alive": false,
+   "note": "Es un sustantivo: nombra algo, y una semana después se sigue escribiendo igual."
+  },
+  "camino": {
+   "label": "camino",
+   "alive": false,
+   "note": "Es un sustantivo: nombra algo, y una semana después se sigue escribiendo igual."
+  },
+  "lapiz": {
+   "label": "lápiz",
+   "alive": false,
+   "note": "Es un sustantivo: nombra algo, y una semana después se sigue escribiendo igual."
+  }
+ },
+ "games": {
+  "terrariopalabras": {
+   "type": "terrarium",
+   "title": "El terrario de las palabras",
+   "intro": "Mete en el terrario las palabras que creas que cambian con el tiempo y deja pasar una semana: los verbos se conjugan; los sustantivos se quedan igual.",
+   "scene": {
+    "embrollo": "«¡Una mesa también cambia si la miras con cariño!», dice el Embrollo, y se ríe.",
+    "creature": "{{creature}} pega la nariz al cristal y espera a ver qué pasa."
+   },
+   "win": "Los verbos cambian con el tiempo: canta, cantó. Los sustantivos nombran cosas y se quedan como están.",
+   "lose": "Aquí no se pierde: saca lo que no ha cambiado y deja pasar otra semana.",
+   "most": 8,
+   "levels": {
+    "1": {
+     "things": [
+      "cantar",
+      "correr",
+      "saltar",
+      "comer",
+      "vivir",
+      "leer",
+      "mesa",
+      "nube",
+      "libro",
+      "perro",
+      "camino",
+      "lapiz"
+     ],
+     "goal": 4
+    },
+    "2": {
+     "things": [
+      "cantar",
+      "correr",
+      "saltar",
+      "comer",
+      "vivir",
+      "leer",
+      "mesa",
+      "nube",
+      "libro",
+      "perro",
+      "camino",
+      "lapiz"
+     ],
+     "goal": 5
+    },
+    "3": {
+     "things": [
+      "cantar",
+      "correr",
+      "saltar",
+      "comer",
+      "vivir",
+      "leer",
+      "mesa",
+      "nube",
+      "libro",
+      "perro",
+      "camino",
+      "lapiz"
+     ],
+     "goal": 6
+    },
+    "4": {
+     "things": [
+      "cantar",
+      "correr",
+      "saltar",
+      "comer",
+      "vivir",
+      "leer",
+      "mesa",
+      "nube",
+      "libro",
+      "perro",
+      "camino",
+      "lapiz"
+     ],
+     "goal": 6
+    }
+   }
+  }
+ }
+}
