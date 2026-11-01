@@ -78,11 +78,15 @@
   }
 
   /**
-   * Whether the device can draw the models (WebGL 2).
+   * Whether the device can draw the models: WebGL 2, and not the light art (little memory, saving data, or a class whose
+   * teacher asked for it): there, the library and the models are not brought, and the puppets stand.
    *
    * @return {boolean}
    */
   function canDraw() {
+    if (T.lightArt) {
+      return false;
+    }
     if (webgl === null) {
       try {
         webgl = !!document.createElement('canvas').getContext('webgl2');

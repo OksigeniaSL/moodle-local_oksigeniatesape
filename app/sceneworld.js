@@ -191,16 +191,19 @@
           }
         };
         // The figures are drawn on one canvas (768 × 896, the feet in the same place): the same scale keeps their
-        // heights; the grown-ups who speak, a little taller than the hero (as Gaudí draws them).
-        var unit = size / 896;
-        place(S.hero, heroX, ground, unit);
+        // heights; the grown-ups who speak, a little taller than the hero (as Gaudí draws them). Each by its own height:
+        // with the light art, a picture is the small copy.
+        var unit = function(f) {
+          return f ? size / (f.sprite.height || 896) : 0;
+        };
+        place(S.hero, heroX, ground, unit(S.hero));
         // The creature beside the hero, in front of what is read, never under it.
         // A creature in live 3D takes more room beside the hero than its picture: a little further.
         var petX = (S.hero ? S.hero.tx : heroX) + size * (S.pet && modelled(S.pet) ? 0.5 : 0.38);
         place(S.pet, beside ? Math.min(petX, side - size * 0.14) : petX, ground - size * 0.03, size * 0.5 / (S.pet ?
           S.pet.sprite.height : 1));
         // A model brings its own height in metres: taller or not, by itself.
-        place(S.speaker, speakerX, ground, unit * (S.speaker && TALL[S.speaker.code] && !modelled(S.speaker) ? 1.1 : 1));
+        place(S.speaker, speakerX, ground, unit(S.speaker) * (S.speaker && TALL[S.speaker.code] && !modelled(S.speaker) ? 1.1 : 1));
         // The suspects, in a row on the floor just above what is read (beside it, over its width; on a phone, behind
         // the figures, between them). When what is read grows tall, they go up with it, and smaller, up to the bar on
         // top: they are never behind it.

@@ -223,7 +223,9 @@
         figure(S, which, which === 'hero' ? 0xffc857 : 0x7cc67f);
       }
       var image = !puppet && (hue || PAINTS[paint]) ? painted(S, which, hue, paint) : which;
-      var sprite = puppet ? puppet.container.setPosition(x, y) : S.add.image(x, y, image).setOrigin(0.5, 1);
+      // A picture stands on its feet, in the same place of its canvas as those of its puppet.
+      var sprite = puppet ? puppet.container.setPosition(x, y) : S.add.image(x, y, image).setOrigin(0.5, which === 'hero' ?
+        860 / 896 : 457 / 512);
       var shadow = S.add.ellipse(x, y, 10, 10, 0x0b1a10, 0.32);
       return {x: x, y: y, sprite: sprite, puppet: puppet, shadow: shadow, base: height / sprite.height, walk: 0,
         moving: false, facing: 1, lift: 0, tilt: 0, pose: null};
