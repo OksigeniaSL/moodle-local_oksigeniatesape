@@ -124,6 +124,31 @@
   }
 
   /**
+   * How fast a gesture that goes forward (walk) has to play so the feet do not slide: the ground the figure covered
+   * since the last frame against the ground its gesture covers at its own pace, eased, between half and twice. Any
+   * other gesture plays at its pace.
+   *
+   * @param {Object} fig The figure (a sheet or a model): its container is where the engine puts it.
+   * @param {number} dt Seconds since the last frame.
+   * @param {number} walks Units of the place per second its gesture covers at its pace; 0 if it does not go forward.
+   * @return {number} How fast to play it (1, its pace).
+   */
+  function pace(fig, dt, walks) {
+    var c = fig.container;
+    var was = fig.was;
+    fig.was = {x: c.x, y: c.y};
+    if (!was || !(dt > 0) || !(walks > 0)) {
+      fig.pace = undefined;
+      return 1;
+    }
+    var dx = c.x - was.x;
+    var dy = c.y - was.y;
+    var rate = Math.sqrt(dx * dx + dy * dy) / dt / walks;
+    fig.pace = fig.pace === undefined ? rate : fig.pace + (rate - fig.pace) * Math.min(1, dt * 6);
+    return Math.max(0.5, Math.min(2, fig.pace));
+  }
+
+  /**
    * A figure made of sheets.
    *
    * @param {Object} scene
@@ -238,9 +263,17 @@
   };
 
   /**
-   * The frames move by themselves; here, only how high the feet are over the ground in this frame.
+   * The frames move by themselves; here, how fast, walking (meta.speed: px of the cell per second), so the feet keep
+   * to the ground; and how high the feet are over the ground in this frame.
+   *
+   * @param {number} [dt] Seconds since the last time.
    */
-  Sheet.prototype.draw = function() {
+  Sheet.prototype.draw = function(dt) {
+    var speed = this.clipName === 'walk' && this.meta && this.meta.speed;
+    var rate = pace(this, dt, speed ? speed * Math.abs(this.container.scaleY * this.image.scaleY) : 0);
+    if (this.image.anims) {
+      this.image.anims.timeScale = rate;
+    }
     var lift = this.meta && this.meta.lift;
     var frame = this.image.anims && this.image.anims.currentFrame;
     this.lift = lift && frame ? lift[frame.index - 1] || 0 : 0;
@@ -248,6 +281,7 @@
 
   T.sheet = {
     find: find,
+    pace: pace,
 
     /**
      * Asks the engine, while the place loads, for the sheets its body uses at once (those it has).

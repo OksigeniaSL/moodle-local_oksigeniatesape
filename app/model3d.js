@@ -37,10 +37,13 @@
     small: {canvas: [512, 512], feet: [256, 457], tall: 430}
   };
   /**
-   * @var {number} Metres of a person as tall as a puppet: the models are measured in metres, so each one keeps its own
-   *     height (a dwarf, shorter than a druid; the creature, its size beside them).
+   * @var {number} Metres of a grown-up as tall as the puppet of a grown-up who speaks (the druid; FORMATO.md of Gaudí,
+   *     «Las medidas»): the models are measured in metres, so each one keeps its own height (a dwarf, shorter than a
+   *     druid; the creature, its size beside them).
    */
   var PERSON = 1.7;
+  /** @var {number} How much taller than a hero the puppet of a grown-up who speaks is drawn (sceneworld.js). */
+  var GROWN = 1.1;
   /** @var {number} How much a model turns to the side it faces, in radians: three quarters. */
   var YAW = 0.45;
   /** @var {number} Seconds of passage from one gesture to the next. */
@@ -179,6 +182,29 @@
   }
 
   /**
+   * What stands in front of the place (branches, the edge of a shelf: the picture the engine draws over everything),
+   * drawn again in the layer of the models, in front of them, so the hero still passes behind it; the one of the engine
+   * is hidden, not to draw it twice.
+   *
+   * @param {Object} image The picture of the engine, with its origin at the top left.
+   * @return {Object} A plane of three.js.
+   */
+  function frontOf(image) {
+    var THREE = window.THREE;
+    var map = new THREE.Texture(image.texture.getSourceImage());
+    map.colorSpace = THREE.SRGBColorSpace;
+    map.needsUpdate = true;
+    var w = image.width * image.scaleX;
+    var h = image.height * image.scaleY;
+    var plane = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({map: map, transparent: true,
+      depthTest: false, depthWrite: false}));
+    plane.position.set(image.x + w / 2, -(image.y + h / 2), 9000);
+    plane.renderOrder = 10;
+    image.setVisible(false);
+    return plane;
+  }
+
+  /**
    * The layer of the models of a place, made once: a canvas of its own over the one of the place, the same size, with
    * a camera in the units of the place; drawn after each update of the place.
    *
@@ -231,14 +257,27 @@
       camera.updateProjectionMatrix();
       layer.outline.uRes.value.set(r.width * renderer.getPixelRatio(), r.height * renderer.getPixelRatio());
     };
+    // Once the place is drawn, with its camera where it is now (a place that follows the hero scrolls and zooms).
     var draw = function() {
+      var view = scene.cameras && scene.cameras.main && scene.cameras.main.worldView;
+      if (view && view.width) {
+        camera.left = view.x;
+        camera.right = view.x + view.width;
+        camera.top = -view.y;
+        camera.bottom = -(view.y + view.height);
+        camera.updateProjectionMatrix();
+      }
+      if (scene.front && !layer.front) {
+        layer.front = frontOf(scene.front);
+        layer.scene.add(layer.front);
+      }
       layer.models.forEach(function(m) {
         m.sync();
       });
       renderer.render(layer.scene, camera);
     };
     var gone = function() {
-      scene.events.off('postupdate', draw);
+      scene.events.off('render', draw);
       scene.scale.off('resize', fit);
       window.removeEventListener('resize', fit);
       renderer.dispose();
@@ -248,7 +287,7 @@
     fit();
     scene.scale.on('resize', fit);
     window.addEventListener('resize', fit);
-    scene.events.on('postupdate', draw);
+    scene.events.on('render', draw);
     scene.events.once('shutdown', gone);
     scene.events.once('destroy', gone);
     scene.modelLayer = layer;
@@ -428,6 +467,12 @@
     if (!this.root || this.still) {
       return;
     }
+    // Walking, its steps at the pace it goes forward (speed of the gesture, in metres per second).
+    var walk = this.clipName === 'walk' && this.info.walk && this.info.walk.speed;
+    var rate = T.sheet.pace(this, dt, walk ? walk * this.perMetre() : 0);
+    if (this.current) {
+      this.current.timeScale = rate;
+    }
     this.mixer.update(dt || 0);
     if (!this.face) {
       return;
@@ -479,8 +524,7 @@
   };
 
   /**
-   * The model where the engine has put its figure: at its feet, in metres of the place (a person of 1.7 m as tall as a
-   * puppet of a person; the creature, whose puppet is drawn at half the size of a person, at the same metres), turned
+   * The model where the engine has put its figure: at its feet, in metres of the place (perMetre), turned
    * three quarters to the side it faces, shown when it shows.
    */
   Model.prototype.sync = function() {
@@ -489,18 +533,38 @@
       return;
     }
     this.root.visible = !!c.scene && c.visible && c.alpha > 0.05;
-    // Pixels of the place per metre: from the scale the engine gives the figure (the one of a person, or of the
-    // creature, which it draws at half the size of a person in a canvas of 512).
-    var perPerson = this.small ? Math.abs(c.scaleY) * 1024 : Math.abs(c.scaleY) * BODIES.person.canvas[1];
-    var k = perPerson * (BODIES.person.tall / BODIES.person.canvas[1]) / PERSON;
+    var k = this.perMetre();
     this.root.position.set(c.x, -c.y, c.depth || 0);
     this.root.scale.set(k, k, k);
     this.root.rotation.set(0, c.scaleX < 0 ? -YAW : YAW, 0);
   };
 
+  /**
+   * Units of the place per metre where the model stands: from the scale the engine gives its figure (that of a hero, or
+   * of the creature, which it draws at half the size of a person in a canvas of 512), the same for everyone on the same
+   * ground; a grown-up of 1.7 m as tall as the puppet of a grown-up.
+   *
+   * @return {number}
+   */
+  Model.prototype.perMetre = function() {
+    var c = this.container;
+    var perPerson = this.small ? Math.abs(c.scaleY) * 1024 : Math.abs(c.scaleY) * BODIES.person.canvas[1];
+    return perPerson * GROWN * (BODIES.person.tall / BODIES.person.canvas[1]) / PERSON;
+  };
+
   T.model = {
     /** @var {Object} How tall each model stands, in metres, once it has come (for the tests). */
     metres: {},
+
+    /**
+     * Whether a figure is a model: it brings its height in metres, so the place does not make it taller.
+     *
+     * @param {Object} [puppet] What stands for the figure (a puppet, sheets or a model).
+     * @return {boolean}
+     */
+    is: function(puppet) {
+      return puppet instanceof Model;
+    },
 
     /**
      * The model of a figure in the art packs, if the device can draw it; null if not.

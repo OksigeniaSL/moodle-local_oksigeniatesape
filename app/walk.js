@@ -22,7 +22,7 @@
   var H = 810;
   /** @var {number} How near the hero has to be of a trace or of the bush. */
   var NEAR = 85;
-  /** @var {number} Pixels a second the hero walks. */
+  /** @var {number} Pixels a second the hero walks at the front of the ground (further back, slower). */
   var SPEED = 270;
   /** @var {Object} The beings that have a picture among the critters of the valley, until they have their own. */
   var CRITTER = {caracol: 'critter.snail', hormiga: 'critter.ant.1', rana: 'critter.frog', mariposa: 'critter.butterfly.1',
@@ -265,7 +265,8 @@
             T.cast.textures(S);
             S.add.image(0, 0, 'bg').setOrigin(0).setDepth(0);
             if (S.textures.exists('front')) {
-              S.add.image(0, 0, 'front').setOrigin(0).setDepth(5000);
+              // In live 3D, the models go over the place: the layer of the models draws it again, in front of them.
+              S.front = S.add.image(0, 0, 'front').setOrigin(0).setDepth(5000);
             }
             var start = point(place.start);
             S.hero = T.cast.actor(S, 'hero', start.x, start.y, 250, still);
@@ -701,7 +702,11 @@
                 return {place: e.place, being: being, found: state.found, crossed: state.crossed.slice(), hide: hides[state.hide],
                   solved: state.solved, busy: state.busy, hero: {x: S.hero.x, y: S.hero.y}, traces: traces,
                   phase: state.phase, pictures: {hero: cast.hero, pet: pet.key, rigs: cast.rigs}, lamp: !!S.lamp,
-                  puppets: {hero: S.hero.puppet ? S.hero.puppet.clipName : '', pet: S.pet.puppet ? S.pet.puppet.clipName : ''}};
+                  puppets: {hero: S.hero.puppet ? S.hero.puppet.clipName : '', pet: S.pet.puppet ? S.pet.puppet.clipName : ''},
+                  // A figure in 3D or in sheets, walking: how fast its steps go so the feet keep to the ground.
+                  models: {hero: !!(T.model && T.model.is(S.hero.puppet)), pet: !!(T.model && T.model.is(S.pet.puppet))},
+                  pace: {hero: S.hero.puppet ? S.hero.puppet.pace : null, pet: S.pet.puppet ? S.pet.puppet.pace : null},
+                  front: S.modelLayer && S.modelLayer.front ? 'models' : S.front ? 'engine' : ''};
               },
               walkTo: function(x, y) {
                 S.walkTo(onGround(place, x, y), null);
@@ -716,7 +721,7 @@
             }
             var dt = Math.min(delta, 50) / 1000;
             moveHero(S, place, state, dt);
-            movePet(S, dt);
+            movePet(S, dt, place);
             var wob = moment.still ? 0 : 18;
             S.fly.x += (S.flyTo.x + Math.sin(time / 420) * wob - S.fly.x) * Math.min(1, dt * 1.6);
             S.fly.y += (S.flyTo.y + Math.cos(time / 530) * wob * 0.7 - S.fly.y) * Math.min(1, dt * 1.6);
@@ -783,10 +788,12 @@
     var free = !state.solved && state.phase === 'explore' && S.stage.layer.querySelector('[data-panel]').hidden;
     var dx = free ? (S.keys.right.isDown ? 1 : 0) - (S.keys.left.isDown ? 1 : 0) : 0;
     var dy = free ? (S.keys.down.isDown ? 1 : 0) - (S.keys.up.isDown ? 1 : 0) : 0;
+    // Further back, smaller and slower on the screen: the same steps over the ground.
+    var speed = SPEED * depthOf(place, hero.y);
     if (dx || dy) {
       hero.target = null;
       var len = Math.hypot(dx, dy);
-      step(place, hero, hero.x + dx / len * SPEED * dt, hero.y + dy / len * SPEED * dt * 0.7);
+      step(place, hero, hero.x + dx / len * speed * dt, hero.y + dy / len * speed * dt * 0.7);
       hero.moving = true;
       if (dx) {
         hero.facing = Math.sign(dx);
@@ -808,7 +815,7 @@
       }
       return;
     }
-    var d = Math.min(gap, SPEED * dt);
+    var d = Math.min(gap, speed * dt);
     if (Math.abs(hero.target.x - hero.x) > 4) {
       hero.facing = Math.sign(hero.target.x - hero.x);
     }
@@ -849,8 +856,9 @@
    *
    * @param {Object} S The scene.
    * @param {number} dt
+   * @param {Object} place
    */
-  function movePet(S, dt) {
+  function movePet(S, dt, place) {
     var pet = S.pet;
     var hero = S.hero;
     if (pet.mode === 'still') {
@@ -870,7 +878,7 @@
     }
     var gap = distance(pet, goal);
     if (gap > 10) {
-      var d = Math.min(gap, (pet.mode === 'lead' ? 330 : 300) * dt * (gap > 200 ? 1.4 : 1));
+      var d = Math.min(gap, (pet.mode === 'lead' ? 330 : 300) * depthOf(place, pet.y) * dt * (gap > 200 ? 1.4 : 1));
       pet.x += (goal.x - pet.x) / gap * d;
       pet.y += (goal.y - pet.y) / gap * d;
       pet.facing = Math.sign(goal.x - pet.x) || pet.facing;
