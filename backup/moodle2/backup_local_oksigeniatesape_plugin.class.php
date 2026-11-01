@@ -15,7 +15,8 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * What the game keeps in a course backup: its settings, the mission (by its code, to install it again), the classroom
+ * What the game keeps in a course backup: its settings, the mission (by its code, to install it again, and its package, for a
+ * site that does not have it), the classroom
  * challenges, the challenges of each activity and the powers of the course. Nothing of the students: their characters
  * belong to the whole site.
  *
@@ -50,9 +51,12 @@ class backup_local_oksigeniatesape_plugin extends backup_local_plugin {
         // The missions the teacher made, before the mission of the course, which may be one of them.
         $owns = new backup_nested_element('owns');
         $own = new backup_nested_element('own', ['id'], ['code', 'version', 'draft', 'mission', 'scenes']);
+        // The package of a mission of the catalog, for a site that does not have it.
+        $package = new backup_nested_element('package', ['id'], ['code', 'version', 'mission', 'scenes']);
         $game->add_child($region);
         $game->add_child($owns);
         $owns->add_child($own);
+        $game->add_child($package);
         $game->add_child($mission);
         $game->add_child($challenges);
         $challenges->add_child($challenge);
@@ -75,7 +79,29 @@ class backup_local_oksigeniatesape_plugin extends backup_local_plugin {
         $power->set_source_table('local_oksigeniatesape_power', ['courseid' => backup::VAR_COURSEID]);
         $edit->set_source_table('local_oksigeniatesape_edit', ['courseid' => backup::VAR_COURSEID]);
         $own->set_source_table('local_oksigeniatesape_own', ['courseid' => backup::VAR_COURSEID]);
+        $package->set_source_array(self::package_of((int) $this->task->get_courseid()));
         return $plugin;
+    }
+
+    /**
+     * The package of the mission of a course, if it comes from the catalog.
+     *
+     * @param int $courseid
+     * @return array Of one record, or none.
+     */
+    private static function package_of(int $courseid): array {
+        $mission = \local_oksigeniatesape\local\missions::get($courseid);
+        $package = $mission ? (\local_oksigeniatesape\local\missions::packages()[$mission->code] ?? null) : null;
+        if (!$package || $mission->origin !== 'catalog') {
+            return [];
+        }
+        return [[
+            'id' => (int) $mission->id,
+            'code' => (string) $mission->code,
+            'version' => (int) ($package['version'] ?? 1),
+            'mission' => json_encode($package),
+            'scenes' => json_encode(array_values(\local_oksigeniatesape\local\missions::package_scenes($mission->code))),
+        ]];
     }
 
     /**

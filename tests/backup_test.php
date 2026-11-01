@@ -114,6 +114,74 @@ final class backup_test extends \advanced_testcase {
         $this->assertSame('Un título propio', edits::of($newid, 'livingthings')['C1-2']['title'] ?? '');
     }
 
+    public function test_a_mission_the_other_site_does_not_have_comes_with_the_backup(): void {
+        global $CFG, $DB, $USER;
+        require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
+        require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $CFG->keeptempdirectoriesonbackup = true;
+        // A mission uploaded to this site.
+        $source = $CFG->dirroot . '/local/oksigeniatesape/missions/livingthings';
+        $dir = make_request_directory();
+        $package = array_merge(json_decode(file_get_contents($source . '/mission.json'), true), ['code' => 'viajera']);
+        file_put_contents($dir . '/mission.json', json_encode($package));
+        $files = ['mission.json' => $dir . '/mission.json'];
+        foreach (glob($source . '/scenes/*.json') as $file) {
+            $scene = json_decode(file_get_contents($file), true);
+            $scene['mission'] = 'viajera';
+            file_put_contents($dir . '/' . basename($file), json_encode($scene));
+            $files['scenes/' . basename($file)] = $dir . '/' . basename($file);
+        }
+        get_file_packer('application/zip')->archive_to_pathname($files, $dir . '/package.zip');
+        missions::upload($dir . '/package.zip');
+        $course = $this->getDataGenerator()->create_course();
+        regions::save($course->id, ['enabled' => 1]);
+        missions::install($course->id, 'viajera', 'azara', 'py');
+        $scenes = $DB->count_records(self::T . 'scene', ['missionid' => missions::get($course->id)->id]);
+        $this->assertGreaterThan(0, $scenes);
+        edits::save($course->id, 'C1-2', 'title', 'Un título propio');
+
+        $bc = new \backup_controller(
+            \backup::TYPE_1COURSE,
+            $course->id,
+            \backup::FORMAT_MOODLE,
+            \backup::INTERACTIVE_NO,
+            \backup::MODE_GENERAL,
+            $USER->id
+        );
+        $backupid = $bc->get_backupid();
+        $bc->execute_plan();
+        $bc->destroy();
+        // The other site: it does not have that mission.
+        remove_dir($CFG->dataroot . '/' . missions::SITE_FOLDER . '/viajera');
+        missions::packages(true);
+        missions::forget();
+        $this->assertArrayNotHasKey('viajera', missions::packages());
+        $newid = \restore_dbops::create_new_course('Copia', 'COPIA', $course->category);
+        $rc = new \restore_controller(
+            $backupid,
+            $newid,
+            \backup::INTERACTIVE_NO,
+            \backup::MODE_GENERAL,
+            $USER->id,
+            \backup::TARGET_NEW_COURSE
+        );
+        $this->assertTrue($rc->execute_precheck());
+        $rc->execute_plan();
+        $rc->destroy();
+
+        // It comes with the course, whole, with the changes of the teacher; and only for that course.
+        $mission = missions::get($newid);
+        $this->assertNotNull($mission);
+        $this->assertSame('own', $mission->origin);
+        $this->assertSame('azara', $mission->skin);
+        $this->assertSame($scenes, $DB->count_records(self::T . 'scene', ['missionid' => $mission->id]));
+        $this->assertSame('Un título propio', edits::of($newid, $mission->code)['C1-2']['title'] ?? '');
+        $this->assertArrayNotHasKey('viajera', missions::packages());
+        $this->assertArrayNotHasKey($mission->code, missions::packages());
+    }
+
     public function test_a_mission_the_teacher_made_comes_back_with_its_backup(): void {
         global $CFG, $DB, $USER;
         require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');

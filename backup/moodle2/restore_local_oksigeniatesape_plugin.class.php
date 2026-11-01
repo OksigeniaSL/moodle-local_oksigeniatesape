@@ -42,6 +42,7 @@ class restore_local_oksigeniatesape_plugin extends restore_local_plugin {
         return [
             new restore_path_element('oksigeniatesape_region', $this->get_pathfor('/region')),
             new restore_path_element('oksigeniatesape_own', $this->get_pathfor('/owns/own')),
+            new restore_path_element('oksigeniatesape_package', $this->get_pathfor('/package')),
             new restore_path_element('oksigeniatesape_mission', $this->get_pathfor('/mission')),
             new restore_path_element('oksigeniatesape_challenge', $this->get_pathfor('/challenges/challenge')),
             new restore_path_element('oksigeniatesape_power', $this->get_pathfor('/powers/power')),
@@ -101,7 +102,7 @@ class restore_local_oksigeniatesape_plugin extends restore_local_plugin {
     }
 
     /**
-     * The mission, installed again from the package of the plugin if the site has it.
+     * The mission, installed again from the package of the site if it has it; if not, from the copy the backup brought.
      *
      * @param array|object $data
      */
@@ -118,6 +119,30 @@ class restore_local_oksigeniatesape_plugin extends restore_local_plugin {
             return;
         }
         missions::install($courseid, $data->code, $data->skin, $data->variant);
+    }
+
+    /**
+     * The package of a mission of the catalog, for a site that does not have it: a copy for this course, as one the teacher
+     * made. Never for the whole site: who restores a course does not choose what the other courses are offered. One this
+     * plugin cannot read stays out, and it says so.
+     *
+     * @param array|object $data
+     */
+    public function process_oksigeniatesape_package($data) {
+        $data = (object) $data;
+        if (isset(missions::packages()[$data->code])) {
+            return;
+        }
+        $mission = json_decode((string) ($data->mission ?? ''), true);
+        if (
+            !is_array($mission) || (int) ($mission['format'] ?? 1) > missions::FORMAT
+            || (int) ($mission['requires'] ?? 0) > (int) get_config('local_oksigeniatesape', 'version')
+        ) {
+            $this->log('local_oksigeniatesape: this site cannot read the mission ' . $data->code, backup::LOG_WARNING);
+            return;
+        }
+        $data->draft = json_encode(['title' => missions::text($mission['title'] ?? '', (string) array_key_first($mission['skins'] ?? []))]);
+        $this->process_oksigeniatesape_own($data);
     }
 
     /**
@@ -159,7 +184,7 @@ class restore_local_oksigeniatesape_plugin extends restore_local_plugin {
         $data = (object) $data;
         edits::store(
             $this->task->get_courseid(),
-            (string) $data->mission,
+            $this->owncodes[(string) $data->mission] ?? (string) $data->mission,
             (string) $data->scene,
             (string) $data->path,
             (string) $data->value
