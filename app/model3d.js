@@ -386,6 +386,8 @@
     });
     var box = new THREE.Box3().setFromObject(root);
     this.metres = Math.max(0.01, box.max.y);
+    // A small one who speaks (a bird) has to be seen: how many times its metres it stands in the place (FORMATO.md).
+    this.presence = Number((gltf.scene && gltf.scene.userData && gltf.scene.userData.presence) || 1);
     // For the tests of the browser: how tall each model stands, in metres.
     T.model.metres[this.id] = Math.round(this.metres * 100) / 100;
     this.face = face;
@@ -577,7 +579,7 @@
   Model.prototype.perMetre = function() {
     var c = this.container;
     var perPerson = this.small ? Math.abs(c.scaleY) * 1024 : Math.abs(c.scaleY) * BODIES.person.canvas[1];
-    return perPerson * GROWN * (BODIES.person.tall / BODIES.person.canvas[1]) / PERSON;
+    return perPerson * GROWN * (BODIES.person.tall / BODIES.person.canvas[1]) / PERSON * (this.presence || 1);
   };
 
   T.model = {
