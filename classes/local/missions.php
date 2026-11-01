@@ -63,6 +63,12 @@ final class missions {
     /** @var int The format of mission package this plugin reads, and every one before it. */
     public const FORMAT = 1;
 
+    /** @var int The images a package can bring, in bytes, all of them. */
+    public const MAX_IMAGES = 15 * 1024 * 1024;
+
+    /** @var string[] What the images of a package can be: pieces of a mission, never those of the world of the site. */
+    private const IMAGE_KEYS = ['scene.', 'being.', 'thing.', 'album.', 'map.', 'figure.', 'speaker.'];
+
     /** @var array The licences a mission can have, by their SPDX code: how they are named and where they are read. */
     private const RIGHTS = [
         'CC-BY-4.0' => ['CC BY 4.0', 'https://creativecommons.org/licenses/by/4.0/'],
@@ -130,7 +136,8 @@ final class missions {
      * Keeps on the site the package of a mission, from a zip with its mission.json and its scenes (scenes/*.json),
      * at the top of the zip or in one folder. It replaces an older version of the same mission; a course with it takes it
      * as get() says, keeping what the students did and the changes of the teacher. A package of a format this plugin
-     * cannot read, or that needs a newer plugin, is refused saying so.
+     * cannot read, or that needs a newer plugin, is refused saying so. Its folder images/, if it has one, becomes an art
+     * pack of the mission: each picture named by its key (scene.claro.png).
      *
      * @param string $zippath
      * @return array The mission.json of the package.
@@ -184,6 +191,7 @@ final class missions {
         if ($current && (int) ($current['version'] ?? 1) > $version) {
             throw new \moodle_exception('missionolder', 'local_oksigeniatesape', '', (int) $current['version']);
         }
+        $images = self::images_of($root);
         $folder = $CFG->dataroot . '/' . self::SITE_FOLDER . '/' . $code;
         if (is_dir($folder)) {
             remove_dir($folder);
@@ -194,7 +202,66 @@ final class missions {
             copy($file, $folder . '/scenes/' . $id . '.json');
         }
         self::index(true);
+        if ($images) {
+            self::keep_images($root, $code, $version, $mission, $images);
+        }
         return $mission;
+    }
+
+    /**
+     * The images of a package, looked at before anything is kept: real pictures, named by a key of a mission, within the
+     * cap. One that does not fit refuses the whole package, saying which.
+     *
+     * @param string $root Where the package was unpacked.
+     * @return array Key => the path inside the package.
+     */
+    private static function images_of(string $root): array {
+        $images = [];
+        $size = 0;
+        foreach (glob($root . '/images/*') ?: [] as $file) {
+            $name = basename($file);
+            $key = pathinfo($file, PATHINFO_FILENAME);
+            $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+            $mission = array_filter(self::IMAGE_KEYS, fn($start) => strpos($key, $start) === 0);
+            if (
+                !is_file($file) || !in_array($extension, ['png', 'webp', 'jpg', 'jpeg'], true) || !$mission
+                || !preg_match('/^[a-z0-9_.-]{1,80}$/', $key) || !@getimagesize($file)
+            ) {
+                throw new \moodle_exception('missionbad', 'local_oksigeniatesape', '', 'images/' . s($name));
+            }
+            $size += filesize($file);
+            $images[$key] = 'images/' . $name;
+        }
+        if ($size > self::MAX_IMAGES) {
+            throw new \moodle_exception('missionbad', 'local_oksigeniatesape', '', 'images: size');
+        }
+        return $images;
+    }
+
+    /**
+     * The images of a package, as an art pack of the mission, with its own code: it is added over the others and leaves
+     * them as they are.
+     *
+     * @param string $root Where the package was unpacked.
+     * @param string $code The mission.
+     * @param int $version
+     * @param array $mission The mission.json.
+     * @param array $images As images_of() gives them.
+     */
+    private static function keep_images(string $root, string $code, int $version, array $mission, array $images): void {
+        $pack = make_request_directory() . '/images.zip';
+        $files = ['pack.json' => [json_encode([
+            'code' => substr($code, 0, 36) . '-img',
+            'name' => self::text($mission['title'] ?? $code, (string) array_key_first($mission['skins'] ?? [])),
+            'kind' => 'mission',
+            'version' => $version,
+            'files' => $images,
+        ])]];
+        foreach ($images as $path) {
+            $files[$path] = $root . '/' . $path;
+        }
+        get_file_packer('application/zip')->archive_to_pathname($files, $pack);
+        art::install($pack);
     }
 
     /**

@@ -445,6 +445,28 @@ final class edits_test extends \advanced_testcase {
         edits::import($to->id, $data);
     }
 
+    public function test_a_layer_goes_from_one_site_to_another(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $course = $this->make_course();
+        edits::save($course->id, 'C1-2', 'title', 'A title in another language');
+        // As a file: what travels is text.
+        $layer = json_decode(json_encode(edits::export($course->id)), true);
+        $this->assertSame('tesape-edits', $layer['format']);
+        // The other site: another course with the same mission, whatever version it has.
+        $other = $this->make_course();
+        // A text that its version does not have stays out, and it says so.
+        $layer['edits'][] = ['scene' => 'C1-2', 'path' => 'nodes/notthere/text', 'value' => 'Otro'];
+        $done = edits::import($other->id, $layer);
+        $this->assertSame(1, $done['applied']);
+        $this->assertSame(1, $done['skipped']);
+        $this->assertSame('A title in another language', $this->scene($other->id, 'C1-2')->data['title']);
+        // A layer of another mission does not fit.
+        $layer['mission'] = 'othermission';
+        $this->expectException(\moodle_exception::class);
+        edits::import($other->id, $layer);
+    }
+
     public function test_a_newer_version_of_the_mission_keeps_the_changes(): void {
         global $DB;
         $this->resetAfterTest();

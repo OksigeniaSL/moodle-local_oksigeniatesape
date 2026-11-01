@@ -191,6 +191,60 @@ final class packages_test extends \advanced_testcase {
         $this->assertNull(missions::update_offered($course->id));
     }
 
+    /**
+     * The pilot mission with images, in a zip.
+     *
+     * @param int $version
+     * @param array $images Name of the file => its content.
+     * @return string Path of the zip.
+     */
+    private function package_with_images(int $version, array $images): string {
+        global $CFG;
+        $dir = make_request_directory();
+        $source = $CFG->dirroot . '/local/oksigeniatesape/missions/livingthings';
+        $mission = array_merge(json_decode(file_get_contents($source . '/mission.json'), true), ['version' => $version]);
+        file_put_contents($dir . '/mission.json', json_encode($mission));
+        $files = ['mission.json' => $dir . '/mission.json'];
+        foreach (glob($source . '/scenes/*.json') as $file) {
+            $files['scenes/' . basename($file)] = $file;
+        }
+        foreach ($images as $name => $content) {
+            file_put_contents($dir . '/' . $name, $content);
+            $files['images/' . $name] = $dir . '/' . $name;
+        }
+        $zip = $dir . '/package.zip';
+        get_file_packer('application/zip')->archive_to_pathname($files, $zip);
+        return $zip;
+    }
+
+    public function test_a_mission_can_bring_its_images(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $version = (int) missions::packages()['livingthings']['version'];
+        $png = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==');
+        // What is not a picture, or would replace a piece of the world of the site, is refused, and nothing is kept.
+        foreach (
+            [
+                'scene.falsa.png' => 'no soy una imagen',
+                'icon.saber.png' => $png,
+                'scene.script.svg' => '<svg></svg>',
+            ] as $name => $content
+        ) {
+            try {
+                missions::upload($this->package_with_images($version + 1, [$name => $content]));
+                $this->fail('It should not take ' . $name);
+            } catch (\moodle_exception $e) {
+                $this->assertSame('missionbad', $e->errorcode, $name);
+            }
+            $this->assertSame($version, (int) missions::packages()['livingthings']['version'], $name);
+        }
+        $manifest = fn() => art::manifest()['files'] ?? [];
+        missions::upload($this->package_with_images($version + 1, ['scene.mia.png' => $png, 'being.nuevo.png' => $png]));
+        $this->assertSame($version + 1, (int) missions::packages()['livingthings']['version']);
+        $this->assertArrayHasKey('scene.mia', $manifest());
+        $this->assertArrayHasKey('being.nuevo', $manifest());
+    }
+
     public function test_a_zip_that_is_not_a_mission(): void {
         $this->resetAfterTest();
         $this->expectException(\moodle_exception::class);
