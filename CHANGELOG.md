@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.247.1 (2026-11-02)
+
+- On a phone, the question of the game and the screens of the battle keep clear of the button
+  of Oksigenia Access, on every page of the game, the teacher's ones too.
+
 ## 0.247.0 (2026-11-02)
 
 - What is empty says how to start: the teams on the class screen, with a way to the teacher

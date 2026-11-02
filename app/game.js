@@ -5877,13 +5877,8 @@
     window.addEventListener('resize', function() {
       clearTimeout(timer);
       timer = setTimeout(check, 300);
-      T.accessRoom();
     });
     check();
-    // The button of Access comes in when its own script has run.
-    [0, 1500, 5000].forEach(function(ms) {
-      setTimeout(T.accessRoom, ms);
-    });
   }
 
   zoomWatch();

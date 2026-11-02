@@ -15006,6 +15006,12 @@ body.adapt-still .map .asleep.waking {
     padding-left: max(12px, calc(var(--tesape-access-left, 0px) - 16px));
     padding-right: max(12px, calc(var(--tesape-access-right, 0px) - 16px));
   }
+
+  /* The battle on a phone keeps clear of the button as a whole. */
+  .battle-phone {
+    padding-left: max(16px, var(--tesape-access-left, 0px));
+    padding-right: max(16px, var(--tesape-access-right, 0px));
+  }
 }
 
 /* A question before something that cannot be undone, over the page. */
@@ -15042,3 +15048,10 @@ body.adapt-still .map .asleep.waking {
   gap: 10px;
 }
 
+/* On a narrow screen, the question keeps clear of the button of Access on its side. */
+@media (max-width: 768px) {
+  .tesape-ask {
+    padding-left: max(16px, var(--tesape-access-left, 0px));
+    padding-right: max(16px, var(--tesape-access-right, 0px));
+  }
+}

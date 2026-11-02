@@ -511,6 +511,16 @@
     root.style.setProperty('--tesape-access-right', right + 'px');
   };
 
+  if (typeof window !== 'undefined' && window.addEventListener) {
+    window.addEventListener('resize', function() {
+      T.accessRoom();
+    });
+    // The button of Access comes in when its own script has run.
+    [800, 2500, 6000].forEach(function(ms) {
+      setTimeout(T.accessRoom, ms);
+    });
+  }
+
   T.moves = function() {
     return !T.adapted.still && !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   };
@@ -580,6 +590,7 @@
    * @return {Promise} Whether yes was chosen.
    */
   T.ask = function(opts) {
+    T.accessRoom();
     return new Promise(function(done) {
       var before = document.activeElement;
       var back = document.createElement('div');
