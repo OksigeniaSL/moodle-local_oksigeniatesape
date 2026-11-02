@@ -338,6 +338,16 @@
           }});
       };
       /**
+       * How tall the heroes of a team stand in its place.
+       *
+       * @param {Object} at Where the team is.
+       * @param {number} many How many heroes it has.
+       * @return {number}
+       */
+      var tallest = function(at, many) {
+        return Math.min(at.height * 0.98, at.width / Math.max(3, many) * 2.6);
+      };
+      /**
        * The heroes of a team, standing over the name of their team.
        *
        * @param {Object} team id, members (characters).
@@ -635,7 +645,9 @@
             var at = teamAt(fogs[id].team);
             fogs[id].sprite.setVisible(!!at);
             if (at) {
-              fogs[id].sprite.setPosition(at.x, at.y).setScale(at.width * (fogs[id].meta.fit || 1) / fogs[id].meta.frame[0]);
+              // As wide as the place of the team, and never so narrow that its curls fall on the faces of its heroes.
+              var box = Math.max(at.width, tallest(at, (heroes[fogs[id].team] || []).length) * 1.9);
+              fogs[id].sprite.setPosition(at.x, at.y).setScale(box * (fogs[id].meta.fit || 1) / fogs[id].meta.frame[0]);
             }
           });
           Object.keys(heroes).forEach(function(id) {
@@ -649,7 +661,7 @@
                 return;
               }
               // Close together, a little over each other, as tall as their place.
-              var size = Math.min(at.height * 0.98, at.width / Math.max(3, h.count) * 2.6);
+              var size = tallest(at, h.count);
               h.sprite.setPosition(at.x + (h.index - (h.count - 1) / 2) * size * 0.36,
                 at.y - 2 * k - Math.abs(Math.sin(time / 600 + h.phase)) * 3 * k).setScale(size / 896);
             });

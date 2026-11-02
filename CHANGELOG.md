@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.240.0 (2026-11-02)
+
+The battle on the class screen, in its place.
+
+- A battle is fought where the next lantern is to be lit, and the final one in the last place:
+  six places painted for it, with the veil over them hardly there at night.
+- What happens in a turn is drawn with sheets of frames from the art pack: the threads torn
+  off the Embrollo, the dome of a shield that stops a knot, the sparks of a broken knot and of
+  the end, and the mist with curls of wool over a dizzy team. Without them, the particles of
+  before.
+- The card of a team a knot has fallen on keeps its width, on the class screen and on the
+  tablet; it collapsed since 0.166.0.
+- By day, the team a knot goes for and the name of the knot can be read.
+
 ## 0.239.0 (2026-11-01)
 
 The skin chosen in live 3D, and the small things of a narrow screen.

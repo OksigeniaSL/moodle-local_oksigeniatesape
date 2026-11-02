@@ -79,7 +79,7 @@
       paths.push('<path' + (i >= threads ? ' class="snap"' : '') + ' d="M2 ' + y + ' C30 ' + (y - 34 + (i * 13) % 40) + ' 64 ' +
         (y + 38 - (i * 11) % 30) + ' 94 ' + (y + 8) + '"/>');
     }
-    return '<span class="tangled' + (threads ? '' : ' free') + '" aria-hidden="true"><img src="' + esc(art) + '" alt="">' +
+    return '<span class="being-tangled' + (threads ? '' : ' free') + '" aria-hidden="true"><img src="' + esc(art) + '" alt="">' +
       (paths.length ? '<svg viewBox="0 0 96 96">' + paths.join('') + '</svg>' : '') + '</span>';
   };
 
