@@ -5318,8 +5318,69 @@ body.adapt-still .nudge {
   }
 }
 
+/* Bubbles that rise around the hero; snow that falls. */
+.aura.aura-bubbles::after,
+.aura.aura-snow::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  pointer-events: none;
+}
+
+.aura.aura-bubbles::after {
+  background:
+    radial-gradient(circle 4px at 18% 70%, transparent 55%, rgba(159, 227, 255, .95) 60%, transparent 75%),
+    radial-gradient(circle 3px at 82% 55%, transparent 50%, rgba(216, 244, 255, .95) 58%, transparent 75%),
+    radial-gradient(circle 3px at 60% 88%, transparent 50%, rgba(124, 200, 240, .95) 58%, transparent 75%);
+  animation: tesape-bubbles 3.2s ease-in-out infinite;
+}
+
+.aura.aura-snow::after {
+  background:
+    radial-gradient(circle 2px at 20% 15%, #fff, transparent 70%),
+    radial-gradient(circle 2px at 78% 35%, #eef6ff, transparent 70%),
+    radial-gradient(circle 3px at 40% 60%, #fff, transparent 70%),
+    radial-gradient(circle 2px at 88% 80%, #eef6ff, transparent 70%);
+  animation: tesape-snow 4s linear infinite;
+}
+
+@keyframes tesape-bubbles {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes tesape-snow {
+  0% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  30%,
+  70% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .aura.aura-fireflies::after {
+  .aura.aura-fireflies::after,
+  .aura.aura-bubbles::after,
+  .aura.aura-snow::after {
     animation: none;
   }
 }

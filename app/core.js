@@ -1387,7 +1387,10 @@
   var PAINTS = {
     'paint-gold': {filter: 'hue-rotate(17deg) saturate(1.6) brightness(1.18)', hue: 45},
     'paint-night': {filter: 'hue-rotate(190deg) saturate(.9) brightness(.75)', hue: 240},
-    'paint-snow': {filter: 'grayscale(.92) brightness(1.25)', hue: 205}
+    'paint-snow': {filter: 'grayscale(.92) brightness(1.25)', hue: 205},
+    'paint-ember': {filter: 'hue-rotate(-22deg) saturate(1.6) brightness(1.05)', hue: 12},
+    'paint-moss': {filter: 'hue-rotate(75deg) saturate(.9) brightness(.92)', hue: 110},
+    'paint-coral': {filter: 'hue-rotate(-38deg) saturate(1.2) brightness(1.15)', hue: 355}
   };
 
   /** The images of the creatures with their mark drawn in, by image and mark: addresses of the device, or who waits. */

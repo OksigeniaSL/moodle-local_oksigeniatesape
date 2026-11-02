@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.245.0 (2026-11-02)
+
+- The market of the valley has three paints more for the creature (ember, moss and coral) and two
+  auras more for the hero (bubbles that rise and snow that falls), in the place, in live 3D and on
+  the tablet.
+
 ## 0.244.0 (2026-11-02)
 
 - Each place of a painted map sleeps until its lantern is lit, when the art pack brings it

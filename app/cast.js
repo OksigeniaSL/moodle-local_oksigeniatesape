@@ -74,6 +74,21 @@
     'paint-snow': function(m) {
       m.grayscale(0.92);
       m.brightness(1.25, true);
+    },
+    'paint-ember': function(m) {
+      m.hue(-22);
+      m.saturate(0.6, true);
+      m.brightness(1.05, true);
+    },
+    'paint-moss': function(m) {
+      m.hue(75);
+      m.saturate(-0.1, true);
+      m.brightness(0.92, true);
+    },
+    'paint-coral': function(m) {
+      m.hue(-38);
+      m.saturate(0.2, true);
+      m.brightness(1.15, true);
     }
   };
 
@@ -255,7 +270,7 @@
      *
      * @param {Object} S The scene.
      * @param {Object} who The figure, as actor() makes it.
-     * @param {string} aura aura-fireflies or aura-leaves.
+     * @param {string} aura aura-fireflies, aura-leaves, aura-bubbles or aura-snow.
      * @param {boolean} still
      */
     aura: function(S, who, aura, still) {
@@ -264,7 +279,12 @@
         'aura-fireflies': {texture: 'soft', tint: [0xffd23f, 0xffe58a], light: 0xffe58a, scale: {start: 0.36, end: 0.2},
           speed: {min: 4, max: 16}, gravityY: 0, frequency: 150, blendMode: 'ADD'},
         'aura-leaves': {texture: 'leaf', tint: [0x6fd08c, 0x9bdc6a, 0x4fae6a], light: 0x6fd08c, scale: {start: 1.1, end: 0.8},
-          speed: {min: 6, max: 20}, gravityY: 14, frequency: 260, rotate: {min: 0, max: 360}, blendMode: 'NORMAL'}
+          speed: {min: 6, max: 20}, gravityY: 14, frequency: 260, rotate: {min: 0, max: 360}, blendMode: 'NORMAL'},
+        // Bubbles rise, snow falls slowly.
+        'aura-bubbles': {texture: 'soft', tint: [0x9fe3ff, 0xd8f4ff, 0x7cc8f0], light: 0x9fe3ff, scale: {start: 0.3, end: 0.45},
+          speed: {min: 2, max: 8}, gravityY: -22, frequency: 110, blendMode: 'ADD'},
+        'aura-snow': {texture: 'soft', tint: [0xffffff, 0xe4f1ff], light: 0xe4f1ff, scale: {start: 0.26, end: 0.18},
+          speed: {min: 2, max: 10}, gravityY: 10, frequency: 90, blendMode: 'ADD'}
       };
       var look = looks[aura];
       if (!look) {

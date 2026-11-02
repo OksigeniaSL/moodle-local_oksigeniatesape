@@ -34,8 +34,13 @@ final class market {
         'paint-gold' => ['kind' => 'paint', 'price' => 10, 'team' => false],
         'paint-night' => ['kind' => 'paint', 'price' => 10, 'team' => false],
         'paint-snow' => ['kind' => 'paint', 'price' => 10, 'team' => false],
+        'paint-ember' => ['kind' => 'paint', 'price' => 10, 'team' => false],
+        'paint-moss' => ['kind' => 'paint', 'price' => 10, 'team' => false],
+        'paint-coral' => ['kind' => 'paint', 'price' => 10, 'team' => false],
         'aura-fireflies' => ['kind' => 'aura', 'price' => 15, 'team' => false],
         'aura-leaves' => ['kind' => 'aura', 'price' => 15, 'team' => false],
+        'aura-bubbles' => ['kind' => 'aura', 'price' => 15, 'team' => false],
+        'aura-snow' => ['kind' => 'aura', 'price' => 15, 'team' => false],
         'banner-lantern' => ['kind' => 'banner', 'price' => 20, 'team' => true],
     ];
 
