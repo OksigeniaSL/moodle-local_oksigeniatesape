@@ -1775,7 +1775,8 @@
       '') + '> ' + esc(t('teach_showres')) + '</label><button class="btn btn-soft" data-all>' + esc(t('teach_selectall')) +
       '</button></span></div>' + teams +
       (shown.length ? '<ul class="list">' + shown.map(studentCard).join('') + '</ul>' : '<p class="empty">' +
-      esc(t('teach_nostudents')) + '</p>') + '</section><div id="actionbar"></div>');
+      esc(t('teach_nostudents')) + '</p><p><a class="btn btn-soft" href="' +
+      esc(cfg.wwwroot + '/user/index.php?id=' + cfg.courseid) + '">' + esc(t('teach_nostudents_go')) + '</a></p>') + '</section><div id="actionbar"></div>');
     bindEntry(el);
     bindMakeTeams(el);
     bindSession(el);
@@ -3398,7 +3399,8 @@
       esc(t('teach_tab_challenges')) + '</h2>' +
       (can('manageregion') ? '<button class="btn btn-main" data-new>' + esc(t('teach_newchallenge')) + '</button>' : '') +
       '</div><p style="color:var(--text-soft)">' + esc(t('teach_challenges_help')) + '</p>' + (list ? '<ul class="list">' +
-      list + '</ul>' : '<p class="empty">' + esc(t('app_nochallenges')) + '</p>') + '</section><div id="form"></div>' +
+      list + '</ul>' : '<p class="empty">' + esc(t(can('manageregion') ? 'teach_challenges_none' : 'app_nochallenges')) + '</p>') +
+      '</section><div id="form"></div>' +
       '<section class="card" style="margin-top:16px"><h2>' + esc(t('teach_act_title')) + '</h2><p style="color:' +
       'var(--text-soft)">' + esc(t('teach_act_help')) + '</p>' + (acts ? '<ul class="list">' + acts + '</ul>' :
       '<p class="empty">' + esc(t('teach_act_none')) + '</p>') + '</section>' + tanglesSection());

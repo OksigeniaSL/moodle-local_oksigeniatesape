@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.247.0 (2026-11-02)
+
+- What is empty says how to start: the teams on the class screen, with a way to the teacher
+  panel; the students of a course, with a way to its participants; the classroom challenges,
+  the ideas, the powers, the team of a student, the wheel and the question bank, with who does
+  what for them to come.
+
 ## 0.246.0 (2026-11-02)
 
 - What cannot be undone asks in the page, not in a box of the browser: the question, and two

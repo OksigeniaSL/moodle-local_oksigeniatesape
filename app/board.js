@@ -2870,7 +2870,8 @@
       return !s.teamid;
     });
     return '<section class="card board-teams"><div class="kicker">' + esc(t('board_teams')) + '</div>' +
-      (groups || '<p class="empty">' + esc(t('board_noteams')) + '</p>') +
+      (groups || '<p class="empty">' + esc(t('board_noteams')) + '</p><p><a class="btn btn-soft" href="' +
+        esc(cfg.wwwroot + '/local/oksigeniatesape/teach.php?id=' + cfg.courseid) + '">' + esc(t('board_panel')) + '</a></p>') +
       (loose.length ? '<div class="board-team"><div class="members">' + loose.map(student).join('') + '</div></div>' : '') +
       '<p class="help-soft">' + esc(t('board_tapstudents')) + '</p></section>';
   }
