@@ -144,7 +144,9 @@
     },
     {
      "who": "place",
-     "do": "light",
+     "do": "play",
+     "sheet": "arrows",
+     "or": "light",
      "when": {
       "valley": "Las flechas se encienden"
      }

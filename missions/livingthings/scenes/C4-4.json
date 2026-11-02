@@ -229,6 +229,46 @@
    "type": "ending",
    "acts": [
     {
+     "who": "place",
+     "do": "play",
+     "sheet": "seedwind",
+     "when": {
+      "valley": "otra viaja en un perro"
+     }
+    },
+    {
+     "who": "place",
+     "do": "play",
+     "sheet": "seedwater",
+     "when": {
+      "valley": "otra viaja en un perro"
+     }
+    },
+    {
+     "who": "place",
+     "do": "play",
+     "sheet": "seeddog",
+     "when": {
+      "valley": "otra viaja en un perro"
+     }
+    },
+    {
+     "who": "place",
+     "do": "play",
+     "sheet": "seedbird",
+     "when": {
+      "valley": "otra viaja en un perro"
+     }
+    },
+    {
+     "who": "place",
+     "do": "play",
+     "sheet": "seedjump",
+     "when": {
+      "valley": "otra viaja en un perro"
+     }
+    },
+    {
      "who": "pet",
      "do": "play",
      "sheet": "sneeze.clean",
@@ -262,6 +302,46 @@
    "type": "ending",
    "acts": [
     {
+     "who": "place",
+     "do": "play",
+     "sheet": "seedwind",
+     "when": {
+      "valley": "Tres semillas llegan lejos"
+     }
+    },
+    {
+     "who": "place",
+     "do": "play",
+     "sheet": "seedwater.fall",
+     "when": {
+      "valley": "Tres semillas llegan lejos"
+     }
+    },
+    {
+     "who": "place",
+     "do": "play",
+     "sheet": "seeddog",
+     "when": {
+      "valley": "Tres semillas llegan lejos"
+     }
+    },
+    {
+     "who": "place",
+     "do": "play",
+     "sheet": "seedbird",
+     "when": {
+      "valley": "Tres semillas llegan lejos"
+     }
+    },
+    {
+     "who": "place",
+     "do": "play",
+     "sheet": "seedjump.fall",
+     "when": {
+      "valley": "Tres semillas llegan lejos"
+     }
+    },
+    {
      "who": "pet",
      "do": "play",
      "sheet": "sneeze.clean",
@@ -286,6 +366,20 @@
   },
   "pie": {
    "type": "ending",
+   "acts": [
+    {
+     "who": "place",
+     "do": "play",
+     "sheet": "seedwater.fall",
+     "when": "Casi todas las semillas"
+    },
+    {
+     "who": "place",
+     "do": "play",
+     "sheet": "seedjump.fall",
+     "when": "Casi todas las semillas"
+    }
+   ],
    "outcome": "retry",
    "text": "Casi todas las semillas han caído al pie de la madre. La jardinera las junta una a una: «La forma lo dice todo. ¿Qué es ligero, qué flota, qué se engancha, qué es dulce y qué estalla?».",
    "retry": "viajar",

@@ -54,8 +54,9 @@
       var shown = opts.image;
       // The sheets of frames that the pack places on its paintings (anim.fx.<name>, with its places), and those of the
       // painting of now: what the text tells, seen where it happens.
+      // On a device with little memory, none: their pictures weigh, and the painting whole tells the same.
       var files = T.cfg && T.cfg.art && T.cfg.art.files || {};
-      var sheetNames = Object.keys(files).filter(function(k) {
+      var sheetNames = T.lightArt ? [] : Object.keys(files).filter(function(k) {
         return k.indexOf('anim.fx.') === 0;
       }).map(function(k) {
         return k.slice(8);
@@ -81,7 +82,7 @@
        * @return {string|null}
        */
       var cleanOf = function(url) {
-        return T.artUrl([keyOf(url) + '.clean']) || url;
+        return !T.lightArt && T.artUrl([keyOf(url) + '.clean']) || url;
       };
       var who = null;
       var speaking = false;

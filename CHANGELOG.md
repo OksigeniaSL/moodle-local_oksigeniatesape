@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.243.0 (2026-11-02)
+
+- On a device with little memory, the place keeps the whole painting and plays no sheets of
+  frames: their pictures weigh, and what the moment says instead happens.
+- Mission 99: the seeds travel in «Las semillas viajeras», and the arrows light up in the mud in
+  «¿Quién se come a quién?».
+
 ## 0.242.0 (2026-11-02)
 
 More of what the text tells, seen where it happens.

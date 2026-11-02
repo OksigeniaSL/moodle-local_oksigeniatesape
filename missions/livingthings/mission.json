@@ -1,11 +1,11 @@
 {
  "code": "livingthings",
- "version": 98,
+ "version": 99,
  "format": 1,
  "world": "valle",
  "art": {
   "pack": "mission-livingthings",
-  "min": 26
+  "min": 27
  },
  "publisher_id": "oksigenia",
  "languages": [
@@ -17,6 +17,12 @@
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 99,
+   "kind": "improvement",
+   "date": "2026-11-02",
+   "text": "Las semillas viajan de verdad en «Las semillas viajeras», y las flechas se encienden en el barro en «¿Quién se come a quién?»"
+  },
   {
    "version": 98,
    "kind": "improvement",
