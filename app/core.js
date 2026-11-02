@@ -859,18 +859,19 @@
   var asleepBoxes = {};
 
   /**
-   * Each place of a painted map that the class has not lit yet, asleep (map.<painting>.asleep.<place>, where
-   * map.<painting>.asleep says, in proportion of the painting); a place lighting up now wakes, fading over the painting.
+   * Each place of a painted map whose lantern is not lit yet, asleep (map.<painting>.asleep.<place>, where
+   * anim.map.<painting>.asleep says, in proportion of the painting): on the map of a student, their own lanterns; on the
+   * class screen, those of the class. A place lighting up now wakes, fading over the painting.
    * The first time, where they go is read and they are put on the maps already drawn.
    *
    * @param {Object} m
-   * @param {Object} [waking] By id of chapter, the places lighting up now.
+   * @param {Object} [waking] By id of chapter, the places lighting up now: the map of a student.
    * @return {string}
    */
   T.mapAsleep = function(m, waking) {
     var map = m.map || m.code;
     var key = T.artKey && T.artKey(['map.' + map + '.' + m.skin, 'map.' + map]);
-    var said = key && T.artUrl([key + '.asleep']);
+    var said = key && T.artUrl(['anim.' + key + '.asleep']);
     if (!said || T.lightArt) {
       return '';
     }
@@ -879,7 +880,7 @@
         var box = boxes[ch.code];
         var now = waking && waking[String(ch.id)];
         var art = box && T.artUrl([key + '.asleep.' + ch.code]);
-        if (!art || ((ch.lit || ch.mine) && !now)) {
+        if (!art || ((waking ? ch.mine : ch.lit) && !now)) {
           return '';
         }
         return '<image class="asleep' + (now ? ' waking' : '') + '" href="' + T.esc(art) + '" x="' + box.x * 400 +
