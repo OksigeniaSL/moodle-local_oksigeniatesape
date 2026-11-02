@@ -1349,11 +1349,20 @@
         (team.tactic && l.maxcandles && !l.outcome ? '<span class="tag tactic-tag ' + esc(team.tactic) + '">' +
         esc(t('app_tactic_' + team.tactic)) + '</span>' : '') + speaker + marks + say + '</div>';
     }).join('');
-    // The place of the battle, as the story of the mission paints it (the port of the expedition of Azara), or the tower.
+    // The place of the battle: where the next lantern is to be lit (the last place, for the final battle), painted for
+    // the battle; or as the story of the mission paints it (the port of the expedition of Azara); or the tower.
     var skin = (state.board.mission || {}).skin;
-    var tower = l.maxcandles ? T.artUrl(['scene.battle.' + skin, 'scene.torre']) : null;
+    var chapters = (state.board.mission || {}).chapters || [];
+    var unlit = chapters.filter(function(ch) {
+      return !ch.lit;
+    });
+    var here = !l.final && unlit.length ? unlit[0] : chapters[chapters.length - 1];
+    var place = 'scene.battle.' + (here ? here.code : '');
+    var story = T.artUrl(['scene.battle.' + skin]);
+    var painted = l.maxcandles ? T.artUrl(story ? [place + '.' + skin] : [place + '.' + skin, place]) : null;
+    var tower = l.maxcandles ? painted || story || T.artUrl(['scene.torre']) : null;
     var end = l.maxcandles && l.outcome ? ' ' + l.outcome : '';
-    app.innerHTML = '<div class="board battle-board' + (hit ? ' shake' : '') + (l.maxcandles ? ' turns' + end : '') + '"' +
+    app.innerHTML = '<div class="board battle-board' + (hit ? ' shake' : '') + (l.maxcandles ? ' turns' + end : '') + (painted ? ' painted' : '') + '"' +
       (tower ? ' style="--tower:url(\'' + esc(tower) + '\')"' : '') + '><header class="board-top">' + T.emblem() +
       '<div><b>' + esc(cfg.coursename) + '</b><small>' +
       esc(t(l.final ? 'board_battle_final' : 'board_battle')) + (l.phase > 1 && !l.outcome ? ' · ' +

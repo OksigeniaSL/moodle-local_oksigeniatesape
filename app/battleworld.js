@@ -44,7 +44,9 @@
       var heroes = {};
       var count = {hits: 0, knots: 0, shields: 0, bursts: 0, verbs: 0, sheets: {}};
       // The sheets of frames of the pack for what is seen in a turn.
-      var SHEETS = ['threads', 'shield', 'sparks'];
+      var SHEETS = ['threads', 'shield', 'sparks', 'fog'];
+      // The mist over each team that is dizzy, by team.
+      var fogs = {};
       // The colour of each verb: the shield, the cheer, the glance and the trail.
       var VERBS = {shield: 0xffc857, cheer: 0xe8508f, glance: 0x8fd3ff, trail: 0x7cc67f, carry: 0xb9a6ff};
       var ratio = function() {
@@ -91,6 +93,18 @@
         return meta && S.textures.exists('fx.' + name) ? meta : null;
       };
       /**
+       * The animation of a sheet of frames of the pack, made the first time.
+       *
+       * @param {string} key
+       * @param {Object} meta
+       */
+      var animOf = function(key, meta) {
+        if (!S.anims.exists(key)) {
+          S.anims.create({key: key, frames: S.anims.generateFrameNumbers(key, {start: 0, end: meta.frames - 1}),
+            frameRate: meta.fps || 16, repeat: meta.loop ? -1 : 0});
+        }
+      };
+      /**
        * A sheet of frames of the pack played once in the canvas, as T.fx.sprite plays it in the page, with the same frame,
        * fps, anchor, fit, cues and still. Without movement, the still frame for a moment, with the cues called at once.
        *
@@ -135,10 +149,7 @@
           }
           return true;
         }
-        if (!S.anims.exists(key)) {
-          S.anims.create({key: key, frames: S.anims.generateFrameNumbers(key, {start: 0, end: meta.frames - 1}),
-            frameRate: meta.fps || 16, repeat: 0});
-        }
+        animOf(key, meta);
         one.on('animationupdate', function(animation, frame) {
           fire(frame.index - 1);
         });
@@ -148,6 +159,42 @@
         });
         one.play(key);
         return true;
+      };
+      /**
+       * The teams that are dizzy, with the mist and the curls of wool over their heroes as long as they are. It follows their
+       * place at every frame; without movement, its still frame.
+       *
+       * @param {Array} ids The teams.
+       */
+      var mist = function(ids) {
+        Object.keys(fogs).forEach(function(id) {
+          if (ids.indexOf(fogs[id].team) < 0) {
+            var going = fogs[id].sprite;
+            delete fogs[id];
+            S.tweens.add({targets: going, alpha: 0, duration: 400, onComplete: function() {
+              going.destroy();
+            }});
+          }
+        });
+        var meta = sheetOf('fog');
+        if (!meta) {
+          return;
+        }
+        ids.forEach(function(team) {
+          if (fogs[team]) {
+            return;
+          }
+          count.sheets.fog = (count.sheets.fog || 0) + 1;
+          var anchor = meta.anchor || [0.5, 0.5];
+          var one = S.add.sprite(0, 0, 'fx.fog', 0).setOrigin(anchor[0], anchor[1]).setDepth(22).setVisible(false);
+          if (T.moves()) {
+            animOf('fx.fog', meta);
+            one.play('fx.fog');
+          } else {
+            one.setFrame(meta.still || 0);
+          }
+          fogs[team] = {team: team, sprite: one, meta: meta};
+        });
       };
       /**
        * Threads torn off the Embrollo: its sheet, up to three times by how many it has lost, one after the other and turned
@@ -383,6 +430,7 @@
             }
           });
           S.target = !l.outcome && l.targetid ? l.targetid : null;
+          mist(l.outcome ? [] : l.dizzy || []);
           var life = l.maxhp ? l.hp / l.maxhp : 1;
           S.life = life;
           var turn = l.id + ':' + l.round;
@@ -453,7 +501,7 @@
             teams: Object.keys(heroes).length, heroes: Object.keys(heroes).reduce(function(sum, id) {
               return sum + heroes[id].filter(Boolean).length;
             }, 0), hits: count.hits, knots: count.knots, shields: count.shields, bursts: count.bursts,
-            verbs: count.verbs, sheets: count.sheets,
+            verbs: count.verbs, sheets: count.sheets, fogs: Object.keys(fogs).length,
             // The teams whose heroes stand inside their place now.
             aligned: !S ? 0 : Object.keys(heroes).filter(function(id) {
               var at = teamAt(id);
@@ -583,6 +631,13 @@
             S.ring.setPosition(target.x, target.y - 4 * k).setSize(target.width * 0.95, 22 * k)
               .setAlpha(0.6 + 0.4 * Math.sin(time / 200));
           }
+          Object.keys(fogs).forEach(function(id) {
+            var at = teamAt(fogs[id].team);
+            fogs[id].sprite.setVisible(!!at);
+            if (at) {
+              fogs[id].sprite.setPosition(at.x, at.y).setScale(at.width * (fogs[id].meta.fit || 1) / fogs[id].meta.frame[0]);
+            }
+          });
           Object.keys(heroes).forEach(function(id) {
             var at = teamAt(id);
             heroes[id].forEach(function(h) {

@@ -9896,7 +9896,7 @@ body.adapt-still .feed-face.eating .creature {
 
 .knot-name {
   margin: 0 0 6px;
-  color: var(--lilac, #b9a6ff);
+  color: var(--lilac-text, #e1d8ff);
   font: 700 18px var(--f-title);
 }
 
@@ -10962,6 +10962,15 @@ body.adapt-still .mission-grid .chapter.as-sheet {
   background: linear-gradient(rgba(var(--night-rgb), .82), rgba(var(--night-rgb), .9)), var(--tower) center / cover no-repeat;
 }
 
+/* A place painted for the battle needs hardly any veil at night; by day, the veil is what lets the text be read. */
+.battle-board.turns.painted {
+  background: linear-gradient(rgba(var(--night-rgb), .08), rgba(var(--night-rgb), .18)), var(--tower) center / cover no-repeat;
+}
+
+[data-theme="day"] .battle-board.turns.painted {
+  background: linear-gradient(rgba(var(--night-rgb), .78), rgba(var(--night-rgb), .84)), var(--tower) center / cover no-repeat;
+}
+
 .intent-chip {
   display: inline-flex;
   align-items: center;
@@ -10970,7 +10979,7 @@ body.adapt-still .mission-grid .chapter.as-sheet {
   padding: 6px 14px;
   border-radius: 999px;
   border: 2px solid rgba(160, 120, 220, .8);
-  background: rgba(40, 24, 70, .85);
+  background: rgba(var(--night-rgb), .85);
   color: var(--text);
   font-weight: 700;
 }
