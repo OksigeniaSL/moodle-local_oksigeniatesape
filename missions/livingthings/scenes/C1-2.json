@@ -376,9 +376,25 @@
     },
     {
      "who": "place",
+     "do": "play",
+     "sheet": "seed",
+     "when": {
+      "valley": "Las semillas tiemblan y se calientan"
+     }
+    },
+    {
+     "who": "place",
+     "do": "play",
+     "sheet": "lantern",
+     "or": "light",
+     "when": {
+      "valley": "La linterna del claro se enciende"
+     }
+    },
+    {
+     "who": "place",
      "do": "light",
      "when": {
-      "valley": "La linterna del claro se enciende",
       "azara": "El cuaderno recupera su primera página"
      }
     }
@@ -416,6 +432,15 @@
     {
      "who": "pet",
      "do": "alert"
+    },
+    {
+     "who": "place",
+     "do": "play",
+     "sheet": "seed",
+     "yours": "seed.faint",
+     "when": {
+      "valley": "Las semillas tiemblan"
+     }
     }
    ],
    "outcome": "partial",

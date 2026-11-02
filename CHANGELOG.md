@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.241.0 (2026-11-02)
+
+What the text tells, seen where it happens.
+
+- A sheet of frames from the art pack can stand on a painting, where the sheet itself says, and
+  play when the text tells it: an act of a told moment with do: play. It stays in its last
+  frame, or goes on in the part that loops. Where it cannot be seen, the effect the moment says
+  instead.
+- A painting can bring a clean version for the live place, without what its sheets bring; the
+  rest of the game keeps it whole.
+- Mission 97: the seed trembles and warms up, and the lanterns light up in their place.
+- Art: the creature at stages 3 to 5 as a puppet in its three branches, with the colour of
+  stage 2.
+
 ## 0.240.2 (2026-11-02)
 
 - In the page of the Moodle app, a numeric entity that is no character goes away, instead of

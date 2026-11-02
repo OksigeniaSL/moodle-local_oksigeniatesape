@@ -52,6 +52,37 @@
       var S = null;
       var cast = {};
       var shown = opts.image;
+      // The sheets of frames that the pack places on its paintings (anim.fx.<name>, with its places), and those of the
+      // painting of now: what the text tells, seen where it happens.
+      var files = T.cfg && T.cfg.art && T.cfg.art.files || {};
+      var sheetNames = Object.keys(files).filter(function(k) {
+        return k.indexOf('anim.fx.') === 0;
+      }).map(function(k) {
+        return k.slice(8);
+      }).sort();
+      var standing = [];
+      var standToken = 0;
+      /**
+       * The key in the packs of the picture at an address.
+       *
+       * @param {string|null} url
+       * @return {string}
+       */
+      var keyOf = function(url) {
+        return Object.keys(files).filter(function(k) {
+          return files[k] === url;
+        })[0] || '';
+      };
+      /**
+       * The painting to draw in the place: the one without what its sheets of frames bring, if there is one (the rest of
+       * the game keeps the painting whole).
+       *
+       * @param {string|null} url
+       * @return {string|null}
+       */
+      var cleanOf = function(url) {
+        return T.artUrl([keyOf(url) + '.clean']) || url;
+      };
       var who = null;
       var speaking = false;
       // What the place has done of what the text tells (for the tests of the browser).
@@ -171,6 +202,7 @@
           S.bgFade.fillGradientStyle(0x0f2131, 0x0f2131, 0x0f2131, 0x0f2131, 0, 0, 1, 1);
           S.bgFade.fillRect(0, fade - melt, w, melt);
         }
+        layoutPieces();
         var painting = S.bgs[S.bgs.length - 1];
         if (searching && painting) {
           searching({left: (painting.x - painting.displayWidth / 2) / ratio,
@@ -269,6 +301,182 @@
           }
         }
       };
+      /**
+       * What stands on the painting goes where the painting is now.
+       */
+      var layoutPieces = function() {
+        var bg = S && S.bgs[S.bgs.length - 1];
+        if (!bg) {
+          return;
+        }
+        standing.forEach(function(p) {
+          var x = bg.x + (p.spot.at[0] - 0.5) * bg.displayWidth;
+          var y = bg.y + (p.spot.at[1] - 0.5) * bg.displayHeight;
+          var k = p.spot.width * bg.displayWidth / p.meta.frame[0];
+          p.sprite.setPosition(x, y).setScale(k);
+          if (p.base) {
+            p.base.setPosition(x, y).setScale(k);
+          }
+        });
+      };
+      /**
+       * Brings the pictures of some sheets of frames.
+       *
+       * @param {Array} names
+       * @param {Function} done When they are all here.
+       */
+      var bringSheets = function(names, done) {
+        var missing = names.filter(function(n) {
+          return !S.textures.exists('fx.' + n) && S.cache.json.get('anim.fx.' + n) && T.artUrl(['fx.' + n]);
+        });
+        if (!missing.length) {
+          done();
+          return;
+        }
+        var left = missing.length;
+        missing.forEach(function(n) {
+          var frame = S.cache.json.get('anim.fx.' + n).frame;
+          S.load.once('filecomplete-spritesheet-fx.' + n, function() {
+            left--;
+            if (!left) {
+              done();
+            }
+          });
+          S.load.spritesheet('fx.' + n, T.artUrl(['fx.' + n]), {frameWidth: frame[0], frameHeight: frame[1]});
+        });
+        S.load.start();
+      };
+      /**
+       * What stands on this painting, waiting: each sheet of frames it has a place for, a sheet for each thing (those of
+       * the same thing, seed and seed.faint, are played in the same place), and under it what it stands on.
+       */
+      var standPieces = function() {
+        standing.forEach(function(p) {
+          S.tweens.add({targets: p.base ? [p.sprite, p.base] : [p.sprite], alpha: 0, duration: still ? 1 : 300, onComplete: function() {
+            p.sprite.destroy();
+            if (p.base) {
+              p.base.destroy();
+            }
+          }});
+        });
+        standing = [];
+        var token = ++standToken;
+        var key = keyOf(shown);
+        var metaOf = function(n) {
+          return S.cache.json.get('anim.fx.' + n);
+        };
+        var names = sheetNames.filter(function(n) {
+          return metaOf(n) && metaOf(n).places && metaOf(n).places[key];
+        });
+        var things = {};
+        names.forEach(function(n) {
+          var thing = n.split('.')[0];
+          things[thing] = things[thing] || n;
+        });
+        var under = Object.keys(things).map(function(thing) {
+          return thing + '.base';
+        }).filter(metaOf);
+        bringSheets(names.concat(under), function() {
+          if (token !== standToken) {
+            return;
+          }
+          Object.keys(things).forEach(function(thing) {
+            var meta = metaOf(things[thing]);
+            var anchor = meta.anchor || [0.5, 0.5];
+            [].concat(meta.places[key]).forEach(function(spot) {
+              var base = spot.base && S.textures.exists('fx.' + thing + '.base') ?
+                S.add.sprite(0, 0, 'fx.' + thing + '.base', 0).setOrigin(anchor[0], anchor[1]).setDepth(-9.5) : null;
+              var sprite = S.add.sprite(0, 0, 'fx.' + things[thing], meta.rest || 0).setOrigin(anchor[0], anchor[1]).setDepth(-9)
+                .setFlipX(!!spot.flip).setVisible(!spot.hidden);
+              standing.push({thing: thing, spot: spot, meta: meta, sheet: things[thing], sprite: sprite, base: base});
+            });
+          });
+          layoutPieces();
+        });
+      };
+      /**
+       * A sheet of frames plays on what it is drawn on; after the end it stays in its last frame, or goes on in the part
+       * that loops.
+       *
+       * @param {Object} sprite
+       * @param {string} name
+       * @param {Object} meta
+       */
+      var runSheet = function(sprite, name, meta) {
+        var key = 'fx.' + name;
+        if (!S.anims.exists(key)) {
+          S.anims.create({key: key, frames: S.anims.generateFrameNumbers(key, {start: 0, end: meta.frames - 1}),
+            frameRate: meta.fps || 12, repeat: 0});
+        }
+        sprite.off('animationcomplete');
+        if (meta.loop_from !== undefined) {
+          sprite.once('animationcomplete', function() {
+            if (!S.anims.exists(key + '.loop')) {
+              S.anims.create({key: key + '.loop', frames: S.anims.generateFrameNumbers(key, {start: meta.loop_from,
+                end: meta.frames - 1}), frameRate: meta.fps || 12, repeat: -1});
+            }
+            sprite.play(key + '.loop');
+          });
+        }
+        sprite.play(key);
+      };
+      /**
+       * What the text tells, seen where it happens: a sheet of frames plays on what stands on the painting (the place of
+       * who plays can have its own). Where the painting has no place for it, or it falls off the screen (a phone cuts
+       * the sides of the painting), what the moment says instead.
+       *
+       * @param {Object} what sheet; yours, the sheet of the place marked as that of who plays; or, an effect instead.
+       */
+      var playPiece = function(what) {
+        var thing = String(what.sheet || '').split('.')[0];
+        var here = standing.filter(function(p) {
+          return p.thing === thing && p.sprite.x >= 0 && p.sprite.x <= S.scale.width && p.sprite.y >= 0 &&
+            p.sprite.y <= S.scale.height;
+        });
+        if (!here.length || !S.cache.json.get('anim.fx.' + what.sheet)) {
+          effect(what.or);
+          return;
+        }
+        here.forEach(function(p) {
+          var name = p.spot.yours && what.yours ? what.yours : what.sheet;
+          var meta = S.cache.json.get('anim.fx.' + name);
+          bringSheets([name], function() {
+            if (!p.sprite.scene) {
+              return;
+            }
+            var begin = function() {
+              if (!p.sprite.scene) {
+                return;
+              }
+              p.sheet = name;
+              var last = meta.still === undefined ? meta.frames - 1 : meta.still;
+              p.sprite.setTexture('fx.' + name, still ? last : meta.rest || 0);
+              if (!p.sprite.visible) {
+                p.sprite.setVisible(true).setAlpha(0);
+                S.tweens.add({targets: p.sprite, alpha: 1, duration: still ? 1 : 200});
+              }
+              if (p.base) {
+                p.base.setAlpha(meta.base_alpha || 1);
+              }
+              if (still) {
+                if (p.base) {
+                  p.base.setFrame(S.cache.json.get('anim.fx.' + thing + '.base').still || 0);
+                }
+                return;
+              }
+              runSheet(p.sprite, name, meta);
+              if (p.base) {
+                runSheet(p.base, thing + '.base', S.cache.json.get('anim.fx.' + thing + '.base'));
+              }
+            };
+            if (p.spot.delay && !still) {
+              S.time.delayedCall(p.spot.delay / (meta.fps || 12) * 1000, begin);
+            } else {
+              begin();
+            }
+          });
+        });
+      };
       var world = {
         /**
          * The painting of the moment changes: it fades into the new one.
@@ -284,11 +492,12 @@
             T.model.place(S, url);
           }
           var key = 'bg.' + (S.bgCount = (S.bgCount || 0) + 1);
-          S.load.image(key, url);
+          S.load.image(key, cleanOf(url));
           S.load.once('complete', function() {
             var old = S.bgs[S.bgs.length - 1];
             var bg = S.add.image(0, 0, key).setDepth(-10).setAlpha(still ? 1 : 0);
             S.bgs.push(bg);
+            standPieces();
             layout(false);
             S.tweens.add({targets: bg, alpha: 1, duration: still ? 1 : 450, onComplete: function() {
               if (old) {
@@ -479,12 +688,17 @@
          * figure without that gesture does the one most like it.
          *
          * @param {string} who speaker, hero, pet or place.
-         * @param {string} what The gesture, or what happens to the place.
+         * @param {string} what The gesture, or what happens to the place (play: a sheet of frames on what stands on it).
+         * @param {Object} [more] sheet, yours and or, to play.
          */
-        act: later(function(who, what) {
-          acted.push(who + ' ' + what);
+        act: later(function(who, what, more) {
+          acted.push(who + ' ' + what + (more && more.sheet ? ' ' + more.sheet : ''));
           if (who === 'place') {
-            effect(what);
+            if (what === 'play') {
+              playPiece(more || {});
+            } else {
+              effect(what);
+            }
             return;
           }
           var f = who === 'hero' ? S.hero : who === 'pet' ? S.pet : who === 'speaker' ? S.speaker : null;
@@ -755,6 +969,10 @@
               return p.frame;
             }).join(' ') : '',
             noRoom: noRoom,
+            pieces: standing.map(function(p) {
+              return {thing: p.thing, sheet: p.sheet, frame: p.sprite.frame.name, shown: p.sprite.visible, x: p.sprite.x, y: p.sprite.y,
+                base: !!p.base, playing: !!(p.sprite.anims && p.sprite.anims.isPlaying)};
+            }),
             heroModel: modelled(S && S.hero),
             hero: S && S.hero && S.hero.puppet ? S.hero.puppet.clipName + (S.hero.puppet.tone ? ' ' + S.hero.puppet.tone : '') :
               '',
@@ -787,8 +1005,27 @@
       return T.stage.backdrop(parent, {
         preload: function() {
           if (opts.image) {
-            this.load.image('bg.0', opts.image);
+            this.load.image('bg.0', cleanOf(opts.image));
           }
+          // What each sheet of frames says; and, of those the first painting has a place for, its picture, so that what
+          // stands on it is there from the start.
+          var load = this.load;
+          var first = keyOf(opts.image);
+          sheetNames.forEach(function(n) {
+            load.once('filecomplete-json-anim.fx.' + n, function(key, type, meta) {
+              var spots = meta && meta.places && meta.places[first];
+              if (spots && meta.frame && T.artUrl(['fx.' + n])) {
+                load.spritesheet('fx.' + n, T.artUrl(['fx.' + n]), {frameWidth: meta.frame[0], frameHeight: meta.frame[1]});
+                var under = n.split('.')[0] + '.base';
+                if (T.artUrl(['fx.' + under]) && [].concat(spots).some(function(s) {
+                  return s.base;
+                })) {
+                  load.spritesheet('fx.' + under, T.artUrl(['fx.' + under]), {frameWidth: meta.frame[0], frameHeight: meta.frame[1]});
+                }
+              }
+            });
+            load.json('anim.fx.' + n, files['anim.fx.' + n]);
+          });
           if (c && c.role) {
             cast = T.cast.load(this, c, opts.world.family);
           }
@@ -808,6 +1045,7 @@
           }
           if (S.textures.exists('bg.0')) {
             S.bgs.push(S.add.image(0, 0, 'bg.0').setDepth(-10));
+            standPieces();
           }
           T.cast.textures(S);
           if (c && c.role) {

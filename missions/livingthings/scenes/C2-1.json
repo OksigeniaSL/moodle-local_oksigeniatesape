@@ -170,7 +170,9 @@
     },
     {
      "who": "place",
-     "do": "light",
+     "do": "play",
+     "sheet": "lantern",
+     "or": "light",
      "when": {
       "valley": "La linterna de la biblioteca se enciende"
      }

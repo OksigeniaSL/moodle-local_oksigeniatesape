@@ -1,11 +1,11 @@
 {
  "code": "livingthings",
- "version": 96,
+ "version": 97,
  "format": 1,
  "world": "valle",
  "art": {
   "pack": "mission-livingthings",
-  "min": 23
+  "min": 25
  },
  "publisher_id": "oksigenia",
  "languages": [
@@ -17,6 +17,12 @@
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 97,
+   "kind": "improvement",
+   "date": "2026-11-02",
+   "text": "La semilla tiembla y las linternas se encienden en el lugar, cuando lo cuenta el texto"
+  },
   {
    "version": 96,
    "kind": "fix",

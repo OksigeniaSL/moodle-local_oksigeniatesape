@@ -150,6 +150,14 @@
      }
     },
     {
+     "who": "place",
+     "do": "play",
+     "sheet": "lantern",
+     "when": {
+      "valley": "La linterna del lago se enciende"
+     }
+    },
+    {
      "who": "pet",
      "do": "alert",
      "when": "mete una pata en el agua"

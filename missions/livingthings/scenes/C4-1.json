@@ -138,7 +138,9 @@
     },
     {
      "who": "place",
-     "do": "light",
+     "do": "play",
+     "sheet": "lantern",
+     "or": "light",
      "when": {
       "valley": "La linterna del jardín se enciende"
      }

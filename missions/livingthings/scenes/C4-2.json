@@ -401,7 +401,9 @@
     },
     {
      "who": "place",
-     "do": "light",
+     "do": "play",
+     "sheet": "lantern.green",
+     "or": "light",
      "when": {
       "valley": "se enciende con una luz verde"
      }
@@ -434,6 +436,17 @@
   },
   "palida": {
    "type": "ending",
+   "acts": [
+    {
+     "who": "place",
+     "do": "play",
+     "sheet": "lantern.pale",
+     "or": "light",
+     "when": {
+      "valley": "se enciende a medias"
+     }
+    }
+   ],
    "outcome": "partial",
    "text": {
     "valley": "Dos de las tres cosas ayudan; la tercera, no. Las plantas se enderezan, pero una se queda pálida en su rincón. La linterna mayor se enciende a medias, temblando. «Otro día, con las tres cosas justas, se encenderá del todo», dice la jardinera. {{creature}} se acurruca junto a la planta pálida para darle calor.",

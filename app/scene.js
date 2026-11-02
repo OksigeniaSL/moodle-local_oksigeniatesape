@@ -1088,7 +1088,7 @@
             i = j;
           }
         });
-        return {at: i, who: a.who, what: a.do};
+        return {at: i, who: a.who, what: a.do, sheet: a.sheet, yours: a.yours, or: a.or};
       }).filter(function(a) {
         return a.at >= 0;
       });
@@ -1126,7 +1126,7 @@
           if (a.at === now) {
             setTimeout(function() {
               if (at === now) {
-                alive('act', a.who, a.what);
+                alive('act', a.who, a.what, a);
               }
             }, 450);
           }

@@ -36,6 +36,12 @@
      "who": "pet",
      "do": "alert",
      "when": "tiembla un poco"
+    },
+    {
+     "who": "place",
+     "do": "play",
+     "sheet": "seed.faint",
+     "when": "tiembla un poco"
     }
    ],
    "nature": {
@@ -154,9 +160,25 @@
     },
     {
      "who": "place",
+     "do": "play",
+     "sheet": "seed",
+     "when": {
+      "valley": "La semilla tiembla en la mano"
+     }
+    },
+    {
+     "who": "place",
+     "do": "play",
+     "sheet": "lantern",
+     "or": "light",
+     "when": {
+      "valley": "La linterna del claro se enciende"
+     }
+    },
+    {
+     "who": "place",
      "do": "light",
      "when": {
-      "valley": "La linterna del claro se enciende",
       "azara": "El cuaderno recupera su primera página"
      }
     }
