@@ -363,7 +363,7 @@
       return ch.x + ',' + ch.y;
     }).join(' ');
     return '<svg class="dawn-map" viewBox="0 0 400 ' + T.mapHeight(m) + '" aria-hidden="true">' + T.mapGround(m) +
-      T.mapLandmarks(m) + '<polyline points="' + pts + '" class="road"/>' + m.chapters.map(function(ch) {
+      T.mapAsleep(m) + T.mapLandmarks(m) + '<polyline points="' + pts + '" class="road"/>' + m.chapters.map(function(ch) {
         return '<circle cx="' + ch.x + '" cy="' + ch.y + '" r="10" class="dawn-lamp' + (ch.lit ? ' lit' : '') + '"/>' +
           (stained[ch.code] ? '<circle cx="' + (ch.x + 22) + '" cy="' + (ch.y - 20) + '" r="13" class="dawn-blot"/>' : '');
       }).join('') + '</svg>';
@@ -2390,7 +2390,7 @@
     return '<section class="board-map"><h2>' + esc(m.title) + '</h2>' + classCreature() + '<div class="map-wrap' +
       (height > 640 ? ' tall' : '') +
       '">' + T.skyChip(m) + '<svg class="map" viewBox="0 0 400 ' + height + '" role="img" aria-label="' + esc(m.title) + '"><defs>' +
-      T.MAPGLOW + '</defs>' + T.mapGround(m) + T.mapLandmarks(m) + T.mapNight(m) + T.mapSky(m) +
+      T.MAPGLOW + '</defs>' + T.mapGround(m) + T.mapAsleep(m) + T.mapLandmarks(m) + T.mapNight(m) + T.mapSky(m) +
       '<polyline points="' + pts + '" class="road"/>' + (lit ? '<polyline points="' + walked + '" class="road walked"/>' : '') +
       drawn + (T.critters ? T.critters.fireflies(m) : '') + places + '</svg></div>' + fogNote(m, fog) + fromFar() + T.campaign(state.board.campaign) + classRow() +
       pastExpeditions() + '</section>';

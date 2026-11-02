@@ -486,6 +486,31 @@
    *
    * @return {boolean}
    */
+  /**
+   * The room the button of Oksigenia Access takes on a side of a narrow screen, where the rows of options reach: its
+   * width from that edge, in --tesape-access-left and --tesape-access-right, so that what is read in a row stays clear
+   * of it. Nothing on a wide screen, or with the button on top or at the bottom.
+   */
+  T.accessRoom = function() {
+    var root = document.documentElement;
+    var host = document.querySelector('oksigenia-access-panel');
+    var button = host && host.shadowRoot && host.shadowRoot.querySelector('.oks-access-wrapper');
+    var r = button && window.innerWidth <= 768 ? button.getBoundingClientRect() : null;
+    var left = 0;
+    var right = 0;
+    if (r && r.width && r.height) {
+      // By which third of the screen it stands: in the middle one (on top or at the bottom), it takes no side.
+      var middle = (r.left + r.right) / 2 / window.innerWidth;
+      if (middle < 1 / 3) {
+        left = Math.ceil(r.right + 8);
+      } else if (middle > 2 / 3) {
+        right = Math.ceil(window.innerWidth - r.left + 8);
+      }
+    }
+    root.style.setProperty('--tesape-access-left', left + 'px');
+    root.style.setProperty('--tesape-access-right', right + 'px');
+  };
+
   T.moves = function() {
     return !T.adapted.still && !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   };
@@ -823,11 +848,61 @@
     }
     var map = m.map || m.code;
     var painted = T.artUrl(['map.' + map + '.' + m.skin, 'map.' + map]);
-    return painted ? '<image href="' + T.esc(painted) + '" x="0" y="0" width="400" height="640" ' +
+    return painted ? '<image class="ground" href="' + T.esc(painted) + '" x="0" y="0" width="400" height="640" ' +
       'preserveAspectRatio="xMidYMid slice"/>' : night +
       '<path d="M0 600 Q120 520 220 590 T400 560 V640 H0Z" fill="#183a2b"/>' +
       '<path d="M0 230 Q90 190 170 230 T400 200 V260 Q300 300 200 270 T0 290Z" fill="#1d4a5e" opacity=".6"/>' +
       '<path d="M20 120 L52 50 L84 120Z M330 380 L356 318 L382 380Z M40 470 L64 414 L88 470Z" fill="#163829"/>';
+  };
+
+  /** @var {Object} Where each place is asleep on a painted map, by the key of its painting, once read (false: none). */
+  var asleepBoxes = {};
+
+  /**
+   * Each place of a painted map that the class has not lit yet, asleep (map.<painting>.asleep.<place>, where
+   * map.<painting>.asleep says, in proportion of the painting); a place lighting up now wakes, fading over the painting.
+   * The first time, where they go is read and they are put on the maps already drawn.
+   *
+   * @param {Object} m
+   * @param {Object} [waking] By id of chapter, the places lighting up now.
+   * @return {string}
+   */
+  T.mapAsleep = function(m, waking) {
+    var map = m.map || m.code;
+    var key = T.artKey && T.artKey(['map.' + map + '.' + m.skin, 'map.' + map]);
+    var said = key && T.artUrl([key + '.asleep']);
+    if (!said || T.lightArt) {
+      return '';
+    }
+    var draw = function(boxes) {
+      return m.chapters.map(function(ch) {
+        var box = boxes[ch.code];
+        var now = waking && waking[String(ch.id)];
+        var art = box && T.artUrl([key + '.asleep.' + ch.code]);
+        if (!art || ((ch.lit || ch.mine) && !now)) {
+          return '';
+        }
+        return '<image class="asleep' + (now ? ' waking' : '') + '" href="' + T.esc(art) + '" x="' + box.x * 400 +
+          '" y="' + box.y * 640 + '" width="' + box.w * 400 + '" height="' + box.h * 640 + '" preserveAspectRatio="none"/>';
+      }).join('');
+    };
+    if (asleepBoxes[key] === undefined) {
+      asleepBoxes[key] = null;
+      fetch(said, {credentials: 'same-origin'}).then(function(r) {
+        return r.json();
+      }).then(function(boxes) {
+        asleepBoxes[key] = boxes || false;
+        var html = boxes ? draw(boxes) : '';
+        document.querySelectorAll('svg.map image.ground, svg.dawn-map image.ground').forEach(function(ground) {
+          if (html && !ground.parentNode.querySelector('image.asleep')) {
+            ground.insertAdjacentHTML('afterend', html);
+          }
+        });
+      }).catch(function() {
+        asleepBoxes[key] = false;
+      });
+    }
+    return asleepBoxes[key] ? draw(asleepBoxes[key]) : '';
   };
 
   /**

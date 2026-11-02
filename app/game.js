@@ -2082,7 +2082,7 @@
       '" data-herox="' + current.x + '" data-heroy="' + current.y +
       '">' + (state.visit ? '' : landmarks() + asleep()) + '<svg class="map" viewBox="0 0 400 ' + height +
       '" role="group" aria-label="' + esc(m.title) + '"><defs>' + T.MAPGLOW + '</defs>' + T.mapGround(m) +
-      T.mapLandmarks(m) + T.mapNight(m) + T.mapSky(m) + '<polyline points="' + pts + '" class="road"/>' +
+      T.mapAsleep(m, lighting) + T.mapLandmarks(m) + T.mapNight(m) + T.mapSky(m) + '<polyline points="' + pts + '" class="road"/>' +
       (walked ? '<polyline points="' + walked + '" class="road walked"/>' : '') + roadDrawing(fresh) +
       (T.critters ? T.critters.fireflies(m) : '') + prints + places + secrets + crowd + blots + minions + thread + me + pet + hungry +
       '</svg></div>' + (card ? '</div>' : '');
@@ -5876,8 +5876,13 @@
     window.addEventListener('resize', function() {
       clearTimeout(timer);
       timer = setTimeout(check, 300);
+      T.accessRoom();
     });
     check();
+    // The button of Access comes in when its own script has run.
+    [0, 1500, 5000].forEach(function(ms) {
+      setTimeout(T.accessRoom, ms);
+    });
   }
 
   zoomWatch();

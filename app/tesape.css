@@ -14905,3 +14905,44 @@ body.still .pet-me.patted .creature {
   font-size: 1.15em;
   letter-spacing: .12em;
 }
+
+/* A place of the map lit now wakes: its asleep piece fades over the painting, as its lantern lights. */
+.map .asleep.waking {
+  animation: asleep-wakes 1.8s ease .9s both;
+}
+
+@keyframes asleep-wakes {
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map .asleep.waking {
+    display: none;
+  }
+}
+
+body.adapt-still .map .asleep.waking {
+  display: none;
+}
+
+/* On a narrow screen, the rows of options leave room for the button of Access on its side (at the end, over the
+   padding of each kind of row). */
+@media (max-width: 768px) {
+  .battle-option {
+    padding-left: max(16px, calc(var(--tesape-access-left, 0px) - 16px));
+    padding-right: max(16px, calc(var(--tesape-access-right, 0px) - 16px));
+  }
+
+  .scene-layer .opt {
+    padding-left: max(14px, calc(var(--tesape-access-left, 0px) - 16px));
+    padding-right: max(14px, calc(var(--tesape-access-right, 0px) - 16px));
+  }
+
+  .scene-layer.live .opt,
+  .scene-layer.live .scene-body.standing .opts.many .opt {
+    padding-left: max(12px, calc(var(--tesape-access-left, 0px) - 16px));
+    padding-right: max(12px, calc(var(--tesape-access-right, 0px) - 16px));
+  }
+}
