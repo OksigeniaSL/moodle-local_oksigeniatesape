@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.244.0 (2026-11-02)
+
+- Each place of a painted map sleeps until its lantern is lit, when the art pack brings it
+  asleep: on the map of a student, by their own lanterns; on the class screen, by those of the
+  class. A place lit since the map was last seen wakes, fading, as its lantern lights.
+- On a narrow screen, the rows of options leave room for the button of Oksigenia Access on its
+  side, so that what is read never runs under it.
+
 ## 0.243.0 (2026-11-02)
 
 - On a device with little memory, the place keeps the whole painting and plays no sheets of
