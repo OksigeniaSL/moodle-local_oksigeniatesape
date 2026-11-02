@@ -121,7 +121,9 @@ class mobile {
      * What goes into a page of the app, to be read and never compiled: the app compiles the page as an Angular template,
      * and Mustache leaves as they are the braces (bindings) and the at signs (blocks and declarations; one left unfinished
      * also stops the page from compiling). Each becomes its full-width twin, which reads the same. Addresses keep their at
-     * signs: in an attribute they mean nothing, and an address has to stay as it is.
+     * signs: in an attribute they mean nothing, and an address has to stay as it is. Entities are undone first, as many
+     * times as they were written: the escaping of Moodle leaves the numeric ones as they are, and Angular reads them as the
+     * character they stand for, also to start a binding. The template escapes what is left again.
      *
      * @param mixed $data The data of the template.
      * @param string $key The name of this value.
@@ -137,6 +139,10 @@ class mobile {
         if (!is_string($data)) {
             return $data;
         }
+        do {
+            $before = $data;
+            $data = html_entity_decode($data, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        } while ($data !== $before);
         $data = strtr($data, ['{' => '｛', '}' => '｝']);
         return in_array($key, ['url', 'image'], true) ? $data : strtr($data, ['@' => '＠']);
     }

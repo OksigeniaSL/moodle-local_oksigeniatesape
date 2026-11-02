@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.240.1 (2026-11-02)
+
+- In the page of the Moodle app, a name written with entities is read and never compiled, as
+  one written with the characters themselves.
+
 ## 0.240.0 (2026-11-02)
 
 The battle on the class screen, in its place.
