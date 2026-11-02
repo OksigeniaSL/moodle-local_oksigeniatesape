@@ -42,7 +42,9 @@
       var last = null;
       var places = {boss: null, teams: {}};
       var heroes = {};
-      var count = {hits: 0, knots: 0, shields: 0, bursts: 0, verbs: 0};
+      var count = {hits: 0, knots: 0, shields: 0, bursts: 0, verbs: 0, sheets: {}};
+      // The sheets of frames of the pack for what is seen in a turn.
+      var SHEETS = ['threads', 'shield', 'sparks'];
       // The colour of each verb: the shield, the cheer, the glance and the trail.
       var VERBS = {shield: 0xffc857, cheer: 0xe8508f, glance: 0x8fd3ff, trail: 0x7cc67f, carry: 0xb9a6ff};
       var ratio = function() {
@@ -77,6 +79,112 @@
         var r = rect(places.teams[id]);
         var k = ratio();
         return r ? {x: (r.left + r.width / 2) * k, y: (r.top + r.height) * k, width: r.width * k, height: r.height * k} : null;
+      };
+      /**
+       * What the pack says of a sheet of frames, if it brings it.
+       *
+       * @param {string} name threads, shield, sparks.
+       * @return {Object|null}
+       */
+      var sheetOf = function(name) {
+        var meta = S.cache.json.get('anim.fx.' + name);
+        return meta && S.textures.exists('fx.' + name) ? meta : null;
+      };
+      /**
+       * A sheet of frames of the pack played once in the canvas, as T.fx.sprite plays it in the page, with the same frame,
+       * fps, anchor, fit, cues and still. Without movement, the still frame for a moment, with the cues called at once.
+       *
+       * @param {string} name threads, shield, sparks.
+       * @param {number} x Where its anchor goes.
+       * @param {number} y
+       * @param {number} box What its fit measures against.
+       * @param {Object} how depth; angle; cue, that gets the name of each cue.
+       * @return {boolean} Whether the pack brings it: if not, nothing is played and no cue is called.
+       */
+      var sheet = function(name, x, y, box, how) {
+        var meta = sheetOf(name);
+        if (!meta) {
+          return false;
+        }
+        count.sheets[name] = (count.sheets[name] || 0) + 1;
+        var key = 'fx.' + name;
+        var anchor = meta.anchor || [0.5, 0.5];
+        var one = S.add.sprite(x, y, key, 0).setOrigin(anchor[0], anchor[1]).setDepth(how.depth)
+          .setScale(box * (meta.fit || 1) / meta.frame[0]).setAngle(how.angle || 0);
+        var cues = Object.keys(meta.cues || {});
+        var fire = function(frame) {
+          cues = cues.filter(function(cue) {
+            if (meta.cues[cue] > frame) {
+              return true;
+            }
+            if (how.cue) {
+              how.cue(cue);
+            }
+            return false;
+          });
+        };
+        if (!T.moves()) {
+          fire(Infinity);
+          if (meta.still === null || meta.still === undefined) {
+            one.destroy();
+          } else {
+            one.setFrame(meta.still);
+            S.time.delayedCall(900, function() {
+              one.destroy();
+            });
+          }
+          return true;
+        }
+        if (!S.anims.exists(key)) {
+          S.anims.create({key: key, frames: S.anims.generateFrameNumbers(key, {start: 0, end: meta.frames - 1}),
+            frameRate: meta.fps || 16, repeat: 0});
+        }
+        one.on('animationupdate', function(animation, frame) {
+          fire(frame.index - 1);
+        });
+        one.on('animationcomplete', function() {
+          fire(Infinity);
+          one.destroy();
+        });
+        one.play(key);
+        return true;
+      };
+      /**
+       * Threads torn off the Embrollo: its sheet, up to three times by how many it has lost, one after the other and turned
+       * so that they do not repeat; the blow falls when the first one snaps. Without the sheet, the threads of always.
+       *
+       * @param {number} many How many it has lost.
+       * @param {Function} [blow]
+       */
+      var pull = function(many, blow) {
+        var from = bossAt();
+        var done = blow || function() {};
+        if (!sheet('threads', from.x, from.y, from.size, {depth: 25, cue: done})) {
+          S.threads.explode(10 + Math.min(20, many * 3), from.x, from.y);
+          done();
+          return;
+        }
+        var more = T.moves() ? Math.min(3, Math.ceil(many / 3)) : 1;
+        for (var i = 1; i < more; i++) {
+          S.time.delayedCall(i * 130, function(n) {
+            var at = bossAt();
+            sheet('threads', at.x, at.y, at.size, {depth: 25, angle: n * 40});
+          }, [i]);
+        }
+      };
+      /**
+       * A burst of sparks, by how big it is on a screen of 1080: its sheet, or the sparks of always.
+       *
+       * @param {number} px
+       * @param {number} x
+       * @param {number} y
+       * @param {number} many The sparks without the sheet.
+       * @return {void}
+       */
+      var sparks = function(px, x, y, many) {
+        if (!sheet('sparks', x, y, px * S.scale.height / 1080, {depth: 40})) {
+          S.sparks.explode(many, x, y);
+        }
       };
       /**
        * A verb used: an arrow of its colour goes from the heroes of the team that used it to those of the team it goes to,
@@ -125,7 +233,7 @@
           line.lineTo(end.x, end.y).strokePath();
           head.setPosition(end.x, end.y);
         }, onComplete: function() {
-          S.sparks.explode(10, b.x, y1);
+          sparks(180, b.x, y1, 10);
           S.tweens.add({targets: [line, head], alpha: 0, duration: 500, delay: 500, onComplete: function() {
             line.destroy();
             head.destroy();
@@ -145,11 +253,25 @@
           return;
         }
         var ball = S.add.image(from.x, from.y, 'dot').setTint(0x8b5cf6).setScale(2.2 * ratio()).setDepth(30);
-        S.tweens.add({targets: ball, x: to.x, y: to.y - (shield ? 120 : 40) * ratio(), duration: 600, ease: 'Quad.easeIn',
+        var flight = 600;
+        var land = to.y - (shield ? 120 : 40) * ratio();
+        // The dome opens over the team in time for the knot to reach its top when it says so; it brings its own blow.
+        var dome = shield ? sheetOf('shield') : null;
+        if (dome) {
+          var wide = to.width * (dome.fit || 1);
+          land = to.y - wide * dome.frame[1] / dome.frame[0] * (dome.anchor || [0.5, 1])[1];
+          S.time.delayedCall(flight - (dome.cues && dome.cues.hit || 0) * 1000 / (dome.fps || 16), function() {
+            sheet('shield', to.x, to.y, to.width, {depth: 31});
+          });
+        }
+        S.tweens.add({targets: ball, x: to.x, y: land, duration: flight, ease: 'Quad.easeIn',
           onComplete: function() {
             ball.destroy();
             if (shield) {
               count.shields++;
+              if (dome) {
+                return;
+              }
               var arc = S.add.ellipse(to.x, to.y - 110 * ratio(), to.width * 0.9, 60 * ratio()).setStrokeStyle(5, 0xffc857, 1)
                 .setDepth(31);
               S.sparks.explode(16, to.x, to.y - 110 * ratio());
@@ -159,7 +281,9 @@
               return;
             }
             count.knots++;
-            S.threads.explode(14, to.x, to.y - 40 * ratio());
+            if (!sheet('threads', to.x, to.y - 40 * ratio(), to.width * 0.4, {depth: 25})) {
+              S.threads.explode(14, to.x, to.y - 40 * ratio());
+            }
             (heroes[id] || []).forEach(function(h, i) {
               S.tweens.add({targets: h.sprite, y: h.sprite.y - 14 * ratio(), duration: 120, delay: i * 40, yoyo: true,
                 ease: 'Sine.easeOut'});
@@ -276,10 +400,10 @@
           });
           if (l.revealed && (l.right || 0) > 0 && once('hit:' + turn)) {
             count.hits++;
-            var b = bossAt();
-            S.threads.explode(10 + Math.min(20, (l.right || 0) * 3), b.x, b.y);
-            S.boss.shake = 1;
-            act('hit');
+            pull(l.right || 0, function() {
+              S.boss.shake = 1;
+              act('hit');
+            });
           } else if (l.revealed && !(l.right || 0) && !l.outcome && once('taunt:' + turn)) {
             // Nobody undid it: it laughs, bouncing.
             mood('taunt', 2600);
@@ -305,14 +429,19 @@
             if (l.knot && l.knot.broken) {
               count.bursts++;
               var at = bossAt();
-              S.sparks.explode(30, at.x, at.y);
-              S.threads.explode(24, at.x, at.y);
+              sparks(420, at.x, at.y, 30);
+              pull(3);
             }
           }
           if (l.outcome && once('end:' + l.id)) {
             S.ending = l.outcome;
             var end = bossAt();
-            S.sparks.explode(l.outcome === 'won' ? 40 : 10, end.x, end.y);
+            sparks(l.outcome === 'won' ? 640 : 180, end.x, end.y, l.outcome === 'won' ? 40 : 10);
+            if (l.outcome === 'won' && sheetOf('sparks')) {
+              S.time.delayedCall(200, function() {
+                sparks(640, end.x, end.y, 0);
+              });
+            }
           }
         },
 
@@ -324,7 +453,7 @@
             teams: Object.keys(heroes).length, heroes: Object.keys(heroes).reduce(function(sum, id) {
               return sum + heroes[id].filter(Boolean).length;
             }, 0), hits: count.hits, knots: count.knots, shields: count.shields, bursts: count.bursts,
-            verbs: count.verbs,
+            verbs: count.verbs, sheets: count.sheets,
             // The teams whose heroes stand inside their place now.
             aligned: !S ? 0 : Object.keys(heroes).filter(function(id) {
               var at = teamAt(id);
@@ -356,6 +485,19 @@
             if (rig) {
               T.puppet.load(this, 'puppet.boss' + phase, rig);
             }
+          }, this);
+          // The sheets of frames, if the pack brings them: first what each one says, then its picture in those frames.
+          SHEETS.forEach(function(name) {
+            var said = T.artUrl(['anim.fx.' + name]);
+            var picture = T.artUrl(['fx.' + name]);
+            if (!said || !picture) {
+              return;
+            }
+            var load = this.load;
+            load.once('filecomplete-json-anim.fx.' + name, function(key, type, meta) {
+              load.spritesheet('fx.' + name, picture, {frameWidth: meta.frame[0], frameHeight: meta.frame[1]});
+            });
+            load.json('anim.fx.' + name, said);
           }, this);
         },
         create: function() {
