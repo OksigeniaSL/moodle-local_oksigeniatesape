@@ -4205,7 +4205,8 @@
   function bindTeam() {
     app.querySelectorAll('[data-gift]').forEach(function(b) {
       b.onclick = function() {
-        if (!window.confirm(t('app_gift_confirm', b.querySelector('b').textContent))) {
+        if (!T.asked(b, {text: t('app_gift_confirm', b.querySelector('b').textContent), yes: t('app_gift_confirm_yes'),
+          no: t('app_gift_confirm_no'), safe: true})) {
           return;
         }
         app.querySelectorAll('[data-gift]').forEach(function(x) {

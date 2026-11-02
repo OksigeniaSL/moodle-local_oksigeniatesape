@@ -218,7 +218,7 @@
     app.querySelectorAll('[data-huddle]').forEach(function(b) {
       b.onclick = function(ev) {
         ev.stopPropagation();
-        if (!window.confirm(t('board_huddle_close_confirm'))) {
+        if (!T.asked(b, {text: t('board_huddle_close_confirm'), yes: t('board_huddle_close_confirm_yes'), no: t('board_huddle_close_confirm_no')})) {
           return;
         }
         T.api('huddle', {courseid: cfg.courseid, action: 'close', huddleid: Number(b.dataset.huddle)}).then(function() {

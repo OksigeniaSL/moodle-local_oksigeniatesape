@@ -373,7 +373,7 @@
         }).join('') + '</ul><div class="actions" style="justify-content:flex-start;margin-top:12px"><button type="button" class="btn btn-soft" ' +
         'data-leavecampaign>' + esc(t('teach_campaign_leave')) + '</button></div>';
       box.querySelector('[data-leavecampaign]').onclick = function() {
-        if (window.confirm(t('teach_campaign_leave_confirm', campaign.name))) {
+        if (T.asked(this, {text: t('teach_campaign_leave_confirm', campaign.name), yes: t('teach_campaign_leave_confirm_yes'), no: t('teach_campaign_leave_confirm_no')})) {
           this.disabled = true;
           send({action: 'leave'}, 'teach_campaign_left');
         }
@@ -448,7 +448,7 @@
       }
       box.querySelectorAll('[data-closegame]').forEach(function(b) {
         b.onclick = function() {
-          if (!window.confirm(t('teach_games_close_confirm', b.dataset.name))) {
+          if (!T.asked(b, {text: t('teach_games_close_confirm', b.dataset.name), yes: t('teach_games_close_confirm_yes'), no: t('teach_games_close_confirm_no')})) {
             return;
           }
           b.disabled = true;
@@ -1687,7 +1687,7 @@
       box.querySelectorAll('[data-remote]').forEach(function(b) {
         b.onclick = function() {
           var what = b.dataset.remote;
-          if (what === 'finish' && !window.confirm(t('teach_command_finishsure'))) {
+          if (what === 'finish' && !T.asked(b, {text: t('teach_command_finishsure'), yes: t('teach_command_finishsure_yes'), no: t('teach_command_finishsure_no')})) {
             return;
           }
           b.disabled = true;
@@ -2011,7 +2011,7 @@
     };
     b.onclick = function() {
       var size = Number(el.querySelector('[data-teamsize]').value);
-      if (state.data.standings.length && !window.confirm(t('teach_teams_again'))) {
+      if (state.data.standings.length && !T.asked(b, {text: t('teach_teams_again'), yes: t('teach_teams_again_yes'), no: t('teach_teams_again_no')})) {
         return;
       }
       b.disabled = true;
@@ -2353,7 +2353,7 @@
     var resetTalents = el.querySelector('[data-resettalents]');
     if (resetTalents) {
       resetTalents.onclick = function() {
-        if (!window.confirm(t('teach_talents_reset_confirm'))) {
+        if (!T.asked(resetTalents, {text: t('teach_talents_reset_confirm'), yes: t('teach_talents_reset_confirm_yes'), no: t('teach_talents_reset_confirm_no')})) {
           return;
         }
         resetTalents.disabled = true;
@@ -2737,7 +2737,7 @@
     }
     el.querySelectorAll('[data-idea]').forEach(function(b) {
       b.onclick = function() {
-        if (b.dataset.action === 'delete' && !window.confirm(t('teach_ideas_delete'))) {
+        if (b.dataset.action === 'delete' && !T.asked(b, {text: t('teach_ideas_delete'), yes: t('teach_ideas_delete_yes'), no: t('teach_ideas_delete_no')})) {
           return;
         }
         T.api('handle_idea', {courseid: cfg.courseid, ideaid: Number(b.dataset.idea), action: b.dataset.action})
@@ -3593,7 +3593,7 @@
     var del = form.querySelector('[data-delete]');
     if (del) {
       del.onclick = function() {
-        if (!window.confirm(t('teach_delete_confirm'))) {
+        if (!T.asked(del, {text: t('teach_delete_confirm'), yes: t('teach_delete_confirm_yes'), no: t('teach_delete_confirm_no')})) {
           return;
         }
         T.api('delete_challenge', {courseid: cfg.courseid, id: c.id}).then(function() {

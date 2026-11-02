@@ -572,6 +572,81 @@
     };
   };
 
+  /**
+   * A question before something that cannot be undone, in the page: what is asked, and two buttons that say what each
+   * one does. Escape, or a touch outside, is the second. The first gets the focus only when nothing is lost by it.
+   *
+   * @param {Object} opts text, yes and no: what each button says; safe: whether yes can take the focus.
+   * @return {Promise} Whether yes was chosen.
+   */
+  T.ask = function(opts) {
+    return new Promise(function(done) {
+      var before = document.activeElement;
+      var back = document.createElement('div');
+      back.className = 'tesape-ask';
+      back.innerHTML = '<div class="tesape-ask-box" role="alertdialog" aria-modal="true" aria-describedby="tesape-ask-text">' +
+        '<p id="tesape-ask-text">' + T.esc(opts.text) + '</p><div class="tesape-ask-buttons"><button type="button" ' +
+        'class="btn btn-soft" data-ask-no>' + T.esc(opts.no) + '</button><button type="button" class="btn btn-main" ' +
+        'data-ask-yes>' + T.esc(opts.yes) + '</button></div></div>';
+      var yes = back.querySelector('[data-ask-yes]');
+      var no = back.querySelector('[data-ask-no]');
+      var end = function(ok) {
+        document.removeEventListener('keydown', keys, true);
+        back.remove();
+        if (before && before.isConnected && before.focus) {
+          before.focus();
+        }
+        done(ok);
+      };
+      var keys = function(ev) {
+        if (ev.key === 'Escape') {
+          ev.preventDefault();
+          end(false);
+        } else if (ev.key === 'Tab') {
+          // Between the two buttons only.
+          ev.preventDefault();
+          (document.activeElement === yes ? no : yes).focus();
+        }
+      };
+      yes.onclick = function() {
+        end(true);
+      };
+      no.onclick = function() {
+        end(false);
+      };
+      back.onclick = function(ev) {
+        if (ev.target === back) {
+          end(false);
+        }
+      };
+      document.addEventListener('keydown', keys, true);
+      document.body.appendChild(back);
+      (opts.safe ? yes : no).focus();
+    });
+  };
+
+  /**
+   * For a button whose handler asks before doing: whether it was just answered yes. If not, the question is asked and,
+   * with a yes, the button is pressed again, and then this says yes once.
+   *
+   * @param {Element} el The button.
+   * @param {Object} opts As T.ask().
+   * @return {boolean}
+   */
+  T.asked = function(el, opts) {
+    if (el.tesapeAsked && Date.now() - el.tesapeAsked < 3000) {
+      el.tesapeAsked = 0;
+      return true;
+    }
+    T.ask(opts).then(function(ok) {
+      if (ok && el.isConnected) {
+        el.tesapeAsked = Date.now();
+        el.click();
+      }
+    });
+    return false;
+  };
+
   T.toast = function(html, bad) {
     var box = document.querySelector('.toasts');
     if (!box) {

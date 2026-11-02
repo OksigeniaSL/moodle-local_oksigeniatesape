@@ -357,9 +357,15 @@
       st.scene = +b.dataset.n;
     },
     'del-scene': function(b) {
-      if (window.confirm(t('teach_au_delete_scene_confirm'))) {
-        st.d.scenes.splice(+b.dataset.n, 1);
-      }
+      var n = +b.dataset.n;
+      T.ask({text: t('teach_au_delete_scene_confirm'), yes: t('teach_au_delete_scene_confirm_yes'),
+        no: t('teach_au_delete_scene_confirm_no')}).then(function(ok) {
+        if (ok) {
+          st.d.scenes.splice(n, 1);
+          render();
+          later();
+        }
+      });
     },
     'back-scenes': function() {
       st.scene = null;
@@ -492,7 +498,7 @@
           T.toast(esc(e.message), true);
         });
       } else if (act === 'publish') {
-        if (!window.confirm(t('teach_au_publish_confirm'))) {
+        if (!T.asked(b, {text: t('teach_au_publish_confirm'), yes: t('teach_au_publish_confirm_yes'), no: t('teach_au_publish_confirm_no')})) {
           return;
         }
         save().then(function() {
@@ -559,7 +565,7 @@
       });
       box.querySelectorAll('[data-act="delete"]').forEach(function(b) {
         b.onclick = function() {
-          if (window.confirm(t('teach_au_delete_confirm'))) {
+          if (T.asked(b, {text: t('teach_au_delete_confirm'), yes: t('teach_au_delete_confirm_yes'), no: t('teach_au_delete_confirm_no')})) {
             api('delete', {code: b.dataset.code}).then(draw).catch(function(e) {
               T.toast(esc(e.message), true);
             });

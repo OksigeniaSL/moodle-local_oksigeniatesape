@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.246.0 (2026-11-02)
+
+- What cannot be undone asks in the page, not in a box of the browser: the question, and two
+  buttons that say what each one does («Cerrar la partida» / «Dejarla abierta»). Escape, or a
+  touch outside, is the second, which also gets the focus. In the teacher's screens, the class
+  screen, the Workshop and the gift of a place.
+
 ## 0.245.0 (2026-11-02)
 
 - The market of the valley has three paints more for the creature (ember, moss and coral) and two

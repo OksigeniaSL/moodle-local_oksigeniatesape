@@ -432,7 +432,7 @@
     var orig = box.querySelector('[data-qorig]');
     if (orig) {
       orig.onclick = function() {
-        if (!window.confirm(t('teach_ws_q_orig_confirm'))) {
+        if (!T.asked(orig, {text: t('teach_ws_q_orig_confirm'), yes: t('teach_ws_q_orig_confirm_yes'), no: t('teach_ws_q_orig_confirm_no')})) {
           return;
         }
         api('questions', {value: '[]'}).then(function(d) {
@@ -594,7 +594,7 @@
     var all = head.querySelector('[data-allorig]');
     if (all) {
       all.onclick = function() {
-        if (!window.confirm(t('teach_ws_allorig_confirm'))) {
+        if (!T.asked(all, {text: t('teach_ws_allorig_confirm'), yes: t('teach_ws_allorig_confirm_yes'), no: t('teach_ws_allorig_confirm_no')})) {
           return;
         }
         api('restore', {}).then(render).catch(function(e) {
@@ -662,7 +662,8 @@
           '</button></div>';
         to.querySelector('[data-copygo]').onclick = function() {
           var select = to.querySelector('[data-target]');
-          if (!window.confirm(t('teach_ws_copy_confirm', courses[select.value]))) {
+          if (!T.asked(this, {text: t('teach_ws_copy_confirm', courses[select.value]), yes: t('teach_ws_copy_confirm_yes'),
+            no: t('teach_ws_copy_confirm_no')})) {
             return;
           }
           api('copy', {target: +select.value}).then(done).catch(function(e) {
@@ -874,7 +875,8 @@
       if (skip) {
         var going = skip.hasAttribute('data-skip');
         var place = findChapter(skip.dataset.skipchapter);
-        if (!window.confirm(t(going ? 'teach_ws_skip_confirm' : 'teach_ws_unskip_confirm', place.name))) {
+        var ask = going ? 'teach_ws_skip_confirm' : 'teach_ws_unskip_confirm';
+        if (!T.asked(skip, {text: t(ask, place.name), yes: t(ask + '_yes'), no: t(ask + '_no')})) {
           return;
         }
         skip.disabled = true;
