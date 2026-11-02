@@ -123,7 +123,9 @@ class mobile {
      * also stops the page from compiling). Each becomes its full-width twin, which reads the same. Addresses keep their at
      * signs: in an attribute they mean nothing, and an address has to stay as it is. Entities are undone first, as many
      * times as they were written: the escaping of Moodle leaves the numeric ones as they are, and Angular reads them as the
-     * character they stand for, also to start a binding. The template escapes what is left again.
+     * character they stand for, also to start a binding. A numeric one that is no character goes: Angular cannot read it,
+     * and the whole page would not compile; taking it out may leave another, so it goes round again. The template escapes
+     * what is left again.
      *
      * @param mixed $data The data of the template.
      * @param string $key The name of this value.
@@ -142,6 +144,9 @@ class mobile {
         do {
             $before = $data;
             $data = html_entity_decode($data, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            if ($data === $before) {
+                $data = preg_replace('/&#(\d+|x[0-9a-f]+);/i', '', $data);
+            }
         } while ($data !== $before);
         $data = strtr($data, ['{' => '｛', '}' => '｝']);
         return in_array($key, ['url', 'image'], true) ? $data : strtr($data, ['@' => '＠']);

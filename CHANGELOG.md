@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.240.2 (2026-11-02)
+
+- In the page of the Moodle app, a numeric entity that is no character goes away, instead of
+  stopping the whole page from compiling.
+
 ## 0.240.1 (2026-11-02)
 
 - In the page of the Moodle app, a name written with entities is read and never compiled, as

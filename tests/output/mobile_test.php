@@ -59,7 +59,8 @@ final class mobile_test extends \advanced_testcase {
         $this->resetAfterTest();
         $gen = $this->getDataGenerator();
         $names = ['&#123;&#123;7*7&#125;&#125;', '&#x7b;&#X7B;8*8&#x7d;&#x7D;', '&#38;#123;&#38;#123;9*9&#38;#125;&#38;#125;',
-            '&amp;#123;&amp;#123;6*6&amp;#125;&amp;#125;', '&lbrace;&lbrace;5*5&rbrace;&rbrace;', '&commat;if (a)', '&#64;let b = 1;'];
+            '&amp;#123;&amp;#123;6*6&amp;#125;&amp;#125;', '&lbrace;&lbrace;5*5&rbrace;&rbrace;', '&commat;if (a)', '&#64;let b = 1;',
+            '&#9999999999;', '&#x110000;', '&#&#1;123;&#&#1;123;4*4&#&#1;125;&#&#1;125;', '&#1;'];
         $game = $gen->create_course(['fullname' => implode(' ', $names)]);
         regions::save((int) $game->id, ['enabled' => 1]);
         missions::install((int) $game->id, 'livingthings', 'valley', 'es');
@@ -68,11 +69,14 @@ final class mobile_test extends \advanced_testcase {
             $html = $page['templates'][0]['html'];
             // Nothing that Angular would read as a brace, an at sign or the start of another entity.
             $this->assertDoesNotMatchRegularExpression('/&#0*(123|125|64|38);|&#x0*(7b|7d|40|26);|&(lbrace|rbrace|commat|lcub|rcub);/i', $html);
+            // Nor a number that is no character, which would stop the page from compiling.
+            $this->assertDoesNotMatchRegularExpression('/&#(9{10}|x110000|0*1);/i', $html);
             $this->assertStringNotContainsString('{', $html);
             $this->assertDoesNotMatchRegularExpression('/@[a-z]/i', $html);
             // And it is read as what it says.
             $this->assertStringContainsString('｛｛7*7｝｝', $html);
             $this->assertStringContainsString('｛｛9*9｝｝', $html);
+            $this->assertStringContainsString('｛｛4*4｝｝', $html);
             $this->assertStringContainsString('＠if (a)', $html);
         }
     }
