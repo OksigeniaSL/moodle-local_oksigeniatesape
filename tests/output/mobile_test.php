@@ -61,11 +61,19 @@ final class mobile_test extends \advanced_testcase {
         $names = ['&#123;&#123;7*7&#125;&#125;', '&#x7b;&#X7B;8*8&#x7d;&#x7D;', '&#38;#123;&#38;#123;9*9&#38;#125;&#38;#125;',
             '&amp;#123;&amp;#123;6*6&amp;#125;&amp;#125;', '&lbrace;&lbrace;5*5&rbrace;&rbrace;', '&commat;if (a)', '&#64;let b = 1;',
             '&#9999999999;', '&#x110000;', '&#&#1;123;&#&#1;123;4*4&#&#1;125;&#&#1;125;', '&#1;'];
-        $game = $gen->create_course(['fullname' => implode(' ', $names)]);
-        regions::save((int) $game->id, ['enabled' => 1]);
-        missions::install((int) $game->id, 'livingthings', 'valley', 'es');
-        $this->setUser($gen->create_and_enrol($game, 'student'));
-        foreach ([mobile::mobile_games_view([]), mobile::mobile_course_view(['courseid' => $game->id])] as $page) {
+        // In several courses: a full name has its limit.
+        $user = $gen->create_user();
+        $pages = [];
+        foreach (array_chunk($names, 3) as $some) {
+            $game = $gen->create_course(['fullname' => implode(' ', $some)]);
+            regions::save((int) $game->id, ['enabled' => 1]);
+            missions::install((int) $game->id, 'livingthings', 'valley', 'es');
+            $gen->enrol_user($user->id, $game->id, 'student');
+            $pages[] = $game;
+        }
+        $this->setUser($user);
+        $pages = array_merge(array_map(fn($game) => mobile::mobile_course_view(['courseid' => $game->id]), $pages), [mobile::mobile_games_view([])]);
+        foreach ($pages as $page) {
             $html = $page['templates'][0]['html'];
             // Nothing that Angular would read as a brace, an at sign or the start of another entity.
             $this->assertDoesNotMatchRegularExpression('/&#0*(123|125|64|38);|&#x0*(7b|7d|40|26);|&(lbrace|rbrace|commat|lcub|rcub);/i', $html);
@@ -73,11 +81,10 @@ final class mobile_test extends \advanced_testcase {
             $this->assertDoesNotMatchRegularExpression('/&#(9{10}|x110000|0*1);/i', $html);
             $this->assertStringNotContainsString('{', $html);
             $this->assertDoesNotMatchRegularExpression('/@[a-z]/i', $html);
-            // And it is read as what it says.
-            $this->assertStringContainsString('｛｛7*7｝｝', $html);
-            $this->assertStringContainsString('｛｛9*9｝｝', $html);
-            $this->assertStringContainsString('｛｛4*4｝｝', $html);
-            $this->assertStringContainsString('＠if (a)', $html);
+        }
+        // And it is read as what it says, all together in the page of all the games.
+        foreach (['｛｛7*7｝｝', '｛｛9*9｝｝', '｛｛4*4｝｝', '＠if (a)'] as $read) {
+            $this->assertStringContainsString($read, $html);
         }
     }
 
