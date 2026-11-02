@@ -153,6 +153,12 @@
    "type": "ending",
    "acts": [
     {
+     "who": "pet",
+     "do": "play",
+     "sheet": "sneeze",
+     "when": "las olisquea y estornuda"
+    },
+    {
      "who": "hero",
      "do": "celebrate"
     },

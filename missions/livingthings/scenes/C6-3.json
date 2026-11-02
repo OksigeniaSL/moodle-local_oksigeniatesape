@@ -236,6 +236,12 @@
    "type": "ending",
    "acts": [
     {
+     "who": "pet",
+     "do": "play",
+     "sheet": "sneeze",
+     "when": "estornuda sobre el vídeo"
+    },
+    {
      "who": "hero",
      "do": "celebrate"
     },

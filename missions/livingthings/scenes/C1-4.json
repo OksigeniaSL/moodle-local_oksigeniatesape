@@ -298,6 +298,16 @@
   },
   "bien": {
    "type": "ending",
+   "acts": [
+    {
+     "who": "place",
+     "do": "play",
+     "sheet": "book",
+     "when": {
+      "valley": "en el Gran Libro queda una página"
+     }
+    }
+   ],
    "outcome": "success",
    "text": {
     "valley": "El consejo cierra la sesión y en el Gran Libro queda una página nueva: las cinco pruebas y la regla. «Lo importante no era el veredicto», dice la druida mayor, «sino cómo se llega a él. El Embrollo decide a la primera; el consejo, prueba por prueba». {{creature}} se ha dormido sobre la lista, y la druida la mira con la lupa para comprobar que respira.",

@@ -252,6 +252,16 @@
   },
   "sube": {
    "type": "ending",
+   "acts": [
+    {
+     "who": "place",
+     "do": "play",
+     "sheet": "book",
+     "when": {
+      "valley": "El informe entra en el Gran Libro"
+     }
+    }
+   ],
    "outcome": "success",
    "text": {
     "valley": "Con las tres medidas, la gráfica de la simulación sigue el mismo camino que la de verdad: de menos de cien a más de dos mil. «Las personas lo empujaron hacia abajo y las personas lo empujaron hacia arriba», dice la garza. «Con datos se ve lo uno y lo otro.» El informe entra en el Gran Libro con su fuente y su fecha. {{creature}} mira la gráfica y pone la pata donde sube.",

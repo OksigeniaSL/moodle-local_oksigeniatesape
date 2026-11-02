@@ -288,6 +288,16 @@
   },
   "tejida": {
    "type": "ending",
+   "acts": [
+    {
+     "who": "place",
+     "do": "play",
+     "sheet": "book",
+     "when": {
+      "valley": "La página de la red entra"
+     }
+    }
+   ],
    "outcome": "success",
    "text": {
     "valley": "La red queda tejida, con cada uno en su hilo y los que comen restos abajo del todo, sosteniéndola. «Una cadena se rompe por un eslabón», dice la garza. «Una red aguanta más, pero todo lo que pasa en un hilo se nota en los demás.» La página de la red entra en el Gran Libro. {{creature}} se mira en el agua y sigue sin saber en qué hilo iría.",

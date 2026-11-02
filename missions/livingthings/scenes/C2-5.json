@@ -35,6 +35,11 @@
    "type": "story",
    "acts": [
     {
+     "who": "place",
+     "do": "show",
+     "sheet": "circles.on"
+    },
+    {
      "who": "pet",
      "do": "hop",
      "when": {
@@ -246,7 +251,9 @@
     },
     {
      "who": "place",
-     "do": "light",
+     "do": "play",
+     "sheet": "circles.on",
+     "or": "light",
      "when": {
       "valley": "brillan en orden"
      }
@@ -270,6 +277,17 @@
   },
   "medias": {
    "type": "ending",
+   "acts": [
+    {
+     "who": "place",
+     "do": "play",
+     "sheet": "circles.on",
+     "or": "light",
+     "when": {
+      "valley": "Casi todas las fichas"
+     }
+    }
+   ],
    "outcome": "partial",
    "text": {
     "valley": "Casi todas las fichas brillan en su círculo; un par se quedan temblando en el borde. «Las del centro son las más difíciles», dice Doña Hebra. «Otro día las miramos con calma.» {{creature}} sopla una ficha hacia el centro.",
@@ -286,7 +304,9 @@
    "acts": [
     {
      "who": "place",
-     "do": "dark",
+     "do": "play",
+     "sheet": "circles.off",
+     "or": "dark",
      "when": {
       "valley": "se apagan"
      }

@@ -477,6 +477,46 @@
           });
         });
       };
+      /**
+       * What stands hidden on the painting shows, in its frame of rest (a painting that two scenes share).
+       *
+       * @param {Object} what sheet.
+       */
+      var showPiece = function(what) {
+        var thing = String(what.sheet || '').split('.')[0];
+        standing.forEach(function(p) {
+          if (p.thing === thing && !p.sprite.visible) {
+            p.sprite.setVisible(true).setAlpha(0);
+            S.tweens.add({targets: p.sprite, alpha: 1, duration: still ? 1 : 400});
+          }
+        });
+      };
+      /**
+       * A sheet of frames without a place on the painting comes out of a figure, from its face and upwards, away from
+       * what is read, and goes away by itself. Nothing without movement.
+       *
+       * @param {Object} f The figure.
+       * @param {Object} what sheet.
+       */
+      var fromFigure = function(f, what) {
+        var meta = what.sheet && S.cache.json.get('anim.fx.' + what.sheet);
+        if (!f || !meta || still) {
+          return;
+        }
+        bringSheets([what.sheet], function() {
+          // How tall it stands: a model, by its metres; a puppet or a picture, three quarters of its canvas. Its face, a bit
+          // over the middle of that; the sheet, half as wide again.
+          var tall = modelled(f) ? f.puppet.metres * f.puppet.perMetre() : f.base * f.sprite.height * 0.75;
+          var right = f.x > S.scale.width / 2;
+          var anchor = meta.anchor || [0.5, 0.5];
+          var one = S.add.sprite(f.x, f.y - tall * 0.62, 'fx.' + what.sheet, 0).setOrigin(right ? 1 - anchor[0] : anchor[0], anchor[1])
+            .setFlipX(right).setAngle(right ? 50 : -50).setDepth(5000).setScale(tall * 1.5 / meta.frame[0]);
+          runSheet(one, what.sheet, meta);
+          one.once('animationcomplete', function() {
+            one.destroy();
+          });
+        });
+      };
       var world = {
         /**
          * The painting of the moment changes: it fades into the new one.
@@ -688,7 +728,8 @@
          * figure without that gesture does the one most like it.
          *
          * @param {string} who speaker, hero, pet or place.
-         * @param {string} what The gesture, or what happens to the place (play: a sheet of frames on what stands on it).
+         * @param {string} what The gesture, or what happens to the place (play: a sheet of frames on what stands on it;
+         *     show: what stands hidden on it). Who is not the place can play a sheet too, that comes out of them.
          * @param {Object} [more] sheet, yours and or, to play.
          */
         act: later(function(who, what, more) {
@@ -696,12 +737,18 @@
           if (who === 'place') {
             if (what === 'play') {
               playPiece(more || {});
+            } else if (what === 'show') {
+              showPiece(more || {});
             } else {
               effect(what);
             }
             return;
           }
           var f = who === 'hero' ? S.hero : who === 'pet' ? S.pet : who === 'speaker' ? S.speaker : null;
+          if (what === 'play') {
+            fromFigure(f, more || {});
+            return;
+          }
           if (f && f.puppet) {
             T.cast.act(f, what);
           }

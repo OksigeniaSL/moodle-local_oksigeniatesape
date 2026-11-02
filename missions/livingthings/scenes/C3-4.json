@@ -228,6 +228,16 @@
   },
   "guardianes": {
    "type": "ending",
+   "acts": [
+    {
+     "who": "place",
+     "do": "play",
+     "sheet": "book",
+     "when": {
+      "valley": "La tabla queda apuntada"
+     }
+    }
+   ],
    "outcome": "success",
    "text": {
     "valley": "La clave funciona: cada ser del patio cae en su casilla, y el murciélago tiene ya la suya. El búho abre un ojo: «Una buena pregunta separa por lo que no cambia. Con esa regla se puede hacer una clave de cualquier sitio: del patio, del barrio, del bosque entero». La tabla queda apuntada en el Gran Libro. {{creature}} prueba la clave consigo misma y no cae en ninguna casilla: todavía no sabe qué es.",

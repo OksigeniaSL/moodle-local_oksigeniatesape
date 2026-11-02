@@ -371,6 +371,14 @@
    "type": "ending",
    "acts": [
     {
+     "who": "place",
+     "do": "play",
+     "sheet": "book",
+     "when": {
+      "valley": "en el Gran Libro aparece"
+     }
+    },
+    {
      "who": "hero",
      "do": "celebrate"
     },
@@ -429,6 +437,14 @@
   "dormida": {
    "type": "ending",
    "acts": [
+    {
+     "who": "place",
+     "do": "play",
+     "sheet": "book",
+     "when": {
+      "valley": "El Gran Libro recupera"
+     }
+    },
     {
      "who": "pet",
      "do": "alert"

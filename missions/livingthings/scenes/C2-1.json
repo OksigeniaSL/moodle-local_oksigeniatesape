@@ -157,6 +157,12 @@
    "type": "ending",
    "acts": [
     {
+     "who": "pet",
+     "do": "play",
+     "sheet": "sneeze",
+     "when": "estornuda tinta"
+    },
+    {
      "who": "hero",
      "do": "celebrate"
     },

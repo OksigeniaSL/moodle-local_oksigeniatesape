@@ -1,11 +1,11 @@
 {
  "code": "livingthings",
- "version": 97,
+ "version": 98,
  "format": 1,
  "world": "valle",
  "art": {
   "pack": "mission-livingthings",
-  "min": 25
+  "min": 26
  },
  "publisher_id": "oksigenia",
  "languages": [
@@ -17,6 +17,12 @@
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 98,
+   "kind": "improvement",
+   "date": "2026-11-02",
+   "text": "Más de lo que cuenta el texto se ve en el lugar: el Gran Libro que se abre y se escribe, la luciérnaga sobre la pista, los dos círculos que brillan y se apagan y el estornudo de la criatura"
+  },
   {
    "version": 97,
    "kind": "improvement",

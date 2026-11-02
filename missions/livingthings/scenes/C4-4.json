@@ -229,6 +229,12 @@
    "type": "ending",
    "acts": [
     {
+     "who": "pet",
+     "do": "play",
+     "sheet": "sneeze.clean",
+     "when": "estornuda y un diente de león"
+    },
+    {
      "who": "hero",
      "do": "celebrate"
     },
@@ -255,6 +261,12 @@
   "cerca": {
    "type": "ending",
    "acts": [
+    {
+     "who": "pet",
+     "do": "play",
+     "sheet": "sneeze.clean",
+     "when": "estornuda y un diente de león"
+    },
     {
      "who": "pet",
      "do": "sniff",

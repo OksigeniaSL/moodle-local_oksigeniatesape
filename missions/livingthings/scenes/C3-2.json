@@ -526,14 +526,25 @@
   },
   "bien": {
    "type": "ending",
+   "image": "bosque-rastro",
    "acts": [
+    {
+     "who": "place",
+     "do": "play",
+     "sheet": "book",
+     "when": {
+      "valley": "vuelve al Gran Libro"
+     }
+    },
     {
      "who": "hero",
      "do": "celebrate"
     },
     {
      "who": "place",
-     "do": "light",
+     "do": "play",
+     "sheet": "firefly",
+     "or": "light",
      "when": {
       "valley": "una luciérnaga se enciende"
      }
@@ -1039,14 +1050,25 @@
   },
   "bien-muda": {
    "type": "ending",
+   "image": "bosque-muda",
    "acts": [
+    {
+     "who": "place",
+     "do": "play",
+     "sheet": "book",
+     "when": {
+      "valley": "vuelve al Gran Libro"
+     }
+    },
     {
      "who": "hero",
      "do": "celebrate"
     },
     {
      "who": "place",
-     "do": "light",
+     "do": "play",
+     "sheet": "firefly",
+     "or": "light",
      "when": {
       "valley": "una luciérnaga se enciende"
      }
@@ -1558,14 +1580,25 @@
   },
   "bien-ave": {
    "type": "ending",
+   "image": "bosque-pluma",
    "acts": [
+    {
+     "who": "place",
+     "do": "play",
+     "sheet": "book",
+     "when": {
+      "valley": "vuelve al Gran Libro"
+     }
+    },
     {
      "who": "hero",
      "do": "celebrate"
     },
     {
      "who": "place",
-     "do": "light",
+     "do": "play",
+     "sheet": "firefly",
+     "or": "light",
      "when": {
       "valley": "una luciérnaga se enciende"
      }

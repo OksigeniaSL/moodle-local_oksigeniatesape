@@ -259,7 +259,9 @@
     },
     {
      "who": "place",
-     "do": "light",
+     "do": "play",
+     "sheet": "circles.on",
+     "or": "light",
      "when": {
       "valley": "brillan en orden sobre el agua"
      }
@@ -299,7 +301,9 @@
    "acts": [
     {
      "who": "place",
-     "do": "dark",
+     "do": "play",
+     "sheet": "circles.off",
+     "or": "dark",
      "when": {
       "valley": "se apagan"
      }

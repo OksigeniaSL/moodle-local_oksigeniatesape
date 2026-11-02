@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.242.0 (2026-11-02)
+
+More of what the text tells, seen where it happens.
+
+- What stands hidden on a painting can be shown at its frame of rest: an act with do: show, for
+  a painting that two scenes share.
+- A sheet of frames can come out of the creature and go away by itself: an act of the creature
+  with do: play.
+- Mission 98: the Great Book opens and writes itself, a firefly lights up over the clue, the two
+  circles shine and go out, and the creature sneezes ink.
+
 ## 0.241.0 (2026-11-02)
 
 What the text tells, seen where it happens.
