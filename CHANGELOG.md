@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.248.1 (2026-11-03)
+
+- The battle on the class screen is scaled as a whole to the screen: as big as the height
+  lets it be, so that it fills it and is read from the back of the class, and never scrolls.
+  Nothing is hidden on a short screen any more (whom the knot goes for, the threads of the
+  Embrollo), and the name of each team has a line of its own.
+
 ## 0.248.0 (2026-11-03)
 
 - The battle fits whole in the screen of a class, without scrolling, at 1280 × 600 (the room a

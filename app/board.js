@@ -1369,7 +1369,8 @@
     var end = l.maxcandles && l.outcome ? ' ' + l.outcome : '';
     app.innerHTML = '<div class="board battle-board' + (hit ? ' shake' : '') + (l.maxcandles ? ' turns' + end : '') +
       (painted ? ' painted' : '') + (Object.keys(inCard).length ? ' reading' : '') + '"' +
-      (tower ? ' style="--tower:url(\'' + esc(tower) + '\')"' : '') + '><header class="board-top">' + T.emblem() +
+      (tower ? ' style="--tower:url(\'' + esc(tower) + '\')"' : '') + '><div class="battle-fit"><header class="board-top">' +
+      T.emblem() +
       '<div><b>' + esc(cfg.coursename) + '</b><small>' +
       esc(t(l.final ? 'board_battle_final' : 'board_battle')) + (l.phase > 1 && !l.outcome ? ' · ' +
       esc(t('board_battle_phase')) : '') + '</small></div><div class="board-tools">' + musicButton() + lightButton() +
@@ -1380,13 +1381,74 @@
       Math.round(100 * life) + '%"></i></span><small>' + esc(t(l.maxcandles ? 'board_turn_threads' : 'board_battle_life')) +
       (l.maxhp ? ': ' + l.hp + ' / ' + l.maxhp : '') + '</small>' + candles(l) + '</div><div class="battle-main">' + main +
       '<div class="actions">' + buttons + '</div></div></div>' +
-      '<div class="battle-teams">' + teams + '</div></div>';
+      '<div class="battle-teams">' + teams + '</div></div></div>';
     battleFx(l);
     bindBattle();
     playOnBoard(l);
     sorting(l);
+    fitBattle();
     liveBattle(l);
   }
+
+  /** How much the battle may shrink to fit the screen, and grow to fill it. */
+  var FIT = {least: 0.5, most: 1.3};
+
+  /**
+   * The battle on the class screen, as big as the screen lets it be: all of it scaled the same, so that it fills the
+   * height there is without scrolling (a classroom board of 1280 × 600 too) and, with room, is read from the back of the
+   * class. It is laid out at the width it is scaled from; what grows inside it later (a picture, a lane) fits it again.
+   */
+  function fitBattle() {
+    var fit = app.querySelector('.battle-fit');
+    if (!fit) {
+      if (state.fitWatch) {
+        state.fitWatch.disconnect();
+        state.fitWatch = null;
+      }
+      return;
+    }
+    var box = window.getComputedStyle(fit.parentNode);
+    var room = window.innerHeight - parseFloat(box.paddingTop) - parseFloat(box.paddingBottom);
+    var tall = function(k) {
+      fit.style.width = (100 / k) + '%';
+      return fit.offsetHeight * k;
+    };
+    // The largest scale at which it fits: the narrower it is laid out, the taller it grows.
+    var k = FIT.most;
+    if (tall(k) > room) {
+      var low = FIT.least;
+      var high = FIT.most;
+      for (var i = 0; i < 8; i++) {
+        k = (low + high) / 2;
+        if (tall(k) > room) {
+          high = k;
+        } else {
+          low = k;
+        }
+      }
+      k = low;
+      tall(k);
+    }
+    fit.style.transform = 'scale(' + k + ')';
+    // What it takes in the page is what is seen of it.
+    fit.style.marginBottom = (fit.offsetHeight * (k - 1)) + 'px';
+    state.fitted = fit.offsetHeight;
+    if (window.ResizeObserver && state.fitWatched !== fit) {
+      if (state.fitWatch) {
+        state.fitWatch.disconnect();
+      }
+      state.fitWatched = fit;
+      state.fitWatch = new window.ResizeObserver(function() {
+        if (fit.isConnected && fit.offsetHeight !== state.fitted) {
+          window.requestAnimationFrame(fitBattle);
+        }
+      });
+      state.fitWatch.observe(fit);
+    }
+  }
+  window.addEventListener('resize', function() {
+    window.requestAnimationFrame(fitBattle);
+  });
 
   /**
    * The verbs used in the turn, one line each; aloud, the trail tells there where the answer is and what comes next.

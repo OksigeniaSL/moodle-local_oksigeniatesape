@@ -12565,13 +12565,25 @@ body.still .board-sorting .lane-items .lane-item {
   gap: 6px;
 }
 
-/* The teams of a battle on the class screen, side by side in one row (two, if there are many): each card with its heroes
-   on top, its name, and under them what it says or is marked. So the whole battle fits in the screen of a class, also on
-   a board of 1280 × 600 (hq shared/pizarras-en-el-aula.md). */
+/* The battle on the class screen is scaled as a whole to the screen (fitBattle() in board.js): as big as the height lets
+   it be, so that it never scrolls (a classroom board of 1280 × 600 included, hq shared/pizarras-en-el-aula.md) and, when
+   there is room, it is read from the back of the class. It is laid out at the width it is scaled from. */
 .battle-board {
   padding-bottom: 16px;
+  overflow-x: hidden;
 }
 
+.battle-fit {
+  transform-origin: 0 0;
+}
+
+/* The Embrollo sets how tall the top of the battle is: a little smaller, and all the rest is seen bigger. */
+.battle-board .battle-boss .embrollo {
+  max-width: 220px;
+}
+
+/* The teams side by side in one row (two, if there are many): each one a column with its heroes on top, its name on a
+   line of its own, how it goes, its knot, and what it says or is marked. */
 .battle-board .battle-teams {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -12587,6 +12599,7 @@ body.still .board-sorting .lane-items .lane-item {
 }
 
 .battle-board .battle-team > .team-heroes,
+.battle-board .battle-team > b,
 .battle-board .battle-team > .pills {
   flex-basis: 100%;
   justify-content: flex-start;
@@ -12636,199 +12649,25 @@ body.battle-live .battle-board .battle-team > .team-heroes {
   color: var(--lantern);
 }
 
-/* A screen that is not tall (a board, a projector): the Embrollo, the question and the heroes, smaller. */
-@media (max-height: 820px) {
-  .board.battle-board {
-    padding-top: 10px;
-  }
-
-  .battle-board .board-top {
-    margin-bottom: 8px;
-  }
-
-  .battle-board .battle-stage {
-    gap: 20px;
-  }
-
-  .battle-board .battle-boss {
-    gap: 6px;
-  }
-
-  .battle-board .battle-boss .embrollo {
-    width: auto;
-    max-height: 24vh;
-  }
-
-  .battle-board .battle-q {
-    font-size: 1.35em;
-    margin: 4px 0 10px;
-  }
-
-  .battle-board-options {
-    gap: 8px;
-  }
-
-  .battle-board-options li {
-    padding: 8px 14px;
-    font-size: 1.1em;
-  }
-
-  body.battle-live .battle-board .battle-team > .team-heroes {
-    height: 52px;
-  }
-
-  .battle-board .team-hero {
-    width: 32px;
-    height: 32px;
-  }
-
-  /* Still big for a finger: a pixel of a board is a big one. */
-  .battle-board .battle-team > .pills .chip {
-    min-height: 34px;
-    padding: 3px 11px;
-    font-size: 14px;
-  }
+/* While each team reads its knot, the Embrollo waits smaller, and the time left and the buttons go on one line. */
+.battle-board.reading .battle-boss .embrollo {
+  width: auto;
+  max-height: 130px;
 }
 
-/* A board of 600 or less (1280 × 600, 960 × 540): the letters a little smaller, still read from the back. */
-@media (max-height: 620px) {
-  .board.battle-board {
-    padding-top: 6px;
-    padding-bottom: 8px;
-    font-size: 14px;
-  }
-
-  .battle-board .board-top {
-    margin-bottom: 4px;
-  }
-
-  .battle-board .battle-teams {
-    margin-top: 10px;
-  }
-
-  .battle-board .battle-boss .embrollo {
-    max-height: 19vh;
-  }
-
-  .battle-board .knot-call {
-    margin: 4px 0 8px;
-  }
-
-  .battle-board .knot-claim {
-    margin-bottom: 8px;
-    padding: 10px 14px;
-    font-size: 18px;
-  }
-
-  .battle-board .knot-name {
-    font-size: 16px;
-  }
-
-  .battle-board .turn-outcome {
-    font-size: 17px;
-  }
-
-  .battle-board .turn-outcome.knot-broken {
-    font-size: 20px;
-  }
-
-  body.battle-live .battle-board .battle-team > .team-heroes {
-    height: 44px;
-  }
-
-  /* Whom the knot goes for is said over the Embrollo and marked under the heroes of the team. */
-  .battle-board .knot-target {
-    display: none;
-  }
-
-  .battle-board .battle-team {
-    padding: 6px 8px;
-  }
-
-  .battle-board .battle-team .team-verbs {
-    gap: 4px;
-  }
-
-  .battle-board .battle-team > .pills .chip {
-    padding: 3px 8px;
-    font-size: 13px;
-  }
+.battle-board.reading .battle-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 18px;
 }
 
-/* While each team reads its knot, on a screen that is not tall: the Embrollo waits small, and the cards have the room. */
-@media (max-height: 820px) {
-  .battle-board.reading .battle-boss .embrollo {
-    max-height: 12vh;
-  }
-
-  .battle-board.reading .battle-team {
-    font-size: 15px;
-  }
-
-  .battle-board.reading .battle-boss > small,
-  .battle-board.reading .battle-boss > .intent-chip {
-    display: none;
-  }
-
-  /* The time left and the buttons, on one line. */
-  .battle-board.reading .battle-main {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px 18px;
-  }
-
-  .battle-board.reading .battle-main > :not(.battle-count):not(.actions):not([data-stageleft]) {
-    flex-basis: 100%;
-  }
-
-  .battle-board.reading .battle-main > p {
-    margin: 0;
-  }
-
-  .battle-board.reading .battle-main > .why {
-    font-size: 1em;
-  }
-
-  /* Once the turn is resolved, each card says only whether its knot was undone and the answer: the question was read. */
-  .battle-board.reading .battle-team > .lane.done > span,
-  .battle-board.reading .battle-team > .lane.failed > span {
-    display: none;
-  }
+.battle-board.reading .battle-main > :not(.battle-count):not(.actions):not([data-stageleft]) {
+  flex-basis: 100%;
 }
 
-@media (max-height: 620px) {
-  .battle-board.reading .battle-team {
-    font-size: 13px;
-  }
-
-  .battle-board.reading .battle-team > b {
-    font-size: 14px;
-  }
-}
-
-/* A small board (960 × 540): its pixels are big ones, about two millimetres each, so a smaller letter is still read from
-   the back of the class. */
-@media (max-height: 620px) and (max-width: 1100px) {
-  .battle-board.reading .battle-team {
-    font-size: 12px;
-  }
-
-  .battle-board.reading .battle-team > .pills .chip {
-    min-height: 30px;
-    padding: 2px 7px;
-    font-size: 12px;
-  }
-
-  .battle-board.reading .battle-team > .lane .lane-options {
-    gap: 0;
-  }
-
-  .battle-board.reading .battle-team .btn {
-    min-height: 32px;
-    padding: 4px 10px;
-    font-size: 12px;
-  }
+.battle-board.reading .battle-main > p {
+  margin: 0;
 }
 
 /* By turns aloud: the options of a lane to choose, for the cards; the one a glance struck out, crossed. */
