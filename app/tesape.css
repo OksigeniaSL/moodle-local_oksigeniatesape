@@ -263,8 +263,10 @@ body.tesape {
   box-shadow: 0 6px 18px rgba(var(--lantern-rgb), .35), inset 0 -2px 0 rgba(0, 0, 0, .15);
 }
 
-.btn-main:hover {
-  box-shadow: 0 8px 26px rgba(var(--lantern-rgb), .5), inset 0 -2px 0 rgba(0, 0, 0, .15);
+@media (hover: hover) {
+  .btn-main:hover {
+    box-shadow: 0 8px 26px rgba(var(--lantern-rgb), .5), inset 0 -2px 0 rgba(0, 0, 0, .15);
+  }
 }
 
 .btn-soft {
@@ -272,8 +274,10 @@ body.tesape {
   border: 1px solid var(--line);
 }
 
-.btn-soft:hover {
-  background: rgba(var(--hi), .14);
+@media (hover: hover) {
+  .btn-soft:hover {
+    background: rgba(var(--hi), .14);
+  }
 }
 
 .btn[disabled] {
@@ -389,9 +393,11 @@ body.tesape {
   transition: transform .15s ease, border-color .15s ease, background .15s ease;
 }
 
-.choice:hover {
-  transform: translateY(-3px);
-  background: rgba(var(--hi), .09);
+@media (hover: hover) {
+  .choice:hover {
+    transform: translateY(-3px);
+    background: rgba(var(--hi), .09);
+  }
 }
 
 .choice[aria-pressed="true"] {
@@ -836,9 +842,14 @@ body.tesape {
   cursor: pointer;
 }
 
-.talent-card:hover,
 .talent-card:focus-visible {
   border-color: var(--lantern);
+}
+
+@media (hover: hover) {
+  .talent-card:hover {
+    border-color: var(--lantern);
+  }
 }
 
 /* The trade on the class screen: the team on its own line, and under it what it lends or to whom. */
@@ -3079,10 +3090,16 @@ body.in-scene {
   cursor: help;
 }
 
-.gloss:hover,
 .gloss:focus-visible {
   background: rgba(var(--lantern-rgb), .2);
   outline: none;
+}
+
+@media (hover: hover) {
+  .gloss:hover {
+    background: rgba(var(--lantern-rgb), .2);
+    outline: none;
+  }
 }
 
 /* Over the picture, not over the text it explains. */
@@ -3152,9 +3169,11 @@ body.in-scene {
   transition: transform .12s ease, border-color .15s ease, background .15s ease;
 }
 
-.opt:hover:not([disabled]),
-.bin:hover:not([disabled]) {
-  background: rgba(var(--hi), .11);
+@media (hover: hover) {
+  .opt:hover:not([disabled]),
+  .bin:hover:not([disabled]) {
+    background: rgba(var(--hi), .11);
+  }
 }
 
 .opt.sel {
@@ -3333,8 +3352,10 @@ body.in-scene {
   fill: transparent;
 }
 
-.map .place:hover .ring {
-  stroke: rgba(255, 255, 255, .7);
+@media (hover: hover) {
+  .map .place:hover .ring {
+    stroke: rgba(255, 255, 255, .7);
+  }
 }
 
 /* Teams, powers and the box of ideas (milestone 3). */
@@ -5711,7 +5732,7 @@ body.adapt-still .nudge {
   cursor: pointer;
 }
 
-.cover-option:has(input:checked) {
+.cover-option.on {
   border-color: var(--accent);
   background: rgba(var(--lantern-rgb), .1);
 }
@@ -6217,9 +6238,14 @@ body.adapt-still .nudge {
   text-decoration: none;
 }
 
-.hud .exit-menu a:hover,
 .hud .exit-menu a:focus {
   background: rgba(var(--hi), .08);
+}
+
+@media (hover: hover) {
+  .hud .exit-menu a:hover {
+    background: rgba(var(--hi), .08);
+  }
 }
 
 /* ---------- The little living things of the world ---------- */
@@ -6414,11 +6440,11 @@ body.adapt-still .nudge {
 /* ---------- A scene played as a team ---------- */
 
 /* With two buttons, they go below the title when there is no room beside it. */
-.item:has(.item-actions) {
+.item.with-actions {
   flex-wrap: wrap;
 }
 
-.item:has(.item-actions) .grow {
+.item.with-actions .grow {
   flex: 1 1 55%;
   min-width: 170px;
 }
@@ -6849,10 +6875,16 @@ body.adapt-colours .opt.wrong::before {
   line-height: inherit;
 }
 
-.errors-text .word:hover,
 .errors-text .word:focus-visible {
   background: rgba(var(--lantern-rgb), .18);
   outline: none;
+}
+
+@media (hover: hover) {
+  .errors-text .word:hover {
+    background: rgba(var(--lantern-rgb), .18);
+    outline: none;
+  }
 }
 
 .errors-text .word.ok {
@@ -7169,8 +7201,10 @@ body.adapt-colours .errors-text .fixed ins {
   cursor: pointer;
 }
 
-.venn-zone:hover {
-  background: rgba(var(--lantern-rgb), .1);
+@media (hover: hover) {
+  .venn-zone:hover {
+    background: rgba(var(--lantern-rgb), .1);
+  }
 }
 
 .venn-zone:disabled {
@@ -8898,6 +8932,7 @@ body.adapt-colours .errors-text .fixed ins {
 
 /* On a wide screen, while no note of the notebook is open, its button goes up beside «Confirmar»: one row less, so that
    what is read starts lower and the figures standing above it are bigger. Only the button covers the row. */
+/* Where :has() is not understood (old board browsers), the hints simply stay below the confirm. */
 @media (min-width: 720px) {
   .scene-layer.live .scene-body.standing:has([data-confirm]:not([hidden])) > .scene-hints:not(:has(.hint)) {
     width: fit-content;
@@ -8928,7 +8963,7 @@ body.adapt-colours .errors-text .fixed ins {
   font-weight: 600;
 }
 
-.scene-layer.live .scene-body:has(> .dlg) {
+.scene-layer.live .scene-body.with-dlg {
   padding: 0;
   overflow: visible;
   border: 0;
@@ -8953,7 +8988,7 @@ body.adapt-colours .errors-text .fixed ins {
   bottom: 6px;
 }
 
-.scene-layer.live .dlg:has(.dlg-face) .dlg-name {
+.scene-layer.live .dlg.with-face .dlg-name {
   left: 106px;
 }
 
@@ -10797,14 +10832,6 @@ body.adapt-still .mission-grid .chapter.as-sheet {
   opacity: .35;
 }
 
-.lanes {
-  display: grid;
-  gap: 8px;
-  margin: 10px 0;
-  padding: 0;
-  list-style: none;
-}
-
 .lane {
   display: grid;
   gap: 2px;
@@ -12526,7 +12553,7 @@ body.still .board-sorting .lane-items .lane-item {
 }
 
 /* By turns aloud: the verbs each team says, on its card, under its name. */
-.battle-team:has(.team-verbs) {
+.battle-team.with-verbs {
   flex-wrap: wrap;
 }
 
@@ -12536,6 +12563,272 @@ body.still .board-sorting .lane-items .lane-item {
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
+}
+
+/* The teams of a battle on the class screen, side by side in one row (two, if there are many): each card with its heroes
+   on top, its name, and under them what it says or is marked. So the whole battle fits in the screen of a class, also on
+   a board of 1280 × 600 (hq shared/pizarras-en-el-aula.md). */
+.battle-board {
+  padding-bottom: 16px;
+}
+
+.battle-board .battle-teams {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.battle-board .battle-team {
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 4px 8px;
+  padding: 8px 12px;
+}
+
+.battle-board .battle-team > .team-heroes,
+.battle-board .battle-team > .pills {
+  flex-basis: 100%;
+  justify-content: flex-start;
+}
+
+body.battle-live .battle-board .battle-team > .team-heroes {
+  min-width: 0;
+}
+
+.battle-board .battle-team .speaker-tag {
+  margin-left: 0;
+  padding-left: 0;
+}
+
+/* The knot of each team, in its card under its name: what it asks, its options, and once resolved whether it was undone. */
+.battle-team > .lane {
+  flex-basis: 100%;
+  gap: 4px;
+  margin-top: 2px;
+  padding: 6px 0 2px;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  background: none;
+  font-size: 1em;
+}
+
+.battle-team > .lane > span {
+  font-weight: 600;
+}
+
+.battle-team > .lane .lane-options {
+  flex-direction: column;
+  gap: 2px;
+  font-size: .95em;
+}
+
+.battle-team > .lane .lane-options b {
+  color: var(--lantern);
+}
+
+.battle-team > .lane small {
+  font-size: .95em;
+}
+
+.battle-team > .lane.done small {
+  color: var(--lantern);
+}
+
+/* A screen that is not tall (a board, a projector): the Embrollo, the question and the heroes, smaller. */
+@media (max-height: 820px) {
+  .board.battle-board {
+    padding-top: 10px;
+  }
+
+  .battle-board .board-top {
+    margin-bottom: 8px;
+  }
+
+  .battle-board .battle-stage {
+    gap: 20px;
+  }
+
+  .battle-board .battle-boss {
+    gap: 6px;
+  }
+
+  .battle-board .battle-boss .embrollo {
+    width: auto;
+    max-height: 24vh;
+  }
+
+  .battle-board .battle-q {
+    font-size: 1.35em;
+    margin: 4px 0 10px;
+  }
+
+  .battle-board-options {
+    gap: 8px;
+  }
+
+  .battle-board-options li {
+    padding: 8px 14px;
+    font-size: 1.1em;
+  }
+
+  body.battle-live .battle-board .battle-team > .team-heroes {
+    height: 52px;
+  }
+
+  .battle-board .team-hero {
+    width: 32px;
+    height: 32px;
+  }
+
+  /* Still big for a finger: a pixel of a board is a big one. */
+  .battle-board .battle-team > .pills .chip {
+    min-height: 34px;
+    padding: 3px 11px;
+    font-size: 14px;
+  }
+}
+
+/* A board of 600 or less (1280 × 600, 960 × 540): the letters a little smaller, still read from the back. */
+@media (max-height: 620px) {
+  .board.battle-board {
+    padding-top: 6px;
+    padding-bottom: 8px;
+    font-size: 14px;
+  }
+
+  .battle-board .board-top {
+    margin-bottom: 4px;
+  }
+
+  .battle-board .battle-teams {
+    margin-top: 10px;
+  }
+
+  .battle-board .battle-boss .embrollo {
+    max-height: 19vh;
+  }
+
+  .battle-board .knot-call {
+    margin: 4px 0 8px;
+  }
+
+  .battle-board .knot-claim {
+    margin-bottom: 8px;
+    padding: 10px 14px;
+    font-size: 18px;
+  }
+
+  .battle-board .knot-name {
+    font-size: 16px;
+  }
+
+  .battle-board .turn-outcome {
+    font-size: 17px;
+  }
+
+  .battle-board .turn-outcome.knot-broken {
+    font-size: 20px;
+  }
+
+  body.battle-live .battle-board .battle-team > .team-heroes {
+    height: 44px;
+  }
+
+  /* Whom the knot goes for is said over the Embrollo and marked under the heroes of the team. */
+  .battle-board .knot-target {
+    display: none;
+  }
+
+  .battle-board .battle-team {
+    padding: 6px 8px;
+  }
+
+  .battle-board .battle-team .team-verbs {
+    gap: 4px;
+  }
+
+  .battle-board .battle-team > .pills .chip {
+    padding: 3px 8px;
+    font-size: 13px;
+  }
+}
+
+/* While each team reads its knot, on a screen that is not tall: the Embrollo waits small, and the cards have the room. */
+@media (max-height: 820px) {
+  .battle-board.reading .battle-boss .embrollo {
+    max-height: 12vh;
+  }
+
+  .battle-board.reading .battle-team {
+    font-size: 15px;
+  }
+
+  .battle-board.reading .battle-boss > small,
+  .battle-board.reading .battle-boss > .intent-chip {
+    display: none;
+  }
+
+  /* The time left and the buttons, on one line. */
+  .battle-board.reading .battle-main {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 18px;
+  }
+
+  .battle-board.reading .battle-main > :not(.battle-count):not(.actions):not([data-stageleft]) {
+    flex-basis: 100%;
+  }
+
+  .battle-board.reading .battle-main > p {
+    margin: 0;
+  }
+
+  .battle-board.reading .battle-main > .why {
+    font-size: 1em;
+  }
+
+  /* Once the turn is resolved, each card says only whether its knot was undone and the answer: the question was read. */
+  .battle-board.reading .battle-team > .lane.done > span,
+  .battle-board.reading .battle-team > .lane.failed > span {
+    display: none;
+  }
+}
+
+@media (max-height: 620px) {
+  .battle-board.reading .battle-team {
+    font-size: 13px;
+  }
+
+  .battle-board.reading .battle-team > b {
+    font-size: 14px;
+  }
+}
+
+/* A small board (960 × 540): its pixels are big ones, about two millimetres each, so a smaller letter is still read from
+   the back of the class. */
+@media (max-height: 620px) and (max-width: 1100px) {
+  .battle-board.reading .battle-team {
+    font-size: 12px;
+  }
+
+  .battle-board.reading .battle-team > .pills .chip {
+    min-height: 30px;
+    padding: 2px 7px;
+    font-size: 12px;
+  }
+
+  .battle-board.reading .battle-team > .lane .lane-options {
+    gap: 0;
+  }
+
+  .battle-board.reading .battle-team .btn {
+    min-height: 32px;
+    padding: 4px 10px;
+    font-size: 12px;
+  }
 }
 
 /* By turns aloud: the options of a lane to choose, for the cards; the one a glance struck out, crossed. */
@@ -12563,7 +12856,7 @@ body.still .board-sorting .lane-items .lane-item {
   justify-self: start;
 }
 
-.lanes .lane > .btn {
+.battle-team > .lane > .btn {
   justify-self: start;
 }
 
@@ -12615,10 +12908,16 @@ body.still .board-sorting .lane-items .lane-item {
   cursor: default;
 }
 
-.museum-spot:not(:disabled):hover,
 .museum-spot:focus-visible {
   outline: 2px solid var(--lantern);
   outline-offset: 1px;
+}
+
+@media (hover: hover) {
+  .museum-spot:not(:disabled):hover {
+    outline: 2px solid var(--lantern);
+    outline-offset: 1px;
+  }
 }
 
 .museum-spot.lit {

@@ -3143,8 +3143,8 @@
         'btn-soft') + '" data-teamscene="' + sc.id + '">' + esc(t('app_team_play')) + '</button>' : '';
     };
     var scenes = ch.scenes.map(function(sc) {
-      return '<li class="item"><span class="grow"><b>' + esc(sc.title) + done(sc) + '</b><small>' + (sc.mode === 'team' ?
-        esc(t('app_team_meant')) : '') + (sc.done && sc.better ? (sc.mode === 'team' ? ' · ' : '') +
+      return '<li class="item with-actions"><span class="grow"><b>' + esc(sc.title) + done(sc) + '</b><small>' +
+        (sc.mode === 'team' ? esc(t('app_team_meant')) : '') + (sc.done && sc.better ? (sc.mode === 'team' ? ' · ' : '') +
         esc(t('app_status_better')) : '') + '</small></span>' +
         // In a past expedition, the free expedition: played alone, for pleasure.
         '<span class="item-actions">' + (past ? '' : together(sc)) + '<button class="btn ' + (!past && isNext('scene', sc.id) ?

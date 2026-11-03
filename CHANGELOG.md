@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.248.0 (2026-11-03)
+
+- The battle fits whole in the screen of a class, without scrolling, at 1280 × 600 (the room a
+  classroom board leaves inside its browser), at 960 × 540 and at 1366 × 768: the teams side by
+  side, each one a column with its heroes, its name, its knot and what it says or is marked;
+  on a screen that is not tall, the Embrollo, the letters and the heroes, smaller. The size of
+  the window can change in the middle of the battle: it goes on where it was.
+- The class screen and its battle, also in the browser of an older board (Firefox 98, on
+  Android 8): nothing needs `:has()` any more, and what only shows while a mouse hovers does not
+  stay stuck after a touch.
+- The button for full screen shows only where the page can take it.
+
 ## 0.247.1 (2026-11-02)
 
 - On a phone, the question of the game and the screens of the battle keep clear of the button

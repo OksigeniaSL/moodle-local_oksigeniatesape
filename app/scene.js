@@ -609,7 +609,8 @@
         T.icon('speak') + '</button>' : '') + (saving ? '' : '<button class="btn btn-soft scene-close" type="button" ' +
         'aria-label="' + esc(t('app_close')) + '">' + T.icon('close') + '</button>') + '</div>' + (opts.team &&
         opts.team.length ? '<p class="team-banner">' + esc(t('app_team_banner')) + '</p>' : '') +
-        '<div class="scene-body" tabindex="-1">' + html + '</div></div>';
+        '<div class="scene-body' + (/^<div class="dlg[ "]/.test(html) ? ' with-dlg' : '') + '" tabindex="-1">' + html +
+        '</div></div>';
       // With the place alive behind, only what is read and touched changes; the world stays.
       var old = layer.querySelector('.scene');
       if (layer.classList.contains('live') && old) {
@@ -1100,7 +1101,9 @@
       if (voices.some(Boolean)) {
         T.fx.fetch(voices.filter(Boolean));
       }
-      var body = show('<div class="dlg">' + stage(n.image, n.speaker) + '<div class="dlg-box">' + (n.speaker && !n.nolabel ?
+      var drawn = stage(n.image, n.speaker);
+      var body = show('<div class="dlg' + (drawn.indexOf('class="dlg-face"') >= 0 ? ' with-face' : '') + '">' + drawn +
+        '<div class="dlg-box">' + (n.speaker && !n.nolabel ?
         '<span class="dlg-name">' + esc(data.speakers[n.speaker] || n.speaker) + '</span>' : '') +
         '<p class="scene-text" data-piece></p><span class="dlg-dots" data-dots aria-hidden="true"></span>' +
         '<div class="actions"><button class="btn btn-main" data-focus data-next></button></div></div></div>');

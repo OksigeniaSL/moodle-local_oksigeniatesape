@@ -831,7 +831,7 @@
     }).join('') + '</ol>';
     app.innerHTML = '<div class="board battle-board nest-board"><header class="board-top">' + T.emblem() + '<div><b>' +
       esc(cfg.coursename) + '</b><small>' + esc(t('board_nest', n.team)) + '</small></div><div class="board-tools">' +
-      musicButton() + lightButton() + '<button class="btn btn-soft" data-full>' + esc(t('board_fullscreen')) + '</button></div>' +
+      musicButton() + lightButton() + fullButton() + '</div>' +
       '</header><div class="battle-stage"><div class="battle-boss"><span class="nest-eggs" role="img" aria-label="' +
       esc(t('board_nest_eggs', n)) + '">' + eggs + '</span></div><div class="battle-main">' + main + '<div class="actions">' +
       buttons + '</div></div></div>' + nets + '</div>';
@@ -917,7 +917,7 @@
     }
     app.innerHTML = '<div class="board battle-board untangle-board"><header class="board-top">' + T.emblem() + '<div><b>' +
       esc(cfg.coursename) + '</b><small>' + esc(t('board_untangle')) + '</small></div><div class="board-tools">' + musicButton() +
-      lightButton() + '<button class="btn btn-soft" data-full>' + esc(t('board_fullscreen')) + '</button></div></header>' +
+      lightButton() + fullButton() + '</div></header>' +
       '<div class="battle-stage"><div class="battle-boss">' + bossArt(l, total ? knots / total : 1) + '</div><div ' +
       'class="battle-main">' + main + '<div class="actions">' + buttons + '</div></div></div>' + (strands ? '<ol class=' +
       '"untangle-strands">' + strands + '</ol>' : '') + '</div>';
@@ -1221,6 +1221,8 @@
     var life = l.maxhp ? l.hp / l.maxhp : 1;
     var main;
     var buttons = '';
+    // The lane of each team, by its id, when it goes in its card.
+    var inCard = {};
     var bm = state.board.mission;
     // The end of the mission, and what the Great Book remembers of the class.
     var ending = l.final && l.outcome === 'won' && bm && bm.ending ? '<p class="battle-ending">' + esc(bm.ending) + '</p>' +
@@ -1260,16 +1262,19 @@
         return x.teamid === state.playing && x.play && !x.played;
       })[0] || null);
       main = '<p class="battle-qround">' + esc(t('board_turn_round', l)) + (l.stage === 'strike' ? ' · ' +
-        esc(t('board_turn_strike', l.knot.name)) : '') + '</p>' + (playing ? boardLane(l, playing) : '<ul class="lanes">' +
-        l.lanes.map(function(lane) {
+        esc(t('board_turn_strike', l.knot.name)) : '') + '</p>' + (playing ? boardLane(l, playing) : '');
+      // The lane of each team goes in its card, under its name: each team, a column with its heroes, its knot and what it
+      // says, so that the whole turn fits in the screen of a class.
+      if (!playing) {
+        l.lanes.forEach(function(lane) {
           var q = lane.question;
           var settled = l.revealed && l.stage !== 'mark';
-          return '<li class="lane' + (settled ? (lane.done ? ' done' : ' failed') : '') +
-            (l.tangled.indexOf(lane.teamid) >= 0 ? ' tangled' : '') + '"><b>' + esc(lane.team) + '</b><span>' +
+          inCard[lane.teamid] = '<div class="lane' + (settled ? (lane.done ? ' done' : ' failed') : '') + '"><span>' +
             esc(q.text) + '</span>' + (aloudTurns(l) ? aloudLane(l, lane) : '') + (settled || (l.revealed && !lane.play) ?
             '<small>' + (settled ? (lane.done ? '✓ ' : '✗ ') : '') + esc(lane.play ? '' : q.options[q.correct] || '') +
-            '</small>' : '') + '</li>';
-        }).join('') + '</ul>');
+            '</small>' : '') + '</div>';
+        });
+      }
       main += tokenLines(l);
       if (l.stage === 'mark') {
         // By turns aloud: the teacher marks each team (those that played on the screen are marked) and resolves it.
@@ -1337,7 +1342,7 @@
       })[0];
       var won = l.stage === 'resolve' && lane && lane.done;
       var shielded = l.stage === 'resolve' && l.shielded && l.targetid === team.id;
-      return '<div class="battle-team' + (l.targetid === team.id && !l.outcome ? ' target' : '') +
+      return '<div class="battle-team' + (l.targetid === team.id && !l.outcome ? ' target' : '') + (say ? ' with-verbs' : '') +
         ((l.tangled || []).indexOf(team.id) >= 0 && !l.outcome ? ' tangled' : '') + (shielded ? ' shielded' : '') +
         ((l.dizzy || []).indexOf(team.id) >= 0 && !l.outcome ? ' dizzy' : '') +
         '" data-teamid="' + team.id + '">' +
@@ -1347,7 +1352,7 @@
         esc(t('board_team_dizzy')) + '</span>' : '') + '<small>' + (l.mode === 'phones' ?
         esc(t('board_battle_joined', team.joined)) + ' · ' : '') + esc(t('board_battle_teamright', team.right)) + '</small>' +
         (team.tactic && l.maxcandles && !l.outcome ? '<span class="tag tactic-tag ' + esc(team.tactic) + '">' +
-        esc(t('app_tactic_' + team.tactic)) + '</span>' : '') + speaker + marks + say + '</div>';
+        esc(t('app_tactic_' + team.tactic)) + '</span>' : '') + speaker + (inCard[team.id] || '') + marks + say + '</div>';
     }).join('');
     // The place of the battle: where the next lantern is to be lit (the last place, for the final battle), painted for
     // the battle; or as the story of the mission paints it (the port of the expedition of Azara); or the tower.
@@ -1362,12 +1367,13 @@
     var painted = l.maxcandles ? T.artUrl(story ? [place + '.' + skin] : [place + '.' + skin, place]) : null;
     var tower = l.maxcandles ? painted || story || T.artUrl(['scene.torre']) : null;
     var end = l.maxcandles && l.outcome ? ' ' + l.outcome : '';
-    app.innerHTML = '<div class="board battle-board' + (hit ? ' shake' : '') + (l.maxcandles ? ' turns' + end : '') + (painted ? ' painted' : '') + '"' +
+    app.innerHTML = '<div class="board battle-board' + (hit ? ' shake' : '') + (l.maxcandles ? ' turns' + end : '') +
+      (painted ? ' painted' : '') + (Object.keys(inCard).length ? ' reading' : '') + '"' +
       (tower ? ' style="--tower:url(\'' + esc(tower) + '\')"' : '') + '><header class="board-top">' + T.emblem() +
       '<div><b>' + esc(cfg.coursename) + '</b><small>' +
       esc(t(l.final ? 'board_battle_final' : 'board_battle')) + (l.phase > 1 && !l.outcome ? ' · ' +
       esc(t('board_battle_phase')) : '') + '</small></div><div class="board-tools">' + musicButton() + lightButton() +
-      '<button class="btn btn-soft" data-full>' + esc(t('board_fullscreen')) + '</button></div></header>' +
+      fullButton() + '</div></header>' +
       '<div class="battle-stage"><div class="battle-boss' +
       (hit ? ' hit' : '') + (laugh ? ' laugh' : '') + '">' + embrolloSays(l) + intentChip(l) + bossArt(l, life) +
       '<span class="meter boss"><i style="width:' +
@@ -2291,6 +2297,16 @@
   function switchLight() {
     T.light.toggle();
     render();
+  }
+
+  /**
+   * The button that takes the bars of the browser away, only where the page can (inside a frame it may not).
+   *
+   * @return {string}
+   */
+  function fullButton() {
+    return document.fullscreenEnabled ? '<button class="btn btn-soft" data-full>' +
+      esc(t('board_fullscreen')) + '</button>' : '';
   }
 
   function fullscreen() {
@@ -3298,8 +3314,8 @@
       esc(cfg.wwwroot + '/local/oksigeniatesape/teach.php?id=' + cfg.courseid) + '">' + esc(t('board_powers', pending)) +
       '</a>' : '') + '<a class="btn btn-soft" href="' + esc(cfg.wwwroot + '/local/oksigeniatesape/teach.php?id=' +
       cfg.courseid) + '">' + esc(t('board_panel')) + '</a>' + toolButtons() + musicButton() + lightButton() +
-      '<button class="btn btn-soft" data-full>' +
-      esc(t('board_fullscreen')) + '</button></div></header>' +
+      fullButton() +
+      '</div></header>' +
       '<div class="board-grid">' + map() + '<div class="board-side">' + todayCard() + openerCard() + eventCard() + battleCard() +
       sceneCard() + teams() + museumCard() + deskCard() + '</div></div>' + bar() + '</div>';
     bind();

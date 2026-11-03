@@ -4007,7 +4007,8 @@
     }).join('');
     // The cover of the course page: each mode with a small drawing of how it looks.
     var covers = ['door', 'card', 'direct', 'menu'].map(function(mode) {
-      return '<label class="cover-option"><input type="radio" name="portal" value="' + mode + '"' +
+      return '<label class="cover-option' + (r.portal === mode ? ' on' : '') + '"><input type="radio" name="portal" value="' +
+        mode + '"' +
         (r.portal === mode ? ' checked' : '') + (editable ? '' : ' disabled') + '><span class="cover-sketch cover-' + mode +
         '" aria-hidden="true"><i></i><b></b><b></b><b></b></span><span class="cover-text"><b>' +
         esc(t('teach_cover_' + mode)) + '</b><small>' + esc(t('teach_cover_' + mode + '_help')) + '</small></span></label>';
@@ -4026,7 +4027,8 @@
     var lookCard = '<h3>' + esc(t('teach_look')) + '</h3><p style="color:var(--text-soft)">' + esc(t('teach_look_help')) +
       '</p><div class="cover-options">' + looks.map(function(look) {
         var shown = look || r.worldlook;
-        return '<label class="cover-option"><input type="radio" name="look" value="' + look + '"' +
+        return '<label class="cover-option' + (r.look === look ? ' on' : '') + '"><input type="radio" name="look" value="' +
+          look + '"' +
           (r.look === look ? ' checked' : '') + (editable ? '' : ' disabled') + '><span class="look-sketch look-' + shown +
           '" aria-hidden="true"><i></i><b></b><b></b></span><span class="cover-text"><b>' + esc(look ? t('teach_look_' + look) :
           t('teach_look_world_' + shown)) + '</b><small>' + esc(t('teach_look_' + shown + '_help')) +
@@ -4155,6 +4157,14 @@
       };
     });
     bindMakeTeams(el);
+    // The option chosen shows as chosen (a class, not :has(), which old board browsers do not understand).
+    el.querySelectorAll('.cover-option input').forEach(function(input) {
+      input.addEventListener('change', function() {
+        el.querySelectorAll('.cover-option input[name="' + input.name + '"]').forEach(function(other) {
+          other.closest('.cover-option').classList.toggle('on', other.checked);
+        });
+      });
+    });
     // The theme of the class is saved and seen as soon as it is chosen.
     el.querySelectorAll('[name="look"]').forEach(function(input) {
       input.onchange = function() {
