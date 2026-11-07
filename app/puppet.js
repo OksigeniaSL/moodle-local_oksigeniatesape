@@ -388,6 +388,9 @@
     });
   };
 
+  /** @var {boolean} Whether puppets cut in pieces are used: not since 7 November 2026 (see find()). */
+  var CUT = false;
+
   T.puppet = {
     /**
      * The puppet cut from a picture of the pack (rig.<its key>), with its atlas, the skeleton of its body and the
@@ -413,6 +416,13 @@
       var sheets = !tone && T.sheet && T.sheet.find(id);
       if (sheets) {
         return {sheets: sheets, body: body};
+      }
+      // A puppet cut from a drawing of one piece is not shown (the common rule of 7 November 2026: limbs are not moved by
+      // cutting a drawing into pieces; on the sheet of gestures of the kit, 98 of the 128 of the packs came apart at a
+      // shoulder, an elbow or a wrist): the drawing, whole, which breathes and sways, until the figure comes with a mesh
+      // that bends.
+      if (!CUT) {
+        return null;
       }
       var key = 'rig.' + picture.replace(/^character\./, '');
       var found = {image: T.artUrl([key]), atlas: T.artUrl([key + '.atlas']), skeleton: T.artUrl(['rig.' + body]),

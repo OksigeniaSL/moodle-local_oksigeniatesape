@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.249.2 (2026-11-07)
+
+- The figures are not moved any more as puppets cut from a drawing of one piece: on the sheet of
+  gestures, most of them came apart at a shoulder, an elbow or a wrist. Each one is its drawing,
+  whole, which breathes, sways and walks, or its model in live 3D where the packs bring one, until
+  it comes with a mesh that bends.
+
 ## 0.249.1 (2026-11-07)
 
 - A scene played in its place, on a phone standing: what is wanted goes in a row of its own under
