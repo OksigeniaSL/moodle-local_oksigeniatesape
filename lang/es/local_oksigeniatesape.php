@@ -26,6 +26,13 @@ defined('MOODLE_INTERNAL') || die();
 
 $string['alreadyowned'] = 'Ya lo tienes, o ya es de tu equipo.';
 $string['app_activities_help'] = 'Actividades del curso que cuentan en el juego. Se abren aquí; al completarlas, ganas lo que dan.';
+$string['app_adventure_done'] = 'Hecho: {$a}';
+$string['app_adventure_verb_healer'] = 'Oído';
+$string['app_adventure_verb_protector'] = 'Mano firme';
+$string['app_adventure_verb_sage'] = 'Lupa';
+$string['app_adventure_verb_scout'] = 'Rastro';
+$string['app_adventure_verb_whom'] = '¿A quién miramos?';
+$string['app_adventure_you'] = 'Tú';
 $string['app_album'] = 'El álbum de la guía de campo';
 $string['app_album_empty'] = 'Todavía no hay cromos: llegarán con las fichas de la guía de campo.';
 $string['app_album_help'] = 'Cromos de tu equipo: {$a->cards} (dorados: {$a->golden}). Fichas de toda la clase: {$a->class}. Cada ficha de la guía de campo es un cromo; si dice qué lugar ocupa la especie en la cadena alimentaria, sale dorado.';

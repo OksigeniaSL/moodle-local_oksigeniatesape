@@ -118,6 +118,12 @@
 
   T.walk = {
     /**
+     * How a figure walks a place, for the other moments that are walked (the adventure of a scene, quest.js): the
+     * nearest point of the ground, the hero and the creature on their way, a step and how far back a point is.
+     */
+    parts: {onGround: onGround, moveHero: moveHero, movePet: movePet, step: step, depthOf: depthOf, inside: inside},
+
+    /**
      * Whether a place can be walked for its encounter here.
      *
      * @param {Object} ch The place, as the world gives it.

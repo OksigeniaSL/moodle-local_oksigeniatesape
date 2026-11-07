@@ -378,6 +378,37 @@ final class scene_runner_test extends \advanced_testcase {
         (new scene_runner($scene))->run(array_merge([['n' => $node, 'look' => 'lombriz']], $events));
     }
 
+    public function test_the_way_of_looking_of_the_role_is_help_that_costs_no_breath(): void {
+        // The barge played in its place: the firm hand of the protector on the bat, before putting it in its place.
+        $scene = autoplayer::scene('C3-3');
+        $events = autoplayer::play($scene);
+        $this->assertNotEmpty($scene['adventure']['nodes']['embarcar']['verbs']['protector']['murcielago']);
+        $at = array_search('murcielago', array_column($events, 'item'), true);
+        $this->assertNotFalse($at);
+        $looked = $events;
+        array_splice($looked, $at, 0, [['n' => 'embarcar', 'verb' => 'murcielago']]);
+        $plain = (new scene_runner($scene, [], [], [], 'protector'))->run($events);
+        $helped = (new scene_runner($scene, [], [], [], 'protector'))->run($looked);
+        // The same ending and points, no breath for it, and the bat right at the first try, with help.
+        $this->assertSame($plain['ending'], $helped['ending']);
+        $this->assertSame($plain['points'], $helped['points']);
+        $this->assertSame($plain['hints'], $helped['hints']);
+        $this->assertSame(($plain['objectives']['SV-04']['helped'] ?? 0) + 1, $helped['objectives']['SV-04']['helped']);
+        // Twice the same thing, a thing the scene has no clue of, or a student without a role, is not a play.
+        $twice = $looked;
+        array_splice($twice, $at, 0, [['n' => 'embarcar', 'verb' => 'murcielago']]);
+        $unknown = $events;
+        array_splice($unknown, $at, 0, [['n' => 'embarcar', 'verb' => 'lombriz']]);
+        foreach ([[$twice, 'protector'], [$unknown, 'protector'], [$looked, '']] as [$play, $role]) {
+            try {
+                (new scene_runner($scene, [], [], [], $role))->run($play);
+                $this->fail('a way of looking that does not fit was taken');
+            } catch (\moodle_exception $e) {
+                $this->assertSame('invalidscenepath', $e->errorcode);
+            }
+        }
+    }
+
     public function test_aided_plays_leave_the_hard_things_out(): void {
         $scene = autoplayer::scene('C2-2');
         $events = autoplayer::play($scene);

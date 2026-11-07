@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.249.0 (2026-11-07)
+
+- A scene can be played in its place, as an adventure (`adventure` in the scene): the hero walks
+  the painting of the place and does what is decided there with their hands, instead of choosing
+  among buttons of text. A thing to sort is dragged, or touched and then its place, and it goes
+  there; in its place it stays, in another it complains, in its own voice, and goes back. A being
+  in trouble is carried to where it gets better (or worse). The way to go is pointed on the
+  painting. Who lives in the place says what is wanted, up there and aloud, and answers in a
+  line. The nodes, their events, the ending and what is won are those of the scene, and the
+  server plays it again as always; going to the list plays it as before.
+- The role is a way of looking in the place: the lens of the sage, the ear of the healer (the
+  being tells), the trail of the scout and the firm hand of the protector, with a clue of its own
+  for each thing, which counts as help for that thing but costs no breath; where the scene has an
+  option for the role, it is its way out.
+- «The barge of the expedition» is played at the landing stage: seven passengers to put in their
+  compartments, the salamander that dries out, which way to cross, and the barge sets off with
+  everybody on it (mission 100).
+
 ## 0.248.1 (2026-11-03)
 
 - The battle on the class screen is scaled as a whole to the screen: as big as the height

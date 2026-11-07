@@ -28,8 +28,8 @@ final class page {
     /** @var array Scripts of each app, after the core. */
     private const SCRIPTS = [
         'game' => ['fx', 'critters', 'scene', 'minigame', 'nest', 'errors', 'whack', 'venn', 'whoami', 'guesswho', 'terrarium', 'leaf', 'chain',
-            'burst', 'stage', 'puppet', 'sheet', 'model3d', 'cast', 'walk', 'sceneworld', 'nestworld', 'game', 'exercises', 'battle',
-            'huddle'],
+            'burst', 'stage', 'puppet', 'sheet', 'model3d', 'cast', 'walk', 'adventure', 'sceneworld', 'nestworld', 'game', 'exercises',
+            'battle', 'huddle'],
         'teach' => ['fx', 'scene', 'workshop', 'author', 'teach'],
         'board' => ['fx', 'critters', 'scene', 'stage', 'puppet', 'sheet', 'model3d', 'cast', 'sceneworld', 'battleworld', 'exercises',
             'board'],

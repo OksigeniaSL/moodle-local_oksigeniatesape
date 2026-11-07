@@ -373,6 +373,12 @@
     var huddleIds = [];
     // The place alive behind the scene (sceneworld.js), when it can be: what it is told waits until it is ready.
     var live = null;
+    // The scene played in its place, as an adventure (adventure.js), when it brings it: it plays the nodes it can, and the
+    // ending it already told there is not told again.
+    var adventure = null;
+    var toldInPlace = null;
+    // Where the adventure ended up (the other shore): the painting of the place alive for its ending.
+    var arrivedAt = null;
     var liveQueue = null;
     // What is read grows (what the world says after a decision): the figures move up to stand above it.
     var roomWatch = null;
@@ -409,7 +415,8 @@
       layer.insertBefore(holder, layer.firstChild);
       layer.classList.add('live');
       // In class, the hero is the whole class: no figure of its own, only the place and who speaks.
-      T.sceneWorld.open(holder, {world: cm ? {} : world, image: T.artUrl(pictureKeys(sceneImage(), data)), still: !T.moves()})
+      T.sceneWorld.open(holder, {world: cm ? {} : world, image: (arrivedAt && T.artUrl(['scene.' + arrivedAt])) ||
+        T.artUrl(pictureKeys(sceneImage(), data)), still: !T.moves()})
       .then(function(w) {
         if (!liveQueue) {
           w.close();
@@ -991,6 +998,22 @@
 
     function next() {
       var n = sc.nodes[run.node];
+      // In the place of the scene: what it plays there, and at the end the crossing, before the ending is kept.
+      if (adventure && n.type === 'ending') {
+        var leaving = adventure;
+        adventure = null;
+        leaving.finish(run.node, n, function(told, arrive) {
+          toldInPlace = told ? n : null;
+          arrivedAt = arrive || null;
+          liven();
+          ending(n);
+        });
+        return;
+      }
+      if (adventure && n.type !== 'branch' && adventure.plays(run.node, n)) {
+        adventure.play(run.node, n, run, go);
+        return;
+      }
       if (!n.lineup && n.type !== 'branch') {
         alive('lineup', null);
       }
@@ -3724,9 +3747,49 @@
       var again = body.querySelector('[data-replay]');
       if (again) {
         again.onclick = function() {
-          start();
+          if (adventurable()) {
+            unliven(adventuring);
+          } else {
+            start();
+          }
         };
       }
+    }
+
+    /**
+     * Whether this scene is played in its place, as an adventure: a student on their own, in a scene that brings it.
+     *
+     * @return {boolean}
+     */
+    function adventurable() {
+      return !opts.preview && !cm && !opts.huddle && !(opts.team && opts.team.length) && !opts.noadventure && !!T.adventure &&
+        T.adventure.can(sc);
+    }
+
+    /**
+     * The scene in its place: the adventure plays its nodes, and this player keeps what is done and the ending. Going to
+     * the list, or if the place cannot open, the scene as always.
+     */
+    function adventuring() {
+      arrivedAt = null;
+      var asItWas = function() {
+        adventure = null;
+        liven();
+        start(null);
+      };
+      T.adventure.open({data: data, sc: sc, world: world, tx: tx, has: has, name: myName(), creature: creatureName(),
+        onlist: asItWas,
+        onclose: function() {
+          adventure = null;
+          close();
+        }
+      }).then(function(a) {
+        adventure = a;
+        start(null);
+      }).catch(function(e) {
+        window.console.error(e);
+        asItWas();
+      });
     }
 
     /**
@@ -3883,7 +3946,7 @@
             return o.correct !== true;
           });
         }
-        tell({text: told, image: n.image, speaker: quoted, nolabel: true, acts: n.acts}, function() {
+        var won = function() {
           var body = show(pet + hatch + levelup + (lines.length ? '<div class="conseq good loot"><span class="what">' +
             esc(t('app_forcharacter')) + '</span><ul>' + lines.map(function(line, i) {
               return '<li style="--i: ' + i + '">' + esc(line) + '</li>';
@@ -3892,7 +3955,14 @@
             '<button class="btn btn-main" data-focus data-map>' + esc(t('app_backtomap')) + '</button>' + replay(result) :
             '<button class="btn btn-main" data-focus data-retry>' + esc(t('app_tryagain')) + '</button>') + '</div>');
           ended(body, result, r, n);
-        });
+        };
+        // Told already in the place, by who lives there: what was won comes at once.
+        if (toldInPlace === n) {
+          toldInPlace = null;
+          won();
+        } else {
+          tell({text: told, image: n.image, speaker: quoted, nolabel: true, acts: n.acts}, won);
+        }
       }).catch(function(e) {
         caught(e, n);
       });
@@ -4003,6 +4073,10 @@
         data.flags = JSON.parse(d.flags || '[]');
         data.pictures = JSON.parse(d.pictures || '{}');
         sc = JSON.parse(d.definition);
+        if (adventurable()) {
+          adventuring();
+          return;
+        }
         liven();
         if (T.fx) {
           // The soft sound of the place of the scene.

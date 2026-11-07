@@ -29,6 +29,8 @@ namespace local_oksigeniatesape\local;
  *   free by the help that comes by itself when the student stays still (it is help all the same).
  * - {"n": node, "look": id} for each option, item or step looked at with its tool, before answering that node.
  * - {"n": node, "sniff": 1} when the creature of the student sniffs a choice before it is answered (see sniffs()).
+ * - {"n": node, "verb": id} for each thing looked at with the way of looking of the student's role, in a scene played in
+ *   its place (`adventure`: the lens, the ear, the trail, the firm hand), before answering that node; help for that thing.
  *
  * What a character brings changes what can be done: the items they carry, the roles of their team, the flags other
  * scenes of the mission left (what they did there) and their own role. The protector's shield stops the points lost to
@@ -76,6 +78,9 @@ final class scene_runner {
 
     /** @var array Node => [option, item or step looked at => true]. */
     private array $looks = [];
+
+    /** @var array Things looked at with the way of looking of the role, in the place of the scene: node => id => true. */
+    private array $verbs = [];
 
     /** @var array Node => the option the creature struck out sniffing: once a play. */
     private array $sniffed = [];
@@ -768,7 +773,13 @@ final class scene_runner {
     private function take(string $node): array {
         $event = array_shift($this->events);
         // The hints opened and what was looked at before answering: each one of the node, once.
-        while (is_array($event) && (isset($event['hint']) || isset($event['look']) || isset($event['sniff']))) {
+        $aside = fn($e) => is_array($e) && (isset($e['hint']) || isset($e['look']) || isset($e['sniff']) || isset($e['verb']));
+        while ($aside($event)) {
+            if (isset($event['verb'])) {
+                $this->verb($node, $event);
+                $event = array_shift($this->events);
+                continue;
+            }
             if (isset($event['look'])) {
                 $this->look($node, $event);
                 $event = array_shift($this->events);
@@ -826,6 +837,23 @@ final class scene_runner {
     }
 
     /**
+     * A thing of the node looked at with the way of looking of the student's role, in the place of the scene: what it
+     * finds is a clue of the role for that thing, so it counts as help for it, as the lens does, but it costs no breath:
+     * it is how that role plays. Once each, and only what the scene has a clue of for that role.
+     *
+     * @param string $node
+     * @param array $event
+     */
+    private function verb(string $node, array $event): void {
+        $id = (string) $event['verb'];
+        $clues = $this->scene['adventure']['nodes'][$node]['verbs'][$this->role] ?? null;
+        if (($event['n'] ?? null) !== $node || !is_array($clues) || !isset($clues[$id]) || isset($this->verbs[$node][$id])) {
+            $this->fail('nothing to look at in ' . $node);
+        }
+        $this->verbs[$node][$id] = true;
+    }
+
+    /**
      * The creature of the student sniffs a choice before it is answered: it strikes out one option that is clearly not
      * it. Once a play, only with the creature hatched, and only where the scene lets it.
      *
@@ -880,7 +908,7 @@ final class scene_runner {
             return;
         }
         $this->methods[$node] = false;
-        if (empty($this->looks[$node])) {
+        if (empty($this->looks[$node]) && empty($this->verbs[$node])) {
             return;
         }
         $ok = 0;
@@ -960,7 +988,8 @@ final class scene_runner {
      */
     private function helped(string $node, string $thing = ''): bool {
         return !empty($this->hints[$node]) || isset($this->sniffed[$node]) ||
-            ($thing !== '' ? isset($this->looks[$node][$thing]) : !empty($this->looks[$node]));
+            ($thing !== '' ? isset($this->looks[$node][$thing]) || isset($this->verbs[$node][$thing]) :
+            !empty($this->looks[$node]) || !empty($this->verbs[$node]));
     }
 
     /**

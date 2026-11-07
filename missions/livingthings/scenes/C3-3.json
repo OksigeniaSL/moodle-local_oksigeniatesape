@@ -384,5 +384,313 @@
    ]
   }
  },
+ "adventure": {
+  "place": "barcaza-lago",
+  "ambient": "lago",
+  "arrive": "lago",
+  "title": "El embarcadero",
+  "speaker": {
+   "who": "barquero",
+   "at": [
+    300,
+    398
+   ],
+   "tall": 168,
+   "face": 1
+  },
+  "walk": [
+   [
+    250,
+    598
+   ],
+   [
+    440,
+    580
+   ],
+   [
+    700,
+    590
+   ],
+   [
+    960,
+    602
+   ],
+   [
+    1130,
+    612
+   ],
+   [
+    1150,
+    700
+   ],
+   [
+    1135,
+    798
+   ],
+   [
+    40,
+    798
+   ],
+   [
+    40,
+    660
+   ],
+   [
+    150,
+    615
+   ]
+  ],
+  "start": [
+   120,
+   740
+  ],
+  "boat": {
+   "center": [
+    790,
+    300
+   ],
+   "depth": 400,
+   "deck": {
+    "from": [
+     330,
+     600
+    ],
+    "hero": [
+     405,
+     262,
+     0.42
+    ],
+    "pet": [
+     455,
+     268,
+     0.42
+    ],
+    "speaker": [
+     1178,
+     276,
+     0.88
+    ]
+   }
+  },
+  "nodes": {
+   "intro": {
+    "say": [
+     "¿Vas a cruzar? Pues échame una mano: no zarpo hasta que cada pasajero vaya donde aguanta el viaje.",
+     "Mira los dibujos de la barca: cada compartimento tiene el suyo. Y ojo, que algunos pasajeros engañan."
+    ]
+   },
+   "embarcar": {
+    "play": "board",
+    "goal": "Sube a cada pasajero a su compartimento",
+    "spots": {
+     "peces": [
+      482,
+      238
+     ],
+     "anfibios": [
+      612,
+      247
+     ],
+     "reptiles": [
+      745,
+      256
+     ],
+     "aves": [
+      875,
+      264
+     ],
+     "mamiferos": [
+      975,
+      271
+     ],
+     "invertebrados": [
+      1062,
+      262
+     ]
+    },
+    "wait": {
+     "murcielago": [
+      360,
+      612
+     ],
+     "pinguino": [
+      500,
+      606
+     ],
+     "delfin": [
+      655,
+      548,
+      "water"
+     ],
+     "tortuga": [
+      790,
+      620
+     ],
+     "salamandra": [
+      915,
+      626
+     ],
+     "caballito": [
+      1005,
+      552,
+      "water"
+     ],
+     "arana": [
+      1075,
+      630
+     ]
+    },
+    "tall": {
+     "murcielago": 125,
+     "pinguino": 150,
+     "delfin": 120,
+     "tortuga": 115,
+     "salamandra": 85,
+     "caballito": 120,
+     "arana": 85
+    },
+    "pictures": {
+     "tortuga": "being.tortugamarina"
+    },
+    "idle": "Vivir en el agua no hace pez a nadie. ¿Cómo respira cada uno?",
+    "right": [
+     "Ese va bien.",
+     "Bien puesto.",
+     "Ahí viajará tranquilo."
+    ],
+    "wrong": [
+     "Por algo protesta.",
+     "Ahí no aguanta el viaje.",
+     "Fíjate en cómo es, no en dónde vive."
+    ],
+    "done": "¡Todos a bordo!",
+    "protest": {
+     "murcielago": "¡Vuelo, pero tengo pelo, no plumas!",
+     "pinguino": "¡Tengo plumas y pico, aunque no sepa volar!",
+     "delfin": "¡Este no es mi sitio! Tengo pulmones, y mis crías toman leche.",
+     "tortuga": "Vivo en el mar, pero mi piel es seca y con escamas.",
+     "salamandra": "Mi piel es húmeda y fina, sin escamas. Aquí no aguanto.",
+     "caballito": "¡Yo respiro con branquias, aunque no lo parezca!",
+     "arana": "¡Pero si yo no tengo ni un hueso!"
+    },
+    "verbs": {
+     "sage": {
+      "murcielago": "Tiene pelo por todo el cuerpo, y las alas son de piel.",
+      "pinguino": "Mira: plumas pequeñitas por todo el cuerpo.",
+      "delfin": "Piel lisa, sin escamas, y un agujero encima de la cabeza.",
+      "tortuga": "Escamas duras y secas, hasta en las aletas.",
+      "salamandra": "Piel brillante y húmeda, sin una sola escama.",
+      "caballito": "Tiene branquias a los lados de la cabeza, y aletas finísimas.",
+      "arana": "Ocho patas, y una cubierta dura por fuera. Por dentro, ni un hueso."
+     },
+     "healer": {
+      "murcielago": "Mis crías toman leche de mí, como tú de pequeño.",
+      "pinguino": "Pongo huevos, y los caliento entre mis patas.",
+      "delfin": "Subo a respirar aire, y mis crías toman leche.",
+      "tortuga": "Respiro aire, y pongo mis huevos en la arena de la playa.",
+      "salamandra": "De pequeña vivía en el agua. Ahora respiro también por la piel.",
+      "caballito": "Yo respiro el agua con mis branquias. Nunca subo a por aire.",
+      "arana": "Por dentro soy blandita: lo duro lo llevo por fuera."
+     },
+     "scout": {
+      "murcielago": "Pelos sueltos en la viga donde duerme colgado.",
+      "pinguino": "Plumas sueltas por la orilla, y huellas de dos patas.",
+      "delfin": "Burbujas en el agua: cada poco sube a por aire.",
+      "tortuga": "Un rastro en la arena de la playa, hasta un nido de huevos.",
+      "salamandra": "Un rastro mojado, y huevos en el agua, entre las hierbas.",
+      "caballito": "Nunca sube a la superficie: respira debajo del agua.",
+      "arana": "Un hilo de seda, y una piel dura vacía: la deja al crecer."
+     },
+     "protector": {
+      "murcielago": "Calentito y peludo. Por dentro noto sus huesos.",
+      "pinguino": "Suave, de plumas, y con el pico duro.",
+      "delfin": "Piel lisa y caliente, sin escamas.",
+      "tortuga": "Fría y seca, con escamas duras por todas partes.",
+      "salamandra": "Fría, húmeda y suave. Cuidado, que se seca.",
+      "caballito": "Duro como una armadura, pero con huesos dentro, y aletas.",
+      "arana": "Blandita por dentro, dura por fuera. Ni un hueso."
+     }
+    }
+   },
+   "lastimada": {
+    "play": "rescue",
+    "goal": "Ayuda a la salamandra",
+    "being": "salamandra",
+    "at": [
+     720,
+     624
+    ],
+    "say": "Espera… Esa salamandra se está quedando seca. Así no aguanta el viaje.",
+    "spots": {
+     "agua": {
+      "at": [
+       560,
+       590
+      ],
+      "look": "water"
+     },
+     "sol": {
+      "at": [
+       930,
+       700
+      ],
+      "look": "sun"
+     }
+    },
+    "verbs": {
+     "protector": "guardia",
+     "healer": "cuidar",
+     "sage": "recordar",
+     "scout": "rastro"
+    },
+    "who": {
+     "guardia": "hero",
+     "cuidar": "hero",
+     "recordar": "hero",
+     "rastro": "hero"
+    },
+    "lines": {
+     "agua": "Eso es: con la piel mojada se espabila.",
+     "sol": "¡Al sol no, que se le agrieta la piel! Trae, que la mojo yo.",
+     "guardia": "Yo la cuido: que nadie la pise, y con las manos mojadas, a la sombra.",
+     "cuidar": "Primero, con calma. La pata solo tiene un rasguño: lo urgente es su piel.",
+     "recordar": "Las salamandras viven bajo las piedras, cerca del agua. Necesita humedad.",
+     "rastro": "Sus huellas iban hacia el agua, y se cortan aquí: ¡buscaba humedad!"
+    },
+    "back": "Mucho mejor. ¡Ahora sí, nos vamos!"
+   },
+   "rumbo": {
+    "play": "route",
+    "goal": "Elige por dónde cruzar",
+    "say": "¿Por dónde cruzamos: pegados a los juncos o por el centro?",
+    "ways": {
+     "juncos": {
+      "at": [
+       1270,
+       222
+      ],
+      "label": "Por los juncos"
+     },
+     "centro": {
+      "at": [
+       820,
+       140
+      ],
+      "label": "Por el centro"
+     }
+    },
+    "lines": {
+     "juncos": "Despacio, entre los juncos. Mira: nidos escondidos, y una rana que nos mira.",
+     "centro": "Por el centro vamos más deprisa. ¡Mira, un pez ha saltado!"
+    }
+   },
+   "llegada": {
+    "say": "Ni un mareo ni una queja. ¡Así da gusto cruzar!"
+   },
+   "protesta": {
+    "say": "Hemos llegado, pero alguien ha protestado todo el viaje. Otro día, cada uno a su sitio a la primera."
+   }
+  }
+ },
  "method": "SV-07"
 }

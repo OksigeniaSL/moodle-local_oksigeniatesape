@@ -26,6 +26,13 @@ defined('MOODLE_INTERNAL') || die();
 
 $string['alreadyowned'] = 'You already have it, or your team does.';
 $string['app_activities_help'] = 'Activities of the course that count in the game. They open here; when you complete them, you get what they give.';
+$string['app_adventure_done'] = 'Done: {$a}';
+$string['app_adventure_verb_healer'] = 'Ear';
+$string['app_adventure_verb_protector'] = 'Firm hand';
+$string['app_adventure_verb_sage'] = 'Lens';
+$string['app_adventure_verb_scout'] = 'Trail';
+$string['app_adventure_verb_whom'] = 'Who shall we look at?';
+$string['app_adventure_you'] = 'You';
 $string['app_album'] = 'The album of the field guide';
 $string['app_album_empty'] = 'No cards yet: they come with the entries of the field guide.';
 $string['app_album_help'] = 'Cards of your team: {$a->cards} (golden: {$a->golden}). Entries of the whole class: {$a->class}. Each entry of the field guide is a card; if it says what place the species takes in a food chain, it is golden.';

@@ -1104,6 +1104,72 @@ body.stage-open {
   background: #ffc857;
 }
 
+/* A scene played in its place (adventure.js): what is wanted, up there, and the way of looking of the role, at hand. */
+.adventure-goal {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  padding: 6px 8px 6px 14px;
+  border: 2px solid #ffc857;
+  border-radius: 999px;
+  background: rgba(15, 33, 49, .88);
+  color: #fff1bd;
+  font-size: .95rem;
+}
+
+.adventure-goal:empty,
+.adventure-goal b:empty {
+  display: none;
+}
+
+.adventure-goal .stage-prints {
+  padding: 4px 6px;
+  background: none;
+}
+
+.adventure-verb {
+  position: absolute;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: max(16px, env(safe-area-inset-bottom));
+}
+
+.adventure-verb[hidden] {
+  display: none;
+}
+
+.adventure-verb .btn {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  min-height: 56px;
+  padding: 8px 18px 8px 12px;
+  border: 3px solid #ffc857;
+  border-radius: 999px;
+  background: rgba(15, 33, 49, .92);
+  color: #fff1bd;
+  font-size: 1.05rem;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .35);
+}
+
+.adventure-verb .btn .icon,
+.adventure-verb .btn svg {
+  width: 32px;
+  height: 32px;
+}
+
+.adventure-verb.armed .btn {
+  background: #ffc857;
+  color: #0f2131;
+}
+
+@media (max-width: 900px) {
+  /* Above the words said, not over them. */
+  .adventure-verb {
+    bottom: calc(max(16px, env(safe-area-inset-bottom)) + 92px);
+  }
+}
+
 .stage-say {
   position: absolute;
   left: 50%;

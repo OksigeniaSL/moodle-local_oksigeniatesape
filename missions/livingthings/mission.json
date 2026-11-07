@@ -1,6 +1,6 @@
 {
  "code": "livingthings",
- "version": 99,
+ "version": 100,
  "format": 1,
  "world": "valle",
  "art": {
@@ -17,6 +17,12 @@
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 100,
+   "kind": "improvement",
+   "date": "2026-11-07",
+   "text": "«La barcaza de la expedición» se juega en el embarcadero: subes a cada pasajero a su compartimento, ayudas a la salamandra y eliges por dónde cruzar, y la barca zarpa"
+  },
   {
    "version": 99,
    "kind": "improvement",
