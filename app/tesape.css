@@ -1170,6 +1170,28 @@ body.stage-open {
   }
 }
 
+@media (max-width: 720px) {
+  /* On a narrow screen, what is wanted goes in a row of its own, under the way out and the list: all of it in sight. */
+  .stage-top {
+    flex-wrap: wrap;
+  }
+
+  .stage-top .stage-hud {
+    order: 5;
+    flex: 1 1 100%;
+    display: flex;
+    justify-content: center;
+    min-width: 0;
+  }
+
+  .adventure-goal {
+    max-width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+    text-align: center;
+  }
+}
+
 .stage-say {
   position: absolute;
   left: 50%;

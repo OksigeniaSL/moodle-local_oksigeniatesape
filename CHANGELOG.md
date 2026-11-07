@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.249.1 (2026-11-07)
+
+- A scene played in its place, on a phone standing: what is wanted goes in a row of its own under
+  the way out and the list, so that all of it is on the screen, and more of the place is seen, in
+  the middle, between what is up and what is said.
+
 ## 0.249.0 (2026-11-07)
 
 - A scene can be played in its place, as an adventure (`adventure` in the scene): the hero walks

@@ -824,10 +824,17 @@
         S.camAt = {x: W / 2, y: H / 2};
         S.fit = function() {
           var cam = S.cameras.main;
-          S.zoom = Math.max(S.scale.width / W, S.scale.height / H);
+          var w = S.scale.width;
+          var h = S.scale.height;
+          // Lying, the place fills the screen; standing (a phone), more of it is seen, between what is up and what is
+          // said, and the rest of the screen is the colour of the night.
+          S.zoom = h > w ? Math.max(w / W * 1.7, h / H * 0.62) : Math.max(w / W, h / H);
           cam.setZoom(S.zoom);
-          cam.setBounds(0, 0, W, H);
+          // Taller than the place: it stands in the middle, with the night above and below.
+          var tall = h / S.zoom;
+          cam.setBounds(0, tall > H ? (H - tall) / 2 : 0, W, Math.max(H, tall));
         };
+        S.cameras.main.setBackgroundColor('#0f2131');
         S.fit();
         S.scale.on('resize', S.fit);
         S.cameras.main.centerOn(W / 2, H / 2);
@@ -1711,7 +1718,7 @@
           // The camera: if the place is wider than the screen, it follows what happens, softly.
           var cam = S.cameras.main;
           var view = cam.worldView;
-          if (view.width < W - 2 || view.height < H - 2) {
+          if (view.width < W - 2 || view.height < H - 2 || view.height > H + 2) {
             var focus = S.press && S.press.drag ? S.press.b : S.carried || S.hero;
             var fx = S.riders && S.riders.length ? S.boat.x : focus.x;
             var fy = S.riders && S.riders.length ? S.boat.y : focus.y - 120;
