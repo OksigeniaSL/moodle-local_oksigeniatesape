@@ -1078,6 +1078,7 @@ body.stage-open {
   border: 2px solid #ffc857;
   background: rgba(15, 33, 49, .85);
   color: #fff1bd;
+  white-space: nowrap;
 }
 
 .stage-top .btn svg {
@@ -1184,11 +1185,32 @@ body.stage-open {
     min-width: 0;
   }
 
+  /* The name of the place gives way, so the list and the way out stay in the first row. */
+  .stage-top h2 {
+    flex: 1 1 0;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
   .adventure-goal {
     max-width: 100%;
     flex-wrap: wrap;
     justify-content: center;
     text-align: center;
+  }
+}
+
+@media (max-width: 420px) {
+  /* A small phone standing: lighter buttons up there, so the name of the place still fits beside them. */
+  .stage-top .btn {
+    padding: 6px 10px;
+    font-size: .9rem;
+  }
+
+  .stage-top h2 {
+    font-size: .95rem;
   }
 }
 
@@ -6854,14 +6876,35 @@ body.adapt-colours .opt.wrong::before {
     backdrop-filter: none;
   }
 
-  .hud,
+  /* Without the blur, opaque: the text that passes behind them does not show through. */
+  .hud {
+    background: rgb(var(--night-rgb));
+    backdrop-filter: none;
+  }
+
   .tabs {
+    background: linear-gradient(0deg, rgb(var(--deep-rgb)), rgb(var(--night-rgb)));
     backdrop-filter: none;
   }
 
   .glow .creature {
     animation: tesape-breathe 3.6s ease-in-out infinite;
     filter: drop-shadow(0 0 8px rgba(var(--lantern-rgb), .8));
+  }
+}
+
+/* Browsers without the blur (Firefox before 103, on the boards of many classrooms): as on tablets. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .card {
+    background: linear-gradient(180deg, var(--card-a), var(--card-b)), rgba(var(--night-rgb), .6);
+  }
+
+  .hud {
+    background: rgb(var(--night-rgb));
+  }
+
+  .tabs {
+    background: linear-gradient(0deg, rgb(var(--deep-rgb)), rgb(var(--night-rgb)));
   }
 }
 

@@ -71,6 +71,35 @@ final class portal_test extends \advanced_testcase {
         regions::save($course->id, ['portal' => 'banner']);
     }
 
+    public function test_a_guest_sees_the_game_and_how_to_come_in(): void {
+        $this->resetAfterTest();
+        $course = $this->getDataGenerator()->create_course();
+        // The game off: a guest sees nothing of it.
+        $this->setGuestUser();
+        $this->assertSame('', portal::cover($course));
+        // On: the map, the mission, where the class is and the way to log in; nothing to play or to teach.
+        regions::save($course->id, ['enabled' => 1]);
+        missions::install($course->id, 'livingthings', 'valley', 'es');
+        $cover = portal::cover($course);
+        $this->assertStringContainsString('tesape-card', $cover);
+        $this->assertStringContainsString('Claro del Despertar', $cover);
+        $this->assertStringContainsString(get_string('portal_guest', 'local_oksigeniatesape'), $cover);
+        $this->assertStringContainsString(get_string('portal_guest_login', 'local_oksigeniatesape'), $cover);
+        $this->assertStringContainsString('/login/index.php', $cover);
+        $this->assertStringNotContainsString('play.php', $cover);
+        $this->assertStringNotContainsString('teach.php', $cover);
+        $this->assertFalse(portal::goes_straight_in($course->id));
+        // The big door, if the teacher wants it; only in the menu, nothing.
+        regions::save($course->id, ['portal' => 'door']);
+        $this->assertStringContainsString('tesape-door', portal::cover($course));
+        regions::save($course->id, ['portal' => 'menu']);
+        $this->assertSame('', portal::cover($course));
+        // Not logged in at all, the same as a guest.
+        regions::save($course->id, ['portal' => 'card']);
+        $this->setUser(0);
+        $this->assertStringContainsString(get_string('portal_guest_login', 'local_oksigeniatesape'), portal::cover($course));
+    }
+
     public function test_the_activities_of_the_mission_can_stay_inside_the_valley(): void {
         global $DB;
         $this->resetAfterTest();

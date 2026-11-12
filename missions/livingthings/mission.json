@@ -1,6 +1,6 @@
 {
  "code": "livingthings",
- "version": 100,
+ "version": 101,
  "format": 1,
  "world": "valle",
  "art": {
@@ -17,6 +17,12 @@
  "publisher": "Oksigenia SL",
  "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
  "changes": [
+  {
+   "version": 101,
+   "kind": "fix",
+   "date": "2026-11-12",
+   "text": "En el terrario, una semana después, la levadura cuenta lo que enseña su dibujo: sus células con brotes"
+  },
   {
    "version": 100,
    "kind": "improvement",
@@ -8076,7 +8082,7 @@
   "levadura": {
    "label": "levadura",
    "alive": true,
-   "week": "Ha hecho burbujas: la masa ha subido y huele a pan.",
+   "week": "Sus células han echado brotes y ya son muchas más; con sus burbujas, la masa ha subido y huele a pan.",
    "group": "hongo",
    "note": "Son hongos tan pequeños que no se ven, y hinchan la masa del pan porque se alimentan y crecen."
   },

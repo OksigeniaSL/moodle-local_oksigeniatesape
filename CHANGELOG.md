@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.249.3 (2026-11-12)
+
+- A guest on the page of a course with the game (a course open to guests, or a visitor who comes
+  from a search) sees its cover: the map, the mission, where the class is and a button to log in
+  and play. Nothing for a guest where the game is off or kept in the menu.
+- A scene played in its place, on a small phone standing (360 px): the name of the place gives way
+  and the buttons up there are lighter, so the list and the way out stay in one row; the buttons up
+  there never break in two lines. Standing, the place stands in the middle of what is free, under
+  what is up there and over what is said, and moves when what is wanted takes one row or two: it
+  no longer covers the top of the painting.
+- Where there is no blur behind (tablets, phones and browsers without it, such as Firefox 98), the
+  header and the tabs of the game are opaque: the text that passes behind no longer shows through.
+- The terrarium: a week inside also changes the picture of what changes without being alive (the
+  water goes down, the fire goes out, the dry leaf falls to pieces), where the pack brings it; what
+  the look of the sage finds keeps its picture.
+- Mission 101: in the terrarium, a week later, the yeast tells what its picture shows, its cells
+  with buds, besides the dough that rose.
+
 ## 0.249.2 (2026-11-07)
 
 - The figures are not moved any more as puppets cut from a drawing of one piece: on the sheet of

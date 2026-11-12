@@ -124,23 +124,27 @@ final class portal {
     public static function cover(\stdClass $course): string {
         global $USER;
         $role = self::role((int) $course->id);
+        if (!$role && (!isloggedin() || isguestuser())) {
+            // A guest (a course open to guests, a visitor from a search): the game is there, and how to come in to play.
+            $role = 'guest';
+        }
         // A student sees the game they play in: the course, or the game more of their group.
         $key = $role === 'student' ? games::key((int) $course->id, (int) $USER->id) : (int) $course->id;
         $region = regions::get($key);
         $enabled = $region && $region->enabled;
-        if (!$role || ($role === 'student' && !$enabled)) {
+        if (!$role || ($role !== 'teacher' && !$enabled)) {
             return '';
         }
         $mode = $region->portal ?? 'door';
         if ($role === 'student' && in_array($mode, ['menu', 'direct'], true)) {
             return '';
         }
-        if ($role === 'teacher' && $mode === 'menu' && $enabled) {
+        if ($role !== 'student' && $mode === 'menu' && $enabled) {
             return '';
         }
         $mission = $enabled ? missions::get($key) : null;
         $data = self::data($course, $mission, $role, (int) $USER->id, $key);
-        $big = $mode !== 'card';
+        $big = $role === 'guest' ? $mode === 'door' : $mode !== 'card';
         $style = $data['image'] ? ' style="background-image:url(\'' . s($data['image']) . '\')"' : '';
         $buttons = '';
         foreach ($data['buttons'] as [$url, $label, $main]) {
@@ -158,7 +162,7 @@ final class portal {
      *
      * @param \stdClass $course
      * @param \stdClass|null $mission
-     * @param string $role teacher or student.
+     * @param string $role teacher, student or guest.
      * @param int $userid
      * @param int $key The game: the course, or a game more in it.
      * @return array kicker, title, line, note, image and buttons (url, label, main).
@@ -192,6 +196,12 @@ final class portal {
                 'total' => $total]);
             $files = art::manifest()['files'] ?? [];
             $view['image'] = $files['map.' . $mission->code . '.' . $mission->skin] ?? ($files['map.' . $mission->code] ?? '');
+        }
+        if ($role === 'guest') {
+            $view['note'] = get_string('portal_guest', 'local_oksigeniatesape');
+            $login = new \moodle_url(get_login_url());
+            $view['buttons'][] = [$login, get_string('portal_guest_login', 'local_oksigeniatesape'), true];
+            return $view;
         }
         if ($role === 'teacher') {
             $view['buttons'][] = [$teach, get_string('portal_teach', 'local_oksigeniatesape'), true];

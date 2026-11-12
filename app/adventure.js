@@ -743,6 +743,9 @@
               }
             },
             update: function(time, delta) {
+              if (S && S.upCheck) {
+                S.upCheck(time);
+              }
               if (S && S.tick) {
                 S.tick(time, delta);
               }
@@ -830,9 +833,37 @@
           // said, and the rest of the screen is the colour of the night.
           S.zoom = h > w ? Math.max(w / W * 1.7, h / H * 0.62) : Math.max(w / W, h / H);
           cam.setZoom(S.zoom);
-          // Taller than the place: it stands in the middle, with the night above and below.
           var tall = h / S.zoom;
-          cam.setBounds(0, tall > H ? (H - tall) / 2 : 0, W, Math.max(H, tall));
+          if (tall <= H) {
+            cam.setBounds(0, 0, W, H);
+            return;
+          }
+          // Taller than the place: it stands in the middle of what is free, under what is up there (the way out, the
+          // list and what is wanted) and over what is said at the bottom, with the night above and below.
+          var up = S.upBottom() + 8;
+          var said = 100;
+          var high = H * S.zoom;
+          var at = Math.max(0, Math.min(h - high, up + (h - up - said - high) / 2));
+          cam.setBounds(0, -at / S.zoom, W, tall);
+        };
+        /** Where what is up there ends, in pixels of the layer (its box, not its shape at a given moment). */
+        S.upBottom = function() {
+          var top = moment && moment.layer.querySelector('.stage-top');
+          return top ? top.offsetTop + top.offsetHeight : 0;
+        };
+        // What is up there changes size (what is wanted comes, takes one row or two, goes): looked at a few times a second,
+        // and the place, again in the middle of what is free.
+        S.upWas = S.upBottom();
+        S.upCheck = function(time) {
+          if (time - (S.upAt || 0) < 250) {
+            return;
+          }
+          S.upAt = time;
+          var now = S.upBottom();
+          if (now !== S.upWas) {
+            S.upWas = now;
+            S.fit();
+          }
         };
         S.cameras.main.setBackgroundColor('#0f2131');
         S.fit();
@@ -1739,7 +1770,10 @@
               beings: Object.keys(S.beings).map(function(k) {
                 var b = S.beings[k];
                 return {id: k, state: b.state, bin: b.bin || '', x: Math.round(b.x), y: Math.round(b.y)};
-              }), spots: S.spots || {}};
+              }), spots: S.spots || {},
+              // Where the painting is on the screen, in pixels of the page.
+              painting: {top: Math.round(-S.cameras.main.worldView.y * S.zoom),
+                bottom: Math.round((H - S.cameras.main.worldView.y) * S.zoom), up: S.upBottom()}};
           },
           give: function(id, spot) {
             var b = S.beings[id];

@@ -72,7 +72,9 @@
     /* ---------- The clearing and the terrarium ---------- */
 
     /**
-     * A thing as a button: its picture (a week later, when one went by and the pack has it), its name and what was seen.
+     * A thing as a button: its picture (a week later, when one went by with it inside and the pack has it: what is alive
+     * changed, and so did what changes without being alive, the water that went down or the fire that went out), its name
+     * and what was seen.
      *
      * @param {Object} x
      * @param {boolean} inside
@@ -80,7 +82,8 @@
      */
     function piece(x, inside) {
       var seen = run.seen[x.id];
-      var later = run.changed[x.id] && x.alive && x.weekpicture && T.artUrl([x.weekpicture]) ? x.weekpicture : x.picture;
+      var later = run.changed[x.id] && (x.alive || x.week) && x.weekpicture && T.artUrl([x.weekpicture]) ? x.weekpicture :
+        x.picture;
       var tag = seen === 'alive' ? '<span class="ter-tag alive">' + esc(t('app_terrarium_changed')) + '</span>' :
         seen === 'not' ? '<span class="ter-tag not">' + esc(t(x.week ? 'app_terrarium_notalive' : 'app_terrarium_same')) +
         '</span>' : '';
@@ -168,9 +171,10 @@
       var lines = run.inside.map(function(id) {
         var x = thing(id);
         run.seen[id] = x.alive ? 'alive' : 'not';
+        // A week inside: not what the look of the sage finds, which only says it is not alive.
+        run.changed[id] = true;
         if (x.alive) {
           living++;
-          run.changed[id] = true;
         }
         return '<li class="' + (x.alive ? 'alive' : 'not') + '"><b>' + esc(T.cap(x.label)) + ':</b> ' + esc(x.week ||
           t('app_terrarium_same_long')) + '</li>';
