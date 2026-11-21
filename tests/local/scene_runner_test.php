@@ -253,6 +253,112 @@ final class scene_runner_test extends \advanced_testcase {
     }
 
     /**
+     * A nest of the climb: eight things, five alive; four tries; ends with five living things in the nest.
+     *
+     * @return array
+     */
+    private static function nest_scene(): array {
+        $items = [];
+        $things = ['lombriz' => true, 'seta' => true, 'musgo' => true, 'semilla' => true, 'rana' => true,
+            'cristal' => false, 'humo' => false, 'pompa' => false];
+        foreach ($things as $id => $alive) {
+            $items[] = ['id' => $id, 'label' => $id, 'alive' => $alive];
+        }
+        return ['start' => 'nido', 'nodes' => [
+            'nido' => ['type' => 'nest', 'objective' => 'vivo', 'probes' => 4, 'need' => 5, 'items' => $items, 'next' => 'fin'],
+            'fin' => ['type' => 'ending', 'outcome' => 'success'],
+        ]];
+    }
+
+    public function test_a_nest_is_found_out_by_trying_and_a_mistake_ties_a_knot(): void {
+        $scene = self::nest_scene();
+        $leave = fn($id) => ['n' => 'nido', 'leave' => $id];
+        $probe = fn($id) => ['n' => 'nido', 'probe' => $id];
+        // Tries are free, the cristal goes in by mistake and is tangled, and its knot is undone after.
+        $events = [$probe('cristal'), $probe('lombriz'), $leave('lombriz'), $leave('cristal'), $leave('seta'), $leave('musgo'),
+            $leave('semilla'), $leave('rana'), ['n' => 'nido', 'untangle' => 'cristal']];
+        $result = (new scene_runner($scene))->run($events);
+        $this->assertSame('fin', $result['ending']);
+        $this->assertSame(['tied' => ['cristal'], 'undone' => ['cristal']], $result['knots']['nido']);
+        $this->assertSame(['ok' => 5, 'total' => 6], self::scored($result['objectives'])['vivo']);
+        // With the aids, the first mistake is a warning: no knot, and the thing can be left again.
+        $aided = (new scene_runner($scene))->aided()->run([$leave('humo'), $leave('lombriz'), $leave('seta'), $leave('musgo'),
+            $leave('semilla'), $leave('rana')]);
+        $this->assertSame([], $aided['knots']['nido']['tied']);
+        // Not a fifth try, not a thing twice, not a knot that was not tied, and the nest has to be full.
+        $wrong = [
+            [$probe('humo'), $probe('humo'), $probe('pompa'), $probe('seta'), $probe('rana')],
+            [$leave('lombriz'), $leave('lombriz')],
+            [$leave('lombriz'), ['n' => 'nido', 'untangle' => 'humo']],
+            [$leave('lombriz'), $leave('seta')],
+        ];
+        foreach ($wrong as $i => $bad) {
+            try {
+                (new scene_runner($scene))->run($bad);
+                $this->fail('A nest played wrong: ' . $i);
+            } catch (\moodle_exception $e) {
+                $this->assertSame('invalidscenepath', $e->errorcode, (string) $i);
+            }
+        }
+    }
+
+    public function test_someone_hiding_is_found_with_trails_and_the_fewer_the_more_gems(): void {
+        $scene = ['start' => 'algo', 'nodes' => [
+            'algo' => ['type' => 'hunt', 'objective' => 'vivo', 'answer' => 'erizo', 'next' => 'fin',
+                'clues' => [['id' => 'c1'], ['id' => 'c2'], ['id' => 'c3']],
+                'names' => [['id' => 'erizo'], ['id' => 'raton'], ['id' => 'topo'], ['id' => 'lagarto']]],
+            'fin' => ['type' => 'ending', 'outcome' => 'success'],
+        ]];
+        $clue = fn($id) => ['n' => 'algo', 'clue' => $id];
+        $guess = fn($id) => ['n' => 'algo', 'guess' => $id];
+        $gems = fn($r) => array_sum(array_column($r['inline'], 'gems'));
+        $golden = (new scene_runner($scene))->run([$clue('c1'), $guess('erizo')]);
+        $this->assertSame(2, $gems($golden));
+        $this->assertSame(['clues' => 1, 'misses' => 0], $golden['hunts']['algo']);
+        $this->assertSame(1, $gems((new scene_runner($scene))->run([$clue('c1'), $clue('c3'), $guess('erizo')])));
+        // A wrong name runs to another bush and is crossed out: it is never lost, and there are no gems.
+        $late = (new scene_runner($scene))->run([$clue('c1'), $guess('topo'), $clue('c2'), $guess('erizo')]);
+        $this->assertSame(0, $gems($late));
+        $this->assertSame(['ok' => 0, 'total' => 1], self::scored($late['objectives'])['vivo']);
+        foreach ([[$guess('erizo')], [$clue('c1'), $guess('topo'), $guess('topo')], [$clue('c1'), $clue('c1')]] as $i => $bad) {
+            try {
+                (new scene_runner($scene))->run($bad);
+                $this->fail('A hunt played wrong: ' . $i);
+            } catch (\moodle_exception $e) {
+                $this->assertSame('invalidscenepath', $e->errorcode, (string) $i);
+            }
+        }
+    }
+
+    public function test_the_duel_is_won_catching_the_lies_and_lost_touching_truths(): void {
+        $lines = [];
+        foreach (['v1' => false, 'm1' => true, 'v2' => false, 'm2' => true, 'v3' => false, 'm3' => true] as $id => $lie) {
+            $lines[] = ['id' => $id, 'lie' => $lie];
+        }
+        $scene = ['start' => 'duelo', 'nodes' => [
+            'duelo' => ['type' => 'duel', 'objective' => 'vivo', 'lines' => $lines, 'lose' => 2, 'won' => 'gana',
+                'lost' => 'pierde'],
+            'gana' => ['type' => 'ending', 'outcome' => 'success', 'effects' => [['gems' => 5]]],
+            'pierde' => ['type' => 'ending', 'outcome' => 'partial', 'retry' => 'duelo'],
+        ]];
+        $touch = fn($id) => ['n' => 'duelo', 'touch' => $id];
+        $won = (new scene_runner($scene))->run([$touch('m1'), $touch('v2'), $touch('m2'), $touch('m3')]);
+        $this->assertSame('gana', $won['ending']);
+        $this->assertSame(['won' => true, 'threads' => 3, 'knots' => 1], $won['duels']['duelo']);
+        $lost = (new scene_runner($scene))->run([$touch('m1'), $touch('v1'), $touch('v2')]);
+        $this->assertSame('pierde', $lost['ending']);
+        $this->assertSame(['won' => false, 'threads' => 1, 'knots' => 2], $lost['duels']['duelo']);
+        // The rematch starts at the duel again.
+        $this->assertSame('gana', (new scene_runner($scene))->run([$touch('m1'), $touch('m2'), $touch('m3')], 'duelo')['ending']);
+        try {
+            (new scene_runner($scene))->run([$touch('m1'), $touch('m1')]);
+            $this->fail('A line touched twice');
+        } catch (\moodle_exception $e) {
+            $this->assertSame('invalidscenepath', $e->errorcode);
+        }
+    }
+
+    /**
      * The trail of the owl comes at random among three (the slime of a snail, the shed skin of a snake, the feather of a
      * woodpecker): each one can be played to its good ending, with the page of its own animal.
      */
