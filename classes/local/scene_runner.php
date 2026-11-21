@@ -703,14 +703,16 @@ final class scene_runner {
     }
 
     /**
-     * A nest: find out by trying what the seed wants, and leave there what it needs. Bringing a thing near the seed is
-     * free (it beats or stays cold), a few times only (`probes`). Leaving a living thing counts; leaving one that is not
-     * alive costs a knot: the Embrollo tangles it and it is out of the nest. The knots are undone after, going back to
-     * each one and hearing why. With the aids of the first steps, the first such mistake is only a warning of the
-     * creature, and the thing goes back to its place. It ends with `need` living things in the nest.
+     * A nest: find out by trying what the seed wants, and put each thing in its site: next to the seed (`seed`) if it is
+     * alive, aside (`aside`) if not. Bringing a thing near the seed is free (it beats or stays cold), a few times only
+     * (`probes`). Each thing has one clean try: in its site, it counts; in the wrong one, the Embrollo ties a knot on it
+     * and it waits apart. A knot is undone going back to the thing, hearing why and choosing its site again; if that is
+     * wrong too, the site is crossed out and the thing goes by itself to the right one: undone all the same. With the
+     * aids of the first steps, the first mistake is only a warning of the creature, and the thing goes back to its place.
+     * It ends with every living thing next to the seed; a knot on a thing that is not alive may stay.
      *
      * @param string $node
-     * @param array $n items (id, alive, objective), probes (4), need (5), objective.
+     * @param array $n items (id, alive, objective), probes (4), objective.
      */
     private function nest(string $node, array $n): void {
         $items = [];
@@ -718,23 +720,30 @@ final class scene_runner {
             $items[(string) $item['id']] = $item;
         }
         $probes = (int) ($n['probes'] ?? 4);
-        $need = (int) ($n['need'] ?? 5);
         $probed = 0;
-        $left = [];
+        $placed = [];
         $tied = [];
         $undone = [];
+        $crossed = [];
         $warned = false;
+        $right = fn($id, $to) => $to === (!empty($items[$id]['alive']) ? 'seed' : 'aside');
         while ($this->more($node)) {
             $event = $this->take($node);
             $id = (string) ($event['probe'] ?? $event['leave'] ?? $event['untangle'] ?? '');
+            $to = (string) ($event['to'] ?? '');
             if (isset($event['untangle'])) {
-                if (!isset($tied[$id]) || isset($undone[$id])) {
+                if (!isset($tied[$id]) || isset($undone[$id]) || !in_array($to, ['seed', 'aside'], true)) {
                     $this->fail('no knot to undo on ' . $id . ' in ' . $node);
                 }
+                // Right or wrong, the knot is undone: a wrong site is crossed out and the thing goes to the good one.
+                if (!$right($id, $to)) {
+                    $crossed[$id] = true;
+                }
                 $undone[$id] = true;
+                $placed[$id] = true;
                 continue;
             }
-            if (!isset($items[$id]) || isset($left[$id]) || isset($tied[$id]) || count($left) >= $need) {
+            if (!isset($items[$id]) || isset($placed[$id]) || isset($tied[$id])) {
                 $this->fail('not a thing at hand in ' . $node);
             }
             if (isset($event['probe'])) {
@@ -743,12 +752,12 @@ final class scene_runner {
                 }
                 continue;
             }
-            if (!isset($event['leave'])) {
-                $this->fail('expected a try, a thing left or a knot undone in ' . $node);
+            if (!isset($event['leave']) || !in_array($to, ['seed', 'aside'], true)) {
+                $this->fail('expected a try, a thing put in a site or a knot undone in ' . $node);
             }
             $objective = $items[$id]['objective'] ?? $n['objective'] ?? null;
-            if (!empty($items[$id]['alive'])) {
-                $left[$id] = true;
+            if ($right($id, $to)) {
+                $placed[$id] = true;
                 $this->points += 2;
                 $this->tally($objective, true, $this->helped($node, $id) ? 'helped' : 'first');
                 continue;
@@ -761,35 +770,40 @@ final class scene_runner {
             $tied[$id] = true;
             $this->tally($objective, false);
         }
-        if (count($left) < $need) {
-            $this->fail('the nest of ' . $node . ' is not full');
+        foreach ($items as $id => $item) {
+            if (!empty($item['alive']) && !isset($placed[$id])) {
+                $this->fail('the seed of ' . $node . ' cannot open yet');
+            }
         }
-        $this->knots[$node] = ['tied' => array_keys($tied), 'undone' => array_keys($undone)];
+        $this->knots[$node] = ['tied' => array_keys($tied), 'undone' => array_keys($undone), 'crossed' => array_keys($crossed),
+            'probes' => $probed];
     }
 
     /**
-     * Someone hides: the student asks for its trails one by one (each with a clue) and says who it is when they dare. A
-     * wrong name is crossed out and the being runs to another bush: it is never lost. The fewer trails, the more the
-     * find shines: 2 gems with one trail and no name crossed out, 1 with none crossed out, else none.
+     * Someone hides: the student opens its trails in order, each with a clue (a trail may be for one role: each reads
+     * the first one their way), and says who it is when they dare. A wrong name is crossed out and the being runs to
+     * another bush: it is never lost. The fewer trails, the more the find shines: 2 gems with one trail and no name
+     * crossed out, 1 with none crossed out, else none.
      *
      * @param string $node
-     * @param array $n clues (id), names (id), answer, objective.
+     * @param array $n clues (id, requires), names (id), answer, objective.
      */
     private function hunt(string $node, array $n): void {
-        $clues = array_map(fn($c) => (string) $c['id'], $n['clues'] ?? []);
+        // The trails this student can open, in order: those for their role, and those for everybody.
+        $mine = array_filter($n['clues'] ?? [], fn($c) => $this->has($c['requires'] ?? null));
+        $clues = array_values(array_map(fn($c) => (string) $c['id'], $mine));
         $names = array_map(fn($c) => (string) $c['id'], $n['names'] ?? []);
         $answer = (string) ($n['answer'] ?? '');
-        $asked = [];
+        $asked = 0;
         $crossed = [];
         $found = false;
         while (!$found) {
             $event = $this->take($node);
             if (isset($event['clue'])) {
-                $id = (string) $event['clue'];
-                if (!in_array($id, $clues, true) || in_array($id, $asked, true)) {
-                    $this->fail('not a trail of ' . $node);
+                if ((string) $event['clue'] !== ($clues[$asked] ?? null)) {
+                    $this->fail('not the next trail of ' . $node);
                 }
-                $asked[] = $id;
+                $asked++;
                 continue;
             }
             $id = (string) ($event['guess'] ?? '');
@@ -804,35 +818,45 @@ final class scene_runner {
         }
         $objective = $n['objective'] ?? null;
         $this->tally($objective, !$crossed, $crossed ? 'after' : ($this->helped($node) ? 'helped' : 'first'));
-        $gems = count($asked) <= 1 && !$crossed ? 2 : (!$crossed ? 1 : 0);
+        $gems = $asked <= 1 && !$crossed ? 2 : (!$crossed ? 1 : 0);
         if ($gems) {
             $this->effect(['gems' => $gems]);
         }
         $this->points += $crossed ? 2 : 4;
-        $this->hunts[$node] = ['clues' => count($asked), 'misses' => count($crossed)];
+        $this->hunts[$node] = ['clues' => $asked, 'misses' => count($crossed)];
     }
 
     /**
      * The duel: the Embrollo reads the notebook where it changed a few words. Touching a line that is a lie makes it
-     * lose a thread; touching a true one ties a knot in the lantern. Catching every lie wins (`won`); as many knots as
-     * `lose` loses (`lost`), and the lantern lights all the same, with its knots.
+     * lose a thread; touching a true one ties a knot in the lantern (with the aids, the first one is only a warning).
+     * Catching every lie wins (`won`); as many knots as `lose` loses (`lost`), and the lantern lights all the same. A
+     * rematch (`of`: the duel it goes on) keeps what was solved, reads what is left and cannot be lost: a true line
+     * touched there only makes the Embrollo laugh.
      *
      * @param string $node
-     * @param array $n lines (id, lie), lose (2), won, lost, objective.
+     * @param array $n lines (id, lie), lose (2), won, lost, of, objective.
      * @return string Next node.
      */
     private function duel(string $node, array $n): string {
+        $of = isset($n['of']) ? (string) $n['of'] : null;
+        $before = $of !== null ? ($this->duels[$of] ?? null) : null;
+        if ($of !== null && !$before) {
+            $this->fail('a rematch of a duel not played: ' . $node);
+        }
+        $nodes = $this->scene['nodes'];
         $lines = [];
-        foreach ($n['lines'] ?? [] as $line) {
+        foreach (($of !== null ? $nodes[$of]['lines'] : $n['lines']) ?? [] as $line) {
             $lines[(string) $line['id']] = !empty($line['lie']);
         }
+        $touched = array_fill_keys($before['touched'] ?? [], true);
+        $threads = (int) ($before['threads'] ?? 0);
+        $knots = (int) ($before['knots'] ?? 0);
         $lies = count(array_filter($lines));
-        $lose = max(1, (int) ($n['lose'] ?? 2));
-        $touched = [];
-        $threads = 0;
-        $knots = 0;
-        $objective = $n['objective'] ?? null;
-        while ($threads < $lies && $knots < $lose) {
+        $lose = $of !== null ? PHP_INT_MAX : max(1, (int) ($n['lose'] ?? 2));
+        $tied = 0;
+        $warned = false;
+        $objective = $n['objective'] ?? ($of !== null ? ($nodes[$of]['objective'] ?? null) : null);
+        while ($threads < $lies && $tied < $lose) {
             $event = $this->take($node);
             $id = (string) ($event['touch'] ?? '');
             if (!isset($lines[$id]) || isset($touched[$id])) {
@@ -843,13 +867,21 @@ final class scene_runner {
                 $threads++;
                 $this->points += 2;
                 $this->tally($objective, true, $this->helped($node, $id) ? 'helped' : 'first');
-            } else {
-                $knots++;
-                $this->tally($objective, false);
+                continue;
             }
+            if ($of !== null || ($this->aided && !$warned)) {
+                // In the rematch it only laughs; with the aids, the first true line touched is a warning.
+                $warned = true;
+                continue;
+            }
+            $tied++;
+            $knots++;
+            $this->tally($objective, false);
         }
         $won = $threads >= $lies;
-        $this->duels[$node] = ['won' => $won, 'threads' => $threads, 'knots' => $knots];
+        // Won in the rematch, the Embrollo takes its knots with it: the lantern is clean.
+        $knots = $of !== null && $won ? 0 : $knots;
+        $this->duels[$node] = ['won' => $won, 'threads' => $threads, 'knots' => $knots, 'touched' => array_keys($touched)];
         return (string) ($won ? $n['won'] : $n['lost']);
     }
 

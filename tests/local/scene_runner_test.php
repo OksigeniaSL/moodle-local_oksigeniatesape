@@ -253,44 +253,54 @@ final class scene_runner_test extends \advanced_testcase {
     }
 
     /**
-     * A nest of the climb: eight things, five alive; four tries; ends with five living things in the nest.
+     * A nest of the climb: eight things, five alive; four tries; two sites, next to the seed and aside.
      *
      * @return array
      */
     private static function nest_scene(): array {
         $items = [];
-        $things = ['lombriz' => true, 'seta' => true, 'musgo' => true, 'semilla' => true, 'rana' => true,
-            'cristal' => false, 'humo' => false, 'pompa' => false];
+        $things = ['lombriz' => true, 'seta' => true, 'musgo' => true, 'bellota' => true, 'rana' => true,
+            'cristal' => false, 'pluma' => false, 'burbuja' => false];
         foreach ($things as $id => $alive) {
             $items[] = ['id' => $id, 'label' => $id, 'alive' => $alive];
         }
         return ['start' => 'nido', 'nodes' => [
-            'nido' => ['type' => 'nest', 'objective' => 'vivo', 'probes' => 4, 'need' => 5, 'items' => $items, 'next' => 'fin'],
+            'nido' => ['type' => 'nest', 'objective' => 'vivo', 'probes' => 4, 'items' => $items, 'next' => 'fin'],
             'fin' => ['type' => 'ending', 'outcome' => 'success'],
         ]];
     }
 
     public function test_a_nest_is_found_out_by_trying_and_a_mistake_ties_a_knot(): void {
         $scene = self::nest_scene();
-        $leave = fn($id) => ['n' => 'nido', 'leave' => $id];
+        $seed = fn($id) => ['n' => 'nido', 'leave' => $id, 'to' => 'seed'];
+        $aside = fn($id) => ['n' => 'nido', 'leave' => $id, 'to' => 'aside'];
         $probe = fn($id) => ['n' => 'nido', 'probe' => $id];
-        // Tries are free, the cristal goes in by mistake and is tangled, and its knot is undone after.
-        $events = [$probe('cristal'), $probe('lombriz'), $leave('lombriz'), $leave('cristal'), $leave('seta'), $leave('musgo'),
-            $leave('semilla'), $leave('rana'), ['n' => 'nido', 'untangle' => 'cristal']];
+        $undo = fn($id, $to) => ['n' => 'nido', 'untangle' => $id, 'to' => $to];
+        // Tries are free; the cristal goes next to the seed and the rana aside by mistake: two knots. The rana's is
+        // undone at once; the cristal's, at the second time, with the site crossed out.
+        $events = [$probe('cristal'), $probe('lombriz'), $seed('lombriz'), $seed('cristal'), $aside('rana'), $seed('seta'),
+            $seed('musgo'), $seed('bellota'), $undo('rana', 'seed'), $aside('pluma'), $undo('cristal', 'seed')];
         $result = (new scene_runner($scene))->run($events);
         $this->assertSame('fin', $result['ending']);
-        $this->assertSame(['tied' => ['cristal'], 'undone' => ['cristal']], $result['knots']['nido']);
-        $this->assertSame(['ok' => 5, 'total' => 6], self::scored($result['objectives'])['vivo']);
-        // With the aids, the first mistake is a warning: no knot, and the thing can be left again.
-        $aided = (new scene_runner($scene))->aided()->run([$leave('humo'), $leave('lombriz'), $leave('seta'), $leave('musgo'),
-            $leave('semilla'), $leave('rana')]);
+        $this->assertSame(['tied' => ['cristal', 'rana'], 'undone' => ['rana', 'cristal'], 'crossed' => ['cristal'],
+            'probes' => 2], $result['knots']['nido']);
+        $this->assertSame(['ok' => 5, 'total' => 7], self::scored($result['objectives'])['vivo']);
+        // A knot on a thing that is not alive may stay; the burbuja, left unplaced, goes aside by itself.
+        $kept = (new scene_runner($scene))->run([$seed('pluma'), $seed('lombriz'), $seed('seta'), $seed('musgo'),
+            $seed('bellota'), $seed('rana')]);
+        $this->assertSame(['pluma'], $kept['knots']['nido']['tied']);
+        $this->assertSame([], $kept['knots']['nido']['undone']);
+        // With the aids, the first mistake is a warning: no knot, and the thing can be put again.
+        $aided = (new scene_runner($scene))->aided()->run([$aside('lombriz'), $seed('lombriz'), $seed('seta'),
+            $seed('musgo'), $seed('bellota'), $seed('rana')]);
         $this->assertSame([], $aided['knots']['nido']['tied']);
-        // Not a fifth try, not a thing twice, not a knot that was not tied, and the nest has to be full.
+        // Not a fifth try, not a thing twice, not a knot that was not tied, and a living thing tangled keeps the seed shut.
         $wrong = [
-            [$probe('humo'), $probe('humo'), $probe('pompa'), $probe('seta'), $probe('rana')],
-            [$leave('lombriz'), $leave('lombriz')],
-            [$leave('lombriz'), ['n' => 'nido', 'untangle' => 'humo']],
-            [$leave('lombriz'), $leave('seta')],
+            [$probe('pluma'), $probe('pluma'), $probe('burbuja'), $probe('seta'), $probe('rana')],
+            [$seed('lombriz'), $seed('lombriz')],
+            [$seed('lombriz'), $undo('pluma', 'aside')],
+            [$aside('lombriz'), $seed('seta'), $seed('musgo'), $seed('bellota'), $seed('rana')],
+            [$seed('lombriz'), ['n' => 'nido', 'leave' => 'seta', 'to' => 'mar']],
         ];
         foreach ($wrong as $i => $bad) {
             try {
@@ -304,25 +314,31 @@ final class scene_runner_test extends \advanced_testcase {
 
     public function test_someone_hiding_is_found_with_trails_and_the_fewer_the_more_gems(): void {
         $scene = ['start' => 'algo', 'nodes' => [
-            'algo' => ['type' => 'hunt', 'objective' => 'vivo', 'answer' => 'erizo', 'next' => 'fin',
-                'clues' => [['id' => 'c1'], ['id' => 'c2'], ['id' => 'c3']],
-                'names' => [['id' => 'erizo'], ['id' => 'raton'], ['id' => 'topo'], ['id' => 'lagarto']]],
+            'algo' => ['type' => 'hunt', 'objective' => 'vivo', 'answer' => 'caracol', 'next' => 'fin',
+                'clues' => [['id' => 'c1-sage', 'requires' => ['role' => 'sage']],
+                    ['id' => 'c1-scout', 'requires' => ['role' => 'scout']], ['id' => 'c2'], ['id' => 'c3']],
+                'names' => [['id' => 'almeja'], ['id' => 'babosa'], ['id' => 'caracol'], ['id' => 'pulpo']]],
             'fin' => ['type' => 'ending', 'outcome' => 'success'],
         ]];
         $clue = fn($id) => ['n' => 'algo', 'clue' => $id];
         $guess = fn($id) => ['n' => 'algo', 'guess' => $id];
         $gems = fn($r) => array_sum(array_column($r['inline'], 'gems'));
-        $golden = (new scene_runner($scene))->run([$clue('c1'), $guess('erizo')]);
+        $sage = fn() => new scene_runner($scene, [], [], [], 'sage');
+        $golden = $sage()->run([$clue('c1-sage'), $guess('caracol')]);
         $this->assertSame(2, $gems($golden));
         $this->assertSame(['clues' => 1, 'misses' => 0], $golden['hunts']['algo']);
-        $this->assertSame(1, $gems((new scene_runner($scene))->run([$clue('c1'), $clue('c3'), $guess('erizo')])));
+        $this->assertSame(1, $gems($sage()->run([$clue('c1-sage'), $clue('c2'), $guess('caracol')])));
+        // Each role reads the first trail its own way.
+        $this->assertSame(2, $gems((new scene_runner($scene, [], [], [], 'scout'))->run([$clue('c1-scout'), $guess('caracol')])));
         // A wrong name runs to another bush and is crossed out: it is never lost, and there are no gems.
-        $late = (new scene_runner($scene))->run([$clue('c1'), $guess('topo'), $clue('c2'), $guess('erizo')]);
+        $late = $sage()->run([$clue('c1-sage'), $guess('babosa'), $clue('c2'), $guess('caracol')]);
         $this->assertSame(0, $gems($late));
         $this->assertSame(['ok' => 0, 'total' => 1], self::scored($late['objectives'])['vivo']);
-        foreach ([[$guess('erizo')], [$clue('c1'), $guess('topo'), $guess('topo')], [$clue('c1'), $clue('c1')]] as $i => $bad) {
+        $wrong = [[$guess('caracol')], [$clue('c1-sage'), $guess('babosa'), $guess('babosa')], [$clue('c2')],
+            [$clue('c1-scout')], [$clue('c1-sage'), $clue('c3')]];
+        foreach ($wrong as $i => $bad) {
             try {
-                (new scene_runner($scene))->run($bad);
+                $sage()->run($bad);
                 $this->fail('A hunt played wrong: ' . $i);
             } catch (\moodle_exception $e) {
                 $this->assertSame('invalidscenepath', $e->errorcode, (string) $i);
@@ -330,31 +346,40 @@ final class scene_runner_test extends \advanced_testcase {
         }
     }
 
-    public function test_the_duel_is_won_catching_the_lies_and_lost_touching_truths(): void {
+    public function test_the_duel_is_won_catching_the_lies_and_the_rematch_cannot_be_lost(): void {
         $lines = [];
         foreach (['v1' => false, 'm1' => true, 'v2' => false, 'm2' => true, 'v3' => false, 'm3' => true] as $id => $lie) {
             $lines[] = ['id' => $id, 'lie' => $lie];
         }
         $scene = ['start' => 'duelo', 'nodes' => [
             'duelo' => ['type' => 'duel', 'objective' => 'vivo', 'lines' => $lines, 'lose' => 2, 'won' => 'gana',
-                'lost' => 'pierde'],
+                'lost' => 'linterna'],
+            'linterna' => ['type' => 'story', 'text' => 'Se enciende igual', 'next' => 'revancha'],
+            'revancha' => ['type' => 'duel', 'of' => 'duelo', 'won' => 'gana'],
             'gana' => ['type' => 'ending', 'outcome' => 'success', 'effects' => [['gems' => 5]]],
-            'pierde' => ['type' => 'ending', 'outcome' => 'partial', 'retry' => 'duelo'],
         ]];
         $touch = fn($id) => ['n' => 'duelo', 'touch' => $id];
+        $again = fn($id) => ['n' => 'revancha', 'touch' => $id];
         $won = (new scene_runner($scene))->run([$touch('m1'), $touch('v2'), $touch('m2'), $touch('m3')]);
-        $this->assertSame('gana', $won['ending']);
-        $this->assertSame(['won' => true, 'threads' => 3, 'knots' => 1], $won['duels']['duelo']);
-        $lost = (new scene_runner($scene))->run([$touch('m1'), $touch('v1'), $touch('v2')]);
-        $this->assertSame('pierde', $lost['ending']);
-        $this->assertSame(['won' => false, 'threads' => 1, 'knots' => 2], $lost['duels']['duelo']);
-        // The rematch starts at the duel again.
-        $this->assertSame('gana', (new scene_runner($scene))->run([$touch('m1'), $touch('m2'), $touch('m3')], 'duelo')['ending']);
-        try {
-            (new scene_runner($scene))->run([$touch('m1'), $touch('m1')]);
-            $this->fail('A line touched twice');
-        } catch (\moodle_exception $e) {
-            $this->assertSame('invalidscenepath', $e->errorcode);
+        $this->assertSame(['duelo', 'gana'], $won['path']);
+        $this->assertSame(['won' => true, 'threads' => 3, 'knots' => 1], array_diff_key($won['duels']['duelo'], ['touched' => 1]));
+        // Lost at the second knot; the lantern lights all the same, and the rematch keeps what was solved, reads what is
+        // left and cannot be lost: a true line there only makes the Embrollo laugh, and the knots go with it.
+        $lost = (new scene_runner($scene))->run([$touch('m1'), $touch('v1'), $touch('v2'), $again('v3'), $again('m2'),
+            $again('m3')]);
+        $this->assertSame(['duelo', 'linterna', 'revancha', 'gana'], $lost['path']);
+        $this->assertSame(['won' => false, 'threads' => 1, 'knots' => 2], array_diff_key($lost['duels']['duelo'], ['touched' => 1]));
+        $this->assertSame(['won' => true, 'threads' => 3, 'knots' => 0], array_diff_key($lost['duels']['revancha'], ['touched' => 1]));
+        // With the aids, the first true line touched is a warning.
+        $aided = (new scene_runner($scene))->aided()->run([$touch('v1'), $touch('m1'), $touch('m2'), $touch('m3')]);
+        $this->assertSame(0, $aided['duels']['duelo']['knots']);
+        foreach ([[$touch('m1'), $touch('m1')], [$touch('m1'), $touch('v1'), $touch('v2'), $again('m1')]] as $i => $bad) {
+            try {
+                (new scene_runner($scene))->run($bad);
+                $this->fail('A duel played wrong: ' . $i);
+            } catch (\moodle_exception $e) {
+                $this->assertSame('invalidscenepath', $e->errorcode, (string) $i);
+            }
         }
     }
 
