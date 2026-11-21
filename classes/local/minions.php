@@ -152,7 +152,7 @@ final class minions {
      */
     public static function places(\stdClass $mission): array {
         global $DB;
-        $chapters = $DB->get_records(self::T . 'chapter', ['missionid' => $mission->id], 'sortorder', 'id, code, litat');
+        $chapters = $DB->get_records(self::T . 'chapter', ['missionid' => $mission->id, 'version' => $mission->version], 'sortorder', 'id, code, litat');
         $out = [];
         $opened = 0;
         $i = 0;

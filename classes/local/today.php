@@ -52,7 +52,7 @@ final class today {
         $meta = $info[$chapter->code] ?? [];
         $scenes = [];
         $summaries = scenes::summaries($mission);
-        foreach ($DB->get_records_menu(self::T . 'scene', ['missionid' => $mission->id], '', 'code, id') as $code => $id) {
+        foreach ($DB->get_records_menu(self::T . 'scene', ['missionid' => $mission->id, 'version' => $mission->version], '', 'code, id') as $code => $id) {
             $scenes[$code] = ['id' => (int) $id, 'title' => (string) ($summaries[$id]['title'] ?? $code)];
         }
         $sessions = [];

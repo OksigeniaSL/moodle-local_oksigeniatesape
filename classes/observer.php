@@ -36,7 +36,7 @@ final class observer {
     /** @var string[] Tables of what was played in a course, by courseid. */
     private const PLAYED_TABLES = ['member', 'team', 'ledger', 'validation', 'inventory', 'sceneattempt', 'found', 'minigame',
         'idea', 'event', 'live', 'livein', 'livetoken', 'nextclass', 'pact', 'daily', 'stain', 'session', 'teamstate',
-        'classplay', 'tangle', 'fight'];
+        'classplay', 'tangle', 'fight', 'teamspend', 'huddle', 'huddlein', 'challengepart'];
 
     /** @var string[] Tables of how the game of a course is set up, by courseid. */
     private const SETUP_TABLES = ['region', 'challenge', 'power', 'mission', 'objcomp', 'edit', 'own'];
@@ -193,8 +193,9 @@ final class observer {
 
     /**
      * A course reset that takes the students out (the course ready for next year): what was played goes, and the game
-     * stays set up as it was (settings, mission, challenges, powers), with the lanterns of the class off again. The
-     * characters stay with their students.
+     * stays set up as it was (settings, mission, challenges, powers), with the lanterns of the class off again, no battle
+     * pending, and the creature of the class back to its egg with the name it was given. The characters stay with their
+     * students.
      *
      * @param \core\event\course_reset_ended $event
      */
@@ -212,8 +213,16 @@ final class observer {
                 [$insql, $params] = $DB->get_in_or_equal($missions);
                 $DB->set_field_select(self::T . 'chapter', 'litat', 0, "missionid $insql", $params);
                 $DB->set_field_select(self::T . 'chapter', 'skippedat', 0, "missionid $insql", $params);
+                $DB->set_field_select(self::T . 'chapter', 'readyat', 0, "missionid $insql", $params);
+            }
+            $region = $DB->get_record(self::T . 'region', ['courseid' => $key]);
+            if ($region) {
+                $name = \local_oksigeniatesape\local\classcreature::given_name($region);
+                $DB->update_record(self::T . 'region', (object) ['id' => $region->id, 'battlestate' => null,
+                    'reviewed' => null, 'creature' => $name === '' ? null : json_encode(['name' => $name])]);
             }
         }
+        regions::forget();
     }
 
     /**

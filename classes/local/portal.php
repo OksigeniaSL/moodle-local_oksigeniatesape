@@ -185,7 +185,7 @@ final class portal {
             $view['title'] = missions::text($mission->data['title'] ?? $mission->code, $mission->skin);
             $chapter = pacts::chapter($mission);
             $lit = $DB->count_records_select(self::T . 'chapter', 'missionid = ? AND litat > 0', [$mission->id]);
-            $total = $DB->count_records(self::T . 'chapter', ['missionid' => $mission->id]);
+            $total = $DB->count_records(self::T . 'chapter', ['missionid' => $mission->id, 'version' => $mission->version]);
             $name = '';
             foreach ($mission->data['chapters'] ?? [] as $info) {
                 if ($chapter && $info['code'] === $chapter->code) {

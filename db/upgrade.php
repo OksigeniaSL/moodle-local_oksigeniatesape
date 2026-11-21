@@ -1191,5 +1191,30 @@ function xmldb_local_oksigeniatesape_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026102441, 'local', 'oksigeniatesape');
     }
 
+    if ($oldversion < 2026112100) {
+        // The version of the mission each place is in: a newer version that takes a place out no longer shows it.
+        $table = new xmldb_table('local_oksigeniatesape_chapter');
+        $field = new xmldb_field('version', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'skippedat');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        // The places of the definition each mission has are those of its version; the others were taken out before.
+        $missions = $DB->get_recordset('local_oksigeniatesape_mission', null, '', 'id, version, definition');
+        foreach ($missions as $mission) {
+            $definition = json_decode((string) $mission->definition, true) ?: [];
+            $codes = array_values(array_filter(array_map(fn($c) => (string) ($c['code'] ?? ''), $definition['chapters'] ?? [])));
+            if (!$codes) {
+                continue;
+            }
+            [$in, $params] = $DB->get_in_or_equal($codes);
+            $DB->execute(
+                'UPDATE {local_oksigeniatesape_chapter} SET version = ? WHERE missionid = ? AND code ' . $in,
+                array_merge([(int) $mission->version, (int) $mission->id], $params)
+            );
+        }
+        $missions->close();
+        upgrade_plugin_savepoint(true, 2026112100, 'local', 'oksigeniatesape');
+    }
+
     return true;
 }

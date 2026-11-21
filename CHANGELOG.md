@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.250.0 (2026-11-21)
+
+- A student who plays with the aids of the first steps gets the best ending of a quest or a scene
+  when they do well all that they were asked: the hard things the aids leave out no longer count
+  against the ending, on the server and on the tablet.
+- A new version of a mission that takes out a place or a scene: the place is no longer on the map,
+  the place of today, the badge or the class screen, and the scene is no longer played; what was
+  played in them stays. Each place keeps the version of the mission it is in.
+- A course reset for next year also clears the task parts of the teams, the team sessions and the
+  spendings of the reserve, the battle waiting for its rematch, the knots gone over and the places
+  waiting to be lit; the creature of the class goes back to its egg with its name. Deleting a
+  course takes those tables too.
+- With separate groups, a teacher who cannot see every group only enters the games more of their
+  groups, and in the game of the course sees, pauses and rewards only the students of their groups,
+  with their log and their photos.
+- In a team session, every tablet reads what the scene says: the guide's tablet only says which
+  moment, which options and who has the hand. A node that is not in the scene is refused. A
+  decision with its information shared out waits on the guide's tablet from the start, so that it
+  is not decided before everybody told their piece.
+- The photos of a game more are shown to the teacher and to their team.
+- The scene played in its place: touching a being and dragging another no longer leaves one in the
+  hero's hands forever; the button of the role waits while the hero is busy, and a being in trouble
+  is decided once. The ✕ and Escape ask before leaving when something was decided; on the way of
+  the boat, they go straight to the ending and keep it. After «See as a list», the place stops
+  speaking and moving the scene. «Play again» after a partial ending opens the place again. A scene
+  closed while it was loading no longer opens behind the map.
+
 ## 0.249.3 (2026-11-12)
 
 - A guest on the page of a course with the game (a course open to guests, or a visitor who comes

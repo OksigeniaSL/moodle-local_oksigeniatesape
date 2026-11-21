@@ -65,7 +65,7 @@ final class expedition {
         if (!$mission) {
             return $view;
         }
-        $chapters = $DB->get_records(self::T . 'chapter', ['missionid' => $mission->id], '', 'id, litat');
+        $chapters = $DB->get_records(self::T . 'chapter', ['missionid' => $mission->id, 'version' => $mission->version], '', 'id, litat');
         $lit = count(array_filter($chapters, fn($c) => !empty($c->litat)));
         $stains = $DB->count_records_select(
             self::T . 'stain',

@@ -109,6 +109,45 @@ final class photos_test extends \advanced_testcase {
         $this->assertFalse(photos::can_see($record, $w->context, $w->users[2]->id));
     }
 
+    public function test_a_photo_of_a_game_more_is_served_to_the_teacher_and_its_team(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $gen = $this->getDataGenerator();
+        $course = $gen->create_course();
+        $context = \context_course::instance($course->id);
+        regions::save($course->id, ['enabled' => 1]);
+        missions::install($course->id, 'livingthings', 'valley', 'es', self::NOW);
+        $teacher = $gen->create_and_enrol($course, 'editingteacher');
+        $groupa = $gen->create_group(['courseid' => $course->id]);
+        $groupb = $gen->create_group(['courseid' => $course->id]);
+        $users = [];
+        foreach ([$groupa, $groupb, $groupb] as $i => $group) {
+            $users[$i] = $gen->create_and_enrol($course, 'student');
+            $gen->create_group_member(['groupid' => $group->id, 'userid' => $users[$i]->id]);
+        }
+        // A game more for the second group, with its own mission.
+        $this->setUser($teacher);
+        $key = games::create((int) $course->id, (int) $groupb->id);
+        regions::save($key, ['enabled' => 1]);
+        missions::install($key, 'livingthings', 'valley', 'es', self::NOW);
+        foreach ([1, 2] as $i) {
+            engine::member(characters::create($users[$i]->id, 'sage', 'f'), $key, self::NOW);
+        }
+        $photo = photos::upload($key, $users[1]->id, 'claro', self::PIXEL, self::NOW);
+        $this->assertSame($key, (int) $photo->courseid);
+        photos::review($key, $photo->id, true, $teacher->id, self::NOW + 60);
+        // The page of the course finds it, and it is for the teacher and for its team, not for the other group.
+        $found = photos::find($context, (int) $photo->id);
+        $this->assertNotNull($found);
+        $this->assertTrue(photos::can_see($found, $context, $teacher->id));
+        $this->assertTrue(photos::can_see($found, $context, $users[2]->id));
+        $this->assertFalse(photos::can_see($found, $context, $users[0]->id));
+        // A photo of another course is not found from this one.
+        $other = \context_course::instance($gen->create_course()->id);
+        $this->assertNull(photos::find($other, (int) $photo->id));
+        $this->assertSame(1, $DB->count_records(self::T . 'photo', ['courseid' => $key]));
+    }
+
     public function test_a_photo_turned_down_goes_away_and_a_new_one_takes_the_place_of_the_old(): void {
         $this->resetAfterTest();
         $w = $this->make_class();

@@ -332,10 +332,10 @@ final class view {
             $reached[$row->sceneid][] = $row->ending;
         }
         $rows->close();
-        $chapters = $DB->get_records(self::T . 'chapter', ['missionid' => $mission->id], 'sortorder');
+        $chapters = $DB->get_records(self::T . 'chapter', ['missionid' => $mission->id, 'version' => $mission->version], 'sortorder');
         // Without their definitions: what the map shows of them is kept apart.
-        $fields = 'id, missionid, chapterid, code, step, quest';
-        $scenes = $DB->get_records(self::T . 'scene', ['missionid' => $mission->id], 'code', $fields);
+        $fields = 'id, missionid, chapterid, code, step, quest, version';
+        $scenes = $DB->get_records(self::T . 'scene', ['missionid' => $mission->id, 'version' => $mission->version], 'code', $fields);
         $summaries = scenes::summaries($mission);
         // The scene a battle lost opens is there only while the Embrollo is out, until the class wins the rematch.
         $escaped = !empty(regions::get($courseid)->battlestate);
@@ -572,7 +572,7 @@ final class view {
                 'title' => missions::text($mission->data['title'] ?? $mission->code, $mission->skin),
                 'subtitle' => missions::text($mission->data['subtitle'] ?? '', $mission->skin),
                 'lit' => $DB->count_records_select(self::T . 'chapter', 'missionid = ? AND litat > 0', [$mission->id]),
-                'total' => $DB->count_records(self::T . 'chapter', ['missionid' => $mission->id]),
+                'total' => $DB->count_records(self::T . 'chapter', ['missionid' => $mission->id, 'version' => $mission->version]),
                 'mine' => (int) ($counts['lantern'] ?? 0),
                 'pages' => (int) ($counts['page'] ?? 0),
             ];
@@ -608,9 +608,9 @@ final class view {
             }
             $chapters = [];
             $summaries = scenes::summaries($mission);
-            $fields = 'id, missionid, chapterid, code, step, quest';
-            $scenes = $DB->get_records(self::T . 'scene', ['missionid' => $mission->id], 'code', $fields);
-            foreach ($DB->get_records(self::T . 'chapter', ['missionid' => $mission->id], 'sortorder') as $chapter) {
+            $fields = 'id, missionid, chapterid, code, step, quest, version';
+            $scenes = $DB->get_records(self::T . 'scene', ['missionid' => $mission->id, 'version' => $mission->version], 'code', $fields);
+            foreach ($DB->get_records(self::T . 'chapter', ['missionid' => $mission->id, 'version' => $mission->version], 'sortorder') as $chapter) {
                 $meta = $info[$chapter->code] ?? [];
                 // The scenes the class can play together: those of the core step.
                 $mine = scenes::for_step(array_values(array_filter($scenes, fn($sc) => $sc->chapterid == $chapter->id)), 2);
@@ -854,6 +854,16 @@ final class view {
             $where .= ' AND l.id < :beforeid';
             $params['beforeid'] = $beforeid;
         }
+        // With separate groups, only the students of the groups of who teaches.
+        if (games::seen_groups($courseid, (int) $GLOBALS['USER']->id) !== null) {
+            $students = array_keys(self::students($courseid));
+            if (!$students) {
+                return [];
+            }
+            [$insql, $inparams] = $DB->get_in_or_equal($students, SQL_PARAMS_NAMED, 'seen');
+            $where .= " AND c.userid $insql";
+            $params += $inparams;
+        }
         $names = \core_user\fields::for_name()->get_sql('u', false, '', '', false)->selects;
         $entries = $DB->get_records_sql(
             "SELECT l.*, c.userid, $names
@@ -901,7 +911,17 @@ final class view {
             true
         );
         // Those of the game: in a course with more than one, each student plays in one.
-        return games::filter($courseid, $users);
+        $users = games::filter($courseid, $users);
+        // With separate groups, who teaches without seeing every group sees only the students of their groups.
+        $seen = games::seen_groups($courseid, (int) $GLOBALS['USER']->id);
+        if ($seen !== null) {
+            $members = [];
+            foreach ($seen as $groupid) {
+                $members += groups_get_members($groupid, 'u.id');
+            }
+            $users = array_intersect_key($users, $members);
+        }
+        return $users;
     }
 
     /**

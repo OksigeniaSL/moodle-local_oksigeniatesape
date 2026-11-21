@@ -760,7 +760,7 @@ final class minigames {
         $groups = $shuffle(array_values(array_filter($things, fn($x) => in_array($x['group'], self::ANIMALGROUPS, true) ||
             in_array($x['group'], ['planta', 'hongo'], true))), 'g');
         // «Think!»: the questions of the places the class has lit, and of the place it is opening.
-        $lit = $DB->get_records_menu(self::T . 'chapter', ['missionid' => $mission->id], 'sortorder', 'code, litat');
+        $lit = $DB->get_records_menu(self::T . 'chapter', ['missionid' => $mission->id, 'version' => $mission->version], 'sortorder', 'code, litat');
         $upto = 1;
         foreach (array_values($lit) as $i => $litat) {
             if ($litat) {

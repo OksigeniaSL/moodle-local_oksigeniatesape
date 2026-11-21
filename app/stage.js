@@ -159,7 +159,8 @@
      * Opens a moment.
      *
      * @param {Object} opts title; scene (preload, create, update: called with the scene of Phaser as this, and the
-     *     moment as its `stage`); onlist (the student goes to the list); onclose (the moment is over or left).
+     *     moment as its `stage`); onlist (the student goes to the list); onleave (the ✕ or Escape: given how to close,
+     *     it decides, for instance asking first; without it, they close); onclose (the moment is over or left).
      * @return {Promise} The moment: say(), hush(), panel(), hidePanel(), close(), toList(), still.
      */
     /**
@@ -314,14 +315,21 @@
             '»</em>' : '<span>' + esc(line.text) + '</span>');
           timer = setTimeout(next, Math.max(2200, line.text.length * 55));
         };
-        layer.querySelector('[data-stage-close]').onclick = moment.close;
+        var leave = function() {
+          if (opts.onleave) {
+            opts.onleave(moment.close);
+          } else {
+            moment.close();
+          }
+        };
+        layer.querySelector('[data-stage-close]').onclick = leave;
         layer.querySelector('[data-stage-list]').onclick = function() {
           T.stage.setList(true);
           moment.toList();
         };
         layer.addEventListener('keydown', function(ev) {
           if (ev.key === 'Escape') {
-            moment.close();
+            leave();
           }
         });
         var scene = {

@@ -165,4 +165,51 @@ final class games_test extends \advanced_testcase {
         $this->assertFalse($DB->record_exists(self::T . 'region', ['courseid' => $key]));
         $this->assertFalse($DB->record_exists(self::T . 'game', ['courseid' => $c]));
     }
+
+    public function test_with_separate_groups_who_teaches_sees_only_their_groups(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $gen = $this->getDataGenerator();
+        $course = $gen->create_course(['groupmode' => SEPARATEGROUPS, 'groupmodeforce' => 1]);
+        $c = (int) $course->id;
+        $editing = $gen->create_and_enrol($course, 'editingteacher');
+        $tutor = $gen->create_and_enrol($course, 'teacher');
+        $groups = $students = [];
+        foreach (['5.º A', '5.º B', '5.º C'] as $i => $name) {
+            $groups[$i] = $gen->create_group(['courseid' => $c, 'name' => $name]);
+            for ($j = 0; $j < 2; $j++) {
+                $students[$i][] = $user = $gen->create_and_enrol($course, 'student');
+                $gen->create_group_member(['groupid' => $groups[$i]->id, 'userid' => $user->id]);
+            }
+        }
+        // The tutor, a teacher who cannot edit, teaches only in 5th A.
+        $gen->create_group_member(['groupid' => $groups[0]->id, 'userid' => $tutor->id]);
+        regions::save($c, ['enabled' => 1]);
+        missions::install($c, 'livingthings', 'valley', 'es', null, true);
+        $this->setUser($editing);
+        $key = games::create($c, (int) $groups[1]->id);
+        // Who sees every group goes into every game and sees every student of the game of the course.
+        $this->assertTrue(games::can_enter($key, (int) $editing->id));
+        $this->assertCount(4, view::students($c));
+        $this->assertCount(2, games::menu($c));
+        // The tutor: not into the game more of 5th B, and in the game of the course only the students of 5th A.
+        $this->setUser($tutor);
+        $this->assertFalse(games::can_enter($key, (int) $tutor->id));
+        $this->assertTrue(games::can_enter($c, (int) $tutor->id));
+        $this->assertCount(1, games::menu($c));
+        $this->assertEqualsCanonicalizing(array_column($students[0], 'id'), array_keys(view::students($c)));
+        $this->assertTrue(games::sees($c, (int) $tutor->id, (int) $students[0][0]->id));
+        $this->assertFalse(games::sees($c, (int) $tutor->id, (int) $students[2][0]->id));
+        try {
+            view::require_students($c, [(int) $students[2][0]->id]);
+            $this->fail('A student of another group');
+        } catch (\invalid_parameter_exception $e) {
+            $this->assertStringContainsString((string) $students[2][0]->id, $e->getMessage());
+        }
+        // Its log, only with the students of 5th A.
+        foreach ([$students[0][0], $students[2][0]] as $user) {
+            engine::saber(engine::member(characters::create($user->id, 'sage', 'f'), $c), 5, 'manual', (int) $editing->id);
+        }
+        $this->assertSame([(int) $students[0][0]->id], array_values(array_unique(array_column(view::log($c, 0, 50), 'userid'))));
+    }
 }

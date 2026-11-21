@@ -183,7 +183,7 @@ final class activities {
         $chapterof = [];
         $mission = missions::get($courseid);
         if ($mission) {
-            foreach ($DB->get_records(self::T . 'chapter', ['missionid' => $mission->id]) as $chapter) {
+            foreach ($DB->get_records(self::T . 'chapter', ['missionid' => $mission->id, 'version' => $mission->version]) as $chapter) {
                 if ($chapter->sectionid) {
                     $chapterof[$chapter->sectionid] = (int) $chapter->id;
                 }

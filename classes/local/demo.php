@@ -280,8 +280,8 @@ final class demo {
     private static function make_plays(int $courseid, array $students, int $weeks, int $seed, int $now): void {
         global $DB;
         $mission = missions::get($courseid);
-        $chapters = array_values($DB->get_records(self::T . 'chapter', ['missionid' => $mission->id], 'sortorder'));
-        $scenes = $DB->get_records(self::T . 'scene', ['missionid' => $mission->id], 'code');
+        $chapters = array_values($DB->get_records(self::T . 'chapter', ['missionid' => $mission->id, 'version' => $mission->version], 'sortorder'));
+        $scenes = $DB->get_records(self::T . 'scene', ['missionid' => $mission->id, 'version' => $mission->version], 'code');
         foreach ($students as $i => $user) {
             $char = characters::get((int) $user->id);
             $step = (int) $DB->get_field(self::T . 'member', 'step', ['charid' => $char->id, 'courseid' => $courseid]);

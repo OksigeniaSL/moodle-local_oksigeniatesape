@@ -235,7 +235,7 @@ final class badges {
             if (!$badge->is_active() || $badge->is_issued($userid)) {
                 return;
             }
-            $places = $DB->get_fieldset_select(self::T . 'chapter', 'code', 'missionid = ?', [$mission->id]);
+            $places = $DB->get_fieldset_select(self::T . 'chapter', 'code', 'missionid = ? AND version = ?', [$mission->id, $mission->version]);
             $where = 'charid = ? AND missionid = ? AND kind = ?';
             $lit = $DB->get_fieldset_select(self::T . 'found', 'code', $where, [$char->id, $mission->id, 'lantern']);
             if ($places && !array_diff($places, $lit)) {

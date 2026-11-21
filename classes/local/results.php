@@ -53,9 +53,9 @@ final class results {
             $info[$chapter['code']] = $chapter;
         }
         $chapters = [];
-        foreach ($DB->get_records(self::T . 'chapter', ['missionid' => $mission->id], 'sortorder') as $chapter) {
+        foreach ($DB->get_records(self::T . 'chapter', ['missionid' => $mission->id, 'version' => $mission->version], 'sortorder') as $chapter) {
             $scenes = [];
-            foreach ($DB->get_records(self::T . 'scene', ['chapterid' => $chapter->id], 'code') as $scene) {
+            foreach ($DB->get_records(self::T . 'scene', ['chapterid' => $chapter->id, 'version' => $mission->version], 'code') as $scene) {
                 $scenes[] = self::scene($scene, $mission, $names);
             }
             $chapters[] = [

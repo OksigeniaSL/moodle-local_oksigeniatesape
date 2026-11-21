@@ -803,7 +803,7 @@ final class edits {
         $changes = self::of($courseid, $code);
         $original = json_decode((string) $mission->definition, true) ?: [];
         $places = self::fields(self::texts($original, true), $changes[self::MISSION] ?? [], $skin, $variant, []);
-        $scenes = $DB->get_records(self::T . 'scene', ['missionid' => $mission->id], 'code');
+        $scenes = $DB->get_records(self::T . 'scene', ['missionid' => $mission->id, 'version' => $mission->version], 'code');
         // The classroom challenges of the course, and the one of each place.
         $courseid = (int) $mission->courseid;
         $classroom = $DB->get_records(self::T . 'challenge', ['courseid' => $courseid, 'cmid' => 0], 'name', 'id, name, chapterid');

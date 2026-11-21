@@ -124,7 +124,7 @@
    * @param {Function} play Plays the option chosen on another tablet.
    * @param {Function} present Gets the users still in.
    * @param {Function} [gate] Gets, with the information shared out, how many told their piece (told, all) while the
-   *     decision waits for them, or null when it can be decided.
+   *     decision waits for them, or null when it can be decided; and the node the session is at.
    * @return {Object} With stop().
    */
   T.huddleSync = function(id, now, play, present, gate) {
@@ -150,7 +150,7 @@
             return Number(m.userid);
           }));
           if (gate) {
-            gate(h.shared && !h.ready ? {told: h.told, all: h.tellers} : null);
+            gate(h.shared && !h.ready ? {told: h.told, all: h.tellers} : null, h.node);
           }
           if (h.pending && h.pending.seq === h.seq && !applied[h.seq]) {
             applied[h.seq] = true;

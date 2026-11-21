@@ -378,7 +378,7 @@ final class missions {
             $existing = $DB->get_record(self::T . 'chapter', ['missionid' => $record->id, 'code' => $chapter['code']]);
             if ($existing) {
                 $DB->update_record(self::T . 'chapter', (object) ['id' => $existing->id, 'sortorder' => $i,
-                    'timemodified' => $now]);
+                    'version' => $record->version, 'timemodified' => $now]);
                 $chapterids[$chapter['code']] = (int) $existing->id;
                 // The task of the place gets its parts if it had none (the teacher may have written their own).
                 if (!empty($chapter['offscreenparts'])) {
@@ -393,6 +393,7 @@ final class missions {
                     'missionid' => $record->id,
                     'code' => $chapter['code'],
                     'sortorder' => $i,
+                    'version' => $record->version,
                     'timecreated' => $now,
                     'timemodified' => $now,
                 ]);

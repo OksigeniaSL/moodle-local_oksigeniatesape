@@ -81,7 +81,7 @@ final class questions {
         if (!$mission || empty($mission->data['questions'])) {
             return null;
         }
-        $chapters = $DB->get_records(self::T . 'chapter', ['missionid' => $mission->id], 'sortorder', 'id, code, litat');
+        $chapters = $DB->get_records(self::T . 'chapter', ['missionid' => $mission->id, 'version' => $mission->version], 'sortorder', 'id, code, litat');
         $lit = count(array_filter($chapters, fn($c) => (int) $c->litat > 0));
         $open = array_slice(array_map(fn($c) => $c->code, array_values($chapters)), 0, max(1, $lit + 1));
         $all = self::usable($mission);

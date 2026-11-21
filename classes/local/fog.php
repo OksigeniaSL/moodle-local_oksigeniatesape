@@ -76,7 +76,7 @@ final class fog {
             }
         }
         $out = [];
-        foreach ($DB->get_records(self::T . 'chapter', ['missionid' => $mission->id], 'sortorder') as $chapter) {
+        foreach ($DB->get_records(self::T . 'chapter', ['missionid' => $mission->id, 'version' => $mission->version], 'sortorder') as $chapter) {
             $open = $chapter->litat || ($now && (int) $now->id === (int) $chapter->id);
             $sum = $sums[$chapter->id] ?? ['ok' => 0, 'total' => 0];
             if ($open && $sum['total'] >= self::ENOUGH && $sum['ok'] < self::SHARE * $sum['total']) {
@@ -98,7 +98,7 @@ final class fog {
         if (!$mission) {
             return [];
         }
-        $codes = $DB->get_records_menu(self::T . 'chapter', ['missionid' => $mission->id], '', 'id, code');
+        $codes = $DB->get_records_menu(self::T . 'chapter', ['missionid' => $mission->id, 'version' => $mission->version], '', 'id, code');
         $grouping = (int) (regions::get($courseid)->groupingid ?? 0);
         $out = [];
         foreach (groups_get_all_groups(games::course($courseid), 0, $grouping) as $group) {

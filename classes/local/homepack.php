@@ -64,7 +64,7 @@ final class homepack {
             '{{creature}}' => $creature !== '' ? $creature : get_string('app_creature', 'local_oksigeniatesape'),
             '{{name}}' => $char && $char->nickname ? $char->nickname : $user->firstname,
         ];
-        $scenes = $DB->get_records(self::T . 'scene', ['missionid' => $mission->id, 'chapterid' => $chapter->id], 'code');
+        $scenes = $DB->get_records(self::T . 'scene', ['missionid' => $mission->id, 'version' => $mission->version, 'chapterid' => $chapter->id], 'code');
         $out = [
             'name' => $user->firstname,
             'place' => missions::text($info['name'] ?? $chapter->code, $skin, $variant),

@@ -74,7 +74,7 @@ final class families {
             $out['nature'] = $both ? get_string('app_nature_and', 'local_oksigeniatesape', $both) : (string) ($words[0] ?? '');
         }
         // The places of the expedition: those the class lit (not those it passed by), and the one it is in now.
-        $records = $DB->get_records(self::T . 'chapter', ['missionid' => $mission->id], '', 'code, litat, skippedat');
+        $records = $DB->get_records(self::T . 'chapter', ['missionid' => $mission->id, 'version' => $mission->version], '', 'code, litat, skippedat');
         $now = pacts::chapter($mission);
         $here = $now ? (string) $now->code : '';
         $seen = false;

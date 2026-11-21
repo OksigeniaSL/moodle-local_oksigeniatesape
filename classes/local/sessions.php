@@ -141,7 +141,7 @@ final class sessions {
         }
         $text = fn($t) => missions::text($t ?? '', $mission->skin, $mission->variant);
         $place = $chapter === self::ENTRY ? '' : self::place($mission, $chapter);
-        $scenes = $DB->get_records_menu(self::T . 'scene', ['missionid' => $mission->id], '', 'code, id');
+        $scenes = $DB->get_records_menu(self::T . 'scene', ['missionid' => $mission->id, 'version' => $mission->version], '', 'code, id');
         $summaries = scenes::summaries($mission);
         $steps = [];
         foreach ((array) ($sheet['steps'] ?? []) as $step) {

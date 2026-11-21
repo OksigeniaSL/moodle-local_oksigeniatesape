@@ -217,6 +217,42 @@ final class scene_runner_test extends \advanced_testcase {
     }
 
     /**
+     * Every scene of the pilot mission, whatever it is.
+     *
+     * @return array
+     */
+    public static function every_scene_provider(): array {
+        $codes = array_map(fn($f) => basename($f, '.json'), glob(__DIR__ . '/../../missions/livingthings/scenes/*.json'));
+        return array_combine($codes, array_map(fn($c) => [$c], $codes));
+    }
+
+    /**
+     * With the aids of the first steps the hard things of a sorting stay out, so a good play of what was asked reaches
+     * the same ending as a good play without the aids.
+     *
+     * @param string $code
+     * @dataProvider every_scene_provider
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('every_scene_provider')]
+    public function test_a_good_play_with_the_aids_reaches_the_same_ending(string $code): void {
+        $scene = autoplayer::scene($code);
+        $events = autoplayer::play($scene);
+        $good = (new scene_runner($scene))->run($events);
+        $hard = [];
+        foreach ($scene['nodes'] as $id => $n) {
+            foreach ($n['type'] === 'classify' ? $n['items'] : [] as $item) {
+                if (!empty($item['hard'])) {
+                    $hard[$id][(string) $item['id']] = true;
+                }
+            }
+        }
+        $asked = array_values(array_filter($events, fn($e) => !isset($e['item'], $hard[$e['n']][(string) $e['item']])));
+        $aided = (new scene_runner($scene))->aided()->run($asked);
+        $this->assertSame($good['ending'], $aided['ending'], $code);
+        $this->assertSame($good['outcome'], $aided['outcome'], $code);
+    }
+
+    /**
      * The trail of the owl comes at random among three (the slime of a snail, the shed skin of a snake, the feather of a
      * woodpecker): each one can be played to its good ending, with the page of its own animal.
      */

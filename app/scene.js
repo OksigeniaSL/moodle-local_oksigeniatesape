@@ -380,6 +380,8 @@
     // Where the adventure ended up (the other shore): the painting of the place alive for its ending.
     var arrivedAt = null;
     var liveQueue = null;
+    // The scene was closed: what was still loading (the scene, its place) does not open after it.
+    var closed = false;
     // What is read grows (what the world says after a decision): the figures move up to stand above it.
     var roomWatch = null;
     // Something looked for on the painting of the place alive: where the painting is, and how to draw the moment again
@@ -459,6 +461,7 @@
     }
 
     function close() {
+      closed = true;
       unliven();
       if (huddle) {
         huddle.stop();
@@ -473,6 +476,19 @@
     }
 
     /**
+     * Whether leaving now loses something: decisions made, and no ending yet.
+     *
+     * @return {boolean}
+     */
+    function decided() {
+      var at = sc && run && sc.nodes[run.node];
+      var made = run && run.events.some(function(e) {
+        return e.pick || e.item || e.step;
+      });
+      return !!(made && at && at.type !== 'ending');
+    }
+
+    /**
      * The ✕ of a scene: with decisions made and no ending yet, it asks first, because what was decided is not kept. The
      * ✕ again (or Escape) is «keep playing».
      */
@@ -483,11 +499,7 @@
         layer.querySelector('.scene-close').focus();
         return;
       }
-      var at = sc && run && sc.nodes[run.node];
-      var decided = run && run.events.some(function(e) {
-        return e.pick || e.item || e.step;
-      });
-      if (!decided || !at || at.type === 'ending') {
+      if (!decided()) {
         close();
         return;
       }
@@ -1011,7 +1023,12 @@
         return;
       }
       if (adventure && n.type !== 'branch' && adventure.plays(run.node, n)) {
-        adventure.play(run.node, n, run, go);
+        var playing = adventure;
+        playing.play(run.node, n, run, function(node) {
+          if (adventure === playing) {
+            go(node);
+          }
+        });
         return;
       }
       if (!n.lineup && n.type !== 'branch') {
@@ -1043,7 +1060,7 @@
             }
             return false;
           }
-          if (rule.if && rule.if.correct_at_least !== undefined && correctIn(rule.if.in) >= rule.if.correct_at_least) {
+          if (rule.if && rule.if.correct_at_least !== undefined && correctIn(rule.if.in) >= needed(rule.if)) {
             target = rule.next;
             return true;
           }
@@ -1066,6 +1083,14 @@
         tend(n);
       } else if (n.type === 'ending') {
         ending(n);
+      }
+      // In a team session, a decision with its information shared out waits for the pieces from the start: the session
+      // says when everybody told theirs, and it is not decided before.
+      var tellers = huddleIds.filter(function(id) {
+        return Number(id) !== Number(cfg.userid);
+      }).length;
+      if (huddle && tellers && sharedOut(n)) {
+        huddleGate({told: 0, all: tellers});
       }
     }
 
@@ -1450,6 +1475,30 @@
      * @param {string|Array} nodes
      * @return {number}
      */
+    // The right answers a rule asks for. With the aids, the hard things were never asked: the ending counts what
+    // could be tried (as the server does).
+    function needed(cond) {
+      if (!data.aided) {
+        return cond.correct_at_least;
+      }
+      var most = [].concat(cond.in).reduce(function(sum, node) {
+        var n = sc.nodes[node] || {};
+        if (n.type === 'classify') {
+          return sum + (n.items || []).filter(tryable).length;
+        }
+        var opts = n.type === 'tend' ? n.items || [] : n.type === 'find' ? n.spots || [] : n.options || [];
+        return sum + opts.filter(function(o) {
+          return !!o.correct;
+        }).length;
+      }, 0);
+      return Math.min(cond.correct_at_least, most);
+    }
+
+    // A thing of a sorting the student can try: not locked, and not left out by the aids of the first steps.
+    function tryable(it) {
+      return has(it.requires) && !(data.aided && it.hard);
+    }
+
     function correctIn(nodes) {
       return [].concat(nodes).reduce(function(sum, node) {
         return sum + correctInOne(node);
@@ -1724,17 +1773,14 @@
         kind = n.type;
       }
       var hand = turnOf();
-      // What each role sees: each tablet gets only its own piece.
-      var views = {};
-      Object.keys(n.views || {}).forEach(function(r) {
-        views[r] = tx(n.views[r]);
-      });
-      // What the answers told so far, for every tablet.
-      var known = run.clues.map(function(c) {
-        return tx(sc.clues[c]);
-      });
-      return {node: run.node, kind: kind, prompt: n.prompt ? tx(easy(n, 'prompt')) : '', options: options, views: views, known: known,
-        hand: hand ? Number(hand.userid) : Number(cfg.userid), bins: bins, max: max,
+      // Only which node, which options are on the table and who has the hand: the server words it all from the scene
+      // (what it asks, what each role sees, and what the answers told so far).
+      return {node: run.node, kind: kind, options: options.map(function(o) {
+        return {id: o.id};
+      }), bins: bins.map(function(b) {
+        return {id: b.id};
+      }), clues: run.clues.slice(), easy: !!(T.adapted.easyread && n.easyprompt),
+        hand: hand ? Number(hand.userid) : Number(cfg.userid), max: max,
         min: Math.min(max, (n.select && n.select.min) || 1)};
     }
 
@@ -1824,7 +1870,12 @@
      *
      * @param {Object|null} wait told, all; or null, when it can be decided.
      */
-    function huddleGate(wait) {
+    function huddleGate(wait, node) {
+      // What the session says of the node before (until this one is published) does not open a decision whose pieces
+      // are to be told.
+      if (!wait && node !== undefined && run && node !== run.node && sharedOut(sc.nodes[run.node])) {
+        return;
+      }
       layer.classList.toggle('team-wait', !!wait);
       var note = layer.querySelector('.team-wait-note');
       if (!wait) {
@@ -1845,6 +1896,16 @@
         }
       }
       note.textContent = t('app_huddle_told', wait);
+    }
+
+    /**
+     * Whether a decision has its information shared out: a piece for each role, to be told before it is decided.
+     *
+     * @param {Object} n
+     * @return {boolean}
+     */
+    function sharedOut(n) {
+      return !!(n && n.views && Object.keys(n.views).length && /^(choice|use|justify|order|classify)$/.test(n.type));
     }
 
     /**
@@ -2741,9 +2802,7 @@
     function classify(n) {
       var once = n.retry === 'none';
       // With the aids of the first steps, the hard things stay out of the table.
-      var items = n.items.filter(function(it) {
-        return has(it.requires) && !(data.aided && it.hard);
-      });
+      var items = n.items.filter(tryable);
       var locked = n.items.filter(function(it) {
         return !has(it.requires);
       });
@@ -3748,7 +3807,10 @@
       if (again) {
         again.onclick = function() {
           if (adventurable()) {
-            unliven(adventuring);
+            unliven();
+            toldInPlace = null;
+            arrivedAt = null;
+            adventuring();
           } else {
             start();
           }
@@ -3779,11 +3841,26 @@
       };
       T.adventure.open({data: data, sc: sc, world: world, tx: tx, has: has, name: myName(), creature: creatureName(),
         onlist: asItWas,
+        onleave: function(go) {
+          if (!decided()) {
+            go();
+            return;
+          }
+          T.ask({text: t('app_leave_ask'), yes: t('app_leave_go'), no: t('app_leave_stay')}).then(function(ok) {
+            if (ok) {
+              go();
+            }
+          });
+        },
         onclose: function() {
           adventure = null;
           close();
         }
       }).then(function(a) {
+        if (closed) {
+          a.close();
+          return;
+        }
         adventure = a;
         start(null);
       }).catch(function(e) {
@@ -4067,6 +4144,9 @@
         throw e;
       }))
       .then(function(d) {
+        if (closed) {
+          return;
+        }
         data = d;
         data.speakers = JSON.parse(d.speakers || '{}');
         data.items = JSON.parse(d.items || '{}');

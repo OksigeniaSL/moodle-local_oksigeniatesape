@@ -167,6 +167,10 @@
       var S = null;
       var ready = null;
       var ended = false;
+      // The student went to the list or left: nothing of the place speaks or goes on any more.
+      var gone = false;
+      // The ending, while the boat sails: what to call with how it went, at the end of the crossing or as soon as it closes.
+      var pending = null;
       // What the hero can do now: walk (explore), nothing (busy), or nothing at all (over).
       var state = {phase: 'busy', solved: false};
       var tx = o.tx;
@@ -182,6 +186,9 @@
        * @param {Function} [end] When it has been said.
        */
       var say = function(who, text, end) {
+        if (gone) {
+          return;
+        }
         text = tx(text);
         if (!text || !moment) {
           if (end) {
@@ -291,7 +298,7 @@
             esc(t('app_adventure_verb_' + role)) + '</span></button>';
           moment.layer.querySelector('.stage-ui').appendChild(box);
           box.querySelector('[data-verb]').onclick = function() {
-            if (S && S.onVerb) {
+            if (S && S.onVerb && state.phase === 'explore') {
               S.onVerb();
             }
           };
@@ -356,8 +363,9 @@
          */
         finish: function(id, n, done) {
           ended = true;
+          pending = done;
           ready.then(function() {
-            sail(id, n, done);
+            sail(id, n);
           });
         },
 
@@ -382,6 +390,9 @@
         lines = [].concat(lines || []);
         var i = 0;
         var one = function() {
+          if (gone) {
+            return;
+          }
           if (i >= lines.length) {
             next();
             return;
@@ -562,7 +573,12 @@
             verbButton(!!mine, false);
           });
         });
+        var chosen = false;
         var choose = function(option, then) {
+          if (chosen) {
+            return;
+          }
+          chosen = true;
           state.phase = 'busy';
           S.mode = null;
           S.carried = null;
@@ -590,6 +606,8 @@
         };
         S.onPlace = function(being, spot) {
           if (being !== b || !options[spot]) {
+            // Not this one, or not one of its places: the hero is free again.
+            state.phase = chosen ? state.phase : 'explore';
             return;
           }
           choose(spot, function(op, after) {
@@ -647,10 +665,19 @@
 
       /* ---------- The end ---------- */
 
-      var sail = function(id, n, done) {
+      var sail = function(id, n) {
+        if (!pending) {
+          // Closed before it could sail: the ending was already kept.
+          return;
+        }
         state.phase = 'busy';
         verbButton(false);
         goal('');
+        // On the way, the list would start the scene again: only the ✕, which goes straight to the ending.
+        var list = moment && moment.layer.querySelector('[data-stage-list]');
+        if (list) {
+          list.hidden = true;
+        }
         var line = (q.nodes[id] || {}).say;
         S.embark(function() {
           if (S.wayLine) {
@@ -662,9 +689,13 @@
             say(q.speaker.who, line || '', function() {
               S.cameras.main.fadeOut(moment.still ? 1 : 700, 15, 33, 49);
               setTimeout(function() {
+                var done = pending;
+                pending = null;
                 player.close();
                 // Where it ended up: the painting the ending is told in.
-                done(!!line, q.arrive || '');
+                if (done) {
+                  done(!!line, q.arrive || '');
+                }
               }, moment.still ? 10 : 750);
             });
           });
@@ -676,15 +707,42 @@
           title: tx(q.title || sc.title),
           onlist: function() {
             ended = true;
+            gone = true;
+            if (T.fx) {
+              T.fx.hush();
+            }
+            if (pending) {
+              // On the way the list is not offered; if it came anyway, the ending is kept, as with the ✕.
+              var done = pending;
+              pending = null;
+              done(false, q.arrive || '');
+              return;
+            }
             if (o.onlist) {
               o.onlist();
             }
           },
+          // The ✕ or Escape: while the boat sails, straight to the ending; before the end, the scene asks first.
+          onleave: function(close) {
+            if (ended || !o.onleave) {
+              close();
+              return;
+            }
+            o.onleave(close);
+          },
           onclose: function() {
+            gone = true;
             if (T.fx) {
               T.fx.hush();
               T.fx.moment('');
               T.fx.figureSays = null;
+            }
+            if (pending) {
+              // Closed on the way: the ending is kept now, without the crossing (and told in the page).
+              var done = pending;
+              pending = null;
+              done(false, q.arrive || '');
+              return;
             }
             if (!ended && o.onclose) {
               ended = true;
@@ -1149,8 +1207,10 @@
 
         /** Its place: it stays inside, the boat answers with a light, and the hero and the creature are glad. */
         S.settle = function(b, bin) {
-          S.carried = null;
-          S.glowSpots(false);
+          if (S.carried === b) {
+            S.carried = null;
+          }
+          S.glowSpots(!!S.carried);
           b.state = 'aboard';
           b.bin = bin;
           S.toBoat(b, bin, function() {
@@ -1170,8 +1230,10 @@
          * @param {Function} complain
          */
         S.refuse = function(b, bin, complain) {
-          S.carried = null;
-          S.glowSpots(false);
+          if (S.carried === b) {
+            S.carried = null;
+          }
+          S.glowSpots(!!S.carried);
           b.state = 'jump';
           S.toBoat(b, bin, function() {
             sound('nope', 'wrong');
@@ -1602,6 +1664,7 @@
           var y = pointer.worldY;
           if (!p.drag && Math.hypot(x - p.x, y - p.y) > 14) {
             p.drag = true;
+            S.hero.arrive = null;
             if (S.carried && S.carried !== p.b) {
               S.putBack(S.carried);
             }
@@ -1675,6 +1738,8 @@
             if (dragged) {
               put();
             } else {
+              // The hero takes it there; nothing else is touched meanwhile (the button of the role neither).
+              state.phase = 'busy';
               S.walkTo(P.onGround(place, at[0] - 80, at[1] + 30), put);
             }
             return;

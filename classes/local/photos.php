@@ -157,9 +157,9 @@ final class photos {
      * @return bool False if it is not to be served.
      */
     public static function serve(\context_course $context, array $args, array $options): bool {
-        global $DB, $USER;
+        global $USER;
         $photoid = (int) array_shift($args);
-        $photo = $DB->get_record(self::T . 'photo', ['id' => $photoid, 'courseid' => $context->instanceid]);
+        $photo = self::find($context, $photoid);
         if (!$photo || !self::can_see($photo, $context, (int) $USER->id)) {
             return false;
         }
@@ -179,6 +179,20 @@ final class photos {
     }
 
     /**
+     * A photo of one of the games of a course: the game of the course or a game more of one of its groups.
+     *
+     * @param \context_course $context
+     * @param int $photoid
+     * @return \stdClass|null
+     */
+    public static function find(\context_course $context, int $photoid): ?\stdClass {
+        global $DB;
+        [$insql, $params] = $DB->get_in_or_equal(games::keys((int) $context->instanceid));
+        $photo = $DB->get_record_select(self::T . 'photo', "id = ? AND courseid $insql", array_merge([$photoid], $params));
+        return $photo ?: null;
+    }
+
+    /**
      * Who may see a photo: the teacher (and the class screen) always; a student, only an approved one of their team.
      *
      * @param \stdClass $photo
@@ -191,9 +205,12 @@ final class photos {
             has_capability('local/oksigeniatesape:award', $context, $userid) ||
             has_capability('local/oksigeniatesape:runclassscreen', $context, $userid)
         ) {
-            return true;
+            // With separate groups, only the photos of the students of their groups.
+            $author = empty($photo->charid) ? 0 : (int) $GLOBALS['DB']->get_field(self::T . 'char', 'userid', ['id' => $photo->charid]);
+            return !$author || games::sees((int) ($photo->courseid ?? $context->instanceid), $userid, $author);
         }
-        $team = teams::of((int) $context->instanceid, $userid);
+        // The team in the game the photo is of, which may be a game more of a group.
+        $team = teams::of((int) ($photo->courseid ?? $context->instanceid), $userid);
         return $photo->status === 'approved' && $team && (int) $team->id === (int) $photo->groupid;
     }
 

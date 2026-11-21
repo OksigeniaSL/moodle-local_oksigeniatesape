@@ -47,7 +47,7 @@ final class pacts {
      */
     public static function chapter(\stdClass $mission): ?\stdClass {
         global $DB;
-        $chapters = $DB->get_records(self::T . 'chapter', ['missionid' => $mission->id], 'sortorder');
+        $chapters = $DB->get_records(self::T . 'chapter', ['missionid' => $mission->id, 'version' => $mission->version], 'sortorder');
         foreach ($chapters as $chapter) {
             if (!$chapter->litat) {
                 return $chapter;

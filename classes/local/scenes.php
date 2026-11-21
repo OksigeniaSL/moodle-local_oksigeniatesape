@@ -84,8 +84,11 @@ final class scenes {
         $scene = self::get($courseid, $sceneid);
         $mission = missions::get($courseid);
         $off = edits::off($courseid, (string) $scene->missioncode);
-        $current = $mission && (int) $scene->missionid === (int) $mission->id;
-        if (!$mission || (!$current && !$past) || in_array((string) $scene->code, $off, true)) {
+        // A scene a newer version of the mission took out is no longer played, though what was played stays.
+        $current = $mission && (int) $scene->missionid === (int) $mission->id
+            && (int) $scene->version === (int) $mission->version;
+        $gone = $mission && (int) $scene->missionid === (int) $mission->id && !$current;
+        if (!$mission || $gone || (!$current && !$past) || in_array((string) $scene->code, $off, true)) {
             throw new \moodle_exception('invalidgameplay', 'local_oksigeniatesape');
         }
         return $scene;
@@ -105,7 +108,8 @@ final class scenes {
     }
 
     /**
-     * The scenes still in the game: without those the teachers of the course took out in the workshop.
+     * The scenes still in the game: without those the teachers of the course took out in the workshop, nor those a newer
+     * version of the mission took out (they stay for what was played).
      *
      * @param \stdClass[] $scenes Of one mission.
      * @return \stdClass[]
@@ -116,12 +120,13 @@ final class scenes {
         if (!$first || empty($first->missionid)) {
             return $scenes;
         }
-        $mission = $DB->get_record(self::T . 'mission', ['id' => (int) $first->missionid], 'id, courseid, code');
+        $mission = $DB->get_record(self::T . 'mission', ['id' => (int) $first->missionid], 'id, courseid, code, version');
         if (!$mission) {
             return $scenes;
         }
         $off = edits::off((int) $mission->courseid, (string) $mission->code);
-        return $off ? array_filter($scenes, fn($s) => !in_array((string) $s->code, $off, true)) : $scenes;
+        return array_filter($scenes, fn($s) => !in_array((string) $s->code, $off, true)
+            && (!isset($s->version) || (int) $s->version === (int) $mission->version));
     }
 
     /**
@@ -171,7 +176,7 @@ final class scenes {
         $list = $cache->get($key);
         if ($list === false) {
             $list = [];
-            foreach ($DB->get_records(self::T . 'scene', ['missionid' => $mission->id]) as $scene) {
+            foreach ($DB->get_records(self::T . 'scene', ['missionid' => $mission->id, 'version' => $mission->version]) as $scene) {
                 $def = edits::scene($scene, $mission);
                 $best = array_keys(array_filter($def['nodes'] ?? [], fn($n) => ($n['type'] ?? '') === 'ending'
                     && ($n['outcome'] ?? 'success') === 'success'));

@@ -115,7 +115,7 @@ final class campaigns {
             $lit = $total = 0;
             if ($mission) {
                 // A place the teacher skipped counts neither as lit nor as one more.
-                $total = $DB->count_records(self::T . 'chapter', ['missionid' => $mission->id, 'skippedat' => 0]);
+                $total = $DB->count_records(self::T . 'chapter', ['missionid' => $mission->id, 'version' => $mission->version, 'skippedat' => 0]);
                 $lit = $DB->count_records_select(
                     self::T . 'chapter',
                     'missionid = ? AND litat > 0 AND skippedat = 0',

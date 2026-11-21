@@ -159,6 +159,25 @@ final class observer_test extends \advanced_testcase {
         $this->assertFalse($DB->record_exists(self::T . 'ledger', ['charid' => $char->id]));
     }
 
+    /**
+     * Team work of a student in a course: a part of the task of the team, a team session with a teammate in it, and a
+     * spending of the reserve.
+     *
+     * @param int $courseid
+     * @param int $charid
+     */
+    private function team_work(int $courseid, int $charid): void {
+        global $DB;
+        $now = time();
+        // A team of its own for each student, so that two courses do not share a part of a task.
+        $row = ['courseid' => $courseid, 'groupid' => $charid, 'charid' => $charid, 'timecreated' => $now];
+        $DB->insert_record(self::T . 'challengepart', (object) ($row + ['challengeid' => 1, 'part' => 0]));
+        $huddleid = $DB->insert_record(self::T . 'huddle', (object) ($row + ['sceneid' => 1, 'timemodified' => $now]));
+        $in = ['huddleid' => $huddleid, 'courseid' => $courseid, 'charid' => $charid, 'lastseen' => $now, 'timecreated' => $now];
+        $DB->insert_record(self::T . 'huddlein', (object) $in);
+        $DB->insert_record(self::T . 'teamspend', (object) ($row + ['kind' => 'gift', 'day' => $now, 'timemodified' => $now]));
+    }
+
     public function test_a_reset_for_next_year_keeps_the_game_set_up(): void {
         global $DB;
         $this->resetAfterTest();
@@ -167,6 +186,13 @@ final class observer_test extends \advanced_testcase {
         $courseid = (int) $class->course->id;
         $mission = \local_oksigeniatesape\local\missions::get($courseid);
         $DB->set_field(self::T . 'chapter', 'litat', time(), ['missionid' => $mission->id]);
+        $DB->set_field(self::T . 'chapter', 'readyat', time(), ['missionid' => $mission->id]);
+        $this->team_work($courseid, (int) characters::get((int) $class->students[0]->id)->id);
+        // A battle lost waiting for its rematch, mistakes gone over, and the creature of the class grown.
+        $DB->set_field(self::T . 'region', 'battlestate', json_encode(['left' => 0.4]), ['courseid' => $courseid]);
+        $DB->set_field(self::T . 'region', 'reviewed', json_encode(['k1' => 1]), ['courseid' => $courseid]);
+        $creature = json_encode(['name' => 'Nube', 'hue' => 120, 'grown' => 30, 'grewat' => time()]);
+        $DB->set_field(self::T . 'region', 'creature', $creature, ['courseid' => $courseid]);
         $setup = [];
         foreach (['region', 'challenge', 'power', 'mission'] as $table) {
             $setup[$table] = $DB->count_records(self::T . $table, ['courseid' => $courseid]);
@@ -178,13 +204,19 @@ final class observer_test extends \advanced_testcase {
         $reset(['reset_forum_all' => 1]);
         $this->assertGreaterThan(0, $DB->count_records(self::T . 'member', ['courseid' => $courseid]));
         $reset(['unenrol_users' => [$DB->get_field('role', 'id', ['shortname' => 'student'])]]);
-        foreach (['member', 'ledger', 'idea', 'team'] as $table) {
+        $played = ['member', 'ledger', 'idea', 'team', 'challengepart', 'huddle', 'huddlein', 'teamspend'];
+        foreach ($played as $table) {
             $this->assertEquals(0, $DB->count_records(self::T . $table, ['courseid' => $courseid]), $table);
         }
         foreach ($setup as $table => $count) {
             $this->assertEquals($count, $DB->count_records(self::T . $table, ['courseid' => $courseid]), $table);
         }
         $this->assertEquals(0, $DB->count_records_select(self::T . 'chapter', 'missionid = ? AND litat > 0', [$mission->id]));
+        $this->assertEquals(0, $DB->count_records_select(self::T . 'chapter', 'missionid = ? AND readyat > 0', [$mission->id]));
+        $region = $DB->get_record(self::T . 'region', ['courseid' => $courseid]);
+        $this->assertNull($region->battlestate);
+        $this->assertNull($region->reviewed);
+        $this->assertSame(['name' => 'Nube'], json_decode($region->creature, true));
         $this->assertGreaterThan(0, $DB->count_records(self::T . 'char'));
     }
 
@@ -207,6 +239,7 @@ final class observer_test extends \advanced_testcase {
             $in = ['liveid' => $liveid, 'courseid' => $courseid, 'charid' => $char->id, 'round' => 0, 'timecreated' => $now];
             $DB->insert_record(self::T . 'livein', (object) $in);
             $gen->create_inventory(['charid' => $char->id, 'itemid' => $item->id, 'courseid' => $courseid]);
+            $this->team_work($courseid, (int) $char->id);
         }
         $chars = $DB->count_records(self::T . 'char');
         $missions = $DB->get_records_menu(self::T . 'mission', null, '', 'courseid, id');
@@ -215,7 +248,8 @@ final class observer_test extends \advanced_testcase {
 
         delete_course($gone->course, false);
 
-        $tables = ['region', 'member', 'team', 'ledger', 'power', 'inventory', 'mission', 'idea', 'event', 'live', 'livein'];
+        $tables = ['region', 'member', 'team', 'ledger', 'power', 'inventory', 'mission', 'idea', 'event', 'live', 'livein',
+            'challengepart', 'huddle', 'huddlein', 'teamspend'];
         foreach ($tables as $table) {
             $this->assertEquals(0, $DB->count_records(self::T . $table, ['courseid' => $gone->course->id]), $table);
             $this->assertGreaterThan(0, $DB->count_records(self::T . $table, ['courseid' => $kept->course->id]), $table);

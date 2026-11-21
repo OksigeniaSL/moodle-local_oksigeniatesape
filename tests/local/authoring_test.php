@@ -249,4 +249,64 @@ final class authoring_test extends \advanced_testcase {
         $this->assertSame(2, (int) missions::get($course->id)->version);
         $this->assertSame($lanterns, $DB->count_records(self::T . 'found', ['charid' => $char->id, 'kind' => 'lantern']));
     }
+
+    public function test_a_new_version_that_takes_out_a_place_and_a_scene_leaves_them_out(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $dg = $this->getDataGenerator();
+        $course = $dg->create_course();
+        regions::save($course->id, ['enabled' => 1, 'weeklycap' => 0]);
+        $own = authoring::create($course->id, 'Cuatro lugares');
+        $o = fn($label, $correct) => ['label' => $label, 'correct' => $correct, 'feedback' => ''];
+        $one = fn($q) => [['type' => 'one', 'prompt' => $q, 'options' => [$o('Sí', true), $o('No', false)]]];
+        $draft = authoring::save($course->id, $own->code, ['title' => 'Cuatro lugares', 'objectives' => [['name' => 'Ver']],
+            'places' => [['name' => 'Uno'], ['name' => 'Dos'], ['name' => 'Tres'], ['name' => 'Cuatro']]]);
+        [$p1, $p2, $p3, $p4] = array_column($draft['places'], 'code');
+        $draft['scenes'] = [
+            ['place' => $p1, 'title' => 'Escena uno', 'text' => 'Texto.', 'moments' => $one('¿Uno?')],
+            ['place' => $p2, 'title' => 'Escena dos', 'text' => 'Texto.', 'moments' => $one('¿Dos?')],
+            ['place' => $p3, 'title' => 'Escena tres A', 'text' => 'Texto.', 'moments' => $one('¿Tres A?')],
+            ['place' => $p3, 'title' => 'Escena tres B', 'text' => 'Texto.', 'moments' => $one('¿Tres B?')],
+            ['place' => $p4, 'title' => 'Escena cuatro', 'text' => 'Texto.', 'moments' => $one('¿Cuatro?')],
+        ];
+        for ($i = 1; $i <= 4; $i++) {
+            $draft['questions'][] = ['place' => $p1, 'text' => "¿Pregunta $i?", 'options' => ['Buena', 'Mala']];
+        }
+        $draft = authoring::save($course->id, $own->code, $draft);
+        $codes = array_column($draft['scenes'], 'code');
+        authoring::publish($course->id, $own->code);
+        $user = $dg->create_and_enrol($course, 'student');
+        $char = characters::create($user->id, 'sage', 'f');
+        engine::member($char, $course->id);
+        $scene = fn($i) => $DB->get_record(self::T . 'scene', ['missionid' => missions::get($course->id)->id,
+            'code' => $codes[$i]], '*', MUST_EXIST);
+        // The class passes the first place, and the student plays the second scene of the third.
+        edits::skip($course->id, $p1, true);
+        $tres = $scene(3);
+        $events = autoplayer::play(json_decode($tres->definition, true));
+        scenes::play($course->id, $user->id, (int) $tres->id, $events, null);
+        // The teacher takes out the second place (with its scene) and the first scene of the third, and publishes again.
+        $draft['places'] = array_values(array_filter($draft['places'], fn($p) => $p['code'] !== $p2));
+        $gone = [$codes[1], $codes[2]];
+        $draft['scenes'] = array_values(array_filter($draft['scenes'], fn($sc) => !in_array($sc['code'], $gone, true)));
+        authoring::save($course->id, $own->code, $draft);
+        authoring::publish($course->id, $own->code);
+        missions::forget();
+        $mission = missions::get($course->id);
+        $this->assertSame(2, (int) $mission->version);
+        // What was played stays, but the place taken out is no longer on the map nor the place of today.
+        $this->assertSame(4, $DB->count_records(self::T . 'chapter', ['missionid' => $mission->id]));
+        $this->setUser($user);
+        $world = view::world($course->id, $user->id);
+        $this->assertSame([$p1, $p3, $p4], array_column($world['mission']['chapters'], 'code'));
+        $this->assertSame($p3, pacts::chapter($mission)->code);
+        // The third place is done with the only scene left in it.
+        $chapter = $DB->get_record(self::T . 'chapter', ['missionid' => $mission->id, 'code' => $p3], '*', MUST_EXIST);
+        $this->assertTrue(scenes::chapter_done(characters::get($user->id), 2, $chapter));
+        // And the scene taken out is no longer played.
+        $this->expectException(\moodle_exception::class);
+        $this->expectExceptionMessage(get_string('invalidgameplay', 'local_oksigeniatesape'));
+        scenes::playable($course->id, (int) $scene(2)->id);
+    }
 }

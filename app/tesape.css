@@ -1134,6 +1134,7 @@ body.stage-open {
   bottom: max(16px, env(safe-area-inset-bottom));
 }
 
+.stage-top .btn[hidden],
 .adventure-verb[hidden] {
   display: none;
 }

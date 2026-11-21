@@ -400,12 +400,48 @@ final class scene_runner {
                 foreach ((array) $if['in'] as $in) {
                     $count += $this->correct_in((string) $in);
                 }
-                if ($count >= (int) $if['correct_at_least']) {
+                $need = (int) $if['correct_at_least'];
+                if ($this->aided) {
+                    // With the aids, the hard things were never asked: the ending counts what could be tried.
+                    $need = min($need, $this->most_in((array) $if['in']));
+                }
+                if ($count >= $need) {
                     return $rule['next'];
                 }
             }
         }
         return $n['else'];
+    }
+
+    /**
+     * The most right answers the student could give in some nodes: the items of a classify they could try, and the
+     * options, things or spots marked correct in the others.
+     *
+     * @param array $nodes
+     * @return int
+     */
+    private function most_in(array $nodes): int {
+        $most = 0;
+        foreach ($nodes as $node) {
+            $n = $this->scene['nodes'][(string) $node] ?? [];
+            if (($n['type'] ?? '') === 'classify') {
+                $most += count(array_filter($n['items'] ?? [], fn($item) => $this->tryable($item)));
+                continue;
+            }
+            $list = ['tend' => 'items', 'find' => 'spots'][$n['type'] ?? ''] ?? 'options';
+            $most += count(array_filter($n[$list] ?? [], fn($option) => !empty($option['correct'])));
+        }
+        return $most;
+    }
+
+    /**
+     * Whether the student can try an item of a classify: not locked, and not left out by the aids.
+     *
+     * @param array $item
+     * @return bool
+     */
+    private function tryable(array $item): bool {
+        return $this->has($item['requires'] ?? null) && !($this->aided && !empty($item['hard']));
     }
 
     /**
@@ -595,7 +631,7 @@ final class scene_runner {
         $known = [];
         foreach ($n['items'] as $item) {
             $known[(string) $item['id']] = true;
-            if (!$this->has($item['requires'] ?? null) || ($this->aided && !empty($item['hard']))) {
+            if (!$this->tryable($item)) {
                 // Locked, or left out by the aids: they could not try it, so it does not count against the objective.
                 continue;
             }

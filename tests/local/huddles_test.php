@@ -37,9 +37,10 @@ final class huddles_test extends \advanced_testcase {
     /**
      * A course with the mission and a team of three, and the id of a scene.
      *
+     * @param string $code The scene the team plays.
      * @return array [course, users, group, sceneid]
      */
-    private function make_team(): array {
+    private function make_team(string $code = 'C3-2'): array {
         global $DB;
         $gen = $this->getDataGenerator();
         $course = $gen->create_course();
@@ -53,7 +54,7 @@ final class huddles_test extends \advanced_testcase {
             engine::member(characters::create($user->id, $role, 'f'), $course->id, self::NOW);
             $users[] = $user;
         }
-        $sceneid = (int) $DB->get_field(self::T . 'scene', 'id', ['missionid' => $mission->id, 'code' => 'C3-2']);
+        $sceneid = (int) $DB->get_field(self::T . 'scene', 'id', ['missionid' => $mission->id, 'code' => $code]);
         return [$course, $users, $group, $sceneid];
     }
 
@@ -84,28 +85,37 @@ final class huddles_test extends \advanced_testcase {
             $char,
             self::NOW + 6
         ));
-        // A decision to choose, with the hand on Leo.
+        // A decision to choose, with the hand on Leo. The tablet of the guide says which node and which options; the
+        // words come from the scene, whatever the tablet sends.
         $seq = huddles::publish(
             $session,
             $char,
-            ['node' => 'n1', 'kind' => 'choose', 'prompt' => '¿Cuál?',
-            'options' => [['id' => 'a', 'label' => 'A'], ['id' => 'b', 'label' => 'B']], 'hand' => (int) $leo->id,
-            'views' => ['scout' => 'Un rastro fino y brillante', 'sage' => 'La clave del Gran Libro', 'robot' => 'x'],
-            'known' => ['No tiene huesos']],
+            ['node' => 'p2', 'kind' => 'choose', 'prompt' => 'Texto libre del guía',
+            'options' => [['id' => 'patas6', 'label' => 'Otra cosa'], ['id' => 'concha'], ['id' => 'inventada', 'label' => 'X']],
+            'hand' => (int) $leo->id, 'views' => ['scout' => 'Un rastro inventado'], 'clues' => ['sinhuesos', 'nada']],
             self::NOW + 6
         );
         $view = huddles::mine($course->id, $leo->id, self::NOW + 7);
         $this->assertTrue($view['myturn']);
-        // Each tablet, the piece of its role only.
-        $this->assertSame('Un rastro fino y brillante', $view['piece']);
-        $this->assertSame('La clave del Gran Libro', huddles::mine($course->id, $ana->id, self::NOW + 7)['piece']);
-        $this->assertSame('', huddles::mine($course->id, $eva->id, self::NOW + 7)['piece']);
-        // What the answers told, for every tablet.
-        $this->assertSame(['No tiene huesos'], huddles::mine($course->id, $eva->id, self::NOW + 7)['known']);
-        $this->assertSame(['a', 'b'], array_column($view['options'], 'id'));
+        $this->assertSame('¿Y ahora, qué le preguntamos?', $view['prompt']);
+        $this->assertSame(['patas6', 'concha'], array_column($view['options'], 'id'));
+        $this->assertNotSame('Otra cosa', $view['options'][0]['label']);
+        // Each tablet, the piece of its role only, as the scene says it.
+        $this->assertSame('Visto de cerca, el rastro no tiene pisadas: es una sola franja, lisa y seguida.', $view['piece']);
+        $this->assertStringStartsWith('Clave del Gran Libro', huddles::mine($course->id, $ana->id, self::NOW + 7)['piece']);
+        $this->assertStringStartsWith('El rastro va de hoja', huddles::mine($course->id, $eva->id, self::NOW + 7)['piece']);
+        // What the answers told, for every tablet: only clues of the scene.
+        $this->assertSame(['No tiene huesos por dentro'], huddles::mine($course->id, $eva->id, self::NOW + 7)['known']);
         $this->assertArrayNotHasKey('pending', $view);
+        // A node that is not in the scene is not published.
+        try {
+            huddles::publish($session, $char, ['node' => 'inventado', 'kind' => 'choose', 'hand' => (int) $leo->id], self::NOW + 7);
+            $this->fail('A node that is not in the scene');
+        } catch (\invalid_parameter_exception $e) {
+            $this->assertStringContainsString('inventado', $e->getMessage());
+        }
         // Not someone else, nor a decision already gone, nor an option that is not there.
-        foreach ([[$eva, 'a', $seq], [$leo, 'a', $seq - 1], [$leo, 'z', $seq]] as [$who, $option, $at]) {
+        foreach ([[$eva, 'patas6', $seq], [$leo, 'patas6', $seq - 1], [$leo, 'inventada', $seq]] as [$who, $option, $at]) {
             [$s, $c] = huddles::get($course->id, $who->id, (int) $huddle->id, self::NOW + 8);
             try {
                 huddles::decide($s, $c, $option, $at, self::NOW + 8);
@@ -120,10 +130,10 @@ final class huddles_test extends \advanced_testcase {
             huddles::tell($s, $c, $seq);
         }
         [$s, $c] = huddles::get($course->id, $leo->id, (int) $huddle->id, self::NOW + 9);
-        huddles::decide($s, $c, 'b', $seq, self::NOW + 9);
+        huddles::decide($s, $c, 'concha', $seq, self::NOW + 9);
         // The guide sees it to play it; the rest, that it waits.
         $this->assertSame(
-            ['by' => (int) $leo->id, 'option' => 'b', 'seq' => $seq, 'answer' => ''],
+            ['by' => (int) $leo->id, 'option' => 'concha', 'seq' => $seq, 'answer' => ''],
             huddles::mine($course->id, $ana->id, self::NOW + 10)['pending']
         );
         $this->assertTrue(huddles::mine($course->id, $eva->id, self::NOW + 10)['waiting']);
@@ -133,7 +143,7 @@ final class huddles_test extends \advanced_testcase {
         huddles::publish(
             $session,
             $char,
-            ['node' => 'n2', 'kind' => 'classify', 'prompt' => 'Clasifica', 'hand' => 0],
+            ['node' => 'p1', 'kind' => 'choose', 'hand' => 0],
             self::NOW + 11
         );
         $this->assertArrayNotHasKey('pending', huddles::mine($course->id, $ana->id, self::NOW + 12));
@@ -184,11 +194,10 @@ final class huddles_test extends \advanced_testcase {
             $option = (string) $event['pick'][0];
             $who = $users[$hand % 4];
             [$session, $char] = huddles::get($course->id, $guide->id, (int) $huddle->id, $at);
-            // Every other decision, with the information shared out: everybody tells their piece first.
-            $shared = $hand % 2 === 0;
-            $seq = huddles::publish($session, $char, ['node' => $event['n'], 'kind' => 'choose', 'prompt' => '?',
-                'options' => [['id' => $option, 'label' => $option]], 'hand' => (int) $who->id,
-                'views' => $shared ? ['scout' => 'Un rastro', 'healer' => 'Un olor', 'protector' => 'Un ruido'] : []], $at);
+            // A decision with the information shared out: everybody tells their piece first.
+            $shared = !empty($scene->data['nodes'][$event['n']]['views']);
+            $seq = huddles::publish($session, $char, ['node' => $event['n'], 'kind' => 'choose',
+                'options' => [['id' => $option]], 'hand' => (int) $who->id], $at);
             foreach ($shared ? array_slice($users, 1) : [] as $user) {
                 [$s, $c] = huddles::get($course->id, $user->id, (int) $huddle->id, $at + 1);
                 huddles::tell($s, $c, $seq);
@@ -221,14 +230,15 @@ final class huddles_test extends \advanced_testcase {
         huddles::join($course->id, $leo->id, self::NOW + 1);
         [$session, $char] = huddles::get($course->id, $ana->id, (int) $huddle->id, self::NOW + 2);
         huddles::start($session, $char, self::NOW + 2);
-        $options = [['id' => 'a', 'label' => 'A'], ['id' => 'b', 'label' => 'B'], ['id' => 'c', 'label' => 'C']];
+        $options = [['id' => 'sinhuesos'], ['id' => 'concha'], ['id' => 'humeda']];
         // Several: between the least and the most it allows, of its own options.
-        $seq = huddles::publish($session, $char, ['node' => 'n1', 'kind' => 'multi', 'prompt' => '¿Cuáles?',
+        $seq = huddles::publish($session, $char, ['node' => 'porque', 'kind' => 'multi',
             'options' => $options, 'max' => 2, 'min' => 2, 'hand' => (int) $leo->id], self::NOW + 3);
         $view = huddles::mine($course->id, $leo->id, self::NOW + 4);
         $this->assertSame([2, 2], [$view['max'], $view['min']]);
         [$s, $c] = huddles::get($course->id, $leo->id, (int) $huddle->id, self::NOW + 4);
-        foreach ([['a'], ['a', 'b', 'c'], ['a', 'z'], ['a', 'a']] as $wrong) {
+        $wrongs = [['sinhuesos'], ['sinhuesos', 'concha', 'humeda'], ['sinhuesos', 'z'], ['sinhuesos', 'sinhuesos']];
+        foreach ($wrongs as $wrong) {
             try {
                 huddles::decide($s, $c, '', $seq, self::NOW + 4, $wrong);
                 $this->fail('Not an answer to several: ' . implode(',', $wrong));
@@ -236,25 +246,39 @@ final class huddles_test extends \advanced_testcase {
                 $this->assertSame('huddlenotyours', $e->errorcode);
             }
         }
-        huddles::decide($s, $c, '', $seq, self::NOW + 4, ['c', 'a']);
-        $this->assertSame(['c', 'a'], json_decode(huddles::mine($course->id, $ana->id, self::NOW + 5)['pending']['answer']));
-        // To sort: every thing, each in one of its groups.
-        $seq = huddles::publish($session, $char, ['node' => 'n2', 'kind' => 'classify', 'prompt' => 'Clasifica',
-            'options' => $options, 'bins' => [['id' => 'vivo', 'label' => 'Vivo'], ['id' => 'no', 'label' => 'No vivo']],
-            'hand' => (int) $leo->id], self::NOW + 6);
-        $this->assertSame(['vivo', 'no'], array_column(huddles::mine($course->id, $leo->id, self::NOW + 7)['bins'], 'id'));
-        [$s, $c] = huddles::get($course->id, $leo->id, (int) $huddle->id, self::NOW + 7);
-        foreach ([['a' => 'vivo', 'b' => 'no'], ['a' => 'vivo', 'b' => 'no', 'c' => 'mar']] as $wrong) {
+        huddles::decide($s, $c, '', $seq, self::NOW + 4, ['humeda', 'sinhuesos']);
+        $pending = huddles::mine($course->id, $ana->id, self::NOW + 5)['pending'];
+        $this->assertSame(['humeda', 'sinhuesos'], json_decode($pending['answer']));
+    }
+
+    public function test_sorting_is_decided_whole_on_the_tablet_of_the_hand(): void {
+        $this->resetAfterTest();
+        [$course, $users, , $sceneid] = $this->make_team('C2-1');
+        [$ana, $leo] = $users;
+        $huddle = huddles::open($course->id, $ana->id, $sceneid, self::NOW);
+        huddles::join($course->id, $leo->id, self::NOW + 1);
+        [$session, $char] = huddles::get($course->id, $ana->id, (int) $huddle->id, self::NOW + 2);
+        huddles::start($session, $char, self::NOW + 2);
+        // To sort: every thing, each in one of its groups, which are those of the scene.
+        $seq = huddles::publish($session, $char, ['node' => 'colocar', 'kind' => 'classify',
+            'options' => [['id' => 'arbol'], ['id' => 'perro'], ['id' => 'flor']], 'bins' => [['id' => 'vivo']],
+            'hand' => (int) $leo->id], self::NOW + 3);
+        $view = huddles::mine($course->id, $leo->id, self::NOW + 4);
+        $this->assertSame(['animales', 'plantas', 'otros'], array_column($view['bins'], 'id'));
+        $this->assertSame('Ni animal ni planta', $view['bins'][2]['label']);
+        [$s, $c] = huddles::get($course->id, $leo->id, (int) $huddle->id, self::NOW + 4);
+        $wrongs = [['arbol' => 'plantas', 'perro' => 'animales'], ['arbol' => 'plantas', 'perro' => 'animales', 'flor' => 'mar']];
+        foreach ($wrongs as $wrong) {
             try {
-                huddles::decide($s, $c, '', $seq, self::NOW + 7, $wrong);
+                huddles::decide($s, $c, '', $seq, self::NOW + 4, $wrong);
                 $this->fail('Not a sorting of every thing');
             } catch (\moodle_exception $e) {
                 $this->assertSame('huddlenotyours', $e->errorcode);
             }
         }
-        $placed = ['a' => 'vivo', 'b' => 'no', 'c' => 'vivo'];
-        huddles::decide($s, $c, '', $seq, self::NOW + 7, $placed);
-        $this->assertSame($placed, json_decode(huddles::mine($course->id, $ana->id, self::NOW + 8)['pending']['answer'], true));
+        $placed = ['arbol' => 'plantas', 'perro' => 'animales', 'flor' => 'plantas'];
+        huddles::decide($s, $c, '', $seq, self::NOW + 4, $placed);
+        $this->assertSame($placed, json_decode(huddles::mine($course->id, $ana->id, self::NOW + 5)['pending']['answer'], true));
     }
 
     public function test_with_the_information_shared_out_it_is_decided_when_everybody_told_their_piece(): void {
@@ -266,9 +290,8 @@ final class huddles_test extends \advanced_testcase {
         huddles::join($course->id, $eva->id, self::NOW + 1);
         [$session, $char] = huddles::get($course->id, $ana->id, (int) $huddle->id, self::NOW + 2);
         huddles::start($session, $char, self::NOW + 2);
-        $seq = huddles::publish($session, $char, ['node' => 'n1', 'kind' => 'choose', 'prompt' => '¿Por dónde?',
-            'options' => [['id' => 'a', 'label' => 'A'], ['id' => 'b', 'label' => 'B']], 'hand' => (int) $leo->id,
-            'views' => ['scout' => 'Huellas hacia el agua', 'sage' => 'La clave dice: con escamas']], self::NOW + 3);
+        $seq = huddles::publish($session, $char, ['node' => 'p2', 'kind' => 'choose',
+            'options' => [['id' => 'patas6'], ['id' => 'concha']], 'hand' => (int) $leo->id], self::NOW + 3);
         $view = huddles::mine($course->id, $leo->id, self::NOW + 4);
         $this->assertSame([true, 0, 2, false, false], [$view['shared'], $view['told'], $view['tellers'], $view['mytold'],
             $view['ready']]);
@@ -276,7 +299,7 @@ final class huddles_test extends \advanced_testcase {
         foreach ([$leo, $eva] as $i => $who) {
             [$s, $c] = huddles::get($course->id, $leo->id, (int) $huddle->id, self::NOW + 5 + $i);
             try {
-                huddles::decide($s, $c, 'a', $seq, self::NOW + 5 + $i);
+                huddles::decide($s, $c, 'patas6', $seq, self::NOW + 5 + $i);
                 $this->fail('Decided before everybody told their piece');
             } catch (\moodle_exception $e) {
                 $this->assertSame('huddlewait', $e->errorcode);
@@ -287,12 +310,12 @@ final class huddles_test extends \advanced_testcase {
         $view = huddles::mine($course->id, $leo->id, self::NOW + 7);
         $this->assertSame([2, true, true], [$view['told'], $view['mytold'], $view['ready']]);
         [$s, $c] = huddles::get($course->id, $leo->id, (int) $huddle->id, self::NOW + 7);
-        huddles::decide($s, $c, 'a', $seq, self::NOW + 7);
-        $this->assertSame('a', huddles::mine($course->id, $ana->id, self::NOW + 8)['pending']['option']);
+        huddles::decide($s, $c, 'patas6', $seq, self::NOW + 7);
+        $this->assertSame('patas6', huddles::mine($course->id, $ana->id, self::NOW + 8)['pending']['option']);
         // A decision without pieces does not wait.
         [$session, $char] = huddles::get($course->id, $ana->id, (int) $huddle->id, self::NOW + 9);
-        huddles::publish($session, $char, ['node' => 'n2', 'kind' => 'choose', 'prompt' => '¿Y ahora?',
-            'options' => [['id' => 'c', 'label' => 'C']], 'hand' => (int) $eva->id], self::NOW + 9);
+        huddles::publish($session, $char, ['node' => 'porque', 'kind' => 'multi',
+            'options' => [['id' => 'sinhuesos']], 'hand' => (int) $eva->id], self::NOW + 9);
         $this->assertTrue(huddles::mine($course->id, $eva->id, self::NOW + 10)['ready']);
     }
 

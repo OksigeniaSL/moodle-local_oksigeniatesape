@@ -163,13 +163,62 @@ final class games {
      */
     public static function can_enter(int $key, int $userid): bool {
         $courseid = self::course($key);
-        if (
-            has_any_capability(['local/oksigeniatesape:manageregion', 'local/oksigeniatesape:award',
-                'local/oksigeniatesape:runclassscreen'], \context_course::instance($courseid), $userid)
-        ) {
-            return true;
+        if (self::teaches($courseid, $userid)) {
+            // With separate groups, a game more only for who teaches in its group (or sees every group).
+            $seen = $key < 0 ? self::seen_groups($key, $userid) : null;
+            return $seen === null || in_array((int) (self::of_course($courseid)[-$key]->groupid ?? 0), $seen, true);
         }
         return self::key($courseid, $userid) === $key;
+    }
+
+    /**
+     * Whether a user teaches in a course: they set up the game, give points or run the class screen.
+     *
+     * @param int $courseid
+     * @param int $userid
+     * @return bool
+     */
+    private static function teaches(int $courseid, int $userid): bool {
+        return has_any_capability(['local/oksigeniatesape:manageregion', 'local/oksigeniatesape:award',
+            'local/oksigeniatesape:runclassscreen'], \context_course::instance($courseid), $userid);
+    }
+
+    /**
+     * The groups whose students a user who teaches may see: all of them (null), unless the course keeps its groups
+     * separate and the user cannot see every group; then, the groups they are in. For a student, null: what they see of
+     * others is decided elsewhere.
+     *
+     * @param int $key Of a game of the course.
+     * @param int $userid
+     * @return int[]|null
+     */
+    public static function seen_groups(int $key, int $userid): ?array {
+        $courseid = self::course($key);
+        $context = \context_course::instance($courseid);
+        if (
+            (int) groups_get_course_groupmode(get_course($courseid)) !== SEPARATEGROUPS
+            || has_capability('moodle/site:accessallgroups', $context, $userid) || !self::teaches($courseid, $userid)
+        ) {
+            return null;
+        }
+        return array_map('intval', groups_get_user_groups($courseid, $userid)[0] ?? []);
+    }
+
+    /**
+     * Whether a user who teaches may see a student of a game (see seen_groups()).
+     *
+     * @param int $key
+     * @param int $userid Who teaches.
+     * @param int $studentid
+     * @return bool
+     */
+    public static function sees(int $key, int $userid, int $studentid): bool {
+        $seen = self::seen_groups($key, $userid);
+        if ($seen === null) {
+            return true;
+        }
+        $theirs = array_map('intval', groups_get_user_groups(self::course($key), $studentid)[0] ?? []);
+        return (bool) array_intersect($seen, $theirs);
     }
 
     /**
@@ -266,8 +315,13 @@ final class games {
      * @return array key, name, group (0 for the game of the course).
      */
     public static function menu(int $courseid): array {
+        global $USER;
         $out = [['key' => $courseid, 'name' => '', 'group' => 0]];
         foreach (self::of_course($courseid) as $game) {
+            // With separate groups, only the games more of the groups of who teaches.
+            if (!self::can_enter(-(int) $game->id, (int) $USER->id)) {
+                continue;
+            }
             $out[] = ['key' => -(int) $game->id, 'name' => format_string($game->name), 'group' => (int) $game->groupid];
         }
         return $out;

@@ -178,42 +178,66 @@ final class huddles {
     }
 
     /**
-     * The guide publishes the decision at hand: what it asks, who decides, and the options if it is one to choose.
+     * The guide publishes the moment at hand (a decision, or what is told between them): what it asks, who decides, and
+     * the options if it is one to choose. The tablet of the guide says which node of the scene it is, which of its
+     * options are on the table and who has the hand; the words every tablet reads come from the scene, never from the
+     * tablet. A node that is not in the scene is refused.
      *
      * @param \stdClass $huddle
      * @param \stdClass $char
-     * @param array $node node, kind, prompt, options (id, label), views (what each role sees), hand (a user).
+     * @param array $node node, kind, options (id), bins (id), clues (ids of what the answers told), easy (the prompt for easy
+     *     reading), hand (a user), max, min.
      * @param int $now
      * @return int The number of the decision.
      */
     public static function publish(\stdClass $huddle, \stdClass $char, array $node, int $now): int {
         self::guide($huddle, $char);
         $state = self::state($huddle);
+        $scene = scenes::get((int) $huddle->courseid, (int) $huddle->sceneid)->data;
+        $id = clean_param((string) ($node['node'] ?? ''), PARAM_ALPHANUMEXT);
+        $n = $scene['nodes'][$id] ?? null;
+        if (!$n) {
+            throw new \invalid_parameter_exception('Not a node of the scene: ' . $id);
+        }
+        $say = self::words($huddle, $char, $scene);
+        // The options on the table, as the scene words them: a choice, its things of the backpack or reasons; an order, its
+        // steps; a sorting, its things.
+        $list = ['order' => 'steps', 'path' => 'steps', 'classify' => 'items', 'tend' => 'items', 'find' => 'spots'];
+        $all = [];
+        foreach ($n[$list[$n['type']] ?? 'options'] ?? [] as $option) {
+            $all[(string) ($option['id'] ?? '')] = $option;
+        }
         $options = [];
         foreach ((array) ($node['options'] ?? []) as $option) {
-            $options[] = ['id' => clean_param((string) ($option['id'] ?? ''), PARAM_ALPHANUMEXT),
-                'label' => clean_param((string) ($option['label'] ?? ''), PARAM_TEXT)];
+            $oid = (string) ($option['id'] ?? '');
+            if (isset($all[$oid])) {
+                $options[] = ['id' => $oid, 'label' => $say($all[$oid]['label'] ?? '')];
+            }
         }
         // What each role sees of the decision: each tablet gets only the piece of its role.
         $views = [];
-        foreach ((array) ($node['views'] ?? []) as $role => $text) {
+        foreach ((array) ($n['views'] ?? []) as $role => $text) {
             if (in_array($role, characters::ROLES, true)) {
-                $views[$role] = clean_param((string) $text, PARAM_TEXT);
+                $views[$role] = $say($text);
             }
         }
-        // What the answers told so far, for every tablet.
-        $known = array_slice(array_map(fn($k) => clean_param((string) $k, PARAM_TEXT), (array) ($node['known'] ?? [])), 0, 12);
+        // What the answers told so far, for every tablet: clues of the scene.
+        $known = [];
+        foreach (array_slice(array_unique(array_map('strval', (array) ($node['clues'] ?? []))), 0, 12) as $clue) {
+            if (isset($scene['clues'][$clue])) {
+                $known[] = $say($scene['clues'][$clue]);
+            }
+        }
         // To sort, the groups the things go to.
         $bins = [];
-        foreach ((array) ($node['bins'] ?? []) as $bin) {
-            $bins[] = ['id' => clean_param((string) ($bin['id'] ?? ''), PARAM_ALPHANUMEXT),
-                'label' => clean_param((string) ($bin['label'] ?? ''), PARAM_TEXT)];
+        foreach ($n['bins'] ?? [] as $bin) {
+            $bins[] = ['id' => (string) ($bin['id'] ?? ''), 'label' => $say($bin['label'] ?? '')];
         }
+        $prompt = !empty($node['easy']) && !empty($n['easyprompt']) ? $n['easyprompt'] : ($n['prompt'] ?? '');
         $state['seq']++;
-        $state['node'] = ['views' => $views, 'known' => $known,
-            'node' => clean_param((string) ($node['node'] ?? ''), PARAM_ALPHANUMEXT),
+        $state['node'] = ['views' => $views, 'known' => $known, 'node' => $id,
             'kind' => clean_param((string) ($node['kind'] ?? ''), PARAM_ALPHA),
-            'prompt' => clean_param((string) ($node['prompt'] ?? ''), PARAM_TEXT),
+            'prompt' => $say($prompt),
             'options' => $options, 'hand' => (int) ($node['hand'] ?? 0), 'bins' => $bins,
             'max' => max(1, (int) ($node['max'] ?? 1)), 'min' => max(1, (int) ($node['min'] ?? 1)),
             'shared' => (bool) $views];
@@ -222,6 +246,35 @@ final class huddles {
         $state['told'] = [];
         self::save($huddle, $state, $now);
         return $state['seq'];
+    }
+
+    /**
+     * The words of a scene as the tablet of the guide shows them: the voice of the story and of the local examples, and
+     * the names of the guide and their creature.
+     *
+     * @param \stdClass $huddle
+     * @param \stdClass $char The guide.
+     * @param array $scene
+     * @return callable From a text of the scene to plain text.
+     */
+    private static function words(\stdClass $huddle, \stdClass $char, array $scene): callable {
+        $mission = missions::get((int) $huddle->courseid);
+        $skin = (string) ($mission->skin ?? '');
+        $variant = (string) ($mission->variant ?? '');
+        $region = regions::get((int) $huddle->courseid);
+        $user = \core_user::get_user((int) $char->userid, 'id, firstname');
+        $name = !empty($region->nicknames) && !empty($char->nickname) ? (string) $char->nickname : (string) ($user->firstname ?? '');
+        $creature = (string) (json_decode((string) ($char->creature ?? ''), true)['name'] ?? '');
+        $creature = $creature !== '' ? $creature : get_string('app_creature', 'local_oksigeniatesape');
+        $locals = $scene['locals'] ?? [];
+        return function ($text) use ($skin, $variant, $name, $creature, $locals): string {
+            $text = missions::text($text ?? '', $skin, $variant);
+            $text = preg_replace_callback('/\{\{local:([a-z0-9_-]+)\}\}/', function ($m) use ($locals, $variant) {
+                $local = $locals[$m[1]] ?? null;
+                return is_array($local) ? (string) ($local[$variant] ?? reset($local)) : $m[0];
+            }, $text);
+            return clean_param(strtr($text, ['{{name}}' => $name, '{{creature}}' => $creature]), PARAM_TEXT);
+        };
     }
 
     /**
