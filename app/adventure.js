@@ -365,7 +365,11 @@
           ended = true;
           pending = done;
           ready.then(function() {
-            sail(id, n);
+            if (q.boat) {
+              sail(id, n);
+            } else {
+              land(id, n);
+            }
           });
         },
 
@@ -665,6 +669,37 @@
 
       /* ---------- The end ---------- */
 
+      /**
+       * The end in a place without a boat: who speaks says how it went, there, and the place goes.
+       *
+       * @param {string} id
+       * @param {Object} n The ending.
+       */
+      var land = function(id, n) {
+        if (!pending) {
+          return;
+        }
+        state.phase = 'busy';
+        verbButton(false);
+        var list = moment && moment.layer.querySelector('[data-stage-list]');
+        if (list) {
+          list.hidden = true;
+        }
+        var line = (q.nodes[id] || {}).say;
+        S.cheer(n.outcome === 'success');
+        say(q.speaker.who, line || '', function() {
+          S.cameras.main.fadeOut(moment.still ? 1 : 700, 15, 33, 49);
+          setTimeout(function() {
+            var done = pending;
+            pending = null;
+            player.close();
+            if (done) {
+              done(!!line, q.arrive || '');
+            }
+          }, moment.still ? 10 : 750);
+        });
+      };
+
       var sail = function(id, n) {
         if (!pending) {
           // Closed before it could sail: the ending was already kept.
@@ -824,11 +859,11 @@
         S.beings = {};
         S.last = 0;
         S.add.image(0, 0, 'bg').setOrigin(0).setDepth(0);
-        // The boat, loose from the painting: it rocks, takes the passengers inside and sails.
+        // The boat, loose from the painting, where the place has one: it rocks, takes the passengers inside and sails.
         var boat = q.boat || {};
         var bc = point(boat.center || [W / 2, H / 2]);
-        S.boat = S.add.container(bc.x, bc.y).setDepth(boat.depth || 400);
-        if (S.loose) {
+        S.boat = q.boat ? S.add.container(bc.x, bc.y).setDepth(boat.depth || 400) : null;
+        if (S.loose && S.boat) {
           S.boatBack = S.add.image(-bc.x, -bc.y, 'barge').setOrigin(0);
           S.boatFront = S.add.image(-bc.x, -bc.y, 'barge.front').setOrigin(0);
           // Its shadow on the water, under the hull: it sits on the lake, docked or sailing.
