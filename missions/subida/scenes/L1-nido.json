@@ -497,6 +497,7 @@
    "nido": {
     "play": "nest",
     "goal": "Despierta tu semilla",
+    "hatch": true,
     "spots": {
      "seed": [
       717,

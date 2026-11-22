@@ -940,6 +940,13 @@
           });
           S.time.delayedCall(900, function() {
             seed('open');
+            if (how.hatch && S.seed) {
+              // The creature is born where the seed was, and from now on goes with the hero.
+              S.pet.x = S.seed.x;
+              S.pet.y = S.seed.y + 24;
+              S.pet.mode = 'follow';
+              S.hop(S.pet);
+            }
             S.cheer(true);
             var said = (lines.opened || []).slice();
             var next = function() {
@@ -964,6 +971,12 @@
         n.items.forEach(function(it) {
           S.addBeing(it, how);
         });
+        if (how.hatch) {
+          // The creature is still the seed: it is not in the place until the seed opens.
+          S.pet.mode = 'still';
+          S.pet.x = -400;
+          S.pet.y = 700;
+        }
         S.spots = how.spots;
         S.touchable = ['wait', 'tied', 'placed'];
         S.mode = {kind: 'nest'};
