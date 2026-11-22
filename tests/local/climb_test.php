@@ -39,8 +39,8 @@ final class climb_test extends \advanced_testcase {
         $course = $dg->create_course();
         regions::save($course->id, ['enabled' => 1, 'weeklycap' => 0]);
         $mission = missions::install($course->id, 'subida', 'valley', 'es');
-        $this->assertSame(['claro'], array_values($DB->get_fieldset_select(self::T . 'chapter', 'code', 'missionid = ?',
-            [$mission->id])));
+        $places = $DB->get_fieldset_select(self::T . 'chapter', 'code', 'missionid = ?', [$mission->id]);
+        $this->assertSame(['claro'], array_values($places));
         $scenes = $DB->get_records_menu(self::T . 'scene', ['missionid' => $mission->id], 'code', 'code, id');
         $this->assertSame(['L1-algo', 'L1-duelo', 'L1-nido'], array_keys($scenes));
         $user = $dg->create_and_enrol($course, 'student');
