@@ -39,12 +39,14 @@ final class climb_act extends external_api {
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
             'courseid' => new external_value(PARAM_INT, 'Course'),
-            'action' => new external_value(PARAM_ALPHA, 'hero, light, name, paint or skin'),
+            'action' => new external_value(PARAM_ALPHA, 'hero, light, name, paint, skin or mark'),
             'role' => new external_value(PARAM_ALPHA, 'hero: protector, healer, sage or scout', VALUE_DEFAULT, ''),
             'nameform' => new external_value(PARAM_ALPHA, 'hero: m or f', VALUE_DEFAULT, ''),
             'name' => new external_value(PARAM_TEXT, 'name: the name of the creature (empty: none)', VALUE_DEFAULT, ''),
             'code' => new external_value(PARAM_ALPHANUMEXT, 'paint: a paint of the market (empty: none)', VALUE_DEFAULT, ''),
             'skin' => new external_value(PARAM_RAW_TRIMMED, 'skin: a skin of the game', VALUE_DEFAULT, ''),
+            'mark' => new external_value(PARAM_ALPHA, 'mark: what is noted', VALUE_DEFAULT, ''),
+            'value' => new external_value(PARAM_ALPHANUMEXT, 'mark: its value', VALUE_DEFAULT, ''),
         ]);
     }
 
@@ -58,6 +60,8 @@ final class climb_act extends external_api {
      * @param string $name
      * @param string $code
      * @param string $skin
+     * @param string $mark
+     * @param string $value
      * @return array The state, as get_climb returns it.
      */
     public static function execute(
@@ -67,11 +71,14 @@ final class climb_act extends external_api {
         string $nameform = '',
         string $name = '',
         string $code = '',
-        string $skin = ''
+        string $skin = '',
+        string $mark = '',
+        string $value = ''
     ): array {
         global $USER;
         $params = self::validate_parameters(self::execute_parameters(), ['courseid' => $courseid, 'action' => $action,
-            'role' => $role, 'nameform' => $nameform, 'name' => $name, 'code' => $code, 'skin' => $skin]);
+            'role' => $role, 'nameform' => $nameform, 'name' => $name, 'code' => $code, 'skin' => $skin,
+            'mark' => $mark, 'value' => $value]);
         $context = \local_oksigeniatesape\local\games::require_enter($params['courseid']);
         self::validate_context($context);
         require_capability('local/oksigeniatesape:play', $context);
@@ -91,6 +98,9 @@ final class climb_act extends external_api {
                 break;
             case 'skin':
                 $state = climb::skin($params['courseid'], $userid, $params['skin']);
+                break;
+            case 'mark':
+                $state = climb::mark($params['courseid'], $userid, $params['mark'], $params['value']);
                 break;
             default:
                 throw new \invalid_parameter_exception('Unknown action: ' . $params['action']);

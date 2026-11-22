@@ -94,6 +94,11 @@ final class climb_test extends \advanced_testcase {
         climb::paint($course->id, $user->id, '');
         $this->assertSame($before - 5, climb::paint($course->id, $user->id, 'paint-ember')['gems']);
         $this->assertSame('#d9a173', climb::skin($course->id, $user->id, '#d9a173')['hero']['skin']);
+        // What is noted, once: a second value does not change the first, and what is not a measure is not kept.
+        climb::mark($course->id, $user->id, 'next', '12');
+        climb::mark($course->id, $user->id, 'next', '40');
+        $this->assertSame(['next'], climb::mark($course->id, $user->id, 'anything', 'x')['marks']);
+        $this->assertSame(1, $DB->count_records(self::T . 'found', ['kind' => 'mark', 'code' => 'next=12']));
     }
 
     public function test_a_hero_is_chosen_on_the_path(): void {

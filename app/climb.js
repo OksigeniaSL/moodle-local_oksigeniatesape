@@ -95,6 +95,47 @@
   }
 
   /**
+   * Notes a measure of the script, once (the server keeps only the first): what, and its value.
+   *
+   * @param {string} what
+   * @param {string|number} value
+   */
+  function note(what, value) {
+    if (state && state.marks && state.marks.indexOf(what) < 0) {
+      state.marks.push(what);
+      if (!state.hero || state.hero.trying) {
+        // Before there is a hero (the first minute), kept until there is one.
+        waiting.push([what, value]);
+        return;
+      }
+      T.api('climb_act', {courseid: cfg.courseid, action: 'mark', mark: what, value: String(value)}).catch(function() {
+        return null;
+      });
+    }
+  }
+
+  /** @var {Array} What was noted before the student had a hero. */
+  var waiting = [];
+
+  /**
+   * Sends what was noted before the student had a hero.
+   */
+  function sendWaiting() {
+    var all = waiting;
+    waiting = [];
+    all.forEach(function(one) {
+      T.api('climb_act', {courseid: cfg.courseid, action: 'mark', mark: one[0], value: String(one[1])}).catch(function() {
+        return null;
+      });
+    });
+  }
+
+  /** @var {number} When the valley was entered (for the second of the first touch). */
+  var enteredAt = 0;
+  /** @var {number} When the path came back after the next place showed itself (for whether it is touched, and when). */
+  var invitedAt = 0;
+
+  /**
    * The voice of a line: the hero speaks with the voice of their role and figure; anyone else, with theirs.
    *
    * @param {string} who
@@ -332,6 +373,7 @@
     place.querySelector('button').onclick = function() {
       this.classList.add('pl-fuera');
       v.scene.classList.add('pl-dentro');
+      enteredAt = Date.now();
       T.fx.ambient('night', 'claro');
       setTimeout(function() {
         place.remove();
@@ -535,6 +577,8 @@
         return chain(beat(3).say).then(function() {
           return touched(seed);
         }).then(function() {
+          // The first touch with an effect: its second, from the way in.
+          note('first', Math.round((Date.now() - enteredAt) / 1000));
           hand.remove();
           seed.classList.add('op-late');
           T.fx.sound('chime');
@@ -586,6 +630,7 @@
       stage.appendChild(row);
       var said = beat(8).say || {};
       var roles = ['sage', 'healer', 'scout', 'protector'];
+      var heard = {};
       var forms = {sage: 'f', healer: 'm', scout: 'f', protector: 'm'};
       return chain(beat(7).say).then(function() {
         return new Promise(function(chosen) {
@@ -601,10 +646,11 @@
                 return;
               }
               last = role;
+              heard[role] = true;
               row.querySelectorAll('.op-heroe').forEach(function(o) {
                 o.classList.toggle('op-tocado', o === b);
               });
-              state.hero = {role: role, nameform: forms[role]};
+              state.hero = {role: role, nameform: forms[role], trying: true};
               say(said[role]).then(function() {
                 subtitle('', '');
               });
@@ -612,6 +658,12 @@
           });
         });
       }).then(function(role) {
+        // The heroes heard, by their first letter (sage, healer, scout, protector: s, h, c, p).
+        note('heard', roles.filter(function(r) {
+          return heard[r];
+        }).map(function(r) {
+          return {sage: 's', healer: 'h', scout: 'c', protector: 'p'}[r];
+        }).join(''));
         row.querySelectorAll('.op-heroe').forEach(function(o) {
           o.classList.toggle('op-aparta', o.dataset.role !== role);
         });
@@ -640,6 +692,7 @@
         });
         return call('climb_act', {action: 'hero', role: pick[0], nameform: pick[1]});
       }).then(function() {
+        sendWaiting();
         return wait(1200);
       }).then(function() {
         stage.remove();
@@ -723,6 +776,11 @@
       };
       var next = mark(v.map, 'pl-siguiente', c.next || [1075, 735], t('app_climb_next'));
       next.onclick = function() {
+        // The measure that decides: touched with nobody asking, and after how many seconds.
+        if (invitedAt) {
+          note('next', Math.round((Date.now() - invitedAt) / 1000));
+          note('mute', T.fx.muted && T.fx.muted() ? 'yes' : 'no');
+        }
         chain(((state.climb.next || {}).touch || {}).say);
       };
     }
@@ -1096,6 +1154,7 @@
       b.innerHTML = '<img src="' + esc(T.artUrl([surprises[id].art]) || '') + '" alt=""><span>' +
         esc(surprises[id].text.split(',')[0].replace(/^(el|la|los|las) /, '')) + '</span>';
       b.onclick = function() {
+        note('surprise', id);
         draw(id);
       };
       main.querySelector('.pl-rejilla').appendChild(b);
@@ -1107,6 +1166,9 @@
     main.querySelector('.pl-cerrar').onclick = function() {
       library();
     };
+    main.querySelector('.pl-guardar').addEventListener('click', function() {
+      note('saved', 'yes');
+    });
     chain(card.say);
     var canvas = made.querySelector('canvas');
     var draw = function(id) {
@@ -1326,6 +1388,7 @@
       return wait(still ? 0 : 900);
     }).then(function() {
       path();
+      invitedAt = Date.now();
     });
   }
 

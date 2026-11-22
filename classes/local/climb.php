@@ -35,6 +35,9 @@ final class climb {
     /** @var int Longest name of a creature. */
     private const NAME_LENGTH = 24;
 
+    /** @var string[] What is noted of the student on the path, once each (the script's measures). */
+    private const MARKS = ['first', 'heard', 'surprise', 'saved', 'next', 'mute'];
+
     /**
      * The mission of the game, if it brings a climb.
      *
@@ -113,6 +116,8 @@ final class climb {
             'gems' => $char ? (int) $char->gems : 0,
             'creature' => ['name' => (string) ($traits['name'] ?? ''), 'paint' => (string) ($worn['paint'] ?? '')],
             'paints' => $paints,
+            // What was noted already (the client does not send it again).
+            'marks' => array_values(array_map(fn($code) => strstr($code, '=', true), array_keys($found['mark'] ?? []))),
         ];
     }
 
@@ -202,6 +207,33 @@ final class climb {
         }
         $DB->update_record(self::T . 'char', (object) ['id' => $char->id, 'creature' => json_encode($traits),
             'timemodified' => time()]);
+        return self::state($courseid, $userid);
+    }
+
+    /**
+     * Notes something of the student on the path, the first time only: the second of their first touch, the heroes heard,
+     * the surprise of the postcard and whether it was saved, whether the next place was touched (and after how many
+     * seconds), whether it was played with no sound.
+     *
+     * @param int $courseid
+     * @param int $userid
+     * @param string $what One of MARKS.
+     * @param string $value
+     * @return array The state.
+     */
+    public static function mark(int $courseid, int $userid, string $what, string $value): array {
+        global $DB;
+        $mission = self::mission($courseid);
+        $char = characters::get($userid);
+        $value = substr(preg_replace('/[^a-z0-9-]/', '', strtolower($value)), 0, 20);
+        if ($mission && $char && in_array($what, self::MARKS, true) && $value !== '') {
+            $where = "charid = ? AND missionid = ? AND kind = 'mark' AND " . $DB->sql_like('code', '?');
+            $known = $DB->record_exists_select(self::T . 'found', $where, [$char->id, $mission->id, $what . '=%']);
+            if (!$known) {
+                $DB->insert_record(self::T . 'found', (object) ['charid' => $char->id, 'courseid' => $courseid,
+                    'missionid' => $mission->id, 'kind' => 'mark', 'code' => $what . '=' . $value, 'timecreated' => time()]);
+            }
+        }
         return self::state($courseid, $userid);
     }
 
