@@ -23,6 +23,20 @@
   "SV-01": "Distinguir lo vivo de lo inerte",
   "SV-07": "Trabajar como un científico"
  },
+ "speakers": {
+  "druida-mayor": {
+   "valley": "La druida"
+  },
+  "embrollo": {
+   "valley": "El Embrollo"
+  },
+  "caracol": {
+   "valley": "El caracol"
+  },
+  "moho": {
+   "valley": "El moho"
+  }
+ },
  "chapters": [
   {
    "code": "claro",

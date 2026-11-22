@@ -33,7 +33,7 @@
     protector: {icon: 'shield', who: 'hero'}
   };
   /** @var {Object} How each node type is played here. */
-  var PLAYS = {classify: ['board'], choice: ['rescue', 'route']};
+  var PLAYS = {classify: ['board'], choice: ['rescue', 'route'], nest: ['nest']};
 
   /**
    * One of the ways of saying something, not the one said last time.
@@ -366,6 +366,8 @@
               board(id, n, how, run, go);
             } else if (how.play === 'rescue') {
               rescue(id, n, how, run, go);
+            } else if (how.play === 'nest') {
+              nest(id, n, how, run, go);
             } else {
               route(id, n, how, run, go);
             }
@@ -648,6 +650,397 @@
         };
       };
 
+      /* ---------- The nest: what is alive, found out by trying ---------- */
+
+      /**
+       * A nest played in its place (the climb): the things wait around the clearing. Touching one, the hero looks at it
+       * their way and it says a trait of its own; then it is brought to the seed (which beats or stays cold, a few times
+       * only), put next to the seed or put aside. A mistake ties a knot of the Embrollo on it and it waits apart, at the
+       * edge; touched again, it says why and its site is chosen again. It ends when the living things are next to the
+       * seed, and the seed opens. Every touch is a button too: dragging is never needed.
+       *
+       * @param {string} id
+       * @param {Object} n
+       * @param {Object} how
+       * @param {Object} run
+       * @param {Function} go
+       */
+      var nest = function(id, n, how, run, go) {
+        var items = {};
+        n.items.forEach(function(it) {
+          items[it.id] = it;
+        });
+        var alive = n.items.filter(function(it) {
+          return it.alive;
+        }).length;
+        var probes = n.probes || 4;
+        var lines = n.say || {};
+        var st = {probed: 0, placed: {}, tied: {}, knots: 0, warned: false, looked: {}, said: {}, ring: 0, aside: 0};
+        var EDGE = [[110, 770], [1330, 770], [1190, 792], [250, 792], [960, 796]];
+        var menu = null;
+        // Who says a line of the scene: [who, text], who being a thing of the place, the hero or someone who speaks.
+        var speak = function(pair, end) {
+          if (!pair || !pair[1]) {
+            if (end) {
+              end();
+            }
+            return;
+          }
+          var who = pair[0] === 'heroe' ? 'hero' : S.beings[pair[0]] ? 'being:' + pair[0] : pair[0];
+          say(who, pair[1], end);
+        };
+        var once = function(key, end) {
+          if (st.said[key]) {
+            if (end) {
+              end();
+            }
+            return;
+          }
+          st.said[key] = true;
+          speak(lines[key], end);
+        };
+        var atSeed = function() {
+          return Object.keys(st.placed).filter(function(k) {
+            return st.placed[k] === 'seed';
+          }).length;
+        };
+        var ribbon = function() {
+          var dots = [];
+          for (var i = 0; i < alive; i++) {
+            dots.push(i < atSeed());
+          }
+          goal(how.goal, dots);
+        };
+        // The seed answers: it beats, stays cold, shivers, leans to a thing or opens.
+        var seed = function(kind, toward) {
+          var sd = S.seed;
+          if (!sd || moment.still) {
+            return;
+          }
+          if (kind === 'beat') {
+            S.tweens.add({targets: sd, scale: sd.base * 1.25, duration: 220, yoyo: true, repeat: 2, ease: 'Sine.easeOut'});
+            S.sparks.explode(10, sd.x, sd.y - 30);
+            sound('beat', 'chime');
+          } else if (kind === 'cold') {
+            sd.setTint(0x9fd3ff);
+            S.tweens.add({targets: sd, angle: 4, duration: 60, yoyo: true, repeat: 5, onComplete: function() {
+              sd.clearTint();
+              sd.setAngle(0);
+            }});
+            sound('nope', 'wrong');
+          } else if (kind === 'shiver') {
+            S.tweens.add({targets: sd, x: sd.x + 3, duration: 50, yoyo: true, repeat: 7});
+          } else if (kind === 'lean' && toward) {
+            S.tweens.add({targets: sd, angle: toward.x < sd.x ? -14 : 14, duration: 500, yoyo: true, hold: 900});
+          } else if (kind === 'open') {
+            S.tweens.add({targets: sd, scale: sd.base * 1.8, alpha: 0, duration: 900, ease: 'Back.easeIn'});
+            S.sparks.explode(28, sd.x, sd.y - 30);
+            S.hearts.explode(8, sd.x, sd.y - 40);
+          }
+        };
+        // A knot of the Embrollo: a thread from the tower to the thing, which takes its colour.
+        var knotOn = function(b) {
+          var g = S.add.graphics().setDepth(4300);
+          g.lineStyle(4, 0xa98bff, 0.9);
+          var top = {x: W - 90, y: -20};
+          var mid = {x: (top.x + b.x) / 2 + 60, y: (top.y + b.y) / 2 - 80};
+          var curve = new Phaser.Curves.QuadraticBezier(new Phaser.Math.Vector2(top.x, top.y),
+            new Phaser.Math.Vector2(mid.x, mid.y), new Phaser.Math.Vector2(b.x, b.y - b.sprite.displayHeight * 0.6));
+          curve.draw(g, 32);
+          g.lineStyle(5, 0xa98bff, 1);
+          g.strokeCircle(b.x, b.y - b.sprite.displayHeight * 0.5, Math.max(18, b.sprite.displayWidth * 0.35));
+          b.knot = g;
+          b.sprite.setTint(0xc8b6ff);
+        };
+        var knotOff = function(b) {
+          if (b.knot) {
+            var g = b.knot;
+            b.knot = null;
+            S.tweens.add({targets: g, alpha: 0, duration: 500, onComplete: function() {
+              g.destroy();
+            }});
+          }
+          b.sprite.clearTint();
+        };
+        var hideMenu = function() {
+          if (menu) {
+            menu.remove();
+            menu = null;
+          }
+        };
+        var showMenu = function(b, untangle) {
+          hideMenu();
+          var acts = untangle || st.probed >= probes ? ['seed', 'aside'] : ['probe', 'seed', 'aside'];
+          menu = document.createElement('div');
+          menu.className = 'adventure-choices';
+          menu.setAttribute('role', 'group');
+          menu.setAttribute('aria-label', b.name);
+          menu.innerHTML = acts.map(function(a) {
+            return '<button type="button" class="btn ' + (a === 'probe' ? 'btn-soft' : 'btn-main') + '" data-act="' + a +
+              '">' + esc(t('app_adventure_nest_' + a)) + '</button>';
+          }).join('');
+          moment.layer.querySelector('.stage-ui').appendChild(menu);
+          menu.querySelectorAll('[data-act]').forEach(function(btn) {
+            btn.onclick = function() {
+              if (state.phase !== 'explore') {
+                return;
+              }
+              var act = btn.dataset.act;
+              hideMenu();
+              if (act === 'probe') {
+                probe(b);
+              } else if (untangle) {
+                undo(b, act);
+              } else {
+                leave(b, act);
+              }
+            };
+          });
+          var first = menu.querySelector('button');
+          if (first) {
+            first.focus();
+          }
+        };
+        var free = function() {
+          state.phase = 'explore';
+          S.last = S.time.now;
+          ribbon();
+        };
+        // Put in its site: next to the seed, in a gap of the ring; aside, on the stone.
+        var put = function(b, to, done) {
+          st.placed[b.id] = to;
+          var at = to === 'seed' ? how.ring[st.ring++ % how.ring.length] :
+            [how.spots.aside[0] + (st.aside++ % 3 - 1) * 54, how.spots.aside[1]];
+          b.state = 'jump';
+          S.jump(b, at[0], at[1], null, function() {
+            b.state = 'placed';
+            b.home = {x: at[0], y: at[1]};
+            if (to === 'seed') {
+              S.sparks.explode(moment.still ? 3 : 8, at[0], at[1] - 20);
+              sound('settle', 'chime');
+            }
+            if (done) {
+              done();
+            }
+          });
+        };
+        var tie = function(b, done) {
+          st.tied[b.id] = true;
+          st.knots++;
+          var at = EDGE[(st.knots - 1) % EDGE.length];
+          b.state = 'jump';
+          S.jump(b, at[0], at[1], null, function() {
+            b.state = 'tied';
+            b.home = {x: at[0], y: at[1]};
+            knotOn(b);
+            var knot = lines.knot || [];
+            speak(knot[Math.min(st.knots, knot.length) - 1], function() {
+              if (st.knots === 1) {
+                once('first_knot', done);
+              } else {
+                done();
+              }
+            });
+          });
+        };
+        var probe = function(b) {
+          state.phase = 'busy';
+          st.probed++;
+          run.events.push({n: id, probe: b.id});
+          var it = items[b.id];
+          var home = {x: b.home.x, y: b.home.y};
+          b.state = 'jump';
+          S.jump(b, how.spots.seed[0] + 70, how.spots.seed[1] + 10, null, function() {
+            seed(it.alive ? 'beat' : 'cold');
+            speak(it.probe, function() {
+              var back = function() {
+                S.jump(b, home.x, home.y, null, function() {
+                  b.state = 'wait';
+                  free();
+                });
+              };
+              if (st.probed === 1) {
+                once('first_probe', back);
+              } else if (st.probed >= probes) {
+                once('no_probes', back);
+              } else {
+                back();
+              }
+            });
+          });
+        };
+        var leave = function(b, to) {
+          state.phase = 'busy';
+          var it = items[b.id];
+          run.events.push({n: id, leave: b.id, to: to});
+          var after = function() {
+            free();
+            check();
+          };
+          if (to === (it.alive ? 'seed' : 'aside')) {
+            put(b, to, function() {
+              once('first_leave', after);
+            });
+            return;
+          }
+          if (to === 'seed') {
+            seed('shiver');
+          }
+          speak(it.wrong, function() {
+            // With the aids, the first mistake is only a warning: the thing stays where it was, with no knot.
+            if (data.aided && !st.warned) {
+              st.warned = true;
+              speak(lines.aided, after);
+              return;
+            }
+            tie(b, after);
+          });
+        };
+        var undo = function(b, to) {
+          state.phase = 'busy';
+          var it = items[b.id];
+          var good = it.alive ? 'seed' : 'aside';
+          run.events.push({n: id, untangle: b.id, to: to});
+          delete st.tied[b.id];
+          knotOff(b);
+          if (to !== good) {
+            // The wrong site is crossed out, and the thing goes by itself to the right one.
+            S.emote(b, '✕');
+          }
+          put(b, good, function() {
+            speak(lines.undone, function() {
+              free();
+              check();
+            });
+          });
+        };
+        // The living things next to the seed: the rest goes aside by itself, the five beat and the seed opens.
+        var check = function() {
+          var left = n.items.filter(function(it) {
+            return it.alive && st.placed[it.id] !== 'seed';
+          });
+          if (left.length) {
+            if (left.every(function(it) {
+              return st.tied[it.id];
+            })) {
+              once('missing');
+            }
+            return;
+          }
+          clearInterval(idle);
+          hideMenu();
+          state.phase = 'busy';
+          S.mode = null;
+          S.onTouch = null;
+          verbButton(false);
+          n.items.forEach(function(it) {
+            if (!st.placed[it.id] && !st.tied[it.id]) {
+              put(S.beings[it.id], 'aside');
+            }
+          });
+          S.time.delayedCall(900, function() {
+            seed('open');
+            S.cheer(true);
+            var said = (lines.opened || []).slice();
+            var next = function() {
+              var l = said.shift();
+              if (l) {
+                speak(l, function() {
+                  setTimeout(next, 250);
+                });
+                return;
+              }
+              if (st.knots) {
+                go(n.next);
+              } else {
+                speak(lines.no_knot, function() {
+                  go(n.next);
+                });
+              }
+            };
+            next();
+          });
+        };
+        n.items.forEach(function(it) {
+          S.addBeing(it, how);
+        });
+        S.spots = how.spots;
+        S.touchable = ['wait', 'tied', 'placed'];
+        S.mode = {kind: 'nest'};
+        S.onTouch = function(b) {
+          if (state.phase !== 'explore') {
+            return;
+          }
+          S.last = S.time.now;
+          var it = items[b.id];
+          if (b.state === 'placed') {
+            // The why, also for who does not fail: a thing already in its site says it again.
+            speak(it.why);
+            return;
+          }
+          state.phase = 'busy';
+          hideMenu();
+          var tied = b.state === 'tied';
+          var look = (it.looks || {})[role];
+          S.look(b, role, function() {
+            if (look && !st.looked[b.id]) {
+              st.looked[b.id] = true;
+              run.events.push({n: id, verb: b.id});
+            }
+            speak(tied ? it.why : look, function() {
+              var open = function() {
+                state.phase = 'explore';
+                showMenu(b, tied);
+              };
+              if (tied) {
+                open();
+              } else {
+                once('first_touch', open);
+              }
+            });
+          });
+        };
+        // The help comes by itself, free and without giving the rule: the seed leans to a thing not looked at; with
+        // two knots or a while more, the druid compares a living thing with one that is not, both still to be placed.
+        var idle = setInterval(function() {
+          if (!S || ended) {
+            clearInterval(idle);
+            return;
+          }
+          if (state.phase !== 'explore') {
+            return;
+          }
+          var still = S.time.now - S.last;
+          var help = lines.idle || {};
+          if (!st.said.lean && still > (help.after || 40) * 1000) {
+            st.said.lean = true;
+            var unseen = n.items.filter(function(it) {
+              return !st.looked[it.id] && !st.placed[it.id] && !st.tied[it.id];
+            })[0];
+            if (unseen) {
+              seed('lean', S.beings[unseen.id]);
+            }
+            S.last = S.time.now;
+            return;
+          }
+          var cmp = lines.compare || {};
+          if (!st.said.compare && (st.knots >= (cmp.knots || 2) || (st.said.lean && still > (cmp.after || 40) * 1000))) {
+            var pair = (cmp.pairs || []).filter(function(p) {
+              return !st.placed[p.alive] && !st.placed[p.not];
+            })[0];
+            if (pair) {
+              st.said.compare = true;
+              speak(pair.line);
+            }
+          }
+        }, 1000);
+        state.phase = 'explore';
+        S.last = S.time.now;
+        ribbon();
+        verbButton(false);
+        speak(lines.start);
+      };
+
       /* ---------- Which way ---------- */
 
       /**
@@ -836,6 +1229,13 @@
                   }
                 });
               });
+              // The seed of the student, where a nest wakes it.
+              var nests = Object.keys(q.nodes).some(function(nid) {
+                return q.nodes[nid].play === 'nest';
+              });
+              if (nests && T.artUrl(['creature.seed'])) {
+                L.load.image('seed', T.artUrl(['creature.seed']));
+              }
               if (T.artUrl(['critter.firefly'])) {
                 L.load.image('firefly', T.artUrl(['critter.firefly']));
               }
@@ -895,6 +1295,18 @@
             S.rock = S.tweens.add({targets: S.boat, y: bc.y + 2.5, angle: 0.35, duration: 1900, yoyo: true, repeat: -1,
               ease: 'Sine.easeInOut'});
           }
+        }
+        // The seed, in the nest of the place, where a nest wakes it.
+        var nestAt = null;
+        Object.keys(q.nodes).forEach(function(nid) {
+          if (q.nodes[nid].play === 'nest') {
+            nestAt = q.nodes[nid].spots.seed;
+          }
+        });
+        if (nestAt && S.textures.exists('seed')) {
+          S.seed = S.add.image(nestAt[0], nestAt[1] - 8, 'seed').setOrigin(0.5, 0.85).setDepth(nestAt[1] + 5);
+          S.seed.setScale(64 / (S.seed.height || 64));
+          S.seed.base = S.seed.scale;
         }
         // The hero and the creature.
         var start = point(q.start);
@@ -1084,7 +1496,7 @@
           var best = Infinity;
           Object.keys(S.beings).forEach(function(k) {
             var b = S.beings[k];
-            if (b.state !== 'wait' && b.state !== 'trouble') {
+            if ((S.touchable || ['wait', 'trouble']).indexOf(b.state) < 0) {
               return;
             }
             var bounds = b.sprite.getBounds();
@@ -1693,6 +2105,15 @@
           var x = pointer.worldX;
           var y = pointer.worldY;
           var b = S.beingAt(x, y);
+          // Where a touch opens what can be done with a thing (the nest), it is not taken nor dragged.
+          if (S.onTouch && S.mode.kind === 'nest') {
+            if (b) {
+              S.onTouch(b);
+            } else {
+              S.walkTo(P.onGround(place, x, y), null);
+            }
+            return;
+          }
           if (b && (S.mode.kind === 'board' || b === S.mode.being)) {
             if (S.armed && S.onVerb) {
               S.onVerb(b);
