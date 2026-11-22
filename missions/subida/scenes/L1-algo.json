@@ -40,6 +40,7 @@
       "role": "sage"
      },
      "sight": "La hoja, con marcas de raspado",
+     "art": "thing.rastro.hoja.raspada",
      "text": [
       "caracol",
       "Raspo las hojas con una lengua llena de dientecitos."
@@ -51,6 +52,7 @@
       "role": "healer"
      },
      "sight": "Junto a la hoja, un hoyito con huevos diminutos",
+     "art": "thing.rastro.hoja.huevos",
      "text": [
       "caracol",
       "Pongo mis huevos en un hoyito de tierra húmeda."
@@ -62,6 +64,7 @@
       "role": "scout"
      },
      "sight": "La tierra mojada bajo la hoja, como después de llover",
+     "art": "thing.rastro.hoja.tierra",
      "text": [
       "caracol",
       "Salgo después de llover; el sol me seca."
@@ -73,6 +76,7 @@
       "role": "protector"
      },
      "sight": "Baba en el borde de la hoja",
+     "art": "thing.rastro.hoja.baba",
      "text": [
       "caracol",
       "Dejo un rastro brillante y pegajoso por donde paso."
@@ -81,6 +85,7 @@
     {
      "id": "r2",
      "sight": "La tapita blanca y seca",
+     "art": "thing.rastro.tapa",
      "text": [
       "caracol",
       "Cuando hace mucho calor, cierro mi puerta con una tapa."
@@ -89,6 +94,7 @@
     {
      "id": "r3",
      "sight": "El rastro brillante y, entre las hojas, una sombra en espiral",
+     "art": "thing.rastro.baba.espiral",
      "text": [
       "caracol",
       "Llevo mi casa a cuestas, enrollada en espiral."
@@ -263,7 +269,18 @@
         1095,
         705
        ]
-      ]
+      ],
+      "layer": {
+       "key": "scene.claro-abierto.mata.derecha",
+       "at": [
+        1277,
+        414
+       ],
+       "pivot": [
+        1362,
+        593
+       ]
+      }
      },
      "izquierda": {
       "at": [
@@ -289,10 +306,23 @@
         426,
         747
        ]
-      ]
+      ],
+      "layer": {
+       "key": "scene.claro-abierto.mata.izquierda",
+       "at": [
+        0,
+        441
+       ],
+       "pivot": [
+        107,
+        595
+       ]
+      }
      }
     },
-    "first": "derecha"
+    "first": "derecha",
+    "closed": "thing.rastro.cerrado",
+    "trailTall": 72
    }
   }
  }

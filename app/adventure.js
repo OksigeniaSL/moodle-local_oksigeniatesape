@@ -1154,7 +1154,33 @@
         var opened = 0;
         var crossed = [];
         var marks = [];
+        var shown = [];
         var names = null;
+        var trailTall = how.trailTall || 72;
+        var closedKey = how.closed && S.textures.exists(how.closed) ? how.closed : null;
+        // Each bush of the painting in its own layer, over it, to shake it on its foot; who hides goes behind it.
+        var layers = {};
+        Object.keys(bushes).forEach(function(k) {
+          var ly = bushes[k].layer;
+          if (ly && S.textures.exists(ly.key)) {
+            var img = S.add.image(ly.pivot[0], ly.pivot[1], ly.key);
+            img.setOrigin((ly.pivot[0] - ly.at[0]) / img.width, (ly.pivot[1] - ly.at[1]) / img.height);
+            layers[k] = img.setDepth(ly.pivot[1]);
+          }
+        });
+        var shake = function(k) {
+          var img = layers[k];
+          if (!img || moment.still) {
+            return false;
+          }
+          var t = {v: 0};
+          S.tweens.add({targets: t, v: 1, duration: 650, ease: 'Linear', onUpdate: function() {
+            img.setAngle(7 * Math.sin(t.v * Math.PI * 6) * (1 - t.v));
+          }, onComplete: function() {
+            img.setAngle(0);
+          }});
+          return true;
+        };
         var speak = function(pair, end) {
           if (!pair || !pair[1]) {
             if (end) {
@@ -1181,6 +1207,14 @@
           var spots = (bushes[at] || {}).trails || [];
           for (var i = opened; i < clues.length; i++) {
             var pt = spots[i % spots.length];
+            if (closedKey) {
+              // A little heap of leaves over each; the next one to open, clearer.
+              var heap = S.add.image(pt[0], pt[1], closedKey).setOrigin(0.5, 1).setDepth(pt[1]);
+              heap.setScale(trailTall / heap.height).setAlpha(i === opened ? 1 : 0.8);
+              heap.at = pt;
+              marks.push(heap);
+              continue;
+            }
             var g = S.add.graphics().setDepth(pt[1]);
             g.fillStyle(0xfff1bd, i === opened ? 0.95 : 0.45);
             g.fillEllipse(pt[0], pt[1], 46, 20);
@@ -1194,10 +1228,12 @@
             return m.at;
           });
         };
-        var rustle = function() {
-          var b = bushes[at];
+        var rustle = function(k) {
+          var b = bushes[k || at];
           if (b && !moment.still) {
-            S.cameras.main.shake(120, 0.002);
+            if (!shake(k || at)) {
+              S.cameras.main.shake(120, 0.002);
+            }
             S.dust.explode(10, b.at[0], b.at[1] + 20);
           }
           sound('rustle', 'tap');
@@ -1240,8 +1276,16 @@
           S.walkTo(P.onGround(place, mark.at[0] - 50, mark.at[1] + 10), function() {
             S.hero.facing = Math.sign(mark.at[0] - S.hero.x) || 1;
             T.cast.act(S.hero, 'point');
-            mark.destroy();
             marks.shift();
+            if (mark.setTexture && cl.art && S.textures.exists(cl.art)) {
+              // The leaves fly off and what was under them stays on the ground.
+              S.dust.explode(8, mark.at[0], mark.at[1] - 10);
+              mark.setTexture(cl.art).setAlpha(1);
+              mark.setScale(trailTall / mark.height);
+              shown.push(mark);
+            } else {
+              mark.destroy();
+            }
             rustle();
             speak(cl.text, function() {
               lay();
@@ -1271,7 +1315,9 @@
               if (others.length) {
                 at = others[0];
               }
-              rustle();
+              setTimeout(function() {
+                rustle();
+              }, moment.still ? 0 : 450);
               lay();
               namesBox();
               var after = function() {
@@ -1296,21 +1342,49 @@
           marks = [];
           S.mode = null;
           S.onTouchAt = null;
+          // The creature goes back to the hero's side, and leaves the one found in sight.
+          S.pet.mode = 'follow';
           var b = bushes[at];
           var it = {id: n.answer, label: n.answer, art: n.art};
-          var snail = S.addBeing(it, {wait: {}, tall: {}});
-          snail.x = b.at[0] - 40;
-          snail.y = b.at[1] + 60;
-          snail.home = {x: snail.x, y: snail.y};
-          snail.sprite.setPosition(snail.x, snail.y);
+          var tall = {};
+          tall[n.answer] = how.answerTall || 110;
+          var snail = S.addBeing(it, {wait: {}, tall: tall});
+          // Out from behind its bush, toward the middle of the clearing, in front of it; the hero steps back to see it.
+          var ly = b.layer;
+          var toward = b.at[0] < W / 2 ? 1 : -1;
+          var out = {x: b.at[0] + toward * 130, y: (ly ? ly.pivot[1] : b.at[1]) + 40};
+          S.walkTo(P.onGround(place, b.at[0] + toward * 330, out.y + 20), function() {
+            S.hero.facing = -toward;
+          });
+          snail.x = layers[at] ? b.at[0] : out.x;
+          snail.y = layers[at] ? b.at[1] : out.y;
+          snail.sprite.setPosition(snail.x, snail.y).setDepth(snail.y);
           S.size(snail, snail.y);
-          S.hop(snail);
+          shake(at);
+          if (layers[at] && !moment.still) {
+            S.tweens.add({targets: snail, x: out.x, y: out.y, duration: 900, ease: 'Sine.easeOut', onUpdate: function() {
+              snail.sprite.setPosition(snail.x, snail.y).setDepth(snail.y);
+              S.size(snail, snail.y);
+            }, onComplete: function() {
+              snail.home = {x: snail.x, y: snail.y};
+              S.hop(snail);
+            }});
+          } else {
+            snail.x = out.x;
+            snail.y = out.y;
+            snail.sprite.setPosition(snail.x, snail.y).setDepth(snail.y);
+            S.size(snail, snail.y);
+            S.hop(snail);
+          }
+          snail.home = {x: out.x, y: out.y};
           var kind = crossed.length ? 'none' : opened <= 1 ? 'golden' : 'clear';
           if (kind !== 'none') {
             S.sparks.explode(kind === 'golden' ? 26 : 12, snail.x, snail.y - 30);
             // The shine of the find, behind it, as long as it is there.
-            S.fxPlay(kind === 'golden' ? 'hallazgo.dorado' : 'hallazgo.claro', snail.x, snail.y,
-              snail.sprite.displayWidth * 1.5, {loop: true, depth: snail.sprite.depth - 1});
+            S.time.delayedCall(moment.still ? 0 : 900, function() {
+              S.fxPlay(kind === 'golden' ? 'hallazgo.dorado' : 'hallazgo.claro', snail.x, snail.y,
+                snail.sprite.displayWidth * 1.5, {loop: true, depth: snail.sprite.depth - 1});
+            });
           }
           var said = (n.found || []).slice();
           var next = function() {
@@ -1855,6 +1929,19 @@
                     L.load.image('being.' + it.id, url);
                   }
                 });
+                // The trails of a search, closed and opened, and the bushes it hides in, each in its layer.
+                if (node.type === 'hunt') {
+                  var keys = [how.closed].concat((node.clues || []).map(function(cl) {
+                    return cl.art;
+                  }), Object.keys(how.bushes || {}).map(function(k) {
+                    return (how.bushes[k].layer || {}).key;
+                  }));
+                  keys.forEach(function(key) {
+                    if (key && T.artUrl([key]) && !L.textures.exists(key)) {
+                      L.load.image(key, T.artUrl([key]));
+                    }
+                  });
+                }
                 // Who hides in a search comes out at the end.
                 if (node.type === 'hunt' && node.answer) {
                   var found = T.artUrl([].concat(node.art || [], 'being.' + node.answer));
@@ -2072,6 +2159,19 @@
                 sp.destroy();
               });
             }
+            return sp;
+          }
+          if (opts.loop && meta.loop_from && !part) {
+            // It lights up once, then goes on in a loop from its own frame.
+            var rest = 'fxa.' + name + '.from';
+            if (!S.anims.exists(rest)) {
+              S.anims.create({key: rest, frames: S.anims.generateFrameNumbers('fx.' + name, {start: meta.loop_from,
+                end: to}), frameRate: meta.fps || 20, repeat: -1});
+            }
+            sp.play({key: key, repeat: 0});
+            sp.once('animationcomplete', function() {
+              sp.play(rest);
+            });
             return sp;
           }
           sp.play(key);
