@@ -1,0 +1,338 @@
+{
+ "id": "L1-duelo",
+ "mission": "subida",
+ "chapter": "claro",
+ "title": "El duelo",
+ "step": 0,
+ "objectives": [
+  "SV-01"
+ ],
+ "minutes": 3,
+ "start": "duelo",
+ "nodes": {
+  "duelo": {
+   "type": "duel",
+   "objective": "SV-01",
+   "image": "scene.claro-abierto",
+   "lose": 2,
+   "sight": "La linterna del claro, en su poste al pie del sendero, empieza a brillar sola con la vida del nido, y el Embrollo baja rodando para impedirlo, con el cuaderno de la druida sujeto entre sus hilos",
+   "goal": "Toca lo que sea mentira",
+   "ribbon": {
+    "threads": 3,
+    "knots": 2
+   },
+   "shuffle": true,
+   "say": {
+    "start": [
+     [
+      "embrollo",
+      "¡Alto ahí! Esta linterna no se enciende."
+     ],
+     [
+      "embrollo",
+      "He cambiado unas palabritas del cuaderno de la druida."
+     ],
+     [
+      "druida-mayor",
+      "Toca lo que sea mentira."
+     ],
+     [
+      "embrollo",
+      "Si tocas una verdad, te ato un nudo."
+     ],
+     [
+      "embrollo",
+      "¡Con dos, te enredo la linterna!"
+     ]
+    ],
+    "waiting": [
+     "embrollo",
+     "¿Y bien?"
+    ],
+    "lie": [
+     [
+      "embrollo",
+      "¡Ay, mi hilo! Esa me había quedado tan bonita…"
+     ],
+     [
+      "embrollo",
+      "¿Otra? ¡Si la escribí con mi mejor tinta!"
+     ]
+    ],
+    "truth": [
+     [
+      "embrollo",
+      "¡Esa era verdad! Un nudo para tu linterna."
+     ],
+     [
+      "druida-mayor",
+      "Eso era verdad."
+     ]
+    ],
+    "won": [
+     [
+      "embrollo",
+      "¡Me deshilacho! ¡Esto no se queda así!"
+     ],
+     [
+      "druida-mayor",
+      "¡Ha huido torre arriba!"
+     ],
+     [
+      "heroe",
+      "¡Lo hemos conseguido!"
+     ],
+     [
+      "druida-mayor",
+      "Lo demás está bien escrito."
+     ]
+    ],
+    "lost": [
+     [
+      "embrollo",
+      "¡Dos nudos! ¡Tu linterna, enredada!"
+     ],
+     [
+      "druida-mayor",
+      "Eso también era verdad."
+     ],
+     [
+      "druida-mayor",
+      "Se enciende igual, aunque lleve sus nudos."
+     ]
+    ],
+    "aided": [
+     "druida-mayor",
+     "Eso era verdad."
+    ]
+   },
+   "lines": [
+    {
+     "id": "f1",
+     "text": [
+      "embrollo",
+      "La lombriz no tiene ojos, pero nota la luz y huye."
+     ],
+     "lie": false,
+     "function": "relation",
+     "rematch": {
+      "sniff": "lombriz",
+      "sight": "huele la lombriz del nido: viva; no hace nada"
+     }
+    },
+    {
+     "id": "f2",
+     "text": [
+      "embrollo",
+      "La seta se alimenta de aire."
+     ],
+     "lie": true,
+     "function": "nutrition",
+     "changed": [
+      "de aire"
+     ],
+     "truth": [
+      "druida-mayor",
+      "La seta se alimenta de restos de hojas y de madera."
+     ]
+    },
+    {
+     "id": "f3",
+     "text": [
+      "embrollo",
+      "La rana caza insectos con la lengua para alimentarse."
+     ],
+     "lie": false,
+     "function": "nutrition",
+     "rematch": {
+      "sniff": "rana",
+      "sight": "huele la rana del nido: viva; no hace nada"
+     }
+    },
+    {
+     "id": "f4",
+     "text": [
+      "embrollo",
+      "La bellota está muerta: de ella no nacerá nada."
+     ],
+     "lie": true,
+     "function": "reproduction",
+     "changed": [
+      "muerta",
+      "no nacerá nada"
+     ],
+     "truth": [
+      "druida-mayor",
+      "La bellota está dormida: con agua y calor, nacerá un árbol."
+     ],
+     "rematch": {
+      "sniff": "bellota",
+      "growl": true,
+      "sight": "huele la bellota del nido, viva, y le gruñe a la frase"
+     }
+    },
+    {
+     "id": "f5",
+     "text": [
+      "embrollo",
+      "Las plantas no notan la luz."
+     ],
+     "lie": true,
+     "function": "relation",
+     "changed": [
+      "no notan"
+     ],
+     "truth": [
+      "druida-mayor",
+      "Las plantas notan la luz: sus tallos crecen hacia ella."
+     ]
+    },
+    {
+     "id": "f6",
+     "text": [
+      "embrollo",
+      "La hormiga nace de un huevo que puso la reina."
+     ],
+     "lie": false,
+     "function": "reproduction"
+    }
+   ],
+   "won": "gana",
+   "lost": "linterna"
+  },
+  "linterna": {
+   "type": "story",
+   "lantern": "knots",
+   "sight": "La luz del nido sube por el poste y la linterna del claro se enciende con sus dos nudos a la vista",
+   "next": "revancha"
+  },
+  "revancha": {
+   "type": "duel",
+   "of": "duelo",
+   "image": "scene.claro-abierto",
+   "goal": "Toca lo que sea mentira",
+   "sight": "La criatura huele a quien nombra cada frase, si está en el nido, y le gruñe a la frase que llama muerto a algo que huele vivo",
+   "say": {
+    "start": [
+     [
+      "druida-mayor",
+      "¿Revancha? Ahora tu criatura te ayuda."
+     ],
+     [
+      "embrollo",
+      "¿Otra vez? ¡Bah! Leo lo que queda."
+     ]
+    ],
+    "won": [
+     [
+      "embrollo",
+      "¡Me deshilacho! ¡Esto no se queda así!"
+     ],
+     [
+      "druida-mayor",
+      "¡Ha huido torre arriba!"
+     ],
+     [
+      "druida-mayor",
+      "Y tu linterna, sin nudos."
+     ]
+    ]
+   },
+   "laugh": "Tocar esa verdad solo hace reír al Embrollo, sin nudo",
+   "won": "gana"
+  },
+  "gana": {
+   "type": "ending",
+   "outcome": "success",
+   "sight": "Huye sendero arriba, deshilachado, y va soltando cosas que brillan: son sus gemas, que se cuentan en la linterna",
+   "effects": [
+    {
+     "gems": 5
+    }
+   ]
+  }
+ },
+ "code": "L1-duelo",
+ "adventure": {
+  "place": "claro-abierto",
+  "title": "El duelo",
+  "ambient": "claro",
+  "walk": [
+   [
+    0,
+    470
+   ],
+   [
+    620,
+    468
+   ],
+   [
+    1060,
+    450
+   ],
+   [
+    1440,
+    470
+   ],
+   [
+    1440,
+    800
+   ],
+   [
+    0,
+    800
+   ]
+  ],
+  "start": [
+   982,
+   772
+  ],
+  "speaker": {
+   "who": "druida-mayor",
+   "at": [
+    360,
+    528
+   ],
+   "tall": 170,
+   "face": 1
+  },
+  "nodes": {
+   "duelo": {
+    "play": "duel",
+    "goal": "Toca lo que sea mentira",
+    "lantern": {
+     "farol": [
+      1166,
+      435
+     ],
+     "pie_del_poste": [
+      1233,
+      555
+     ]
+    },
+    "path": [
+     1050,
+     432
+    ]
+   },
+   "revancha": {
+    "play": "duel",
+    "goal": "Toca lo que sea mentira",
+    "lantern": {
+     "farol": [
+      1166,
+      435
+     ],
+     "pie_del_poste": [
+      1233,
+      555
+     ]
+    },
+    "path": [
+     1050,
+     432
+    ]
+   }
+  }
+ }
+}

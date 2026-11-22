@@ -1,0 +1,704 @@
+{
+ "id": "L1-nido",
+ "mission": "subida",
+ "chapter": "claro",
+ "title": "El Nido",
+ "step": 0,
+ "objectives": [
+  "SV-01"
+ ],
+ "minutes": 5,
+ "start": "nido",
+ "nodes": {
+  "nido": {
+   "type": "nest",
+   "objective": "SV-01",
+   "image": "scene.claro-abierto",
+   "probes": 4,
+   "sight": "El nido de ramas en el centro, con la semilla dentro y cinco huecos alrededor; a un lado, una piedra plana con tres huecos; las ocho cosas, cada una en su sitio del claro",
+   "goal": "Despierta tu semilla",
+   "ribbon": {
+    "gaps": 5,
+    "dots": 4
+   },
+   "say": {
+    "start": [
+     "druida-mayor",
+     "Despierta tu semilla. Acércale cosas y mira qué hace."
+    ],
+    "first_touch": [
+     "druida-mayor",
+     "Prueba con la semilla, o deja cada cosa en su sitio."
+    ],
+    "first_probe": [
+     "druida-mayor",
+     "Solo aguanta cuatro pruebas."
+    ],
+    "no_probes": [
+     "druida-mayor",
+     "Ya no le quedan fuerzas para probar."
+    ],
+    "first_leave": [
+     "druida-mayor",
+     "A su lado caben cinco. Lo demás, aparte."
+    ],
+    "knot": [
+     [
+      "embrollo",
+      "¡Un nudo para mi ovillo!"
+     ],
+     [
+      "embrollo",
+      "¡Otro! ¡Qué bien me salen!"
+     ],
+     [
+      "embrollo",
+      "¡Je, je! ¡Esto se enreda!"
+     ]
+    ],
+    "first_knot": [
+     "druida-mayor",
+     "No pasa nada: luego vuelves y lo deshaces."
+    ],
+    "undone": [
+     "embrollo",
+     "¡Bah! Ya ataré otro."
+    ],
+    "opened": [
+     [
+      "druida-mayor",
+      "Las cinco están vivas."
+     ],
+     [
+      "druida-mayor",
+      "Se alimentan, notan lo que pasa y se reproducen."
+     ],
+     [
+      "heroe",
+      "¡Hola!"
+     ]
+    ],
+    "missing": [
+     "druida-mayor",
+     "Le falta una. Mira lo que está enredado."
+    ],
+    "no_knot": [
+     "embrollo",
+     "¡Ni un nudo! Qué rabia."
+    ],
+    "idle": {
+     "after": 40,
+     "sight": "La semilla se inclina hacia una cosa que no se ha mirado"
+    },
+    "compare": {
+     "after": 40,
+     "knots": 2,
+     "pairs": [
+      {
+       "alive": "lombriz",
+       "not": "cristal",
+       "line": [
+        "druida-mayor",
+        "La lombriz se encoge al tocarla. ¿Y el cristal?"
+       ]
+      },
+      {
+       "alive": "rana",
+       "not": "burbuja",
+       "line": [
+        "druida-mayor",
+        "La rana respira. ¿Y la burbuja?"
+       ]
+      },
+      {
+       "alive": "musgo",
+       "not": "pluma",
+       "line": [
+        "druida-mayor",
+        "Del musgo salen musgos nuevos. ¿Y de la pluma?"
+       ]
+      }
+     ]
+    },
+    "aided": [
+     "druida-mayor",
+     "Casi. Mírala otra vez."
+    ]
+   },
+   "items": [
+    {
+     "id": "lombriz",
+     "label": "La lombriz",
+     "alive": true,
+     "art": "being.lombriz",
+     "where": "Bajo una piedra, retorciéndose",
+     "probe": [
+      "druida-mayor",
+      "¡Late!"
+     ],
+     "looks": {
+      "sage": [
+       "lombriz",
+       "Por dentro llevo tierra y trocitos de hojas que he tragado."
+      ],
+      "healer": [
+       "lombriz",
+       "Respiro por la piel; por eso la llevo siempre húmeda."
+      ],
+      "scout": [
+       "lombriz",
+       "Vengo de un túnel que cavé bajo la piedra."
+      ],
+      "protector": [
+       "lombriz",
+       "Soy blanda y fresca; al menor roce, me encojo."
+      ]
+     },
+     "wrong": [
+      "lombriz",
+      "¡Como hojas y cavo túneles! ¿Qué más quieres?"
+     ],
+     "why": [
+      "lombriz",
+      "Me alimento de restos de hojas. Me encojo si me tocan. Pongo huevos."
+     ]
+    },
+    {
+     "id": "seta",
+     "label": "La seta",
+     "alive": true,
+     "art": "being.seta",
+     "where": "Junto a un tronco caído",
+     "probe": [
+      "druida-mayor",
+      "¿Sin hojas, y la hace latir?"
+     ],
+     "looks": {
+      "sage": [
+       "seta",
+       "Casi todo mi cuerpo es una red finísima, dentro del tronco."
+      ],
+      "healer": [
+       "seta",
+       "Suelto esporas finísimas; de cada una puede nacer otro hongo."
+      ],
+      "scout": [
+       "seta",
+       "Salgo del tronco caído, y me alimento de su madera."
+      ],
+      "protector": [
+       "seta",
+       "Soy blandita y fresca, y huelo a tierra húmeda."
+      ]
+     },
+     "wrong": [
+      "seta",
+      "¡No tengo hojas, pero como madera vieja!"
+     ],
+     "why": [
+      "seta",
+      "Soy la parte que asoma de un hongo. Me alimento de restos. De mis esporas nacen hongos nuevos."
+     ]
+    },
+    {
+     "id": "musgo",
+     "label": "El musgo",
+     "alive": true,
+     "art": "being.musgo",
+     "where": "Sobre una piedra húmeda, a la sombra",
+     "probe": [
+      "druida-mayor",
+      "Tan pequeño, y late con él."
+     ],
+     "looks": {
+      "sage": [
+       "musgo",
+       "Estoy hecho de hojitas diminutas, verdes como las de un árbol."
+      ],
+      "healer": [
+       "musgo",
+       "Sin flores ni semillas, de mí salen musgos nuevos."
+      ],
+      "scout": [
+       "musgo",
+       "Vengo de la piedra húmeda, donde crecí a la sombra."
+      ],
+      "protector": [
+       "musgo",
+       "Seco, crujo como papel; mojado, vuelvo a ser blando y verde."
+      ]
+     },
+     "wrong": [
+      "musgo",
+      "¡Pequeño, sí, pero crezco y doy musgos nuevos!"
+     ],
+     "why": [
+      "musgo",
+      "Soy una planta pequeña. Fabrico mi alimento con la luz. Me reproduzco con esporas."
+     ]
+    },
+    {
+     "id": "bellota",
+     "label": "La bellota",
+     "alive": true,
+     "art": "being.bellota",
+     "where": "Junto al roble del borde del claro",
+     "probe": [
+      "druida-mayor",
+      "¿Una piedrecita que la hace latir?"
+     ],
+     "looks": {
+      "sage": [
+       "bellota",
+       "Dentro de mi cáscara guardo una planta diminuta y su comida."
+      ],
+      "healer": [
+       "bellota",
+       "Respiro tan despacio que parece que no respiro."
+      ],
+      "scout": [
+       "bellota",
+       "Caí del roble grande; de mí saldrá otro."
+      ],
+      "protector": [
+       "bellota",
+       "Dura y quieta como una piedra, pero con agua me hincho."
+      ]
+     },
+     "wrong": [
+      "bellota",
+      "¡Dormida, no muerta! Dame agua y verás."
+     ],
+     "why": [
+      "bellota",
+      "Parezco muerta, pero dentro duerme una planta diminuta con su comida. Con agua y calor, despierta y germina."
+     ]
+    },
+    {
+     "id": "rana",
+     "label": "La rana",
+     "alive": true,
+     "art": "being.rana",
+     "where": "Bajo una hoja, junto a la charca; solo parpadea",
+     "probe": [
+      "druida-mayor",
+      "Ni se mueve, y late a su lado."
+     ],
+     "looks": {
+      "sage": [
+       "rana",
+       "Tengo huesos por dentro y la piel fina y húmeda."
+      ],
+      "healer": [
+       "rana",
+       "Estoy quieta, pero mi garganta sube y baja sin parar."
+      ],
+      "scout": [
+       "rana",
+       "Vengo de la charca; allí fui renacuajo."
+      ],
+      "protector": [
+       "rana",
+       "Fresca y resbaladiza; si me tocas, doy un salto."
+      ]
+     },
+     "wrong": [
+      "rana",
+      "¡Quieta, sí! ¡Esperando a que pase un mosquito!"
+     ],
+     "why": [
+      "rana",
+      "Estar quieta no es estar sin vida. Respiro, cazo insectos para alimentarme y pongo huevos en el agua."
+     ]
+    },
+    {
+     "id": "cristal",
+     "label": "El cristal",
+     "alive": false,
+     "art": "thing.cristal",
+     "where": "En una roca húmeda, brillando",
+     "probe": [
+      "druida-mayor",
+      "Crece, pero la deja fría."
+     ],
+     "looks": {
+      "sage": [
+       "cristal",
+       "Crezco porque se me pegan trocitos por fuera."
+      ],
+      "healer": [
+       "cristal",
+       "A mi lado van saliendo otros cristales más pequeños."
+      ],
+      "scout": [
+       "cristal",
+       "Vengo de la roca húmeda, donde crezco poco a poco."
+      ],
+      "protector": [
+       "cristal",
+       "Soy duro y frío, con caras planas y bordes afilados."
+      ]
+     },
+     "wrong": [
+      "cristal",
+      "¡Crezco, pero por fuera, como una bola de nieve!"
+     ],
+     "why": [
+      "cristal",
+      "Crezco porque se me pegan trocitos por fuera. No me alimento, no noto nada y no tengo crías."
+     ]
+    },
+    {
+     "id": "pluma",
+     "label": "La pluma",
+     "alive": false,
+     "art": "thing.pluma",
+     "where": "En la hierba, meciéndose con el aire",
+     "probe": [
+      "druida-mayor",
+      "Viene de un ave, y la deja fría."
+     ],
+     "looks": {
+      "sage": [
+       "pluma",
+       "Estoy hecha de lo mismo que tus uñas."
+      ],
+      "healer": [
+       "pluma",
+       "Nací en la piel de un ave, como tu pelo."
+      ],
+      "scout": [
+       "pluma",
+       "Vengo de un ave que vuela por encima del claro."
+      ],
+      "protector": [
+       "pluma",
+       "Soy suave y ligera; con un soplo echo a volar."
+      ]
+     },
+     "wrong": [
+      "pluma",
+      "¡El ave vuela por ahí; yo solo soy su pluma!"
+     ],
+     "why": [
+      "pluma",
+      "Me fabricó un ave viva. Yo sola no me alimento ni tengo crías. Vengo de un ser vivo, pero no lo soy."
+     ]
+    },
+    {
+     "id": "burbuja",
+     "label": "La burbuja",
+     "alive": false,
+     "art": "thing.burbuja",
+     "where": "Flota sobre la hierba; la sopló el Embrollo al pasar, en el segundo 5",
+     "probe": [
+      "druida-mayor",
+      "Se mueve y brilla, y nada."
+     ],
+     "looks": {
+      "sage": [
+       "burbuja",
+       "Soy una capa finísima de agua y jabón, con aire dentro."
+      ],
+      "healer": [
+       "burbuja",
+       "Nazco de un soplo; dentro llevo el aire de quien sopló."
+      ],
+      "scout": [
+       "burbuja",
+       "Me ha soplado el Embrollo, para confundirte."
+      ],
+      "protector": [
+       "burbuja",
+       "Floto y brillo, pero si me tocas, ¡plof!"
+      ]
+     },
+     "wrong": [
+      "burbuja",
+      "¡Brillo mucho, pero dentro solo llevo aire!"
+     ],
+     "why": [
+      "burbuja",
+      "Soy agua y jabón con aire dentro. Floto porque me lleva el aire y brillo con la luz. Moverse y brillar no es estar vivo."
+     ]
+    }
+   ],
+   "next": "abierta"
+  },
+  "abierta": {
+   "type": "ending",
+   "outcome": "success",
+   "sight": "Las cinco laten a la vez y la semilla se abre en el nido: nace la criatura, igual para todos, y estornuda",
+   "ribbon": {
+    "knots": "5 seres vivos · 1 nudo",
+    "clean": "sin nudos"
+   },
+   "pending": "La criatura da tirones a su hilo: deshacerlo es opcional, y el camino enseña el lugar con nudos pendientes"
+  }
+ },
+ "code": "L1-nido",
+ "adventure": {
+  "place": "claro-abierto",
+  "title": "El Nido",
+  "ambient": "claro",
+  "walk": [
+   [
+    0,
+    470
+   ],
+   [
+    620,
+    468
+   ],
+   [
+    1060,
+    450
+   ],
+   [
+    1440,
+    470
+   ],
+   [
+    1440,
+    800
+   ],
+   [
+    0,
+    800
+   ]
+  ],
+  "start": [
+   982,
+   772
+  ],
+  "speaker": {
+   "who": "druida-mayor",
+   "at": [
+    360,
+    528
+   ],
+   "tall": 170,
+   "face": 1
+  },
+  "nodes": {
+   "nido": {
+    "play": "nest",
+    "goal": "Despierta tu semilla",
+    "spots": {
+     "seed": [
+      717,
+      630
+     ],
+     "aside": [
+      280,
+      588
+     ]
+    },
+    "ring": [
+     [
+      502,
+      645
+     ],
+     [
+      578,
+      732
+     ],
+     [
+      717,
+      758
+     ],
+     [
+      856,
+      732
+     ],
+     [
+      932,
+      645
+     ]
+    ],
+    "wait": {
+     "lombriz": [
+      495,
+      518
+     ],
+     "seta": [
+      585,
+      502
+     ],
+     "musgo": [
+      675,
+      492
+     ],
+     "bellota": [
+      765,
+      488
+     ],
+     "rana": [
+      855,
+      488
+     ],
+     "cristal": [
+      945,
+      492
+     ],
+     "pluma": [
+      1035,
+      502
+     ],
+     "burbuja": [
+      1125,
+      518
+     ]
+    },
+    "pictures": {
+     "lombriz": "being.lombriz",
+     "seta": "being.seta",
+     "musgo": "being.musgo",
+     "bellota": "being.bellota",
+     "rana": "being.rana",
+     "cristal": "thing.cristal",
+     "pluma": "thing.pluma",
+     "burbuja": "thing.burbuja"
+    },
+    "verbs": {
+     "sage": {
+      "lombriz": [
+       "lombriz",
+       "Por dentro llevo tierra y trocitos de hojas que he tragado."
+      ],
+      "seta": [
+       "seta",
+       "Casi todo mi cuerpo es una red finísima, dentro del tronco."
+      ],
+      "musgo": [
+       "musgo",
+       "Estoy hecho de hojitas diminutas, verdes como las de un árbol."
+      ],
+      "bellota": [
+       "bellota",
+       "Dentro de mi cáscara guardo una planta diminuta y su comida."
+      ],
+      "rana": [
+       "rana",
+       "Tengo huesos por dentro y la piel fina y húmeda."
+      ],
+      "cristal": [
+       "cristal",
+       "Crezco porque se me pegan trocitos por fuera."
+      ],
+      "pluma": [
+       "pluma",
+       "Estoy hecha de lo mismo que tus uñas."
+      ],
+      "burbuja": [
+       "burbuja",
+       "Soy una capa finísima de agua y jabón, con aire dentro."
+      ]
+     },
+     "healer": {
+      "lombriz": [
+       "lombriz",
+       "Respiro por la piel; por eso la llevo siempre húmeda."
+      ],
+      "seta": [
+       "seta",
+       "Suelto esporas finísimas; de cada una puede nacer otro hongo."
+      ],
+      "musgo": [
+       "musgo",
+       "Sin flores ni semillas, de mí salen musgos nuevos."
+      ],
+      "bellota": [
+       "bellota",
+       "Respiro tan despacio que parece que no respiro."
+      ],
+      "rana": [
+       "rana",
+       "Estoy quieta, pero mi garganta sube y baja sin parar."
+      ],
+      "cristal": [
+       "cristal",
+       "A mi lado van saliendo otros cristales más pequeños."
+      ],
+      "pluma": [
+       "pluma",
+       "Nací en la piel de un ave, como tu pelo."
+      ],
+      "burbuja": [
+       "burbuja",
+       "Nazco de un soplo; dentro llevo el aire de quien sopló."
+      ]
+     },
+     "scout": {
+      "lombriz": [
+       "lombriz",
+       "Vengo de un túnel que cavé bajo la piedra."
+      ],
+      "seta": [
+       "seta",
+       "Salgo del tronco caído, y me alimento de su madera."
+      ],
+      "musgo": [
+       "musgo",
+       "Vengo de la piedra húmeda, donde crecí a la sombra."
+      ],
+      "bellota": [
+       "bellota",
+       "Caí del roble grande; de mí saldrá otro."
+      ],
+      "rana": [
+       "rana",
+       "Vengo de la charca; allí fui renacuajo."
+      ],
+      "cristal": [
+       "cristal",
+       "Vengo de la roca húmeda, donde crezco poco a poco."
+      ],
+      "pluma": [
+       "pluma",
+       "Vengo de un ave que vuela por encima del claro."
+      ],
+      "burbuja": [
+       "burbuja",
+       "Me ha soplado el Embrollo, para confundirte."
+      ]
+     },
+     "protector": {
+      "lombriz": [
+       "lombriz",
+       "Soy blanda y fresca; al menor roce, me encojo."
+      ],
+      "seta": [
+       "seta",
+       "Soy blandita y fresca, y huelo a tierra húmeda."
+      ],
+      "musgo": [
+       "musgo",
+       "Seco, crujo como papel; mojado, vuelvo a ser blando y verde."
+      ],
+      "bellota": [
+       "bellota",
+       "Dura y quieta como una piedra, pero con agua me hincho."
+      ],
+      "rana": [
+       "rana",
+       "Fresca y resbaladiza; si me tocas, doy un salto."
+      ],
+      "cristal": [
+       "cristal",
+       "Soy duro y frío, con caras planas y bordes afilados."
+      ],
+      "pluma": [
+       "pluma",
+       "Soy suave y ligera; con un soplo echo a volar."
+      ],
+      "burbuja": [
+       "burbuja",
+       "Floto y brillo, pero si me tocas, ¡plof!"
+      ]
+     }
+    }
+   }
+  }
+ }
+}

@@ -1,0 +1,282 @@
+{
+ "id": "L1-algo",
+ "mission": "subida",
+ "chapter": "claro",
+ "title": "Algo se mueve",
+ "step": 0,
+ "objectives": [
+  "SV-07"
+ ],
+ "minutes": 4,
+ "start": "algo",
+ "nodes": {
+  "algo": {
+   "type": "hunt",
+   "objective": "SV-07",
+   "image": "scene.claro-abierto",
+   "answer": "caracol",
+   "art": "being.caracol",
+   "sight": "La criatura recién nacida se queda mirando una mata que se mueve, con la cabeza alzada: aún no sabe olfatear, porque lo aprende con la linterna",
+   "stage": "La mata; tres rastros en el suelo, cerrados y en fila hacia ella (una hoja con agujeros redondos, una tapita blanca y seca sobre una piedra y un rastro brillante que entra en la mata); abajo, los cuatro nombres, apagados hasta que se abre el primer rastro",
+   "goal": "¿Quién se esconde en esa mata?",
+   "say": {
+    "start": [
+     "druida-mayor",
+     "¿Quién se esconde en esa mata?"
+    ],
+    "bet": [
+     "druida-mayor",
+     "Cuantos menos rastros necesites, más brilla tu hallazgo."
+    ],
+    "first_miss": [
+     "druida-mayor",
+     "Se ha cambiado de mata. ¡Búscalo!"
+    ]
+   },
+   "clues": [
+    {
+     "id": "r1-sage",
+     "requires": {
+      "role": "sage"
+     },
+     "sight": "La hoja, con marcas de raspado",
+     "text": [
+      "caracol",
+      "Raspo las hojas con una lengua llena de dientecitos."
+     ]
+    },
+    {
+     "id": "r1-healer",
+     "requires": {
+      "role": "healer"
+     },
+     "sight": "Junto a la hoja, un hoyito con huevos diminutos",
+     "text": [
+      "caracol",
+      "Pongo mis huevos en un hoyito de tierra húmeda."
+     ]
+    },
+    {
+     "id": "r1-scout",
+     "requires": {
+      "role": "scout"
+     },
+     "sight": "La tierra mojada bajo la hoja, como después de llover",
+     "text": [
+      "caracol",
+      "Salgo después de llover; el sol me seca."
+     ]
+    },
+    {
+     "id": "r1-protector",
+     "requires": {
+      "role": "protector"
+     },
+     "sight": "Baba en el borde de la hoja",
+     "text": [
+      "caracol",
+      "Dejo un rastro brillante y pegajoso por donde paso."
+     ]
+    },
+    {
+     "id": "r2",
+     "sight": "La tapita blanca y seca",
+     "text": [
+      "caracol",
+      "Cuando hace mucho calor, cierro mi puerta con una tapa."
+     ]
+    },
+    {
+     "id": "r3",
+     "sight": "El rastro brillante y, entre las hojas, una sombra en espiral",
+     "text": [
+      "caracol",
+      "Llevo mi casa a cuestas, enrollada en espiral."
+     ]
+    }
+   ],
+   "names": [
+    {
+     "id": "almeja",
+     "label": "la almeja",
+     "ask": [
+      "heroe",
+      "¿Eres la almeja?"
+     ],
+     "reply": [
+      "caracol",
+      "¿Una almeja? ¡Pero si estoy en la hierba!"
+     ]
+    },
+    {
+     "id": "babosa",
+     "label": "la babosa",
+     "ask": [
+      "heroe",
+      "¿Eres la babosa?"
+     ],
+     "reply": [
+      "caracol",
+      "¡Casi! Somos primos, pero no soy yo."
+     ]
+    },
+    {
+     "id": "caracol",
+     "label": "el caracol",
+     "ask": [
+      "heroe",
+      "¿Eres el caracol?"
+     ]
+    },
+    {
+     "id": "pulpo",
+     "label": "el pulpo",
+     "ask": [
+      "heroe",
+      "¿Eres el pulpo?"
+     ],
+     "reply": [
+      "caracol",
+      "¿Un pulpo en el claro? ¡Ni en sueños!"
+     ]
+    }
+   ],
+   "miss": "El nombre se tacha, el ser huye a otra mata con un ruido de hojas y el brillo se apaga",
+   "found": [
+    [
+     "caracol",
+     "¡Me has encontrado!"
+    ],
+    [
+     "caracol",
+     "Mis ojos van en la punta de las antenas."
+    ]
+   ],
+   "shine": {
+    "golden": [
+     "druida-mayor",
+     "¡Con un solo rastro! Mira cómo brilla."
+    ],
+    "clear": [
+     "druida-mayor",
+     "¡A la primera! Mira cómo brilla."
+    ],
+    "none": [
+     "druida-mayor",
+     "Encontrado, aunque esta vez sin brillo."
+    ]
+   },
+   "next": "fin"
+  },
+  "fin": {
+   "type": "ending",
+   "outcome": "success"
+  }
+ },
+ "code": "L1-algo",
+ "adventure": {
+  "place": "claro-abierto",
+  "title": "Algo se mueve",
+  "ambient": "claro",
+  "walk": [
+   [
+    0,
+    470
+   ],
+   [
+    620,
+    468
+   ],
+   [
+    1060,
+    450
+   ],
+   [
+    1440,
+    470
+   ],
+   [
+    1440,
+    800
+   ],
+   [
+    0,
+    800
+   ]
+  ],
+  "start": [
+   982,
+   772
+  ],
+  "speaker": {
+   "who": "druida-mayor",
+   "at": [
+    360,
+    528
+   ],
+   "tall": 170,
+   "face": 1
+  },
+  "nodes": {
+   "algo": {
+    "play": "hunt",
+    "goal": "¿Quién se esconde en esa mata?",
+    "bushes": {
+     "derecha": {
+      "at": [
+       1372,
+       502
+      ],
+      "box": [
+       1287,
+       428,
+       1440,
+       588
+      ],
+      "trails": [
+       [
+        1275,
+        630
+       ],
+       [
+        1185,
+        668
+       ],
+       [
+        1095,
+        705
+       ]
+      ]
+     },
+     "izquierda": {
+      "at": [
+       108,
+       522
+      ],
+      "box": [
+       8,
+       453,
+       213,
+       590
+      ],
+      "trails": [
+       [
+        240,
+        668
+       ],
+       [
+        333,
+        708
+       ],
+       [
+        426,
+        747
+       ]
+      ]
+     }
+    },
+    "first": "derecha"
+   }
+  }
+ }
+}

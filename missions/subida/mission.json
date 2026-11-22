@@ -1,0 +1,311 @@
+{
+ "code": "subida",
+ "version": 1,
+ "format": 1,
+ "title": "La subida a la torre",
+ "licence": "free",
+ "rights": "CC-BY-SA-4.0 OR GPL-3.0-or-later",
+ "publisher": "Oksigenia SL",
+ "publisher_id": "oksigenia",
+ "edition": 1,
+ "lang": "es",
+ "languages": [
+  "es"
+ ],
+ "ages": "9–11",
+ "skins": {
+  "valley": "El valle"
+ },
+ "variants": {
+  "es": "España"
+ },
+ "objectives": {
+  "SV-01": "Distinguir lo vivo de lo inerte",
+  "SV-07": "Trabajar como un científico"
+ },
+ "chapters": [
+  {
+   "code": "claro",
+   "name": "El claro"
+  }
+ ],
+ "items": {},
+ "climb": {
+  "opening": [
+   {
+    "at": 0,
+    "sight": "El valle en penumbra, la torre encendida arriba y un solo botón grande",
+    "button": "Entrar en el valle",
+    "touch": "Toque 1: «Entrar en el valle». El valle llena la pantalla y empieza el ambiente del anochecer"
+   },
+   {
+    "at": 5,
+    "sight": "El Embrollo, un ovillo de hilos con ojos, cruza el claro rodando y sube por el sendero; a su paso, las seis linternas se apagan una a una y la luz de la torre se enreda. De paso sopla una burbuja, que se queda flotando",
+    "say": [
+     [
+      "embrollo",
+      "¡Soy el Embrollo y lo he enredado todo!"
+     ],
+     [
+      "embrollo",
+      "A ver quién sabe ahora quién es quién."
+     ]
+    ],
+    "sound": "Una risa corta y un «puf» por linterna"
+   },
+   {
+    "at": 12,
+    "sight": "Entra la druida, con un bastón que da una luz pequeña",
+    "sound": "Pasos sobre hojas"
+   },
+   {
+    "at": 15,
+    "sight": "La druida se agacha y tiende una semilla que late: es lo único que brilla. Una mano dibujada la señala",
+    "say": [
+     [
+      "druida-mayor",
+      "Tómala."
+     ]
+    ],
+    "sound": "Un latido suave",
+    "touch": "Toque 2: la semilla late más fuerte y su luz crece"
+   },
+   {
+    "at": 22,
+    "sight": "La semilla baja al borde de abajo, como si estuviera en las manos de quien juega",
+    "say": [
+     [
+      "druida-mayor",
+      "Es tuya. Dentro duerme alguien."
+     ]
+    ]
+   },
+   {
+    "at": 30,
+    "sight": "Una línea de luz dibuja el sendero desde el claro hasta la torre, con seis linternas apagadas",
+    "counter": "Tu camino: 0 de 6",
+    "say": [
+     [
+      "druida-mayor",
+      "Es tu camino. Enciende las seis linternas y sube a la torre."
+     ]
+    ],
+    "sound": "Una nota que sube con la línea",
+    "touch": "Nada; si se toca una linterna, tiembla"
+   },
+   {
+    "at": 36,
+    "sight": "El Embrollo asoma en lo alto de la torre",
+    "say": [
+     [
+      "embrollo",
+      "¡Te espero arriba!"
+     ]
+    ]
+   },
+   {
+    "at": 40,
+    "sight": "Cuatro héroes en el claro, cada uno con el objeto de su mirada a la vista",
+    "say": [
+     [
+      "druida-mayor",
+      "¿Quién eres?"
+     ]
+    ],
+    "touch": "Toque 3: un héroe. Hace su gesto y dice su frase"
+   },
+   {
+    "at": 43,
+    "sight": "El héroe tocado, en primer plano",
+    "say": {
+     "sage": [
+      "heroe",
+      "Yo miro de cerca."
+     ],
+     "healer": [
+      "heroe",
+      "Yo escucho."
+     ],
+     "scout": [
+      "heroe",
+      "Yo sigo rastros."
+     ],
+     "protector": [
+      "heroe",
+      "Yo agarro sin miedo."
+     ]
+    },
+    "touch": "Toque 4: otro héroe (se pueden oír los cuatro). Toque 5: el elegido, otra vez: da un paso al frente y los demás se apartan"
+   },
+   {
+    "at": 55,
+    "sight": "A su lado, sus dos figuras, con la misma ropa y el mismo objeto: una de chico y otra de chica",
+    "sound": "Un acorde corto",
+    "touch": "Toque 6: una figura, que recibe la semilla en las manos"
+   },
+   {
+    "at": 62,
+    "sight": "En el centro del claro, un nido de ramas; a un lado, una piedra plana; las ocho cosas, repartidas por el claro; la druida, junto al nido",
+    "sound": "Pasos",
+    "touch": "Toque 7: el nido. El héroe anda hasta él y deja la semilla dentro"
+   },
+   {
+    "at": 72,
+    "scene": "L1-nido"
+   }
+  ],
+  "lantern": {
+   "sight": "La luz del nido sube por el poste y la linterna del claro se enciende, limpia o con los nudos del duelo. La luz baja hasta la criatura: crece un poco, sin cambiar de etapa ni decir su nombre de luz, y arruga la nariz",
+   "say": [
+    [
+     "druida-mayor",
+     "Tu criatura ya sabe olfatear lo vivo, aunque no lo parezca."
+    ]
+   ],
+   "verb": "sniff",
+   "sniff": [
+    {
+     "at": "bellota",
+     "does": "un gesto contento"
+    },
+    {
+     "at": "cristal",
+     "does": "un estornudo"
+    }
+   ],
+   "button": "nose",
+   "counter": "Tu camino: 1 de 6"
+  },
+  "gems": {
+   "sight": "Lo que soltó el Embrollo, la luz de la linterna y el brillo del hallazgo vuelan a una bolsa y se cuentan",
+   "say": [
+    [
+     "druida-mayor",
+     "Son gemas, y son tuyas."
+    ]
+   ],
+   "from": {
+    "lantern": 5,
+    "duel": 5,
+    "find": [
+     0,
+     1,
+     2
+    ]
+   }
+  },
+  "camp": {
+   "sight": "En el camino aparece, junto al claro, una tienda pequeña con su fuego: el campamento",
+   "say": {
+    "arrive": [
+     "druida-mayor",
+     "Este es tu campamento."
+    ],
+    "paints": [
+     "druida-mayor",
+     "Cada pintura cuesta diez gemas."
+    ],
+    "painted": [
+     "heroe",
+     "¡Qué bien te queda!"
+    ]
+   },
+   "paint": {
+    "price": 10,
+    "items": [
+     "paint-gold",
+     "paint-night",
+     "paint-snow",
+     "paint-ember",
+     "paint-moss",
+     "paint-coral"
+    ]
+   },
+   "name": {
+    "ask": [
+     "druida-mayor",
+     "¿Qué nombre le pones?"
+    ],
+    "default": "tu criatura"
+   },
+   "sniff": "Gesto contento ante lo vivo y estornudo ante lo demás"
+  },
+  "postcard": {
+   "say": [
+    [
+     "druida-mayor",
+     "Esto es para tu casa. ¿Qué te ha sorprendido más?"
+    ]
+   ],
+   "image": "La criatura, con su pintura, olfateando la cosa elegida; detrás, la linterna del claro encendida y, muy arriba, la torre; en una esquina, el héroe. Marco de postal y un sello con la linterna",
+   "text": [
+    "¡Hoy ha nacido mi criatura!",
+    "Para despertarla, he descubierto qué cosas están vivas.",
+    "Lo que más me ha sorprendido: {sorpresa}.",
+    "Ya sabe olfatear lo vivo. Pídanme que les enseñe cómo."
+   ],
+   "named": "¡Hoy ha nacido {nombre}, mi criatura!",
+   "surprises": {
+    "lombriz": {
+     "art": "being.lombriz",
+     "text": "la lombriz, que respira por la piel"
+    },
+    "seta": {
+     "art": "being.seta",
+     "text": "la seta, que vive casi entera escondida en el tronco"
+    },
+    "musgo": {
+     "art": "being.musgo",
+     "text": "el musgo, que es una planta diminuta"
+    },
+    "bellota": {
+     "art": "being.bellota",
+     "text": "la bellota, que parecía una piedra y está viva"
+    },
+    "rana": {
+     "art": "being.rana",
+     "text": "la rana, que estaba quieta y está viva"
+    },
+    "cristal": {
+     "art": "thing.cristal",
+     "text": "el cristal, que crece y no está vivo"
+    },
+    "pluma": {
+     "art": "thing.pluma",
+     "text": "la pluma, que viene de un ave y no está viva"
+    },
+    "burbuja": {
+     "art": "thing.burbuja",
+     "text": "la burbuja, que se mueve y no está viva"
+    },
+    "caracol": {
+     "art": "being.caracol",
+     "text": "el caracol, que lleva los ojos en las antenas"
+    }
+   }
+  },
+  "next": {
+   "counter": "Tu camino: 1 de 6",
+   "sight": "La linterna del claro encendida (con sus nudos, si los hay) y, sendero arriba, el lugar siguiente, apagado. La criatura levanta la nariz hacia él",
+   "library": {
+    "sight": "La imagen sube por el sendero y entra, en penumbra, en una sala con estantes llenos de libros. En una mesa, una rebanada de pan olvidada, con una pelusa verde y blanca. Nada se mueve. Una estela de olor, que se ve, va del pan a la nariz de la criatura, y el pan late como latía la semilla",
+    "say": [
+     [
+      "moho",
+      "¿Me hueles? Nadie más sabe que estoy vivo."
+     ]
+    ],
+    "then": "La imagen vuelve al camino"
+   },
+   "touch": {
+    "sight": "El lugar siguiente brilla un poco y se puede tocar, pero nadie invita a hacerlo",
+    "say": [
+     [
+      "embrollo",
+      "¡Esa todavía la estoy enredando! Vuelve otro día."
+     ]
+    ]
+   }
+  }
+ }
+}
