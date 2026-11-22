@@ -471,3 +471,54 @@ body.pl-en-campa .pl-subtitulos { top: max(18px, env(safe-area-inset-top)); bott
   .pl-olfato img { width: 60px; height: 30px; }
   .pl-olfato svg { width: 32px; height: 32px; }
 }
+
+/* --- The postcard for home (script §5.4): choosing on a sheet of parchment over the camp at night; then the postcard
+   itself, as big as the screen lets it be, to save or to choose again. */
+.pl-postal { position: fixed; inset: 0; display: grid; place-items: center; padding: calc(max(14px, env(safe-area-inset-top)) + 16px) 18px
+  calc(max(14px, env(safe-area-inset-bottom)) + 96px); overflow: auto; }
+.pl-postal-fondo { position: fixed; inset: 0; background: #0b1724 center / cover no-repeat;
+  filter: brightness(.55); }
+.pl-elegir { display: flex; flex-direction: column; align-items: center; gap: 18px; padding: 24px 26px 28px; border-radius: 26px;
+  background: #f3ead4; color: #2a2219; box-shadow: 0 20px 50px rgba(0, 0, 0, .5); }
+.pl-elegir[hidden], .pl-hecha[hidden] { display: none; }
+.pl-elegir h1 { margin: 0; font-family: var(--f-title); font-size: clamp(1.4rem, 2.6vw, 2rem); color: #16304a; text-align: center; }
+.pl-rejilla { display: grid; grid-template-columns: repeat(5, 116px); gap: 14px; justify-content: center; }
+.pl-eleccion { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 6px 8px; min-height: 120px;
+  border: 2px solid rgba(156, 101, 12, .35); border-radius: 18px; background: #fffaf0; cursor: pointer; font: inherit;
+  font-size: 1rem; font-weight: 700; color: #2a2219; }
+.pl-eleccion:focus-visible { outline: 4px solid #e9a92b; outline-offset: 3px; }
+.pl-eleccion img { width: 76px; height: 76px; object-fit: contain; }
+.pl-falta { width: 70px; height: 70px; border-radius: 14px; border: 2px dashed rgba(156, 101, 12, .45); }
+.pl-hecha { display: flex; flex-direction: column; align-items: center; gap: 16px; width: 100%; }
+.pl-hecha canvas { display: block; width: min(100%, calc((100vh - 200px) * 1.6)); height: auto; max-height: calc(100vh - 190px); object-fit: contain; border-radius: 22px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, .55); }
+.pl-acciones { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+.pl-acciones .btn { min-height: 56px; font-size: 1.1rem; }
+.pl-otra { background: rgba(var(--night-rgb), .9); color: var(--text); border: 1px solid var(--line); }
+[data-theme="day"] .pl-otra { background: rgba(255, 255, 255, .95); }
+@media (max-width: 700px) {
+  .pl-rejilla { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .pl-elegir { padding: 18px 14px 20px; }
+  .pl-eleccion { min-height: 104px; }
+  .pl-eleccion img { width: 62px; height: 62px; }
+}
+@media (orientation: portrait) and (max-width: 700px) {
+  .pl-postal { place-items: start center; }
+  .pl-hecha canvas { width: 100%; max-height: none; }
+}
+.pl-eleccion span::first-letter { text-transform: uppercase; }
+
+/* --- The twenty seconds of the next place (script §5.5): a room of shelves in the half-dark, a slice of bread on a table
+   that beats as the seed did, and the trail of its smell going out towards the creature. Nothing written. */
+.pl-biblioteca { position: fixed; inset: 0; background: #0b1724 center / cover no-repeat; filter: brightness(.5) saturate(.8);
+  animation: pl-sube 1.6s ease both; transition: filter 1.2s ease, opacity .9s ease; }
+@keyframes pl-sube { from { transform: translateY(8%) scale(1.06); opacity: 0; } }
+.pl-biblioteca.pl-huele { filter: brightness(.68) saturate(.9); }
+.pl-biblioteca.pl-sale { opacity: 0; }
+.pl-pan { position: absolute; left: 50%; bottom: 22%; width: clamp(90px, 14vh, 160px); transform: translateX(-50%);
+  filter: drop-shadow(0 0 0 rgba(255, 220, 140, 0)); }
+.pl-huele .pl-pan { animation: pl-late-pan 1.2s ease-in-out infinite; }
+@keyframes pl-late-pan { 50% { transform: translateX(-50%) scale(1.1); filter: drop-shadow(0 0 18px rgba(255, 220, 140, .9)); } }
+.pl-estela { position: absolute; left: calc(50% - clamp(190px, 30vh, 340px)); bottom: 26%; width: clamp(180px, 28vh, 320px);
+  opacity: 0; transform: scaleX(-1); transition: opacity 1.2s ease; }
+.pl-huele .pl-estela { opacity: 1; }

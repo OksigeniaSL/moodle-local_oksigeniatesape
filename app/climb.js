@@ -1030,16 +1030,302 @@
     };
     main.querySelector('.pl-salir').onclick = function() {
       document.body.classList.remove('pl-en-campa');
-      if (T.climbPostcard) {
-        T.climbPostcard();
-      } else {
-        path();
-      }
+      postcard();
     };
     counter(lit());
     show(false);
     say(says.say && says.say.arrive).then(function() {
       subtitle('', '');
+    });
+  }
+
+  /**
+   * Loads a picture for the canvas (null if it does not come).
+   *
+   * @param {string} src
+   * @return {Promise}
+   */
+  function picture(src) {
+    return new Promise(function(done) {
+      if (!src) {
+        done(null);
+        return;
+      }
+      var i = new Image();
+      i.onload = function() {
+        done(i);
+      };
+      i.onerror = function() {
+        done(null);
+      };
+      i.src = src;
+    });
+  }
+
+  /**
+   * The postcard for home, on leaving the camp: «What surprised you most?» with the things of the day; one touch and
+   * the postcard is drawn (the valley with the lantern lit, the hero, the creature with its paint sniffing what was
+   * chosen, the stamp and the words in the child's voice) and can be saved as a picture. It is not said aloud: it is for
+   * the adult to read. Closing it, the twenty seconds of the next place.
+   */
+  function postcard() {
+    var card = state.climb.postcard || {};
+    var surprises = card.surprises || {};
+    app.innerHTML = '';
+    var bg = document.createElement('div');
+    bg.className = 'pl-postal-fondo';
+    bg.style.backgroundImage = 'url("' + (T.artUrl(['scene.campamento', 'scene.claro-abierto']) || '') + '")';
+    app.appendChild(bg);
+    var main = document.createElement('main');
+    main.className = 'pl-postal';
+    var ask = (card.say || [])[0] || [];
+    main.innerHTML = '<section class="pl-elegir"><h1>' + esc(ask[1] ? ask[1].replace(/^[^¿]*(?=¿)/, '') : '') +
+      '</h1><div class="pl-rejilla"></div></section><section class="pl-hecha" hidden><canvas role="img"></canvas>' +
+      '<div class="pl-acciones"><a class="btn btn-main pl-guardar" download="' + esc(t('app_climb_postcard_file')) +
+      '" href="#">' + esc(t('app_climb_postcard_save')) + '</a><button type="button" class="btn pl-otra">' +
+      esc(t('app_climb_postcard_other')) + '</button><button type="button" class="btn btn-soft pl-cerrar">' +
+      esc(t('app_climb_postcard_done')) + '</button></div></section>';
+    app.appendChild(main);
+    var choose = main.querySelector('.pl-elegir');
+    var made = main.querySelector('.pl-hecha');
+    Object.keys(surprises).forEach(function(id) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'pl-eleccion';
+      b.dataset.id = id;
+      b.innerHTML = '<img src="' + esc(T.artUrl([surprises[id].art]) || '') + '" alt=""><span>' +
+        esc(surprises[id].text.split(',')[0].replace(/^(el|la|los|las) /, '')) + '</span>';
+      b.onclick = function() {
+        draw(id);
+      };
+      main.querySelector('.pl-rejilla').appendChild(b);
+    });
+    main.querySelector('.pl-otra').onclick = function() {
+      made.hidden = true;
+      choose.hidden = false;
+    };
+    main.querySelector('.pl-cerrar').onclick = function() {
+      library();
+    };
+    chain(card.say);
+    var canvas = made.querySelector('canvas');
+    var draw = function(id) {
+      choose.hidden = true;
+      made.hidden = false;
+      subtitle('', '');
+      var upright = window.innerHeight > window.innerWidth;
+      var W = upright ? 1000 : 1600;
+      var H = upright ? 1720 : 1000;
+      var L = upright ? {px: 46, py: 46, pw: 908, ph: 780, stamp: [W - 236, 880], tx: 60, ty: 950, tw: 660, foot: H - 50, t1: 62,
+        t2: 42, step: 54} : {px: 46, py: 46, pw: 900, ph: H - 92, stamp: [W - 236, 60], tx: 1000, ty: 330, tw: 540, foot: H - 70,
+        t1: 46, t2: 29, step: 40};
+      canvas.width = W;
+      canvas.height = H;
+      var ctx = canvas.getContext('2d');
+      var style = window.getComputedStyle(document.body);
+      var titleFont = style.getPropertyValue('--f-title') || 'Georgia, serif';
+      var textFont = style.getPropertyValue('--f-text') || 'Verdana, sans-serif';
+      var alive = /^being\./.test(surprises[id].art);
+      var lines = function(text, width) {
+        var out = [];
+        var l = '';
+        text.split(' ').forEach(function(w) {
+          var tt = l ? l + ' ' + w : w;
+          if (ctx.measureText(tt).width > width && l) {
+            out.push(l);
+            l = w;
+          } else {
+            l = tt;
+          }
+        });
+        out.push(l);
+        return out;
+      };
+      var round = function(x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.arcTo(x + w, y, x + w, y + h, r);
+        ctx.arcTo(x + w, y + h, x, y + h, r);
+        ctx.arcTo(x, y + h, x, y, r);
+        ctx.arcTo(x, y, x + w, y, r);
+        ctx.closePath();
+      };
+      var box = ((state.climb.valley || {}).lit || [])[0];
+      Promise.all([picture(T.artUrl(['scene.valle'])), picture(T.artUrl(['scene.valle.luz-1'])),
+        picture(T.artUrl(['creature.2.fur.sniff', 'creature.2.fur'])), picture(T.artUrl([surprises[id].art])),
+        picture(heroPicture()), picture(cfg.wwwroot + '/local/oksigeniatesape/app/' + (alive ? 'scent.svg' : 'scent-cold.svg')),
+        document.fonts ? document.fonts.ready : null]).then(function(r) {
+        var valleyPic = r[0];
+        var light = r[1];
+        var creature = r[2];
+        var thing = r[3];
+        var hero = r[4];
+        var scent = r[5];
+        ctx.fillStyle = '#f3ead4';
+        round(0, 0, W, H, 36);
+        ctx.fill();
+        ctx.setLineDash([14, 10]);
+        ctx.strokeStyle = '#c99a3c';
+        ctx.lineWidth = 4;
+        round(18, 18, W - 36, H - 36, 26);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        // The picture: the valley from the clearing to the tower, the lantern of the clearing lit.
+        var m = master();
+        ctx.save();
+        round(L.px, L.py, L.pw, L.ph, 22);
+        ctx.clip();
+        var sh = Math.min(m[1], 1060 * L.ph / L.pw);
+        var sw = sh * L.pw / L.ph;
+        var sx = Math.max(0, Math.min(m[0] - sw, 893 - sw / 2));
+        var sy = m[1] - sh;
+        if (valleyPic) {
+          ctx.drawImage(valleyPic, sx, sy, sw, sh, L.px, L.py, L.pw, L.ph);
+        }
+        if (light && box) {
+          ctx.drawImage(light, L.px + (box[0] - sx) * L.pw / sw, L.py + (box[1] - sy) * L.ph / sh, (box[2] - box[0]) * L.pw / sw,
+            (box[3] - box[1]) * L.ph / sh);
+        }
+        var g = ctx.createRadialGradient(L.px + L.pw * 0.55, L.py + L.ph * 0.86, 10, L.px + L.pw * 0.55, L.py + L.ph * 0.86, 420);
+        g.addColorStop(0, 'rgba(255, 210, 120, .55)');
+        g.addColorStop(1, 'rgba(255, 210, 120, 0)');
+        ctx.fillStyle = g;
+        ctx.fillRect(L.px, L.py, L.pw, L.ph);
+        if (hero) {
+          ctx.drawImage(hero, L.px + 16, L.py + L.ph - 540, 540 * hero.width / hero.height, 540);
+        }
+        // The creature in profile, sniffing, with its paint; the thing before its nose; the trail of the smell.
+        var kx = L.px + 270;
+        var ky = L.py + L.ph - 450;
+        var ks = 430;
+        if (creature) {
+          ctx.filter = (POTS[state.creature.paint] || {}).filter || 'none';
+          ctx.drawImage(creature, kx, ky, ks, ks);
+          ctx.filter = 'none';
+        }
+        var nx = kx + ks * 0.86;
+        var ny = ky + ks * 0.45;
+        var ew = 210;
+        var eh = 105;
+        var ex = nx - 5;
+        var ey = ny - eh * 0.25;
+        var ts = 180;
+        if (thing) {
+          ctx.drawImage(thing, ex + ew * 0.766 - ts / 2 + 10, ey + eh * 0.766 + 5, ts, ts);
+        }
+        if (scent) {
+          ctx.save();
+          ctx.translate(ex + ew, ey);
+          ctx.scale(-1, 1);
+          ctx.drawImage(scent, 0, 0, ew, eh);
+          ctx.restore();
+        }
+        ctx.restore();
+        // The stamp, with the lantern.
+        var s0 = L.stamp[0];
+        var s1 = L.stamp[1];
+        ctx.fillStyle = '#16304a';
+        ctx.fillRect(s0, s1, 170, 200);
+        ctx.strokeStyle = '#f3ead4';
+        ctx.lineWidth = 10;
+        ctx.setLineDash([8, 8]);
+        ctx.strokeRect(s0 - 5, s1 - 5, 180, 210);
+        ctx.setLineDash([]);
+        ctx.strokeStyle = '#ffc857';
+        ctx.lineWidth = 4;
+        ctx.strokeRect(s0 + 14, s1 + 14, 142, 172);
+        var lx = s0 + 85;
+        var ly = s1 + 100;
+        var gl = ctx.createRadialGradient(lx, ly, 4, lx, ly, 70);
+        gl.addColorStop(0, 'rgba(255, 200, 87, .9)');
+        gl.addColorStop(1, 'rgba(255, 200, 87, 0)');
+        ctx.fillStyle = gl;
+        ctx.fillRect(s0 + 14, s1 + 14, 142, 172);
+        ctx.fillStyle = '#ffc857';
+        ctx.fillRect(lx - 4, ly - 62, 8, 14);
+        ctx.fillRect(lx - 26, ly - 48, 52, 8);
+        ctx.beginPath();
+        ctx.moveTo(lx - 22, ly - 40);
+        ctx.lineTo(lx + 22, ly - 40);
+        ctx.lineTo(lx + 18, ly + 34);
+        ctx.lineTo(lx - 18, ly + 34);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = '#fff1bd';
+        ctx.beginPath();
+        ctx.ellipse(lx, ly - 4, 9, 16, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // The words, in the child's voice, to the family.
+        var name = state.creature.name;
+        var text = (card.text || []).slice();
+        if (name && card.named) {
+          text[0] = card.named.replace('{nombre}', name);
+        }
+        var y = L.ty;
+        ctx.fillStyle = '#16304a';
+        ctx.font = '700 ' + L.t1 + 'px ' + titleFont;
+        lines(text.shift() || '', L.tw).forEach(function(l) {
+          ctx.fillText(l, L.tx, y);
+          y += L.t1 + 8;
+        });
+        y += 14;
+        ctx.font = '500 ' + L.t2 + 'px ' + textFont;
+        ctx.fillStyle = '#2a2219';
+        text.forEach(function(p) {
+          lines(p.replace('{sorpresa}', surprises[id].text), L.tw).forEach(function(l) {
+            ctx.fillText(l, L.tx, y);
+            y += L.step;
+          });
+          y += 16;
+        });
+        ctx.strokeStyle = 'rgba(42, 34, 25, .18)';
+        ctx.lineWidth = 2;
+        for (var r2 = L.ty + 60; r2 < L.foot - 30; r2 += 40) {
+          if (r2 > y - 10) {
+            ctx.beginPath();
+            ctx.moveTo(L.tx, r2);
+            ctx.lineTo(L.tx + L.tw, r2);
+            ctx.stroke();
+          }
+        }
+        ctx.fillStyle = '#9c650c';
+        ctx.font = '600 22px ' + textFont;
+        ctx.fillText('Tesapé', L.tx, L.foot);
+        main.querySelector('.pl-guardar').href = canvas.toDataURL('image/png');
+        canvas.setAttribute('aria-label', t('app_climb_postcard_of', surprises[id].text));
+      });
+    };
+  }
+
+  /**
+   * The twenty seconds of the next place, on closing the postcard: the picture goes up the path into a room of shelves
+   * in the half-dark; on a table, a forgotten slice of bread; a trail of smell goes from it to the creature, and the
+   * bread beats as the seed did. Neither the place nor the mould is named in writing. Then back to the path.
+   */
+  function library() {
+    var next = state.climb.next || {};
+    var lib = next.library || {};
+    app.innerHTML = '';
+    var room = document.createElement('div');
+    room.className = 'pl-biblioteca';
+    room.style.backgroundImage = 'url("' + (T.artUrl(['scene.biblioteca-estantes', 'scene.biblioteca']) || '') + '")';
+    room.innerHTML = '<img class="pl-pan" src="' + esc(T.artUrl(['thing.pan.moho']) || '') + '" alt=""><img class="pl-estela" ' +
+      'src="' + esc(cfg.wwwroot + '/local/oksigeniatesape/app/scent.svg') + '" alt="">';
+    app.appendChild(room);
+    counter(lit());
+    wait(1800).then(function() {
+      room.classList.add('pl-huele');
+      T.fx.sound('chime');
+      return wait(900);
+    }).then(function() {
+      return chain(lib.say);
+    }).then(function() {
+      return wait(1200);
+    }).then(function() {
+      room.classList.add('pl-sale');
+      return wait(still ? 0 : 900);
+    }).then(function() {
+      path();
     });
   }
 
@@ -1050,6 +1336,8 @@
     path();
   }, camp: function() {
     campsite();
+  }, postcard: function() {
+    postcard();
   }};
 
   call('get_climb').then(function() {
