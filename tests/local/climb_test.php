@@ -25,8 +25,10 @@ namespace local_oksigeniatesape\local;
  * @copyright  2026 Oksigenia SL <dev@oksigenia.cc>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \local_oksigeniatesape\local\scenes
+ * @covers     \local_oksigeniatesape\local\climb
  */
 #[\PHPUnit\Framework\Attributes\CoversClass(scenes::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(climb::class)]
 final class climb_test extends \advanced_testcase {
     /** @var string Prefix of the plugin tables. */
     private const T = 'local_oksigeniatesape_';
@@ -67,5 +69,40 @@ final class climb_test extends \advanced_testcase {
         // The three scenes of the clearing: its lantern is lit for the student.
         $chapter = $DB->get_record(self::T . 'chapter', ['missionid' => $mission->id, 'code' => 'claro'], '*', MUST_EXIST);
         $this->assertTrue(scenes::chapter_done(characters::get($user->id), 2, $chapter));
+        // On the path: the three steps in the order of the place, done; the lantern of the path not yet lit.
+        $state = climb::state($course->id, $user->id);
+        $this->assertSame(['L1-nido', 'L1-algo', 'L1-duelo'], array_column($state['scenes'], 'code'));
+        $this->assertSame([true, true, true], array_column($state['scenes'], 'done'));
+        $this->assertSame(['El Nido', 'Algo se mueve', 'El duelo'], array_column($state['scenes'], 'title'));
+        $this->assertFalse($state['paid']);
+        $this->assertFalse($state['sniff']);
+        // Its moment: five gems, once, and the creature learns to sniff.
+        $before = $state['gems'];
+        $state = climb::light($course->id, $user->id);
+        $this->assertTrue($state['paid']);
+        $this->assertTrue($state['sniff']);
+        $this->assertSame($before + 5, $state['gems']);
+        $this->assertSame($before + 5, climb::light($course->id, $user->id)['gems']);
+        // The creature is named, or not.
+        $this->assertSame('Kapi', climb::name($course->id, $user->id, '  Kapi ')['creature']['name']);
+        $this->assertSame('', climb::name($course->id, $user->id, '')['creature']['name']);
+    }
+
+    public function test_a_hero_is_chosen_on_the_path(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $dg = $this->getDataGenerator();
+        $course = $dg->create_course();
+        regions::save($course->id, ['enabled' => 1, 'weeklycap' => 0]);
+        missions::install($course->id, 'subida', 'valley', 'es');
+        $user = $dg->create_and_enrol($course, 'student');
+        $this->setUser($user);
+        $this->assertNull(climb::state($course->id, $user->id)['hero']);
+        $state = climb::hero($course->id, $user->id, 'scout', 'm');
+        $this->assertSame(['role' => 'scout', 'nameform' => 'm'], $state['hero']);
+        // Chosen again: another figure; the lantern is not lit before its scenes.
+        $this->assertSame('f', climb::hero($course->id, $user->id, 'scout', 'f')['hero']['nameform']);
+        $this->assertFalse(climb::light($course->id, $user->id)['paid']);
+        $this->assertNotNull(climb::mission($course->id));
     }
 }

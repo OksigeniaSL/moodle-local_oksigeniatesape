@@ -40,4 +40,6 @@ if ($key !== $id) {
 }
 $PAGE->set_context($context);
 $PAGE->set_url(new moodle_url('/local/oksigeniatesape/play.php', ['id' => $id]));
-\local_oksigeniatesape\local\page::output('game', $course, [], $id);
+// A mission that brings its own path (the climb to the tower) is played on it, not on the map.
+$app = \local_oksigeniatesape\local\climb::mission($id) ? 'climb' : 'game';
+\local_oksigeniatesape\local\page::output($app, $course, [], $id);

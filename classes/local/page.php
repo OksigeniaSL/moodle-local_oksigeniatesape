@@ -30,6 +30,10 @@ final class page {
         'game' => ['fx', 'critters', 'scene', 'minigame', 'nest', 'errors', 'whack', 'venn', 'whoami', 'guesswho', 'terrarium', 'leaf', 'chain',
             'burst', 'stage', 'puppet', 'sheet', 'model3d', 'cast', 'walk', 'adventure', 'sceneworld', 'nestworld', 'game', 'exercises',
             'battle', 'huddle'],
+        // The climb to the tower: the engine of the places and the scenes, and its own path instead of the map.
+        'climb' => ['fx', 'critters', 'scene', 'minigame', 'nest', 'errors', 'whack', 'venn', 'whoami', 'guesswho', 'terrarium',
+            'leaf', 'chain', 'burst', 'stage', 'puppet', 'sheet', 'model3d', 'cast', 'walk', 'adventure', 'sceneworld',
+            'nestworld', 'exercises', 'climb'],
         'teach' => ['fx', 'scene', 'workshop', 'author', 'teach'],
         'board' => ['fx', 'critters', 'scene', 'stage', 'puppet', 'sheet', 'model3d', 'cast', 'sceneworld', 'battleworld', 'exercises',
             'board'],
@@ -41,7 +45,7 @@ final class page {
     /**
      * Prints the page.
      *
-     * @param string $app game, teach or board.
+     * @param string $app game, climb, teach or board.
      * @param \stdClass $course
      * @param array $config More configuration for the client.
      * @param int $game The game, if it is one more of the course.
@@ -109,6 +113,8 @@ final class page {
             $scripts .= '<script src="' . $base . $js . '.js?v=' . $version . '"></script>' . "\n";
         }
         $access = $app === 'board' ? '' : self::access();
+        // The climb brings its own pieces over the colours of the game.
+        $styles = $app === 'climb' ? '<link rel="stylesheet" href="' . $base . 'climb.css?v=' . $version . '">' . "\n" : '';
         @header('Content-Type: text/html; charset=utf-8');
         @header('X-Frame-Options: SAMEORIGIN');
         echo '<!DOCTYPE html>
@@ -124,7 +130,7 @@ final class page {
 <link rel="apple-touch-icon" href="' . $base . 'apple-touch-icon.png">
 <link rel="preload" href="' . $base . 'fonts/lexend-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="' . $base . 'tesape.css?v=' . $version . '">
-' . ($worldcolours ? '<style>' . $worldcolours . '</style>' . "\n" : '') . '</head>
+' . $styles . ($worldcolours ? '<style>' . $worldcolours . '</style>' . "\n" : '') . '</head>
 <body class="tesape">
 <div id="app" aria-live="polite"><noscript>' . $title . '</noscript></div>
 <script>window.TESAPE_CONFIG = ' . $json . ';</script>

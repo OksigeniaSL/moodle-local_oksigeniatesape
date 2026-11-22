@@ -277,6 +277,20 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'local/oksigeniatesape:award',
     ],
+    'local_oksigeniatesape_get_climb' => [
+        'classname' => 'local_oksigeniatesape\\external\\get_climb',
+        'description' => 'Where the current student is on the climb of the game.',
+        'type' => 'read',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:play',
+    ],
+    'local_oksigeniatesape_climb_act' => [
+        'classname' => 'local_oksigeniatesape\\external\\climb_act',
+        'description' => 'The current student chooses their hero, lights a lantern or names their creature on the climb.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'local/oksigeniatesape:play',
+    ],
     'local_oksigeniatesape_set_name' => [
         'classname' => 'local_oksigeniatesape\\external\\set_name',
         'description' => 'The current student names their hero or their creature.',

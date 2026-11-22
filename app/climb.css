@@ -1,0 +1,229 @@
+/* The climb to the tower: the path of a mission that brings one (the valley, its lanterns, the place of now with its
+   steps as stones, the camp and the next place), over the game's own colours (tesape.css): night by default, light with
+   data-theme="day". Nothing says right or wrong in green and red: warm light and bluish frost are things of the world.
+   Every touch target is 56 px or more. */
+
+body.climb { overflow: hidden; }
+
+/* --- The valley, painted at 1920 × 1080: it covers a landscape screen; on a phone held upright it fills the height and
+   slides sideways (piezas.js centres it on the place of now). Every mark goes in the master's pixels, as a share. */
+.pl-escena { position: fixed; inset: 0; overflow: hidden; background: #0b1724; }
+.pl-mapa { position: absolute; left: 50%; top: 50%; width: max(100vw, 177.78vh); aspect-ratio: 16 / 9;
+  transform: translate(-50%, -50%); }
+.pl-mapa > img.pl-fondo { position: absolute; inset: 0; width: 100%; height: 100%; display: block; user-select: none; }
+.pl-capa { position: absolute; z-index: 0; display: block; pointer-events: none; }
+@media (orientation: portrait) {
+  .pl-escena.pl-desliza { overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .pl-escena.pl-desliza::-webkit-scrollbar { display: none; }
+  .pl-desliza .pl-mapa { position: relative; left: 0; top: 0; height: 100%; width: auto; transform: none; }
+}
+/* the dusk of the first screen and the dim of a scene behind the interface */
+.pl-velo { position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse at 70% 18%, rgba(15, 33, 49, 0) 0%, rgba(8, 16, 26, .35) 55%, rgba(5, 10, 18, .72) 100%); }
+
+/* --- «Tu camino: 0 de 6», up on the left: the mission, always. Six little lanterns under the words. */
+.pl-contador { position: fixed; z-index: 20; top: max(14px, env(safe-area-inset-top)); left: max(14px, env(safe-area-inset-left));
+  display: flex; align-items: center; gap: 12px; padding: 8px 16px 8px 10px; border: 2px solid var(--lantern);
+  border-radius: 18px; background: rgba(var(--night-rgb), .86); color: var(--text);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .35); }
+.pl-contador-farol { flex: none; width: 34px; height: 34px; color: var(--lantern); filter: drop-shadow(0 0 6px rgba(var(--lantern-rgb), .6)); }
+.pl-contador-texto { display: flex; flex-direction: column; gap: 4px; }
+.pl-contador-linea { display: flex; align-items: baseline; gap: 8px; }
+.pl-contador-linea span { font-size: .95rem; font-weight: 600; color: var(--text-soft); }
+.pl-contador-linea b { font-family: var(--f-title); font-size: 1.45rem; line-height: 1; color: var(--lantern-text); }
+.pl-contador-pips { display: flex; gap: 5px; }
+.pl-contador-pips i { display: block; width: 14px; height: 20px; }
+.pl-contador-pips svg { display: block; width: 100%; height: 100%; fill: none; stroke: rgba(var(--hi), .5); stroke-width: 1.3;
+  stroke-linejoin: round; }
+.pl-contador-pips i.on svg { fill: var(--lantern); stroke: var(--lantern); filter: drop-shadow(0 0 4px rgba(var(--lantern-rgb), .9)); }
+[data-theme="day"] .pl-contador { background: rgba(255, 255, 255, .94); border-color: var(--lantern-deep); }
+[data-theme="day"] .pl-contador-farol { color: var(--lantern-deep); filter: none; }
+[data-theme="day"] .pl-contador-pips svg { stroke: rgba(var(--hi), .45); }
+[data-theme="day"] .pl-contador-pips i.on svg { fill: var(--lantern-deep); stroke: var(--lantern-deep); filter: none; }
+
+/* --- What is said, written the same, under: who says it and the line. The box is as wide as its words, centred. */
+.pl-subtitulos { position: fixed; z-index: 30; left: 16px; right: 16px; bottom: max(18px, env(safe-area-inset-bottom));
+  display: flex; justify-content: center; pointer-events: none; }
+.pl-subtitulo { display: inline-flex; flex-direction: column; gap: 2px; padding: 10px 18px 12px; border-radius: 16px;
+  background: rgba(var(--deep-rgb), .9); box-shadow: 0 8px 24px rgba(0, 0, 0, .35); text-align: center; }
+.pl-subtitulo:empty { display: none; }
+.pl-subtitulo small { font-size: .8rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.pl-subtitulo span { font-size: 1.22rem; font-weight: 500; line-height: 1.35; color: var(--text); }
+.pl-subtitulo[data-quien="druida"] small { color: var(--leaf-text); }
+.pl-subtitulo[data-quien="embrollo"] small { color: var(--lilac-text); }
+.pl-subtitulo[data-quien="heroe"] small { color: var(--lantern-text); }
+[data-theme="day"] .pl-subtitulo { background: rgba(255, 255, 255, .95); }
+
+/* --- The tower, small, in a corner while a riddle is played: the mission does not go away. A medallion with the painted
+   tower and a ring of six parts, one per lantern. */
+.pl-torre { position: fixed; z-index: 20; top: max(14px, env(safe-area-inset-top)); right: max(14px, env(safe-area-inset-right));
+  width: 72px; height: 72px; padding: 5px; border-radius: 50%;
+  background: conic-gradient(var(--pl-aro, transparent)); box-shadow: 0 6px 18px rgba(0, 0, 0, .4); }
+.pl-torre img { display: block; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; object-position: 50% 30%;
+  border: 2px solid var(--night); }
+
+/* --- The ribbon of the goal, up there: what is wanted now and how much of it is done. It grows out of the game's
+   .adventure-goal (app/adventure.js, goal()): the same gold edge on the night, bigger, for a child and a whiteboard. */
+.pl-cinta-sitio { position: fixed; z-index: 20; top: max(14px, env(safe-area-inset-top)); left: 0; right: 0;
+  display: flex; justify-content: center; pointer-events: none; }
+.pl-cinta { pointer-events: auto; display: inline-flex; align-items: center; gap: 14px; padding: 8px 10px 8px 20px;
+  border: 2px solid var(--lantern); border-radius: 999px; background: rgba(var(--night-rgb), .9); color: var(--lantern-text);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .4); transform-origin: 50% 0; transition: transform .5s cubic-bezier(.2, .9, .3, 1.2); }
+.pl-cinta > b { font-size: 1.15rem; font-weight: 700; white-space: nowrap; }
+.pl-cinta-marcas { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px;
+  background: rgba(var(--hi), .07); }
+.pl-cinta-sep { width: 2px; height: 22px; border-radius: 1px; background: rgba(var(--hi), .2); }
+[data-theme="day"] .pl-cinta { background: rgba(255, 255, 255, .95); border-color: var(--lantern-deep); }
+
+/* the five hollows by the seed: empty, a ring; filled, a warm light */
+.pl-hueco { width: 22px; height: 22px; border-radius: 50%; border: 2px dashed rgba(var(--lantern-rgb), .65); }
+.pl-hueco.on { border: 2px solid var(--lantern); background: radial-gradient(circle, #fff1bd 0 25%, var(--lantern) 60%);
+  box-shadow: 0 0 12px rgba(var(--lantern-rgb), .8); }
+/* the four points of light of the tries: spent, a cold spark */
+.pl-luz { width: 16px; height: 16px; background: var(--lantern);
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  filter: drop-shadow(0 0 4px rgba(var(--lantern-rgb), .9)); }
+.pl-luz.gastada { background: #7d93a6; filter: none; opacity: .55; }
+/* the glow of the find: a gem whose light goes down with each trail opened, and out with a miss */
+.pl-brillo { display: inline-flex; align-items: center; gap: 6px; }
+.pl-brillo svg { width: 26px; height: 26px; color: var(--lilac); filter: drop-shadow(0 0 var(--pl-brillo, 8px) rgba(var(--lilac-rgb), .95)); }
+.pl-brillo i { width: 8px; height: 18px; border-radius: 4px; background: var(--lilac); box-shadow: 0 0 8px rgba(var(--lilac-rgb), .8); }
+.pl-brillo i.off { background: rgba(var(--hi), .18); box-shadow: none; }
+.pl-brillo.apagado svg { color: #7d93a6; filter: none; }
+/* the Embrollo's three threads (cut ones fade) and the two knots he may tie */
+.pl-hilo { width: 28px; height: 22px; color: var(--lilac); }
+.pl-hilo.cortado { opacity: .28; }
+.pl-nudo { width: 24px; height: 24px; border-radius: 50%; border: 2px dashed rgba(var(--lilac-rgb), .6); display: grid; place-items: center; }
+.pl-nudo svg { width: 20px; height: 20px; color: var(--lilac); display: none; }
+.pl-nudo.on { border-style: solid; border-color: var(--lilac); background: rgba(var(--lilac-rgb), .18); }
+.pl-nudo.on svg { display: block; }
+.pl-marcas-titulo { font-size: .78rem; font-weight: 700; color: var(--text-soft); }
+
+/* the end of a riddle, told where it was played: the ribbon grows for a moment with the tally, then stays */
+.pl-cinta.pl-final { transform: scale(1.35); }
+.pl-cinta.pl-final.pl-asentada { transform: none; }
+.pl-cuenta { display: inline-flex; align-items: center; gap: 10px; font-size: 1.15rem; font-weight: 700; white-space: nowrap; }
+.pl-cuenta .pl-nudo { border-style: solid; border-color: var(--lilac); background: rgba(var(--lilac-rgb), .18); }
+.pl-cuenta .pl-nudo svg { display: block; }
+
+/* the big round marks on the valley: a stone, a lantern, the camp */
+.pl-marca { position: absolute; z-index: 2; transform: translate(-50%, -50%); }
+@media (prefers-reduced-motion: reduce) {
+  .pl-cinta, .pl-cinta.pl-final { transition: none; transform: none; }
+  * { animation: none !important; }
+}
+
+/* --- A riddle's place behind the interface (the clearing, painted): it covers the screen, the nest at its foot. */
+.pl-lugar-fondo { position: fixed; inset: 0; background: #0b1724 center / cover no-repeat; }
+.pl-lugar-fondo::after { content: ''; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(5, 12, 20, .45) 0%, rgba(5, 12, 20, .05) 30%, rgba(5, 12, 20, .15) 100%); }
+.pl-nido { position: fixed; left: 50%; bottom: 14vh; width: min(46vw, 62vh); transform: translateX(-50%); }
+.pl-nido img { display: block; width: 100%; }
+.pl-nido-luz { position: absolute; left: 50%; top: 38%; width: 70%; aspect-ratio: 1.6; transform: translate(-50%, -50%);
+  background: radial-gradient(ellipse, rgba(255, 220, 140, .85) 0%, rgba(255, 200, 87, .35) 35%, rgba(255, 200, 87, 0) 70%);
+  mix-blend-mode: screen; animation: pl-respira 2.4s ease-in-out infinite; }
+@keyframes pl-respira { 50% { opacity: .6; } }
+
+/* On a narrow screen held upright the ribbon goes under the tower's medallion and its marks under its words. */
+@media (max-width: 640px) {
+  .pl-cinta-sitio { top: calc(max(14px, env(safe-area-inset-top)) + 84px); left: 12px; right: 12px; }
+  .pl-cinta { flex-wrap: wrap; justify-content: center; gap: 8px 12px; padding: 10px 14px; border-radius: 22px; }
+  .pl-cinta > b { white-space: normal; text-align: center; }
+  .pl-cuenta { flex-wrap: wrap; justify-content: center; white-space: normal; }
+  .pl-cinta.pl-final { transform: scale(1.12); }
+  .pl-subtitulo span { font-size: 1.08rem; }
+}
+
+/* The way with the tower (22 November 2026): the valley painted by the art, and over it, in the master's pixels,
+   the line of light of the path, the place of now with its three steps as stones, the lit lanterns, the camp and the
+   next place. Stones of 88 px of the master: 63 px on a 1366 × 768 screen, 69 on a phone held upright. */
+
+/* the line of light that draws the path from the clearing to the tower (guion §1, second 30) */
+.pl-sendero { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+.pl-sendero path { fill: none; stroke: #ffd77a; stroke-width: 7; stroke-linecap: round; stroke-linejoin: round;
+  filter: drop-shadow(0 0 10px rgba(255, 200, 87, .9)); stroke-dasharray: var(--largo); stroke-dashoffset: var(--largo);
+  animation: pl-dibuja 3.2s cubic-bezier(.45, 0, .2, 1) .3s forwards; opacity: .9; }
+@keyframes pl-dibuja { to { stroke-dashoffset: 0; } }
+.pl-sendero.quieto path { animation: none; stroke-dashoffset: 0; opacity: .55; stroke-width: 5; }
+
+/* the place of now: a warm light on the clearing, breathing */
+.pl-lugar { position: absolute; width: 30%; aspect-ratio: 1.7; transform: translate(-50%, -50%); pointer-events: none;
+  background: radial-gradient(ellipse, rgba(255, 200, 87, .32) 0%, rgba(255, 200, 87, .12) 40%, rgba(255, 200, 87, 0) 70%);
+  mix-blend-mode: screen; animation: pl-respira 4s ease-in-out infinite; }
+@keyframes pl-respira { 50% { opacity: .65; } }
+
+/* a lantern of the way: a big target over the painted one; touched before its time, it trembles */
+.pl-farol { width: 3.6%; aspect-ratio: .9; border: 0; background: none; padding: 0; cursor: pointer;
+  -webkit-tap-highlight-color: transparent; }
+.pl-farol:focus-visible { outline: 3px solid var(--lantern); outline-offset: 4px; border-radius: 12px; }
+.pl-farol.tiembla { animation: pl-tiembla .5s ease; }
+@keyframes pl-tiembla { 20% { transform: translate(-50%, -50%) rotate(-7deg); } 50% { transform: translate(-50%, -50%) rotate(6deg); }
+  80% { transform: translate(-50%, -50%) rotate(-3deg); } }
+
+/* the three steps of the place, as round flat stones with their sign cut in */
+.pl-piedra { width: 4.6%; aspect-ratio: 1; padding: 0; border: 0; border-radius: 50%; cursor: pointer; display: grid;
+  place-items: center; color: #9fb3c3;
+  background: radial-gradient(circle at 38% 30%, #8a9aa6 0%, #5d6d7a 45%, #3a4854 100%);
+  box-shadow: inset 0 -5px 0 rgba(0, 0, 0, .35), inset 0 3px 0 rgba(255, 255, 255, .18), 0 6px 14px rgba(0, 0, 0, .55);
+  -webkit-tap-highlight-color: transparent; }
+.pl-piedra svg { width: 56%; height: 56%; }
+.pl-piedra.luego { filter: saturate(.6) brightness(.8); }
+.pl-piedra.hecha { color: #2b1d05; background: radial-gradient(circle at 38% 30%, #fff1bd 0%, #ffc857 45%, #c98d1c 100%);
+  box-shadow: inset 0 -5px 0 rgba(0, 0, 0, .25), 0 0 18px rgba(255, 200, 87, .75), 0 6px 14px rgba(0, 0, 0, .5); }
+.pl-piedra.ahora { color: #fff1bd; box-shadow: inset 0 -5px 0 rgba(0, 0, 0, .35), 0 0 0 4px #ffc857, 0 0 26px rgba(255, 200, 87, .9),
+  0 6px 14px rgba(0, 0, 0, .55); animation: pl-llama 1.8s ease-in-out infinite; }
+@keyframes pl-llama { 50% { box-shadow: inset 0 -5px 0 rgba(0, 0, 0, .35), 0 0 0 7px rgba(255, 200, 87, .55), 0 0 34px rgba(255, 200, 87, .95),
+  0 6px 14px rgba(0, 0, 0, .55); } }
+.pl-piedra:focus-visible { outline: 3px solid #fff1bd; outline-offset: 5px; }
+/* a step with a knot still tied: a violet thread knotted on its edge, to undo when the child wants */
+.pl-piedra .pl-piedra-nudo { position: absolute; right: -12%; top: -12%; width: 42%; height: 42%; border-radius: 50%;
+  display: grid; place-items: center; background: #2a2150; color: #d9ccff; box-shadow: 0 0 0 2px #b9a6ff, 0 0 12px rgba(185, 166, 255, .8); }
+.pl-piedra .pl-piedra-nudo svg { width: 76%; height: 76%; }
+/* the name of the step of now, on a little tag over it */
+.pl-piedra-nombre { position: absolute; transform: translate(-50%, -100%); padding: 6px 14px; border-radius: 999px;
+  background: rgba(var(--night-rgb), .9); border: 2px solid var(--lantern); color: var(--lantern-text); font-weight: 700;
+  font-size: clamp(.9rem, 1.15vw, 1.1rem); white-space: nowrap; pointer-events: none; }
+[data-theme="day"] .pl-piedra-nombre { background: rgba(255, 255, 255, .95); border-color: var(--lantern-deep); }
+
+/* the camp, by the clearing, once the lantern is lit (guion §5.3): the tent with its fire, a target of 120 × 85 px of
+   the master (85 × 60 on a 1366 screen), with the warmth of its fire around it */
+.pl-campamento { width: 6.25%; aspect-ratio: 120 / 85; border: 0; padding: 0; background: none; cursor: pointer;
+  filter: drop-shadow(0 0 10px rgba(255, 190, 100, .75)); animation: pl-respira 3s ease-in-out infinite; }
+.pl-campamento img { display: block; width: 100%; height: 100%; }
+.pl-campamento:focus-visible { outline: 3px solid var(--lantern); outline-offset: 4px; border-radius: 10px; }
+/* the next place: a little light, that can be touched though nobody asks to (guion §5.5) */
+.pl-siguiente { width: 8%; aspect-ratio: 1; border: 0; padding: 0; border-radius: 50%; cursor: pointer; background:
+  radial-gradient(circle, rgba(255, 215, 122, .55) 0%, rgba(255, 200, 87, .22) 40%, rgba(255, 200, 87, 0) 70%);
+  mix-blend-mode: screen;
+  animation: pl-respira 3.2s ease-in-out infinite; }
+.pl-siguiente:focus-visible { outline: 3px solid var(--lilac); outline-offset: 2px; }
+
+/* The way in (22 November 2026; guion §1, second 0): the valley at dusk, the tower lit up there, and one button.
+   Nothing can sound before the first touch, so nothing else is on the screen to be read. */
+.pl-faro { position: absolute; width: 14%; aspect-ratio: 1.3; transform: translate(-50%, -50%); pointer-events: none;
+  background: radial-gradient(ellipse, rgba(185, 140, 255, .45) 0%, rgba(150, 110, 240, .18) 40%, rgba(150, 110, 240, 0) 70%);
+  mix-blend-mode: screen; animation: pl-faro 3.6s ease-in-out infinite; }
+@keyframes pl-faro { 50% { opacity: .55; transform: translate(-50%, -50%) scale(.92); } }
+.pl-entrar-sitio { position: fixed; z-index: 10; left: 0; right: 0; bottom: max(15vh, 92px); display: flex; justify-content: center; }
+.pl-entrar { min-height: 72px; padding: .7em 2.1em; font-family: var(--f-title); font-size: clamp(1.45rem, 2.6vw, 2rem);
+  letter-spacing: .01em; }
+.pl-entrar:focus-visible { outline: 4px solid #fff1bd; outline-offset: 6px; }
+.pl-entrar.pl-fuera { opacity: 0; transform: scale(.94); transition: opacity .5s ease, transform .5s ease; pointer-events: none; }
+/* once in, the dusk lifts a little: the valley fills the screen */
+.pl-escena .pl-velo { transition: opacity 1.6s ease; }
+.pl-escena.pl-dentro .pl-velo { opacity: .35; }
+
+/* The bag of gems, where the gems of the day are counted: under the counter, each gem a little beat. */
+.pl-bolsa { position: fixed; z-index: 25; top: calc(max(14px, env(safe-area-inset-top)) + 84px);
+  left: max(14px, env(safe-area-inset-left)); display: flex; align-items: center; gap: 10px; padding: 8px 18px 8px 12px;
+  border: 2px solid var(--lilac); border-radius: 18px; background: rgba(var(--night-rgb), .9); color: var(--text);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .35); }
+.pl-bolsa-gema { width: 34px; height: 34px; color: var(--lilac); filter: drop-shadow(0 0 6px rgba(var(--lilac-rgb), .8)); }
+.pl-bolsa-gema svg { display: block; width: 100%; height: 100%; }
+.pl-bolsa b { font-family: var(--f-title); font-size: 1.7rem; line-height: 1; color: var(--lilac-text); min-width: 1.4em; }
+.pl-bolsa.pl-bolsa-late { animation: pl-late .16s ease; }
+@keyframes pl-late { 50% { transform: scale(1.08); } }
+[data-theme="day"] .pl-bolsa { background: rgba(255, 255, 255, .95); }
+/* a stone touched before its time trembles, like a lantern */
+.pl-piedra.tiembla { animation: pl-tiembla .5s ease; }
+.climb-error { position: fixed; inset: auto 16px 40% 16px; text-align: center; font-size: 1.2rem; }
