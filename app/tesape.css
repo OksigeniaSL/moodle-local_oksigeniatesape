@@ -1166,6 +1166,68 @@ body.stage-open {
   opacity: .5;
 }
 
+/* The notebook of the druid in the duel: a page over the place, each line read by the Embrollo, touched to say it is
+   a lie. */
+.duel-page {
+  position: absolute;
+  top: calc(max(16px, env(safe-area-inset-top)) + 72px);
+  left: max(16px, env(safe-area-inset-left));
+  width: min(560px, calc(100% - 32px));
+  padding: 14px 18px 16px;
+  border-radius: 14px;
+  background: #f6ecd2;
+  color: #2b2418;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, .35);
+  z-index: 5;
+}
+
+.duel-title {
+  margin: 0 0 8px;
+  font-family: 'Cherry Swash', serif;
+  font-size: 1.05rem;
+  color: #6b4f2a;
+}
+
+.duel-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.duel-line {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 52px;
+  padding: 10px 14px;
+  border: 2px solid #d8c39a;
+  border-radius: 10px;
+  background: #fffaf0;
+  color: inherit;
+  font: inherit;
+  font-size: 1.02rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.duel-line:disabled {
+  cursor: default;
+}
+
+.duel-line.lie .duel-said s {
+  text-decoration-color: #7a4fd6;
+  text-decoration-thickness: 3px;
+}
+
+.duel-line.lie .duel-good {
+  font-family: 'Cherry Swash', serif;
+  color: #3b6b2f;
+}
+
+.duel-line.firm {
+  border-color: #a98bff;
+}
+
 .adventure-verb .btn {
   display: inline-flex;
   gap: 8px;

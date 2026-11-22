@@ -33,7 +33,7 @@
     protector: {icon: 'shield', who: 'hero'}
   };
   /** @var {Object} How each node type is played here. */
-  var PLAYS = {classify: ['board'], choice: ['rescue', 'route'], nest: ['nest'], hunt: ['hunt']};
+  var PLAYS = {classify: ['board'], choice: ['rescue', 'route'], nest: ['nest'], hunt: ['hunt'], duel: ['duel']};
 
   /**
    * One of the ways of saying something, not the one said last time.
@@ -370,6 +370,8 @@
               nest(id, n, how, run, go);
             } else if (how.play === 'hunt') {
               hunt(id, n, how, run, go);
+            } else if (how.play === 'duel') {
+              duel(id, n, how, run, go);
             } else {
               route(id, n, how, run, go);
             }
@@ -1283,6 +1285,268 @@
         });
       };
 
+      /* ---------- The duel: the lies of the Embrollo ---------- */
+
+      /**
+       * The duel (the climb): the Embrollo comes down the path to the lantern with the notebook of the druid, where it
+       * changed a few words, and reads its lines one by one; each stays on the page and is touched to say it is a lie.
+       * A lie caught: what was changed is crossed out, the druid reads the good line and the Embrollo loses a thread.
+       * A true line touched: a knot in the lantern (with the aids, the first one only a warning); with as many knots as
+       * the duel allows, it is lost and the lantern lights all the same. The rematch keeps the page, reads what is left
+       * and cannot be lost: the creature smells who each line names, and a true line touched only makes it laugh.
+       *
+       * @param {string} id
+       * @param {Object} n
+       * @param {Object} how
+       * @param {Object} run
+       * @param {Function} go
+       */
+      var duel = function(id, n, how, run, go) {
+        var rematch = !!n.of;
+        var base = rematch ? sc.nodes[n.of] : n;
+        var lines = n.say || {};
+        var all = (base.lines || []).slice();
+        var lies = all.filter(function(l) {
+          return l.lie;
+        }).length;
+        var lose = rematch ? Infinity : base.lose || 2;
+        // What the first duel left: in the rematch, the page keeps it.
+        var page = S.duelPage || (S.duelPage = {touched: {}, threads: 0, knots: 0, order: null});
+        var tied = 0;
+        var warned = false;
+        var speak = function(pair, end) {
+          if (!pair || !pair[1]) {
+            if (end) {
+              end();
+            }
+            return;
+          }
+          say(pair[0] === 'heroe' ? 'hero' : pair[0], pair[1], end);
+        };
+        var chain = function(list, end) {
+          list = (list || []).slice();
+          var next = function() {
+            var l = list.shift();
+            if (!l) {
+              if (end) {
+                end();
+              }
+              return;
+            }
+            speak(l, function() {
+              setTimeout(next, 200);
+            });
+          };
+          next();
+        };
+        // The Embrollo, at the foot of the lantern.
+        var lamp = (how.lantern || {}).farol || [W - 270, 430];
+        var foot = (how.lantern || {}).pie_del_poste || [lamp[0] + 60, lamp[1] + 120];
+        var emb = S.figures && S.figures.embrollo;
+        if (!emb && S.textures.exists('figure.embrollo')) {
+          var from = how.path || [lamp[0] - 110, lamp[1]];
+          var sprite = S.add.image(from[0], from[1], 'figure.embrollo').setOrigin(0.5, 0.92).setDepth(foot[1]);
+          sprite.setScale(150 / (sprite.height || 150));
+          emb = {x: from[0], y: from[1], sprite: sprite, base: sprite.scale};
+          S.figures = S.figures || {};
+          S.figures.embrollo = emb;
+          S.tweens.add({targets: sprite, x: foot[0] - 150, y: foot[1] + 30, angle: 360, duration: moment.still ? 1 : 1600,
+            ease: 'Cubic.easeOut', onComplete: function() {
+              sprite.setAngle(0);
+            }});
+        }
+        var shrink = function() {
+          if (emb && !moment.still) {
+            emb.base *= 0.86;
+            S.tweens.add({targets: emb.sprite, scale: emb.base, duration: 400, ease: 'Back.easeIn'});
+            S.dust.explode(8, emb.sprite.x, emb.sprite.y - 40);
+          }
+        };
+        var knotLamp = function() {
+          var g = S.add.graphics().setDepth(4300);
+          g.lineStyle(5, 0xa98bff, 1);
+          g.strokeCircle(lamp[0], lamp[1] + 6 * page.knots, 26 + 4 * page.knots);
+          (S.lampKnots = S.lampKnots || []).push(g);
+        };
+        // The page of the notebook, over the place.
+        var box = moment.layer.querySelector('.duel-page');
+        if (!box) {
+          box = document.createElement('div');
+          box.className = 'duel-page';
+          box.innerHTML = '<p class="duel-title">' + esc(t('app_adventure_duel_page')) + '</p><div class="duel-lines"></div>';
+          moment.layer.querySelector('.stage-ui').appendChild(box);
+        }
+        var list = box.querySelector('.duel-lines');
+        if (!page.order) {
+          page.order = all.slice();
+          if (base.shuffle) {
+            for (var i = page.order.length - 1; i > 0; i--) {
+              var j = Math.floor(Math.random() * (i + 1));
+              var tmp = page.order[i];
+              page.order[i] = page.order[j];
+              page.order[j] = tmp;
+            }
+          }
+        }
+        var mark = function(l, el) {
+          var said = tx(l.text[1]);
+          if (page.touched[l.id] === 'lie') {
+            var crossed = esc(said);
+            (l.changed || []).forEach(function(c) {
+              crossed = crossed.split(esc(c)).join('<s>' + esc(c) + '</s>');
+            });
+            el.innerHTML = '<span class="duel-said">' + crossed + '</span><span class="duel-good">' +
+              esc(tx((l.truth || [])[1] || '')) + '</span>';
+            el.disabled = true;
+            el.className = 'duel-line lie';
+          } else if (page.touched[l.id] === 'truth') {
+            el.textContent = said;
+            el.disabled = true;
+            el.className = 'duel-line firm';
+          }
+        };
+        var lineEl = function(l) {
+          var el = list.querySelector('[data-line="' + l.id + '"]');
+          if (!el) {
+            el = document.createElement('button');
+            el.type = 'button';
+            el.className = 'duel-line';
+            el.dataset.line = l.id;
+            el.textContent = tx(l.text[1]);
+            list.appendChild(el);
+          }
+          // Each line answers the duel played now: in the rematch, the same page goes on with its own node.
+          el.onclick = function() {
+            if (state.phase === 'explore' && !page.touched[l.id]) {
+              touch(l, el);
+            }
+          };
+          mark(l, el);
+          return el;
+        };
+        var ribbon = function() {
+          var dots = [];
+          for (var k = 0; k < lies; k++) {
+            dots.push(k >= page.threads);
+          }
+          goal(how.goal || n.goal, dots);
+        };
+        var finish = function(won) {
+          state.phase = 'busy';
+          S.mode = null;
+          if (won) {
+            box.remove();
+            if (emb) {
+              // Off up the path, frayed, dropping its gems.
+              S.sparks.explode(moment.still ? 4 : 20, emb.sprite.x, emb.sprite.y - 30);
+              S.tweens.add({targets: emb.sprite, x: (how.path || [lamp[0] - 110])[0], y: -120, alpha: 0.2,
+                duration: moment.still ? 1 : 1800, ease: 'Cubic.easeIn'});
+            }
+            (S.lampKnots || []).forEach(function(g) {
+              g.destroy();
+            });
+            S.lampKnots = [];
+            S.cheer(true);
+            chain(lines.won, function() {
+              go(n.won || n.next);
+            });
+          } else {
+            chain(lines.lost, function() {
+              // The lantern lights all the same, with its knots.
+              S.sparks.explode(moment.still ? 4 : 16, lamp[0], lamp[1]);
+              go(n.lost || n.next);
+            });
+          }
+        };
+        var touch = function(l, el) {
+          state.phase = 'busy';
+          S.last = S.time.now;
+          run.events.push({n: id, touch: l.id});
+          if (l.lie) {
+            page.touched[l.id] = 'lie';
+            page.threads++;
+            mark(l, el);
+            shrink();
+            ribbon();
+            var said = lines.lie || [];
+            speak(said[Math.min(page.threads, said.length) - 1], function() {
+              speak(l.truth, function() {
+                if (page.threads >= lies) {
+                  finish(true);
+                } else {
+                  state.phase = 'explore';
+                }
+              });
+            });
+            return;
+          }
+          page.touched[l.id] = 'truth';
+          mark(l, el);
+          if (rematch || (data.aided && !warned)) {
+            // In the rematch it only laughs; with the aids, the first true line touched is a warning.
+            warned = true;
+            if (emb) {
+              S.hop(emb);
+            }
+            speak(rematch ? null : lines.aided || (lines.truth || [])[1], function() {
+              state.phase = 'explore';
+            });
+            return;
+          }
+          tied++;
+          page.knots++;
+          knotLamp();
+          chain(lines.truth, function() {
+            if (tied >= lose) {
+              finish(false);
+            } else {
+              state.phase = 'explore';
+            }
+          });
+        };
+        // The Embrollo reads what is left of the page, line by line; in the rematch, the creature smells who it names.
+        var read = function(end) {
+          var pending = page.order.filter(function(l) {
+            return !page.touched[l.id];
+          });
+          page.order.forEach(function(l) {
+            if (page.touched[l.id]) {
+              lineEl(l);
+            }
+          });
+          var next = function() {
+            var l = pending.shift();
+            if (!l) {
+              end();
+              return;
+            }
+            lineEl(l);
+            speak(l.text, function() {
+              var sniff = rematch && l.rematch && l.rematch.sniff;
+              if (sniff && S.beings[sniff]) {
+                S.pet.mode = 'lead';
+                S.pet.goal = {x: S.beings[sniff].x - 50, y: S.beings[sniff].y + 10};
+                S.hop(S.pet);
+              }
+              setTimeout(next, 250);
+            });
+          };
+          next();
+        };
+        S.mode = {kind: 'duel'};
+        verbButton(false);
+        state.phase = 'busy';
+        ribbon();
+        chain(lines.start, function() {
+          read(function() {
+            speak(rematch ? null : lines.waiting, function() {
+              state.phase = 'explore';
+              S.last = S.time.now;
+            });
+          });
+        });
+      };
+
       /* ---------- Which way ---------- */
 
       /**
@@ -1484,6 +1748,13 @@
               });
               if (nests && T.artUrl(['creature.seed'])) {
                 L.load.image('seed', T.artUrl(['creature.seed']));
+              }
+              // The Embrollo, where it comes to duel.
+              var duels = Object.keys(q.nodes).some(function(nid) {
+                return q.nodes[nid].play === 'duel';
+              });
+              if (duels && T.artUrl(['figure.embrollo'])) {
+                L.load.image('figure.embrollo', T.artUrl(['figure.embrollo']));
               }
               if (T.artUrl(['critter.firefly'])) {
                 L.load.image('firefly', T.artUrl(['critter.firefly']));

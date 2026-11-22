@@ -27,6 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 $string['alreadyowned'] = 'You already have it, or your team does.';
 $string['app_activities_help'] = 'Activities of the course that count in the game. They open here; when you complete them, you get what they give.';
 $string['app_adventure_done'] = 'Done: {$a}';
+$string['app_adventure_duel_page'] = 'The notebook of the druid';
 $string['app_adventure_nest_aside'] = 'Aside';
 $string['app_adventure_nest_probe'] = 'Bring it to the seed';
 $string['app_adventure_nest_seed'] = 'Next to the seed';
