@@ -180,6 +180,9 @@
         var v3 = function(a, d) {
           return new THREE.Vector3((a || [])[0] || d, (a || [])[1] || d, (a || [])[2] || d);
         };
+        // Its bands were drawn for a sun of their own (that of the viewer of the 3D, more in front): with the sun of
+        // the place, the side towards the camera falls in the shade band.
+        sh.uniforms.uSun = {value: (toon.sol ? v3(toon.sol, 0) : new THREE.Vector3(-0.45, 0.62, 0.72)).normalize()};
         sh.uniforms.uSombra = {value: v3(toon.sombra, 1)};
         sh.uniforms.uLuz = {value: v3(toon.luz, 1)};
         sh.uniforms.uCorte = {value: new THREE.Vector2((toon.corte || [0.36])[0], (toon.corte || [0, 0.46])[1])};
