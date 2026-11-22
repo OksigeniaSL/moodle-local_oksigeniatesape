@@ -15422,3 +15422,27 @@ body.adapt-still .map .asleep.waking {
 @media (prefers-reduced-motion: reduce) {
   .adventure-tally { transform: none; transition: none; }
 }
+
+/* What a play counts, in its ribbon: the gaps by the seed and the tries left (a warm light, spent in cold), the shine of
+   the find (a gem whose light goes down with each trail, out after a miss), the threads of the Embrollo and its knots. */
+.adv-marks { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px;
+  background: rgba(var(--hi), .07); }
+.adv-sep { width: 2px; height: 22px; border-radius: 1px; background: rgba(var(--hi), .2); }
+.adv-gap { width: 22px; height: 22px; border-radius: 50%; border: 2px dashed rgba(var(--lantern-rgb), .65); }
+.adv-gap.on { border: 2px solid var(--lantern); background: radial-gradient(circle, #fff1bd 0 25%, var(--lantern) 60%);
+  box-shadow: 0 0 12px rgba(var(--lantern-rgb), .8); }
+.adv-try { width: 16px; height: 16px; background: var(--lantern);
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  filter: drop-shadow(0 0 4px rgba(var(--lantern-rgb), .9)); }
+.adv-try.spent { background: #7d93a6; filter: none; opacity: .55; }
+.adv-shine svg { width: 26px; height: 26px; color: var(--lilac); filter: drop-shadow(0 0 var(--adv-shine, 8px) rgba(var(--lilac-rgb), .95)); }
+.adv-shine i { width: 8px; height: 18px; border-radius: 4px; background: var(--lilac); box-shadow: 0 0 8px rgba(var(--lilac-rgb), .8); }
+.adv-shine i.off { background: rgba(var(--hi), .18); box-shadow: none; }
+.adv-shine.out svg { color: #7d93a6; filter: none; }
+.adv-thread { width: 28px; height: 22px; color: var(--lilac); }
+.adv-thread svg, .adv-knot svg { display: block; width: 100%; height: 100%; }
+.adv-thread.cut { opacity: .28; }
+.adv-knot { width: 24px; height: 24px; padding: 2px; border-radius: 50%; border: 2px dashed rgba(var(--lilac-rgb), .6); }
+.adv-knot svg { visibility: hidden; }
+.adv-knot.on { border-style: solid; border-color: var(--lilac); background: rgba(var(--lilac-rgb), .18); }
+.adv-knot.on svg { visibility: visible; }

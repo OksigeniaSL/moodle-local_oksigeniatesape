@@ -308,7 +308,7 @@
        * @param {string} goal
        * @param {Array} [dots] true for what is done.
        */
-      var goal = function(text, dots) {
+      var goal = function(text, dots, marks) {
         if (!moment) {
           return;
         }
@@ -316,11 +316,71 @@
           moment.hud('');
           return;
         }
+        if (marks) {
+          // A play that shows what it counts its own way (the ribbon of the climb).
+          moment.hud('<span class="adventure-goal"><b>' + esc(tx(text)) + '</b>' + marks + '</span>');
+          return;
+        }
         moment.hud('<span class="adventure-goal"><b>' + esc(tx(text)) + '</b>' + (dots && dots.length ?
           '<span class="stage-prints" role="img" aria-label="' + esc(t('app_adventure_done', dots.filter(Boolean).length + '/' +
           dots.length)) + '">' + dots.map(function(on) {
             return '<i class="' + (on ? 'on' : '') + '"></i>';
           }).join('') + '</span>' : '') + '</span>');
+      };
+
+      /** @var {Object} The little signs of the ribbon: a thread of the Embrollo, a knot of wool, a gem. */
+      var SIGN = {
+        thread: '<svg viewBox="0 0 28 22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" ' +
+          'aria-hidden="true"><path d="M2 16c4-10 8-10 10-2s6 8 9-1 5-8 5-8"/></svg>',
+        knot: '<svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+          '<g stroke="#ede8f3" stroke-width="3"><path d="M2.5 8 21.5 16.5"/><path d="M2.5 16.5 21.5 8"/></g><g ' +
+          'stroke="#7056d6" stroke-width="1.8"><path d="M2.5 8 21.5 16.5"/><path d="M2.5 16.5 21.5 8"/></g><g ' +
+          'stroke="#ede8f3" stroke-width="2.4"><path d="M12 11.6C10.6 8.2 6.2 7.6 6 10.2 5.8 12.9 10 13.6 12 11.6z"/>' +
+          '<path d="M12 11.6C13.4 8.2 17.8 7.6 18 10.2 18.2 12.9 14 13.6 12 11.6z"/></g><g stroke="#7056d6" ' +
+          'stroke-width="1.3"><path d="M12 11.6C10.6 8.2 6.2 7.6 6 10.2 5.8 12.9 10 13.6 12 11.6z"/><path d="M12 11.6C13.4 ' +
+          '8.2 17.8 7.6 18 10.2 18.2 12.9 14 13.6 12 11.6z"/></g></svg>',
+        gem: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12l4 6-10 12L2 9z" fill="currentColor"/>' +
+          '<path d="M2 9h20M9 3 7 9l5 12 5-12-2-6" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.2"/></svg>'
+      };
+
+      /**
+       * What a play counts, in the ribbon: the nest (the gaps by the seed filled, the tries left), the search (the shine
+       * of the find, out after a miss) or the duel (the threads the Embrollo has left, the knots it tied).
+       *
+       * @param {string} kind nest, hunt or duel.
+       * @param {Object} o
+       * @return {string}
+       */
+      var ribbonMarks = function(kind, o) {
+        var h = '';
+        var i;
+        if (kind === 'nest') {
+          for (i = 0; i < o.gaps; i++) {
+            h += '<i class="adv-gap' + (i < o.filled ? ' on' : '') + '"></i>';
+          }
+          h += '<i class="adv-sep"></i>';
+          for (i = 0; i < o.of; i++) {
+            h += '<i class="adv-try' + (i < o.left ? '' : ' spent') + '"></i>';
+          }
+          return '<span class="adv-marks" role="img" aria-label="' + esc(t('app_adventure_marks_nest', o)) + '">' + h +
+            '</span>';
+        }
+        if (kind === 'hunt') {
+          for (i = 0; i < o.of; i++) {
+            h += '<i class="' + (!o.out && i < o.shine ? '' : 'off') + '"></i>';
+          }
+          return '<span class="adv-marks adv-shine' + (o.out ? ' out' : '') + '" role="img" aria-label="' +
+            esc(t('app_adventure_marks_hunt', {shine: o.out ? 0 : o.shine, of: o.of})) + '" style="--adv-shine: ' +
+            (o.out ? 0 : 3 + o.shine * 3) + 'px">' + SIGN.gem + h + '</span>';
+        }
+        for (i = 0; i < o.threads; i++) {
+          h += '<span class="adv-thread' + (i < o.left ? '' : ' cut') + '">' + SIGN.thread + '</span>';
+        }
+        h += '<i class="adv-sep"></i>';
+        for (i = 0; i < o.of; i++) {
+          h += '<span class="adv-knot' + (i < o.knots ? ' on' : '') + '">' + SIGN.knot + '</span>';
+        }
+        return '<span class="adv-marks" role="img" aria-label="' + esc(t('app_adventure_marks_duel', o)) + '">' + h + '</span>';
       };
 
       /** The button of the way of looking of the role, at hand; nothing for who has no role. */
@@ -731,7 +791,8 @@
           for (var i = 0; i < alive; i++) {
             dots.push(i < atSeed());
           }
-          goal(how.goal, dots);
+          goal(how.goal, dots, ribbonMarks('nest', {gaps: alive, filled: atSeed(), of: probes, left: Math.max(0,
+            probes - st.probed)}));
         };
         // The seed answers: it beats, stays cold, shivers, leans to a thing or opens.
         var seed = function(kind, toward) {
@@ -899,6 +960,7 @@
         var probe = function(b) {
           state.phase = 'busy';
           st.probed++;
+          ribbon();
           run.events.push({n: id, probe: b.id});
           var it = items[b.id];
           var home = {x: b.home.x, y: b.home.y};
@@ -1200,7 +1262,7 @@
           for (var i = 0; i < clues.length; i++) {
             dots.push(i < left);
           }
-          goal(how.goal || n.goal, dots);
+          goal(how.goal || n.goal, dots, ribbonMarks('hunt', {shine: left, of: clues.length, out: crossed.length > 0}));
         };
         // The trails still closed, on the ground in front of the bush where it hides now.
         var lay = function() {
@@ -1635,7 +1697,8 @@
           for (var k = 0; k < lies; k++) {
             dots.push(k >= page.threads);
           }
-          goal(how.goal || n.goal, dots);
+          goal(how.goal || n.goal, dots, ribbonMarks('duel', {threads: lies, left: lies - page.threads, knots: Math.min(page.knots,
+            lose === Infinity ? page.knots : lose), of: lose === Infinity ? base.lose || 2 : lose}));
         };
         var finish = function(won) {
           state.phase = 'busy';
@@ -1721,6 +1784,7 @@
           }
           tied++;
           page.knots++;
+          ribbon();
           // It throws a thread to the lantern, and there is the knot.
           gesture('throw');
           knotLamp();
