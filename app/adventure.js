@@ -33,7 +33,7 @@
     protector: {icon: 'shield', who: 'hero'}
   };
   /** @var {Object} How each node type is played here. */
-  var PLAYS = {classify: ['board'], choice: ['rescue', 'route'], nest: ['nest']};
+  var PLAYS = {classify: ['board'], choice: ['rescue', 'route'], nest: ['nest'], hunt: ['hunt']};
 
   /**
    * One of the ways of saying something, not the one said last time.
@@ -368,6 +368,8 @@
               rescue(id, n, how, run, go);
             } else if (how.play === 'nest') {
               nest(id, n, how, run, go);
+            } else if (how.play === 'hunt') {
+              hunt(id, n, how, run, go);
             } else {
               route(id, n, how, run, go);
             }
@@ -1054,6 +1056,233 @@
         speak(lines.start);
       };
 
+      /* ---------- Someone hiding: trails, a bet and a name ---------- */
+
+      /**
+       * Someone hides in a bush of the place (the climb). Before anything, the bet is said: the fewer trails, the more the
+       * find shines. Its trails are on the ground in front of the bush, in a row: touching the next one, the hero goes
+       * there and the one hiding tells a clue from the bush (the first, the way of the role). Then a name is said when
+       * the student dares: a wrong one is crossed out and the being runs to the other bush, with the trails left; the
+       * right one brings it out, and how much the find shines is said. Nobody loses it.
+       *
+       * @param {string} id
+       * @param {Object} n
+       * @param {Object} how
+       * @param {Object} run
+       * @param {Function} go
+       */
+      var hunt = function(id, n, how, run, go) {
+        var lines = n.say || {};
+        var clues = (n.clues || []).filter(function(cl) {
+          return o.has(cl.requires);
+        });
+        var bushes = how.bushes || {};
+        var at = how.first || Object.keys(bushes)[0];
+        var opened = 0;
+        var crossed = [];
+        var marks = [];
+        var names = null;
+        var speak = function(pair, end) {
+          if (!pair || !pair[1]) {
+            if (end) {
+              end();
+            }
+            return;
+          }
+          say(pair[0] === 'heroe' ? 'hero' : pair[0], pair[1], end);
+        };
+        var shine = function() {
+          var left = crossed.length ? 0 : Math.max(0, clues.length - Math.max(opened, 1) + 1);
+          var dots = [];
+          for (var i = 0; i < clues.length; i++) {
+            dots.push(i < left);
+          }
+          goal(how.goal || n.goal, dots);
+        };
+        // The trails still closed, on the ground in front of the bush where it hides now.
+        var lay = function() {
+          marks.forEach(function(m) {
+            m.destroy();
+          });
+          marks = [];
+          var spots = (bushes[at] || {}).trails || [];
+          for (var i = opened; i < clues.length; i++) {
+            var pt = spots[i % spots.length];
+            var g = S.add.graphics().setDepth(pt[1]);
+            g.fillStyle(0xfff1bd, i === opened ? 0.95 : 0.45);
+            g.fillEllipse(pt[0], pt[1], 46, 20);
+            g.lineStyle(3, 0x8a6d3b, 0.9);
+            g.strokeEllipse(pt[0], pt[1], 46, 20);
+            g.at = pt;
+            marks.push(g);
+          }
+          // For the tests of the browser: where the trails still closed are.
+          S.trailsNow = marks.map(function(m) {
+            return m.at;
+          });
+        };
+        var rustle = function() {
+          var b = bushes[at];
+          if (b && !moment.still) {
+            S.cameras.main.shake(120, 0.002);
+            S.dust.explode(10, b.at[0], b.at[1] + 20);
+          }
+          sound('rustle', 'tap');
+        };
+        var free = function() {
+          state.phase = 'explore';
+          S.last = S.time.now;
+          shine();
+        };
+        var namesBox = function() {
+          if (names) {
+            names.remove();
+          }
+          names = document.createElement('div');
+          names.className = 'adventure-choices';
+          names.setAttribute('role', 'group');
+          names.innerHTML = (n.names || []).map(function(nm) {
+            var off = !opened || crossed.indexOf(nm.id) >= 0;
+            return '<button type="button" class="btn btn-main' + (crossed.indexOf(nm.id) >= 0 ? ' crossed' : '') +
+              '" data-name="' + esc(nm.id) + '"' + (off ? ' disabled' : '') + '>' + esc(tx(nm.label)) + '</button>';
+          }).join('');
+          moment.layer.querySelector('.stage-ui').appendChild(names);
+          names.querySelectorAll('[data-name]').forEach(function(btn) {
+            btn.onclick = function() {
+              if (state.phase === 'explore' && !btn.disabled) {
+                guess(btn.dataset.name);
+              }
+            };
+          });
+        };
+        var open = function() {
+          var cl = clues[opened];
+          var mark = marks[0];
+          if (!cl || !mark) {
+            return;
+          }
+          state.phase = 'busy';
+          run.events.push({n: id, clue: cl.id});
+          opened++;
+          S.walkTo(P.onGround(place, mark.at[0] - 50, mark.at[1] + 10), function() {
+            S.hero.facing = Math.sign(mark.at[0] - S.hero.x) || 1;
+            T.cast.act(S.hero, 'point');
+            mark.destroy();
+            marks.shift();
+            rustle();
+            speak(cl.text, function() {
+              lay();
+              namesBox();
+              free();
+            });
+          });
+        };
+        var guess = function(name) {
+          state.phase = 'busy';
+          run.events.push({n: id, guess: name});
+          var nm = (n.names || []).filter(function(x) {
+            return x.id === name;
+          })[0] || {};
+          speak(nm.ask, function() {
+            if (name === n.answer) {
+              found();
+              return;
+            }
+            crossed.push(name);
+            rustle();
+            speak(nm.reply, function() {
+              // It runs to the other bush, with the trails left.
+              var others = Object.keys(bushes).filter(function(k) {
+                return k !== at;
+              });
+              if (others.length) {
+                at = others[0];
+              }
+              rustle();
+              lay();
+              namesBox();
+              var after = function() {
+                free();
+              };
+              if (crossed.length === 1) {
+                speak(lines.first_miss, after);
+              } else {
+                after();
+              }
+            });
+          });
+        };
+        var found = function() {
+          if (names) {
+            names.remove();
+            names = null;
+          }
+          marks.forEach(function(m) {
+            m.destroy();
+          });
+          marks = [];
+          S.mode = null;
+          S.onTouchAt = null;
+          var b = bushes[at];
+          var it = {id: n.answer, label: n.answer, art: n.art};
+          var snail = S.addBeing(it, {wait: {}, tall: {}});
+          snail.x = b.at[0] - 40;
+          snail.y = b.at[1] + 60;
+          snail.home = {x: snail.x, y: snail.y};
+          snail.sprite.setPosition(snail.x, snail.y);
+          S.size(snail, snail.y);
+          S.hop(snail);
+          var kind = crossed.length ? 'none' : opened <= 1 ? 'golden' : 'clear';
+          if (kind !== 'none') {
+            S.sparks.explode(kind === 'golden' ? 26 : 12, snail.x, snail.y - 30);
+          }
+          var said = (n.found || []).slice();
+          var next = function() {
+            var l = said.shift();
+            if (l) {
+              speak(l, function() {
+                setTimeout(next, 250);
+              });
+              return;
+            }
+            speak((n.shine || {})[kind], function() {
+              go(n.next);
+            });
+          };
+          next();
+        };
+        S.onTouchAt = function(x, y) {
+          if (state.phase !== 'explore') {
+            return;
+          }
+          S.last = S.time.now;
+          var mark = marks[0];
+          if (mark && Math.hypot(x - mark.at[0], y - mark.at[1]) < 60) {
+            open();
+            return;
+          }
+          S.walkTo(P.onGround(place, x, y), null);
+        };
+        // The creature, born a moment ago, looks at the bush that moves: it cannot smell yet.
+        var b0 = bushes[at];
+        if (b0) {
+          S.pet.mode = 'lead';
+          S.pet.goal = {x: b0.at[0] - 120, y: Math.max(b0.at[1] + 80, 600)};
+        }
+        S.mode = {kind: 'hunt'};
+        verbButton(false);
+        lay();
+        namesBox();
+        state.phase = 'busy';
+        shine();
+        rustle();
+        speak(lines.start, function() {
+          speak(lines.bet, function() {
+            free();
+          });
+        });
+      };
+
       /* ---------- Which way ---------- */
 
       /**
@@ -1241,6 +1470,13 @@
                     L.load.image('being.' + it.id, url);
                   }
                 });
+                // Who hides in a search comes out at the end.
+                if (node.type === 'hunt' && node.answer) {
+                  var found = T.artUrl([].concat(node.art || [], 'being.' + node.answer));
+                  if (found && !L.textures.exists('being.' + node.answer)) {
+                    L.load.image('being.' + node.answer, found);
+                  }
+                }
               });
               // The seed of the student, where a nest wakes it.
               var nests = Object.keys(q.nodes).some(function(nid) {
@@ -2118,6 +2354,11 @@
           var x = pointer.worldX;
           var y = pointer.worldY;
           var b = S.beingAt(x, y);
+          // Where the place itself is touched (the trails of someone hiding), the play says what was touched.
+          if (S.onTouchAt && S.mode.kind === 'hunt') {
+            S.onTouchAt(x, y);
+            return;
+          }
           // Where a touch opens what can be done with a thing (the nest), it is not taken nor dragged.
           if (S.onTouch && S.mode.kind === 'nest') {
             if (b) {

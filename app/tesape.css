@@ -1139,6 +1139,33 @@ body.stage-open {
   display: none;
 }
 
+/* What can be done in the place now (the sites of a thing of the nest, the names of who hides): big buttons in a row,
+   in the middle, over what is said at the bottom. */
+.adventure-choices {
+  position: absolute;
+  left: 50%;
+  bottom: calc(max(16px, env(safe-area-inset-bottom)) + 104px);
+  transform: translateX(-50%);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  width: max-content;
+  max-width: calc(100% - 32px);
+  z-index: 5;
+}
+
+.adventure-choices .btn {
+  min-height: 56px;
+  padding: 10px 22px;
+  font-size: 1.05rem;
+}
+
+.adventure-choices .btn.crossed {
+  text-decoration: line-through;
+  opacity: .5;
+}
+
 .adventure-verb .btn {
   display: inline-flex;
   gap: 8px;
