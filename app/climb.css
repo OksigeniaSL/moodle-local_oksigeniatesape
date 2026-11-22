@@ -213,17 +213,17 @@ body.climb { overflow: hidden; }
 .pl-escena .pl-velo { transition: opacity 1.6s ease; }
 .pl-escena.pl-dentro .pl-velo { opacity: .35; }
 
-/* The bag of gems, where the gems of the day are counted: under the counter, each gem a little beat. */
-.pl-bolsa { position: fixed; z-index: 25; top: calc(max(14px, env(safe-area-inset-top)) + 84px);
+/* The bag of the day, where the gems of the lantern are counted: under the counter, each gem a little beat. */
+.pl-bolsa-dia { position: fixed; z-index: 25; top: calc(max(14px, env(safe-area-inset-top)) + 84px);
   left: max(14px, env(safe-area-inset-left)); display: flex; align-items: center; gap: 10px; padding: 8px 18px 8px 12px;
   border: 2px solid var(--lilac); border-radius: 18px; background: rgba(var(--night-rgb), .9); color: var(--text);
   box-shadow: 0 8px 24px rgba(0, 0, 0, .35); }
 .pl-bolsa-gema { width: 34px; height: 34px; color: var(--lilac); filter: drop-shadow(0 0 6px rgba(var(--lilac-rgb), .8)); }
 .pl-bolsa-gema svg { display: block; width: 100%; height: 100%; }
-.pl-bolsa b { font-family: var(--f-title); font-size: 1.7rem; line-height: 1; color: var(--lilac-text); min-width: 1.4em; }
-.pl-bolsa.pl-bolsa-late { animation: pl-late .16s ease; }
+.pl-bolsa-dia b { font-family: var(--f-title); font-size: 1.7rem; line-height: 1; color: var(--lilac-text); min-width: 1.4em; }
+.pl-bolsa-dia.pl-late { animation: pl-late .16s ease; }
 @keyframes pl-late { 50% { transform: scale(1.08); } }
-[data-theme="day"] .pl-bolsa { background: rgba(255, 255, 255, .95); }
+[data-theme="day"] .pl-bolsa-dia { background: rgba(255, 255, 255, .95); }
 /* a stone touched before its time trembles, like a lantern */
 .pl-piedra.tiembla { animation: pl-tiembla .5s ease; }
 .climb-error { position: fixed; inset: auto 16px 40% 16px; text-align: center; font-size: 1.2rem; }
@@ -274,4 +274,200 @@ body.climb { overflow: hidden; }
 @media (max-width: 640px) {
   .op-fila { flex-wrap: wrap; bottom: 6%; gap: 4px 8px; }
   .op-heroe { height: clamp(140px, 26vh, 240px); }
+}
+
+/* --- The camp (script §5.3): the only place where the gems are seen and spent. Everything in sight: the hero (figure and
+   skin tone, free), the creature (the star, painted or not, with its name if it has one), six pots of paint (the colour
+   is seen, no labels), the bag of gems and, at the edge of the clearing, the eight things of the Nest, that the creature
+   sniffs. */
+.pl-campa { position: fixed; inset: 0; display: grid; grid-template-columns: 1fr 1.25fr 1fr; grid-template-rows: auto 1fr auto;
+  gap: 8px 18px; padding: calc(max(14px, env(safe-area-inset-top)) + 70px) 28px calc(max(14px, env(safe-area-inset-bottom)) + 12px); }
+.pl-campa-fondo { position: fixed; inset: 0; background: #0b1724 center / cover no-repeat;
+  filter: brightness(.5) saturate(.75) hue-rotate(-12deg); }
+.pl-campa-fondo::after { content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 60% 62%, rgba(255, 170, 70, .28) 0%, rgba(255, 170, 70, 0) 45%),
+              linear-gradient(180deg, rgba(8, 18, 34, .55) 0%, rgba(8, 18, 34, .2) 50%, rgba(8, 18, 34, .6) 100%); }
+
+/* the bag of gems, up on the right: seen here only */
+body.pl-en-campa .pl-bolsa { position: fixed; z-index: 20; top: max(14px, env(safe-area-inset-top)); right: max(14px, env(safe-area-inset-right));
+  display: flex; align-items: center; gap: 10px; padding: 8px 18px 8px 10px; border: 2px solid var(--lilac); border-radius: 18px;
+  background: rgba(var(--night-rgb), .88); box-shadow: 0 8px 24px rgba(0, 0, 0, .35); }
+body.pl-en-campa .pl-bolsa svg { width: 38px; height: 38px; color: var(--lilac); filter: drop-shadow(0 0 8px rgba(var(--lilac-rgb), .9)); }
+body.pl-en-campa .pl-bolsa b { font-family: var(--f-title); font-size: 1.9rem; line-height: 1; color: var(--lilac-text); }
+body.pl-en-campa .pl-bolsa.gasta b { animation: pl-gasta .6s ease; }
+@keyframes pl-gasta { 40% { transform: scale(1.3); } }
+[data-theme="day"] body.pl-en-campa .pl-bolsa { background: rgba(255, 255, 255, .95); }
+
+/* the hero: figure and skin tone, for free */
+.pl-heroe { grid-column: 1; grid-row: 2; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; min-height: 0; }
+.pl-heroe img { flex: 1 1 auto; min-height: 0; max-height: 100%; width: auto; object-fit: contain;
+  filter: drop-shadow(0 0 2px rgba(255, 241, 189, .6)) drop-shadow(0 10px 14px rgba(0, 0, 0, .5)); }
+.pl-opciones { display: flex; gap: 10px; margin-top: 8px; }
+.pl-op { width: 56px; height: 56px; border-radius: 50%; border: 2px solid rgba(var(--hi), .3); background: rgba(var(--night-rgb), .8);
+  color: var(--text); cursor: pointer; display: grid; place-items: center; padding: 0; }
+.pl-op[aria-pressed="true"] { border-color: var(--lantern); box-shadow: 0 0 0 3px rgba(var(--lantern-rgb), .35); }
+.pl-op img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; object-position: 50% 12%; }
+.pl-op.piel i { width: 30px; height: 30px; border-radius: 50%; box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .2); }
+
+/* the creature, in the middle, big; its name under it; its nose, to sniff */
+.pl-criatura { grid-column: 2; grid-row: 2; position: relative; display: flex; flex-direction: column; align-items: center;
+  justify-content: flex-end; min-height: 0; }
+.pl-criatura-boton { flex: 1 1 auto; min-height: 0; border: 0; background: none; padding: 0; cursor: pointer; display: flex;
+  align-items: flex-end; justify-content: center; }
+.pl-criatura-boton img { max-height: 100%; max-width: 100%; object-fit: contain; filter: var(--paint, none) drop-shadow(0 0 3px rgba(255, 241, 189, .5))
+  drop-shadow(0 12px 16px rgba(0, 0, 0, .5)); transition: filter .5s ease; }
+.pl-nombre { margin-top: 6px; padding: 6px 18px; border-radius: 999px; background: rgba(var(--night-rgb), .86);
+  border: 2px dashed rgba(var(--lantern-rgb), .6); color: var(--lantern-text); font-family: var(--f-title); font-size: 1.3rem; }
+.pl-nombre.puesto { border-style: solid; }
+[data-theme="day"] .pl-nombre { background: rgba(255, 255, 255, .95); }
+
+/* the paints: six pots on a board, the colour seen; touching one tries it on, and «Pintarla» spends the gems */
+.pl-pinturas { grid-column: 3; grid-row: 2; align-self: center; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.pl-estante { display: grid; grid-template-columns: repeat(3, 64px); gap: 14px 14px; padding: 16px 18px 22px; border-radius: 18px;
+  background: linear-gradient(180deg, rgba(var(--night-rgb), .86), rgba(var(--night-rgb), .94));
+  box-shadow: inset 0 -10px 0 #6b4a2b, 0 10px 24px rgba(0, 0, 0, .45); }
+[data-theme="day"] .pl-estante { background: linear-gradient(180deg, rgba(255, 255, 255, .92), rgba(255, 255, 255, .97)); }
+.pl-bote { width: 64px; height: 72px; padding: 0; border: 0; background: none; cursor: pointer; position: relative; }
+.pl-bote svg { width: 100%; height: 100%; display: block; filter: drop-shadow(0 4px 6px rgba(0, 0, 0, .45)); }
+.pl-bote[aria-pressed="true"]::after { content: ''; position: absolute; inset: -6px; border-radius: 14px;
+  box-shadow: 0 0 0 3px var(--lantern), 0 0 18px rgba(var(--lantern-rgb), .7); }
+.pl-precio { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; color: var(--lilac-text); }
+.pl-precio svg { width: 20px; height: 20px; color: var(--lilac); }
+.pl-pintarla { min-height: 56px; font-size: 1.1rem; }
+.pl-pintarla[hidden] { display: none; }
+
+/* the edge of the clearing: the eight things of the Nest, that the creature sniffs one after another */
+.pl-borde { grid-column: 1 / -1; grid-row: 3; display: flex; align-items: center; justify-content: center; gap: 14px; }
+.pl-cosas { display: flex; gap: 10px; padding: 8px 12px; border-radius: 18px; background: rgba(var(--night-rgb), .7); }
+[data-theme="day"] .pl-cosas { background: rgba(255, 255, 255, .85); }
+.pl-cosa { position: relative; width: 62px; height: 62px; border-radius: 14px; display: grid; place-items: center; }
+.pl-cosa img { width: 100%; height: 100%; object-fit: contain; }
+.pl-cosa.falta { border: 2px dashed rgba(var(--hi), .35); color: var(--text-soft); font-size: .7rem; text-align: center; line-height: 1.1; }
+/* sniffed: warm light for what is alive, a puff of frost for what is not (the world's colours, not right and wrong) */
+.pl-cosa.vivo::after, .pl-cosa.novivo::after { content: ''; position: absolute; inset: -4px; border-radius: 16px; }
+.pl-cosa.vivo::after { box-shadow: 0 0 0 3px rgba(var(--lantern-rgb), .9), 0 0 20px rgba(var(--lantern-rgb), .8); }
+.pl-cosa.novivo::after { box-shadow: 0 0 0 3px rgba(170, 210, 240, .8); background: radial-gradient(circle, rgba(200, 230, 255, .35), rgba(200, 230, 255, 0) 70%); }
+.pl-olfato { width: 72px; height: 72px; border-radius: 50%; border: 0; cursor: pointer; display: grid; place-items: center; padding: 0;
+  background: linear-gradient(180deg, var(--lantern-light), var(--lantern) 55%, var(--lantern-deep)); color: var(--on-lantern);
+  box-shadow: 0 6px 18px rgba(var(--lantern-rgb), .45); }
+.pl-olfato svg { width: 40px; height: 40px; }
+.pl-salir { position: fixed; z-index: 20; right: max(18px, env(safe-area-inset-right)); bottom: max(18px, env(safe-area-inset-bottom)); }
+
+/* the name, asked by the druid: a field on a card over the camp, big enough for a child's fingers */
+.pl-nombrar { position: fixed; z-index: 40; inset: 0; display: grid; place-items: center; background: rgba(4, 10, 18, .55); }
+.pl-nombrar[hidden] { display: none; }
+.pl-nombrar form { display: flex; flex-direction: column; gap: 14px; padding: 22px; border-radius: 22px; border: 2px solid var(--lantern);
+  background: rgba(var(--night-rgb), .96); width: min(92vw, 520px); }
+.pl-nombrar input { min-height: 60px; padding: 0 18px; border-radius: 14px; border: 2px solid rgba(var(--lantern-rgb), .6);
+  background: rgba(var(--hi), .06); color: var(--text); font-family: var(--f-title); font-size: 1.6rem; }
+.pl-nombrar .botones { display: flex; gap: 10px; justify-content: flex-end; }
+
+/* A phone held upright: the creature on top, the hero small by it, the pots under, the things in a sliding row. */
+@media (orientation: portrait) and (max-width: 700px) {
+  .pl-campa { grid-template-columns: 1fr 1.6fr; grid-template-rows: 1fr auto auto auto; padding-top: calc(max(14px, env(safe-area-inset-top)) + 76px);
+    padding-left: 14px; padding-right: 14px; gap: 10px; }
+  .pl-heroe { grid-column: 1; grid-row: 1; }
+  .pl-criatura { grid-column: 2; grid-row: 1; }
+  .pl-pinturas { grid-column: 1 / -1; grid-row: 2; flex-direction: row; justify-content: center; flex-wrap: wrap; }
+  .pl-estante { grid-template-columns: repeat(6, 44px); gap: 8px; padding: 12px 12px 18px; }
+  .pl-bote { width: 44px; height: 52px; }
+  .pl-borde { grid-row: 3; justify-content: flex-start; }
+  .pl-cosas { overflow-x: auto; scrollbar-width: none; }
+  .pl-cosa { flex: none; width: 52px; height: 52px; }
+  .pl-op { width: 48px; height: 48px; }
+  .pl-op img { width: 38px; height: 38px; }
+  .pl-olfato { flex: none; width: 60px; height: 60px; }
+  .pl-salir { position: static; grid-column: 1 / -1; grid-row: 4; justify-self: end; }
+}
+
+/* (fixes after the first captures) the creature is the star; images fit their column; the words go over the edge row */
+.pl-campa { grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr) minmax(0, 1fr); }
+.pl-heroe, .pl-criatura, .pl-pinturas { min-width: 0; }
+.pl-heroe img { flex: 1 1 0; min-height: 0; width: 100%; object-fit: contain; }
+.pl-criatura-boton { flex: 1 1 0; width: 100%; }
+.pl-criatura-boton img { width: 100%; height: 100%; object-fit: contain; object-position: 50% 100%; }
+.pl-salir { color: var(--text); }
+body.pl-en-campa .pl-subtitulos { bottom: calc(max(18px, env(safe-area-inset-bottom)) + 104px); }
+@media (orientation: portrait) and (max-width: 700px) {
+  .pl-campa { grid-template-columns: minmax(0, .8fr) minmax(0, 1.4fr); }
+  body.pl-en-campa .pl-subtitulos { bottom: calc(max(18px, env(safe-area-inset-bottom)) + 214px); }
+}
+/* (second round) in the camp the words go up, between the way and the gems; «Salir» closes the edge row; the price on
+   its own plate so it reads on the night in both themes */
+body.pl-en-campa .pl-subtitulos { top: max(18px, env(safe-area-inset-top)); bottom: auto; left: 240px; right: 150px; }
+.pl-salir { position: static; margin-left: 10px; }
+.pl-precio { padding: 5px 14px; border-radius: 999px; background: rgba(var(--night-rgb), .88); }
+[data-theme="day"] .pl-precio { background: rgba(255, 255, 255, .95); }
+@media (orientation: portrait) and (max-width: 700px) {
+  body.pl-en-campa .pl-subtitulos { top: calc(max(14px, env(safe-area-inset-top)) + 70px); bottom: auto; left: 12px; right: 12px; }
+  .pl-borde { flex-wrap: wrap; }
+  .pl-salir { margin-left: auto; }
+  .pl-opciones { gap: 6px; }
+  .pl-op { width: 42px; height: 42px; }
+  .pl-op img { width: 34px; height: 34px; }
+  .pl-op.piel i { width: 24px; height: 24px; }
+}
+.pl-salir { background: rgba(var(--night-rgb), .88); border: 1px solid var(--line); }
+[data-theme="day"] .pl-salir { background: rgba(255, 255, 255, .95); }
+
+/* (after the art review) the hero in the fire's light, with a rim, and its choices grouped under «Tu héroe» */
+.pl-heroe { position: relative; }
+.pl-heroe::before { content: ''; position: absolute; left: 50%; bottom: 96px; width: 120%; height: 42%; transform: translateX(-50%);
+  background: radial-gradient(ellipse at 50% 85%, rgba(255, 180, 80, .45) 0%, rgba(255, 170, 70, .16) 40%, rgba(255, 170, 70, 0) 70%);
+  pointer-events: none; }
+.pl-heroe img { position: relative; filter: drop-shadow(0 0 2px rgba(255, 220, 150, .95)) drop-shadow(0 0 10px rgba(255, 190, 100, .45))
+  drop-shadow(0 10px 14px rgba(0, 0, 0, .5)) brightness(1.12); }
+.pl-heroe-titulo { margin: 10px 0 0; padding: 3px 14px; border-radius: 999px; background: rgba(var(--night-rgb), .86);
+  color: var(--lantern-text); font-size: .9rem; font-weight: 700; }
+[data-theme="day"] .pl-heroe-titulo { background: rgba(255, 255, 255, .95); }
+.pl-heroe-titulo + .pl-opciones { margin-top: 6px; padding: 6px 10px; border-radius: 16px; background: rgba(var(--night-rgb), .6); }
+@media (orientation: portrait) and (max-width: 700px) {
+  .pl-heroe::before { bottom: 120px; }
+  .pl-heroe-titulo { font-size: .8rem; margin-top: 6px; }
+}
+
+/* (22 November) the camp at night: open grass in the middle and on the left, the fire and the tent on the right. The
+   pots go down on the grass, under the tent, not over it; the painting needs no darkening of its own. */
+.pl-campa-fondo.pl-noche { filter: none; }
+.pl-campa-fondo::after { background: linear-gradient(180deg, rgba(8, 18, 34, .35) 0%, rgba(8, 18, 34, 0) 30%, rgba(8, 18, 34, .3) 100%); }
+.pl-pinturas { align-self: end; margin-bottom: 8px; }
+/* the right quarter is the fire and the tent: nothing of the interface over it on a wide screen */
+@media (orientation: landscape), (min-width: 701px) {
+  .pl-campa { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, .9fr); }
+  .pl-borde { grid-column: 1 / 4; }
+}
+/* when the edge row does not fit, it starts on the left and its things slide, never cut */
+.pl-borde { min-width: 0; }
+.pl-cosas { min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.pl-cosas::-webkit-scrollbar { display: none; }
+.pl-cosa { flex: none; }
+@media (max-width: 1200px) { .pl-borde { justify-content: flex-start; } }
+
+/* the sniffing button: the painted trail of smell (the same the creature makes in 3D) reaching a nose, on a pill of the
+   night with the lantern's edge; and, sniffed, each thing gives off its trail: warm before what lives, frosty before what
+   does not */
+.pl-olfato { width: 108px; height: 64px; border-radius: 999px; border: 2px solid var(--lantern); background: rgba(var(--night-rgb), .92);
+  color: var(--lantern-light); display: flex; align-items: center; justify-content: center; gap: 0; padding: 0 10px;
+  box-shadow: 0 6px 18px rgba(var(--lantern-rgb), .35); }
+.pl-olfato img { width: 62px; height: 31px; transform: translateY(4px); }
+.pl-olfato svg { width: 30px; height: 30px; margin-left: -4px; }
+[data-theme="day"] .pl-olfato { background: rgba(255, 255, 255, .95); color: var(--lantern-deep); border-color: var(--lantern-deep); }
+.pl-cosa.vivo::before, .pl-cosa.novivo::before { content: ''; position: absolute; z-index: 1; left: -18%; top: -46%; width: 100%;
+  aspect-ratio: 2; background: url(scent.svg) center / contain no-repeat; pointer-events: none; }
+.pl-cosa.novivo::before { background-image: url(scent-cold.svg); }
+.pl-cosas { padding-top: 22px; }
+@media (orientation: portrait) and (max-width: 700px) {
+  .pl-olfato { width: 92px; height: 56px; }
+  .pl-olfato img { width: 52px; height: 26px; }
+  .pl-olfato svg { width: 26px; height: 26px; }
+}
+
+/* (second look at the button) a nose seen from the front, bigger, the trail reaching it from the left */
+.pl-olfato { width: 128px; height: 68px; padding: 0 12px 0 8px; }
+.pl-olfato img { width: 74px; height: 37px; transform: translate(6px, 6px); }
+.pl-olfato svg { width: 38px; height: 38px; margin-left: -6px; }
+@media (orientation: portrait) and (max-width: 700px) {
+  .pl-olfato { width: 104px; height: 58px; }
+  .pl-olfato img { width: 60px; height: 30px; }
+  .pl-olfato svg { width: 32px; height: 32px; }
 }

@@ -719,9 +719,7 @@
       var camp = mark(v.map, 'pl-campamento', c.camp || [735, 930], t('app_climb_camp'), T.artUrl(['thing.valle.tienda']) ?
         '<img src="' + esc(T.artUrl(['thing.valle.tienda'])) + '" alt="">' : '');
       camp.onclick = function() {
-        if (T.climbCamp) {
-          T.climbCamp(api());
-        }
+        campsite();
       };
       var next = mark(v.map, 'pl-siguiente', c.next || [1075, 735], t('app_climb_next'));
       next.onclick = function() {
@@ -788,7 +786,7 @@
       return n + s.gems;
     }, 0) + (state.paid ? (says.from || {}).lantern || 0 : 0);
     var bag = document.createElement('div');
-    bag.className = 'pl-bolsa';
+    bag.className = 'pl-bolsa-dia';
     bag.setAttribute('role', 'status');
     bag.innerHTML = '<span class="pl-bolsa-gema">' + SVG.gem + '</span><b>0</b>';
     document.body.appendChild(bag);
@@ -799,9 +797,9 @@
         if (n < from) {
           n++;
           shown.textContent = String(n);
-          bag.classList.remove('pl-bolsa-late');
+          bag.classList.remove('pl-late');
           void bag.offsetWidth;
-          bag.classList.add('pl-bolsa-late');
+          bag.classList.add('pl-late');
           T.fx.sound('coin');
           setTimeout(step, still ? 0 : 160);
           return;
@@ -818,16 +816,231 @@
     });
   }
 
+  /** @var {Object} The paints of the market, the colour of each pot and how it looks on the drawn creature. */
+  var POTS = {
+    'paint-gold': {pot: '#f2b632', filter: 'hue-rotate(17deg) saturate(1.6) brightness(1.18)'},
+    'paint-night': {pot: '#2f4f86', filter: 'hue-rotate(190deg) saturate(.9) brightness(.75)'},
+    'paint-snow': {pot: '#e9eef3', filter: 'grayscale(.92) brightness(1.25)'},
+    'paint-ember': {pot: '#e0613f', filter: 'hue-rotate(-22deg) saturate(1.6) brightness(1.05)'},
+    'paint-moss': {pot: '#5f8f3e', filter: 'hue-rotate(75deg) saturate(.9) brightness(.92)'},
+    'paint-coral': {pot: '#f07b86', filter: 'hue-rotate(-38deg) saturate(1.2) brightness(1.15)'}
+  };
+
+  /** @var {Array} The skins of the camp, by the tone of the pictures of the heroes (t1, t2, t3). */
+  var TONES = [['t1', 0], ['t2', 2], ['t3', 4]];
+
   /**
-   * What the other parts of the climb (the camp, the postcard, the first minute) may use of this one.
+   * The picture of the student's hero: its role, its figure and, if chosen, its tone.
    *
-   * @return {Object}
+   * @param {string} [form]
+   * @param {string} [tone]
+   * @return {string}
    */
-  function api() {
-    return {state: function() {
-      return state;
-    }, call: call, say: say, chain: chain, subtitle: subtitle, counter: counter, valley: valley, path: path, at: at,
-    svg: SVG, still: still};
+  function heroPicture(form, tone) {
+    var h = state.hero || {};
+    var base = 'character.storyheroes.' + h.role + '.' + (form || h.nameform) + '.1';
+    return T.artUrl([base + '.' + (tone || toneOf(h.skin)), base].filter(function(k) {
+      return k.slice(-1) !== '.';
+    })) || '';
+  }
+
+  /**
+   * The tone of the pictures for a skin of the game.
+   *
+   * @param {string} skin
+   * @return {string}
+   */
+  function toneOf(skin) {
+    var i = (T.SKINS || []).indexOf(skin);
+    return i < 0 ? '' : 't' + (i < 2 ? 1 : i < 4 ? 2 : 3);
+  }
+
+  /**
+   * The camp, by the clearing once its lantern is lit: the hero (figure and skin, free), the creature (named if wanted,
+   * painted with gems), the pots of paint, the bag of gems, and the eight things of the Nest at the edge, that the
+   * creature sniffs with the sense it learnt. Leaving it, the postcard.
+   */
+  function campsite() {
+    var says = state.climb.camp || {};
+    var trying = '';
+    document.body.classList.add('pl-en-campa');
+    app.innerHTML = '';
+    var bg = document.createElement('div');
+    bg.className = 'pl-campa-fondo pl-noche';
+    bg.style.backgroundImage = 'url("' + (T.artUrl(['scene.campamento', 'scene.claro-abierto']) || '') + '")';
+    app.appendChild(bg);
+    var bag = document.createElement('div');
+    bag.className = 'pl-bolsa';
+    bag.setAttribute('role', 'status');
+    bag.innerHTML = SVG.gem + '<b></b>';
+    app.appendChild(bag);
+    var main = document.createElement('main');
+    main.className = 'pl-campa';
+    var pot = function(colour) {
+      return '<svg viewBox="0 0 64 72" aria-hidden="true"><ellipse cx="32" cy="14" rx="22" ry="7" fill="#8a6a45"/>' +
+        '<path d="M10 14v44c0 6 10 10 22 10s22-4 22-10V14" fill="#a7835a"/><path d="M10 14c0 5 10 8 22 8s22-3 22-8" fill="' +
+        colour + '"/><path d="M14 22c2 1 4 9 5 16" stroke="' + colour + '" stroke-width="5" stroke-linecap="round" ' +
+        'fill="none"/><rect x="18" y="34" width="28" height="14" rx="4" fill="#f3ead4" opacity=".85"/><circle cx="32" ' +
+        'cy="41" r="4.5" fill="' + colour + '"/></svg>';
+    };
+    var nose = '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" ' +
+      'stroke-linejoin="round" aria-hidden="true"><path d="M12.5 4c0 6-2 10-4.5 13-2 2.6-.6 6 2.8 5.6"/><path d="M19.5 4c0 6 ' +
+      '2 10 4.5 13 2 2.6.6 6-2.8 5.6"/><path d="M13.5 22c1.4 1.5 3.6 1.5 5 0"/><circle cx="12.3" cy="20.3" r="1.3" ' +
+      'fill="currentColor" stroke="none"/><circle cx="19.7" cy="20.3" r="1.3" fill="currentColor" stroke="none"/></svg>';
+    var h = state.hero || {};
+    main.innerHTML = '<section class="pl-heroe" aria-label="' + esc(t('app_climb_hero')) + '"><img src="' +
+      esc(heroPicture()) + '" alt=""><p class="pl-heroe-titulo">' + esc(t('app_climb_hero')) + '</p>' +
+      '<div class="pl-opciones">' + ['m', 'f'].map(function(form) {
+        return '<button type="button" class="pl-op figura" data-form="' + form + '" aria-pressed="' + (h.nameform === form) +
+          '" aria-label="' + esc(t('app_climb_figure_' + form)) + '"><img src="' + esc(heroPicture(form)) + '" alt=""></button>';
+      }).join('') + '</div><div class="pl-opciones">' + TONES.filter(function(tone) {
+        return T.artUrl(['character.storyheroes.' + h.role + '.' + h.nameform + '.1.' + tone[0]]);
+      }).map(function(tone) {
+        var skin = (T.SKINS || [])[tone[1] + 1] || '';
+        return '<button type="button" class="pl-op piel" data-skin="' + esc(skin) + '" aria-pressed="' +
+          (toneOf(h.skin) === tone[0]) + '" aria-label="' + esc(t('app_climb_skin_' + tone[0])) + '"><i style="background:' +
+          esc(skin) + '"></i></button>';
+      }).join('') + '</div></section><section class="pl-criatura" aria-label="' + esc(t('app_climb_creature')) + '">' +
+      '<button type="button" class="pl-criatura-boton" aria-label="' + esc(t('app_climb_name_it')) + '"><img src="' +
+      esc(T.artUrl(['creature.2.fur', 'creature.2']) || '') + '" alt=""></button><span class="pl-nombre"></span></section>' +
+      '<section class="pl-pinturas" aria-label="' + esc(t('app_climb_paints')) + '"><div class="pl-estante">' +
+      Object.keys(POTS).map(function(code) {
+        return '<button type="button" class="pl-bote" data-code="' + code + '" aria-pressed="false" aria-label="' +
+          esc(t('app_climb_' + code.replace('-', '_'))) + '">' + pot(POTS[code].pot) + '</button>';
+      }).join('') + '</div><span class="pl-precio">' + SVG.gem + esc(t('app_climb_each', (says.paint || {}).price || 10)) +
+      '</span><button type="button" class="btn btn-main pl-pintarla" hidden>' + esc(t('app_climb_paint_it')) + '</button>' +
+      '</section><div class="pl-borde"><button type="button" class="pl-olfato" aria-label="' + esc(t('app_climb_sniff')) +
+      '"><img src="' + esc(cfg.wwwroot + '/local/oksigeniatesape/app/scent.svg') + '" alt="">' + nose + '</button>' +
+      '<div class="pl-cosas" aria-label="' + esc(t('app_climb_things')) + '"></div><button type="button" ' +
+      'class="btn btn-soft pl-salir">' + esc(t('app_climb_leave')) + '</button></div>';
+    app.appendChild(main);
+    var naming = document.createElement('div');
+    naming.className = 'pl-nombrar';
+    naming.hidden = true;
+    naming.innerHTML = '<form><label for="pl-nombre-campo">' + esc(((says.name || {}).ask || [])[1] || '') + '</label>' +
+      '<input id="pl-nombre-campo" maxlength="24" autocomplete="off"><div class="botones"><button type="button" ' +
+      'class="btn btn-soft" data-cerrar>' + esc(t('app_climb_not_now')) + '</button><button class="btn btn-main">' +
+      esc(t('app_climb_give_it')) + '</button></div></form>';
+    app.appendChild(naming);
+    var creature = main.querySelector('.pl-criatura-boton img');
+    var paintIt = main.querySelector('.pl-pintarla');
+    var show = function(spent) {
+      bag.querySelector('b').textContent = String(state.gems);
+      bag.setAttribute('aria-label', t('app_climb_gems', state.gems));
+      if (spent) {
+        bag.classList.remove('gasta');
+        void bag.offsetWidth;
+        bag.classList.add('gasta');
+      }
+      var name = main.querySelector('.pl-nombre');
+      name.textContent = state.creature.name || (says.name || {}).default || '';
+      name.classList.toggle('puesto', !!state.creature.name);
+      creature.style.setProperty('--paint', (POTS[trying || state.creature.paint] || {}).filter || 'none');
+      main.querySelectorAll('.pl-bote').forEach(function(b) {
+        b.setAttribute('aria-pressed', String(b.dataset.code === (trying || state.creature.paint)));
+      });
+    };
+    // The pots: touching one tries it on the creature; «Paint it» spends the gems (or wears one it has).
+    main.querySelectorAll('.pl-bote').forEach(function(b) {
+      b.onclick = function() {
+        trying = b.dataset.code;
+        var have = state.paints.indexOf(trying) >= 0;
+        paintIt.hidden = trying === state.creature.paint;
+        paintIt.disabled = !have && state.gems < ((says.paint || {}).price || 10);
+        show(false);
+        say(says.say && says.say.paints).then(function() {
+          subtitle('', '');
+        });
+      };
+    });
+    paintIt.onclick = function() {
+      var had = state.paints.indexOf(trying) >= 0;
+      call('climb_act', {action: 'paint', code: trying}).then(function() {
+        paintIt.hidden = true;
+        trying = '';
+        show(!had);
+        T.fx.sound('coin');
+        return say(says.say && says.say.painted);
+      }).then(function() {
+        subtitle('', '');
+      }).catch(function() {
+        paintIt.disabled = true;
+      });
+    };
+    // The hero: its figure and its skin, for free.
+    main.querySelectorAll('.pl-op.figura').forEach(function(b) {
+      b.onclick = function() {
+        call('climb_act', {action: 'hero', role: state.hero.role, nameform: b.dataset.form}).then(function() {
+          campsite();
+        });
+      };
+    });
+    main.querySelectorAll('.pl-op.piel').forEach(function(b) {
+      b.onclick = function() {
+        call('climb_act', {action: 'skin', skin: b.dataset.skin}).then(function() {
+          campsite();
+        });
+      };
+    });
+    // The things at the edge, and the creature's nose: it sniffs them one after another.
+    var things = main.querySelector('.pl-cosas');
+    var sniffed = (((state.climb.postcard || {}).surprises) || {});
+    Object.keys(sniffed).filter(function(id) {
+      return id !== 'caracol';
+    }).forEach(function(id) {
+      var d = document.createElement('span');
+      d.className = 'pl-cosa';
+      d.dataset.id = id;
+      d.dataset.alive = /^being\./.test(sniffed[id].art) ? '1' : '';
+      d.setAttribute('role', 'img');
+      d.setAttribute('aria-label', id);
+      d.innerHTML = '<img src="' + esc(T.artUrl([sniffed[id].art]) || '') + '" alt="">';
+      things.appendChild(d);
+    });
+    main.querySelector('.pl-olfato').onclick = function() {
+      var all = things.querySelectorAll('.pl-cosa');
+      all.forEach(function(d) {
+        d.classList.remove('vivo', 'novivo');
+      });
+      all.forEach(function(d, i) {
+        setTimeout(function() {
+          d.classList.add(d.dataset.alive ? 'vivo' : 'novivo');
+          T.fx.sound(d.dataset.alive ? 'chime' : 'tap');
+        }, (still ? 0 : 450) * i);
+      });
+    };
+    // The name, if the child wants one.
+    main.querySelector('.pl-criatura-boton').onclick = function() {
+      naming.hidden = false;
+      naming.querySelector('input').value = state.creature.name;
+      naming.querySelector('input').focus();
+      say((says.name || {}).ask).then(function() {
+        subtitle('', '');
+      });
+    };
+    naming.querySelector('form').onsubmit = function(e) {
+      e.preventDefault();
+      naming.hidden = true;
+      call('climb_act', {action: 'name', name: naming.querySelector('input').value}).then(function() {
+        show(false);
+      });
+    };
+    naming.querySelector('[data-cerrar]').onclick = function() {
+      naming.hidden = true;
+    };
+    main.querySelector('.pl-salir').onclick = function() {
+      document.body.classList.remove('pl-en-campa');
+      if (T.climbPostcard) {
+        T.climbPostcard();
+      } else {
+        path();
+      }
+    };
+    counter(lit());
+    show(false);
+    say(says.say && says.say.arrive).then(function() {
+      subtitle('', '');
+    });
   }
 
   // For the tests of the browser.
@@ -835,6 +1048,8 @@
     return state;
   }, path: function() {
     path();
+  }, camp: function() {
+    campsite();
   }};
 
   call('get_climb').then(function() {

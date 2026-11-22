@@ -86,6 +86,14 @@ final class climb_test extends \advanced_testcase {
         // The creature is named, or not.
         $this->assertSame('Kapi', climb::name($course->id, $user->id, '  Kapi ')['creature']['name']);
         $this->assertSame('', climb::name($course->id, $user->id, '')['creature']['name']);
+        // At the camp: a paint bought with ten gems and worn; worn again later, it costs nothing.
+        $state = climb::paint($course->id, $user->id, 'paint-ember');
+        $this->assertSame('paint-ember', $state['creature']['paint']);
+        $this->assertSame(['paint-ember'], $state['paints']);
+        $this->assertSame($before - 5, $state['gems']);
+        climb::paint($course->id, $user->id, '');
+        $this->assertSame($before - 5, climb::paint($course->id, $user->id, 'paint-ember')['gems']);
+        $this->assertSame('#d9a173', climb::skin($course->id, $user->id, '#d9a173')['hero']['skin']);
     }
 
     public function test_a_hero_is_chosen_on_the_path(): void {
@@ -99,7 +107,7 @@ final class climb_test extends \advanced_testcase {
         $this->setUser($user);
         $this->assertNull(climb::state($course->id, $user->id)['hero']);
         $state = climb::hero($course->id, $user->id, 'scout', 'm');
-        $this->assertSame(['role' => 'scout', 'nameform' => 'm'], $state['hero']);
+        $this->assertSame(['role' => 'scout', 'nameform' => 'm', 'skin' => ''], $state['hero']);
         // Chosen again: another figure; the lantern is not lit before its scenes.
         $this->assertSame('f', climb::hero($course->id, $user->id, 'scout', 'f')['hero']['nameform']);
         $this->assertFalse(climb::light($course->id, $user->id)['paid']);

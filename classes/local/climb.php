@@ -91,6 +91,11 @@ final class climb {
         usort($scenes, fn($a, $b) => ($order[$a['code']] ?? PHP_INT_MAX) <=> ($order[$b['code']] ?? PHP_INT_MAX) ?:
             strcmp($a['code'], $b['code']));
         $traits = $char ? (json_decode((string) ($char->creature ?? ''), true) ?: []) : [];
+        $look = $char ? (json_decode((string) ($char->appearance ?? ''), true) ?: []) : [];
+        // The paint it wears, and the paints it has.
+        $worn = $char ? market::worn($char) : [];
+        $owned = 'charid = ? AND groupid = 0 AND ' . $DB->sql_like('code', '?');
+        $paints = $char ? array_values($DB->get_fieldset_select(self::T . 'purchase', 'code', $owned, [$char->id, 'paint-%'])) : [];
         // Who speaks, with their name in the skin of the mission.
         $speakers = [];
         foreach ((array) ($mission->data['speakers'] ?? []) as $who => $names) {
@@ -104,9 +109,10 @@ final class climb {
             'lantern' => !empty($found['lantern'][$chapter->code]),
             'paid' => $char ? self::paid($char, $courseid, $chapter) : false,
             'sniff' => !empty($found['verb']['sniff']),
-            'hero' => $char ? ['role' => $char->role, 'nameform' => $char->nameform] : null,
+            'hero' => $char ? ['role' => $char->role, 'nameform' => $char->nameform, 'skin' => (string) ($look['skin'] ?? '')] : null,
             'gems' => $char ? (int) $char->gems : 0,
-            'creature' => ['name' => (string) ($traits['name'] ?? ''), 'paint' => (string) ($traits['paint'] ?? '')],
+            'creature' => ['name' => (string) ($traits['name'] ?? ''), 'paint' => (string) ($worn['paint'] ?? '')],
+            'paints' => $paints,
         ];
     }
 
@@ -196,6 +202,53 @@ final class climb {
         }
         $DB->update_record(self::T . 'char', (object) ['id' => $char->id, 'creature' => json_encode($traits),
             'timemodified' => time()]);
+        return self::state($courseid, $userid);
+    }
+
+    /**
+     * The student paints their creature at the camp: a paint they have, or one bought now.
+     *
+     * @param int $courseid
+     * @param int $userid
+     * @param string $code A paint of the market (paint-gold…), or empty to take it off.
+     * @return array The state.
+     */
+    public static function paint(int $courseid, int $userid, string $code): array {
+        global $DB;
+        $char = characters::get($userid);
+        if (!$char) {
+            throw new \moodle_exception('nocharacter', 'local_oksigeniatesape');
+        }
+        if ($code === '') {
+            market::wear($userid, 'paint');
+        } else {
+            if (strpos($code, 'paint-') !== 0) {
+                throw new \moodle_exception('nomarket', 'local_oksigeniatesape');
+            }
+            if (!$DB->record_exists(self::T . 'purchase', ['charid' => $char->id, 'code' => $code, 'groupid' => 0])) {
+                market::buy($courseid, $userid, $code);
+            }
+            market::wear($userid, $code);
+        }
+        return self::state($courseid, $userid);
+    }
+
+    /**
+     * The student changes the skin of their hero at the camp, for free.
+     *
+     * @param int $courseid
+     * @param int $userid
+     * @param string $skin One of the skins of the game (a colour).
+     * @return array The state.
+     */
+    public static function skin(int $courseid, int $userid, string $skin): array {
+        $char = characters::get($userid);
+        if (!$char) {
+            throw new \moodle_exception('nocharacter', 'local_oksigeniatesape');
+        }
+        $look = json_decode((string) ($char->appearance ?? ''), true) ?: [];
+        $look['skin'] = $skin;
+        characters::update_look($char, $look, $char->lineage ?? null);
         return self::state($courseid, $userid);
     }
 
