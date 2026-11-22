@@ -530,6 +530,16 @@
     if (this.extras.estados) {
       this.state(this.wantState || 'entero');
     }
+    // What it holds and shows only when asked (the Embrollo's notebook: {nodo, oculto}), hidden until then.
+    Object.keys(this.extras).forEach(function(k) {
+      var held = self.extras[k];
+      if (held && typeof held === 'object' && held.nodo && held.oculto) {
+        var o = root.getObjectByName(clean(held.nodo));
+        if (o) {
+          o.visible = (self.shown || []).indexOf(clean(held.nodo)) >= 0;
+        }
+      }
+    });
     this.layer.scene.add(root);
     this.layer.models.push(this);
     var want = this.want || 'idle';
@@ -567,9 +577,25 @@
    * @param {string} name
    */
   Model.prototype.hide = function(name) {
+    this.shown = (this.shown || []).filter(function(n) {
+      return n !== clean(name);
+    });
     var o = this.root && this.root.getObjectByName(clean(name));
     if (o) {
       o.visible = false;
+    }
+  };
+
+  /**
+   * Shows a part of the model hidden until asked (what it holds); asked before the model comes, it is kept for then.
+   *
+   * @param {string} name The name of its node.
+   */
+  Model.prototype.show = function(name) {
+    this.shown = (this.shown || []).concat(clean(name));
+    var o = this.root && this.root.getObjectByName(clean(name));
+    if (o) {
+      o.visible = true;
     }
   };
 

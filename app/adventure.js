@@ -1503,7 +1503,13 @@
           puppet.play('roll', true);
           S.tweens.add({targets: emb, x: foot[0] - 150, y: foot[1] + 30, duration: moment.still ? 1 : 1600,
             ease: 'Cubic.easeOut', onComplete: function() {
-              puppet.play('idle', true);
+              // It brings out the druid's notebook and reads it, where its model holds one.
+              if (puppet.show && puppet.play('lee', true)) {
+                puppet.show('cuaderno');
+                emb.pose = 'lee';
+              } else {
+                puppet.play('idle', true);
+              }
             }});
         }
         if (!emb && S.textures.exists('figure.embrollo')) {
@@ -1531,7 +1537,7 @@
             if (emb.puppet.state) {
               emb.puppet.state(page.threads >= 2 ? 'deshilachado' : 'a-medias');
             }
-            gesture('idle', true);
+            gesture(emb.pose || 'idle', true);
           }, moment.still ? 0 : 1700);
           return true;
         };
@@ -1546,6 +1552,19 @@
           }
         };
         var knotLamp = function() {
+          // The knot of wool over the lantern, each one a little lower; where the pack has none, a ring.
+          var w = 70 + 8 * page.knots;
+          var at = [lamp[0], lamp[1] + 40 + 10 * page.knots];
+          var tied = S.fxPlay('nudo', at[0], at[1], w, {part: 'aparece', keep: true, depth: 4300});
+          if (tied) {
+            tied.once('animationcomplete', function() {
+              if (tied.active) {
+                S.fxPlay('nudo', at[0], at[1], w, {part: 'queda', loop: true, sprite: tied});
+              }
+            });
+            (S.lampKnots = S.lampKnots || []).push(tied);
+            return;
+          }
           var g = S.add.graphics().setDepth(4300);
           g.lineStyle(5, 0xa98bff, 1);
           g.strokeCircle(lamp[0], lamp[1] + 6 * page.knots, 26 + 4 * page.knots);
@@ -1623,6 +1642,11 @@
               // Off up the path, frayed, dropping its gems.
               S.sparks.explode(moment.still ? 4 : 20, emb.sprite.x, emb.sprite.y - 30);
               if (emb.puppet) {
+                // It lets go of the notebook as it runs.
+                emb.pose = null;
+                if (emb.puppet.hide) {
+                  emb.puppet.hide('cuaderno');
+                }
                 gesture('flee', true);
                 S.tweens.add({targets: emb, x: (how.path || [lamp[0] - 110])[0], y: (how.path || [0, 432])[1] - 40,
                   duration: moment.still ? 1 : 1800, ease: 'Cubic.easeIn', onComplete: function() {
@@ -1634,8 +1658,13 @@
                   duration: moment.still ? 1 : 1800, ease: 'Cubic.easeIn'});
               }
             }
+            // The knots of the lantern come loose.
             (S.lampKnots || []).forEach(function(g) {
-              g.destroy();
+              if (g.anims && g.active) {
+                S.fxPlay('nudo', g.x, g.y, g.displayWidth, {part: 'deshace', sprite: g});
+              } else {
+                g.destroy();
+              }
             });
             S.lampKnots = [];
             S.cheer(true);

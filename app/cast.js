@@ -385,7 +385,9 @@
         squash = 1 + Math.sin(time / 520 + who.x) * 0.012;
       }
       if (who.puppet) {
-        if (!who.puppet.busy() && !who.puppet.play(who.moving ? 'walk' : who.saying ? 'talk' : who.pose || 'idle')) {
+        // Walking, talking or at rest; a figure in a pose of its own talks in it if it can (the Embrollo reading aloud).
+        var want = who.moving ? 'walk' : who.saying ? (who.pose ? who.pose + '.talk' : 'talk') : who.pose || 'idle';
+        if (!who.puppet.busy() && !who.puppet.play(want) && !who.puppet.play(who.saying ? 'talk' : 'idle')) {
           who.puppet.play('idle');
         }
         who.puppet.draw(dt);
