@@ -1017,7 +1017,9 @@
         leaving.finish(run.node, n, function(told, arrive) {
           toldInPlace = told ? n : null;
           arrivedAt = arrive || null;
-          liven();
+          if (!opts.bare) {
+            liven();
+          }
           ending(n);
         });
         return;
@@ -3946,6 +3948,23 @@
       }
       // The same mark if it is sent again from here: it counts once.
       run.playid = run.playid || T.playId();
+      if (opts.bare && !cm) {
+        // Where the end was told in the place (the climb), it is kept quietly and the path comes back: no panel.
+        saving = true;
+        layer.classList.add('scene-bare');
+        T.api('play_scene', {courseid: cfg.courseid, sceneid: data.id, events: JSON.stringify(run.events), start: run.from,
+          team: '', playid: run.playid}).then(function(result) {
+          saving = false;
+          world = result.world;
+          close();
+        }).catch(function() {
+          saving = false;
+          layer.classList.remove('scene-bare');
+          opts.bare = false;
+          ending(n);
+        });
+        return;
+      }
       saving = true;
       show('<div class="loading-inline"><div class="lamp"></div>' + esc(t('app_saving')) + '</div>');
       Promise.all([T.api('play_scene', {courseid: cfg.courseid, sceneid: data.id, events: JSON.stringify(run.events),

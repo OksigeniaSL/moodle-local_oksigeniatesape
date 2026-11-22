@@ -742,7 +742,7 @@
       return null;
     }).then(function(w) {
       world = w || world;
-      T.playScene({sceneid: s.id, world: world, onclose: function() {
+      T.playScene({sceneid: s.id, world: world, bare: true, onclose: function() {
         call('get_climb').then(path);
       }});
     });

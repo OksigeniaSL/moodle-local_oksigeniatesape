@@ -1032,6 +1032,10 @@
                 return;
               }
               T.cast.act(S.pet, 'happy');
+              // What the end counts, in the ribbon itself: the living things by the seed and the knots it cost.
+              S.tally = {text: t('app_adventure_tally_nest', {alive: alive, knots: st.knots ? t(st.knots === 1 ?
+                'app_adventure_tally_knot' : 'app_adventure_tally_knots', st.knots) : t('app_adventure_tally_noknots')}),
+              dots: alive, knot: st.knots > 0};
               if (st.knots) {
                 go(n.next);
               } else {
@@ -1828,16 +1832,39 @@
         }
         var line = (q.nodes[id] || {}).say;
         S.cheer(n.outcome === 'success');
-        say(q.speaker.who, line || '', function() {
-          S.cameras.main.fadeOut(moment.still ? 1 : 700, 15, 33, 49);
+        // A tally stays in sight its moment, and a little more, before the place goes.
+        var shownAt = Date.now();
+        var hold = S.tally && !moment.still ? 4200 : 0;
+        if (S.tally) {
+          // The end told in the place itself: the ribbon grows a moment with what was done, then stays.
+          var dots = '';
+          for (var i = 0; i < (S.tally.dots || 0); i++) {
+            dots += '<i class="on"></i>';
+          }
+          moment.hud('<span class="adventure-goal adventure-tally"><span class="stage-prints">' + dots + '</span><b>' +
+            esc(S.tally.text) + '</b></span>');
+          var grown = moment.layer.querySelector('.adventure-tally');
           setTimeout(function() {
-            var done = pending;
-            pending = null;
-            player.close();
-            if (done) {
-              done(!!line, q.arrive || '');
+            if (grown) {
+              grown.classList.add('settled');
             }
-          }, moment.still ? 10 : 750);
+          }, moment.still ? 0 : 2600);
+        }
+        say(q.speaker.who, line || '', function() {
+          setTimeout(function() {
+            if (!moment) {
+              return;
+            }
+            S.cameras.main.fadeOut(moment.still ? 1 : 700, 15, 33, 49);
+            setTimeout(function() {
+              var done = pending;
+              pending = null;
+              player.close();
+              if (done) {
+                done(!!line, q.arrive || '');
+              }
+            }, moment.still ? 10 : 750);
+          }, Math.max(0, hold - (Date.now() - shownAt)));
         });
       };
 

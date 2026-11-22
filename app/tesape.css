@@ -15414,3 +15414,11 @@ body.adapt-still .map .asleep.waking {
     padding-right: max(16px, var(--tesape-access-right, 0px));
   }
 }
+
+/* The end of a scene told in its place: the ribbon grows a moment with what was done, then settles; nothing over it. */
+.adventure-tally { transform: scale(1.3); transform-origin: 50% 0; transition: transform .5s cubic-bezier(.2, .9, .3, 1.2); }
+.adventure-tally.settled { transform: none; }
+.scene-layer.scene-bare { background: transparent; }
+@media (prefers-reduced-motion: reduce) {
+  .adventure-tally { transform: none; transition: none; }
+}
