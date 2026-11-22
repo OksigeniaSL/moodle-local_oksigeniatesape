@@ -1461,6 +1461,9 @@
               });
               return;
             }
+            // What the end counts, in the ribbon: the trails it took.
+            S.tally = {text: t('app_adventure_tally_hunt', t(opened === 1 ? 'app_adventure_tally_trail' :
+              'app_adventure_tally_trails', opened)), dots: 0};
             speak((n.shine || {})[kind], function() {
               go(n.next);
             });
@@ -1703,6 +1706,11 @@
         var finish = function(won) {
           state.phase = 'busy';
           S.mode = null;
+          // What the end counts, in the ribbon: the lies caught and the knots it cost (a rematch won takes them away).
+          var tied = won && rematch ? 0 : page.knots;
+          S.tally = {text: t('app_adventure_tally_duel', {lies: page.threads, knots: tied ? t(tied === 1 ?
+            'app_adventure_tally_knot' : 'app_adventure_tally_knots', tied) : t('app_adventure_tally_noknots')}),
+          dots: page.threads};
           if (won) {
             box.remove();
             if (emb) {

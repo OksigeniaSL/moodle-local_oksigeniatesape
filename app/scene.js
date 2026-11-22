@@ -1083,6 +1083,12 @@
         path(n);
       } else if (n.type === 'tend') {
         tend(n);
+      } else if (n.type === 'nest') {
+        nestList(n);
+      } else if (n.type === 'hunt') {
+        huntList(n);
+      } else if (n.type === 'duel') {
+        duelList(n);
       } else if (n.type === 'ending') {
         ending(n);
       }
@@ -1107,6 +1113,200 @@
       tell(n, function() {
         go(n.next);
       });
+    }
+
+    /**
+     * A line said in a list: who says it and what, as the box of words shows it.
+     *
+     * @param {Array} pair [who, text].
+     * @return {string}
+     */
+    function listLine(pair) {
+      if (!pair || !pair[1]) {
+        return '';
+      }
+      return '<p class="list-said">' + esc(tx(pair[1])) + '</p>';
+    }
+
+    /**
+     * The nest, as a list (where its place cannot be played, or it is asked so): each thing with its two sites, next
+     * to the seed or aside; a thing put in the wrong one is knotted until it is put again. The seed opens when every
+     * living thing is next to it. The same events as in the place.
+     *
+     * @param {Object} n
+     */
+    function nestList(n) {
+      var items = n.items || [];
+      var placed = {};
+      var tied = {};
+      var warned = false;
+      var body = show('<p class="scene-prompt">' + esc(tx(n.goal || '')) + '</p><div class="list-play" data-list></div>' +
+        '<div data-out></div>');
+      var box = body.querySelector('[data-list]');
+      var out = body.querySelector('[data-out]');
+      var good = function(it) {
+        return it.alive ? 'seed' : 'aside';
+      };
+      var draw = function() {
+        box.innerHTML = items.map(function(it) {
+          var pic = T.artUrl([it.art || '']);
+          return '<div class="list-row' + (placed[it.id] ? ' done' : tied[it.id] ? ' tied' : '') + '">' +
+            '<span class="list-name">' + (pic ? '<img src="' + esc(pic) + '" alt="">' : '') + esc(tx(it.label || it.id)) +
+            '</span>' + (placed[it.id] ? '<span class="list-mark">' + esc(t(placed[it.id] === 'seed' ?
+            'app_adventure_nest_seed' : 'app_adventure_nest_aside')) + '</span>' : ['seed', 'aside'].map(function(to) {
+              return '<button type="button" class="btn btn-soft" data-id="' + esc(it.id) + '" data-to="' + to + '">' +
+                esc(t(to === 'seed' ? 'app_adventure_nest_seed' : 'app_adventure_nest_aside')) + '</button>';
+            }).join('')) + '</div>';
+        }).join('');
+        box.querySelectorAll('[data-to]').forEach(function(b) {
+          b.onclick = function() {
+            put(b.dataset.id, b.dataset.to);
+          };
+        });
+      };
+      var put = function(id, to) {
+        var it = items.filter(function(x) {
+          return x.id === id;
+        })[0];
+        var right = to === good(it);
+        var said = null;
+        if (tied[id]) {
+          // The knot is undone: the thing goes to its good site either way.
+          run.events.push({n: run.node, untangle: id, to: to});
+          delete tied[id];
+          placed[id] = good(it);
+          said = (n.say || {}).undone;
+        } else {
+          run.events.push({n: run.node, leave: id, to: to});
+          if (right) {
+            placed[id] = to;
+          } else if (data.aided && !warned) {
+            warned = true;
+          } else {
+            tied[id] = true;
+            said = ((n.say || {}).knot || [])[0];
+          }
+        }
+        out.innerHTML = listLine(said);
+        draw();
+        var open = items.every(function(x) {
+          return !x.alive || placed[x.id];
+        });
+        if (open) {
+          go(n.next);
+        }
+      };
+      draw();
+    }
+
+    /**
+     * Someone hiding, as a list: its trails opened one after another, in order, and its names to say; a wrong name is
+     * crossed out. The same events as in the place.
+     *
+     * @param {Object} n
+     */
+    function huntList(n) {
+      var clues = (n.clues || []).filter(function(cl) {
+        return has(cl.requires);
+      });
+      var opened = 0;
+      var crossed = [];
+      var body = show('<p class="scene-prompt">' + esc(tx(n.goal || '')) + '</p><div class="list-play" data-clues></div>' +
+        '<div class="list-names" data-names></div><div data-out></div>');
+      var out = body.querySelector('[data-out]');
+      var draw = function() {
+        var box = body.querySelector('[data-clues]');
+        box.innerHTML = clues.slice(0, opened).map(function(cl) {
+          return listLine(cl.text);
+        }).join('') + (opened < clues.length ? '<button type="button" class="btn btn-soft" data-open>' +
+          esc(t('app_adventure_hunt_open', opened + 1)) + '</button>' : '');
+        var open = box.querySelector('[data-open]');
+        if (open) {
+          open.onclick = function() {
+            run.events.push({n: run.node, clue: clues[opened].id});
+            opened++;
+            draw();
+          };
+        }
+        var names = body.querySelector('[data-names]');
+        names.innerHTML = (n.names || []).map(function(nm) {
+          var off = !opened || crossed.indexOf(nm.id) >= 0;
+          return '<button type="button" class="btn btn-main' + (crossed.indexOf(nm.id) >= 0 ? ' crossed' : '') +
+            '" data-name="' + esc(nm.id) + '"' + (off ? ' disabled' : '') + '>' + esc(tx(nm.label)) + '</button>';
+        }).join('');
+        names.querySelectorAll('[data-name]').forEach(function(b) {
+          b.onclick = function() {
+            var id = b.dataset.name;
+            run.events.push({n: run.node, guess: id});
+            if (id === n.answer) {
+              go(n.next);
+              return;
+            }
+            crossed.push(id);
+            var nm = (n.names || []).filter(function(x) {
+              return x.id === id;
+            })[0] || {};
+            out.innerHTML = listLine(nm.reply);
+            draw();
+          };
+        });
+      };
+      draw();
+    }
+
+    /**
+     * The duel, as a list: the lines of the notebook, each one touched once; a lie caught is crossed out, a true line
+     * touched ties a knot. All the lies caught, it is won; too many knots, it is lost (a rematch cannot be lost, and keeps
+     * what the duel solved). The same events as in the place.
+     *
+     * @param {Object} n
+     */
+    function duelList(n) {
+      var base = n.of ? sc.nodes[n.of] || n : n;
+      var lines = base.lines || [];
+      var rematch = !!n.of;
+      var lose = rematch ? Infinity : base.lose || 2;
+      run.duel = run.duel || {touched: {}};
+      var touched = run.duel.touched;
+      var knots = 0;
+      var body = show('<p class="scene-prompt">' + esc(tx(n.goal || base.goal || '')) + '</p><div class="list-play" ' +
+        'data-lines></div><div data-out></div>');
+      var out = body.querySelector('[data-out]');
+      var lies = lines.filter(function(l) {
+        return l.lie;
+      });
+      var draw = function() {
+        var box = body.querySelector('[data-lines]');
+        box.innerHTML = lines.map(function(l) {
+          var how = touched[l.id];
+          return '<button type="button" class="btn btn-soft list-line' + (how === 'lie' ? ' lie' : how === 'truth' ?
+            ' firm' : '') + '" data-line="' + esc(l.id) + '"' + (how ? ' disabled' : '') + '>' + (how === 'lie' ? '<s>' +
+            esc(tx(l.text[1])) + '</s>' : esc(tx(l.text[1]))) + '</button>';
+        }).join('');
+        box.querySelectorAll('[data-line]').forEach(function(b) {
+          b.onclick = function() {
+            var l = lines.filter(function(x) {
+              return x.id === b.dataset.line;
+            })[0];
+            run.events.push({n: run.node, touch: l.id});
+            touched[l.id] = l.lie ? 'lie' : 'truth';
+            if (!l.lie && !rematch) {
+              knots++;
+            }
+            out.innerHTML = listLine(l.lie ? (base.say || {}).lie && base.say.lie[0] : (base.say || {}).truth &&
+              base.say.truth[0]);
+            draw();
+            if (lies.every(function(x) {
+              return touched[x.id] === 'lie';
+            })) {
+              go(n.won || n.next);
+            } else if (knots >= lose) {
+              go(n.lost || n.next);
+            }
+          };
+        });
+      };
+      draw();
     }
 
     /**
