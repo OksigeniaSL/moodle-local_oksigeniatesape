@@ -486,6 +486,10 @@
    "stage": 2,
    "coat": "fur"
   },
+  "heroModels": {
+   "healer": "storyheroes.healer.dwarf.{form}.3",
+   "protector": "storyheroes.protector.dwarf.{form}.3"
+  },
   "cast": {
    "lombriz": "lombriz",
    "seta": "seta",
@@ -503,6 +507,7 @@
     "play": "nest",
     "goal": "Despierta tu semilla",
     "hatch": true,
+    "bring": true,
     "spots": {
      "seed": [
       717,

@@ -701,30 +701,17 @@
       });
     };
 
-    // Second 62: the clearing with its nest; touched, the hero leaves the seed in it and the Nest begins.
+    // Second 62: the Nest, in its place: the seed comes to the hands of the hero, who leaves it in the nest when the
+    // nest is touched; then the Nest begins.
     var nest = function() {
-      var stage = document.createElement('div');
-      stage.className = 'op-claro';
-      stage.style.backgroundImage = 'url("' + (T.artUrl(['scene.claro-abierto']) || '') + '")';
-      app.appendChild(stage);
-      // The nest of the painting, lit: touching it, the Nest.
-      var spot = document.createElement('button');
-      spot.type = 'button';
-      spot.className = 'op-nido';
-      spot.setAttribute('aria-label', t('app_climb_nest'));
-      stage.appendChild(spot);
-      onClearing(spot, (state.climb.clearing || {}).nest || [540, 543, 888, 714]);
-      T.fx.sound('near');
-      return touched(spot).then(function() {
-        var first = state.scenes.filter(function(s) {
-          return s.code === (beat(beats.length - 1).scene || '');
-        })[0] || state.scenes[0];
-        stage.remove();
-        path();
-        if (first) {
-          play(first);
-        }
-      });
+      var first = state.scenes.filter(function(s) {
+        return s.code === (beat(beats.length - 1).scene || '');
+      })[0] || state.scenes[0];
+      path();
+      if (first) {
+        play(first);
+      }
+      return Promise.resolve();
     };
   }
 

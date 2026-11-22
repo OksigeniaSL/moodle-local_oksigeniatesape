@@ -1188,11 +1188,106 @@
             }
           }
         }, 1000);
-        state.phase = 'explore';
-        S.last = S.time.now;
-        ribbon();
-        verbButton(false);
-        speak(lines.start);
+        var begin = function() {
+          state.phase = 'explore';
+          S.last = S.time.now;
+          ribbon();
+          verbButton(false);
+          speak(lines.start);
+        };
+        bring(how, begin);
+      };
+
+      /**
+       * The seed comes to the hands of the hero and the hero leaves it in the nest (the first minute, touches 6 and 7):
+       * it flies from the bottom edge (the hands of who plays) and reaches the hero's hands as it catches it (`receive`);
+       * the hero holds it (`carry`) while the nest shines; touched, the hero carries it there (`carry.walk`), leaves it
+       * (`place`) and it slides to the middle of the nest. Where the hero or the seed is not a model with hands, the seed
+       * is in the nest from the start.
+       *
+       * @param {Object} how
+       * @param {Function} done
+       */
+      var bring = function(how, done, waited) {
+        var fig = S.figures && S.figures.seed;
+        var hero = S.hero;
+        var is = function(p) {
+          return !!(p && T.model && T.model.is(p));
+        };
+        var holder = hero && is(hero.puppet) ? hero.puppet : null;
+        var seedModel = fig && is(fig.puppet) ? fig.puppet : null;
+        if (how.bring && !moment.still && holder && seedModel && (!holder.root || !seedModel.root) && (waited || 0) < 40) {
+          // The models are still coming: a little more, up to eight seconds.
+          state.phase = 'busy';
+          setTimeout(function() {
+            if (S && moment) {
+              bring(how, done, (waited || 0) + 1);
+            }
+          }, 200);
+          return;
+        }
+        if (!how.bring || moment.still || !holder || !seedModel || !holder.hands()) {
+          done();
+          return;
+        }
+        state.phase = 'busy';
+        var home = {x: fig.x, y: fig.y};
+        var rest = seedModel.tall;
+        var cam = S.cameras.main;
+        var clip = function(name, key, fallback) {
+          var v = ((holder.info || {})[name] || {})[key];
+          return typeof v === 'number' ? v : fallback;
+        };
+        // From the bottom edge of the screen to the hero's hands, as tall as it will be in them.
+        fig.x = cam.worldView.centerX;
+        fig.y = cam.worldView.bottom + 60;
+        hero.pose = 'carry';
+        holder.play('receive', true);
+        var held = (seedModel.metres || 0.3) * holder.perMetre();
+        var hands = holder.hands();
+        S.tweens.add({targets: fig, x: hands.x, y: hands.y + held * 0.45, duration: clip('receive', 'catch', 1) * 1000,
+          ease: 'Sine.easeOut', onUpdate: function(tw) {
+            seedModel.tall = rest + (held - rest) * tw.progress;
+          }, onComplete: function() {
+            holder.hold(seedModel);
+            // The nest shines, and waits to be touched.
+            var glow = S.add.ellipse(home.x, home.y - 10, 260, 90, 0xffd27a, 0.35).setDepth(home.y - 1);
+            var shine = S.tweens.add({targets: glow, alpha: 0.12, duration: 900, yoyo: true, repeat: -1});
+            S.waitNest = home;
+            S.onTouchAt = function(x, y) {
+              if (Math.hypot(x - home.x, (y - home.y) * 1.8) > 200) {
+                return;
+              }
+              S.onTouchAt = null;
+              S.waitNest = null;
+              shine.stop();
+              glow.destroy();
+              var side = hero.x < home.x ? -1 : 1;
+              hero.walkClip = 'carry.walk';
+              S.walkTo(P.onGround(place, home.x + side * 130, home.y + 24), function() {
+                hero.walkClip = null;
+                hero.pose = null;
+                hero.facing = -side;
+                holder.play('place', true);
+                setTimeout(function() {
+                  var at = holder.letGo(seedModel);
+                  if (at) {
+                    fig.x = at.x;
+                    fig.y = at.y;
+                  }
+                  seedModel.tall = held;
+                  S.tweens.add({targets: fig, x: home.x, y: home.y, duration: 600, ease: 'Sine.easeInOut',
+                    onUpdate: function(tw) {
+                      seedModel.tall = held + (rest - held) * tw.progress;
+                    }, onComplete: function() {
+                      seedModel.tall = rest;
+                      seedModel.play('idle', true);
+                      done();
+                    }});
+                }, clip('place', 'release', 1.35) * 1000);
+              });
+            };
+          }});
       };
 
       /* ---------- Someone hiding: trails, a bet and a name ---------- */
@@ -2037,7 +2132,9 @@
                   L.load.image('dock', T.artUrl([key + '.dock']));
                 }
               }
-              L.cast = T.cast.load(L, c);
+              // The model the place gives to the hero of each role and figure (the climb), where there is one.
+              var given = ((q.heroModels || {})[c.role] || '').replace('{form}', c.nameform === 'f' ? 'f' : 'm');
+              L.cast = T.cast.load(L, c, undefined, given || undefined);
               // Who lives here: their puppet or model, if the pack brings it; else their figure.
               var rig = T.puppet ? T.puppet.find('figure.' + q.speaker.who, 'speaker') : null;
               L.speakerRig = rig;
@@ -3063,6 +3160,11 @@
 
         S.press = null;
         S.input.on('pointerdown', function(pointer) {
+          // The nest waiting for the seed the hero holds: only it is touched.
+          if (S.waitNest && S.onTouchAt) {
+            S.onTouchAt(pointer.worldX, pointer.worldY);
+            return;
+          }
           if (state.phase !== 'explore' || !S.mode) {
             return;
           }
@@ -3283,6 +3385,7 @@
               hero: {x: Math.round(S.hero.x), y: Math.round(S.hero.y)}, loose: !!S.loose, ways: !!S.wayKeys,
               models: {hero: !!(T.model && T.model.is(S.hero.puppet)), speaker: !!(S.speaker && T.model &&
                 T.model.is(S.speaker.puppet))},
+              nest: S.waitNest ? {x: Math.round(S.waitNest.x), y: Math.round(S.waitNest.y)} : null,
               beings: Object.keys(S.beings).map(function(k) {
                 var b = S.beings[k];
                 return {id: k, state: b.state, bin: b.bin || '', x: Math.round(b.x), y: Math.round(b.y)};

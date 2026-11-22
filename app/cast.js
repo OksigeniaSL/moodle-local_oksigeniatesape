@@ -202,14 +202,16 @@
      * @param {Object} scene The scene of the engine, while it loads.
      * @param {Object} c The character.
      * @param {string} [family]
+     * @param {string} [model] The model the place gives to this hero (by role and figure), before its own.
      * @return {Object} hero (key of its picture), pet (as creature() gives it), rigs (hero, pet: whether puppets).
      */
-    load: function(scene, c, family) {
+    load: function(scene, c, family, model) {
       var hero = c.role ? heroKey(c, family) : null;
       // The puppet is cut from the picture in the tone it is painted in, and brings the other tones it can take.
       var tone = c.role ? toneOf(c) : null;
       var pet = creature(c);
-      var rigs = T.puppet ? {hero: c.role ? T.puppet.find(heroKey(c, family, true), 'hero', tone) : null,
+      var given = model && T.puppet ? T.puppet.find(model, 'hero', tone) : null;
+      var rigs = T.puppet ? {hero: c.role ? given || T.puppet.find(heroKey(c, family, true), 'hero', tone) : null,
         pet: T.puppet.find(pet.key, 'creature')} : {};
       if (rigs.hero) {
         T.puppet.load(scene, 'puppet.hero', rigs.hero);
@@ -386,8 +388,11 @@
       }
       if (who.puppet) {
         // Walking, talking or at rest; a figure in a pose of its own talks in it if it can (the Embrollo reading aloud).
-        var want = who.moving ? 'walk' : who.saying ? (who.pose ? who.pose + '.talk' : 'talk') : who.pose || 'idle';
-        if (!who.puppet.busy() && !who.puppet.play(want) && !who.puppet.play(who.saying ? 'talk' : 'idle')) {
+        // A figure that walks its own way (carrying something: carry.walk) does so where it can.
+        var want = who.moving ? who.walkClip || 'walk' : who.saying ? (who.pose ? who.pose + '.talk' : 'talk') :
+          who.pose || 'idle';
+        if (!who.puppet.busy() && !who.puppet.play(want) && !who.puppet.play(who.moving ? 'walk' : who.saying ? 'talk' :
+          'idle')) {
           who.puppet.play('idle');
         }
         who.puppet.draw(dt);

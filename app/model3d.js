@@ -587,6 +587,63 @@
   };
 
   /**
+   * Another model held in the hands of this one (the seed): hung from its bone `hold`, whose head is the centre of what
+   * it holds, at its size in metres. False if this one has no such bone, or either has not come yet.
+   *
+   * @param {Object} other A model.
+   * @param {number[]} [at] Where its origin goes from the head of the bone (the seed: 13.5 cm under its centre).
+   * @return {boolean}
+   */
+  Model.prototype.hold = function(other, at) {
+    var bone = this.root && this.root.getObjectByName('hold');
+    if (!bone || !other || !other.root) {
+      return false;
+    }
+    at = at || [0, -0.135, 0];
+    bone.add(other.root);
+    other.root.position.set(at[0], at[1], at[2]);
+    other.root.rotation.set(0, 0, 0);
+    other.root.scale.set(1, 1, 1);
+    other.heldBy = this;
+    return true;
+  };
+
+  /**
+   * Where the hands of this model are, in units of the place (the head of its bone `hold`), or null.
+   *
+   * @return {Object|null} x, y.
+   */
+  Model.prototype.hands = function() {
+    var THREE = window.THREE;
+    var bone = this.root && this.root.getObjectByName('hold');
+    if (!bone || !THREE) {
+      return null;
+    }
+    this.root.updateMatrixWorld(true);
+    var p = bone.getWorldPosition(new THREE.Vector3());
+    return {x: p.x, y: -p.y};
+  };
+
+  /**
+   * Lets go of what this model holds: it goes back to the place, where it was, and the engine places it again.
+   *
+   * @param {Object} other The model it holds.
+   * @return {Object|null} x, y: where it was let go, in units of the place.
+   */
+  Model.prototype.letGo = function(other) {
+    var THREE = window.THREE;
+    if (!other || other.heldBy !== this || !THREE) {
+      return null;
+    }
+    other.root.updateMatrixWorld(true);
+    var p = other.root.getWorldPosition(new THREE.Vector3());
+    other.root.parent.remove(other.root);
+    this.layer.scene.add(other.root);
+    other.heldBy = null;
+    return {x: p.x, y: -p.y};
+  };
+
+  /**
    * Shows a part of the model hidden until asked (what it holds); asked before the model comes, it is kept for then.
    *
    * @param {string} name The name of its node.
@@ -766,6 +823,11 @@
   Model.prototype.sync = function() {
     var c = this.container;
     if (!this.root) {
+      return;
+    }
+    if (this.heldBy) {
+      // In the hands of another model: it goes with its bone, at the size of who holds it.
+      this.root.visible = !!c.scene && c.visible;
       return;
     }
     this.root.visible = !!c.scene && c.visible && c.alpha > 0.05;
