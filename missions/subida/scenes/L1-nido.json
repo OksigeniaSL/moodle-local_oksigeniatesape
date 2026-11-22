@@ -482,6 +482,10 @@
    "face": 1
   },
   "heroVoice": "role",
+  "creature": {
+   "stage": 2,
+   "coat": "fur"
+  },
   "cast": {
    "lombriz": "lombriz",
    "seta": "seta",

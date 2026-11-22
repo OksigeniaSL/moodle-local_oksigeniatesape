@@ -746,18 +746,23 @@
     var k = this.perMetre() * (this.stateScale || 1);
     this.root.position.set(c.x, -c.y, c.depth || 0);
     this.root.scale.set(k, k, k);
-    this.root.rotation.set(0, c.scaleX < 0 ? -YAW : YAW, 0);
+    // Turned three quarters to the side it faces; what is seen from the front (the seed), straight.
+    this.root.rotation.set(0, (this.extras || {}).frente ? 0 : c.scaleX < 0 ? -YAW : YAW, 0);
   };
 
   /**
    * Units of the place per metre where the model stands: from the scale the engine gives its figure (that of a hero, or
    * of the creature, which it draws at half the size of a person in a canvas of 512), the same for everyone on the same
-   * ground; a grown-up of 1.7 m as tall as the puppet of a grown-up.
+   * ground; a grown-up of 1.7 m as tall as the puppet of a grown-up. A model given a height (tall), that height.
    *
    * @return {number}
    */
   Model.prototype.perMetre = function() {
     var c = this.container;
+    if (this.tall && this.metres) {
+      // A thing the place wants of a given size (the seed, big enough to see and touch): that tall at the scale of 1.
+      return this.tall * Math.abs(c.scaleY) / this.metres;
+    }
     var perPerson = this.small ? Math.abs(c.scaleY) * 1024 : Math.abs(c.scaleY) * BODIES.person.canvas[1];
     return perPerson * GROWN * (BODIES.person.tall / BODIES.person.canvas[1]) / PERSON * (this.presence || 1);
   };

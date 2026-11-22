@@ -166,6 +166,17 @@
       var data = o.data;
       var world = o.world || {};
       var c = world.character || {};
+      if (q.creature) {
+        // A place where everybody's creature is the same one (the climb, where it is born): its stage and its coat.
+        var traits = {};
+        try {
+          traits = JSON.parse(c.creature || '{}') || {};
+        } catch (e) {
+          traits = {};
+        }
+        traits.coat = q.creature.coat || traits.coat;
+        c = Object.assign({}, c, {creaturestage: q.creature.stage || c.creaturestage, creature: JSON.stringify(traits)});
+      }
       var role = data.role || c.role || '';
       var P = T.walk.parts;
       var place = {walk: q.walk, start: q.start};
@@ -728,6 +739,16 @@
           if (!sd || moment.still) {
             return;
           }
+          var fig = S.figures && S.figures.seed;
+          if (fig && fig.pose !== 'opened') {
+            // Its gesture, and then back to rest (the engine plays its pose when the gesture ends); once open, it stays
+            // open.
+            var clip = {beat: 'beat', cold: 'cold', shiver: 'shiver', open: 'open'}[kind] ||
+              (kind === 'lean' ? (toward && toward.x < sd.x ? 'lean.L' : 'lean.R') : null);
+            if (clip && fig.puppet.play(clip, true) && kind === 'open') {
+              fig.pose = 'opened';
+            }
+          }
           var halo = sd.displayHeight * 0.8 / 0.3;
           if (kind === 'beat') {
             S.fxPlay('semilla.latido', sd.x, sd.y, halo, {depth: sd.depth - 1});
@@ -981,11 +1002,24 @@
           S.time.delayedCall(900, function() {
             seed('open');
             if (how.hatch && S.seed) {
-              // The creature is born where the seed was, and from now on goes with the hero.
-              S.pet.x = S.seed.x;
-              S.pet.y = S.seed.y + 24;
-              S.pet.mode = 'follow';
-              S.hop(S.pet);
+              // The creature is born out of the seed and lands at its side (where the model of the seed says), and from
+              // now on goes with the hero.
+              var h = S.seed.displayHeight || 90;
+              setTimeout(function() {
+                S.pet.x = S.seed.x + h * 1.29;
+                S.pet.y = S.seed.y + h * 0.17;
+                S.pet.facing = 1;
+                if (!T.cast.act(S.pet, 'hatch')) {
+                  S.hop(S.pet);
+                }
+                setTimeout(function() {
+                  if (T.cast.act(S.pet, 'sneeze')) {
+                    sound('sneeze', '');
+                    S.fxPlay('criatura.estornudo', S.pet.x + 40, S.pet.y - 40, 160, {depth: S.pet.y + 5});
+                  }
+                  S.pet.mode = 'follow';
+                }, moment.still ? 0 : 2300);
+              }, moment.still ? 0 : 1460);
             }
             S.cheer(true);
             var said = (lines.opened || []).slice();
@@ -997,6 +1031,7 @@
                 });
                 return;
               }
+              T.cast.act(S.pet, 'happy');
               if (st.knots) {
                 go(n.next);
               } else {
@@ -1835,6 +1870,12 @@
               if (nests && T.artUrl(['creature.seed'])) {
                 L.load.image('seed', T.artUrl(['creature.seed']));
               }
+              // The seed in live 3D, where the packs bring it: it beats, shivers, leans and opens.
+              var seedRig = nests && T.puppet ? T.puppet.find('creature.seed', 'creature') : null;
+              L.seedRig = seedRig;
+              if (seedRig) {
+                T.puppet.load(L, 'puppet.seed', seedRig);
+              }
               // The sheets of frames of the plays of the place (anim.fx.<name> and its picture fx.<name>): first what
               // each says of itself, then its picture cut in frames of that size.
               var fxs = [];
@@ -1940,6 +1981,21 @@
           S.seed = S.add.image(nestAt[0], nestAt[1] - 8, 'seed').setOrigin(0.5, 0.85).setDepth(nestAt[1] + 5);
           S.seed.setScale(seedTall / (S.seed.height || 64));
           S.seed.base = S.seed.scale;
+          var seedPuppet = S.seedRig ? T.puppet.make(S, 'puppet.seed', still) : null;
+          if (seedPuppet) {
+            // Its model stands where its drawing was (the drawing stays, hidden, for where the effects go).
+            S.seed.setVisible(false);
+            S.figures = S.figures || {};
+            // As tall as its drawing: the model, by the height it is given; its sheets, by their canvas.
+            var model3d = T.model && T.model.is(seedPuppet);
+            if (model3d) {
+              seedPuppet.tall = seedTall;
+            }
+            S.figures.seed = {x: nestAt[0], y: nestAt[1] - 8, sprite: seedPuppet.container, puppet: seedPuppet,
+              shadow: S.add.ellipse(0, 0, 10, 10, 0x0b1a10, 0), base: model3d ? 1 : seedTall /
+              (seedPuppet.container.height || 512), walk: 0, moving: false, facing: 1, lift: 0, tilt: 0, pose: null};
+            seedPuppet.play('idle', true);
+          }
         }
         // The hero and the creature.
         var start = point(q.start);
