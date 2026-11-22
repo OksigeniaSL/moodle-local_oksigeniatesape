@@ -34,6 +34,13 @@
   };
   /** @var {Object} How each node type is played here. */
   var PLAYS = {classify: ['board'], choice: ['rescue', 'route'], nest: ['nest'], hunt: ['hunt'], duel: ['duel']};
+  /** @var {Object} The sheets of frames each play may show over the place. */
+  var FX = {
+    nest: ['nudo', 'burbuja.revienta', 'semilla.latido', 'semilla.anillo', 'semilla.frio', 'semilla.destello',
+      'criatura.estornudo'],
+    hunt: ['hallazgo.dorado', 'hallazgo.claro'],
+    duel: ['nudo']
+  };
 
   /**
    * One of the ways of saying something, not the one said last time.
@@ -721,22 +728,27 @@
           if (!sd || moment.still) {
             return;
           }
+          var halo = sd.displayHeight * 0.8 / 0.3;
           if (kind === 'beat') {
+            S.fxPlay('semilla.latido', sd.x, sd.y, halo, {depth: sd.depth - 1});
+            S.fxPlay('semilla.anillo', sd.x, sd.y, halo, {depth: sd.depth - 1});
             S.tweens.add({targets: sd, scale: sd.base * 1.25, duration: 220, yoyo: true, repeat: 2, ease: 'Sine.easeOut'});
             S.sparks.explode(10, sd.x, sd.y - 30);
             sound('beat', 'chime');
           } else if (kind === 'cold') {
+            S.fxPlay('semilla.frio', sd.x, sd.y, halo, {depth: sd.depth + 1});
+            sound('shiver', 'wrong');
             sd.setTint(0x9fd3ff);
             S.tweens.add({targets: sd, angle: 4, duration: 60, yoyo: true, repeat: 5, onComplete: function() {
               sd.clearTint();
               sd.setAngle(0);
             }});
-            sound('nope', 'wrong');
           } else if (kind === 'shiver') {
             S.tweens.add({targets: sd, x: sd.x + 3, duration: 50, yoyo: true, repeat: 7});
           } else if (kind === 'lean' && toward) {
             S.tweens.add({targets: sd, angle: toward.x < sd.x ? -14 : 14, duration: 500, yoyo: true, hold: 900});
           } else if (kind === 'open') {
+            S.fxPlay('semilla.destello', sd.x, sd.y, halo, {depth: sd.depth + 1});
             S.tweens.add({targets: sd, scale: sd.base * 1.8, alpha: 0, duration: 900, ease: 'Back.easeIn'});
             S.sparks.explode(28, sd.x, sd.y - 30);
             S.hearts.explode(8, sd.x, sd.y - 40);
@@ -744,6 +756,17 @@
         };
         // A knot of the Embrollo: a thread from the tower to the thing, which takes its colour.
         var knotOn = function(b) {
+          var w = b.sprite.displayWidth;
+          var sheet = S.fxPlay('nudo', b.x, b.y, w, {part: 'aparece', keep: true, depth: b.y + 2});
+          if (sheet) {
+            b.knot = sheet;
+            sheet.once('animationcomplete', function() {
+              if (b.knot === sheet) {
+                S.fxPlay('nudo', b.x, b.y, w, {part: 'queda', loop: true, sprite: sheet});
+              }
+            });
+            return;
+          }
           var g = S.add.graphics().setDepth(4300);
           g.lineStyle(4, 0xa98bff, 0.9);
           var top = {x: W - 90, y: -20};
@@ -760,9 +783,14 @@
           if (b.knot) {
             var g = b.knot;
             b.knot = null;
-            S.tweens.add({targets: g, alpha: 0, duration: 500, onComplete: function() {
-              g.destroy();
-            }});
+            if (g.anims) {
+              // The bow comes loose and the thread flies off.
+              S.fxPlay('nudo', g.x, g.y, g.displayWidth, {part: 'deshace', sprite: g});
+            } else {
+              S.tweens.add({targets: g, alpha: 0, duration: 500, onComplete: function() {
+                g.destroy();
+              }});
+            }
           }
           b.sprite.clearTint();
         };
@@ -912,6 +940,14 @@
             S.emote(b, '✕');
           }
           put(b, good, function() {
+            if (it.pop) {
+              // What floats bursts when its knot is undone: it goes, and its drops fall.
+              var w = b.sprite.displayWidth * 1.5;
+              if (S.fxPlay('burbuja.revienta', b.x, b.y, w, {depth: b.y + 2})) {
+                b.sprite.setVisible(false);
+                b.state = 'gone';
+              }
+            }
             speak(lines.undone, function() {
               free();
               check();
@@ -1237,6 +1273,9 @@
           var kind = crossed.length ? 'none' : opened <= 1 ? 'golden' : 'clear';
           if (kind !== 'none') {
             S.sparks.explode(kind === 'golden' ? 26 : 12, snail.x, snail.y - 30);
+            // The shine of the find, behind it, as long as it is there.
+            S.fxPlay(kind === 'golden' ? 'hallazgo.dorado' : 'hallazgo.claro', snail.x, snail.y,
+              snail.sprite.displayWidth * 1.5, {loop: true, depth: snail.sprite.depth - 1});
           }
           var said = (n.found || []).slice();
           var next = function() {
@@ -1796,6 +1835,25 @@
               if (nests && T.artUrl(['creature.seed'])) {
                 L.load.image('seed', T.artUrl(['creature.seed']));
               }
+              // The sheets of frames of the plays of the place (anim.fx.<name> and its picture fx.<name>): first what
+              // each says of itself, then its picture cut in frames of that size.
+              var fxs = [];
+              Object.keys(q.nodes).forEach(function(nid) {
+                fxs = fxs.concat(FX[q.nodes[nid].play] || []);
+              });
+              fxs.forEach(function(name) {
+                var meta = T.artUrl(['anim.fx.' + name]);
+                var pic = T.artUrl(['fx.' + name]);
+                if (!meta || !pic || L.cache.json.exists('anim.fx.' + name)) {
+                  return;
+                }
+                L.load.once('filecomplete-json-anim.fx.' + name, function(key, type, data) {
+                  if (data && data.frame) {
+                    L.load.spritesheet('fx.' + name, pic, {frameWidth: data.frame[0], frameHeight: data.frame[1]});
+                  }
+                });
+                L.load.json('anim.fx.' + name, meta);
+              });
               // The Embrollo, where it comes to duel.
               var duels = Object.keys(q.nodes).some(function(nid) {
                 return q.nodes[nid].play === 'duel';
@@ -1920,6 +1978,54 @@
           scale: {start: 0.9, end: 0.3}, alpha: {start: 1, end: 0}, tint: [0xe8508f, 0xff8fbf], gravityY: -40,
           emitting: false}).setDepth(4700);
         S.emotes = [];
+        /**
+         * A sheet of frames played over the place: at a point (its anchor), as wide as asked, once or in a loop, all of
+         * it or one of its parts. Without movement, its still frame. It goes when it ends, unless it is kept.
+         *
+         * @param {string} name
+         * @param {number} x
+         * @param {number} y
+         * @param {number} width
+         * @param {Object} [opts] part, loop, keep, depth, sprite (one to play on, instead of a new one).
+         * @return {Object|null} The sprite.
+         */
+        S.fxPlay = function(name, x, y, width, opts) {
+          var meta = S.cache.json.get('anim.fx.' + name);
+          if (!meta || !S.textures.exists('fx.' + name)) {
+            return null;
+          }
+          opts = opts || {};
+          var part = opts.part ? (meta.partes || {})[opts.part] : null;
+          var from = part ? part[0] : 0;
+          var to = part ? part[1] : (meta.frames || 1) - 1;
+          var key = 'fxa.' + name + '.' + (opts.part || 'all') + (opts.loop ? '.loop' : '');
+          if (!S.anims.exists(key)) {
+            S.anims.create({key: key, frames: S.anims.generateFrameNumbers('fx.' + name, {start: from, end: to}),
+              frameRate: meta.fps || 20, repeat: opts.loop ? -1 : 0});
+          }
+          var sp = opts.sprite || S.add.sprite(x, y, 'fx.' + name, from);
+          var anchor = meta.anchor || [0.5, 0.5];
+          sp.setOrigin(anchor[0], anchor[1]).setDepth(opts.depth || 4400);
+          if (width) {
+            sp.setScale(width / meta.frame[0]);
+          }
+          if (still) {
+            sp.setFrame(part ? to : meta.still || 0);
+            if (!opts.loop && !opts.keep) {
+              S.time.delayedCall(500, function() {
+                sp.destroy();
+              });
+            }
+            return sp;
+          }
+          sp.play(key);
+          if (!opts.loop && !opts.keep) {
+            sp.once('animationcomplete', function() {
+              sp.destroy();
+            });
+          }
+          return sp;
+        };
         S.keys = S.input.keyboard.createCursorKeys();
         // The camera: the whole place if it fits; if not, it follows what happens, softly.
         S.camAt = {x: W / 2, y: H / 2};
