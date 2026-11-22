@@ -744,7 +744,7 @@
             // Its gesture, and then back to rest (the engine plays its pose when the gesture ends); once open, it stays
             // open.
             var clip = {beat: 'beat', cold: 'cold', shiver: 'shiver', open: 'open'}[kind] ||
-              (kind === 'lean' ? (toward && toward.x < sd.x ? 'lean.L' : 'lean.R') : null);
+              (kind === 'lean' ? (toward && toward.x < sd.x ? 'lean.l' : 'lean.r') : null);
             if (clip && fig.puppet.play(clip, true) && kind === 'open') {
               fig.pose = 'opened';
             }
