@@ -37,14 +37,14 @@
     small: {canvas: [512, 512], feet: [256, 457], tall: 430}
   };
   /**
-   * @var {number} Metres of a grown-up as tall as the puppet of a grown-up who speaks (the druid; FORMATO.md of Gaudí,
-   *     «Las medidas»): the models are measured in metres, so each one keeps its own height (a dwarf, shorter than a
+   * @var {number} Metres of a grown-up as tall as the puppet of a grown-up who speaks (the druid; the format of the 3D
+   *     models, «Las medidas»): the models are measured in metres, so each one keeps its own height (a dwarf, shorter than a
    *     druid; the creature, its size beside them).
    */
   var PERSON = 1.7;
   /** @var {number} How much taller than a hero the puppet of a grown-up who speaks is drawn (sceneworld.js). */
   var GROWN = 1.1;
-  /** @var {Object} For a state of the face that a model lacks, the nearest (FORMATO.md of Gaudí). */
+  /** @var {Object} For a state of the face that a model lacks, the nearest (the format of the 3D models). */
   var NEAREST = {wide: 'open', happy: 'closed', laugh: 'a'};
 
   /**

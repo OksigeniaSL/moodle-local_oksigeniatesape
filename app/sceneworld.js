@@ -224,7 +224,7 @@
           }
         };
         // The figures are drawn on one canvas (768 × 896, the feet in the same place): the same scale keeps their
-        // heights; the grown-ups who speak, a little taller than the hero (as Gaudí draws them). Each by its own height:
+        // heights; the grown-ups who speak, a little taller than the hero (as they are drawn). Each by its own height:
         // with the light art, a picture is the small copy.
         var unit = function(f) {
           return f ? size / (f.sprite.height || 896) : 0;

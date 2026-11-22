@@ -789,8 +789,8 @@
   var sheets = {};
 
   /**
-   * A sheet of frames of the pack played over a figure, once (anim.fx.<name> and its picture fx.<name>, as Gaudí draws
-   * them: frame, cols, rows, frames, fps, anchor, fit, cues, still): its frame fits the box of the figure (fit), its
+   * A sheet of frames of the pack played over a figure, once (anim.fx.<name> and its picture fx.<name>, as the art
+   * packs bring them: frame, cols, rows, frames, fps, anchor, fit, cues, still): its frame fits the box of the figure (fit), its
    * anchor sits on the centre of the figure, and each cue calls back at its frame (swap: where the light covers the
    * figure). Without movement, the still frame, with the cues called at once.
    *

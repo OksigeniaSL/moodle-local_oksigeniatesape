@@ -1818,14 +1818,16 @@
         }
         // The seed, in the nest of the place, where a nest wakes it.
         var nestAt = null;
+        var seedTall = 64;
         Object.keys(q.nodes).forEach(function(nid) {
           if (q.nodes[nid].play === 'nest') {
             nestAt = q.nodes[nid].spots.seed;
+            seedTall = q.nodes[nid].seedTall || seedTall;
           }
         });
         if (nestAt && S.textures.exists('seed')) {
           S.seed = S.add.image(nestAt[0], nestAt[1] - 8, 'seed').setOrigin(0.5, 0.85).setDepth(nestAt[1] + 5);
-          S.seed.setScale(64 / (S.seed.height || 64));
+          S.seed.setScale(seedTall / (S.seed.height || 64));
           S.seed.base = S.seed.scale;
         }
         // The hero and the creature.

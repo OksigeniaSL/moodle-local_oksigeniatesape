@@ -2290,7 +2290,7 @@ Block 1.6 of the plan: the place and the map.
   place and the place comes up as a sheet over it (it closes with its grip, its cross or Escape).
 - **The team on the map, without names**: small silhouettes beside the lantern of the place where each one last
   played, and «3 of your team here» in the place.
-- **The market and the album are places of the map**, two landmarks in its corner (painted by Gaudí, art pack v20)
+- **The market and the album are places of the map**, two landmarks in its corner (art pack v20)
   with the way back to the map; «Me» keeps the sheet and two rows of big buttons (look, how you see it, names, its
   coat, ideas).
 

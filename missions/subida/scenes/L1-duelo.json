@@ -316,12 +316,13 @@
     "lantern": {
      "farol": [
       1166,
-      435
+      452
      ],
      "pie_del_poste": [
       1233,
       555
-     ]
+     ],
+     "capa": "luz-linterna.png"
     },
     "path": [
      1050,
@@ -334,12 +335,13 @@
     "lantern": {
      "farol": [
       1166,
-      435
+      452
      ],
      "pie_del_poste": [
       1233,
       555
-     ]
+     ],
+     "capa": "luz-linterna.png"
     },
     "path": [
      1050,

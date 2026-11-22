@@ -574,6 +574,17 @@
      "pluma": "thing.pluma",
      "burbuja": "thing.burbuja"
     },
+    "tall": {
+     "lombriz": 120,
+     "seta": 120,
+     "musgo": 120,
+     "bellota": 120,
+     "rana": 120,
+     "cristal": 120,
+     "pluma": 120,
+     "burbuja": 120
+    },
+    "seedTall": 90,
     "verbs": {
      "sage": {
       "lombriz": [
