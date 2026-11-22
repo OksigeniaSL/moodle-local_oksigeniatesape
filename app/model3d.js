@@ -140,6 +140,16 @@
   }
 
   /**
+   * A name of a node of a GLB as three.js keeps it: without dots (PropertyBinding.sanitizeNodeName).
+   *
+   * @param {string} name
+   * @return {string}
+   */
+  function clean(name) {
+    return String(name).replace(/[\[\]\.:\/]/g, '').replace(/\s/g, '_');
+  }
+
+  /**
    * The two tones of the light of a place on a model: the lit side towards the key colour, the side in shade towards the
    * shade colour (three steps for a drawn model, a soft swing for a painted one). One multiply, no light loop.
    *
@@ -147,9 +157,11 @@
    * @param {boolean} painted Its texture carries its own shading.
    * @param {Object} light key, shade and sunView of the layer.
    * @param {number[]} [tint] The colour of the creature, as a matrix (rows of five), in the colours of the picture.
+   * @param {Object} [toon] Its own two bands, where the model brings them (the Embrollo): sombra and luz, what multiplies
+   *     the texture in the shade and towards the sun, and corte and brillo, where each band starts and ends.
    * @return {Object}
    */
-  function toonMaterial(src, painted, light, tint) {
+  function toonMaterial(src, painted, light, tint, toon) {
     var THREE = window.THREE;
     // The two pieces of the face share one texture: each one, its own copy, to move its offset.
     var map = src.map && src.name.indexOf('face_') === 0 ? src.map.clone() : src.map;
@@ -158,12 +170,21 @@
     m.name = src.name;
     // Each kind, its own program: they all have this same function.
     m.customProgramCacheKey = function() {
-      return 'toon' + (painted ? 'P' : 'D') + (tint ? 'T' : '');
+      return 'toon' + (painted ? 'P' : 'D') + (tint ? 'T' : '') + (toon ? 'O' : '');
     };
     m.onBeforeCompile = function(sh) {
       sh.uniforms.uSun = {value: light.sunView};
       sh.uniforms.uKey = {value: light.key};
       sh.uniforms.uShade = {value: light.shade};
+      if (toon) {
+        var v3 = function(a, d) {
+          return new THREE.Vector3((a || [])[0] || d, (a || [])[1] || d, (a || [])[2] || d);
+        };
+        sh.uniforms.uSombra = {value: v3(toon.sombra, 1)};
+        sh.uniforms.uLuz = {value: v3(toon.luz, 1)};
+        sh.uniforms.uCorte = {value: new THREE.Vector2((toon.corte || [0.36])[0], (toon.corte || [0, 0.46])[1])};
+        sh.uniforms.uBrillo = {value: new THREE.Vector2((toon.brillo || [0.76])[0], (toon.brillo || [0, 0.9])[1])};
+      }
       if (tint) {
         sh.uniforms.uTint = {value: new THREE.Matrix3().set(tint[0], tint[1], tint[2], tint[5], tint[6], tint[7], tint[10], tint[11],
           tint[12])};
@@ -172,12 +193,17 @@
       sh.vertexShader = sh.vertexShader
         .replace('#include <common>', '#include <common>\nvarying vec3 vToonN;')
         .replace('#include <project_vertex>', '#include <project_vertex>\n\tvToonN = normalize( transformedNormal );');
-      var band = painted ? 'float b = smoothstep( -0.12, 0.38, ndl ); vec3 lt = mix( mix( uKey, uShade, 0.4 ) * 0.9, uKey, b );' :
+      // Its own two bands keep its colours under the light of any place: the shade towards the shade of the place times
+      // its own, the side to the sun towards the key times its own.
+      var band = toon ? 'float b1 = smoothstep( uCorte.x, uCorte.y, ndl ); float b2 = smoothstep( uBrillo.x, uBrillo.y, ndl ); ' +
+        'vec3 lt = mix( mix( uShade * uSombra, uKey, b1 ), uKey * uLuz, b2 );' :
+        painted ? 'float b = smoothstep( -0.12, 0.38, ndl ); vec3 lt = mix( mix( uKey, uShade, 0.4 ) * 0.9, uKey, b );' :
         'float fw = fwidth( ndl ) + 0.015;\n\t\tfloat b1 = smoothstep( 0.06 - fw, 0.06 + fw, ndl );\n\t\t' +
         'float b2 = smoothstep( 0.66 - fw, 0.66 + fw, ndl );\n\t\tvec3 lt = mix( uShade, uKey, b1 ) * ( 1.0 + 0.07 * b2 );';
       sh.fragmentShader = sh.fragmentShader
         .replace('#include <common>', '#include <common>\nvarying vec3 vToonN;\nuniform vec3 uSun;\nuniform vec3 uKey;\n' +
-          'uniform vec3 uShade;' + (tint ? '\nuniform mat3 uTint;\nuniform vec3 uTintAdd;' : ''))
+          'uniform vec3 uShade;' + (tint ? '\nuniform mat3 uTint;\nuniform vec3 uTintAdd;' : '') +
+          (toon ? '\nuniform vec3 uSombra;\nuniform vec3 uLuz;\nuniform vec2 uCorte;\nuniform vec2 uBrillo;' : ''))
         .replace('#include <map_fragment>', '#include <map_fragment>' + (tint ?
           '\n\tdiffuseColor.rgb = pow( clamp( uTint * pow( diffuseColor.rgb, vec3( 0.4545 ) ) + uTintAdd, 0.0, 1.0 ), vec3( 2.2 ) );' :
           ''))
@@ -444,6 +470,9 @@
     var THREE = window.THREE;
     var self = this;
     var root = THREE.SkeletonUtils.clone(gltf.scene);
+    // What the model says of itself: its own light (toon), and the states it can be in (estados, nodos).
+    this.extras = (gltf.scene && gltf.scene.userData) || {};
+    var toon = this.extras.toon || null;
     var painted = true;
     root.traverse(function(o) {
       if (o.isMesh && o.material && o.material.name === 'outline') {
@@ -456,7 +485,8 @@
       }
       o.frustumCulled = false;
       o.material = o.material.name === 'outline' ? outlineMaterial(o.material, self.layer.outline) :
-        toonMaterial(o.material, painted, self.layer.light, self.tint);
+        toonMaterial(o.material, painted, self.layer.light, self.tint,
+          toon && o.material.name === (toon.material || 'body') ? toon : null);
       var mask = self.skin && o.material.name !== 'outline' && (o.material.name.indexOf('face_') === 0 ? self.skin.face : self.skin.body);
       if (mask) {
         skinTone(o.material, mask, self.skin.gain);
@@ -487,12 +517,57 @@
     });
     this.actions = {};
     this.root = root;
+    // A gesture that tears a band off (lose.N): when it ends, the band is gone.
+    this.mixer.addEventListener('finished', function(e) {
+      var torn = /^lose\.(\d+)$/.exec((e.action && e.action.getClip().name) || '');
+      if (torn) {
+        self.hide('banda.' + torn[1]);
+      }
+    });
+    if (this.extras.estados) {
+      this.state(this.wantState || 'entero');
+    }
     this.layer.scene.add(root);
     this.layer.models.push(this);
     var want = this.want || 'idle';
     this.clipName = '';
     this.play(this.clips[want] ? want : 'idle', true);
     this.sync();
+  };
+
+  /**
+   * A state of the model, where it brings them (the Embrollo in the duel: entero, a-medias, deshilachado): the parts it
+   * hides and its size. Asked before the model comes, it is kept for then.
+   *
+   * @param {string} name
+   */
+  Model.prototype.state = function(name) {
+    this.wantState = name;
+    var st = this.root && ((this.extras || {}).estados || {})[name];
+    if (!st) {
+      return;
+    }
+    var self = this;
+    var hidden = (st.ocultar || []).map(clean);
+    ((this.extras || {}).nodos || []).forEach(function(n) {
+      var o = self.root.getObjectByName(clean(n));
+      if (o) {
+        o.visible = hidden.indexOf(clean(n)) < 0;
+      }
+    });
+    this.stateScale = Number(st.escala) || 1;
+  };
+
+  /**
+   * Hides a part of the model by its name in the GLB (three.js takes the dots out of the names).
+   *
+   * @param {string} name
+   */
+  Model.prototype.hide = function(name) {
+    var o = this.root && this.root.getObjectByName(clean(name));
+    if (o) {
+      o.visible = false;
+    }
   };
 
   /**
@@ -556,6 +631,11 @@
       }
       this.mixer.update(0);
       action.paused = true;
+      // Without movement, a band torn off goes at once.
+      var torn = /^lose\.(\d+)$/.exec(name);
+      if (torn) {
+        this.hide('banda.' + torn[1]);
+      }
     } else if (this.current && this.current !== action) {
       this.current.crossFadeTo(action, FADE, false);
     }
@@ -660,7 +740,7 @@
       return;
     }
     this.root.visible = !!c.scene && c.visible && c.alpha > 0.05;
-    var k = this.perMetre();
+    var k = this.perMetre() * (this.stateScale || 1);
     this.root.position.set(c.x, -c.y, c.depth || 0);
     this.root.scale.set(k, k, k);
     this.root.rotation.set(0, c.scaleX < 0 ? -YAW : YAW, 0);
@@ -819,7 +899,9 @@
         });
       }
       lights.then(function(all) {
-        var one = (all || {})[key] || DEFAULT;
+        // The colours of each painting, by its key (under pinturas; at the top in the first files).
+        var table = (all && all.pinturas) || all || {};
+        var one = table[key] || DEFAULT;
         layer.light.key.set(one.key || DEFAULT.key);
         layer.light.shade.set(one.shade || DEFAULT.shade);
       });

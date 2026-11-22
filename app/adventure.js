@@ -1343,6 +1343,21 @@
         var lamp = (how.lantern || {}).farol || [W - 270, 430];
         var foot = (how.lantern || {}).pie_del_poste || [lamp[0] + 60, lamp[1] + 120];
         var emb = S.figures && S.figures.embrollo;
+        var puppet = !emb && S.embrolloRig ? T.puppet.make(S, 'puppet.embrollo', moment.still) : null;
+        if (puppet) {
+          // In live 3D (or its sheets): it rolls down the path to the foot of the lantern.
+          var start = how.path || [lamp[0] - 110, lamp[1]];
+          emb = {x: start[0], y: start[1], sprite: puppet.container, puppet: puppet, shadow: S.add.ellipse(0, 0, 10, 10,
+            0x0b1a10, 0.32), base: 170 / (puppet.container.height || 896), walk: 0, moving: false, facing: -1, lift: 0,
+            tilt: 0, pose: null};
+          S.figures = S.figures || {};
+          S.figures.embrollo = emb;
+          puppet.play('roll', true);
+          S.tweens.add({targets: emb, x: foot[0] - 150, y: foot[1] + 30, duration: moment.still ? 1 : 1600,
+            ease: 'Cubic.easeOut', onComplete: function() {
+              puppet.play('idle', true);
+            }});
+        }
         if (!emb && S.textures.exists('figure.embrollo')) {
           var from = how.path || [lamp[0] - 110, lamp[1]];
           var sprite = S.add.image(from[0], from[1], 'figure.embrollo').setOrigin(0.5, 0.92).setDepth(foot[1]);
@@ -1355,7 +1370,27 @@
               sprite.setAngle(0);
             }});
         }
+        var gesture = function(name, loop) {
+          return !!(emb && emb.puppet && emb.puppet.play && emb.puppet.play(name, loop));
+        };
+        // A band torn off with each lie caught; then it is half undone, then frayed.
+        var torn = function() {
+          if (!emb || !emb.puppet) {
+            return false;
+          }
+          gesture('lose.' + (2 * page.threads - 1));
+          setTimeout(function() {
+            if (emb.puppet.state) {
+              emb.puppet.state(page.threads >= 2 ? 'deshilachado' : 'a-medias');
+            }
+            gesture('idle', true);
+          }, moment.still ? 0 : 1700);
+          return true;
+        };
         var shrink = function() {
+          if (torn()) {
+            return;
+          }
           if (emb && !moment.still) {
             emb.base *= 0.86;
             S.tweens.add({targets: emb.sprite, scale: emb.base, duration: 400, ease: 'Back.easeIn'});
@@ -1439,8 +1474,17 @@
             if (emb) {
               // Off up the path, frayed, dropping its gems.
               S.sparks.explode(moment.still ? 4 : 20, emb.sprite.x, emb.sprite.y - 30);
-              S.tweens.add({targets: emb.sprite, x: (how.path || [lamp[0] - 110])[0], y: -120, alpha: 0.2,
-                duration: moment.still ? 1 : 1800, ease: 'Cubic.easeIn'});
+              if (emb.puppet) {
+                gesture('flee', true);
+                S.tweens.add({targets: emb, x: (how.path || [lamp[0] - 110])[0], y: (how.path || [0, 432])[1] - 40,
+                  duration: moment.still ? 1 : 1800, ease: 'Cubic.easeIn', onComplete: function() {
+                    emb.sprite.setVisible(false);
+                    emb.shadow.setVisible(false);
+                  }});
+              } else {
+                S.tweens.add({targets: emb.sprite, x: (how.path || [lamp[0] - 110])[0], y: -120, alpha: 0.2,
+                  duration: moment.still ? 1 : 1800, ease: 'Cubic.easeIn'});
+              }
             }
             (S.lampKnots || []).forEach(function(g) {
               g.destroy();
@@ -1451,6 +1495,7 @@
               go(n.won || n.next);
             });
           } else {
+            gesture('laugh');
             chain(lines.lost, function() {
               // The lantern lights all the same, with its knots.
               S.sparks.explode(moment.still ? 4 : 16, lamp[0], lamp[1]);
@@ -1485,7 +1530,7 @@
           if (rematch || (data.aided && !warned)) {
             // In the rematch it only laughs; with the aids, the first true line touched is a warning.
             warned = true;
-            if (emb) {
+            if (!gesture('laugh') && emb) {
               S.hop(emb);
             }
             speak(rematch ? null : lines.aided || (lines.truth || [])[1], function() {
@@ -1495,6 +1540,8 @@
           }
           tied++;
           page.knots++;
+          // It throws a thread to the lantern, and there is the knot.
+          gesture('throw');
           knotLamp();
           chain(lines.truth, function() {
             if (tied >= lose) {
@@ -1753,6 +1800,12 @@
               var duels = Object.keys(q.nodes).some(function(nid) {
                 return q.nodes[nid].play === 'duel';
               });
+              // Its model in live 3D or its sheets, where the packs bring them; else its drawing.
+              var embRig = duels && T.puppet ? T.puppet.find('figure.embrollo', 'speaker') : null;
+              L.embrolloRig = embRig;
+              if (embRig) {
+                T.puppet.load(L, 'puppet.embrollo', embRig);
+              }
               if (duels && T.artUrl(['figure.embrollo'])) {
                 L.load.image('figure.embrollo', T.artUrl(['figure.embrollo']));
               }
@@ -2791,6 +2844,13 @@
             S.speaker.sprite.setDepth(900);
             S.speaker.shadow.setDepth(899);
           }
+          // Others who are in the place as figures of the engine (the Embrollo in the duel): where they are, at their size.
+          Object.keys(S.figures || {}).forEach(function(k) {
+            var f = S.figures[k];
+            if (f.puppet) {
+              T.cast.move(S, f, depth(f), time, dt, 7, still);
+            }
+          });
           (S.riders || []).forEach(function(r) {
             r.f.sprite.setDepth(S.boat.depth + 20);
             r.f.shadow.setVisible(false);
