@@ -202,7 +202,7 @@
         var hash = T.lineKey(text).replace(/^voice\.line\./, '');
         if (who === 'hero') {
           name = o.name || t('app_adventure_you');
-          key = T.heroKey(c, world.classstage, text);
+          key = q.heroVoice === 'role' ? heroByRole(hash) : T.heroKey(c, world.classstage, text);
         } else if (who === 'pet') {
           name = petName;
           key = 'voice.say.creature.' + hash;
@@ -211,12 +211,14 @@
           var id = who.slice(6);
           var b = S && S.beings[id];
           name = b ? b.name : id;
-          key = 'voice.say.pasajero-' + id + '.' + hash;
+          // Its own voice of the casting where the place says so (the things of the nest); else, a passenger's.
+          key = 'voice.say.' + ((q.cast || {})[id] || 'pasajero-' + id) + '.' + hash;
           figure = b;
         } else {
-          name = speakerName;
+          // Who lives here, or another who speaks in the place (the Embrollo): each with their name and their figure.
+          name = who === q.speaker.who ? speakerName : (data.speakers || {})[who] || who;
           key = 'voice.say.' + who + '.' + hash;
-          figure = S && S.speaker;
+          figure = S && (who === q.speaker.who ? S.speaker : (S.figures || {})[who] || null);
         }
         moment.hush();
         moment.say(name, text, true);
@@ -250,6 +252,22 @@
         if (who === 'hero' && S && S.hero) {
           T.cast.says(S.hero, Math.max(1200, text.length * 50));
         }
+      };
+
+      /**
+       * The voice of the hero by their role, where the place asks for it (the climb): who heals or follows trails, with
+       * the younger voices; who studies or protects, with the others; a girl or a boy as their character.
+       *
+       * @param {string} hash
+       * @return {string|null}
+       */
+      var heroByRole = function(hash) {
+        if (T.adapted && T.adapted.readaloud) {
+          return null;
+        }
+        var key = 'voice.hero.' + (c.nameform === 'f' ? 'f' : 'm') + (['healer', 'scout'].indexOf(role) >= 0 ? '1' : '2') +
+          '.' + hash;
+        return T.artUrl([key]) ? key : null;
       };
 
       /**

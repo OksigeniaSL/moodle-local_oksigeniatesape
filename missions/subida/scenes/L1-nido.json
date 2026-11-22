@@ -480,6 +480,19 @@
    "tall": 170,
    "face": 1
   },
+  "heroVoice": "role",
+  "cast": {
+   "lombriz": "lombriz",
+   "seta": "seta",
+   "musgo": "musgo",
+   "bellota": "bellota",
+   "rana": "rana",
+   "cristal": "cristal",
+   "pluma": "pluma",
+   "burbuja": "burbuja",
+   "caracol": "caracol",
+   "moho": "moho"
+  },
   "nodes": {
    "nido": {
     "play": "nest",
