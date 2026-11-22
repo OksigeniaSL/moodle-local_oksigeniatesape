@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.251.0 (2026-11-22)
+
+- A mission may bring its own path instead of the map: the climb to the tower. It opens with a
+  single button over the valley at dusk. The first minute follows: the Embrollo rolls up the path
+  putting out the six lanterns, the druid shows the seed that beats, a line of light draws the
+  path, and the student chooses who they are, a hero that is not named and says what it does, and
+  then its figure. On the path, the place of now has its steps as stones, each one a scene played in
+  its place; the lantern of the place lights when they are done, with its gems counted in a bag.
+  Then come the camp, the postcard and a glimpse of the next place. The services get_climb and
+  climb_act keep where the student is.
+- The camp: the hero's figure and skin, free; the creature named, and painted with the paints of
+  the market; the bag of gems; the things of the place, which the creature sniffs with a warm trail
+  before what lives and a frosted one before what does not.
+- The postcard for home: what surprised the student most, drawn with the valley and its lantern, the
+  hero, the painted creature sniffing it and the words in the child's voice, saved as a picture.
+- New plays in the place: the nest (things next to the seed or aside, a try to see how the seed
+  answers, a knot for a thing in the wrong site, undone by putting it again), someone hiding (trails
+  opened in order, a name to say, a wrong one crossed out; the fewer trails, the more the find
+  shines) and the duel (the lines of a notebook, the lies to catch, a knot for a true line, a
+  rematch that keeps what was solved). Each one counts its own way in its ribbon, tells its end in
+  the ribbon itself, and can be played as a list.
+- On the path of the climb, the end of a scene is kept quietly and the path comes back, with no
+  panel.
+- The 3D models take the light of each place. A model can hold another in its hands (the seed, from
+  a bone of its own), show a part it keeps hidden (the notebook the Embrollo reads, and reads
+  aloud), and be as tall as the place asks (the seed in the nest). The seed beats, shivers, leans
+  and opens in live 3D, and the creature is born at its side.
+- Sheets of frames over the place: the knot of wool that appears, stays and comes loose, the halo
+  and the frost of the seed, the bubble that bursts, the shine of the find; bushes in their own
+  layers that shake, and the one found coming out from behind its bush.
+- The climb notes, once each, the second of the first touch, the heroes heard, the surprise of the
+  postcard and whether it was saved, and whether the next place was touched with nobody asking.
+
 ## 0.250.0 (2026-11-21)
 
 - A student who plays with the aids of the first steps gets the best ending of a quest or a scene
