@@ -227,3 +227,51 @@ body.climb { overflow: hidden; }
 /* a stone touched before its time trembles, like a lantern */
 .pl-piedra.tiembla { animation: pl-tiembla .5s ease; }
 .climb-error { position: fixed; inset: auto 16px 40% 16px; text-align: center; font-size: 1.2rem; }
+
+/* --- The first minute (script §1): the Embrollo rolling up the path, the clearing where the druid gives the seed, the
+   four heroes and the two figures of the one chosen, the nest. */
+.op-embrollo { width: 4.4%; transform: translate(-50%, -80%); z-index: 3; pointer-events: none;
+  filter: drop-shadow(0 0 10px rgba(185, 140, 255, .8)); }
+.op-embrollo.op-arriba { width: 3.4%; animation: pl-respira 1.6s ease-in-out infinite; }
+.op-claro { position: fixed; inset: 0; z-index: 15; background: #0b1724 center / cover no-repeat;
+  animation: op-entra .6s ease; }
+@keyframes op-entra { from { opacity: 0; } }
+.op-claro::after { content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(180deg, rgba(5, 12, 20, .35) 0%, rgba(5, 12, 20, 0) 35%, rgba(5, 12, 20, .25) 100%); }
+.op-druida { position: absolute; z-index: 1; left: 22%; bottom: 14%; height: 46vh; opacity: 0;
+  transition: opacity .8s ease; }
+.op-druida.op-dentro { opacity: 1; }
+.op-druida.op-fuera { opacity: .35; }
+.op-semilla { position: fixed; z-index: 30; left: 50%; top: 52%; width: max(96px, 13vh); aspect-ratio: 1; padding: 0;
+  border: 0; border-radius: 50%; background: radial-gradient(circle, rgba(255, 220, 140, .55) 0%, rgba(255, 200, 87, 0) 70%);
+  transform: translate(-50%, -50%); cursor: pointer; animation: op-late 1.2s ease-in-out infinite;
+  transition: top 1s ease, left 1s ease, width 1s ease; }
+.op-semilla img { width: 70%; height: 70%; object-fit: contain; }
+.op-semilla.op-late { animation-duration: .5s; }
+.op-semilla.op-abajo { top: calc(100% - max(70px, 9vh)); }
+.op-semilla.op-manos { left: 50%; top: 58%; width: max(70px, 9vh); }
+@keyframes op-late { 50% { transform: translate(-50%, -50%) scale(1.12); filter: brightness(1.2); } }
+.op-mano { position: fixed; z-index: 31; left: calc(50% + max(48px, 6vh)); top: calc(52% + max(30px, 4vh)); width: 56px;
+  height: 56px; fill: #fff7e0; stroke: #3a2a10; stroke-width: 2; pointer-events: none;
+  animation: op-senala 1.1s ease-in-out infinite; }
+.op-mano svg { width: 100%; height: 100%; transform: rotate(-30deg); }
+@keyframes op-senala { 50% { transform: translate(-8px, -8px); } }
+.op-fila { position: absolute; z-index: 1; left: 0; right: 0; bottom: 12%; display: flex; justify-content: center;
+  align-items: flex-end; gap: clamp(8px, 3vw, 48px); padding: 0 12px; }
+.op-heroe { padding: 0; border: 0; background: none; cursor: pointer; height: clamp(160px, 44vh, 400px);
+  aspect-ratio: 768 / 896;
+  display: flex; align-items: flex-end; justify-content: center; border-radius: 24px;
+  transition: transform .5s ease, opacity .5s ease, filter .5s ease; -webkit-tap-highlight-color: transparent; }
+.op-heroe img { height: 100%; width: 100%; object-fit: contain; object-position: 50% 100%;
+  filter: drop-shadow(0 10px 14px rgba(0, 0, 0, .45)); }
+.op-heroe.op-tocado { transform: translateY(-4%) scale(1.06); filter: drop-shadow(0 0 18px rgba(255, 200, 87, .9)); }
+.op-heroe.op-aparta { opacity: .15; transform: scale(.9); pointer-events: none; }
+.op-heroe:focus-visible { outline: 3px solid var(--lantern); outline-offset: 6px; }
+.op-nido { position: absolute; z-index: 1; min-width: 56px; min-height: 56px; padding: 0; border: 0; border-radius: 50%;
+  cursor: pointer; background: radial-gradient(ellipse, rgba(255, 220, 140, .5) 0%, rgba(255, 200, 87, .2) 45%,
+  rgba(255, 200, 87, 0) 70%); mix-blend-mode: screen; animation: pl-respira 2s ease-in-out infinite; }
+.op-nido:focus-visible { outline: 3px solid var(--lantern); outline-offset: 4px; }
+@media (max-width: 640px) {
+  .op-fila { flex-wrap: wrap; bottom: 6%; gap: 4px 8px; }
+  .op-heroe { height: clamp(140px, 26vh, 240px); }
+}

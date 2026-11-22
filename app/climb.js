@@ -335,8 +335,343 @@
       T.fx.ambient('night', 'claro');
       setTimeout(function() {
         place.remove();
-        path();
+        if (state.hero) {
+          path();
+        } else {
+          opening(v);
+        }
       }, still ? 0 : 900);
+    };
+  }
+
+  /**
+   * Waits a while (none without movement).
+   *
+   * @param {number} ms
+   * @return {Promise}
+   */
+  function wait(ms) {
+    return new Promise(function(done) {
+      setTimeout(done, still ? 0 : ms);
+    });
+  }
+
+  /**
+   * Waits for a touch on an element.
+   *
+   * @param {HTMLElement} el
+   * @return {Promise}
+   */
+  function touched(el) {
+    return new Promise(function(done) {
+      el.onclick = function() {
+        el.onclick = null;
+        done();
+      };
+    });
+  }
+
+  /**
+   * A picture of the pack on the screen, where the class says.
+   *
+   * @param {HTMLElement} host
+   * @param {string} cls
+   * @param {string} key
+   * @param {string} [tag] img (default) or button.
+   * @param {string} [label]
+   * @return {HTMLElement}
+   */
+  function figure(host, cls, key, tag, label) {
+    var el = document.createElement(tag || 'img');
+    el.className = cls;
+    var url = T.artUrl([key]) || '';
+    if (tag === 'button') {
+      el.type = 'button';
+      el.setAttribute('aria-label', label || '');
+      el.innerHTML = '<img src="' + esc(url) + '" alt="">';
+    } else {
+      el.src = url;
+      el.alt = '';
+    }
+    host.appendChild(el);
+    return el;
+  }
+
+  /**
+   * Puts an element over a box of the painting of the clearing, as it covers the screen.
+   *
+   * @param {HTMLElement} el
+   * @param {number[]} box x0, y0, x1, y1 in pixels of the painting (or a point: x, y).
+   * @param {number} [tall] For a point: the height there, in pixels of the painting; the point is at its feet.
+   */
+  function onClearing(el, box, tall) {
+    var size = (state.climb.clearing || {}).size || [1440, 810];
+    var k = Math.max(window.innerWidth / size[0], window.innerHeight / size[1]);
+    var dx = (window.innerWidth - size[0] * k) / 2;
+    var dy = (window.innerHeight - size[1] * k) / 2;
+    el.style.position = 'absolute';
+    if (box.length === 4) {
+      el.style.left = (dx + box[0] * k) + 'px';
+      el.style.top = (dy + box[1] * k) + 'px';
+      el.style.width = ((box[2] - box[0]) * k) + 'px';
+      el.style.height = ((box[3] - box[1]) * k) + 'px';
+    } else {
+      el.style.left = (dx + box[0] * k) + 'px';
+      el.style.top = (dy + (box[1] - tall) * k) + 'px';
+      el.style.height = (tall * k) + 'px';
+      el.style.transform = 'translateX(-50%)';
+    }
+  }
+
+  /**
+   * The point of the path of the valley nearest to a point.
+   *
+   * @param {number[]} xy
+   * @return {number} Its index.
+   */
+  function nearest(xy) {
+    var pts = (state.climb.valley || {}).path || [];
+    var best = 0;
+    pts.forEach(function(p, i) {
+      if (Math.hypot(p[0] - xy[0], p[1] - xy[1]) < Math.hypot(pts[best][0] - xy[0], pts[best][1] - xy[1])) {
+        best = i;
+      }
+    });
+    return best;
+  }
+
+  /**
+   * The first minute: the Embrollo puts the six lanterns out on its way up to the tower; the druid gives the seed; the
+   * line of light draws the path; the student chooses who they are (a hero, then its figure) and leaves the seed in the
+   * nest, where the Nest begins. What is said comes from the package (climb.opening), in its order.
+   *
+   * @param {Object} v The valley of the way in.
+   */
+  function opening(v) {
+    var beats = state.climb.opening || [];
+    var beat = function(n) {
+      return beats[n] || {};
+    };
+    var c = state.climb.valley || {};
+    var pts = c.path || [];
+    // Lit at first, all six; each goes out as the Embrollo passes it.
+    var layers = (c.lanterns || []).map(function(xy, i) {
+      return layer(v.map, i, false);
+    });
+    var veil = v.scene.querySelector('.pl-velo');
+    var ball = figure(v.map, 'pl-marca op-embrollo', 'figure.embrollo');
+    at(ball, pts[0] || [445, 905]);
+    var climbUp = function(ms) {
+      return new Promise(function(done) {
+        if (still || !pts.length) {
+          layers.forEach(function(l) {
+            if (l) {
+              l.style.opacity = '0';
+            }
+          });
+          at(ball, c.beacon || [1342, 152]);
+          done();
+          return;
+        }
+        var outAt = (c.lanterns || []).map(nearest);
+        var t0 = 0;
+        requestAnimationFrame(function step(now) {
+          t0 = t0 || now;
+          var k = Math.min(1, (now - t0) / ms);
+          var i = Math.min(pts.length - 1, Math.floor(k * (pts.length - 1)));
+          at(ball, pts[i]);
+          ball.style.transform = 'translate(-50%, -80%) rotate(' + (k * 1440) + 'deg)';
+          outAt.forEach(function(j, n) {
+            var l = layers[n];
+            if (l && i >= j && l.style.opacity !== '0') {
+              l.style.transition = 'opacity .5s ease';
+              l.style.opacity = '0';
+              T.fx.sound('tap');
+            }
+          });
+          if (k < 1) {
+            requestAnimationFrame(step);
+          } else {
+            done();
+          }
+        });
+      });
+    };
+    if (veil) {
+      veil.remove();
+    }
+    wait(600).then(function() {
+      // Second 5: it rolls across the clearing and up the path, putting the lanterns out.
+      T.fx.sound('giggle');
+      return Promise.all([climbUp(7000), chain(beat(1).say)]);
+    }).then(function() {
+      ball.remove();
+      return clearing();
+    });
+
+    // Seconds 12 to 30: the druid, the seed that beats, in the hands of who plays.
+    var clearing = function() {
+      var stage = document.createElement('div');
+      stage.className = 'op-claro';
+      stage.style.backgroundImage = 'url("' + (T.artUrl(['scene.claro-abierto']) || '') + '")';
+      app.appendChild(stage);
+      var druid = figure(stage, 'op-druida', 'figure.druida-mayor');
+      var cl = state.climb.clearing || {};
+      if (cl.druid) {
+        // Where she stands in the Nest, as tall.
+        onClearing(druid, cl.druid, cl.druidTall || 170);
+      }
+      return wait(400).then(function() {
+        druid.classList.add('op-dentro');
+        T.fx.sound('near');
+        return wait(1600);
+      }).then(function() {
+        var seed = figure(stage, 'op-semilla', 'creature.seed', 'button', t('app_climb_seed'));
+        var hand = document.createElement('i');
+        hand.className = 'op-mano';
+        hand.innerHTML = '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M20 44c-6-3-11-10-12-16-1-3 2-5 4-3l4 4V9a3 3 0 0 1 6 0v12' +
+          'V6a3 3 0 0 1 6 0v15V8a3 3 0 0 1 6 0v14-9a3 3 0 0 1 6 0v17c0 8-5 14-12 15z"/></svg>';
+        stage.appendChild(hand);
+        return chain(beat(3).say).then(function() {
+          return touched(seed);
+        }).then(function() {
+          hand.remove();
+          seed.classList.add('op-late');
+          T.fx.sound('chime');
+          return wait(900);
+        }).then(function() {
+          seed.classList.add('op-abajo');
+          druid.classList.add('op-fuera');
+          return chain(beat(4).say);
+        }).then(function() {
+          stage.remove();
+          return way(seed);
+        });
+      });
+    };
+
+    // Seconds 30 to 40: the line of light of the path, the counter, the Embrollo up in the tower.
+    var way = function(seed) {
+      app.appendChild(seed);
+      var line = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      var m = master();
+      line.setAttribute('class', 'pl-sendero');
+      line.setAttribute('viewBox', '0 0 ' + m[0] + ' ' + m[1]);
+      line.setAttribute('preserveAspectRatio', 'none');
+      line.innerHTML = '<path d="M' + pts.map(function(xy) {
+        return xy[0] + ' ' + xy[1];
+      }).join(' L') + '"/>';
+      v.map.appendChild(line);
+      line.style.setProperty('--largo', Math.ceil(line.querySelector('path').getTotalLength()));
+      counter(0);
+      T.fx.sound('path');
+      return chain(beat(5).say).then(function() {
+        var top = figure(v.map, 'pl-marca op-embrollo op-arriba', 'figure.embrollo');
+        at(top, c.beacon || [1342, 152]);
+        return chain(beat(6).say).then(function() {
+          top.remove();
+          return heroes(seed);
+        });
+      });
+    };
+
+    // Seconds 40 to 62: who are you? Four heroes; the one chosen steps forward; its two figures; one takes the seed.
+    var heroes = function(seed) {
+      var stage = document.createElement('div');
+      stage.className = 'op-claro op-heroes';
+      stage.style.backgroundImage = 'url("' + (T.artUrl(['scene.claro-abierto']) || '') + '")';
+      app.appendChild(stage);
+      var row = document.createElement('div');
+      row.className = 'op-fila';
+      stage.appendChild(row);
+      var said = beat(8).say || {};
+      var roles = ['sage', 'healer', 'scout', 'protector'];
+      var forms = {sage: 'f', healer: 'm', scout: 'f', protector: 'm'};
+      return chain(beat(7).say).then(function() {
+        return new Promise(function(chosen) {
+          var last = null;
+          roles.forEach(function(role) {
+            // Not named on the first day: each one is what it says.
+            var b = figure(row, 'op-heroe', 'character.storyheroes.' + role + '.' + forms[role] + '.1', 'button',
+              (said[role] || [])[1] || role);
+            b.dataset.role = role;
+            b.onclick = function() {
+              if (last === role) {
+                chosen(role);
+                return;
+              }
+              last = role;
+              row.querySelectorAll('.op-heroe').forEach(function(o) {
+                o.classList.toggle('op-tocado', o === b);
+              });
+              state.hero = {role: role, nameform: forms[role]};
+              say(said[role]).then(function() {
+                subtitle('', '');
+              });
+            };
+          });
+        });
+      }).then(function(role) {
+        row.querySelectorAll('.op-heroe').forEach(function(o) {
+          o.classList.toggle('op-aparta', o.dataset.role !== role);
+        });
+        T.fx.sound('choose');
+        return wait(900).then(function() {
+          row.innerHTML = '';
+          T.fx.sound('chime');
+          return new Promise(function(picked) {
+            ['m', 'f'].forEach(function(form) {
+              var b = figure(row, 'op-heroe op-figura', 'character.storyheroes.' + role + '.' + form + '.1', 'button',
+                t('app_climb_figure_' + form));
+              b.dataset.form = form;
+              b.onclick = function() {
+                picked([role, form]);
+              };
+            });
+          });
+        });
+      }).then(function(pick) {
+        row.querySelectorAll('.op-figura').forEach(function(o) {
+          o.classList.toggle('op-aparta', o.dataset.form !== pick[1]);
+          if (o.dataset.form === pick[1]) {
+            // The seed goes to its hands.
+            seed.classList.add('op-manos');
+          }
+        });
+        return call('climb_act', {action: 'hero', role: pick[0], nameform: pick[1]});
+      }).then(function() {
+        return wait(1200);
+      }).then(function() {
+        stage.remove();
+        seed.remove();
+        return nest();
+      });
+    };
+
+    // Second 62: the clearing with its nest; touched, the hero leaves the seed in it and the Nest begins.
+    var nest = function() {
+      var stage = document.createElement('div');
+      stage.className = 'op-claro';
+      stage.style.backgroundImage = 'url("' + (T.artUrl(['scene.claro-abierto']) || '') + '")';
+      app.appendChild(stage);
+      // The nest of the painting, lit: touching it, the Nest.
+      var spot = document.createElement('button');
+      spot.type = 'button';
+      spot.className = 'op-nido';
+      spot.setAttribute('aria-label', t('app_climb_nest'));
+      stage.appendChild(spot);
+      onClearing(spot, (state.climb.clearing || {}).nest || [540, 543, 888, 714]);
+      T.fx.sound('near');
+      return touched(spot).then(function() {
+        var first = state.scenes.filter(function(s) {
+          return s.code === (beat(beats.length - 1).scene || '');
+        })[0] || state.scenes[0];
+        stage.remove();
+        path();
+        if (first) {
+          play(first);
+        }
+      });
     };
   }
 
