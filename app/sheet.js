@@ -56,14 +56,15 @@
     var prefix = 'spr.' + id + '.';
     var out = {};
     Object.keys(files).forEach(function(k) {
-      var m = k.indexOf(prefix) === 0 && /^([a-z_]+)\.(d|f)\.atlas$/.exec(k.slice(prefix.length));
+      var m = k.indexOf(prefix) === 0 && /^([a-z0-9_.]+)\.(d|f)\.atlas$/.exec(k.slice(prefix.length));
       var key = m ? k.slice(0, -'.atlas'.length) : '';
-      if (!m || !files[key]) {
-        return;
-      }
-      var pages = [key];
-      for (var n = 1; files[key + '-' + n]; n++) {
+      // A sheet of one page has the key of its atlas; one of several, the key with the number of each page.
+      var pages = m && files[key] ? [key] : [];
+      for (var n = 1; m && files[key + '-' + n]; n++) {
         pages.push(key + '-' + n);
+      }
+      if (!pages.length) {
+        return;
       }
       out[m[1]] = out[m[1]] || {};
       out[m[1]][m[2]] = {key: key, atlas: files[k], pages: pages, urls: pages.map(function(p) {

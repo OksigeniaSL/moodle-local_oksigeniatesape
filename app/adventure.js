@@ -1264,7 +1264,8 @@
               glow.destroy();
               var side = hero.x < home.x ? -1 : 1;
               hero.walkClip = 'carry.walk';
-              S.walkTo(P.onGround(place, home.x + side * 130, home.y + 24), function() {
+              // Beside the nest, on the grass, not on its rim.
+              S.walkTo(P.onGround(place, home.x + side * 215, home.y + 62), function() {
                 hero.walkClip = null;
                 hero.pose = null;
                 hero.facing = -side;
@@ -1282,6 +1283,10 @@
                     }, onComplete: function() {
                       seedModel.tall = rest;
                       seedModel.play('idle', true);
+                      // Out of the way of what goes next to the seed.
+                      S.walkTo(P.onGround(place, home.x + side * 330, home.y + 70), function() {
+                        hero.facing = -side;
+                      });
                       done();
                     }});
                 }, clip('place', 'release', 1.35) * 1000);

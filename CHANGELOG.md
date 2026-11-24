@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.251.1 (2026-11-24)
+
+- The sheets of a figure with several pages, and the gestures with a dot or a number in their name,
+  are found: on a device that cannot draw the live models, the figure is its sheets again.
+- The hero who leaves the seed in the nest stands beside it, on the grass and not on its rim, and
+  then goes out of the way, facing it.
+
 ## 0.251.0 (2026-11-22)
 
 - A mission may bring its own path instead of the map: the climb to the tower. It opens with a
